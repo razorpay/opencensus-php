@@ -72,7 +72,10 @@ class Core extends Base\Core
     {
         // set the from time to current time. For all practical
         // purposes, this is usually not set by input.
-        $input = [Entity::BEGIN => time()];
+        $input = [
+            Entity::BEGIN => time(),
+            Entity::PUBLIC => true
+        ];
 
         $downtimes = $this->repo->gateway_downtime->fetch($input);
 

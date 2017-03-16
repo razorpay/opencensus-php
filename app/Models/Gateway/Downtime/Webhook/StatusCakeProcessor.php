@@ -4,17 +4,17 @@ namespace RZP\Models\Gateway\Downtime\Webhook;
 
 use App;
 use RZP\Exception;
-use RZP\Models\Gateway\Downtime\InputFormatter;
-use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Downtime;
 use RZP\Models\Gateway\Downtime\Entity;
-use RZP\Models\Gateway\Downtime\ReasonCode;
 use RZP\Models\Gateway\Downtime\Source;
+use RZP\Models\Gateway\Downtime\ReasonCode;
+use RZP\Models\Gateway\Downtime\InputFormatter;
 
-class StatusCakeProcessor implements AbstractProcessorInterface
+class StatusCakeProcessor implements ProcessorInterface
 {
     const STATUS_UP = 'UP';
 
@@ -139,17 +139,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             $formatted[Entity::BEGIN] = time();
         }
 
-        try
-        {
-            $this->setIssuerMetaData($input, $formatted);
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->warning(
-                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_PARSE_ERROR, ['input' => $input]);
-
-            throw $e;
-        }
+        $this->setIssuerMetaData($input, $formatted);
 
         $formatted[Entity::COMMENT] = 'STATUSCAKE STATUSCODE : '. $input['StatusCode'];
 
@@ -170,140 +160,81 @@ class StatusCakeProcessor implements AbstractProcessorInterface
      */
     protected function setIssuerMetaData(array $input, array &$formatted)
     {
-        $tags = $input['Tags'];
+        $rawTags = $input['Tags'];
 
-        $decodedTags = [];
+        $tags = $this->decodeJson($rawTags);
 
-        try
+        $options = [
+            Entity::METHOD    => $tags[Entity::METHOD] ?? null,
+            Entity::GATEWAY   => $tags[Entity::GATEWAY] ?? null,
+            Entity::ISSUER    => $tags[Entity::ISSUER] ?? null,
+            Entity::NETWORK   => $tags[Entity::NETWORK] ?? null,
+            Entity::CARD_TYPE => $tags[Entity::CARD_TYPE] ?? null,
+        ];
+
+        // Lower case all the values of option
+        array_walk($options, function ($value)
         {
-            $decodedTags = json_decode($tags, true);
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TAGS,
-                [
-                    'tags' => $tags,
-                    'input' => $input,
-                    'exception' => $e->getMessage()
-                ]);
+                return strtolower($value);
+        });
 
-            throw new Exception\LogicException(
-                'StatusCake invalid tag value', $tags, $input);
-        }
-
-        $jsonError = json_last_error();
-
-        if ($jsonError !== 0)
-        {
-            $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TAGS,
-                [
-                    'tags' => $tags,
-                    'input' => $input,
-                    'json_error' => $jsonError
-                ]);
-
-            throw new Exception\LogicException(
-                'StatusCake invalid tag value', $tags, $input);
-        }
-
-        $method = isset($decodedTags[Entity::METHOD]) ? strtolower($decodedTags[Entity::METHOD]) : null;
-
-        $gateway = isset($decodedTags[Entity::GATEWAY]) ? strtolower($decodedTags[Entity::GATEWAY]) : null;
-
-        $issuer = isset($decodedTags[Entity::ISSUER]) ? strtoupper($decodedTags[Entity::ISSUER]) : null;
-
-        $network = isset($decodedTags[Entity::NETWORK]) ? strtolower($decodedTags[Entity::NETWORK]) : null;
-
-        $cardType = isset($decodedTags[Entity::CARD_TYPE]) ? strtolower($decodedTags[Entity::CARD_TYPE]) : null;
-
-        $method = strtolower($method);
-
-        $formatted[Entity::METHOD] = $method;
-
-        switch ($method)
+        switch ($options[Entity::METHOD])
         {
             case Method::NETBANKING:
 
-                if (isset($issuer) === false)
+                if ($options['issuer'] === null)
                 {
                     $this->trace->warning(
                         TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_NBDATA,
-                        ['data' => $decodedTags]
+                        ['data' => $tags]
                     );
 
                     throw new Exception\BadRequestValidationFailureException(
                         'StatusCake invalid Netbanking data',
-                        $method,
-                        $decodedTags
-                    );
+                        'tags',
+                        $tags);
                 }
 
-                if (isset($gateway) === false)
+                if ($options['gateway'] === null)
                 {
-                    $gateway = $this->getNetbankingGateway($issuer);
+                    $options['gateway'] = $this->getNetbankingGateway($options['issuer']);
                 }
-
-                $formatted[Entity::GATEWAY] = $gateway;
-
-                $formatted[Entity::ISSUER] = $issuer;
 
                 break;
 
             case Method::CARD:
 
-                if (isset($gateway) === false)
+                if ($options['gateway'] === null)
                 {
                     $this->trace->warning(
                         TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_CDATA,
-                        ['data' => $decodedTags]
+                        ['data' => $tags]
                     );
 
                     throw new Exception\BadRequestValidationFailureException(
                         'StatusCake invalid Card data',
-                        $method,
-                        $decodedTags
-                    );
-                }
-
-                $formatted[Entity::GATEWAY] = $gateway;
-
-                if (isset($issuer) === true)
-                {
-                    $formatted[Entity::ISSUER] = $issuer;
-                }
-
-                if (isset($network) === true)
-                {
-                    $formatted[Entity::NETWORK] = $network;
-                }
-
-                if (isset($cardType) === true)
-                {
-                    $formatted[Entity::CARD_TYPE] = $cardType;
+                        'tags',
+                        $tags);
                 }
 
                 break;
 
             case Method::WALLET:
-
                 // wallets begin he gateway name with WALLET_. So, check if the gateway name actually
                 // contains WALLET_. Else, append it here so validation can succeed.
 
-                if (isset($gateway) === false)
+                if (isset($options['gateway']) === false)
                 {
                     $this->trace->warning(
                         TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_WDATA,
-                        ['data' => $decodedTags]
+                        ['data' => $tags]
                     );
 
                     throw new Exception\BadRequestValidationFailureException(
                         'StatusCake invalid wallet data',
-                        $method,
-                        $decodedTags
-                    );
+                        'tags',
+                        $tags);
                 }
-
-                $formatted[Entity::GATEWAY] = $gateway;
 
                 break;
 
@@ -316,12 +247,14 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
                 throw new Exception\BadRequestValidationFailureException(
                     'StatusCake invalid data',
-                    $method,
-                    $input
+                    'method',
+                    $options['method']
                 );
         }
 
-        // $formatted = InputFormatter::format($formatted);
+        $options['issuer'] = strtoupper($options['issuer']);
+
+        $formatted = array_merge($formatted, $options);
     }
 
     protected function validateStatus($status)
@@ -370,6 +303,35 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
             throw new Exception\BadRequestValidationFailureException(
                 'StatusCake token validation failure.');
+        }
+    }
+
+    protected function decodeJson($json)
+    {
+        $decodeJson = json_decode($json, true);
+
+        switch (json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+            default:
+
+                $this->trace->error(
+                    TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TAGS,
+                    [
+                        'json' => $json,
+                        'error' => json_last_error()
+                    ]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json]);
         }
     }
 }

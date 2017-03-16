@@ -677,7 +677,7 @@ class GatewayDowntimeTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(isset($response['end']), false);
+        $this->assertNull($response['end']);
 
         $content['Status'] = 'Up';
 
@@ -685,7 +685,7 @@ class GatewayDowntimeTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(isset($response['end']), true);
+        $this->assertNotNull($response['end']);
     }
 
     public function testStatusCakeWebHookMissingToken()

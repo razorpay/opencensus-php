@@ -698,7 +698,7 @@ return [
             'content' => [
                 'method' => 'card',
                 'reason_code' => 'ISSUER_DOWN',
-                'gateway' => 'hdfc'
+                'gateway' => 'HDFC'
             ]
         ]
     ],
