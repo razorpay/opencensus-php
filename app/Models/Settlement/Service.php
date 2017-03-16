@@ -21,9 +21,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function processFailedSettlements($input, $channel)
+    public function processFailedSettlements($input)
     {
-        $data = (new Settlement\Processor)->processFailedSettlements($input, $channel);
+        $data = (new Settlement\Processor)->processFailedSettlements($input);
 
         return $data;
     }

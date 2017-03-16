@@ -37,25 +37,23 @@ class Processor extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processFailedSettlements(array $input, string $channel)
+    public function processFailedSettlements(array $input)
     {
         $this->preSettlementProcessing($input);
 
-        list($shouldProcess, $message) = $this->shouldProcessSettlements();
+        list($shouldProcess, $data) = $this->shouldProcessSettlements();
 
-        if ($shouldProcess === false)
+        if ($shouldProcess === true)
         {
-            return $message;
+            $data = $this->mutex->acquireAndRelease(
+                self::MUTEX_RETRY_RESOURCE,
+                function () use ($input)
+                {
+                    return $this->retryProcessFailedSettlements();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
-
-        $data = $this->mutex->acquireAndRelease(
-            self::MUTEX_RETRY_RESOURCE,
-            function () use ($input)
-            {
-                return $this->retryProcessFailedSettlements($input);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $data;
     }
@@ -112,52 +110,64 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function retryProcessFailedSettlements(array $input): array
+    protected function retryProcessFailedSettlements(): array
     {
+        $response = [];
+        $channel = null;
+
         try
         {
-            if (isset($input['settlement_ids']) === false)
-            {
-                throw new Exception\LogicException('No settlement IDs provided for retry.');
-            }
+            (new Validator)->validateInput('retry', $this->input);
 
-            $setlIds = $input['settlement_ids'];
+            $setlIds = $this->input['settlement_ids'];
 
             Entity::verifyIdAndStripSignMultiple($setlIds);
 
-            $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds);
+            $channels = $this->getArrayedChannels();
 
-            $setlAttempts = new Base\PublicCollection;
-
-            $totalTxns = 0;
-
-            foreach ($settlements as $setl)
+            foreach ($channels as $channel)
             {
-                $setlTxns = $setl->setlTransactions;
-
-                $setlTxnsCount = $setlTxns->count();
-
-                $merchantSettler = new Merchant($setl->merchant, $this->channel, $this->repo);
-
-                list($setl, $bankTransferAtpt) = $this->repo->transaction(
-                    function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
-                {
-                    list($setl, $bankTransferAtpt) = $merchantSettler->retryFailedSettlement($setl);
-
-                    return $this->createAndupdateBatchEntities($setl, $setlTxnsCount, $bankTransferAtpt);
-                });
-
-                $setlAttempts->push($bankTransferAtpt);
-
-                $totalTxns += $setlTxnsCount;
+                $response[$channel] = $this->retrySettlementsForChannel($setlIds, $channel);
             }
-
-            $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns);
         }
         catch (\Exception $e)
         {
-            $this->settlementFailure($this->channel, $e, TraceCode::SETTLEMENT_RETRY_FAILED);
+            $this->settlementFailure(null, $e, TraceCode::SETTLEMENT_RETRY_FAILED);
         }
+
+        return $response;
+    }
+
+    protected function retrySettlementsForChannel($setlIds, $channel)
+    {
+        $setlAttempts = new Base\PublicCollection;
+
+        $totalTxns = 0;
+
+        $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds, $channel);
+
+        foreach ($settlements as $setl)
+        {
+            $setlTxns = $setl->setlTransactions;
+
+            $setlTxnsCount = $setlTxns->count();
+
+            $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo);
+
+            list($setl, $bankTransferAtpt) = $this->repo->transaction(
+                function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
+            {
+                list($setl, $bankTransferAtpt) = $merchantSettler->retryFailedSettlement($setl);
+
+                return $this->createAndupdateBatchEntities($setl, $setlTxnsCount, $bankTransferAtpt);
+            });
+
+            $setlAttempts->push($bankTransferAtpt);
+
+            $totalTxns += $setlTxnsCount;
+        }
+
+        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
 
         return $response;
     }
