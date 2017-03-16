@@ -172,7 +172,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
         // This is the list of banks in netbanking
         Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
-        Route::get('/admin/networks', 'AdminController@getSupportedNetworks');
 
         Route::get('/admin/features/{entityId}', 'AdminController@getEntityFeatures');
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
@@ -187,8 +186,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/admin/activity', 'AdminController@deleteOtherAdminActivity');
         Route::delete('/admin/activity/{id}', 'AdminController@deleteAdminActivity');
 
-        Route::get('/admin/pricing/list', 'AdminController@getPricingList');
-        Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
         Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
         Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
         Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
@@ -203,11 +200,6 @@ Route::group(['middleware' => ['web']], function () {
         // Admin Meta Routes
         Route::post('/admin/password', 'AdminController@postPassword');
         Route::put('/admin/{id}/edit', 'AdminController@putEdit');
-
-        // Pricing Plan Routes
-        Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');
-        Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
-        Route::delete('/admin/pricing/{planId}/rules/{ruleId}', 'AdminController@deletePricingPlanRule');
 
         // EMI Routes
         Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');

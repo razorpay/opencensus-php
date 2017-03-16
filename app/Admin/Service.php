@@ -1604,28 +1604,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function fetchPricingPlans()
-    {
-        $errors = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->merchants()->toArray();
-
-            $response = $response['items'];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return array($errors, $response);
-    }
-
     public function fetchPricingPlan($id)
     {
         $errors = array();
@@ -1644,68 +1622,6 @@ class Service extends Base\Service
         }
 
         return array($errors, $response);
-    }
-
-    public function addPricingPlanRule($id, $input)
-    {
-        $error = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->fetch($id)->createRule($input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $response);
-    }
-
-    public function deletePricingPlanRule($planId, $ruleId)
-    {
-        $error = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing
-                ->deleteRule($planId, $ruleId)
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $response);
-    }
-
-    public function createPricingPlan($input)
-    {
-        $error = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->create($input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $response);
     }
 
     public function fetchMultipleEntities($mode, $entity, $input)
@@ -2387,15 +2303,6 @@ class Service extends Base\Service
         }
 
        return [$error, $data];
-    }
-
-    public function fetchPaymentNetworks()
-    {
-        $this->setApiCredentials(null, 'live');
-
-        $data = $this->api->pricing->fetchPaymentNetworks();
-
-        return $data;
     }
 
     public function updateMerchantDayAggregations($mode, $input)

@@ -427,13 +427,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse([], $data);
     }
 
-    public function getSupportedNetworks()
-    {
-        $data = (new Admin\Service)->fetchPaymentNetworks();
-
-        return AppResponse::jsonResponse([], $data->toArray());
-    }
-
     public function postEditMerchant($id)
     {
         $input = Input::all();
@@ -557,46 +550,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->capturePayment($mode, $merchantId, $id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getPricingList()
-    {
-        list($error, $data) = (new Admin\Service)->fetchPricingPlans();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getPricingRules($id)
-    {
-        list($error, $data) = (new Admin\Service)->fetchPricingPlan($id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postPricingRules($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->addPricingPlanRule($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function deletePricingPlanRule($planId, $ruleId)
-    {
-        list($error, $data) = (new Admin\Service)
-            ->deletePricingPlanRule($planId, $ruleId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postNewPricingPlan()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->createPricingPlan($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
