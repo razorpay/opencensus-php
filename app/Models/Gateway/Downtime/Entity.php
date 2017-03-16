@@ -220,6 +220,7 @@ class Entity extends Base\PublicEntity
         if ($this->exists === true)
         {
             $oldNetwork = $this->getAttribute(Entity::NETWORK);
+
             $method = $this->getAttribute(Entity::METHOD);
 
             if (($method !== Payment\Method::CARD) or
@@ -254,6 +255,7 @@ class Entity extends Base\PublicEntity
         if ($this->exists === true)
         {
             $oldIssuer = $this->getAttribute(Entity::ISSUER);
+
             $method = $this->getAttribute(Entity::METHOD);
 
             if (($method !== Payment\Method::CARD) or

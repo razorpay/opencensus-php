@@ -94,7 +94,7 @@ return array(
         'appId'     => env('EXCHANGE_APP_ID')
     ],
 
-    'gateway_absence' => [
+    'gateway_downtime' => [
         'statuscake' => [
             'username' => env('STATUSCAKE_USERNAME'),
             'api_key'  => env('STATUSCAKE_API_KEY')
