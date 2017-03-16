@@ -126,7 +126,7 @@ class CreateOffers extends Migration
 
         Schema::table(Table::OFFER, function ($table)
         {
-            $table->dropForeign(Tbale::OFFER . '_' . Offer::MERCHANT_ID . '_foreign');
+            $table->dropForeign(Table::OFFER . '_' . Offer::MERCHANT_ID . '_foreign');
         });
 
         Schema::drop(Table::OFFER);

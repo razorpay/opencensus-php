@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 use RZP\Models\Batch\Type;
 use RZP\Models\Batch\Status;
 use RZP\Models\Batch\Header;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Batch extends Base
 {

@@ -5,10 +5,12 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Settlement\Entity as Settlement;
+use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;
 
-class CreateSettlements extends Migration {
+class CreateSettlements extends Migration
+{
 
     /**
      * Run the migrations.
@@ -26,7 +28,7 @@ class CreateSettlements extends Migration {
 
             $table->char(Settlement::MERCHANT_ID, Settlement::ID_LENGTH);
 
-            $table->char(Settlement::BANK_ACCOUNT_ID, Settlement::ID_LENGTH)
+            $table->char(Settlement::BANK_ACCOUNT_ID, BankAccount::ID_LENGTH)
                   ->nullable();
 
             $table->bigInteger(Settlement::AMOUNT)

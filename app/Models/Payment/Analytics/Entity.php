@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const LIBRARY                       = 'library';
     const LIBRARY_VERSION               = 'library_version';
     const BROWSER                       = 'browser';
+    const BROWSER_VERSION               = 'browser_version';
     const OS                            = 'os';
     const OS_VERSION                    = 'os_version';
     const DEVICE                        = 'device';
@@ -40,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::LIBRARY,
         self::LIBRARY_VERSION,
         self::BROWSER,
+        self::BROWSER_VERSION,
         self::OS,
         self::OS_VERSION,
         self::DEVICE,
@@ -61,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::LIBRARY,
         self::LIBRARY_VERSION,
         self::BROWSER,
+        self::BROWSER_VERSION,
         self::OS,
         self::OS_VERSION,
         self::DEVICE,
@@ -84,6 +87,7 @@ class Entity extends Base\PublicEntity
         self::LIBRARY,
         self::LIBRARY_VERSION,
         self::BROWSER,
+        self::BROWSER_VERSION,
         self::OS,
         self::OS_VERSION,
         self::DEVICE,
@@ -139,6 +143,11 @@ class Entity extends Base\PublicEntity
     public function getBrowser()
     {
         return $this->getAttribute(self::BROWSER);
+    }
+
+    public function getBrowserVersion()
+    {
+        return $this->getAttribute(self::BROWSER_VERSION);
     }
 
     public function getOs()
@@ -203,6 +212,11 @@ class Entity extends Base\PublicEntity
     public function setCheckoutId($checkoutId)
     {
         $this->setAttribute(self::CHECKOUT_ID, $checkoutId);
+    }
+
+    public function setBrowserVersion($browserVersion)
+    {
+        $this->setAttribute(self::BROWSER_VERSION, $browserVersion);
     }
 
     public function setPlatformVersion($platformVersion)

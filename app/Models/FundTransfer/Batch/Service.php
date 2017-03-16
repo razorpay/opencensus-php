@@ -1,32 +1,31 @@
 <?php
 
-namespace RZP\Models\Settlement\Batch;
+namespace RZP\Models\FundTransfer\Batch;
 
 use RZP\Models\Base;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Batch;
 use Carbon\Carbon;
 
 class Service extends Base\Service
 {
-    public function calculatePreviousBatchSettlementFees()
+    public function calculatePreviousBatchFundTransferFees()
     {
         $result = $this->repo->transaction(function()
         {
-            return $this->calculatePreviousBatchSettlementFeesCore();
+            return $this->calculatePreviousBatchFundTransferFeesCore();
         });
 
         return $result;
     }
 
-    protected function calculatePreviousBatchSettlementFeesCore()
+    protected function calculatePreviousBatchFundTransferFeesCore()
     {
-        $batchSettlements = $this->repo->batch_settlement->getIfFeesIsNull();
+        $batchFundTransfers = $this->repo->batch_fund_transfer->getIfFeesIsNull();
 
         $totalFees = 0;
         $totalSetlCount = 0;
 
-        foreach ($batchSettlements as $batch)
+        foreach ($batchFundTransfers as $batch)
         {
             $timestamp = $batch->getCreatedAt();
 
@@ -61,18 +60,18 @@ class Service extends Base\Service
         return ['total_fees' => $totalFees, 'total_setl_count' => $totalSetlCount];
     }
 
-    public function computeBatchSettlementServiceTax()
+    public function computeBatchFundTransferServiceTax()
     {
         return $this->repo->transaction(function ()
         {
-            $batchSettlements = $this->repo->batch_settlement->getIfServiceTaxIsNullOrZero();
+            $batchFundTransfers = $this->repo->batch_fund_transfer->getIfServiceTaxIsNullOrZero();
 
             $setlRepo = $this->repo->settlement;
 
             $totalServiceTax = 0;
             $totalSetlCount = 0;
 
-            foreach ($batchSettlements as $batch)
+            foreach ($batchFundTransfers as $batch)
             {
                 $timestamp = $batch->getCreatedAt();
 
@@ -103,9 +102,9 @@ class Service extends Base\Service
             }
 
             return [
-                'total_service_tax'         => $totalServiceTax,
-                'total_batch_setl_count'    => $totalSetlCount,
-                'total_batch_settlements'   => $batchSettlements->count(),
+                'total_service_tax'          => $totalServiceTax,
+                'total_batch_setl_count'     => $totalSetlCount,
+                'total_batch_fund_transfers' => $batchFundTransfers->count(),
             ];
         });
     }
