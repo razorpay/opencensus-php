@@ -178,6 +178,13 @@ class StatusCakeProcessor implements ProcessorInterface
             $options[$key] = strtolower($value);
         }
 
+        // this check has to happen here since
+        // GATEWAY=> ALL needs to be in upper case
+        if ($options[Entity::GATEWAY] === strtolower(Entity::ALL))
+        {
+            $options[Entity::GATEWAY] = Entity::ALL;
+        }
+
         switch ($options[Entity::METHOD])
         {
             case Method::NETBANKING:
