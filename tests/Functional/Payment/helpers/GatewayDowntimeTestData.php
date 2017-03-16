@@ -677,7 +677,7 @@ return [
                 'issuer' => 'HDFC',
                 'method' => 'netbanking',
                 'reason_code' => 'ISSUER_DOWN',
-                'gateway' => 'netbanking_hdfc'
+                'gateway' => 'ALL'
             ]
         ]
     ],
@@ -711,7 +711,7 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => '{"method": "wallet", "gateway": "wallet_airtelmoney"}'
+                'Tags' => '{"method": "wallet", "gateway": "wallet_airtelmoney", "issuer": "airtelmoney"}'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/status_cake/webhook'
