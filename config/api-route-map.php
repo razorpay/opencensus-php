@@ -164,5 +164,13 @@ return [
             'url'       => 'merchants/{merchantId}/keys/{keyId}',
             'routeName' => 'post_keys'
         ],
+
+        // Pricing
+        'pricing_get_merchant_plans'        => 'pricing/merchants',
+        'pricing_get_plan'                  => 'pricing/{id}',
+        'pricing_add_plan_rule'             => 'pricing/{id}/rule',
+        'pricing_create_plan'               => 'pricing',
+        'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
+        'pricing_supported_networks'        => 'pricing/networks',
     ],
 ];
