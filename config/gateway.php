@@ -225,7 +225,7 @@ return array(
     'netbanking_kotak' => array(
         'live_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret_sec' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
+        'live_hash_secret_tpv' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
     ),
 
     'netbanking_icici' => [
