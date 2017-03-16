@@ -207,7 +207,9 @@ class Gateway extends Base\Gateway
             (empty($input['gateway']['gateway_payment_date']) === true))
         {
             throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_ERROR);
+                        ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
+                        null,
+                        $input);
         }
 
         $contentToSave = [

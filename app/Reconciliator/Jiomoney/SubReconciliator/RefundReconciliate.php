@@ -28,7 +28,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $gatewayPaymentId = (string) $row[self::COLUMN_GATEWAY_PAYMENT_ID];
 
-        $gatewayEntity = $this->repo->wallet_jiomoney->findByGatewayPaymentIdAncAction(
+        $gatewayEntity = $this->repo->wallet_jiomoney->findByGatewayPaymentIdAndAction(
                                                             $gatewayPaymentId,
                                                             Action::AUTHORIZE,
                                                             Wallet::JIOMONEY);
@@ -38,7 +38,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             return null;
         }
 
-        $paymentId = $gatewayEntities->first()->getPaymentId();
+        $paymentId = $gatewayEntity->getPaymentId();
 
         return $paymentId;
     }
