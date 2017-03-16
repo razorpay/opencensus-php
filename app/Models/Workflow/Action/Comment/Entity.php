@@ -15,23 +15,28 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'action_comment';
 
-    protected $generateIdOnCreate = false;
+    protected $generateIdOnCreate = true;
 
     protected $fillable = [
+        self::COMMENT,
         self::ADMIN_ID,
-        self::PAYLOAD_ID,
+        self::ACTION_ID,
     ];
 
     protected $visible = [
+        self::ID,
+        self::COMMENT,
         self::ADMIN_ID,
-        self::PAYLOAD_ID,
+        self::ACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
     protected $public = [
+        self::ID,
+        self::COMMENT,
         self::ADMIN_ID,
-        self::PAYLOAD_ID,
+        self::ACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];

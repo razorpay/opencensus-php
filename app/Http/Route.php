@@ -448,10 +448,11 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
-
         'action_create'                           => ['post',     'workflows/actions',                              'WorkflowController@postCreateAction'                               ],
         'action_fetch_by_id'                      => ['get',      'workflows/actions/{id}',                         'WorkflowController@fetchDiffById'                                  ],
         'action_execute'                          => ['post',     'workflows/actions/{id}',                         'WorkflowController@postExecuteAction'                              ],
+        'action_comment_create'                   => ['post',     'workflows/actions/{id}/comments',                'WorkflowController@postCreateActionComment'                        ],
+        'action_comment_fetch'                    => ['get',      'workflows/actions/{id}/comments',                'WorkflowController@getActionComments'                              ]
     );
 
     public static $public = array(
@@ -596,9 +597,6 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
-        'action_create',
-        'action_fetch_by_id',
-        'action_execute',
     );
 
     public static $internal = array(
@@ -770,6 +768,11 @@ final class Route
         'schedule_fetch',
         'schedule_fetch_multiple',
         'schedule_migration',
+        'action_create',
+        'action_fetch_by_id',
+        'action_execute',
+        'action_comment_create',
+        'action_comment_fetch',
     );
 
     public static $proxy = array(
