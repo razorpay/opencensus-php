@@ -14,7 +14,7 @@ final class FactoryData
     {
         $factory(\RZP\Models\Merchant\Entity::class, [
             'id' => $faker->uniqueid,
-            'org_id' => 'RazorpayOrgnId',
+            'org_id' => '100000razorpay',
             'parent_id' => null,
             'name' => $faker->word,
             'email' => $faker->email,
@@ -175,6 +175,14 @@ final class FactoryData
             'utr' => $faker->randomNumber(8),
             'failure_reason' => null,
             'return_utr' => null,
+        ]);
+
+        $factory(\RZP\Models\FundTransfer\Attempt\Entity::class, [
+            'id' => $faker->uniqueid,
+            'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
+            'entity_type' => 'settlement',
+            'channel' => 'kotak',
+            'version' => 'V2',
         ]);
 
         $factory(\RZP\Models\Adjustment\Entity::class, [

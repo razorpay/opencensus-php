@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6e03c99fd0f7ef5ca085de2e29dd07d7",
+    "content-hash": "897eac9ccacb906b1b086f892cf690fb",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2329,59 +2329,6 @@
             "time": "2016-08-10T16:58:18+00:00"
         },
         {
-            "name": "maknz/slack",
-            "version": "dev-f/queue-with-retry",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/razorpay/slack.git",
-                "reference": "38646d0fd18f45532a94331a73a811fedf191b6d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack/zipball/38646d0fd18f45532a94331a73a811fedf191b6d",
-                "reference": "38646d0fd18f45532a94331a73a811fedf191b6d",
-                "shasum": ""
-            },
-            "require": {
-                "ext-mbstring": "*",
-                "guzzlehttp/guzzle": "~6.0|~5.0|~4.0",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "illuminate/queue": "5.*",
-                "mockery/mockery": "0.9.*",
-                "phpunit/phpunit": "4.2.*"
-            },
-            "suggest": {
-                "illuminate/support": "Required for Laravel support"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Maknz\\Slack\\": "src/"
-                }
-            },
-            "license": [
-                "BSD-2-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "maknz",
-                    "email": "github@mak.geek.nz"
-                }
-            ],
-            "description": "A simple PHP package for sending messages to Slack, with a focus on ease of use and elegant syntax. Includes Laravel support out of the box.",
-            "keywords": [
-                "laravel",
-                "slack"
-            ],
-            "support": {
-                "source": "https://github.com/razorpay/slack/tree/f/queue-with-retry",
-                "issues": "https://github.com/razorpay/slack/issues"
-            },
-            "time": "2017-02-28T12:48:44+00:00"
-        },
-        {
             "name": "maxmind-db/reader",
             "version": "v1.1.3",
             "source": {
@@ -4416,7 +4363,107 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-01-04 14:23:02"
+            "time": "2017-01-04T14:23:02+00:00"
+        },
+        {
+            "name": "razorpay/slack",
+            "version": "v1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/razorpay/slack.git",
+                "reference": "7b1100bcae7611dd11d6a759225569abe3260def"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/7b1100bcae7611dd11d6a759225569abe3260def",
+                "reference": "7b1100bcae7611dd11d6a759225569abe3260def",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "guzzlehttp/guzzle": "~6.0|~5.0|~4.0",
+                "php": ">=5.5.0"
+            },
+            "require-dev": {
+                "illuminate/queue": "5.*",
+                "mockery/mockery": "0.9.*",
+                "phpunit/phpunit": "4.2.*"
+            },
+            "suggest": {
+                "nexylan/slack-bundle": "Required for Symfony bundle support",
+                "razorpay/slack-laravel": "Required for Laravel support"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Razorpay\\Slack\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "maknz",
+                    "email": "github@mak.geek.nz"
+                },
+                {
+                    "name": "Team Razorpay",
+                    "email": "support@razorpay.com"
+                }
+            ],
+            "description": "A simple PHP package for sending messages to Slack, with a focus on ease of use and elegant syntax.",
+            "keywords": [
+                "laravel",
+                "slack"
+            ],
+            "time": "2017-03-10T06:17:18+00:00"
+        },
+        {
+            "name": "razorpay/slack-laravel",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/razorpay/slack-laravel.git",
+                "reference": "47457d07b58a1844fd38e690033452fad2be45e6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/slack-laravel/zipball/47457d07b58a1844fd38e690033452fad2be45e6",
+                "reference": "47457d07b58a1844fd38e690033452fad2be45e6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0",
+                "razorpay/slack": "1.8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Razorpay\\Slack\\Laravel\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "maknz",
+                    "email": "github@mak.geek.nz"
+                },
+                {
+                    "name": "Team Razorpay",
+                    "email": "support@razorpay.com"
+                }
+            ],
+            "description": "Laravel 4 and 5 integration for the razorpay/slack package, including facades and service providers.",
+            "keywords": [
+                "laravel",
+                "slack"
+            ],
+            "time": "2017-03-13T10:46:45+00:00"
         },
         {
             "name": "razorpay/spine",
@@ -4463,7 +4510,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-11-22 08:12:12"
+            "time": "2016-11-22T08:12:12+00:00"
         },
         {
             "name": "razorpay/upi-clients",
@@ -5807,12 +5854,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/codacy/php-codacy-coverage.git",
-                "reference": "2c80784a95f844e6988700e7373225284b713dd2"
+                "reference": "c0b3a02883bd80f0955c2478193304ddbef23e56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/codacy/php-codacy-coverage/zipball/2c80784a95f844e6988700e7373225284b713dd2",
-                "reference": "2c80784a95f844e6988700e7373225284b713dd2",
+                "url": "https://api.github.com/repos/codacy/php-codacy-coverage/zipball/c0b3a02883bd80f0955c2478193304ddbef23e56",
+                "reference": "c0b3a02883bd80f0955c2478193304ddbef23e56",
                 "shasum": ""
             },
             "require": {
@@ -5844,7 +5891,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
-            "time": "2016-10-14T09:44:29+00:00"
+            "time": "2017-03-09T18:29:51+00:00"
         },
         {
             "name": "fzaninotto/faker",
@@ -7604,12 +7651,13 @@
     "stability-flags": {
         "razorpay/razorpay": 20,
         "razorpay/spine": 20,
-        "maknz/slack": 20,
         "razorpay/upi-clients": 20,
         "codacy/coverage": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-gmp": "*"
+    },
     "platform-dev": []
 }

@@ -3,10 +3,10 @@
 namespace RZP\Models\Customer\Transaction;
 
 use RZP\Constants;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Transfer;
-use RZP\Models\Payment;
 use RZP\Models\Merchant;
 
 class Core extends Base\Core
@@ -15,22 +15,24 @@ class Core extends Base\Core
      * Creates a customer_transaction record and am amount debit on the wallet balance
      * Called at payment authorize, for a openwallet payment.
      *
-     * @param  Payment\Entity   $payment
-     * @return Customer\Transaction\Entity
+     * @param array           $payment
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
      */
-    public function createForCustomerDebit(array $input, Merchant\Entity $merchant) : Entity
+    public function createForCustomerDebit(array $payment, Merchant\Entity $merchant) : Entity
     {
-        $amount = $input['payment']['amount'];
+        $amount = $payment['amount'];
 
-        $customerId = $input['payment']['customer_id'];
+        $customerId = $payment['customer_id'];
 
         $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId);
 
         $customerTxn->setEntityType(Constants\Entity::PAYMENT);
 
-        $customerTxn->setEntityId($input['payment']['id']);
+        $customerTxn->setEntityId($payment['id']);
 
-        $customerTxn->setDescription($input['payment']['description'] ?? 'No description');
+        $customerTxn->setDescription($payment['description'] ?? 'No description');
 
         return $this->repo->transaction(function () use ($amount, $customerId, $customerTxn)
         {
@@ -47,9 +49,11 @@ class Core extends Base\Core
     /**
      * Create customer_transaction on payment transfer.
      *
-     * @param  Payment\Entity   $payment
-     * @param  int              $amount
-     * @param  Customer\Entity  $customer
+     * @param Transfer\Entity $transfer
+     * @param  int            $amount
+     * @param string          $customerId
+     * @param Merchant\Entity $merchant
+     *
      * @return Entity
      */
     public function createForCustomerCredit(
@@ -74,8 +78,9 @@ class Core extends Base\Core
     /**
      * Create entry for a refund transaction, and credits customer wallet
      *
-     * @param  string $customerId
-     * @param  int    $amount
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
      * @return Entity
      */
     public function createForCustomerRefund(array $input, Merchant\Entity $merchant) : Entity

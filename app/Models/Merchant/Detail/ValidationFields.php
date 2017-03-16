@@ -59,7 +59,6 @@ class ValidationFields
             Entity::BUSINESS_NAME,
             Entity::BUSINESS_TYPE,
             Entity::PROMOTER_PAN,
-            Entity::COMPANY_PAN,
             Entity::ADDRESS_PROOF_URL,
     ];
 }

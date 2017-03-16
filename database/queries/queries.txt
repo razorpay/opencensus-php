@@ -1776,9 +1776,40 @@ ALTER TABLE transactions
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type,
     ADD INDEX transactions_on_hold_index (on_hold);
 
+# The below query was executed on 8th Sept 2016. Refer https://github.com/razorpay/brahma/issues/433
+ALTER TABLE payment_analytics MODIFY referer text;
+
 ALTER TABLE payment_analytics
-    MODIFY COLUMN referer VARCHAR(2083) NULL;
+    ADD COLUMN browser_version VARCHAR(50) AFTER `browser`;
+
+UPDATE payment_analytics
+    SET browser_version = platform_version
+    WHERE browser is not NULL
+    AND platform_version is not NULL
+    AND platform = 1
+    AND browser_version is NULL;
+
+UPDATE payment_analytics
+    SET platform_version = NULL
+    WHERE platform = 1
+    AND platform_version is not NULL
+    AND browser is not NULL
+    AND browser_version is not NULL;
 
 ALTER TABLE terminals
     ADD INDEX terminals_gateway_merchant_id_index (gateway_merchant_id),
     ADD INDEX terminals_network_category_index (network_category);
+
+# batch fund transfers
+ALTER TABLE settlements
+    ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER batch_settlement_id,
+    ADD CONSTRAINT settlements_batch_fund_transfer_id_foreign FOREIGN KEY(batch_fund_transfer_id)
+    REFERENCES daily_settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE payouts
+    ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER batch_settlement_id,
+    ADD CONSTRAINT payouts_batch_fund_transfer_id_foreign FOREIGN KEY(batch_fund_transfer_id)
+    REFERENCES daily_settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE first_data
+    MODIFY COLUMN error_message VARCHAR(255);

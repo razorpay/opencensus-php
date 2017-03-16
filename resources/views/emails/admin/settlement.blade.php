@@ -28,18 +28,23 @@
                 <tbody>
                     <tr style="border: 1px solid grey">
                         <td style="border: 1px solid grey">NEFT</td>
-                        <td style="border: 1px solid grey">{{{$amounts['neft']}}}</td>
-                        <td style="border: 1px solid grey">{{{$count['neft']}}}</td>
+                        <td style="border: 1px solid grey">{{{sprintf('%.2f', $summary['NEFT']['amount'])}}}</td>
+                        <td style="border: 1px solid grey">{{{$summary['NEFT']['count']}}}</td>
+                    </tr>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">RTGS</td>
+                        <td style="border: 1px solid grey">{{{sprintf('%.2f', $summary['RTGS']['amount'])}}}</td>
+                        <td style="border: 1px solid grey">{{{$summary['RTGS']['count']}}}</td>
                     </tr>
                     <tr style="border: 1px solid grey">
                         <td style="border: 1px solid grey">IFT</td>
-                        <td style="border: 1px solid grey">{{{$amounts['ift']}}}</td>
-                        <td style="border: 1px solid grey">{{{$count['ift']}}}</td>
+                        <td style="border: 1px solid grey">{{{sprintf('%.2f', $summary['IFT']['amount'])}}}</td>
+                        <td style="border: 1px solid grey">{{{$summary['IFT']['count']}}}</td>
                     </tr>
                     <tr style="border: 1px solid grey">
                         <td style="border: 1px solid grey">Total</td>
-                        <td style="border: 1px solid grey">{{{$amounts['total']}}}</td>
-                        <td style="border: 1px solid grey">{{{$count['total']}}}</td>
+                        <td style="border: 1px solid grey">{{{sprintf('%.2f', $summary['total']['amount'])}}}</td>
+                        <td style="border: 1px solid grey">{{{$summary['total']['count']}}}</td>
                     </tr>
                 </tbody>
             </table>
