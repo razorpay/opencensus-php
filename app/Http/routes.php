@@ -37,8 +37,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/user/confirm/{token}', 'UserController@getConfirm');
         Route::group([], function()
         {
-            Route::post('/user/signin', 'UserController@postSignin');
-            Route::post('/user/register', 'UserController@postRegister');
+            Route::post('/user/signin', 'UserController@postSignin'); // warning
+            Route::post('/user/register', 'UserController@postRegister'); // warning
             Route::post('/user/resend', 'MerchantController@postResendConfirmation');
             Route::post('/user/password/reset', 'PasswordController@postRemind');
             Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
@@ -84,8 +84,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/{mode}/analytics/payment/aggregations', 'TransactionController@getPaymentAggregations');
 
         // adding keys as being used in android
-        Route::get('/{mode}/keys', 'MerchantController@getKeys')->name('get_keys');
-        Route::post('/{mode}/key/new', 'MerchantController@postNewKey')->name('keys_setup');
+        Route::get('/{mode}/keys', 'MerchantController@getKeys')->name('get_keys'); // warning
+        Route::post('/{mode}/key/new', 'MerchantController@postNewKey')->name('keys_setup'); // warning
 
         Route::get('/keys/csv', 'MerchantController@getCsv');
         Route::get('/apihost', 'MerchantController@getApihost');
@@ -126,11 +126,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
 
         Route::post('/password', 'UserController@postPassword');
-        Route::post('/activation', 'MerchantController@postActivation')->name('post_activation');
+        Route::post('/activation', 'MerchantController@postActivation')->name('post_activation'); // warning
         Route::post('/activation/{merchantId}', 'MerchantController@postActivation')->name('post_activation');
-        Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step');
+        Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step'); // warning
         Route::post('/activation/save/step/{id}/{merchantId}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step');
-        Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
+        Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file'); // warning
         Route::post('/activation/save/file/{merchantId}', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
         Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all');
