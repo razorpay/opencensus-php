@@ -9,5 +9,9 @@ class Entity extends Base\PublicEntity
     const ID            = 'id';
     const START         = 'start';
     const END           = 'end';
-    const UFH           = 'ufh';
+    const FILE_ID       = 'file_id';
+    const ENTITY        = 'entity';
+    const MERCHANT_ID   = 'merchant_id';
+
+    protected $entity = 'report';
 }
