@@ -12,8 +12,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Plan;
 use RZP\Models\Invoice;
+use RZP\Models\Base;
 
-class Charge
+class Charge extends Base\Core
 {
     protected $app;
     protected $trace;
@@ -24,13 +25,6 @@ class Charge
     const JOB_RELEASE_WAIT = 300;
 
     const MAX_AUTH_ATTEMPTS = 3;
-
-    public function __construct()
-    {
-        $this->app = App::getFacadeRoot();
-        $this->trace = $this->app['trace'];
-        $this->repo = $this->app['repo'];
-    }
 
     /**
      * This is called via the queue to initiate the actual
@@ -239,6 +233,8 @@ class Charge
     {
         $invoice->setBillingStart($subscription->getCurrentStart());
         $invoice->setBillingEnd($subscription->getCurrentEnd());
+
+        $this->repo->saveOrFail($invoice);
     }
 
     protected function getBillingPeriod(Entity $subscription)

@@ -672,6 +672,7 @@ trait Capture
                     'subscription_id'   => $subscription->getId(),
                 ]);
 
+            // TODO: Fix this flow. Invoice is required here.
             (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment);
         }
     }

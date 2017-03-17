@@ -148,8 +148,9 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals('processed', $subscription['status']);
         $this->assertEquals($payment['created_at'], $subscription['start_at']);
         $this->assertNotNull($subscription['end_at']);
-        $this->assertLessThanOrEqual($payment['created_at'] + 7776000, $subscription['charge_at']);
-        $this->assertGreaterThan($payment['created_at'] + 7257600, $subscription['charge_at']);
+        // Should be 90-92 days (3 months) ideally.
+        $this->assertLessThanOrEqual($payment['created_at'] + 7948800, $subscription['charge_at']);
+        $this->assertGreaterThan($payment['created_at'] + 7776000, $subscription['charge_at']);
         $this->assertEquals($payment['created_at'], $subscription['current_start']);
         $this->assertNotNull($subscription['current_end']);
         $this->assertEquals(1, $subscription['paid_count']);
