@@ -7,6 +7,7 @@ use Config;
 use Eloquent;
 use RZP\Tests\TestDummy\Factory;
 use RZP\Models;
+use Carbon\Carbon;
 
 final class FactoryData
 {
@@ -583,7 +584,7 @@ final class FactoryData
             'interval'          => 1,
             'delay'             => 3,
             'hour'              => 5,
-            'next_run'          => 1451586600,
+            'next_run'          => Carbon::today('Asia/Kolkata')->timestamp,
         ]);
     }
 }

@@ -16,8 +16,9 @@ trait SettlementTrait
     protected function getDaysForSettlementHolidayTests()
     {
         return [
-            'payment_created_at'    => '5 july 2016',
-            'payment_settlement_on' => '11 july 2016 7:00:00',
+            'payment_created_at'        => '5 july 2016',
+            'payment_settlment_holiday' => '9 july 2016 7:00:00',
+            'payment_settlement_on'     => '11 july 2016 7:00:00',
         ];
     }
 

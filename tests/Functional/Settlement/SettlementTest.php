@@ -146,7 +146,7 @@ class SettlementTest extends TestCase
                  'created_at' => $createdAt,
                  'updated_at' => $createdAt + 10]);
 
-        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        $setDate = Carbon::parse($days['payment_settlment_holiday'],'Asia/Kolkata');
 
         Carbon::setTestNow($setDate);
 
