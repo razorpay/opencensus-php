@@ -71,7 +71,7 @@ class Service extends Base\Service
 
         if ($esResponse === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
         }
 
         $diff = $esResponse[0]['_source'][Entity::DIFF];
@@ -85,7 +85,7 @@ class Service extends Base\Service
 
         if ($esResponse === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
         }
 
         $esObject = $esResponse[0]['_source'];
