@@ -40,13 +40,13 @@ class Workflow
 
         $entity = $this->getEntityName($routeName);
 
-        $pathParams = $this->router->current()->parameters();
-
-        $entityId = array_values($pathParams)[0];
-
         if (($this->config->get('database.es_workflow_action_mock') === false) and
             ($entity !== null))
         {
+            $pathParams = $this->router->current()->parameters();
+
+            $entityId = array_values($pathParams)[0];
+
             $params = $this->createMakerEntity($request, $entity, $entityId);
 
             $request->replace($params);
