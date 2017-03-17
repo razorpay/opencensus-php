@@ -133,7 +133,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file'); // warning
         Route::post('/activation/save/file/{merchantId}', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
-        Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all');
+        Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all'); // warning
         Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoice_fetch_single');
         Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoice_create');
         Route::patch('/{mode}/invoices/{id}', 'MerchantController@patchInvoice')->name('invoice_edit');
