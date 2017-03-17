@@ -584,7 +584,7 @@ final class FactoryData
             'interval'          => 1,
             'delay'             => 3,
             'hour'              => 5,
-            'next_run'          => Carbon::today('Asia/Kolkata')->timestamp,
+            'next_run'          => 1451586600,
         ]);
     }
 }
