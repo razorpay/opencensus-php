@@ -64,6 +64,8 @@ class FeaturesTest extends TestCase
     {
         $this->ba->adminAuth();
 
+        $this->ba->addAdminAuthHeaders('org_100000razorpay');
+
         $this->startTest();
 
         $this->ba->appAuth();
