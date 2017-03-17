@@ -1813,3 +1813,10 @@ ALTER TABLE payouts
 
 ALTER TABLE first_data
     MODIFY COLUMN error_message VARCHAR(255);
+
+# transfer/ reversal notes
+ALTER TABLE transfers
+    ADD COLUMN notes TEXT AFTER amount_reversed;
+
+ALTER TABLE reversals
+    ADD COLUMN notes TEXT AFTER currency;

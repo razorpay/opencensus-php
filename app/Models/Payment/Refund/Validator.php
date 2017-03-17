@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         'reversals'             => 'sometimes|array',
         'reversals.*.transfer'  => 'required',
         'reversals.*.amount'    => 'required|integer|min:100',
+        'reversals.*.notes'     => 'sometimes|notes',
     ];
 
     protected static $createValidators = [
