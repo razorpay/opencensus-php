@@ -67,7 +67,9 @@ class Repository extends Base\Repository
 
         $this->buildQuery(self::KEY_OPERATOR_MAP, $params, $query);
 
-        return $query->orderBy(Entity::CREATED_AT)->first();
+        return $query->whereNull(Entity::END)
+                     ->orderBy(Entity::CREATED_AT)
+                     ->first();
     }
 
     public function fetchMostRecentActive(array $input)
@@ -86,9 +88,10 @@ class Repository extends Base\Repository
 
         $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);
 
-        $query->whereNull(Entity::END);
-
-        return $query->latest()->first();
+        return $query->whereNull(Entity::END)
+                     ->where(Entity::SCHEDULED, '=', false)
+                     ->latest()
+                     ->first();
     }
 
     protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)

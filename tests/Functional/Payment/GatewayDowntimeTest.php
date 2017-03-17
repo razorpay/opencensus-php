@@ -144,15 +144,15 @@ class GatewayDowntimeTest extends TestCase
 
         $response2 = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($response['id'], $response2['id']);
+        $this->assertNotEquals($response['id'], $response2['id']);
 
-        $this->assertEquals($response2['reason_code'], 'LOW_SUCCESS_RATE');
+        $this->assertEquals('ISSUER_DOWN', $response2['reason_code']);
 
-        $this->assertEquals($response2['scheduled'], true);
+        $this->assertEquals(true, $response2['scheduled']);
 
         $downtimeEntity = $this->getLastEntity('gateway_downtime', true);
 
-        $this->assertEquals($downtimeEntity['source'], 'statuscake');
+        $this->assertEquals('other', $downtimeEntity['source']);
 
     }
 

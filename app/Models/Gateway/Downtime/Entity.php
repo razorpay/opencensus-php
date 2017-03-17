@@ -118,6 +118,9 @@ class Entity extends Base\PublicEntity
     protected static $unsetEditDuplicateInput = [
         Entity::METHOD,
         Entity::GATEWAY,
+        Entity::ISSUER,
+        Entity::PUBLIC,
+        Entity::SCHEDULED
     ];
 
     const END_OF_TIME = 2147483647;
