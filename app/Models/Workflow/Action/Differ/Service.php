@@ -73,7 +73,12 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
         }
 
-        $diff = $esResponse[0]['_source'][Entity::DIFF];
+        $diff = [];
+
+        if (array_key_exists(Entity::DIFF, $esResponse[0]['_source']))
+        {
+            $diff = $esResponse[0]['_source'][Entity::DIFF];
+        }
 
         return $diff;
     }
