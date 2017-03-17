@@ -17,9 +17,13 @@ class Workflow
 
     protected $app;
 
+    protected $config;
+
     public function __construct(Application $app)
     {
         $this->app = $app;
+
+        $this->config = $this->app['config'];
 
         $this->router = $app['router'];
     }
@@ -32,7 +36,8 @@ class Workflow
 
         $entityId = $this->router->current()->getParameter('id');
 
-        if ($entity !== null)
+        if (($this->config->get('database.es_workflow_action_mock') === false) and
+            ($entity !== null))
         {
             $params = $this->createMakerEntity($request, $entity, $entityId);
 

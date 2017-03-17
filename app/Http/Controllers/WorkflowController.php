@@ -46,10 +46,10 @@ class WorkflowController extends Controller
 
         $controller = $action[Differ\Entity::CONTROLLER];
 
-        $functioName = $action[Differ\Entity::FUNCTION_NAME];
+        $functionName = $action[Differ\Entity::FUNCTION_NAME];
 
         Request::replace($payload);
 
-        return App::make($controller)->$functioName($entityId);
+        return App::make($controller)->$functionName($entityId);
     }
 }

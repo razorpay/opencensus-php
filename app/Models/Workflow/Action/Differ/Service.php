@@ -26,6 +26,8 @@ class Service extends Base\Service
 
     protected $config;
 
+    protected $factory;
+
     const ES_TYPE = 'action';
 
     const SKIP_DIFF_FIELDS = [
@@ -44,6 +46,8 @@ class Service extends Base\Service
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
         $this->baseIndex = $this->config->get('database.es_workflow_action')[$mode];
+
+        $this->factory = $this->app->make('httplug.message_factory.default');
     }
 
     public function create(array $input)
@@ -58,7 +62,7 @@ class Service extends Base\Service
 
         $action = $this->$function($action);
 
-        return [ 'action_id' => $action->getId()];
+        return [ 'action_id' => $action->getId() ];
     }
 
     public function fetchDiffById(string $id)
@@ -113,11 +117,9 @@ class Service extends Base\Service
         }
     }
 
-    public function makeRequest($method, $url, $headers, $content)
+    protected function makeRequest($method, $url, $headers, $content)
     {
-        $factory = $this->app->make('httplug.message_factory.default');
-
-        $req = $factory->createRequest($method, $url, $headers, json_encode($content));
+        $req = $this->factory->createRequest($method, $url, $headers, json_encode($content));
 
         $response = null;
 
@@ -163,15 +165,15 @@ class Service extends Base\Service
 
         $entityId = $action->getEntityId();
 
-        $oldE = $this->repo->$entity->findByPublicId($entityId);
+        $oldEntity = $this->repo->$entity->findByPublicId($entityId);
 
-        $newE = clone $oldE;
+        $newEntity = clone $oldEntity;
 
         $validator = EntityValidator::getValidator($action->getRoute());
 
-        $newE = $newE->edit($action->getPayload(), $validator);
+        $newEntity = $newEntity->edit($action->getPayload(), $validator);
 
-        $diff = $this->createDiff($oldE->toArray(), $newE->toArray());
+        $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
 
         $action->setDiff($diff);
 
@@ -180,21 +182,21 @@ class Service extends Base\Service
         return $action;
     }
 
-    protected function createDiff(array $oldE, array $newE)
+    protected function createDiff(array $oldEntity, array $newEntity)
     {
         $diff = [];
 
-        $keys = array_keys($oldE);
+        $keys = array_keys($oldEntity);
 
         $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
 
         foreach ($diffKeys as $key)
         {
-            if ($oldE[$key] !== $newE[$key])
+            if ($oldEntity[$key] !== $newEntity[$key])
             {
-                $diff['old'][$key] = $oldE[$key];
+                $diff['old'][$key] = $oldEntity[$key];
 
-                $diff['new'][$key] = $newE[$key];
+                $diff['new'][$key] = $newEntity[$key];
             }
         }
 
