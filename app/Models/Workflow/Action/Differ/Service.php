@@ -170,11 +170,14 @@ class Service extends Base\Service
 
         $validator = EntityValidator::getValidator($action->getRoute());
 
-        $newEntity = $newEntity->edit($action->getPayload(), $validator);
+        if ($validator !== null)
+        {
+            $newEntity = $newEntity->edit($action->getPayload(), $validator);
 
-        $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
+            $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
 
-        $action->setDiff($diff);
+            $action->setDiff($diff);
+        }
 
         event(new DifferEvent($action->toArray()));
 

@@ -51,7 +51,9 @@ class WorkflowController extends Controller
 
         Request::replace($payload);
 
-        return App::make($controller)->$functionName(implode(", ", $pathParams));
+        $controller = App::make($controller);
+
+        return call_user_func_array([$controller, $functionName], array_values($pathParams));
     }
 
     public function postActionChecker(string $id)

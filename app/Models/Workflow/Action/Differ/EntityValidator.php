@@ -10,6 +10,13 @@ class EntityValidator
 
     public static function getValidator($route)
     {
-        return self::VALIDATOR[$route];
+        $validator = null;
+
+        if (array_key_exists($route, self::VALIDATOR))
+        {
+            $validator = self::VALIDATOR[$route];
+        }
+
+        return $validator;
     }
 }
