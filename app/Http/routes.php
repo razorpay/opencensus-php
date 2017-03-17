@@ -196,6 +196,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
         Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
         Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
+        Route::get('/admin/file/{fileId}', 'AdminController@getUploadedFile');
         Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
         Route::get('admin/{mode}/merchants/aggregations/{resource}', 'AdminController@getMerchantAggregations');
