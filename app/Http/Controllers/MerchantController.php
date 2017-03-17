@@ -426,7 +426,9 @@ class MerchantController extends Controller
     {
         $id = Auth::user()->getCurrentMerchantId();
 
-        list($error, $data) = (new Merchant\Service)->getPreSignupDetails($id);
+        $error = $data = [];
+
+        $data = (new Merchant\Service)->getPreSignupDetails($id);
 
         return AppResponse::jsonResponse($error, $data);
     }

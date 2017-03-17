@@ -907,7 +907,19 @@ class Service extends Base\Service
 
     public function getPreSignupDetails($merchantId)
     {
-        return (new MerchantDetails\Service)->getPresignupDetails($merchantId);
+        $data = [];
+
+        $merchant = Merchant\Entity::findorfail($merchantId);
+
+        $referrer = $merchant->getReferrerAttribute();
+
+        if (($referrer === null) or
+            (Merchant\Entity::verifyUniqueId($referrer) === 0))
+        {
+            $data = (new MerchantDetails\Service)->getPresignupDetails($merchantId);
+        }
+
+        return $data;
     }
 
     public function createCustomer($mode, $params)

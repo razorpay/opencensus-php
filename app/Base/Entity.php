@@ -6,6 +6,8 @@ use Trace;
 
 class Entity extends \Razorpay\Spine\Entity
 {
+    const ID_LENGTH = 14;
+
     public function build(array $input = array())
     {
         $this->input = $input;
@@ -103,5 +105,24 @@ class Entity extends \Razorpay\Spine\Entity
         {
             return class_basename($this);
         }
+    }
+
+    public static function verifyUniqueId($id, $throw = true)
+    {
+        $uniqueIdCheckRegex = '/^[0-9a-z]{'. static::ID_LENGTH .'}$/i';
+
+        $res = preg_match($uniqueIdCheckRegex, $id);
+
+        // preg_match() returns int 0 when the pattern does not match
+        // and int 1 if a match is found. false (boolean) is returned
+        // whenever any error happens.
+        if ((in_array($res, [0, false], true) === true) and
+            ($throw === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                        $id . ' is not a valid id');
+        }
+
+        return $res;
     }
 }
