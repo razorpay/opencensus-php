@@ -24,28 +24,31 @@ class Core extends Base\Core
      * Create a reversal for a Marketplace refund,
      * and a transaction that updates the Marketplace balance
      *
-     * @param  Transfer\Entity              $transfer
-     * @param  Merchant\Entity              $merchant
-     * @param  int                          $amount
+     * @param  Transfer\Entity $transfer
+     * @param  Merchant\Entity $merchant
+     * @param array            $input
+     *
      * @return Entity
      */
     public function createForMarketplaceRefund(
         Transfer\Entity $transfer,
         Merchant\Entity $merchant,
-        int $amount) : Entity
+        array $input) : Entity
     {
         $this->trace->info(
             TraceCode::TRANSFER_REVERSAL_REQUEST,
             [
                 'transfer_id' => $transfer->getId(),
-                'amount'      => $amount
+                'input'       => $input
             ]);
 
-        $transfer->reverseAmount($amount);
+        $transfer->reverseAmount($input[Entity::AMOUNT]);
 
         $this->repo->saveOrFail($transfer);
 
-        $reversal = $this->create($amount, $transfer->getCurrency());
+        $input[Entity::CURRENCY] = $transfer->getCurrency();
+
+        $reversal = $this->create($input);
 
         $reversal->transfer()->associate($transfer);
 
@@ -91,16 +94,10 @@ class Core extends Base\Core
             {
                 (new Validator)->validateReversalAmount($transfer, $input);
 
-                //
-                // If amount is not sent in input,
-                // reverse the entire transfer amount pending
-                //
-                $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
-
-                return $this->repo->transaction(function () use ($transfer, $amount, $merchant)
+                return $this->repo->transaction(function () use ($transfer, $input, $merchant)
                 {
                     $reversal = (new Payment\Processor\Processor($merchant))
-                                    ->refundPaymentAndReverseTransfer($transfer, $amount);
+                                    ->refundPaymentAndReverseTransfer($transfer, $input);
 
                     $this->traceSuccess($reversal);
 
@@ -109,14 +106,9 @@ class Core extends Base\Core
             });
     }
 
-    protected function create(int $amount, string $currency) : Entity
+    protected function create(array $input) : Entity
     {
-        $data = [
-            'amount'    => $amount,
-            'currency'  => $currency,
-        ];
-
-        $reversal = (new Entity)->build($data);
+        $reversal = (new Entity)->build($input);
 
         $reversal->generateId();
 
