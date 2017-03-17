@@ -65,7 +65,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
-        $payment = $this->createGatewayPaymentEntity($attributes);
+        $gatewayPayment = $this->createGatewayEntity($attributes);
 
         $request =  $this->getAuthorizeRequestArray($input);
 
@@ -73,7 +73,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body);
 
-        $this->updateGatewayEntityResponse($payment, $response);
+        $this->updateGatewayEntityResponse($gatewayPayment, $response);
 
         $status = $response[ResponseFields::STATUS];
 

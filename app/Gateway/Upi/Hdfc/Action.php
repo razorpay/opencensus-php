@@ -8,5 +8,5 @@ class Action extends Base\Action
 {
     const COLLECT       = 'collect';
 
-    const VALIDATE_VPA  = 'VALIDATE_VPA';
+    const VALIDATE_VPA  = 'validate_vpa';
 }

@@ -12,48 +12,34 @@ class Gateway extends Base\Gateway
     {
         $attr = $this->getMappedAttributes($attributes);
 
-        $payment = $this->getNewGatewayPaymentEntity();
+        $entity = $this->getNewGatewayPaymentEntity();
 
-        $action = $action ? $action : $this->action;
+        $action = $action ?? $this->action;
 
-        $payment->setPaymentId($this->input['payment']['id']);
+        $entity->setPaymentId($this->input['payment']['id']);
 
-        $payment->setAmount($this->input['payment']['amount']);
+        switch ($action)
+        {
+            case Base\Action::REFUND:
+                $entity->setAmount($this->input['refund']['amount']);
+                break;
 
-        $payment->setAction($action);
+            case Base\Action::AUTHORIZE:
+            default:
+                $entity->setAmount($this->input['payment']['amount']);
+        }
 
-        $payment->setAcquirer(static::ACQUIRER);
+        $entity->setAction($action);
 
-        $payment->generate($attr);
+        $entity->setAcquirer(static::ACQUIRER);
 
-        $payment->fill($attr);
+        $entity->generate($attr);
 
-        $this->repo->saveOrFail($payment);
+        $entity->fill($attr);
 
-        return $payment;
-    }
+        $this->repo->saveOrFail($entity);
 
-    protected function createGatewayRefundEntity($attributes)
-    {
-        $attr = $this->getMappedAttributes($attributes);
-
-        $refund = $this->getNewGatewayPaymentEntity();
-
-        $refund->setPaymentId($this->input['payment']['id']);
-
-        $refund->setAmount($this->input['refund']['amount']);
-
-        $refund->generate($attr);
-
-        $refund->setAction(Base\Action::REFUND);
-
-        $refund->setAcquirer(static::ACQUIRER);
-
-        $refund->fill($attr);
-
-        $this->repo->saveOrFail($refund);
-
-        return $refund;
+        return $entity;
     }
 
     protected function getNewGatewayPaymentEntity()
