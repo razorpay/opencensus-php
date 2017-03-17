@@ -94,7 +94,7 @@ class Service extends Base\Service
         $controllerSplit = explode('@', $controller);
 
         return [
-            Entity::ENTITY_ID     => $esObject[Entity::ENTITY_ID],
+            Entity::PATH_PARAMS   => $esObject[Entity::PATH_PARAMS],
             Entity::PAYLOAD       => $esObject[Entity::PAYLOAD],
             Entity::CONTROLLER    => $controllerSplit[0],
             Entity::FUNCTION_NAME => $controllerSplit[1],

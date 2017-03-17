@@ -41,7 +41,7 @@ class WorkflowController extends Controller
 
         $action = $this->differService->fetchRequest($id);
 
-        $entityId = $action[Differ\Entity::ENTITY_ID];
+        $pathParams = $action[Differ\Entity::PATH_PARAMS];
 
         $payload = $action[Differ\Entity::PAYLOAD];
 
@@ -51,7 +51,7 @@ class WorkflowController extends Controller
 
         Request::replace($payload);
 
-        return App::make($controller)->$functionName($entityId);
+        return App::make($controller)->$functionName(implode(", ", $pathParams));
     }
 
     public function postActionChecker(string $id)

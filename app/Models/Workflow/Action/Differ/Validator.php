@@ -15,6 +15,7 @@ class Validator extends Base\Validator
         Entity::ACTOR       => 'required|string',
         Entity::TYPE        => 'required|string|custom',
         Entity::URL         => 'required|string',
+        Entity::PATH_PARAMS => 'required|array',
         Entity::METHOD      => 'required|string|custom',
         Entity::PAYLOAD     => 'required|array',
         Entity::CONTROLLER  => 'required|string',
