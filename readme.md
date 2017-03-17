@@ -42,6 +42,14 @@
 
 ### Common Instruction
 
+*PHP*: Please make sure you have the `gmp`, `bcmath` extensions installed. Mcrypt may be required if you are working on certain features and PHP <=7.0. This is on top of what [laravel requires](https://laravel.com/docs/5.2/installation#server-requirements):
+
+- PHP >= 5.5.9
+- OpenSSL PHP Extension
+- PDO PHP Extension
+- Mbstring PHP Extension
+- Tokenizer PHP Extension
+
 * `chmod -R o+wx storage/`
 * `composer install` to install project dependencies # Google online on how to install composer globally.
 * Create 2 databases (one is for live and another for test accounts). (`api_live`, `api_test` are sample names)

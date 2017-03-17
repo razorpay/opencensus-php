@@ -61,7 +61,8 @@ class Validator extends Base\Validator
         'reverse_all'             => 'sometimes|boolean',
         'reversals'               => 'sometimes|array',
         'reversals.*.transfer'    => 'required|public_id',
-        'reversals.*.amount'      => 'required|integer|min:100'
+        'reversals.*.amount'      => 'required|integer|min:100',
+        'reversals.*.notes'       => 'sometimes|notes',
     ];
 
     protected static $transferRules = [
@@ -70,6 +71,7 @@ class Validator extends Base\Validator
         'transfers.*.account'        => 'sometimes|public_id',
         'transfers.*.amount'         => 'required|integer|min:100',
         'transfers.*.currency'       => 'required|string|size:3',
+        'transfers.*.notes'          => 'sometimes|notes',
         'transfers.*.on_hold'        => 'sometimes|boolean',
         // 'transfers.*.on_hold_until'  => 'sometimes|integer',
     ];

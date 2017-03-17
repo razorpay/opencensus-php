@@ -13,6 +13,8 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->validator = new Validator;
+
+        $this->cache = $this->app['redis'];
     }
 
     public function validate(array $input)
@@ -27,7 +29,6 @@ class Service extends Base\Service
         $data = [
             'valid'          => true,
             'message'        => null,
-            'transaction_id' => $input['transaction_id'],
         ];
 
         if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
@@ -36,9 +37,12 @@ class Service extends Base\Service
             $data = [
                 'valid'          => false,
                 'message'        => 'Invalid account number',
-                'transaction_id' => $input['transaction_id'],
             ];
         }
+
+        $data['transaction_id'] = $input['transaction_id'];
+
+        $this->uniqueUtrCheck($input, $data);
 
         return $data;
     }
@@ -53,7 +57,37 @@ class Service extends Base\Service
         $this->validator->validateInput('pay', $input);
 
         return [
-            'success' => true,
+            'success'        => true,
+            'message'        => null,
+            'transaction_id' => $input['transaction_id'],
         ];
+    }
+
+    protected function uniqueUtrCheck(array $input, array & $data)
+    {
+        if($data['valid'] === true)
+        {
+            $key = 'ecollect' . $this->mode . $input['transaction_id'];
+
+            $cachedData = $this->cache->get($key);
+
+            if (is_null($cachedData) === false)
+            {
+                $this->app['trace']->warning(
+                    TraceCode::ECOLLECT_VALIDATION_DUPLICATE_UTR,
+                    [
+                        'cached_data'   => json_decode($cachedData, true),
+                        'received_data' => $input,
+                    ]
+                );
+
+                $data['valid']   = false;
+                $data['message'] = 'Duplicate UTR received';
+            }
+            else
+            {
+                $this->cache->set($key, json_encode($input));
+            }
+        }
     }
 }

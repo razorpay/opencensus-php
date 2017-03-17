@@ -1,12 +1,11 @@
 <?php
 
-namespace RZP\Models\Settlement\Kotak;
+namespace RZP\Models\FundTransfer\Kotak;
 
 use Excel;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 
 /**

@@ -158,6 +158,11 @@ class TraceCode
     const LATE_AUTHORIZE_AUTO_CAPTURE               = 'LATE_AUTHORIZE_AUTO_CAPTURE';
     const MISSING_BILLDESK_CANCELLED_REFUNDS        = 'MISSING_BILLDESK_CANCELLED_REFUNDS';
 
+    const REQUESTS_JOB_REQUEST                      = 'REQUESTS_JOB_REQUEST';
+    const REQUESTS_JOB_RESPONSE                     = 'REQUESTS_JOB_RESPONSE';
+    const REQUESTS_JOB_ERROR                        = 'REQUESTS_JOB_ERROR';
+    const MOCK_DRIP_REQUEST                         = 'MOCK_DRIP_REQUEST';
+
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_FAILURE                          = 'TERMINAL_FAILURE';
@@ -379,6 +384,7 @@ class TraceCode
     const SETTLEMENT_RECONCILED                     = 'SETTLEMENT_RECONCILED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
+    const SETTLEMENT_RETRY_FAILED                   = 'SETTLMENT_RETRY_FAILED';
     const SETTLEMENT_RECONCILIATION_FAILED          = 'SETTLEMENT_RECONCILIATION_FAILED';
     const SETTLEMENT_RETURN_FAILED                  = 'SETTLEMENT_RETURN_FAILED';
     const SETTLEMENT_SKIPPED                        = 'SETTLEMENT_SKIPPED';
@@ -419,6 +425,7 @@ class TraceCode
     const SCHEDULE_MIGRATION_COMPLETE               = 'SCHEDULE_MIGRATION_COMPLETE';
 
     const ECOLLECT_VALIDATION_REQUEST               = 'ECOLLECT_VALIDATION_REQUEST';
+    const ECOLLECT_VALIDATION_DUPLICATE_UTR         = 'ECOLLECT_VALIDATION_DUPLICATE_UTR';
     const ECOLLECT_PAY_REQUEST                      = 'ECOLLECT_PAY_REQUEST';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
@@ -428,6 +435,7 @@ class TraceCode
     const MERCHANT_ACCOUNT_ACTIVATED                = 'MERCHANT_ACCOUNT_ACTIVATED';
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
+    const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
 
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
@@ -616,6 +624,9 @@ class TraceCode
     const REMOVE_GATEWAY_PRIORITY_REQUEST           = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const REDIS_DATA_FETCHED                        = 'REDIS_DATA_FETCHED';
 
+    // Trace codes for gateway
+    const FIRST_DATA_PARES_MISSING                  = 'FIRST_DATA_PARES_MISSING';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -745,6 +756,8 @@ class TraceCode
         self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
 
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
+
+        self::MERCHANT_ORG_NOT_GIVEN                    => 'Merchant Org Id is not passed to API on creation',
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
         self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',

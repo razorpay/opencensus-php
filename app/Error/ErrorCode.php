@@ -306,7 +306,7 @@ class ErrorCode
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
 
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE';
-    const BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD                                 = 'BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD';
+    const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                        = 'BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD';
 
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                       = 'BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT';
     const BAD_REQUEST_BATCH_FILE_EMPTY                                              = 'BAD_REQUEST_BATCH_FILE_EMPTY';
@@ -504,4 +504,7 @@ class ErrorCode
 
     // ES related error codes
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
+
+    // File store
+    const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
 }

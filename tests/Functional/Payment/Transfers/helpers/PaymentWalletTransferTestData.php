@@ -32,6 +32,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
         ],
     ],
+
     'testCreateWalletWithNonIndianContact' => [
         'request' => [
             'content' => [
@@ -57,6 +58,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED
         ],
     ],
+
     'testCustomerTransferB2bNotEnabled' => [
         'request' => [
             'content' => [
@@ -79,6 +81,7 @@ return [
             'status_code' => 400,
         ],
     ],
+
     'testCaptureAndTransferToUnknownCustomerId' => [
         'request' => [
             'content' => [
@@ -105,6 +108,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
         ],
     ],
+
     'testTransferToExistingCustomerWithNoExistingWallet' => [
         'request' => [
             'content' => [
@@ -155,6 +159,7 @@ return [
             'status_code' => 200,
         ],
     ],
+
     'testTransferCustomerUsageFirstTxn' => [
         'request' => [
             'content' => [
@@ -171,4 +176,31 @@ return [
             'content'     => []
         ],
     ],
+
+    'testTransferToWalletFundsOnHold' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'customer' => 'cust_10000000000000',
+                        'amount'   => 200,
+                        'currency' => 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
+        ],
+    ]
 ];

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Settlement\Kotak;
+namespace RZP\Models\FundTransfer\Kotak;
 
 use Carbon\Carbon;
 use RZP\Exception;
@@ -9,7 +9,6 @@ use RZP\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
-use RZP\Models\Settlement\Kotak;
 /**
  * This class is used to handle generation of settlement reconciliation
  * files for running tests and in test mode

@@ -57,9 +57,9 @@ class Entity
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';
     const MERCHANT_DETAIL       = 'merchant_detail';
-    const BATCH_SETTLEMENT      = 'batch_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const ORG                   = 'org';
     const ORG_HOSTNAME          = 'org_hostname';
     const ROLE                  = 'role';
@@ -67,6 +67,7 @@ class Entity
     const GROUP                 = 'group';
     const ADMIN                 = 'admin';
     const ADMIN_TOKEN           = 'admin_token';
+    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TRANSFER              = 'transfer';
     const REVERSAL              = 'reversal';
@@ -157,8 +158,8 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
+        self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
-        self::BATCH_SETTLEMENT      => \RZP\Models\Settlement\Batch::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Icici::class,
@@ -181,6 +182,7 @@ class Entity
         self::ADMIN                 => \RZP\Models\Admin\Admin::class,
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
+        self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
     ];
 
     protected static $repository = [

@@ -200,6 +200,7 @@ final class Route
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
         'setl_initiate_schedule'                  => ['post',     'settlements/initiate2/{channel?}',               'SettlementController@postSettlementInitiateV2'                     ],
+        'setl_retry'                              => ['post',     'settlements/retry/{channel?}',                   'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
@@ -210,7 +211,7 @@ final class Route
         'setl_get_details'                        => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
-        'batch_setl_calc_previous_fees'           => ['post',     'batchsettlements/fees/previous',                 'SettlementController@postBatchSettlementCalculatePreviousFees'     ],
+        'batch_setl_calc_previous_fees'           => ['post',     'batchfundtransfers/fees/previous',               'SettlementController@postBatchFundTransferCalculatePreviousFees'   ],
         'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                           'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
@@ -244,6 +245,7 @@ final class Route
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
+        'admin_get_file'                          => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                           ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
         'gateway_payment_callback_axis'           => ['post',     'callback/axis',                                  'GatewayController@callbackAxis'                                    ],
@@ -258,7 +260,7 @@ final class Route
         'transparent_redirect_get'                => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'               => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
         'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                        'SettlementController@postComputeSettlementServiceTax'              ],
-        'batch_settlement_compute_tax'            => ['post',     'batchsettlements/compute/tax',                   'SettlementController@postComputeBatchSettlementServiceTax'         ],
+        'batch_fund_transfer_compute_tax'         => ['post',     'batchfundtransfers/compute/tax',                 'SettlementController@postComputeBatchFundTransferServiceTax'       ],
         'feature_dummy'                           => ['get',      'dummy',                                          'MerchantController@getDummyFeatures'                               ],
         'emi_plan_add'                            => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
         'emi_plans_fetch_multiple'                => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
@@ -300,7 +302,7 @@ final class Route
         'invoice_update'                          => ['patch',    'invoices/{id}',                                  'InvoiceController@updateInvoice'                                   ],
         'invoice_issue'                           => ['post',     'invoices/{id}/issue',                            'InvoiceController@issueInvoice'                                    ],
         'invoice_delete'                          => ['delete',   'invoices/{id}',                                  'InvoiceController@deleteInvoice'                                   ],
-        'invoice_add_line_items'                  => ['post',     'invoices/{id}/line_items',                       'InvoiceController@addLineItems'                                     ],
+        'invoice_add_line_items'                  => ['post',     'invoices/{id}/line_items',                       'InvoiceController@addLineItems'                                    ],
         'invoice_update_line_item'                => ['patch',    'invoices/{id}/line_items/{lineItemId}',          'InvoiceController@updateLineItem'                                  ],
         'invoice_remove_line_item_bulk'           => ['delete',   'invoices/{id}/line_items/bulk',                  'InvoiceController@removeManyLineItems'                             ],
         'invoice_remove_line_item'                => ['delete',   'invoices/{id}/line_items/{lineItemId}',          'InvoiceController@removeLineItem'                                  ],
@@ -660,6 +662,7 @@ final class Route
         'setl_initiate',
         'payout_initiate',
         'setl_initiate_schedule',
+        'setl_retry',
         'setl_file_generate',
         'setl_reconcile',
         'setl_reconcile_h2h',
@@ -674,7 +677,7 @@ final class Route
         'settlement_compute_tax',
         'nodal_initiate_transfer',
         'batch_setl_calc_previous_fees',
-        'batch_settlement_compute_tax',
+        'batch_fund_transfer_compute_tax',
         'payment_verify',
         'payment_authorize_failed',
         'payment_fix_authorize_at',
@@ -768,6 +771,7 @@ final class Route
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
+        'admin_get_file',
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
@@ -1177,7 +1181,7 @@ final class Route
     {
         $key = $this->ba->getPublicKey();
 
-        list($schema, $host) = $this->getSchemaAndHost();
+        list($schema, $host) = $this->getSchemaHostAndPort();
 
         $parameters['key_id'] = $key;
 
@@ -1221,7 +1225,7 @@ final class Route
 
     protected function getSchemaHostAndAuth($key = '', $secret = '')
     {
-        list($schema, $host, $port) = $this->getSchemaAndHost();
+        list($schema, $host, $port) = $this->getSchemaHostAndPort();
 
         $auth = '';
         if ($key !== '')
@@ -1237,7 +1241,8 @@ final class Route
 
         $url = $schema . $auth . $host;
 
-        if ((int)$port !== 80)
+        if (($port !== 80) and
+            ($port !== 443))
         {
             $url .= ':' . $port;
         }
@@ -1245,7 +1250,7 @@ final class Route
         return $url;
     }
 
-    protected function getSchemaAndHost()
+    protected function getSchemaHostAndPort()
     {
         $request = \Request::getFacadeRoot();
 
@@ -1253,7 +1258,7 @@ final class Route
 
         $host = $request->getHost();
 
-        $port = $request->getPort();
+        $port = (int) $request->getPort();
 
         return [$schema, $host, $port];
     }

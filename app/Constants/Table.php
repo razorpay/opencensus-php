@@ -46,13 +46,14 @@ class Table
     const SUBSCRIPTION          = 'subscriptions';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
-    const BATCH_SETTLEMENT      = 'daily_settlements';
+    const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
     const OFFER                 = 'offers';
     const COUPON                = 'coupons';
     const MERCHANT_OFFER        = 'merchant_offer';
+    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
     // organization roles permissions
     const ORG                   = 'orgs';

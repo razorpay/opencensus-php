@@ -201,12 +201,12 @@ class Gateway extends Base\Gateway
         $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
                       ->format('d/m/Y H:m:s');
 
-        if (empty($payment['date']) === false)
-        {
-            // First verify all hdfc netbanking transactions here and
-            // then remove this in future.
-            // $date = $payment['date'];
-        }
+        // if (empty($payment['date']) === false)
+        // {
+        //     // First verify all hdfc netbanking transactions here and
+        //     // then remove this in future.
+        //     // $date = $payment['date'];
+        // }
 
         $clientCode = $payment['client_code'];
 
@@ -401,13 +401,13 @@ class Gateway extends Base\Gateway
 
         if ($this->tpv === true)
         {
-            return $this->config['live_hash_secret_cug'];
+            return $this->config['live_hash_secret_tpv'];
         }
         else if (isset($this->input['merchant']))
         {
             if ($this->input['merchant']->isTPVRequired())
             {
-                return $this->config['live_hash_secret_cug'];
+                return $this->config['live_hash_secret_tpv'];
             }
         }
 
@@ -420,13 +420,13 @@ class Gateway extends Base\Gateway
 
         if ($this->tpv === true)
         {
-            return $this->config['test_hash_secret_cug'];
+            return $this->config['test_hash_secret_tpv'];
         }
         else if (isset($this->input['merchant']))
         {
             if ($this->input['merchant']->isTPVRequired())
             {
-                return $this->config['test_hash_secret_cug'];
+                return $this->config['test_hash_secret_tpv'];
             }
         }
 

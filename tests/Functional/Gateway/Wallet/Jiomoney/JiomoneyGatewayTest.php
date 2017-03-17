@@ -150,18 +150,43 @@ class JiomoneyGatewayTest extends TestCase
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
-    /**
-     * Tests the case when transaction data is not found using STATUSQUERY API"
-     */
-    public function testCheckPaymentStatusApiVerifyPayment()
+    public function testVerifyPaymentWhenCheckPaymentStatusApiReturnsArrayOfObjects()
     {
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
-            if ($action === 'status_query')
+            if ($action === 'check_payment_status')
             {
-                $content['response_header']['api_status'] = '0';
+                $checkPaymentStatusData = $content['RESPONSE']['CHECKPAYMENTSTATUS'];
+
+                $content['RESPONSE']['CHECKPAYMENTSTATUS'] = [
+                    $checkPaymentStatusData,
+                    $checkPaymentStatusData
+                ];
+            }
+        });
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    /**
+     * Tests the case when transaction data is not found using CHECKPAYMENTSTATUS API
+     * and we fallback to STATUSQUERY API for validation"
+     */
+    public function testStatusQueryApiVerifyPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('jiomoney');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'check_payment_status')
+            {
+                $content['RESPONSE']['CHECKPAYMENTSTATUS'] = null;
             }
         });
 
