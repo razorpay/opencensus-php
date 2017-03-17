@@ -84,8 +84,9 @@ class PdfGenerator extends Base\Core
     protected function getPdfContent(string $html)
     {
         $options = [
+            'print-media-type',
             'ignoreWarnings' => false,
-            'encoding'       => 'UTF-8'
+            'encoding'       => 'UTF-8',
         ];
 
         $pdf = (new Pdf($options))->addPage($html);
