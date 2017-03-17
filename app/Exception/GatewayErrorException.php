@@ -56,12 +56,12 @@ class GatewayErrorException extends RecoverableException
     {
         $this->error->setGatewayErrorCodeAndDesc($code, $desc);
 
-        $desc = $this->error->getDescription();
+        $message = $this->error->getDescription();
 
-        $desc .= PHP_EOL . 'Gateway Error Code: ' . $code .
-                 PHP_EOL . 'Gateway Error Desc: ' . $desc;
+        $message .= PHP_EOL . 'Gateway Error Code: ' . $code .
+                    PHP_EOL . 'Gateway Error Desc: ' . $desc;
 
-        $this->message = $desc;
+        $this->message = $message;
     }
 
     protected function isTwoFaError($errorCode)

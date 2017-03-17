@@ -2,10 +2,10 @@
 
 namespace RZP\Models\BankAccount;
 
-use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class BeneficiaryFile
 {
@@ -16,24 +16,29 @@ class BeneficiaryFile
     const DEFAULT_PRICING_RATE = 30000000;
 
     public static $headings = array(
-        'Client_Code ',
-        'Merchant_Code',
-        'Merchant_Name',
-        'Merchant_Add_1',
-        'Merchant_Add_2',
-        'Merchant_Add_3',
-        'Merchant_Add_4',
-        'Agreement date',
+        'Client_Code',
+        'Bene_Code',
+        'Bene Name',
+        'Bene Add 1',
+        'Bene Add 2',
+        'Bene Add 3',
+        'Bene Add 4',
+        'Bene Add 5',
         'Bene_City',
         'Bene_Pin',
         'State',
         'Country',
         'Bene_Email',
         'Bene_Mobile',
-        'Agreement expiry date',
-        'Agreed rates with Merchant/participating bank',
+        'Bene_Tel',
+        'Bene_Fax',
         'IFSC',
-        'Bene_A/c No.',
+        'Bene_A/c No',
+    );
+
+    // Supports only text format right now
+    public static $format = array(
+       'Bene_A/c No' => 'text',
     );
 
     public function __construct()
@@ -45,35 +50,45 @@ class BeneficiaryFile
     {
         $list = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
 
+        $result = $this->createBenefeciaryFile($list);
+
+        return $result;
+    }
+
+    public function generateBetweenTimestamps($from, $to)
+    {
+        $list = (new BankAccount\Repository)->getMerchantBankAccountsBetweenTimestamp($from, $to);
+
+        $result = $this->createBenefeciaryFile($list);
+
+        return $result;
+    }
+
+    protected function createBenefeciaryFile($list)
+    {
         $data = array();
 
         foreach ($list as $ba)
         {
-            $agreementDate = $ba->getAttribute(BankAccount\Entity::CREATED_AT);
-            $agreementDate = (new Carbon('Asia/Kolkata'))->setTimestamp($agreementDate);
-            $agreementDateText = $agreementDate->format('dmY');
-            $agreementExpiryDateText = $agreementDate->addYear()->format('dmY');
-
-            $ratesColumnHeader = 'Agreed rates with Merchant/participating bank';
             $array = array(
-                'Client_Code'           => $ba->getAttribute(BankAccount\Entity::ID),
-                'Merchant_Code'         => '',
-                'Merchant_Name'         => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
-                'Merchant_Add_1'        => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS1),
-                'Merchant_Add_2'        => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS2),
-                'Merchant_Add_3'        => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS3),
-                'Merchant_Add_4'        => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS4),
-                'Agreement date'        => $agreementDateText,
+                'Client_Code'           => 'RAZORNODAL',
+                'Bene_Code'             => $ba->getBeneficiaryCode(),
+                'Bene_Name'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
+                'Bene_Add_1'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS1),
+                'Bene_Add_2'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS2),
+                'Bene_Add_3'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS3),
+                'Bene_Add_4'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS4),
+                'Bene_Add_5'            => '',
                 'Bene_City'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_CITY),
                 'Bene_Pin'              => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_PIN),
                 'State'                 => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_STATE),
                 'Country'               => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_COUNTRY),
                 'Bene_Email'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_EMAIL),
                 'Bene_Mobile'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_MOBILE),
-                'Agreement expiry date' => $agreementExpiryDateText,
-                $ratesColumnHeader      => self::DEFAULT_PRICING_RATE,
+                'Bene_Tel'              => '',
+                'Bene_Fax'              => '',
                 'IFSC'                  => $ba->getAttribute(BankAccount\Entity::IFSC_CODE),
-                'Bene_A/c No.'          => "'".$ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
+                'Bene_A/c No'           => $ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
             );
 
             array_push($data, $array);
@@ -92,13 +107,15 @@ class BeneficiaryFile
     {
         $data['body'] = 'Please find attached updated beneficiary file for ' .
                         'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $merchantsCount .' .';
+                        'Beneficiaries Count is '. $merchantsCount .'.';
 
         $data['file'] = $fullpath;
 
         $this->mail->queue('emails.message', $data, function($message) use ($data)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['aanchal.wadhwani@kotak.com', 'settlements@razorpay.com'];
+
+            $cc = ['uphendra.bn@kotak.com', 'Abhijit.B.Joshi@kotak.com', 'anupam.namdeo@kotak.com'];
 
             $message->from('kotak_beneficiary_file@razorpay.com', 'Razorpay Kotak Beneficiary File');
 
@@ -106,7 +123,13 @@ class BeneficiaryFile
 
             $message->to($emails);
 
+            $message->cc($cc);
+
             $message->attach($data['file']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
         });
     }
 }

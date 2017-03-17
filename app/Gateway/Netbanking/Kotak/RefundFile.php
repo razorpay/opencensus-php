@@ -58,7 +58,7 @@ class RefundFile extends Base\RefundFile
 
         $txt = $this->generateText($data, '|', $ignoreLastNewline);
 
-        $txt = $prependLine.$txt;
+        $txt = $prependLine . $txt;
 
         return $txt;
     }

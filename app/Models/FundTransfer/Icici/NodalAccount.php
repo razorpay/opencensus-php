@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Settlement\Icici;
+namespace RZP\Models\FundTransfer\Icici;
 
 use Carbon\Carbon;
 use Mail;

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Settlement\Kotak;
+namespace RZP\Models\FundTransfer\Kotak;
 
 use AWS;
 use Excel;
@@ -160,6 +160,27 @@ trait FileHandlerTrait
         $fullPath = $this->getFullFilePath($name);
 
         return $this->getFileFromAws($key, $fullPath, $bucket);
+    }
+
+    public function deleteFileIfExists()
+    {
+        $fullPath = $this->getFileIfExists();
+
+        if ($fullPath !== null)
+        {
+            $success = unlink($fullPath);
+
+            if ($success === false)
+            {
+                throw new Exception\RuntimeException(
+                    'Failed to delete file: ' . $fullPath);
+            }
+        }
+    }
+
+    public function getFileBasename($fileFullPath)
+    {
+        return basename($fileFullPath);
     }
 
     /**
@@ -484,22 +505,6 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
-    public function deleteFileIfExists()
-    {
-        $fullPath = $this->getFileIfExists();
-
-        if ($fullPath !== null)
-        {
-            $success = unlink($fullPath);
-
-            if ($success === false)
-            {
-                throw new Exception\RuntimeException(
-                    'Failed to delete file: ' . $fullPath);
-            }
-        }
-    }
-
     protected function getFileToReadName()
     {
         return $this->getFileToReadNameWithoutExt().'.txt';
@@ -703,11 +708,6 @@ trait FileHandlerTrait
         $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         return $lines;
-    }
-
-    public static function getHeadings()
-    {
-        return static::$headings;
     }
 
     protected function storeReconciledFile($file)

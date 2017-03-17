@@ -5,7 +5,7 @@ namespace RZP\Models\Emi\Banks\Base;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Card;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Constants\MailTags;
