@@ -218,20 +218,24 @@ return array(
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => '123456',
         // tpv
-        'live_hash_secret_cug' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
-        'test_hash_secret_cug' => '12345',
+        'live_hash_secret_tpv' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
+        'test_hash_secret_tpv' => '12345',
     ),
 
     'netbanking_kotak' => array(
         'live_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret_sec' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
+        'live_hash_secret_tpv' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
     ),
 
     'netbanking_icici' => [
-        'test_hash_secret'  => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
-        'test_merchant_id'  => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id2' => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
+        'test_hash_secret'     => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'     => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'    => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
+        'live_hash_secret'     => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
+        'live_hash_secret_tpv' => env('NETBANKING_ICICI_LIVE_HASH_SECRET_BROKER'),
+        'live_merchant_id'     => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
+        'live_merchant_id_tpv' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_BROKER'),
     ],
 
     'netbanking_axis' => array(

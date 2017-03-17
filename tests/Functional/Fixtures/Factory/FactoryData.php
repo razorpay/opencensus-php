@@ -177,6 +177,14 @@ final class FactoryData
             'return_utr' => null,
         ]);
 
+        $factory(\RZP\Models\FundTransfer\Attempt\Entity::class, [
+            'id' => $faker->uniqueid,
+            'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
+            'entity_type' => 'settlement',
+            'channel' => 'kotak',
+            'version' => 'V2',
+        ]);
+
         $factory(\RZP\Models\Adjustment\Entity::class, [
             'id' => $faker->uniqueid,
             'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
@@ -550,6 +558,7 @@ final class FactoryData
             'amount'             => 200,
             'currency'           => 'INR',
             'amount_reversed'    => 0,
+            'notes'              => null,
             'on_hold'            => 0,
             'on_hold_until'      => null,
             'merchant_id'        => '10000000000000',
@@ -561,6 +570,7 @@ final class FactoryData
             'id'                 => $faker->uniqueid,
             'amount'             => 200,
             'currency'           => 'INR',
+            'notes'              => null,
             'merchant_id'        => '10000000000000',
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,

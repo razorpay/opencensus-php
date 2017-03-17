@@ -1050,9 +1050,9 @@ class Gateway extends Base\Gateway
         $this->tpv = $gatewayPayment->isTpv();
     }
 
-    public function setTerminal($terminal)
+    public function setGatewayParams($input, $mode, $terminal)
     {
-        parent::setTerminal($terminal);
+        parent::setGatewayParams($input, $mode, $terminal);
 
         $this->setAccountType($terminal);
     }

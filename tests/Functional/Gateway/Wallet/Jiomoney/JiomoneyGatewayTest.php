@@ -150,6 +150,30 @@ class JiomoneyGatewayTest extends TestCase
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
+    public function testVerifyPaymentWhenCheckPaymentStatusApiReturnsArrayOfObjects()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('jiomoney');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'check_payment_status')
+            {
+                $checkPaymentStatusData = $content['RESPONSE']['CHECKPAYMENTSTATUS'];
+
+                $content['RESPONSE']['CHECKPAYMENTSTATUS'] = [
+                    $checkPaymentStatusData,
+                    $checkPaymentStatusData
+                ];
+            }
+        });
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
     /**
      * Tests the case when transaction data is not found using CHECKPAYMENTSTATUS API
      * and we fallback to STATUSQUERY API for validation"

@@ -297,7 +297,7 @@ class ErrorCode
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
 
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE';
-    const BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD                                 = 'BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD';
+    const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                        = 'BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD';
 
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                       = 'BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT';
     const BAD_REQUEST_BATCH_FILE_EMPTY                                              = 'BAD_REQUEST_BATCH_FILE_EMPTY';
@@ -486,6 +486,11 @@ class ErrorCode
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
+
+    // Workflow Related ErrorCodes
+    const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                                 = 'BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE';
+    const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                      = 'BAD_REQUEST_WORKFLOW_INVLID_CHECKER';
+    const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND';
 
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';

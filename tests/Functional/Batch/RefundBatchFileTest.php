@@ -10,7 +10,7 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Batch\Status;
 use RZP\Models\Batch\Header;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Illuminate\Http\UploadedFile;
 
 class RefundBatchFileTest extends TestCase

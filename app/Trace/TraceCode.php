@@ -359,6 +359,7 @@ class TraceCode
     const SETTLEMENT_RECONCILED                     = 'SETTLEMENT_RECONCILED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
+    const SETTLEMENT_RETRY_FAILED                   = 'SETTLMENT_RETRY_FAILED';
     const SETTLEMENT_RECONCILIATION_FAILED          = 'SETTLEMENT_RECONCILIATION_FAILED';
     const SETTLEMENT_RETURN_FAILED                  = 'SETTLEMENT_RETURN_FAILED';
     const SETTLEMENT_SKIPPED                        = 'SETTLEMENT_SKIPPED';
@@ -399,6 +400,7 @@ class TraceCode
     const SCHEDULE_MIGRATION_COMPLETE               = 'SCHEDULE_MIGRATION_COMPLETE';
 
     const ECOLLECT_VALIDATION_REQUEST               = 'ECOLLECT_VALIDATION_REQUEST';
+    const ECOLLECT_VALIDATION_DUPLICATE_UTR         = 'ECOLLECT_VALIDATION_DUPLICATE_UTR';
     const ECOLLECT_PAY_REQUEST                      = 'ECOLLECT_PAY_REQUEST';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
@@ -599,6 +601,9 @@ class TraceCode
     const UPDATE_GATEWAY_PRIORITY_REQUEST           = 'UPDATE_GATEWAY_PRIORITY_REQUEST';
     const REMOVE_GATEWAY_PRIORITY_REQUEST           = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const REDIS_DATA_FETCHED                        = 'REDIS_DATA_FETCHED';
+
+    // Trace codes for gateway
+    const FIRST_DATA_PARES_MISSING                  = 'FIRST_DATA_PARES_MISSING';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
