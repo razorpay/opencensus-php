@@ -3,15 +3,19 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Transfer;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const ID                = 'id';
     const TRANSFER_ID       = 'transfer_id';
     const MERCHANT_ID       = 'merchant_id';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
+    const NOTES             = 'notes';
     const TRANSACTION_ID    = 'transaction_id';
 
     protected static $sign = 'rvrsl';
@@ -23,6 +27,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::AMOUNT,
         self::CURRENCY,
+        self::NOTES,
     ];
 
     protected $visible = [
@@ -32,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::NOTES,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -42,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::TRANSFER_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::NOTES,
         self::CREATED_AT,
     ];
 
@@ -57,6 +64,10 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::TRANSFER_ID,
+    ];
+
+    protected $defaults = [
+        self::NOTES     => [],
     ];
 
     // -------------------- Relations ---------------------------

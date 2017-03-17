@@ -5,7 +5,6 @@ namespace RZP\Models\Customer\Balance;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
-use RZP\Models\Wallet;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 

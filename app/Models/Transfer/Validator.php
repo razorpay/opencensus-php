@@ -17,15 +17,7 @@ class Validator extends Base\Validator
         ToType::CUSTOMER       => 'required_without:account|string|size:19',
         Entity::AMOUNT         => 'required|integer|min:100',
         Entity::CURRENCY       => 'required|size:3|in:INR',
-        Entity::ON_HOLD        => 'sometimes|boolean',
-        // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
-    ];
-
-    protected static $transferRules = [
-        ToType::ACCOUNT        => 'required_without:customer|string|size:18',
-        ToType::CUSTOMER       => 'required_without:account|string|size:19',
-        Entity::AMOUNT         => 'required|integer|min:100',
-        Entity::CURRENCY       => 'required|size:3|in:INR',
+        Entity::NOTES          => 'sometimes|notes',
         Entity::ON_HOLD        => 'sometimes|boolean',
         // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
@@ -56,7 +48,7 @@ class Validator extends Base\Validator
 
         foreach ($transfers as $transfer)
         {
-            $this->validateInput('transfer', $transfer);
+            $this->validateInput('create', $transfer);
 
             $transferSum += (int) $transfer[Entity::AMOUNT];
 

@@ -261,19 +261,21 @@ class Processor extends Base\Core
         return [true, null];
     }
 
+    /**
+     *  NEFT can be processed between 8am and 6 pm only, while batch file can be
+     *  uploaded anytime.
+     * @return [boolean] [returns if settlement can be proessed now]
+     */
     protected function checkInvalidSettlementTime()
     {
-        // NEFT can be processed between 8am and 6 pm only, while batch file can
-        // be uploaded anytime
-
-        $sevenAm = Carbon::today('Asia/Kolkata')->hour(7)->timestamp;
-
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;
 
+        // No settlements after five PM but allow settlements file upload anytime
+        // before that, we want to do it before 8 am as well as that allows us
+        // some time for fixing things before settlement window opens.
         if (($this->mode === Mode::LIVE) and
-            (($this->setlTime <= $sevenAm) or
-             ($this->setlTime >= $fivePm)))
+            ($this->setlTime >= $fivePm))
         {
             return true;
         }
