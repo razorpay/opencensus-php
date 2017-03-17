@@ -15,6 +15,7 @@ class Authorization
     protected $key = null;
     protected $secret = null;
     protected $account = null;
+    protected $adminHeaders = null;
 
     protected $defaultKey = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret = 'TheKeySecretForTests';
