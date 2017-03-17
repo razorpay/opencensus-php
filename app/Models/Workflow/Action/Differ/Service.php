@@ -10,12 +10,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
-use Http\Client\Common\PluginClient;
-use Http\Discovery\HttpClientDiscovery;
-use Http\Client\Exception\HttpException;
-use Http\Client\Common\Plugin\ErrorPlugin;
-use Http\Client\Common\Exception\ClientErrorException;
-use Http\Client\Common\Exception\ServerErrorException;
 
 class Service extends Base\Service
 {
@@ -119,48 +113,6 @@ class Service extends Base\Service
         {
             $this->trace->warning(TraceCode::HEIMDALL_ACTION_LOG_FAIL, ['msg' => $e]);
         }
-    }
-
-    protected function makeRequest($method, $url, $headers, $content)
-    {
-        $req = $this->factory->createRequest($method, $url, $headers, json_encode($content));
-
-        $response = null;
-
-        try
-        {
-            $response = $this->createHttpClient()->sendRequest($req);
-        }
-        catch (ClientErrorException $e)
-        {
-            $response = $e->getResponse();
-        }
-        catch (ServerErrorException $e)
-        {
-            $response = $e->getResponse();
-        }
-        catch (HttpException $e)
-        {
-            $response = $e->getResponse();
-        }
-
-        return $response;
-    }
-
-    protected function createHttpClient()
-    {
-        // Plugin to get error-exceptions from responses of httpClient
-        $errorPlugin = new ErrorPlugin();
-
-        // PluginClient is the decorator around the httpClient that manages plugins
-        // HttpClientDiscovery finds a suitable installed client that -
-        // extends HttpClient (in this case Guzzle6 client)
-        $pluginClient = new PluginClient(
-            HttpClientDiscovery::find(),
-            [$errorPlugin]
-        );
-
-        return $pluginClient;
     }
 
     protected function makerAction(Entity $action)
