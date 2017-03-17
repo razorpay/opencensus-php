@@ -636,6 +636,13 @@ class AdminController extends Controller
         return Redirect::to($url);
     }
 
+    public function getUploadedFile($id)
+    {
+        list($error, $url) = (new Admin\Service)->getUploadedFile($id);
+
+        return Redirect::to($url);
+    }
+
     public function generateBeneficiaryFile()
     {
         $error = (new Admin\Service)->generateBeneficiaryFile();
