@@ -11,7 +11,11 @@
     <div class="panel-heading">
       All Accounts
       <div class='btn-toolbar pull-right'>
-        <button class='btn btn-primary btn-rounded' ng-click="openAddAccountModal()">
+        <button class='btn btn-sm' ng-click="exportAccountsCSV()">
+          <i class='fa fa-download'></i>
+          <span>Export All (CSV)</span>
+        </button>
+        <button class='btn btn-sm btn-primary' ng-click="openAddAccountModal()">
           <i class='fa fa-plus'></i>
           <span>Add Account</span>
         </button>
