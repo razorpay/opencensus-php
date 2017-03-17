@@ -17,7 +17,6 @@ use Http\Client\Common\Plugin\ErrorPlugin;
 use Http\Client\Common\Exception\ClientErrorException;
 use Http\Client\Common\Exception\ServerErrorException;
 
-
 class Service extends Base\Service
 {
     protected $esDao;

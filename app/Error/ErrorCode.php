@@ -491,6 +491,8 @@ class ErrorCode
     const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                                 = 'BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE';
     const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                      = 'BAD_REQUEST_WORKFLOW_INVLID_CHECKER';
     const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND';
+    const BAD_REQUEST_ACTION_INVALID_TYPE                                           = 'BAD_REQUEST_ACTION_INVALID_TYPE';
+    const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
 
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
@@ -498,9 +500,4 @@ class ErrorCode
 
     // ES related error codes
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
-
-    const BAD_REQUEST_ACTION_INVALID_TYPE                                           = 'BAD_REQUEST_ACTION_INVALID_TYPE';
-    const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
-    const BAD_REQUEST_ACTION_NOT_FOUND                                              = 'BAD_REQUEST_ACTION_NOT_FOUND';
-
 }

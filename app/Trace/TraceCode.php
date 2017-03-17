@@ -256,10 +256,7 @@ class TraceCode
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT             = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
 
 
-    /*
-     * Gateway component error messages
-     */
-
+    // Gateway component error messages
     const GATEWAY_RESPONSE                          = 'GATEWAY_RESPONSE';
     const GATEWAY_ENROLL_REQUEST                    = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE                   = 'GATEWAY_ENROLL_RESPONSE';
