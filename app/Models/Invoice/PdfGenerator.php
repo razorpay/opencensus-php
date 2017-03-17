@@ -114,8 +114,6 @@ class PdfGenerator extends Base\Core
             <!DOCTYPE html>
             <html>
             <head>
-                <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
-                </link>
                 <style>
                     $css
                 </style>
