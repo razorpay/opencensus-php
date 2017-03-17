@@ -19,7 +19,7 @@ class BasicEntityReport extends Base
 
     // Maps the entity to the relations that need to be fetched for it
     protected $entityToRelationFetchMap = [
-        E::TRANSACTION => [
+        E::TRANSACTION  => [
             // Maps transaction source to entities that need to be fetched
             E::PAYMENT  => [E::ORDER],
             E::REFUND   => [
@@ -27,10 +27,11 @@ class BasicEntityReport extends Base
                 E::PAYMENT . '.' . E::ORDER
             ],
         ],
-        E::PAYMENT => [E::CARD],
-        E::REFUND => [E::PAYMENT],
-        E::ORDER => [],
-        E::SETTLEMENT => []
+        E::MERCHANT     => [],
+        E::PAYMENT      => [E::CARD],
+        E::REFUND       => [E::PAYMENT],
+        E::ORDER        => [],
+        E::SETTLEMENT   => []
     ];
 
     protected $entity;
@@ -43,11 +44,22 @@ class BasicEntityReport extends Base
         E::PAYMENT,
         E::SETTLEMENT,
         E::TRANSACTION,
+        E::MERCHANT
     );
 
     public function __construct(string $entity)
     {
         parent::__construct();
+
+        //
+        // For linked account report, the entity is exposed as 'account' but is
+        // the merchant entity.
+        // @todo: Change this when account onboarding goes live.
+        //
+        if ($entity === 'account')
+        {
+            $entity = 'merchant';
+        }
 
         $this->entity = $entity;
 
@@ -104,7 +116,7 @@ class BasicEntityReport extends Base
 
         $signedUrl = $this->getPreSignedUrlFromAws($key);
 
-        if (file_exists($fullpath))
+        if (file_exists($fullpath) === true)
         {
             unlink($fullpath);
         }
@@ -184,6 +196,13 @@ class BasicEntityReport extends Base
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot get report for the given entity');
+        }
+
+        if (($this->entity === E::MERCHANT) and
+            ($this->merchant->isMarketplace() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Exporting this data is not allowed for the merchant');
         }
     }
 
