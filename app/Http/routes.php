@@ -83,6 +83,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
         Route::get('/{mode}/analytics/payment/aggregations', 'TransactionController@getPaymentAggregations');
 
+        // adding keys as being used in android
+        Route::get('/{mode}/keys', 'MerchantController@getKeys')->name('get_keys');
+        Route::post('/{mode}/key/new', 'MerchantController@postNewKey')->name('keys_setup');
+
         Route::get('/keys/csv', 'MerchantController@getCsv');
         Route::get('/apihost', 'MerchantController@getApihost');
 

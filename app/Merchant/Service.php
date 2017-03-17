@@ -465,6 +465,29 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
+    public function createKey($merchant_id, $mode)
+    {
+        $errors = array();
+        $data = array();
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $data = $this->api->merchant
+                            ->fetch($merchant_id)
+                            ->keys()
+                            ->create()
+                            ->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return array($errors, $data);
+    }
+
     public function getUsersListWithInvites()
     {
         $merchantId = $this->currentUser
