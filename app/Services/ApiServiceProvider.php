@@ -122,6 +122,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMorphRelationMaps();
 
         $this->registerSesClient();
+
+        $this->registerDrip();
     }
 
     /**
@@ -279,11 +281,27 @@ class ApiServiceProvider extends BaseServiceProvider
 
             $mailer->setContainer($app);
 
-            if ($app->bound('queue')) {
+            if ($app->bound('queue'))
+            {
                 $mailer->setQueue($app['queue.connection']);
             }
 
             return $mailer;
+        });
+    }
+
+    protected function registerDrip()
+    {
+        $this->app->singleton('drip', function ($app)
+        {
+            $dripMock = $app['config']->get('applications.drip.mock');
+
+            if ($dripMock === true)
+            {
+                return new Mock\Drip($app);
+            }
+
+            return new Drip($app);
         });
     }
 }
