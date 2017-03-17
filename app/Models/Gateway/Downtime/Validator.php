@@ -213,67 +213,59 @@ class Validator extends Base\Validator
 
     protected function validateCardIssuer(string $method, string $issuer = null)
     {
-        if ($method === Method::CARD)
+        if (empty($issuer) === true)
         {
-            if (empty($issuer) === true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Issuer cannot be empty for method ' . $method);
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                'Issuer cannot be empty for method ' . $method);
+        }
 
-            if ((in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true))
-            {
-                return;
-            }
+        if ((in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true))
+        {
+            return;
+        }
 
-            if (IFSC::exists($issuer) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    $issuer. ' is not a valid Bank code');
-            }
+        if (IFSC::exists($issuer) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer. ' is not a valid Bank code');
         }
     }
 
     protected function validateNetbankingIssuer(string $gateway, string $method, string $issuer = null)
     {
-        // we need the name of the bank for netbanking and it cannot be empty
-        if ($method === Method::NETBANKING)
+        $issuer = strtoupper($issuer);
+
+        if (empty($issuer) === true)
         {
-            $issuer = strtoupper($issuer);
+            throw new Exception\BadRequestValidationFailureException(
+                'Issuer cannot be empty for method ' . $method);
+        }
 
-            if (empty($issuer) === true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Issuer cannot be empty for method ' . $method);
-            }
+        if ((strtoupper($gateway) !== Entity::ALL) and
+            (in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true))
+        {
+            return;
+        }
 
-            if ((strtoupper($gateway) !== Entity::ALL) and
-                (in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true))
-            {
-                return;
-            }
+        $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
 
-            $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
+        if ((strtolower($gateway) !== strtolower(Entity::ALL)) and
+            (in_array($gateway, $gateways, true) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer .' is not a supported Bank code for gateway ' . $gateway);
+        }
 
-            if ((strtolower($gateway) !== strtolower(Entity::ALL)) and
-                (in_array($gateway, $gateways, true) === false))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    $issuer .' is not a supported Bank code for gateway ' . $gateway);
-            }
-
-            if (IFSC::exists($issuer) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    $issuer. ' is not a valid Bank code');
-            }
+        if (IFSC::exists($issuer) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer. ' is not a valid Bank code');
         }
     }
 
     protected function validateWalletIssuer(string $method, string $issuer = null)
     {
-        if (($method === Method::WALLET) and
-            (Wallet::exists($issuer) === false))
+        if (Wallet::exists($issuer) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a valid Wallet');
