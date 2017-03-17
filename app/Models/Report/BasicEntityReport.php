@@ -229,8 +229,6 @@ class BasicEntityReport extends Base
 
     protected function createFileAndSave($filePath, $fileName)
     {
-        $entity = E::getEntityObject($this->entity);
-
         $file = new UploadedFile($filePath, $fileName);
 
         $creator = new FileStore\Creator;
