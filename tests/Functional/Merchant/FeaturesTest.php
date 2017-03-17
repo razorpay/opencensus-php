@@ -37,6 +37,8 @@ class FeaturesTest extends TestCase
 
     public function testDeleteFeatureFromMerchant()
     {
+        $this->ba->adminAuth();
+
         $features = $this->fixtures->merchant->addFeatures(['dummy']);
 
         $request = [
@@ -54,11 +56,17 @@ class FeaturesTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($resultData, $content);
+
+        $this->ba->appAuth();
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
     {
+        $this->ba->adminAuth();
+
         $this->startTest();
+
+        $this->ba->appAuth();
     }
 
     public function testMultiAssignFeature()
