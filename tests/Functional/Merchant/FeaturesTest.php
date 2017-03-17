@@ -39,6 +39,8 @@ class FeaturesTest extends TestCase
     {
         $this->ba->adminAuth();
 
+        $this->ba->addAdminAuthHeaders('org_100000razorpay');
+
         $features = $this->fixtures->merchant->addFeatures(['dummy']);
 
         $request = [
