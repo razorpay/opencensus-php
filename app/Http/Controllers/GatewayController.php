@@ -228,20 +228,6 @@ class GatewayController extends Controller
     }
 
     /**
-     * Method to delete gateway downtime entity
-     * @param Downtime\Service $service
-     * @param string $id
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function deleteGatewayDowntime(Downtime\Service $service, string $id)
-    {
-        $data = $service->delete($id);
-
-        return ApiResponse::json($data);
-    }
-
-
-    /**
      * Method to get absent gateways across multiple search params
      * @return \Symfony\Component\HttpFoundation\Response
      */

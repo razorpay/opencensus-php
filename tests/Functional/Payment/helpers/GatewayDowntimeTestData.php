@@ -348,17 +348,6 @@ return [
         ]
     ],
 
-
-    'testGatewayDowntimeDelete' => [
-        'request' => [
-            'method' => 'DELETE'
-        ],
-        'response' => [
-            'content' => [
-                'deleted' => true
-            ]
-        ]
-    ],
     'testGatewayCreateNullTo' => [
         'request' => [
             'content' => [

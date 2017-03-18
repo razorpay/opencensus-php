@@ -55,18 +55,6 @@ class Core extends Base\Core
         return $downtime;
     }
 
-    public function delete(string $id)
-    {
-        $downtime = $this->repo->gateway_downtime->findOrFailPublic($id);
-
-        $this->repo->gateway_downtime->deleteOrFail($downtime);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_DOWNTIME_DELETE, ['id' => $downtime->getId()]);
-
-        return $downtime;
-    }
-
     // TODO: Need to relook at the format of the data sent to checkout
     public function getFormattedGatewayDowntimeCheckoutData(Merchant\Entity $merchant)
     {

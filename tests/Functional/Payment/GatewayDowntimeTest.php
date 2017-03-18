@@ -495,20 +495,6 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals($content['comment'], 'SOME_COMMENT');
     }
 
-    //----- Delete Tests -----
-
-    public function testGatewayDowntimeDelete()
-    {
-        $content = $this->createGatewayDowntime();
-
-        $url = '/gateway/downtimes/'. $content['id'];
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->startTest();
-    }
-
-
     //----- Fetch Tests -----
 
     public function testGatewayDowntimeFetchForNullTo()

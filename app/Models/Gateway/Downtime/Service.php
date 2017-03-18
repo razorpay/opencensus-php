@@ -23,13 +23,6 @@ class Service extends Base\Service
         return $downtime->toArrayPublic();
     }
 
-    public function delete($id)
-    {
-        $downtime = $this->core()->delete($id);
-
-        return $downtime->toArrayDeleted();
-    }
-
     public function fetchMultiple(array $input)
     {
         $absentGateways = $this->repo->gateway_downtime->fetch($input);
