@@ -114,6 +114,12 @@ class Server extends Base\Mock\Server
         // for test cases
         $this->content($response);
 
+        // For null verify response
+        if ($response === "")
+        {
+            return $response;
+        }
+
         $response = array_flip($response);
 
         $xml = new \SimpleXMLElement('<DataSet/>');
