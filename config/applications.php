@@ -94,10 +94,17 @@ return array(
         'appId'     => env('EXCHANGE_APP_ID')
     ],
 
+    'drip' => [
+        'mock'      => env('DRIP_MOCK', false),
+        'url'       => env('DRIP_URL'),
+        'accountId' => env('DRIP_ACCOUNT_ID'),
+        'token'     => env('DRIP_TOKEN')
+    ],
+
     'gateway_downtime' => [
         'statuscake' => [
             'username' => env('STATUSCAKE_USERNAME'),
             'api_key'  => env('STATUSCAKE_API_KEY')
         ]
-    ],
+    ]
 );
