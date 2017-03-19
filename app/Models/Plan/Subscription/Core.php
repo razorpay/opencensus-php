@@ -124,6 +124,26 @@ class Core extends Base\Core
             });
     }
 
+    public function expireSubscription(Entity $subscription)
+    {
+        if (($subscription->getStatus() !== Status::CREATED) or
+            ($subscription->getStartAt() === null))
+        {
+            throw new LogicException(
+                'Subscription should have been in created state / start_at should not have been set',
+                null,
+                [
+                    'subscription_id' => $subscription->getId(),
+                    'status'          => $subscription->getStatus(),
+                    'start_at'        => $subscription->getStartAt()
+                ]);
+        }
+
+        $subscription->setStatus(Status::EXPIRED);
+
+        $this->repo->saveOrFail($subscription);
+    }
+
     protected function activateSubscription(Entity $subscription)
     {
         if ($subscription->getStatus() !== Status::AUTHENTICATED)

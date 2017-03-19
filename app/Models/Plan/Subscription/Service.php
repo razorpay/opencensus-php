@@ -63,14 +63,56 @@ class Service extends Base\Service
         }
 
         $summary = [
-            'total' => $subscriptionsToCharge->count(),
-            'invoices_created' => $invoicesCreated,
-            'failed' => $failed,
-            'failure_subscriptions' => $failures,
+            'total'             => $subscriptionsToCharge->count(),
+            'invoices_created'  => $invoicesCreated,
+            'failed'            => $failed,
+            'failures'          => $failures,
         ];
 
         $this->trace->info(
             TraceCode::SUBSCRIPTION_CREATE_INVOICE_SUMMARY,
+            $summary
+        );
+
+        return $summary;
+    }
+
+    public function expireSubscriptions()
+    {
+        $subscriptionsToExpire = $this->repo->subscription->getSubscriptionsToExpire();
+
+        $failed = 0;
+        $failures = [];
+
+        foreach ($subscriptionsToExpire as $subscription)
+        {
+            try
+            {
+                $this->core->expireSubscription($subscription);
+            }
+            catch (\Exception $ex)
+            {
+                $failed += 1;
+                $failures[] = $subscription->getId();
+
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::SUBSCRIPTION_EXPIRE_FAILED,
+                    [
+                        'subscription_id' => $subscription->getId()
+                    ]);
+            }
+        }
+
+        $summary = [
+            'total'    => $subscriptionsToExpire->count(),
+            'failed'   => $failed,
+            'failures' => $failures,
+        ];
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTIONS_EXPIRE_SUMMARY,
             $summary
         );
 

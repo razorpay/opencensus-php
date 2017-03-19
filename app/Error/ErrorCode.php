@@ -274,6 +274,7 @@ class ErrorCode
     const BAD_REQUEST_SUBSCRIPTION_TOTAL_COUNT_EXCEEDED                             = 'BAD_REQUEST_SUBSCRIPTION_TOTAL_COUNT_EXCEEDED';
     const BAD_REQUEST_BANK_REQUIRED_WITH_ACCOUNT_NUMBER                             = 'BAD_REQUEST_BANK_REQUIRED_WITH_ACCOUNT_NUMBER';
     const BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_PAID                                 = 'BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_PAID';
+    const BAD_REQUEST_SUBSCRIPTION_EXPIRED                                          = 'BAD_REQUEST_SUBSCRIPTION_EXPIRED';
 
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                        = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD';
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';

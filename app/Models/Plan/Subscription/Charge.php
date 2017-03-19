@@ -208,7 +208,7 @@ class Charge extends Base\Core
         // we will be keeping the current billing cycle period
         // in subscriptions also.
         //
-        $this->setCurrentPeriod($subscription, $plan);
+        $this->setCurrentPeriod($subscription);
 
         $this->setInvoiceBillingPeriod($subscription, $invoice);
 
@@ -389,9 +389,8 @@ class Charge extends Base\Core
      * [currentStart, currentEnd] = [currentStart+interval, currentStart + (2 * interval)]
      *
      * @param Entity $subscription
-     * @param Plan\Entity $plan
      */
-    protected function setCurrentPeriod(Entity $subscription, Plan\Entity $plan)
+    protected function setCurrentPeriod(Entity $subscription)
     {
         $billingPeriod = $this->getBillingPeriod($subscription);
 
@@ -410,6 +409,8 @@ class Charge extends Base\Core
         if ($subscription->getChargeAt() === null)
         {
             $subscription->setEndedAt($subscription->getCurrentEnd());
+
+            $subscription->setStatus(Status::COMPLETED);
         }
     }
 

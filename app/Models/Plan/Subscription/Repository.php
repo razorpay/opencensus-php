@@ -28,6 +28,17 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getSubscriptionsToExpire()
+    {
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        return $this->newQuery()
+                    ->whereNotNull(Entity::START_AT)
+                    ->where(Entity::START_AT, '<=', $currentTime)
+                    ->where(Entity::STATUS, '=', Status::CREATED)
+                    ->get();
+    }
+
     protected function getBaseSubscriptionsQuery()
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;

@@ -426,15 +426,33 @@ trait Authorize
 
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
-        $subscriptionStatus = $subscription->getStatus();
+        if ($subscription->isExpired() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_EXPIRED,
+                null,
+                [
+                    'subscription_id' => $subscription->getId(),
+                ]);
+        }
 
-        if ($subscriptionStatus === Subscription\Status::CREATED)
+        if ($subscription->isCreated() === true)
         {
             $this->validateNewSubscription($subscription, $payment, $input);
         }
-        else
+        else if ($subscription->hasBeenAuthenticated() === true)
         {
             $this->validateAuthenticatedSubscription($subscription, $payment, $input);
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Subscription is neither in created state nor has ever been authenticated.',
+                null,
+                [
+                    'subscription_id' => $subscription->getId(),
+                    'status' => $subscription->getStatus(),
+                ]);
         }
     }
 
@@ -1520,9 +1538,7 @@ trait Authorize
 
         $subscription = $payment->subscription;
 
-        $subscriptionStatus = $subscription->getStatus();
-
-        if ($subscriptionStatus === Subscription\Status::CREATED)
+        if ($subscription->isCreated() === true)
         {
             $this->processNewSubscription($subscription, $payment);
 
@@ -1638,9 +1654,7 @@ trait Authorize
         $startAt = $subscription->getStartAt();
         $upfrontAmount = $subscription->getUpfrontAmount();
 
-        $paymentStatus = $payment->getStatus();
-
-        if ($paymentStatus === Payment\Status::CAPTURED)
+        if ($payment->isCaptured() === true)
         {
             return;
         }
@@ -1649,7 +1663,7 @@ trait Authorize
         // If upfront amount is present or start_at is null (first charge in auth txn itself),
         // the payment should have been captured before it reaches this stage.
         //
-        if (($paymentStatus !== Payment\Status::CAPTURED) and
+        if (($payment->isCaptured() === false) and
             (($startAt === null) or ($upfrontAmount !== null)))
         {
             throw new Exception\LogicException(
@@ -1660,6 +1674,7 @@ trait Authorize
                     'upfront_amount' => $upfrontAmount,
                     'subscription_id' => $subscription->getId(),
                     'payment_id' => $payment->getId(),
+                    'payment_status' => $payment->getStatus(),
                 ]);
         }
 
@@ -1723,22 +1738,20 @@ trait Authorize
             $valid = false;
         }
 
-        $subscriptionStatus = $subscription->getStatus();
-
         //
         // If a token is not associated with the subscription already,
         // it means that the subscription is in created state, because,
         // no transaction yet happened on this subscription, due to which,
         // there's no token associated with it yet.
         //
-        if ($subscriptionStatus !== Subscription\Status::CREATED)
+        if ($subscription->isCreated() === false)
         {
             $this->trace->error(
                 TraceCode::SUBSCRIPTION_STATE_UNEXPECTED,
                 [
                     'payment_id'            => $payment->getId(),
                     'subscription_id'       => $subscription->getId(),
-                    'subscription_status'   => $subscriptionStatus,
+                    'subscription_status'   => $subscription->getStatus(),
                 ]);
 
             $valid = false;

@@ -52,7 +52,6 @@ class Validator extends Base\Validator
 
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
-        // TODO: Add a cron to expire all subscriptions which have gone past the start_at.
         if ($startAt < $currentTime)
         {
             throw new Exception\BadRequestException(

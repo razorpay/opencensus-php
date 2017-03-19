@@ -213,6 +213,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::CREATED);
     }
 
+    public function isExpired()
+    {
+        return ($this->getAttribbute(self::STATUS) === Status::EXPIRED);
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------

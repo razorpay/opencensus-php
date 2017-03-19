@@ -57,4 +57,11 @@ class PlanController extends Controller
 
         return ApiResponse::json($summary);
     }
+
+    public function postExpireSubscriptions()
+    {
+        $summary = $this->subscriptionService->expireSubscriptions();
+
+        return ApiResponse::json($summary);
+    }
 }
