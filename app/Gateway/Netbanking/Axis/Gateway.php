@@ -95,7 +95,11 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            ['gateway_response' => $response->body]);
+            [
+                'response_body' => $response->body,
+                'payment_id'    => $verify->input['payment']['id'],
+                'status_code'   => $response->status_code
+            ]);
 
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
     }
@@ -313,7 +317,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        if ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS)
+        if ((isset($content[ResponseFields::PAYMENT_STATUS])) and
+            ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
         {
             $attributes = $this->getVerifyAttributes($verify, $gatewayPayment);
 
@@ -346,11 +351,16 @@ class Gateway extends Base\Gateway
 
     protected function parseResponseXml(string $response)
     {
-        $responseArray = (array) simplexml_load_string($response);
+        if (empty($response) === false)
+        {
+            $responseArray = (array) simplexml_load_string($response);
 
-        // Lets assume we verify only one payment at a time
-        // So the response will contain just 1 table at a time
-        return (array) $responseArray['Table1'];
+            // Lets assume we verify only one payment at a time
+            // So the response will contain just 1 table at a time
+            return (array) $responseArray['Table1'];
+        }
+
+        return $response;
     }
 
     /*
