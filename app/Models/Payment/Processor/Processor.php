@@ -1064,7 +1064,7 @@ class Processor
         return $this->shouldAutoCaptureOrder($payment);
     }
 
-    protected function shouldAutoCaptureAlreadyActivatedSubscription(Payment\Entity $payment)
+    protected function shouldAutoCaptureAlreadyAuthenticatedSubscription(Payment\Entity $payment)
     {
         $subscription = $payment->subscription;
 
@@ -1075,7 +1075,7 @@ class Processor
         // is this being charged for, we are not going to auto capture it.
         // Once we start using invoices with this, it'll be easier to
         // identify.
-        // TODO: Handle late auth for activated and for new subscriptions.
+        // TODO: Handle late auth for authenticated and for new subscriptions.
         if ($payment->isLateAuthorized())
         {
             $this->trace->error(

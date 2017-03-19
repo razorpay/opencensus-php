@@ -434,16 +434,19 @@ trait Authorize
         }
         else
         {
-            $this->validateActivatedSubscription($subscription, $payment, $input);
+            $this->validateAuthenticatedSubscription($subscription, $payment, $input);
         }
     }
 
-    protected function validateActivatedSubscription(Subscription\Entity $subscription, Payment\Entity $payment, array $input)
+    protected function validateAuthenticatedSubscription(
+        Subscription\Entity $subscription,
+        Payment\Entity $payment,
+        array $input)
     {
-        if ($subscription->hasBeenActivated() === false)
+        if ($subscription->hasBeenAuthenticated() === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_ACTIVATED,
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_AUTHENTICATED,
                 null,
                 [
                     'payment_id' => $payment->getId(),
@@ -1489,18 +1492,18 @@ trait Authorize
         }
         else
         {
-            $this->processAlreadyActivatedSubscription($subscription, $payment);
+            $this->processAlreadyAuthenticatedSubscription($subscription, $payment);
         }
 
         $this->repo->saveOrFail($subscription);
     }
 
-    protected function processAlreadyActivatedSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
+    protected function processAlreadyAuthenticatedSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
     {
-        if ($subscription->hasBeenActivated() === false)
+        if ($subscription->hasBeenAuthenticated() === false)
         {
             throw new Exception\LogicException(
-                'This should have been called only if the subscription was already activated.',
+                'This should have been called only if the subscription was already authenticated.',
                 null,
                 [
                     'payment_id'            => $payment->getId(),
@@ -1509,7 +1512,7 @@ trait Authorize
                 ]);
         }
 
-        if ($this->shouldAutoCaptureAlreadyActivatedSubscription($payment) === true)
+        if ($this->shouldAutoCaptureAlreadyAuthenticatedSubscription($payment) === true)
         {
             $this->autoCapturePayment($payment);
 
@@ -1533,7 +1536,7 @@ trait Authorize
 
         $this->updateSubscriptionToken($subscription, $payment);
 
-        $subscription->setStatus(Subscription\Status::ACTIVATED);
+        $subscription->setStatus(Subscription\Status::AUTHENTICATED);
 
         //
         // This signifies that the auth transaction also

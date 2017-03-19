@@ -236,7 +236,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
     const BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING                        = 'Recurring is not set for the subscription payment';
     const BAD_REQUEST_SUBSCRIPTION_ALREADY_ACTIVE                               = 'Subscription is already active';
-    const BAD_REQUEST_SUBSCRIPTION_NOT_ACTIVATED                                = 'Payment cannot be authorized since subscription is not activated';
+    const BAD_REQUEST_SUBSCRIPTION_NOT_AUTHENTICATED                            = 'Payment cannot be authorized since subscription is not authenticated';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED                     = 'The subscription already has a token associated with it';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED                         = 'Payment cannot be authorized since subscription does not have any token associated';
     const BAD_REQUEST_SUBSCRIPTION_TOTAL_COUNT_EXCEEDED                         = 'Subscription has already reached its total count of charges';

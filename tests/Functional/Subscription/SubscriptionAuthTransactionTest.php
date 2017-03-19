@@ -59,7 +59,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $token = $this->getLastEntity('token', true);
         $invoice = $this->getLastEntity('invoice', true);
 
-        $this->assertEquals('activated', $subscription['status']);
+        $this->assertEquals('authenticated', $subscription['status']);
         $this->assertEquals($token['id'], $subscription['token_id']);
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);
@@ -99,7 +99,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $token = $this->getLastEntity('token', true);
         $invoice = $this->getLastEntity('invoice', true);
 
-        $this->assertEquals('activated', $subscription['status']);
+        $this->assertEquals('authenticated', $subscription['status']);
         $this->assertEquals($token['id'], $subscription['token_id']);
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);
@@ -301,7 +301,7 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'plan_id' => $plan->getId(),
                 'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
                 'total_count' => 3,
-                'status' => 'activated',
+                'status' => 'authenticated',
             ]);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
@@ -312,7 +312,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('Payment cannot be authorized since subscription is not activated', $ex->getMessage());
+            $this->assertEquals('Payment cannot be authorized since subscription is not authenticated', $ex->getMessage());
 
             return;
         }

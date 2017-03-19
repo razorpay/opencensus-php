@@ -32,7 +32,7 @@ class Entity extends Base\PublicEntity
     const ERROR_STATUS      = 'error_status';
     const UPFRONT_AMOUNT    = 'upfront_amount';
     const FAILED_AT         = 'failed_at';
-    const ACTIVATED_AT      = 'activated_at';
+    const AUTHENTICATED_AT  = 'authenticated_at';
     const CANCELLED_AT      = 'cancelled_at';
 
     protected static $sign = 'sub';
@@ -192,9 +192,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UPFRONT_AMOUNT);
     }
 
-    public function hasBeenActivated()
+    public function hasBeenAuthenticated()
     {
-        return ($this->getAttribute(self::ACTIVATED_AT) !== null);
+        return ($this->getAttribute(self::AUTHENTICATED_AT) !== null);
     }
 
     public function isCreated()

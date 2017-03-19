@@ -44,7 +44,7 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
 
         $this->assertEquals(0, $subscription['paid_count']);
-        $this->assertEquals('activated', $subscription['status']);
+        $this->assertEquals('authenticated', $subscription['status']);
         $this->assertEquals(0, $subscription['auth_attempts']);
         $this->assertNotNull($subscription['end_at']);
 

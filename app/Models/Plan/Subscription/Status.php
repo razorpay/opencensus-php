@@ -11,7 +11,11 @@ class Status
 
     // The auth transaction is complete and probably upfront amount has also been paid.
     // But, no charge has been made on this yet.
-    const ACTIVATED         = 'activated';
+    const AUTHENTICATED     = 'authenticated';
+
+    // The auth transaction is complete and probably upfront amount has also been paid.
+    // But, no charge has been made on this yet.
+    // const ACTIVATED         = 'activated';
 
     // The last charge which was made on the subscription was successfully captured.
     const PROCESSED         = 'processed';
@@ -27,7 +31,7 @@ class Status
 
     // These statuses have corresponding timestamps column in subscription
     public static $timestampedStatuses = [
-        self::ACTIVATED,
+        self::AUTHENTICATED,
         self::CANCELLED,
     ];
 
