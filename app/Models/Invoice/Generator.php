@@ -94,7 +94,13 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    protected function preProcessGeneration(array $input, Subscription\Entity $subscription)
+    /**
+     * @param array                     $input
+     * @param Subscription\Entity|null  $subscription Cannot type hint this because of null.
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    protected function preProcessGeneration(array $input, $subscription)
     {
         $this->associateCustomerWithInvoice($input);
 
