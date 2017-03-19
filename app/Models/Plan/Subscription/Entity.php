@@ -193,6 +193,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOKEN_ID);
     }
 
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
     public function getUpfrontAmount()
     {
         return $this->getAttribute(self::UPFRONT_AMOUNT);

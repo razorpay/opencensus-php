@@ -220,6 +220,18 @@ class Charge extends Base\Core
 
         $this->setActivatedAt($subscription, $capturedPayment);
 
+        $this->repo->transaction(
+            function() use ($invoice, $subscription)
+            {
+                $this->repo->saveOrFail($invoice);
+                $this->repo->saveOrFail($subscription);
+            });
+
+        //
+        // This must be sent after saving the invoice and subscription
+        // to ensure that we don't send an email when we were not able
+        // to charge the subscription.
+        //
         $this->sendInvoiceEmail($invoice);
     }
 
@@ -236,8 +248,6 @@ class Charge extends Base\Core
     {
         $invoice->setBillingStart($subscription->getCurrentStart());
         $invoice->setBillingEnd($subscription->getCurrentEnd());
-
-        $this->repo->saveOrFail($invoice);
     }
 
     protected function getBillingPeriod(Entity $subscription)

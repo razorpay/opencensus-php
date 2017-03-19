@@ -293,6 +293,9 @@ trait PaymentTrait
     {
         $paymentRequest = $this->getDefaultRecurringPaymentArray();
 
+        // For subscription, we get the customer ID from the subscription entity itself.
+        unset($paymentRequest['customer_id']);
+
         $paymentRequest['subscription_id'] = $subscription['public_id'];
         $paymentRequest['amount'] = 500;
 

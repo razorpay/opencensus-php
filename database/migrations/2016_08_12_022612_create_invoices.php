@@ -66,6 +66,9 @@ class CreateInvoices extends Migration
 
             $table->string(Entity::STATUS, 32);
 
+            $table->string(Entity::SUB_STATUS, 32)
+                  ->nullable();
+
             $table->string(Entity::EMAIL_STATUS, 32)
                   ->nullable();
 
@@ -126,6 +129,7 @@ class CreateInvoices extends Migration
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::STATUS);
+            $table->index(Entity::SUB_STATUS);
             $table->index(Entity::DUE_BY);
             $table->index(Entity::SCHEDULED_AT);
             $table->index(Entity::EMAIL_STATUS);

@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_BILLING_ADDR_ID = 'customer_billing_addr_id';
     const CUSTOMER_CONTACT         = 'customer_contact';
     const STATUS                   = 'status';
+    const SUB_STATUS               = 'sub_status';
     const DATE                     = 'date';
     const DUE_BY                   = 'due_by';
     const SCHEDULED_AT             = 'scheduled_at';
@@ -117,6 +118,7 @@ class Entity extends Base\PublicEntity
         // For a draft state, it has to be sent explicitly in the request.
         // It's created in the issued state otherwise.
         self::STATUS                   => Status::ISSUED,
+        self::SUB_STATUS               => null,
         // self::ADJUSTMENT            => 0,
         // self::SHIPPING              => 0,
         self::SUBSCRIPTION_ID          => null,
@@ -188,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::RECEIPT,
         self::STATUS,
+        self::SUB_STATUS,
         self::CUSTOMER_ID,
         self::CUSTOMER,
         self::MERCHANT_ID,
@@ -603,6 +606,13 @@ class Entity extends Base\PublicEntity
 
             $this->setAttribute($timestampKey, $currentTime);
         }
+    }
+
+    public function setSubStatus($subStatus)
+    {
+        Status::checkSubStatus($subStatus);
+
+        $this->setAttribute(self::SUB_STATUS, $subStatus);
     }
 
     public function setShortUrl($shortUrl)

@@ -67,7 +67,7 @@ class Generator extends Base\Core
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
-    public function generate(array $input, $subscription)
+    public function generate(array $input, $subscription = null)
     {
         $this->generateInvoiceSkeleton($input);
 
@@ -94,13 +94,18 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    protected function preProcessGeneration(array $input, $subscription)
+    protected function preProcessGeneration(array $input, Subscription\Entity $subscription)
     {
         $this->associateCustomerWithInvoice($input);
 
         if ($subscription !== null)
         {
             $this->invoice->subscription()->associate($subscription);
+
+            if ($subscription->getStatus() === Subscription\Status::ON_HOLD)
+            {
+                $this->invoice->setSubStatus(Status::ON_HOLD);
+            }
         }
 
         $this->createLineItemsFromInputAndSetInvoiceAmount($input);

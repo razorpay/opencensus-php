@@ -889,7 +889,7 @@ trait Authorize
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
     {
-        // TODO: Get the customer_id from the subscription and fill it in the input.
+        $this->setCustomerIdForSubscriptionInput($input);
 
         //
         // Either the customer ID or the app token ID is required to get the customer.
@@ -1306,6 +1306,16 @@ trait Authorize
         }
     }
 
+    protected function setCustomerIdForSubscriptionInput(array & $input)
+    {
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            $subscription = $this->repo->subscription->findByPublicId($input[Payment\Entity::SUBSCRIPTION_ID]);
+
+            $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
+        }
+    }
+
     protected function getPaymentGatewayRequestData($request, Payment\Entity $payment): array
     {
         if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
@@ -1465,17 +1475,43 @@ trait Authorize
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
-        $this->postPaymentAuthorizeSubscriptionProcessing($payment);
+        try
+        {
+            $this->postPaymentAuthorizeSubscriptionProcessing($payment);
+        }
+        catch (\Exception $ex)
+        {
+            //
+            // If an exception gets thrown here, it would basically mean that
+            // capture failed or updating subscription details failed.
+            // If capture failed, we should still return back success and
+            // handle capture failed scenario later somehow in charge class.
+            //
+            // Ideally, updating subscription details should never fail.
+            // In case it does fail, we return back success and handle updating
+            // the subscription details later somehow -- offline data correction.
+            //
+
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::SUBSCRIPTION_PROCESSING_FAILED,
+                [
+                    'payment_id' => $payment->getId()
+                ]);
+        }
 
         return $this->processAuthorizeResponse($payment);
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
     {
-        // TODO: Need to do proper exception handling in this flow.
-
-        // TODO: This function should be in a transaction because
-        // we update invoice billing period also.
+        //
+        // The following cannot be in a transaction because we run a capture flow
+        // here. We do some processing after the capture too. If something fails
+        // after capture, we should not roll back the capture status and other
+        // operations that we would have done as part of capture.
+        //
 
         if ($payment->hasSubscription() === false)
         {
@@ -1489,13 +1525,23 @@ trait Authorize
         if ($subscriptionStatus === Subscription\Status::CREATED)
         {
             $this->processNewSubscription($subscription, $payment);
+
+            //
+            // We update attributes like token and status, which are done outside
+            // of the handleCaptureSuccess flow. Hence, we need to save it here
+            // explicitly, to ensure that these are saved even if handleCaptureSuccess
+            // is not called.
+            //
+            $this->repo->saveOrFail($subscription);
         }
         else
         {
+            //
+            // We don't update any subscription attributes here. The ones which are updated,
+            // get saved in a transaction in handleCaptureSuccess function.
+            //
             $this->processAlreadyAuthenticatedSubscription($subscription, $payment);
         }
-
-        $this->repo->saveOrFail($subscription);
     }
 
     protected function processAlreadyAuthenticatedSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
@@ -1551,11 +1597,17 @@ trait Authorize
         //
         if ($authTxnCharge)
         {
-            // TODO: If the payment is not in captured state here,
-            // should we throw an exception?
-            // If we throw an exception here, it'll get handled as auth failure
-            // in Charge class. There, we would have to check if it's authorized
-            // but not captured and then set some error attributes.
+            if ($payment->isCaptured() === false)
+            {
+                throw new Exception\LogicException(
+                    'Payment should have been in captured state.',
+                    ErrorCode::SERVER_ERROR_SUBSCRIPTION_PAYMENT_NOT_CAPTURED,
+                    [
+                        'payment_id'        => $payment->getId(),
+                        'payment_status'    => $payment->getStatus(),
+                        'subscription_id'   => $subscription->getId(),
+                    ]);
+            }
 
             //
             // If this is auth txn charge, it means that start_at was null. This,
