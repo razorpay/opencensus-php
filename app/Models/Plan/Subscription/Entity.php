@@ -30,6 +30,12 @@ class Entity extends Base\PublicEntity
     const PAID_COUNT        = 'paid_count';
     const AUTH_ATTEMPTS     = 'auth_attempts';
     const ERROR_STATUS      = 'error_status';
+    //
+    // Upfront amount needs to be at a subscription level because
+    // the upfront amount can change based on the subscription period.
+    // For example, if the subscription is for 3 months, upfront amount can
+    // be 1000rs and if subscription is for 1yr, upfront amount can be 500rs.
+    //
     const UPFRONT_AMOUNT    = 'upfront_amount';
     const FAILED_AT         = 'failed_at';
     const AUTHENTICATED_AT  = 'authenticated_at';

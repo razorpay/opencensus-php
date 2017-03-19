@@ -43,7 +43,8 @@ class Service extends Base\Service
         {
             try
             {
-                $this->core->createInvoice($subscription);
+                $this->core->createInvoiceBeforeCharge($subscription);
+
                 $invoicesCreated += 1;
             }
             catch (\Exception $ex)

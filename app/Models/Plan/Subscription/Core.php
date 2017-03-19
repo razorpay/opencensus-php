@@ -93,21 +93,54 @@ class Core extends Base\Core
         }
     }
 
-    public function createInvoice(Entity $subscription)
+    public function createInvoiceBeforeCharge(Entity $subscription)
     {
-        $merchant = $subscription->merchant;
+        $this->repo->transaction(
+            function() use ($subscription)
+            {
+                $merchant = $subscription->merchant;
 
-        $invoiceInput = $this->getInvoiceInput($subscription);
+                //
+                // If first charge, we set the status to active.
+                // If not, the status would already be active or
+                // would be reset by some other flow (auth/capture).
+                //
+                if ($subscription->getPaidCount() === 0)
+                {
+                    $this->activateSubscription($subscription);
+                }
 
-        $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+                $invoiceInput = $this->getInvoiceInput($subscription);
 
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_INVOICE_CREATED,
-            [
-                'invoice_id' => $invoice->getId(),
-                'subscription_id' => $subscription->getId(),
-                'invoice_details' => $invoice->toArray(),
-            ]);
+                $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+
+                $this->trace->info(
+                    TraceCode::SUBSCRIPTION_INVOICE_CREATED,
+                    [
+                        'invoice_id' => $invoice->getId(),
+                        'subscription_id' => $subscription->getId(),
+                        'invoice_details' => $invoice->toArray(),
+                    ]);
+            });
+    }
+
+    protected function activateSubscription(Entity $subscription)
+    {
+        if ($subscription->getStatus() !== Status::AUTHENTICATED)
+        {
+            throw new LogicException(
+                'The status should have been authenticated since the subscription has not been paid even once.',
+                null,
+                [
+                    'status' => $subscription->getStatus(),
+                    'subscription_id' => $subscription->getId()
+                ]);
+        }
+
+        // TODO: Fire a webhook in sync for activate subscription -- otherwise charge webhook might go before this.
+
+        $subscription->setStatus(Status::ACTIVE);
+        $this->repo->saveOrFail($subscription);
     }
 
     /**
@@ -136,6 +169,8 @@ class Core extends Base\Core
 
         $lineItemAmount = & $invoiceInput[Invoice\Entity::LINE_ITEMS][0][LineItem\Entity::AMOUNT];
 
+        // TODO: Create a separate line_item for upfront amount
+        // instead of adding to the line_item itself.
         if ($subscription->getUpfrontAmount() !== null)
         {
             $lineItemAmount += $subscription->getUpfrontAmount();

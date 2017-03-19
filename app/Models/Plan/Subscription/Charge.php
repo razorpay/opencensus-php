@@ -112,6 +112,7 @@ class Charge extends Base\Core
                     'subscription_id'   => $subscription->getId(),
                 ]);
 
+            // TODO: Decide on what status to keep here. How to handle?
             $subscription->setStatus(Status::ON_HOLD);
             $subscription->setErrorStatus(Status::CAPTURE_FAILURE);
         }
@@ -137,15 +138,17 @@ class Charge extends Base\Core
 
         $authAttempts = $subscription->getAuthAttempts();
 
+        // TODO: Make max_auth_attempts configurable at a merchant level.
         if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
         {
-            $subscription->setStatus(Status::ON_HOLD);
+            $subscription->setStatus(Status::OVERDUE);
             $this->incrementChargeAtByOneDay($subscription);
         }
         else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
         {
-            $subscription->setStatus(Status::FAILED);
-            $subscription->setFailedAt(time());
+            // TODO: Make this merchant configurable. It can either
+            // go into on_hold or cancelled state.
+            $subscription->setStatus(Status::ON_HOLD);
 
             // TODO: Notify merchant about the failure.
         }
