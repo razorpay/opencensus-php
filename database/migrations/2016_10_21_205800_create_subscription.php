@@ -69,7 +69,7 @@ class CreateSubscription extends Migration
             $table->integer(Entity::CHARGE_AT)
                   ->nullable();
 
-            $table->integer(Entity::PROCESSED_AT)
+            $table->integer(Entity::ACTIVATED_AT)
                   ->nullable();
             $table->integer(Entity::CANCELLED_AT)
                   ->nullable();

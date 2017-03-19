@@ -145,7 +145,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $invoice = $this->getLastEntity('invoice', true);
         $order = $this->getLastEntity('order', true);
 
-        $this->assertEquals('processed', $subscription['status']);
+        $this->assertEquals('active', $subscription['status']);
         $this->assertEquals($payment['created_at'], $subscription['start_at']);
         $this->assertNotNull($subscription['end_at']);
         // Should be 90-92 days (3 months) ideally.
@@ -195,7 +195,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $token = $this->getLastEntity('token', true);
 
-        $this->assertEquals('processed', $subscription['status']);
+        $this->assertEquals('active', $subscription['status']);
         $this->assertEquals($token['id'], $subscription['token_id']);
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);

@@ -13,12 +13,15 @@ class Status
     // But, no charge has been made on this yet.
     const AUTHENTICATED     = 'authenticated';
 
+    // The last charge which was made on the subscription was successfully captured.
+    const ACTIVE            = 'active';
+
     // The auth transaction is complete and probably upfront amount has also been paid.
     // But, no charge has been made on this yet.
     // const ACTIVATED         = 'activated';
 
     // The last charge which was made on the subscription was successfully captured.
-    const PROCESSED         = 'processed';
+    // const PROCESSED         = 'processed';
     const ON_HOLD           = 'on_hold';
     const FAILED            = 'failed';
     const CANCELLED         = 'cancelled';

@@ -221,7 +221,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Subscription need not be updated if it's in created or processed state.
+     * Subscription need not be updated if it's in created or activated state.
      * That flow would be taken care by the normal subscription capture flow.
      *
      * Only if it's in on_hold state with capture_failure as error, we need to

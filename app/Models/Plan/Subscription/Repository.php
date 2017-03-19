@@ -12,7 +12,7 @@ class Repository extends Base\Repository
     public function getSubscriptionsToCharge()
     {
         return $this->getBaseSubscriptionsQuery()
-                    ->whereIn(Entity::STATUS, [Status::PROCESSED, Status::AUTHENTICATED])
+                    ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED])
                     ->whereNull(Entity::ENDED_AT)
                     ->where(Entity::AUTH_ATTEMPTS, 0)
                     ->get();

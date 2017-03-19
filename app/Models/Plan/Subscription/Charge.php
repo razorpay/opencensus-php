@@ -196,7 +196,7 @@ class Charge extends Base\Core
     {
         $plan = $subscription->plan;
 
-        $subscription->setStatus(Status::PROCESSED);
+        $subscription->setStatus(Status::ACTIVE);
 
         $this->resetErrorStatusForSuccessfulCapture($subscription, $capturedPayment);
 
@@ -215,7 +215,7 @@ class Charge extends Base\Core
 
         $this->setEndedAtIfApplicable($subscription);
 
-        $this->setProcessedAt($subscription, $capturedPayment);
+        $this->setActivatedAt($subscription, $capturedPayment);
 
         $this->sendInvoiceEmail($invoice);
     }
@@ -309,11 +309,11 @@ class Charge extends Base\Core
      * @param Entity $subscription
      * @param Payment\Entity $capturedPayment
      */
-    protected function setProcessedAt(Entity $subscription, Payment\Entity $capturedPayment)
+    protected function setActivatedAt(Entity $subscription, Payment\Entity $capturedPayment)
     {
         $capturedAt = $capturedPayment->getCaptureTimestamp();
 
-        $subscription->setProcessedAt($capturedAt);
+        $subscription->setActivatedAt($capturedAt);
     }
 
     protected function incrementPaidCount(Entity $subscription)

@@ -19,7 +19,7 @@ class Entity extends Base\PublicEntity
     const CURRENT_END       = 'current_end';
     const STATUS            = 'status';
     const ENDED_AT          = 'ended_at';
-    const PROCESSED_AT      = 'processed_at';
+    const ACTIVATED_AT      = 'activated_at';
     const QUANTITY          = 'quantity';
     const TOKEN_ID          = 'token_id';
     const NOTES             = 'notes';
@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
         self::AUTH_ATTEMPTS     => 0,
         self::UPFRONT_AMOUNT    => null,
         self::ERROR_STATUS      => null,
-        self::PROCESSED_AT      => null,
+        self::ACTIVATED_AT      => null,
         self::FAILED_AT         => null,
         self::CURRENT_START     => null,
         self::CURRENT_END       => null,
@@ -252,9 +252,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CURRENT_END, $currentEnd);
     }
 
-    public function setProcessedAt($processedAt)
+    public function setActivatedAt($activatedAt)
     {
-        $this->setAttribute(self::PROCESSED_AT, $processedAt);
+        $this->setAttribute(self::ACTIVATED_AT, $activatedAt);
     }
 
     public function setTotalCount($totalCount)

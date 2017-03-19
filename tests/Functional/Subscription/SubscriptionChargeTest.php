@@ -75,7 +75,7 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $chargedPayment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('processed', $subscription['status']);
+        $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
 
         $this->assertEquals('captured', $chargedPayment['status']);
