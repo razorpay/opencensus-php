@@ -6,7 +6,7 @@ use RZP\Models\Terminal\Entity as Terminal;
 use Illuminate\Database\Migrations\Migration;
 use RZP\Models\Gateway\Downtime\Entity as Downtime;
 
-class CreateGatewayAbsence extends Migration
+class CreateGatewayDowntime extends Migration
 {
     /**
      * Run the migrations.
