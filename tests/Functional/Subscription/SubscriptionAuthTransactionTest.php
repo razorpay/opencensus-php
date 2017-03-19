@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Subscription;
 
 use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
@@ -301,7 +302,36 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'plan_id' => $plan->getId(),
                 'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
                 'total_count' => 3,
-                'status' => 'authenticated',
+                'status' => 'cancelled',
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        try
+        {
+            $recurringPayment = $this->doAuthPayment($paymentRequest);
+        }
+        catch (LogicException $ex)
+        {
+            $this->assertEquals('Subscription is neither in created state nor has ever been authenticated.', $ex->getMessage());
+
+            return;
+        }
+
+        $this->assertTrue(false);
+    }
+
+    public function testSubscriptionAuthTxnWithExpiredState()
+    {
+        $plan = $this->fixtures->create('plan');
+
+        $subscription = $this->fixtures->create(
+            'subscription',
+            [
+                'plan_id' => $plan->getId(),
+                'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
+                'total_count' => 3,
+                'status' => 'expired',
             ]);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
@@ -312,7 +342,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('Payment cannot be authorized since subscription is not authenticated', $ex->getMessage());
+            $this->assertEquals('The subscription has been expired.', $ex->getMessage());
 
             return;
         }

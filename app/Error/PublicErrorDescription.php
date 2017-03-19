@@ -240,6 +240,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED                         = 'Payment cannot be authorized since subscription does not have any token associated';
     const BAD_REQUEST_SUBSCRIPTION_TOTAL_COUNT_EXCEEDED                         = 'Subscription has already reached its total count of charges';
     const BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_PAID                             = 'The invoice for the subscription is not yet paid';
+    const BAD_REQUEST_SUBSCRIPTION_EXPIRED                                      = 'The subscription has been expired.';
 
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';
