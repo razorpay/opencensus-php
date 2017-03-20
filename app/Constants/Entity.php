@@ -220,7 +220,6 @@ class Entity
         self::GROUP,
         self::ADMIN,
         self::ADMIN_TOKEN,
-        self::ACTION_COMMENT,
         self::IIN,
         self::FEATURE,
         self::METHODS,
