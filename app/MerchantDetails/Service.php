@@ -82,6 +82,7 @@ class Service extends Base\Service
             'bank_account_name'           => 2,
 
             'address_proof_url'           => 3,
+            'promoter_pan_url'            => 3,
     ];
 
     const UPLOAD_KEYS = [
@@ -93,6 +94,7 @@ class Service extends Base\Service
 
     const UPLOAD_KEYS_ACCOUNT = [
         'address_proof_url'    => 'address_proof',
+        'promoter_pan_url'     => 'promoter_pan_proof',
     ];
 
     const UPLOAD_DOCUMENT_ERRORS = [
@@ -104,6 +106,7 @@ class Service extends Base\Service
 
     const UPLOAD_DOCUMENT_ERRORS_ACCOUNT = [
         'address_proof'          => "Please upload bank account proof, as specified.",
+        'promoter_pan_proof'     => "Please upload PAN card scan",
     ];
 
     const PRE_SIGNUP_FIELDS = [
