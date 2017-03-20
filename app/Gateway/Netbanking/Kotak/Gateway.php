@@ -194,7 +194,7 @@ class Gateway extends Base\Gateway
 
         $expectedHash = $this->getHashOfArray($content);
 
-        if (hash_equals($expectedHash, $inputHash)  !== true)
+        if (hash_equals($expectedHash, $inputHash) !== true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Failed checksum verification');
@@ -249,7 +249,7 @@ class Gateway extends Base\Gateway
 
             if ($this->mode === Mode::TEST)
             {
-                $data['MerchantId'] = $this->getTestTPVMerchantId();
+                $data['MerchantId'] = $this->getTestTpvMerchantId();
             }
         }
 
@@ -340,7 +340,7 @@ class Gateway extends Base\Gateway
         return 'OSTEST';
     }
 
-    protected function getTestTPVMerchantId()
+    protected function getTestTpvMerchantId()
     {
         return 'OTTEST';
     }
@@ -351,13 +351,13 @@ class Gateway extends Base\Gateway
 
         if ($this->tpv === true)
         {
-            return $this->config['live_hash_secret_sec'];
+            return $this->config['live_hash_secret_tpv'];
         }
         else if (isset($this->input['merchant']))
         {
             if ($this->input['merchant']->isTPVRequired())
             {
-                return $this->config['live_hash_secret_sec'];
+                return $this->config['live_hash_secret_tpv'];
             }
         }
 
