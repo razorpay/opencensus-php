@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Checker;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\State;
@@ -28,7 +27,7 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        (new Action\Validator)->validateActionBelongsTAdminOrg($action, $admin);
+        (new Action\Validator)->validateActionBelongsToAdminOrg($action, $admin);
 
         $input[Entity::ACTION_ID] = $actionId;
 
@@ -41,6 +40,8 @@ class Service extends Base\Service
     {
         $checkerId = Entity::verifyIdAndStripSign($checkerId);
 
-        $this->repo->action_checker->findByIdAndActionId($checkerId, $actionId);
+        $checker = $this->repo->action_checker->findByIdAndActionId($checkerId, $actionId);
+
+        return $checker->toArrayPublic();
     }
 }
