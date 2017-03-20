@@ -551,18 +551,9 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $auth = ($payment->hasTransaction() === false);
-
         $feesSplit = new PublicCollection;
 
-        if ($auth === true)
-        {
-            list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
-        }
-        else
-        {
-            $txn = $txnCore->updateOnCapture($payment);
-        }
+        list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
 
         $payment->setServiceTax($txn->getServiceTax());
 

@@ -191,10 +191,18 @@ class Core extends Base\Core
         return true;
     }
 
-    protected function txnCreationFromPaymentOperation($payment)
+    protected function txnCreationFromPaymentOperation(Payment\Entity $payment)
     {
         $txn = new Transaction\Entity;
-        $txn->generateId();
+
+        if ($payment->hasTransaction() === true)
+        {
+            $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
+        }
+        else
+        {
+            $txn->generateId();
+        }
 
         list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
 
@@ -948,5 +956,36 @@ class Core extends Base\Core
         {
             $this->updateFeeCredits($txn);
         }
+    }
+
+    public function createTransactionForAuthAndCapture(Payment\Entity $payment)
+    {
+        $txn = new Transaction\Entity;
+
+        $txn->generateId();
+
+        $amount = $payment->getBaseAmount();
+
+        $txnData = [
+            Transaction\Entity::TYPE     => Transaction\Type::PAYMENT,
+            Transaction\Entity::CURRENCY => Currency\Currency::INR,
+            Transaction\Entity::CHANNEL  => Transaction\Channel::KOTAK,
+            Transaction\Entity::AMOUNT   => $amount,
+        ];
+
+        $txn->fill($txnData);
+
+        $txn->sourceAssociate($payment);
+
+        $txn->merchant()->associate($payment->merchant);
+
+        $this->repo->saveOrFail($txn);
+
+        $this->trace->info(
+            TraceCode::TRANSACTION_CREATED_FOR_AUTH_CAPTURE,
+            [
+                'payment_id'     => $payment->getId(),
+                'transaction_id' => $txn->getId(),
+            ]);
     }
 }
