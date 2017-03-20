@@ -1864,8 +1864,10 @@ class Service extends Base\Service
      */
     public function saveScreenshot($id, $input)
     {
-        $keys = MerchantDetails\Entity::getUrlKeys();
+        $keys = (new MerchantDetails\Service)->getUrlKeys();
+
         $found = false;
+
         $creevey = new Creevey($id);
 
         foreach ($keys as $key)
@@ -1873,12 +1875,12 @@ class Service extends Base\Service
             if (\Input::hasFile($key) and $input[$key]->isValid())
             {
                 $found = true;
+
                 $localFilePath = $input[$key]->getRealPath();
 
                 try
                 {
-                    $creevey->compressAndSave($key, $localFilePath,
-                        $input[$key]->getClientOriginalName());
+                    $creevey->compressAndSave($key, $localFilePath, $input[$key]->getClientOriginalName());
                 }
                 catch (\Exception $e)
                 {
@@ -1924,7 +1926,8 @@ class Service extends Base\Service
         $s3 = $this->getS3Client();
 
         $bucket = env('AWS_ACTIVATION_BUCKET');
-        $keys = MerchantDetails\Entity::getUrlKeys();
+
+        $keys = (new MerchantDetails\Service)->getUrlKeys();
 
         $links = [];
 
