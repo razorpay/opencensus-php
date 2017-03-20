@@ -52,7 +52,7 @@ class Library
             $futureRun = Holidays::getNextWorkingDay($futureRun);
         }
 
-        if ($schedule->isHourly() === true)
+        if ($schedule->isHourly() === false)
         {
             // set the hour for future run from schedule
             $futureRun->hour($schedule->getHour());
