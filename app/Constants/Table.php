@@ -70,7 +70,6 @@ class Table
     const WORKFLOW              = 'workflows';
     const WORKFLOW_STEP         = 'workflow_steps';
     const WORKFLOW_ACTION       = 'workflow_actions';
-    const ACTION_PAYLOAD        = 'action_payloads';
     const ACTION_COMMENT        = 'action_comments';
     const ACTION_STATE          = 'action_state';
     const ACTION_CHECKER        = 'action_checker';

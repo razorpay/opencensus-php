@@ -455,6 +455,10 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+
+        'action_create'                           => ['post',     'workflows/actions',                              'WorkflowController@postCreateAction'                               ],
+        'action_fetch_by_id'                      => ['get',      'workflows/actions/{id}',                         'WorkflowController@fetchDiffById'                                  ],
+        'action_execute'                          => ['post',     'workflows/actions/{id}',                         'WorkflowController@postExecuteAction'                              ],
     );
 
     public static $public = array(
@@ -599,6 +603,9 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
+        'action_create',
+        'action_fetch_by_id',
+        'action_execute',
     );
 
     public static $internal = array(
@@ -1063,6 +1070,14 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+    ];
+
+    /**
+     * Routes for all maker & checker actions.
+     * Its the map of the entity vs route name
+     */
+    public static $workflowRoutes = [
+       'merchant_edit_email' => 'merchant',
     ];
 
     const RAZORPAYJS_ROUTES = array(

@@ -261,10 +261,8 @@ class TraceCode
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
 
-    /*
-     * Gateway component error messages
-     */
 
+    // Gateway component error messages
     const GATEWAY_RESPONSE                          = 'GATEWAY_RESPONSE';
     const GATEWAY_ENROLL_REQUEST                    = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE                   = 'GATEWAY_ENROLL_RESPONSE';
@@ -619,9 +617,8 @@ class TraceCode
     const REMOVE_GATEWAY_PRIORITY_REQUEST               = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const REDIS_DATA_FETCHED                            = 'REDIS_DATA_FETCHED';
 
-
     // Trace codes for gateway
-    const FIRST_DATA_PARES_MISSING                  = 'FIRST_DATA_PARES_MISSING';
+    const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
