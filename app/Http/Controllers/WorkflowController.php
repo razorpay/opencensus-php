@@ -10,8 +10,6 @@ use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
-    protected $action;
-
     public function postCreateAction()
     {
         $input = Request::all();
