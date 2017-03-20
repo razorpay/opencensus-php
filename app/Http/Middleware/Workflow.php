@@ -43,9 +43,9 @@ class Workflow
         if (($this->config->get('database.es_workflow_action_mock') === false) and
             ($entity !== null))
         {
-            $pathParams = $this->router->current()->parameters();
+            $routeParams = $this->router->current()->parameters();
 
-            $entityId = array_values($pathParams)[0];
+            $entityId = array_values($routeParams)[0];
 
             $params = $this->createMakerEntity($request, $entity, $entityId);
 
@@ -81,19 +81,19 @@ class Workflow
 
         $controller = $this->router->currentRouteAction();
 
-        $pathParams = $this->router->current()->parameters();
+        $routeParams = $this->router->current()->parameters();
 
         $differEntity = [
-           Differ\Entity::ENTITY_NAME => $entity,
-           Differ\Entity::ENTITY_ID   => $entityId,
-           Differ\Entity::ACTOR       => $request->header(self::USER_HEADER),
-           Differ\Entity::TYPE        => Differ\Type::MAKER,
-           Differ\Entity::URL         => $request->getUri(),
-           Differ\Entity::PATH_PARAMS => $pathParams,
-           Differ\Entity::METHOD      => $request->getMethod(),
-           Differ\Entity::PAYLOAD     => $input,
-           Differ\Entity::CONTROLLER  => $controller,
-           Differ\Entity::ROUTE       => $routeName,
+           Differ\Entity::ENTITY_NAME  => $entity,
+           Differ\Entity::ENTITY_ID    => $entityId,
+           Differ\Entity::ACTOR        => $request->header(self::USER_HEADER),
+           Differ\Entity::TYPE         => Differ\Type::MAKER,
+           Differ\Entity::URL          => $request->getUri(),
+           Differ\Entity::ROUTE_PARAMS => $routeParams,
+           Differ\Entity::METHOD       => $request->getMethod(),
+           Differ\Entity::PAYLOAD      => $input,
+           Differ\Entity::CONTROLLER   => $controller,
+           Differ\Entity::ROUTE        => $routeName,
         ];
 
         return $differEntity;
