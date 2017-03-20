@@ -477,11 +477,6 @@ trait Refund
                 return;
             }
 
-            if (($paymentId === '7L2mx2maYvWr9d') and ($refAmount === 74500))
-            {
-                return;
-            }
-
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\GatewayTimeoutException $ex)
