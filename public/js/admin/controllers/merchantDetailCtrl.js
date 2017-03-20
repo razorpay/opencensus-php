@@ -1078,11 +1078,16 @@ app.controller('MerchantDetailCtrl', [
     $scope.loading = true;
     $scope.pricing_plans = {};
     $scope.pricing_plan_id = current;
-    var request = $http.get('/admin/pricing/list');
+    var params = {
+      route_name: 'pricing_get_merchant_plans'
+    };
+    var request = $http.get('/admin/generic', {
+      params: params
+    });
     request.success(function (data) {
       if (data.success) {
-        for (var key in data.data) {
-          var value  = data.data[key];
+        for (var key in data.data.items) {
+          var value  = data.data.items[key];
           $scope.pricing_plans[value.id] = value.name;
         }
         $scope.loading = false;

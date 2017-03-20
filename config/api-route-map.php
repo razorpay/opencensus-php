@@ -165,6 +165,7 @@ return [
             'routeName' => 'post_keys'
         ],
 
+        // Admin Routes
         // Pricing
         'pricing_get_merchant_plans'        => 'pricing/merchants',
         'pricing_get_plan'                  => 'pricing/{id}',
