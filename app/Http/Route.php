@@ -408,6 +408,9 @@ final class Route
         'action_checker_create'                   => ['post',     'w-action/{id}/checker',                          'WorkflowController@postActionChecker'                              ],
         'action_checker_multiple'                 => ['get',      'w-action/{id}/checkers',                         'WorkflowController@getActionCheckerMultiple'                       ],
         'action_checker_get'                      => ['get',      'w-action/{id}/checker/{checkerId}',              'WorkflowController@getActionChecker'                               ],
+        'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
+        'workflow_get'                            => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
+        'workflow_step_create'                    => ['post',     'workflows/{id}/steps',                           'WorkflowController@createWorkflowStep'                             ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],

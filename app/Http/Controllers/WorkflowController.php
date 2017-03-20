@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
@@ -23,11 +24,40 @@ class WorkflowController extends Controller
         $input = Request::all();
 
         $data = (new Checker\Service)->fetchMultiple($id, $input);
+
+        return ApiResponse::json($data);
     }
 
     public function getActionChecker(string $id, string $checkerId)
     {
         $data = (new Checker\Service)->get($id, $checkerId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createWorkflow()
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Service)->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getWorkflow(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Service)->get($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createWorkflowStep(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Service)->create($id, $input);
 
         return ApiResponse::json($data);
     }
