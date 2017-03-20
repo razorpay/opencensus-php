@@ -85,8 +85,11 @@ class PdfGenerator extends Base\Core
     {
         $options = [
             'print-media-type',
-            'ignoreWarnings' => false,
-            'encoding'       => 'UTF-8',
+            'footer-font-size'  => '9',
+            'footer-center'     => 'Page [page] of [topage]',
+            'dpi'               => 380,
+            'ignoreWarnings'    => false,
+            'encoding'          => 'UTF-8',
         ];
 
         $pdf = (new Pdf($options))->addPage($html);
