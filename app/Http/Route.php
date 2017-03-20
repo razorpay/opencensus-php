@@ -449,6 +449,10 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+
+        // Dummy routes to test Account Auth
+        'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
+        'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
     );
 
     public static $public = array(
@@ -764,6 +768,7 @@ final class Route
         'schedule_fetch',
         'schedule_fetch_multiple',
         'schedule_migration',
+        'internal_dummy_account_test',
     );
 
     public static $proxy = array(
@@ -866,6 +871,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'admin_dummy_account_test',
     ];
 
     public static $adminPermission = [
@@ -903,6 +909,7 @@ final class Route
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
+        'admin_dummy_account_test'       => [Permission::VIEW_MERCHANT],
     ];
 
     public static $direct = array(
@@ -1055,6 +1062,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'admin_dummy_account_test',
     ];
 
     const RAZORPAYJS_ROUTES = array(
