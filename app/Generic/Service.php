@@ -31,7 +31,9 @@ class Service extends Base\Service
 
         $input['token'] = session('api_admin.token'); // admin auth token
 
-        $input['file'] = null;
+        $input['file'] = Input::file('file') ?? null;
+
+        $input['file_name'] = Input::get('file_name') ?? '';
 
         $autoBuildQuery = false;
 
