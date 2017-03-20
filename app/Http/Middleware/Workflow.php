@@ -32,6 +32,12 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
+        // Middleware is only used for workflow routes
+        if (in_array($routeName, Route::$workflowRoutes, true) === false)
+        {
+            return $next($request);
+        }
+
         $entity = $this->getEntityName($routeName);
 
         $pathParams = $this->router->current()->parameters();
