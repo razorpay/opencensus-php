@@ -1820,3 +1820,6 @@ ALTER TABLE transfers
 
 ALTER TABLE reversals
     ADD COLUMN notes TEXT AFTER currency;
+
+DELETE FROM migrations WHERE migration = '2016_08_05_131651_create_gateway_absence';
+DROP TABLE `gateway_status_absence`;
