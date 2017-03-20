@@ -470,18 +470,6 @@ trait Refund
                 return;
             }
 
-            // AirtelMoney refunds which failed because they upgraded their
-            // wallet. We have to create gateway refund records later.
-            if (($paymentId === '6wbhijioS7aZRF') and ($refAmount === 19724))
-            {
-                return;
-            }
-
-            if (($paymentId === '7L2mx2maYvWr9d') and ($refAmount === 74500))
-            {
-                return;
-            }
-
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\GatewayTimeoutException $ex)
