@@ -674,4 +674,9 @@ class Service extends Base\Service
     {
         return $this->linked_account;
     }
+
+    public function getUrlKeys()
+    {
+        return self::$WEBSITE_URLS;
+    }
 }
