@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Comment;
 
-use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Base;
 
@@ -14,10 +13,10 @@ class Repository extends Base\Repository
         Entity::ACTION_ID      => 'sometimes|string|size:20',
     ];
 
-    public function fetchByActionId(string $id)
+    public function fetchByActionId(string $actionId)
     {
         return $this->newQuery()
-                    ->where(Entity::ACTION_ID, '=', $id)
+                    ->where(Entity::ACTION_ID, '=', $actionId)
                     ->get();
     }
 }

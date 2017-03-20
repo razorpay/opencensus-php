@@ -451,7 +451,7 @@ final class Route
         'action_create'                           => ['post',     'workflows/actions',                              'WorkflowController@postCreateAction'                               ],
         'action_fetch_by_id'                      => ['get',      'workflows/actions/{id}',                         'WorkflowController@fetchDiffById'                                  ],
         'action_execute'                          => ['post',     'workflows/actions/{id}',                         'WorkflowController@postExecuteAction'                              ],
-        'action_comment_create'                   => ['post',     'workflows/actions/{id}/comments',                'WorkflowController@postCreateActionComment'                        ],
+        'action_comment_create'                   => ['post',     'workflows/actions/{id}/comments',                'WorkflowController@postActionComment'                              ],
         'action_comment_fetch'                    => ['get',      'workflows/actions/{id}/comments',                'WorkflowController@getActionComments'                              ]
     );
 

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Comment;
 
-use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Base;
 

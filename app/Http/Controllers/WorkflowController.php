@@ -17,8 +17,6 @@ class WorkflowController extends Controller
         parent::__construct();
 
         $this->differ = new Differ\Service;
-
-        $this->comment = new Comment\Service;
     }
 
     public function postCreateAction()
@@ -56,18 +54,18 @@ class WorkflowController extends Controller
         return App::make($controller)->$functioName($entityId);
     }
 
-    public function postCreateActionComment(string $actionId)
+    public function postActionComment(string $actionId)
     {
         $input = Request::all();
 
-        $result = $this->comment->create($actionId, $input);
+        $result = (new Comment\Service)->create($actionId, $input);
 
         return ApiResponse::json($result);
     }
 
     public function getActionComments(string $actionId)
     {
-        $result = $this->comment->fetchByActionId($actionId);
+        $result = (new Comment\Service)->fetchByActionId($actionId);
 
         return ApiResponse::json($result);
     }
