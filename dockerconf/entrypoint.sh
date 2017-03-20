@@ -1,31 +1,33 @@
 #!/bin/bash
 
-echo "Starting Xvfb"
-Xvfb :0 -ac -screen 0 1280x800x24 &
+# Fix permissions
+echo  "$date Fix permissions"
+cd /app/ && chmod 777 -R storage
+echo "$date Configuring App"
 
-export DISPLAY=:0
-export CHROMIUM_BIN=/usr/bin/chromium
+yarn install
+gulp
+# Copy config
+cp dockerconf/dashboard.conf /etc/nginx/conf.d/dashboard.conf && \
+cp environment/.env.example environment/.env.dev_docker && \
+cp environment/.env.example environment/.env.testing_docker && \
+cp environment/env.sample.php environment/env.php && \
+sed -i "s/dev/dev_docker/g" environment/env.php
 
-export DB_MYSQL_HOST=localhost
-export DB_MYSQL_PORT=3306
-export DB_MYSQL_DATABASE=dashboard
-export DB_MYSQL_USERNAME=root
-export DB_MYSQL_PASSWORD=
+echo "$date Memory Limit"
+## This is a bad workaround for increasing php's memory to to 3G enable running tests locally
+## Mac's sed idiosyncrasies :(
+echo 'memory_limit = 128M' | sed -E 's/memory_limit\s*=\s*\d*M/memory_limit = 3048M/g' /etc/php7/php.ini > /tmp/php.ini
+mv /tmp/php.ini /etc/php7/php.ini
 
-echo "Starting selenium server"
-/selenium &> /dev/null &
 
-# echo "Starting vnc server"
-# x11vnc &> /dev/null &
+echo "$date Starting Nginx"
+export PATH=$PATH:/app/
 
-# echo "Starting fluxbox"
-# fluxbox &> /dev/null &
+echo "$date Nginx"
+mkdir /tmp/run
+chown 0775 /tmp/run/
+/usr/sbin/php-fpm7
+/usr/sbin/nginx -g 'daemon off;'
 
-echo "Starting mysql"
-service mysql start
 
-echo "creating db"
-mysql -e "CREATE DATABASE IF NOT EXISTS dashboard;"
-
-echo "Executing command $@"
-exec "$@"

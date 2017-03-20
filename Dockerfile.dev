@@ -1,0 +1,13 @@
+FROM razorpay/docker:base-nginx-php7-yarn
+
+VOLUME ["/app"]
+
+RUN chown -R nginx.nginx /app
+
+COPY ./dockerconf/entrypoint.sh /entrypoint.sh
+
+WORKDIR /app
+
+EXPOSE 80
+
+ENTRYPOINT ["/entrypoint.sh"]

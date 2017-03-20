@@ -1,0 +1,39 @@
+version: '2'
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: razorpay:dashboard
+    volumes:
+     - .:/app
+    links:
+      - dashboard_db
+      - dashboard_cache
+    ports:
+      - 38080:80
+    depends_on:
+      - dashboard_db
+      - dashboard_cache
+    environment:
+     DB_MYSQL_HOST: dashboard_db
+     DB_MYSQL_PORT: 33306
+     DB_MYSQL_DATABASE: dashboard
+     DB_MYSQL_USERNAME: dashboard_user
+     DB_MYSQL_PASSWORD: 123
+     REDIS_HOST: dashboard_cache
+     BASE_URL: http://dashboard.razorpay.dev:38080
+     API_URL: "https://beta-api.razorpay.com/v1/"
+  dashboard_db:
+    image: mysql:5.6
+    ports:
+      - 33306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: dashboard
+      MYSQL_USER: dashboard_user
+      MYSQL_PASSWORD: 123
+  dashboard_cache:
+    image: redis:2.8
+    ports:
+      - 36379:6379
