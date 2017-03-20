@@ -374,6 +374,10 @@ class PublicErrorDescription
 
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                 = 'Es debug method is not valid';
 
+    const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                 = 'Incomplete data for force authorization';
+
+    const BAD_REQUEST_FILE_NOT_FOUND                                            = 'There was error while retrieving the file';
+
     // Workflow Related Errors
     const BAD_REQUEST_ACTION_INVALID_TYPE                                       = 'The given action type is not valid';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                     = 'The given action method is not valid';
