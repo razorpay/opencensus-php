@@ -94,8 +94,8 @@ trait Capture
             ];
 
             $this->app['segment']->trackPayment($payment,
-                                                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
-                                                $customProperties);
+                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
+                $customProperties);
 
             return false;
         }

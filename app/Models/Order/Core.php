@@ -43,6 +43,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($order);
 
+        $this->trace->info(
+            TraceCode::ORDER_CREATED,
+            ['order_id' => $order->getId()]
+        );
+
         return $order;
     }
 
