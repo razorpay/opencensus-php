@@ -358,7 +358,9 @@ class AdminController extends Controller
     public function saveMerchantScreenshot($id)
     {
         $input = \Input::all();
+
         $error = (new Admin\Service)->saveScreenshot($id, $input);
+
         return AppResponse::jsonResponse($error);
     }
 
