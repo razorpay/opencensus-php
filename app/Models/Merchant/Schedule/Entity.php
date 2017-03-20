@@ -6,7 +6,11 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
+    const ENTITY_ID         = 'entity_id';
+    const ENTITY_TYPE       = 'entity_type';
+    const TYPE              = 'type';
     const METHOD            = 'method';
     const SCHEDULE_ID       = 'schedule_id';
 
@@ -21,6 +25,9 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::TYPE,
         self::METHOD,
         self::SCHEDULE_ID,
     ];
@@ -28,6 +35,9 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::MERCHANT_ID,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE,
+        self::TYPE,
         self::METHOD,
         self::SCHEDULE_ID
     ];
@@ -41,6 +51,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function entity()
+    {
+        return $this->morphTo();
+    }
+
     public function schedule()
     {
         return $this->belongsTo('RZP\Models\Schedule\Entity');
@@ -49,6 +64,16 @@ class Entity extends Base\PublicEntity
     public function getMethod()
     {
         return $this->getAttribute(self::METHOD);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
     }
 
     public function getScheduleId()

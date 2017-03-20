@@ -25,6 +25,12 @@ class CreateMerchantSchedules extends Migration
 
             $table->char(MerchantSchedule::MERCHANT_ID, Merchant::ID_LENGTH);
 
+            $table->char(MerchantSchedule::ENTITY_ID, MerchantSchedule::ID_LENGTH);
+
+            $table->char(MerchantSchedule::ENTITY_TYPE, 20);
+
+            $table->char(MerchantSchedule::TYPE, 20);
+
             $table->char(MerchantSchedule::METHOD, 20)
                   ->nullable();
 
