@@ -46,7 +46,7 @@ class WorkflowController extends Controller
 
         $controller = App::make($controller);
 
-        return call_user_func_array([$controller, $functionName], array_values($routeParams));
+        return App::call([$controller, $functionName], array_values($pathParams));
     }
 
     public function postActionChecker(string $id)
