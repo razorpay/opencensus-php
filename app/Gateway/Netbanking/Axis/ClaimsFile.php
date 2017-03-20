@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Axis;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
+use RZP\Models\FileStore;
 
 class ClaimsFile extends Base\RefundFile
 {
@@ -26,16 +27,21 @@ class ClaimsFile extends Base\RefundFile
     {
         list($txt, $totalAmount) = $this->getClaimsData($input);
 
-        $name = $this->getFileToWriteName();
+        $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $filePath = $this->writeToTextFile($txt);
+        $creator = $this->createFile(
+            FileStore\Format::TXT,
+            $txt,
+            $fileName,
+            FileStore\Type::AXIS_NETBANKING_CLAIMS
+        );
 
-        $fileFullPath = $this->getFullFilePath($name);
+        $file = $creator->get();
 
-        return [$totalAmount, $fileFullPath];
+        return [$totalAmount, $file['local_file_path']];
     }
 
-    protected function getClaimsData($input)
+    protected function getClaimsData(array $input)
     {
         $totalAmount = 0;
 
@@ -95,6 +101,6 @@ class ClaimsFile extends Base\RefundFile
             return static::$fileToWriteName . '_' . $time . '_' . $this->mode . '_1';
         }
 
-        return static::$fileToWriteName.'_'.$time.'_1';
+        return static::$fileToWriteName . '_' . $time . '_1';
     }
 }

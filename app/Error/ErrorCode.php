@@ -496,4 +496,7 @@ class ErrorCode
 
     // Error code for data missing during force authorize flow
     const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                     = 'BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING';
+
+    // File store
+    const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
 }

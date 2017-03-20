@@ -96,6 +96,13 @@ class ErrorCodes
 
         'N:100'    => 'Internal Error on FirstData side, contact pghelpdesk with payment id',
         'N:5003'   => 'The order already exists in the database.',
+        'N:-100'   => 'Internal error',
+        'N:-43232' => 'Card function not supported',
+        'N:02'     => 'This transaction is already in process or already processed',
+        'N:03'     => 'Invalid merchant',
+        'N:05'     => 'Do not honour',
+        'N:39'     => 'No credit account',
+        'N:42'     => 'No universal account',
         'N:tmout'  => 'Gateway timed out',
     ];
 
@@ -189,6 +196,13 @@ class ErrorCodes
 
         'N:100'    => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
         'N:5003'   => ErrorCode::BAD_REQUEST_ORDER_EXISTS,
+        'N:02'     => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
+        'N:03'     => ErrorCode::BAD_REQUEST_MERCHANT_INVALID,
+        'N:05'     => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+        'N:39'     => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+        'N:42'     => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
+        'N:-100'   => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        'N:-43232' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_NOT_PERMITTED_TXN,
         'N:tmout'  => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
     ];
 
@@ -196,6 +210,7 @@ class ErrorCodes
         // Internal Error
         // FirstData is down, and should be notified with the order id
         'N:100',
+        'N:-100',
 
         // terminal_state_code error
         // Usually happens when Rupay/Maestro are not enabled for the terminal

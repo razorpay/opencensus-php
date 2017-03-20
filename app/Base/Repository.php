@@ -85,6 +85,21 @@ class Repository extends \Razorpay\Spine\Repository
         return $query->findOrFailPublic($id, $columns);
     }
 
+    public function findWithRelations(
+        string $id,
+        array $relations = [],
+        array $columns = array('*'))
+    {
+        $query = $this->newQuery();
+
+        if (empty($relations) === false)
+        {
+            $query->with($relations);
+        }
+
+        return $query->find($id, $columns);
+    }
+
     public function findMany($ids, $columns = array('*'))
     {
         return $this->newQuery()->findMany($ids, $columns);

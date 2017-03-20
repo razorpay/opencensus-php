@@ -461,6 +461,17 @@ class Gateway
         return self::$walletToGatewayMap[$wallet];
     }
 
+    public static function getWalletForGateway($gateway)
+    {
+        if (in_array($gateway, self::$methodMap[Method::WALLET]) === false)
+        {
+            throw new Exception\LogicException(
+                'Unknown wallet gateway. Gateway: ' . $gateway);
+        }
+
+        return array_flip(self::$walletToGatewayMap)[$gateway];
+    }
+
     public static function validateGateway($gateway)
     {
         if (self::isValidGateway($gateway) === false)

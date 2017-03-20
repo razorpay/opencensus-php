@@ -375,4 +375,6 @@ class PublicErrorDescription
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                 = 'Es debug method is not valid';
 
     const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                 = 'Incomplete data for force authorization';
+
+    const BAD_REQUEST_FILE_NOT_FOUND                                            = 'There was error while retrieving the file';
 }

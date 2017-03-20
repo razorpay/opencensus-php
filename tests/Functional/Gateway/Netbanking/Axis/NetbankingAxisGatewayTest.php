@@ -210,6 +210,26 @@ class NetbankingAxisGatewayTest extends TestCase
             });
     }
 
+    /**
+     * In some cases when authorize was a failure,
+     * verify returns a null response
+     * We expect a status_match
+     */
+    public function testAuthFailedVerifyNullResponse()
+    {
+        $this->testFailedAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockVerifyNullResponse();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertArraySelectiveEquals($data, $verify);
+    }
+
     // Auth fails but verify shows success
     public function testAuthFailedVerifySuccess()
     {
@@ -402,6 +422,15 @@ class NetbankingAxisGatewayTest extends TestCase
             function(& $content, $action = null)
             {
                 $content['PaymentStatus'] = 'F';
+            });
+    }
+
+    protected function mockVerifyNullResponse()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content = "";
             });
     }
 
