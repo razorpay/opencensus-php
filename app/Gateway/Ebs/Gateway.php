@@ -74,16 +74,7 @@ class Gateway extends Base\Gateway
 
     protected function setReferer($terminal, array $input)
     {
-        $referer = $this->app['config']->get('app.url');
-
-        if ($terminal->isShared() === false)
-        {
-            $merchant = $input['merchant'];
-
-            $referer = $merchant->getWebsite();
-        }
-
-        $this->referer = $referer;
+        $this->referer = $this->app['config']->get('app.url');
     }
 
     public function capture(array $input)
