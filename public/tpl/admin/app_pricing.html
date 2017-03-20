@@ -24,7 +24,7 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in pricing_plans">
-            <td>{{row.id}}</td>
+            <td><a ui-sref="app.pricingdetail({id:row.id})" target="_blank">{{row.id}}</a></td>
             <td>{{row.name}}</td>
             <td>{{row.count}}</td>
             <td>
