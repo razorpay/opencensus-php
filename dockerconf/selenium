@@ -1,1 +1,0 @@
-java -Dwebdriver.chrome.driver=/usr/lib/chromium/chromedriver -jar /`ls / | grep selenium-server` &> /dev/null
