@@ -16,31 +16,36 @@ class Entity
     // Core entities
     //
 
-    const P2P                   = 'p2p';
-    const VPA                   = 'vpa';
     const IIN                   = 'iin';
     const KEY                   = 'key';
+    const P2P                   = 'p2p';
+    const VPA                   = 'vpa';
     const CARD                  = 'card';
     const ITEM                  = 'item';
+    const BATCH                 = 'batch';
+    const OFFER                 = 'offer';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
-    const BATCH                 = 'batch';
+    const COUPON                = 'coupon';
     const DEVICE                = 'device';
+    const PAYOUT                = 'payout';
     const REFUND                = 'refund';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
-    const METHODS               = 'methods';
-    const PRICING               = 'pricing';
-    const PAYMENT               = 'payment';
     const FEATURE               = 'feature';
-    const WEBHOOK               = 'webhook';
     const INVOICE               = 'invoice';
-    const SCHEDULE              = 'schedule';
+    const METHODS               = 'methods';
+    const PAYMENT               = 'payment';
+    const PRICING               = 'pricing';
+    const WEBHOOK               = 'webhook';
     const EMI_PLAN              = 'emi_plan';
-    const MERCHANT              = 'merchant';
-    const TERMINAL              = 'terminal';
     const CUSTOMER              = 'customer';
+    const MERCHANT              = 'merchant';
+    const REVERSAL              = 'reversal';
+    const SCHEDULE              = 'schedule';
+    const TERMINAL              = 'terminal';
+    const TRANSFER              = 'transfer';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
     const ADJUSTMENT            = 'adjustment';
@@ -50,33 +55,19 @@ class Entity
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
-    const TERMINAL_ACTION       = 'terminal_action';
-    const GATEWAY_ABSENCE       = 'gateway_absence';
     const MERCHANT_DETAIL       = 'merchant_detail';
-    const BATCH_SETTLEMENT      = 'batch_settlement';
+    const TERMINAL_ACTION       = 'terminal_action';
+    const CUSTOMER_BALANCE      = 'customer_balance';
+    const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const MERCHANT_SCHEDULE     = 'merchant_schedule';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
-    const TERMINAL_ANALYTICS    = 'terminal_analytics';
-    const ORG                   = 'org';
-    const ORG_HOSTNAME          = 'org_hostname';
-    const ROLE                  = 'role';
-    const PERMISSION            = 'permission';
-    const GROUP                 = 'group';
-    const ADMIN                 = 'admin';
-    const ADMIN_TOKEN           = 'admin_token';
     const SETTLEMENT_DETAILS    = 'settlement_details';
-    const TRANSFER              = 'transfer';
-    const REVERSAL              = 'reversal';
-    const CUSTOMER_BALANCE      = 'customer_balance';
+    const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
-    const OFFER                 = 'offer';
-    const COUPON                = 'coupon';
-    const PAYOUT                = 'payout';
+    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
 
-    //
     // Gateway entities
-    //
-
     const EBS                   = 'ebs';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
@@ -108,11 +99,20 @@ class Entity
     const WALLET_JIOMONEY       = 'wallet_jiomoney';
     const WALLET_OPENWALLET     = 'wallet_openwallet';
 
+    // heimdal
+    const ORG                   = 'org';
+    const ORG_HOSTNAME          = 'org_hostname';
+    const ROLE                  = 'role';
+    const PERMISSION            = 'permission';
+    const GROUP                 = 'group';
+    const ADMIN                 = 'admin';
+    const ADMIN_TOKEN           = 'admin_token';
+
     public static $namespace = [
+        self::IIN                   => \RZP\Models\Card\IIN::class,
         self::P2P                   => \RZP\Models\P2p::class,
         self::VPA                   => \RZP\Models\Upi\Vpa::class,
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
-        self::IIN                   => \RZP\Models\Card\IIN::class,
         self::OFFER                 => \RZP\Models\Offer::class,
         self::ORDER                 => \RZP\Models\Order::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
@@ -133,14 +133,15 @@ class Entity
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
-        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
-        self::BATCH_SETTLEMENT      => \RZP\Models\Settlement\Batch::class,
+        self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
         self::MERCHANT_SCHEDULE     => \RZP\Models\Merchant\Schedule::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
+        self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
+        self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
 
         // gateways
         self::EBS                   => \RZP\Gateway\Ebs::class,

@@ -3,23 +3,20 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-use RZP\Base\RuntimeManager;
+
 use RZP\Constants\Mode;
-use RZP\Dashboard\Dashboard;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Card;
-use RZP\Models\Payment;
-use RZP\Models\Settlement;
-use RZP\Models\Base\Traits\BatchSettlementTrait;
-use RZP\Models\Settlement\Kotak;
-use RZP\Models\Transaction;
+use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
+use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
+use RZP\Models\FundTransfer\Kotak;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 
 class Processor extends Base\Core
 {
-    use BatchSettlementTrait;
+    use SettlementTrait;
+    use BatchFundTransferTrait;
 
     protected $setlTime;
 
@@ -28,6 +25,8 @@ class Processor extends Base\Core
     protected $mutex;
 
     const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
+
+    const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY';
 
     const MUTEX_LOCK_TIMEOUT    = 900;
 
@@ -38,49 +37,216 @@ class Processor extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function process(array $input, $channel)
+    public function processFailedSettlements(array $input)
     {
-        $this->increaseAllowedSystemLimits();
+        $this->preSettlementProcessing($input);
 
-        $this->preSettlementProcessing($input, $channel);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements();
 
-        list($shouldProcess, $message) = $this->shouldProcessSettlements();
-
-        if ($shouldProcess === false)
+        if ($shouldProcess === true)
         {
-            return $message;
+            $data = $this->mutex->acquireAndRelease(
+                self::MUTEX_RETRY_RESOURCE,
+                function () use ($input)
+                {
+                    return $this->retryProcessFailedSettlements();
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
-
-        $data = $this->mutex->acquireAndRelease(
-            self::MUTEX_RESOURCE,
-            function () use ($input, $channel, $schedule)
-            {
-                return $this->processSettlements($input, $channel);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $data;
     }
 
-    protected function increaseAllowedSystemLimits()
+    public function process(array $input, $channel)
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        $this->preSettlementProcessing($input);
 
-        RuntimeManager::setTimeLimit(300);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements();
+
+        if ($shouldProcess === true)
+        {
+            $data = $this->mutex->acquireAndRelease(
+                self::MUTEX_RESOURCE,
+                function () use ($channel)
+                {
+                    return $this->processSettlements($channel);
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+
+        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
+
+        $schedules->callOnEveryItem('updateNextRun');
+
+        $this->repo->saveOrFailCollection($schedules);
+
+        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
+
+        return $data;
     }
 
-    protected function preSettlementProcessing(array $input, & $channel)
+    protected function processSettlements($channel)
+    {
+        $response = [];
+
+        try
+        {
+            $channels = $this->getArrayedChannels($channel);
+
+            foreach ($channels as $channel)
+            {
+                list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel);
+
+                $response[$channel] = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_INITIATE_FAILED);
+        }
+
+        return $response;
+    }
+
+    protected function retryProcessFailedSettlements(): array
+    {
+        $response = [];
+        $channel = null;
+
+        try
+        {
+            (new Validator)->validateInput('retry', $this->input);
+
+            $setlIds = $this->input['settlement_ids'];
+
+            Entity::verifyIdAndStripSignMultiple($setlIds);
+
+            $channels = $this->getArrayedChannels();
+
+            foreach ($channels as $channel)
+            {
+                $response[$channel] = $this->retrySettlementsForChannel($setlIds, $channel);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->settlementFailure(null, $e, TraceCode::SETTLEMENT_RETRY_FAILED);
+        }
+
+        return $response;
+    }
+
+    protected function retrySettlementsForChannel($setlIds, $channel)
+    {
+        $setlAttempts = new Base\PublicCollection;
+
+        $totalTxns = 0;
+
+        $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds, $channel);
+
+        foreach ($settlements as $setl)
+        {
+            $setlTxns = $setl->setlTransactions;
+
+            $setlTxnsCount = $setlTxns->count();
+
+            $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo);
+
+            list($setl, $bankTransferAtpt) = $this->repo->transaction(
+                function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
+            {
+                list($setl, $bankTransferAtpt) = $merchantSettler->retryFailedSettlement($setl);
+
+                return $this->createAndupdateBatchEntities($setl, $setlTxnsCount, $bankTransferAtpt);
+            });
+
+            $setlAttempts->push($bankTransferAtpt);
+
+            $totalTxns += $setlTxnsCount;
+        }
+
+        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
+
+        return $response;
+    }
+
+    protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel)
+    {
+        $data = [
+            'count'             => $settlements->count(),
+            'transaction_count' => $txnCount,
+        ];
+
+        if ($setlAttempts->count() > 0)
+        {
+            list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts, $channel);
+
+            $urls = [
+                'kotak_settlement_txt'   => $urlText,
+                'kotak_settlement_excel' => $urlExcel
+            ];
+
+            $this->updateBatchFundTransferEntityUrls($urls);
+
+            $data['settlement_text_file']  = $urlText;
+            $data['settlement_excel_file'] = $urlExcel;
+
+            $this->successNotification($data, $settlements, TraceCode::SETTLEMENT_INITIATED);
+        }
+        else
+        {
+            $data['message'] = 'No settlements found!';
+        }
+
+        return $data;
+    }
+
+    protected function createSettlements($channel): array
+    {
+        $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime, $channel);
+
+        list($settlements, $settledTxnsCount, $setlAttempts) =
+            $this->processUnsettledTransactions($txns, $channel);
+
+        return [$settlements, $settledTxnsCount, $setlAttempts];
+    }
+
+    protected function processUnsettledTransactions($txns, $channel): array
+    {
+        $txns = $this->filterTransactionsForSettlement($txns);
+
+        list($settlements, $settledTxnsCount, $setlAttempts) =
+            $this->createSettlementsFromTxns($txns, $channel);
+
+        return [$settlements, $settledTxnsCount, $setlAttempts];
+    }
+
+    protected function generateSettlementFile($setlAttempts, $channel)
+    {
+        $data = [null, null];
+
+        if ($channel === Channel::KOTAK)
+        {
+            $data = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts);
+        }
+
+        return $data;
+    }
+
+    protected function preSettlementProcessing(array $input)
+    {
+        $this->inititalizeVariables($input);
+
+        $this->increaseAllowedSystemLimits();
+    }
+
+    protected function inititalizeVariables(array $input)
     {
         $this->setlTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         $this->input = $input;
-
-        //set channel
-        if ($channel === null)
-        {
-            $channel = Channel::KOTAK;
-        }
     }
 
     protected function shouldProcessSettlements()
@@ -101,276 +267,25 @@ class Processor extends Base\Core
         return [true, null];
     }
 
+    /**
+     *  NEFT can be processed between 8am and 6 pm only, while batch file can be
+     *  uploaded anytime.
+     * @return [boolean] [returns if settlement can be proessed now]
+     */
     protected function checkInvalidSettlementTime()
     {
-        // NEFT can be processed between 8am and 6 pm only, while batch file can
-        // be uploaded anytime
-
-        $sevenAm = Carbon::today('Asia/Kolkata')->hour(7)->timestamp;
-
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;
 
+        // No settlements after five PM but allow settlements file upload anytime
+        // before that, we want to do it before 8 am as well as that allows us
+        // some time for fixing things before settlement window opens.
         if (($this->mode === Mode::LIVE) and
-            (($this->setlTime <= $sevenAm) or
-             ($this->setlTime >= $fivePm)))
+            ($this->setlTime >= $fivePm))
         {
             return true;
         }
 
         return false;
     }
-
-    protected function processSettlements($input, $channel)
-    {
-        try
-        {
-            list($settlements, $txnCount) = $this->createSettlements($channel);
-
-            $data = [
-                'channel'               => $channel,
-                'count'                 => $settlements->count(),
-                'transaction_count'     => $txnCount,
-            ];
-
-            if ($settlements->count() > 0)
-            {
-                list($urlText, $urlExcel) = $this->generateSettlementFile($settlements, $channel);
-
-                $urls = [
-                    'kotak_settlement_txt'   => $urlText,
-                    'kotak_settlement_excel' => $urlExcel
-                ];
-
-                $this->updateBatchSettlementEntityUrls($urls);
-
-                $data['settlement_text_file']  = $urlText;
-                $data['settlement_excel_file'] = $urlExcel;
-
-                $this->successNotification($data, $settlements);
-            }
-            else
-            {
-                $data['message'] = 'No settlements found!';
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->settlementFailure($channel, $e);
-        }
-
-        return $data;
-    }
-
-    protected function createSettlements($channel)
-    {
-        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
-
-        $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
-
-        list($settlements, $settledTxnsCount) = $this->processUnsettledTransactions($txns, $channel);
-
-        $schedules->callOnEveryItem('updateNextRun');
-
-        $this->repo->saveOrFailCollection($schedules);
-
-        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
-
-        return [$settlements, $settledTxnsCount];
-    }
-
-    protected function processUnsettledTransactions($txns, $channel)
-    {
-        $txns = $this->filterTransactionsForSettlement($txns, $channel);
-
-        list($settlements, $settledTxnsCount) = $this->createSettlementsFromTxns($txns, $channel);
-
-        return [$settlements, $settledTxnsCount];
-    }
-
-    protected function filterTransactionsForSettlement($txns, $channel)
-    {
-        $filteredTxns = new Base\PublicCollection;
-
-        foreach ($txns as $txn)
-        {
-            // skip if txn not to be settled
-            if ($this->shouldSettle($txn, $channel, $txn->merchant) === false)
-            {
-                continue;
-            }
-
-            // skip if txn is refund of authorized txn and update the txn
-            if (($txn->getBalance() === 0) and
-                ($txn->isTypeRefund()))
-            {
-                $payment = $txn->source->payment;
-
-                if ($payment->hasBeenCaptured() === false)
-                {
-                    $txn[Transaction\Entity::SETTLED_AT] = null;
-
-                    $this->repo->saveOrFail($txn);
-
-                    continue;
-                }
-            }
-
-            $filteredTxns->push($txn);
-        }
-
-        return $filteredTxns;
-    }
-
-    protected function createSettlementsFromTxns($txns, $channel)
-    {
-        $settlements = new Base\PublicCollection;
-        $txnsSettledCount = 0;
-
-        $i = 0;
-        $txnsCount = $txns->count();
-
-        while ($i < $txnsCount)
-        {
-            // Settlement amount
-            $setlAmount = $setlGatewayFee = $setlApiFee = 0;
-            $setlFee = $serviceTax = 0;
-
-            $setlTxns = new Base\PublicCollection;
-
-            // Get merchant
-            assert($txns[$i]->merchant !== null);
-
-            $merchant = $txns[$i]->merchant;
-            $merchantId = $merchant->getId();
-
-            //
-            // Since transactions are ordered by the merchant id,
-            // we can do the following operation in O(n) instead of O(n^2)
-            //
-            while (($i < $txnsCount) and
-                   ($txns[$i]->getMerchantId() === $merchantId))
-            {
-                $txn = $txns[$i];
-
-                $setlAmount     += $txn->getCredit() - $txn->getDebit();
-                $setlGatewayFee += $txn->getGatewayFee();
-                $setlApiFee     += $txn->getApiFee();
-                $setlFee        += $txn->getFee();
-                $serviceTax     += $txn->getServiceTax();
-
-                $setlTxns->push($txn);
-                $i++;
-            }
-
-            //
-            // settle only if settlement amount is more than INR 1 and greater than
-            // merchants account balance
-            //
-            $balance = $merchant->balance->getBalance();
-
-            if (($setlAmount <= 100) or
-                ($setlAmount > $balance))
-            {
-                $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
-                    [
-                        'merchant'   => $merchant->getId(),
-                        'setlAmount' => $setlAmount,
-                        'balance'    => $balance
-                    ]);
-
-                continue;
-            }
-
-            // create settlement and update batch settlement entity in transaction
-            $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
-
-            $setl = $this->repo->transaction(
-                function()
-                    use ($merchantSettler, $setlTxns, $setlAmount,
-                         $setlFee, $setlApiFee, $serviceTax)
-                {
-                    $setl = $merchantSettler->settle(
-                                            $setlTxns,
-                                            $setlAmount,
-                                            $setlFee,
-                                            $setlApiFee,
-                                            $serviceTax);
-
-                    $this->createOrUpdateBatchSettlementForEntity($setl, $setlTxns->count());
-
-                    $setl->batchSettlement()->associate($this->batchSettlement);
-
-                    $this->repo->saveOrFail($setl);
-
-                    $this->repo->transaction->settled($setlTxns, $this->setlTime);
-
-                    return $setl;
-                });
-
-            $txnsSettledCount += $setlTxns->count();
-
-            $settlements->push($setl);
-        }
-
-        return [$settlements, $txnsSettledCount];
-    }
-
-    protected function generateSettlementFile($settlements, $channel)
-    {
-        $data = null;
-
-        if ($channel === Channel::KOTAK)
-        {
-            $data = (new Kotak\NodalAccount)->generateSettlementFile($settlements);
-        }
-
-        return $data;
-    }
-
-    protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant)
-    {
-        $today = Carbon::today('Asia/Kolkata');
-
-        $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
-
-        $shouldSettle = (($txn->getChannel() === $channel) and
-                         ($merchant->holdFunds() === false));
-
-        assert ($merchant->bankAccount !== null);
-
-        if (($this->mode !== Mode::TEST) and
-            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
-        {
-            $shouldSettle = false;
-        }
-
-        return $shouldSettle;
-    }
-
-    protected function settlementFailure($channel, $e)
-    {
-        $e = new SettlementFailureException($channel, null, $e);
-
-        $this->failureNotification($e);
-
-        $this->trace->critical(TraceCode::SETTLEMENT_INITIATE_FAILED);
-
-        throw $e;
-    }
-
-    protected function successNotification($data, $settlements)
-    {
-        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
-
-        (new SlackNotification)->success('setl_initiate', $data);
-
-        Dashboard::send('settlement', $settlements);
-    }
-
-    protected function failureNotification($exception)
-    {
-        (new SlackNotification)->failure('setl_initiate', $exception);
-    }
-
 }

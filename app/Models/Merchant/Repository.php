@@ -367,4 +367,34 @@ class Repository extends Base\Repository
 
         return $account;
     }
+
+    /**
+     * Used for Marketplace, dashboard:
+     * Fetch entities for a CSV report of all linked accounts under a marketplace merchant
+     *
+     * @todo: Move this to Merchant/Account/Repository when account onboarding is merged.
+     *
+     * @param       $merchantId
+     * @param       $from       (unused)
+     * @param       $to         (unused)
+     * @param       $count
+     * @param       $skip
+     * @param array $relations
+     *
+     * @return mixed
+     */
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
+    {
+        $query =  $this->newQuery()
+                       ->where(Entity::PARENT_ID, $merchantId);
+
+        if (count($relations) > 0)
+        {
+            $query->with(...$relations);
+        }
+
+        return $query->take($count)
+                     ->skip($skip)
+                     ->get();
+    }
 }

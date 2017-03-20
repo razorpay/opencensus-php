@@ -27,25 +27,29 @@ class RefundFile extends Base\RefundFile
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $urlExcel = $this->writeToExcelFile($data, $fileName);
-
         $creator = $this->createFile(
             FileStore\Format::XLSX,
             $data,
             $fileName,
             FileStore\Type::AIRTELMONEY_WALLET_REFUND);
 
-        $this->sendRefundEmail();
+        $file = $creator->get();
 
-        return $urlExcel;
+        $fileData = [
+            'file_path' => $file['local_file_path'],
+        ];
+
+        $this->sendRefundEmail($fileData);
+
+        return $fileData['file_path'];
     }
 
     protected function sendRefundEmail($fileData = [])
     {
-        $fullpath = $this->getExcelFullFilePath();
-
-        $data['file'] = $fullpath;
-        $data['body'] = 'Please find attached refunds information for AirtelMoney';
+        $data = [
+            'file' => $fileData['file_path'],
+            'body' => 'Please find attached refunds information for AirtelMoney'
+        ];
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {

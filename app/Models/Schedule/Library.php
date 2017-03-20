@@ -12,32 +12,29 @@ class Library
         // Minimum delay before the settlement of any payment. In case of hourly
         // schedules, this is set to zero, but settlement time is pushed forward
         // by an hour anyway to avoid race conditions.
+
         $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
-        $nextRun = $schedule->getNextRun();
-
-        $nextRun = Carbon::createFromTimestamp($nextRun, 'Asia/Kolkata');
+        $nextRun = self::getNextRun($schedule);
 
         // If minimum delay is more than the time till next run of the settlement
         // schedule, then we calculate the *next* next run, and set that.
         if ($settledAt > $nextRun)
         {
-            $nextRun = self::computeFutureRun($schedule, $settledAt, $nextRun);
+            $nextRun = self::computeFutureRun($schedule, $settledAt);
         }
 
         return $nextRun->getTimestamp();
     }
 
-    // ----------------------- Protected methods -----------------------
-
-    protected static function computeFutureRun($schedule, $settledAt, $nextRun)
+    public static function computeFutureRun($schedule, $referenceTime)
     {
         if ($schedule->getAnchor() !== null)
         {
             // Anchored schedules are those that rely on a certain attribute
             // of its target days. For example, settlements that happen every
             // Thursday, or the last Friday of every month.
-            $futureRun = self::resolveAnchored($settledAt, $schedule);
+            $futureRun = self::resolveAnchored($referenceTime, $schedule);
         }
         else
         {
@@ -45,53 +42,56 @@ class Library
             // the time between payment and settlement, or after a fixed period
             // of time. For example, settlements that happen N days after their
             // corresponding payments, or settlements that happen every N hours.
-            $futureRun = self::resolveUnAnchored($settledAt, $schedule, $nextRun);
+            $futureRun = self::resolveUnAnchored($referenceTime, $schedule);
+        }
+
+        // If anchor date is a holiday, don't wait till next anchor
+        // date. Settlement on the next working day.
+        if (Holidays::isWorkingDay($futureRun) === false)
+        {
+            $futureRun = Holidays::getNextWorkingDay($futureRun);
+        }
+
+        if ($schedule->isHourly() === false)
+        {
+            // set the hour for future run from schedule
+            $futureRun->hour($schedule->getHour());
         }
 
         return $futureRun;
     }
 
-    protected static function resolveAnchored($settledAt, $schedule)
+    protected static function resolveAnchored($refTime, $schedule)
     {
         // Since hourly schedules can't be anchored, time no longer matters.
-        $settledAt = $settledAt->addDay()->hour(0)->minute(0)->second(0);
+        $nextRun = $refTime->addDay()->hour(0)->minute(0)->second(0);
 
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
 
         // Increment by step size until condition is met and we arrive
         // at an anchor date.
-        while (self::checkAnchor($settledAt, $schedule) === false)
+        while (self::checkAnchor($nextRun, $schedule) === false)
         {
-            $settledAt->$step();
+            $nextRun->$step();
         }
 
-        // If anchor date is a holiday, don't wait till next anchor
-        // date. Settlement on the next working day.
-        if (Holidays::isWorkingDay($settledAt) === false)
-        {
-            $settledAt = Holidays::getNextWorkingDay($settledAt);
-        }
-
-        return $settledAt;
+        return $nextRun;
     }
 
-    protected static function resolveUnAnchored($settledAt, $schedule, $nextRun)
+    protected static function resolveUnAnchored($refTime, $schedule)
     {
+        $nextRun = self::getNextRun($schedule);
+
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
 
         $interval = $schedule->getInterval();
 
         // Increment by interval until we cross minimum delay time.
-        while ($settledAt > $nextRun)
+        while ($refTime > $nextRun)
         {
             $nextRun->$step($interval);
-        }
-
-        if (Holidays::isWorkingDay($nextRun) === false)
-        {
-            $nextRun = Holidays::getNextWorkingDay($nextRun);
         }
 
         return $nextRun;
@@ -167,12 +167,12 @@ class Library
     }
 
     // Get Carbon object for last_run
-    protected static function getLastRun($schedule)
+    protected static function getNextRun($schedule)
     {
-        $lastRunTimestamp = $schedule->getLastRun();
+        $nextRunTimestamp = $schedule->getNextRun();
 
-        $lastRun = Carbon::createFromTimestamp($lastRunTimestamp, 'Asia/Kolkata');
+        $nextRun = Carbon::createFromTimestamp($nextRunTimestamp, 'Asia/Kolkata');
 
-        return $lastRun;
+        return $nextRun;
     }
 }

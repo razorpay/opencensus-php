@@ -19,6 +19,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postSettlementRetry()
+    {
+        $input = Request::all();
+
+        $data = (new Settlement\Service)->processFailedSettlements($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSettlementFileGenerate()
     {
         $input = Request::all();
@@ -114,14 +123,14 @@ class SettlementController extends Controller
 
     public function postSettlementCalculateFees()
     {
-        $data = (new Settlement\Batch\Service)->calculatePrevousSettlementFees();
+        $data = (new FundTransfer\Batch\Service)->calculatePrevousSettlementFees();
 
         return ApiResponse::json($data);
     }
 
-    public function postBatchSettlementCalculatePreviousFees()
+    public function postBatchFundTransferCalculatePreviousFees()
     {
-        $data = (new Settlement\Batch\Service)->calculatePreviousBatchSettlementFees();
+        $data = (new FundTransfer\Batch\Service)->calculatePreviousBatchFundTransferFees();
 
         return ApiResponse::json($data);
     }
@@ -133,9 +142,9 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postComputeBatchSettlementServiceTax()
+    public function postComputeBatchFundTransferServiceTax()
     {
-        $data = (new Settlement\Batch\Service)->computeBatchSettlementServiceTax();
+        $data = (new FundTransfer\Batch\Service)->computeBatchFundTransferServiceTax();
 
         return ApiResponse::json($data);
     }

@@ -735,7 +735,7 @@ class Service extends Base\Service
 
     public function getMerchantBeneficiaryFile()
     {
-        $file = (new BankAccount\BeneficiaryFile3)->generate();
+        $file = (new BankAccount\BeneficiaryFile)->generate();
 
         return $file;
     }
@@ -779,7 +779,7 @@ class Service extends Base\Service
 
         if ($newBeneficiaryCount > 0)
         {
-            (new BankAccount\BeneficiaryFile3)->generateBetweenTimestamps(
+            (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps(
                                                         $from->timestamp,
                                                         $today->timestamp);
         }

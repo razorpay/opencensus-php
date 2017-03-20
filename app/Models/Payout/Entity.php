@@ -15,30 +15,30 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                    = 'id';
-    const MERCHANT_ID           = 'merchant_id';
-    const CUSTOMER_ID           = 'customer_id';
-    const METHOD                = 'method';
-    const DESTINATION_ID        = 'destination_id';
-    const DESTINATION_TYPE      = 'destination_type';
-    const PURPOSE               = 'purpose';
-    const AMOUNT                = 'amount';
-    const CURRENCY              = 'currency';
-    const NOTES                 = 'notes';
-    const FEES                  = 'fees';
-    const SERVICE_TAX           = 'service_tax';
-    const PAYMENT_ID            = 'payment_id';
-    const TRANSACTION_ID        = 'transaction_id';
-    const BATCH_SETTLEMENT_ID   = 'batch_settlement_id';
-    const STATUS                = 'status';
-    const CHANNEL               = 'channel';
-    const UTR                   = 'utr';
-    const FAILURE_REASON        = 'failure_reason';
-    const RETURN_UTR            = 'return_utr';
-    const REMARKS               = 'remarks';
+    const ID                     = 'id';
+    const MERCHANT_ID            = 'merchant_id';
+    const CUSTOMER_ID            = 'customer_id';
+    const METHOD                 = 'method';
+    const DESTINATION_ID         = 'destination_id';
+    const DESTINATION_TYPE       = 'destination_type';
+    const PURPOSE                = 'purpose';
+    const AMOUNT                 = 'amount';
+    const CURRENCY               = 'currency';
+    const NOTES                  = 'notes';
+    const FEES                   = 'fees';
+    const SERVICE_TAX            = 'service_tax';
+    const PAYMENT_ID             = 'payment_id';
+    const TRANSACTION_ID         = 'transaction_id';
+    const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
+    const STATUS                 = 'status';
+    const CHANNEL                = 'channel';
+    const UTR                    = 'utr';
+    const FAILURE_REASON         = 'failure_reason';
+    const RETURN_UTR             = 'return_utr';
+    const REMARKS                = 'remarks';
 
     // Public attribute
-    const DESTINATION           = 'destination';
+    const DESTINATION            = 'destination';
 
     protected $entity = 'payout';
 
@@ -74,7 +74,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::PAYMENT_ID,
         self::TRANSACTION_ID,
-        self::BATCH_SETTLEMENT_ID,
+        self::BATCH_FUND_TRANSFER_ID,
         self::STATUS,
         self::CHANNEL,
         self::UTR,
@@ -151,9 +151,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Transaction\Entity');
     }
 
-    public function batchSettlement()
+    public function batchFundTransfer()
     {
-        return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
+        return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
     }
 
     public function getAmount()
@@ -189,6 +189,11 @@ class Entity extends Base\PublicEntity
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
+    }
+
+    public function getBatchFundTransferId()
+    {
+        return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
     }
 
     public function isStatusCreated()

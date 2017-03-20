@@ -88,7 +88,7 @@ class Merchant extends Base
 
         $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
 
-        $this->fixtures->on('test');
+        $this->fixtures->create('merchant:merchant_schedule', ['merchant_id' => $accountId]);
 
         return $merchant;
     }

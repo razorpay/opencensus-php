@@ -122,8 +122,8 @@ class ScheduleTest extends TestCase
 
         $time = Carbon::createFromTimestamp($txn['settled_at'], 'Asia/Kolkata');
 
-        // Check if time is midnight
-        $this->assertEquals(0, $time->hour);
+        // Check if time is set to hour value in schedule
+        $this->assertEquals(12, $time->hour);
     }
 
     public function testGetSchedule()
