@@ -1064,6 +1064,15 @@ class Gateway extends Base\Gateway
             F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
         ];
 
+        $content[F::MERCHANT_DEFINED_DATA] = [
+            F::MDD_FIELD => [
+                [
+                    'id' => '1',
+                    '_'  => $input['refund']['id']
+                ]
+            ]
+        ];
+
         $request = $this->getStandardSoapRequest($content);
 
         return $request;
