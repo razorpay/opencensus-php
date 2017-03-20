@@ -318,7 +318,7 @@ class Gateway extends Base\Gateway
      */
     protected function getMerchantCategoryCode(array $input)
     {
-        return $input['merchant']['category'] ?? '6012';
+        return $input['merchant']['category'] ?: '6012';
     }
 
     /**
@@ -342,7 +342,7 @@ class Gateway extends Base\Gateway
     {
         $description = $input['merchant']->getBillingLabelElseName();
 
-        $description = $description ?? 'Razorpay';
+        $description = $description ?: 'Razorpay';
 
         return "Refund for " . substr($description, 0, 36);
     }

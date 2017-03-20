@@ -36,6 +36,7 @@ class Server extends Base\Mock\Server
         Action::CALLBACK        => 21,
         Action::REFUND          => 21,
     ];
+
     public function authorize($input)
     {
         parent::authorize($input);
