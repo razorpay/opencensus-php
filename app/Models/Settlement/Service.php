@@ -16,21 +16,14 @@ class Service extends Base\Service
 {
     public function initiateSettlements($input, $channel = null)
     {
-        $settler = new Settler();
-
-        return $settler->settle($input, $channel);
-    }
-
-    public function initiateSettlementsV2($input, $channel)
-    {
         $data = (new Settlement\Processor)->process($input, $channel);
 
         return $data;
     }
 
-    public function processFailedSettlements($input, $channel)
+    public function processFailedSettlements($input)
     {
-        $data = (new Settlement\Processor)->processFailedSettlements($input, $channel);
+        $data = (new Settlement\Processor)->processFailedSettlements($input);
 
         return $data;
     }

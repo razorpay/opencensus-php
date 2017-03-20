@@ -89,7 +89,7 @@ class Repository extends Base\Repository
         return $txns;
     }
 
-    public function fetchUnsettledTxnsForDueSchedules($timestamp)
+    public function fetchUnsettledTxnsForDueSchedules($timestamp, $channel)
     {
         $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
         $merchantScheduleId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::SETTLEMENT_SCHEDULE_ID);
@@ -108,6 +108,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ON_HOLD, 0)
                     ->where(Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Entity::SETTLED, '=', 0)
+                    ->where(Entity::CHANNEL, '=', $channel)
                     ->where($transactionType, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
                     ->where(Schedule\Entity::NEXT_RUN, '<', $timestamp)
