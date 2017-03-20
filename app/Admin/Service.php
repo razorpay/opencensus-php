@@ -2135,9 +2135,11 @@ class Service extends Base\Service
 
         try
         {
-            $params = array('names'             => explode(",", $input['features']),
-                            'entity_type'       => $entityType,
-                            'entity_id'         => $entityId);
+            $params = [
+                        'names'       => $input['features'],
+                        'entity_type' => $entityType,
+                        'entity_id'   => $entityId
+                    ];
 
             $response = $this->api->feature->setFeatures($params);
 
