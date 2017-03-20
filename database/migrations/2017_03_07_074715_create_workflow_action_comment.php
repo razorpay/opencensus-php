@@ -27,6 +27,8 @@ class CreateWorkflowActionComment extends Migration
             $table->char(Comment::ACTION_ID, Comment::ID_LENGTH);
             $table->char(Comment::ADMIN_ID, Comment::ID_LENGTH);
 
+            $table->text(Comment::COMMENT);
+
             $table->foreign(Comment::ACTION_ID)
                   ->references(Action::ID)
                   ->on(Table::WORKFLOW_ACTION)

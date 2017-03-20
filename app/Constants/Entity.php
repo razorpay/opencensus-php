@@ -15,7 +15,6 @@ class Entity
     //
     // Core entities
     //
-
     const P2P                   = 'p2p';
     const VPA                   = 'vpa';
     const IIN                   = 'iin';

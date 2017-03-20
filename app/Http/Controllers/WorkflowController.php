@@ -6,6 +6,7 @@ use App;
 use Request;
 use ApiResponse;
 use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Workflow\Action\Comment;
 use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
@@ -70,5 +71,21 @@ class WorkflowController extends Controller
         $data = (new Checker\Service)->get($id, $checkerId);
 
         return ApiResponse::json($data);
+    }
+
+    public function postActionComment(string $actionId)
+    {
+        $input = Request::all();
+
+        $result = (new Comment\Service)->create($actionId, $input);
+
+        return ApiResponse::json($result);
+    }
+
+    public function getActionComments(string $actionId)
+    {
+        $result = (new Comment\Service)->fetchByActionId($actionId);
+
+        return ApiResponse::json($result);
     }
 }
