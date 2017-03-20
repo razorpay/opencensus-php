@@ -72,4 +72,13 @@ class Repository extends Base\Repository
 
         return $refundEntities;
     }
+
+    public function findByGatewayPaymentIdAndAction(string $gatewayPaymentId, string $action, string $wallet)
+    {
+        return $this->newQuery()
+                    ->where(Entity::GATEWAY_PAYMENT_ID, '=', $gatewayPaymentId)
+                    ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
+                    ->where(Entity::WALLET, '=', $wallet)
+                    ->first();
+    }
 }

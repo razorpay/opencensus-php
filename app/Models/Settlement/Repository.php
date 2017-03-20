@@ -27,7 +27,7 @@ class Repository extends Base\Repository
         Entity::UTR                    => 'sometimes|alpha_num',
     ];
 
-    public function getFailedSettlementsForRetry(array $setlIds)
+    public function getFailedSettlementsForRetry(array $setlIds, $channel)
     {
         $merchantId = $this->manager->merchant->getAttributeWithTableName(M\Entity::ID);
 
@@ -40,6 +40,7 @@ class Repository extends Base\Repository
                     ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
                     ->where(Entity::STATUS, '=', Status::FAILED)
                     ->where(M\Entity::HOLD_FUNDS, '=', 0)
+                    ->where(Entity::CHANNEL, '=', $channel)
                     ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
                     ->get();
     }
