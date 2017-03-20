@@ -592,6 +592,9 @@ final class FactoryData
         $factory(\RZP\Models\Merchant\Schedule\Entity::class, [
             'id'                => $faker->randomNumber(6),
             'merchant_id'       => '10000000000000',
+            'entity_id'         => '10000000000000',
+            'entity_type'       => 'merchant',
+            'type'              => 'settlement',
             'method'            => null,
             'schedule_id'       => 'factory:RZP\Models\Schedule\Entity',
         ]);
