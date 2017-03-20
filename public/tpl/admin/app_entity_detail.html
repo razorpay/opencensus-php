@@ -91,6 +91,17 @@
         </button> -->
       </div>
     </div>
+    <div class="panel-footer row" ng-show="entity.entity == 'file_store'">
+      <div class="btn-group text-left m-b" role="group"
+        aria-label="File Actions"
+      >
+        <button class="btn btn-info">
+        <a href="admin/file/{{entity.id}}" target="_blank">
+          Download File
+        </a>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 <script type="text/ng-template" id="editTerminal.html">

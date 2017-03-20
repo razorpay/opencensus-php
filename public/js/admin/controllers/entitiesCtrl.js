@@ -92,6 +92,7 @@ app.controller('EntitiesCtrl', [
       'olamoney',
       'airtelmoney',
       'freecharge',
+      'jiomoney',
       'ezeclick',
       'openwallet'
     ];
@@ -363,6 +364,7 @@ app.controller('EntitiesCtrl', [
         upi: booleanList2,
         airtelmoney: booleanList2,
         freecharge: booleanList2,
+        jiomoney: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         parent_id: ['Marketplace Parent Id'],
         receipt_email_enabled: booleanList,
@@ -396,6 +398,7 @@ app.controller('EntitiesCtrl', [
         upi: booleanList,
         airtelmoney: booleanList,
         freecharge: booleanList,
+        jiomoney: booleanList,
         merchant_id: ['Merchant Id']
       },
       netbanking: {

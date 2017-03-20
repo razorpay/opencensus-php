@@ -24,6 +24,7 @@ use Session;
 use Crypt;
 use Cache;
 use Uuid;
+use Trace;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -1773,6 +1774,33 @@ class Service extends Base\Service
         return [$error, null];
     }
 
+    public function getUploadedFile($id)
+    {
+        $error = null;
+        $url = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $file = $this->api
+                         ->admin
+                         ->getFileByAdmin($id);
+            $url = $file->headers->offsetGet('location');
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [ $e->getMessage() ];
+
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured while getting requested file from API",
+                    'exception' => $error,
+            ]);
+        }
+
+        return array($error, $url);
+    }
+
     /**
      * Returns a pre-authed S3 URL to download beneficiary file
      * @param  Date $date date in Y-m-d format (with leading zeroes)
@@ -2191,9 +2219,11 @@ class Service extends Base\Service
 
         try
         {
-            $params = array('names'             => explode(",", $input['features']),
-                            'entity_type'       => $entityType,
-                            'entity_id'         => $entityId);
+            $params = [
+                        'names'       => $input['features'],
+                        'entity_type' => $entityType,
+                        'entity_id'   => $entityId
+                    ];
 
             $response = $this->api->feature->setFeatures($params);
 

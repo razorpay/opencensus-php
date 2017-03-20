@@ -275,4 +275,11 @@ class Admin extends Entity
 
         return $this->request('POST', $relativeUrl, $body);
     }
+
+    public function getFileByAdmin($fileId)
+    {
+        $relativeUrl = "files/$fileId/signed-url";
+
+        return $this->rawRequest('GET', $relativeUrl);
+    }
 }

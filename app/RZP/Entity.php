@@ -69,4 +69,12 @@ class Entity extends Razorpay\Api\Entity
             return static::buildEntity($response);
         }
     }
+
+    protected function rawRequest($method, $relativeUrl, $data = null)
+    {
+        $request = new Request();
+        $request->setOption('follow_redirects', false);
+
+        return $request->rawRequest($method, $relativeUrl, $data);
+    }
 }
