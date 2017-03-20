@@ -229,6 +229,21 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testLiveTransferFundsOnHold()
+    {
+        $this->fixtures->merchant->holdFunds();
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $body = $this->getTransferRequestBody('account')['content'];
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($body)
+        {
+            $this->createTransfer('account', $body, 'live');
+        });
+    }
+
     // ---- Helpers -----
 
     protected function createTransfer($type, $data = [], $mode = 'test')
@@ -247,13 +262,18 @@ class TransferTest extends TestCase
         return $this->getResponse($request, $data);
     }
 
-    protected function createReversal(string $id, $amount = null)
+    protected function createReversal(string $id, $amount = null, array $notes = [])
     {
         $request = $this->getReversalRequestBody($id);
 
         if ($amount !== null)
         {
             $request['content']['amount'] = $amount;
+        }
+
+        if (empty($notes) === false)
+        {
+            $request['content']['notes'] = $notes;
         }
 
         return $this->getResponse($request);
@@ -287,12 +307,18 @@ class TransferTest extends TestCase
 
         $amount = $transfer['amount'] - $amount;
 
-        $reversal = $this->createReversal($transfer['id'], $amount);
+        $notes  = [
+            'order_info'    => 'random_string',
+            'version'       => 2,
+        ];
+
+        $reversal = $this->createReversal($transfer['id'], $amount, $notes);
 
         $expected = [
             'amount'        => $amount,
             'transfer_id'   => $transfer['id'],
             'currency'      => $transfer['currency'],
+            'notes'         => $notes,
         ];
 
         $this->assertArraySelectiveEquals($expected, $reversal);
@@ -312,6 +338,7 @@ class TransferTest extends TestCase
 
     protected function getTransferRequestBody(string $type, string $action = 'create')
     {
+        // fetches the array from TransferTestData
         $request = $this->testData[$action . 'Transfer'];
 
         $key = $action . title_case($type) . 'TransferRequest';

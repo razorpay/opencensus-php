@@ -13,7 +13,11 @@ class Core extends Base\Core
 
         $input[Entity::ADMIN_ID] = $admin->getId();
 
-        $comment = (new Entity)->build($input);
+        $comment = new Entity;
+
+        $comment->generateId();
+
+        $comment->build($input);
 
         $comment->saveOrFail();
 

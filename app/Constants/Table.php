@@ -43,13 +43,14 @@ class Table
     const BANK_ACCOUNT          = 'bank_accounts';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
-    const BATCH_SETTLEMENT      = 'daily_settlements';
+    const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
     const OFFER                 = 'offers';
     const COUPON                = 'coupons';
     const MERCHANT_OFFER        = 'merchant_offer';
+    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
     // organization roles permissions
     const ORG                   = 'orgs';
@@ -66,13 +67,12 @@ class Table
     const LOGIN_ATTEMPT         = 'login_attempts';
 
     // Workflows
-    const WORKFLOW                = 'workflows';
-    const WORKFLOW_STEP           = 'workflow_steps';
-    const WORKFLOW_ACTION         = 'workflow_actions';
-    const ACTION_PAYLOAD          = 'action_payloads';
-    const ACTION_COMMENT          = 'action_comments';
-    const ACTION_TIMELINE         = 'action_timeline';
-    const ACTION_CHECKER          = 'action_checker';
+    const WORKFLOW              = 'workflows';
+    const WORKFLOW_STEP         = 'workflow_steps';
+    const WORKFLOW_ACTION       = 'workflow_actions';
+    const ACTION_COMMENT        = 'action_comments';
+    const ACTION_STATE          = 'action_state';
+    const ACTION_CHECKER        = 'action_checker';
 
     // Gateway related
     const EBS                   = 'ebs';
@@ -97,7 +97,7 @@ class Table
     // Terminal Performance
 
     const TERMINAL_ACTION       = 'terminal_action_logs';
-    const GATEWAY_ABSENCE       = 'gateway_status_absence';
+    const GATEWAY_DOWNTIME      = 'gateway_downtimes';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

@@ -335,4 +335,19 @@ class Gateway extends Base\Gateway
 
         return $this->getLiveMerchantId2();
     }
+
+    /**
+     * Overriding the parent class's method
+     */
+    protected function getLiveSecret()
+    {
+        switch ($this->getLiveMerchantId())
+        {
+            case $this->config['live_merchant_id']:
+                return $this->config['live_hash_secret'];
+
+            case $this->config['live_merchant_id_tpv']:
+                return $this->config['live_hash_secret_tpv'];
+        }
+    }
 }

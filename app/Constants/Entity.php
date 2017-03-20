@@ -15,63 +15,72 @@ class Entity
     //
     // Core entities
     //
+    const P2P                   = 'p2p';
+    const VPA                   = 'vpa';
+    const IIN                   = 'iin';
+    const KEY                   = 'key';
+    const CARD                  = 'card';
+    const ITEM                  = 'item';
+    const ORDER                 = 'order';
+    const TOKEN                 = 'token';
+    const BATCH                 = 'batch';
+    const DEVICE                = 'device';
+    const REFUND                = 'refund';
+    const ADDRESS               = 'address';
+    const BALANCE               = 'balance';
+    const CREDITS               = 'credits';
+    const METHODS               = 'methods';
+    const PRICING               = 'pricing';
+    const PAYMENT               = 'payment';
+    const FEATURE               = 'feature';
+    const WEBHOOK               = 'webhook';
+    const INVOICE               = 'invoice';
+    const SCHEDULE              = 'schedule';
+    const EMI_PLAN              = 'emi_plan';
+    const MERCHANT              = 'merchant';
+    const TERMINAL              = 'terminal';
+    const CUSTOMER              = 'customer';
+    const LINE_ITEM             = 'line_item';
+    const APP_TOKEN             = 'app_token';
+    const ADJUSTMENT            = 'adjustment';
+    const FILE_STORE            = 'file_store';
+    const SETTLEMENT            = 'settlement';
+    const TRANSACTION           = 'transaction';
+    const FEE_BREAKUP           = 'fee_breakup';
+    const BANK_ACCOUNT          = 'bank_account';
+    const FILE_HANDLER          = 'file_handler';
+    const TERMINAL_ACTION       = 'terminal_action';
+    const GATEWAY_DOWNTIME      = 'gateway_downtime';
+    const MERCHANT_DETAIL       = 'merchant_detail';
+    const PAYMENT_ANALYTICS     = 'payment_analytics';
+    const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
+    const ORG                   = 'org';
+    const ORG_HOSTNAME          = 'org_hostname';
+    const ROLE                  = 'role';
+    const PERMISSION            = 'permission';
+    const GROUP                 = 'group';
+    const ADMIN                 = 'admin';
+    const ADMIN_TOKEN           = 'admin_token';
+    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
+    const SETTLEMENT_DETAILS    = 'settlement_details';
+    const TRANSFER              = 'transfer';
+    const REVERSAL              = 'reversal';
+    const CUSTOMER_BALANCE      = 'customer_balance';
+    const CUSTOMER_TRANSACTION  = 'customer_transaction';
+    const OFFER                 = 'offer';
+    const COUPON                = 'coupon';
+    const PAYOUT                = 'payout';
 
-    const P2P                     = 'p2p';
-    const VPA                     = 'vpa';
-    const IIN                     = 'iin';
-    const KEY                     = 'key';
-    const CARD                    = 'card';
-    const ITEM                    = 'item';
-    const ORDER                   = 'order';
-    const TOKEN                   = 'token';
-    const BATCH                   = 'batch';
-    const DEVICE                  = 'device';
-    const REFUND                  = 'refund';
-    const ADDRESS                 = 'address';
-    const BALANCE                 = 'balance';
-    const CREDITS                 = 'credits';
-    const METHODS                 = 'methods';
-    const PRICING                 = 'pricing';
-    const PAYMENT                 = 'payment';
-    const FEATURE                 = 'feature';
-    const WEBHOOK                 = 'webhook';
-    const INVOICE                 = 'invoice';
-    const SCHEDULE                = 'schedule';
-    const EMI_PLAN                = 'emi_plan';
-    const MERCHANT                = 'merchant';
-    const TERMINAL                = 'terminal';
-    const CUSTOMER                = 'customer';
-    const LINE_ITEM               = 'line_item';
-    const APP_TOKEN               = 'app_token';
-    const ADJUSTMENT              = 'adjustment';
-    const FILE_STORE              = 'file_store';
-    const SETTLEMENT              = 'settlement';
-    const TRANSACTION             = 'transaction';
-    const FEE_BREAKUP             = 'fee_breakup';
-    const BANK_ACCOUNT            = 'bank_account';
-    const FILE_HANDLER            = 'file_handler';
-    const TERMINAL_ACTION         = 'terminal_action';
-    const GATEWAY_ABSENCE         = 'gateway_absence';
-    const MERCHANT_DETAIL         = 'merchant_detail';
-    const BATCH_SETTLEMENT        = 'batch_settlement';
-    const PAYMENT_ANALYTICS       = 'payment_analytics';
-    const TERMINAL_ANALYTICS      = 'terminal_analytics';
-    const ORG                     = 'org';
-    const ORG_HOSTNAME            = 'org_hostname';
-    const ROLE                    = 'role';
-    const PERMISSION              = 'permission';
-    const GROUP                   = 'group';
-    const ADMIN                   = 'admin';
-    const ADMIN_TOKEN             = 'admin_token';
-    const ACTION_COMMENT          = 'action_comment';
-    const SETTLEMENT_DETAILS      = 'settlement_details';
-    const TRANSFER                = 'transfer';
-    const REVERSAL                = 'reversal';
-    const CUSTOMER_BALANCE        = 'customer_balance';
-    const CUSTOMER_TRANSACTION    = 'customer_transaction';
-    const OFFER                   = 'offer';
-    const COUPON                  = 'coupon';
-    const PAYOUT                  = 'payout';
+    //
+    // Workflow Entities
+    //
+    const WORKFLOW              = 'workflow';
+    const WORKFLOW_STEP         = 'workflow_step';
+    const WORKFLOW_ACTION       = 'workflow_action';
+    const ACTION_CHECKER        = 'action_checker';
+    const ACTION_STATE          = 'action_state';
+    const ACTION_COMMENT        = 'action_comment';
 
     //
     // Gateway entities
@@ -109,74 +118,81 @@ class Entity
     const WALLET_OPENWALLET     = 'wallet_openwallet';
 
     public static $namespace = [
-        self::P2P                     => \RZP\Models\P2p::class,
-        self::VPA                     => \RZP\Models\Upi\Vpa::class,
-        self::UPI                     => \RZP\Gateway\Upi\Base::class,
-        self::IIN                     => \RZP\Models\Card\IIN::class,
-        self::EBS                     => \RZP\Gateway\Ebs::class,
-        self::ATOM                    => \RZP\Gateway\Atom::class,
-        self::AMEX                    => \RZP\Gateway\Amex::class,
-        self::HDFC                    => \RZP\Gateway\Hdfc::class,
-        self::ORDER                   => \RZP\Models\Order::class,
-        self::PAYTM                   => \RZP\Gateway\Paytm::class,
-        self::SHARP                   => \RZP\Gateway\Sharp::class,
-        self::TOKEN                   => \RZP\Models\Customer\Token::class,
-        self::REFUND                  => \RZP\Models\Payment\Refund::class,
-        self::WALLET                  => \RZP\Gateway\Wallet\Base::class,
-        self::BALANCE                 => \RZP\Models\Merchant\Balance::class,
-        self::CREDITS                 => \RZP\Models\Merchant\Credits::class,
-        self::METHODS                 => \RZP\Models\Merchant\Methods::class,
-        self::PRICING                 => \RZP\Models\Pricing::class,
-        self::FEATURE                 => \RZP\Models\Feature::class,
-        self::WEBHOOK                 => \RZP\Models\Merchant\Webhook::class,
-        self::MERCHANT                => \RZP\Models\Merchant::class,
-        self::BILLDESK                => \RZP\Gateway\Billdesk::class,
-        self::CUSTOMER                => \RZP\Models\Customer::class,
-        self::EMI_PLAN                => \RZP\Models\Emi::class,
-        self::OFFER                   => \RZP\Models\Offer::class,
-        self::COUPON                  => \RZP\Models\Offer\Coupon::class,
-        self::MOBIKWIK                => \RZP\Gateway\Mobikwik::class,
-        self::UPI_NPCI                => \RZP\Gateway\Upi\Npci::class,
-        self::UPI_ICICI               => \RZP\Gateway\Upi\Icici::class,
-        self::UPI_IDFC                => \RZP\Gateway\Upi\Idfc::class,
-        self::AXIS_MIGS               => \RZP\Gateway\AxisMigs::class,
-        self::FILE_STORE              => \RZP\Models\FileStore::class,
-        self::FIRST_DATA              => \RZP\Gateway\FirstData::class,
-        self::APP_TOKEN               => \RZP\Models\Customer\AppToken::class,
-        self::NETBANKING              => \RZP\Gateway\Netbanking\Base::class,
-        self::FEE_BREAKUP             => \RZP\Models\Transaction\FeeBreakup::class,
-        self::AXIS_GENIUS             => \RZP\Gateway\AxisGenius::class,
-        self::CYBERSOURCE             => \RZP\Gateway\Cybersource::class,
-        self::BANK_ACCOUNT            => \RZP\Models\BankAccount::class,
-        self::WALLET_PAYZAPP          => \RZP\Gateway\Wallet\Payzapp::class,
-        self::TERMINAL_ACTION         => \RZP\Models\Terminal\Action::class,
-        self::GATEWAY_ABSENCE         => \RZP\Models\GatewayStatus\Absence::class,
-        self::WALLET_OLAMONEY         => \RZP\Gateway\Wallet\Olamoney::class,
-        self::CUSTOMER_BALANCE        => \RZP\Models\Customer\Balance::class,
-        self::CUSTOMER_TRANSACTION    => \RZP\Models\Customer\Transaction::class,
-        self::BATCH_SETTLEMENT        => \RZP\Models\Settlement\Batch::class,
-        self::NETBANKING_HDFC         => \RZP\Gateway\Netbanking\Hdfc::class,
-        self::NETBANKING_KOTAK        => \RZP\Gateway\Netbanking\Kotak::class,
-        self::NETBANKING_ICICI        => \RZP\Gateway\Netbanking\Icici::class,
-        self::NETBANKING_AIRTEL       => \RZP\Gateway\Netbanking\Airtel::class,
-        self::NETBANKING_AXIS         => \RZP\Gateway\Netbanking\Axis::class,
-        self::WALLET_PAYUMONEY        => \RZP\Gateway\Wallet\Payumoney::class,
-        self::PAYMENT_ANALYTICS       => \RZP\Models\Payment\Analytics::class,
-        self::WALLET_AIRTELMONEY      => \RZP\Gateway\Wallet\Airtelmoney::class,
-        self::SETTLEMENT_DETAILS      => \RZP\Models\Settlement\Details::class,
-        self::TERMINAL_ANALYTICS      => \RZP\Models\Payment\TerminalAnalytics::class,
-        self::WALLET_FREECHARGE       => \RZP\Gateway\Wallet\Freecharge::class,
-        self::WALLET_JIOMONEY         => \RZP\Gateway\Wallet\Jiomoney::class,
-        self::WALLET_OPENWALLET       => \RZP\Gateway\Wallet\Openwallet::class,
-        self::ORG                     => \RZP\Models\Admin\Org::class,
-        self::ORG_HOSTNAME            => \RZP\Models\Admin\Org\Hostname::class,
-        self::ROLE                    => \RZP\Models\Admin\Role::class,
-        self::PERMISSION              => \RZP\Models\Admin\Permission::class,
-        self::GROUP                   => \RZP\Models\Admin\Group::class,
-        self::ADMIN                   => \RZP\Models\Admin\Admin::class,
-        self::ADMIN_TOKEN             => \RZP\Models\Admin\Admin\Token::class,
-        self::MERCHANT_DETAIL         => \RZP\Models\Merchant\Detail::class,
-        self::ACTION_COMMENT          => \RZP\Models\Workflow\Action\Comment::class,
+        self::P2P                   => \RZP\Models\P2p::class,
+        self::VPA                   => \RZP\Models\Upi\Vpa::class,
+        self::UPI                   => \RZP\Gateway\Upi\Base::class,
+        self::IIN                   => \RZP\Models\Card\IIN::class,
+        self::EBS                   => \RZP\Gateway\Ebs::class,
+        self::ATOM                  => \RZP\Gateway\Atom::class,
+        self::AMEX                  => \RZP\Gateway\Amex::class,
+        self::HDFC                  => \RZP\Gateway\Hdfc::class,
+        self::ORDER                 => \RZP\Models\Order::class,
+        self::PAYTM                 => \RZP\Gateway\Paytm::class,
+        self::SHARP                 => \RZP\Gateway\Sharp::class,
+        self::TOKEN                 => \RZP\Models\Customer\Token::class,
+        self::REFUND                => \RZP\Models\Payment\Refund::class,
+        self::WALLET                => \RZP\Gateway\Wallet\Base::class,
+        self::BALANCE               => \RZP\Models\Merchant\Balance::class,
+        self::CREDITS               => \RZP\Models\Merchant\Credits::class,
+        self::METHODS               => \RZP\Models\Merchant\Methods::class,
+        self::PRICING               => \RZP\Models\Pricing::class,
+        self::FEATURE               => \RZP\Models\Feature::class,
+        self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
+        self::MERCHANT              => \RZP\Models\Merchant::class,
+        self::BILLDESK              => \RZP\Gateway\Billdesk::class,
+        self::CUSTOMER              => \RZP\Models\Customer::class,
+        self::EMI_PLAN              => \RZP\Models\Emi::class,
+        self::OFFER                 => \RZP\Models\Offer::class,
+        self::COUPON                => \RZP\Models\Offer\Coupon::class,
+        self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
+        self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
+        self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
+        self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
+        self::FILE_STORE            => \RZP\Models\FileStore::class,
+        self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
+        self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
+        self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
+        self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
+        self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
+        self::CYBERSOURCE           => \RZP\Gateway\Cybersource::class,
+        self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
+        self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
+        self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
+        self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
+        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
+        self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
+        self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
+        self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
+        self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
+        self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Icici::class,
+        self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
+        self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
+        self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
+        self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
+        self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
+        self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
+        self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
+        self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Jiomoney::class,
+        self::WALLET_OPENWALLET     => \RZP\Gateway\Wallet\Openwallet::class,
+        self::ORG                   => \RZP\Models\Admin\Org::class,
+        self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
+        self::ROLE                  => \RZP\Models\Admin\Role::class,
+        self::PERMISSION            => \RZP\Models\Admin\Permission::class,
+        self::GROUP                 => \RZP\Models\Admin\Group::class,
+        self::ADMIN                 => \RZP\Models\Admin\Admin::class,
+        self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
+        self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
+        self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
+
+        self::WORKFLOW              => \RZP\Models\Workflow::class,
+        self::WORKFLOW_STEP         => \RZP\Models\Workflow\Step::class,
+        self::WORKFLOW_ACTION       => \RZP\Models\Workflow\Action::class,
+        self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
+        self::ACTION_STATE          => \RZP\Models\Workflow\Action\State::class,
+        self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
     ];
 
     protected static $repository = [
@@ -212,6 +228,13 @@ class Entity
         self::EMI_PLAN,
         self::MERCHANT,
         self::SCHEDULE,
+
+        self::WORKFLOW,
+        self::WORKFLOW_STEP,
+        self::WORKFLOW_ACTION,
+        self::ACTION_CHECKER,
+        self::ACTION_STATE,
+        self::ACTION_COMMENT,
     ];
 
     public static function getEntityNamespace(string $entity)

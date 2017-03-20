@@ -10,7 +10,9 @@ class Entity extends Base\PublicEntity
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';
     const ADMIN_ID       = 'admin_id';
-    const PAYLOAD_ID     = 'payload_id';
+    const APPROVED       = 'approved';
+
+    protected static $sign = 'w_action';
 
     protected $entity = 'workflow_action';
 
@@ -19,13 +21,12 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::WORKFLOW_ID,
         self::ADMIN_ID,
-        self::PAYLOAD_ID,
     ];
 
     protected $visible = [
         self::WORKFLOW_ID,
         self::ADMIN_ID,
-        self::PAYLOAD_ID,
+        self::APPROVED,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -33,9 +34,17 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::WORKFLOW_ID,
         self::ADMIN_ID,
-        self::PAYLOAD_ID,
+        self::APPROVED,
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    protected $defaults = [
+        self::APPROVED => false,
+    ];
+
+    protected $casts = [
+        self::APPROVED => 'boolean',
     ];
 
     public function workflow()
@@ -43,8 +52,55 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Workflow\Entity');
     }
 
+    public function state()
+    {
+        return $this->hasMany('RZP\Models\Workflow\Action\State\Entity');
+    }
+
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
+    public function setApproved(boolean $status)
+    {
+        $this->setAttribute(self::APPROVED);
+    }
+
+    public function getWorkflowId() : string
+    {
+        return $this->getAttribute(self::WORKFLOW_ID);
+    }
+
+    public function getApproved() : boolean
+    {
+        return $this->getAttribute(self::APPROVED);
+    }
+
+    public function getFinalState() : string
+    {
+        if (empty($this->getId()) === true)
+        {
+            return;
+        }
+
+        $state = $this->repo->action_state->getLatestState($this->getId());
+
+        return $state;
+    }
+
+    public function isValid() : boolean
+    {
+        // Get the final state in the automata and
+        // check if the action is still open
+        $state = $this->getFinalState();
+
+        if ((empty($state) === true) and
+            ($state->isClosedState() === true))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

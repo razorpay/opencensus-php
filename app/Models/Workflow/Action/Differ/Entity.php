@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const ACTOR         = 'actor';
     const TYPE          = 'type';
     const URL           = 'url';
+    const PATH_PARAMS   = 'path_params';
     const METHOD        = 'method';
     const PAYLOAD       = 'payload';
     const CONTROLLER    = 'controller';
@@ -30,6 +31,7 @@ class Entity extends Base\PublicEntity
         self::ACTOR ,
         self::TYPE,
         self::URL,
+        self::PATH_PARAMS,
         self::METHOD,
         self::PAYLOAD,
         self::CONTROLLER,
@@ -44,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::ACTOR ,
         self::TYPE,
         self::URL,
+        self::PATH_PARAMS,
         self::METHOD,
         self::PAYLOAD,
         self::CONTROLLER,
@@ -59,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::ACTOR ,
         self::TYPE,
         self::URL,
+        self::PATH_PARAMS,
         self::METHOD,
         self::PAYLOAD,
         self::CONTROLLER,

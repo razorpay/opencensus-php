@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Openwallet;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
@@ -25,21 +23,22 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
+                'gateway'       => $this->gateway,
+                'payment_id'    => $input['payment']['id'],
+                'customer_id'   => $input['payment']['customer_id'] ?? null,
             ]);
 
         parent::authorize($input);
 
-        $txnId = (new Customer\Transaction\Service)
-                    ->createForDebit($input);
+        $customerTxn = (new Customer\Transaction\Core)
+                            ->createForCustomerDebit($input['payment'], $input['merchant']);
 
         $this->trace->info(
             TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
             [
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
-                'ctxn_id'    => $txnId,
+                'ctxn'       => $customerTxn->toArray(),
             ]);
     }
 
@@ -61,19 +60,21 @@ class Gateway extends Base\Gateway
 
         parent::refund($input);
 
-        $txnId = (new Customer\Transaction\Service)->createForRefund($input);
+        $customerTxn = (new Customer\Transaction\Core)
+                            ->createForCustomerRefund($input, $input['merchant']);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
                 'gateway'       => $this->gateway,
                 'refund_id'     => $input['refund']['id'],
-                'ctxn_id'       => $txnId,
+                'ctxn'          => $customerTxn->toArray(),
             ]);
     }
 
     /**
      * Reverse a customer wallet payment
+     * (called via auto-refund authorized payments)
      *
      * @param  array    $input
      * @return void

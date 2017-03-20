@@ -2,57 +2,60 @@
 
 namespace RZP\Http\Middleware;
 
+use App;
 use Request;
 use Closure;
-use RZP\Exception;
 use RZP\Http\Route;
-use RZP\Trace\TraceCode;
-use RZP\Events\DifferEvent;
 use RZP\Models\Workflow\Action\Differ;
 use Illuminate\Foundation\Application;
 
 class Workflow
 {
-    const AUTH_HEADER = 'authorization';
+    const USER_HEADER = 'X-Dashboard-Username';
 
-    const CONTENT_TYPE = 'Content-Type';
-
-    const USER_HEADER = 'x-dashboard-username';
+    const WORKFLOW_CONTROLLER = 'RZP\Http\Controllers\WorkflowController';
 
     protected $app;
+
+    protected $config;
 
     public function __construct(Application $app)
     {
         $this->app = $app;
 
-        $this->trace = $this->app['trace'];
-
-        $this->ba = $app['basicauth'];
+        $this->config = $this->app['config'];
 
         $this->router = $app['router'];
-
-        $this->repo = $app['repo'];
     }
 
     public function handle($request, Closure $next)
     {
         $routeName = $this->router->currentRouteName();
 
+        // Middleware is only used for workflow routes
+        if (in_array($routeName, Route::$workflowRoutes, true) === false)
+        {
+            return $next($request);
+        }
+
         $entity = $this->getEntityName($routeName);
 
-        $entityId = $this->router->current()->getParameter('id');
-
-        if ($entity !== null)
+        if (($this->config->get('database.es_workflow_action_mock') === false) and
+            ($entity !== null))
         {
-            $params = $this->createDifferEntity($request, $entity, $entityId);
+            $pathParams = $this->router->current()->parameters();
 
-            $response = (new Differ\Service)->makeRequest('POST', url('/v1/workflows/actions'), $request->header(), $params);
+            $entityId = array_values($pathParams)[0];
 
-            return $response->getBody()->getContents();
+            $params = $this->createMakerEntity($request, $entity, $entityId);
+
+            $request->replace($params);
+
+            return App::make(self::WORKFLOW_CONTROLLER)->postCreateAction();
         }
         else
         {
-            $response =  $next($request);
+            $response = $next($request);
         }
 
         return $response;
@@ -70,7 +73,7 @@ class Workflow
         return $entity;
     }
 
-    private function createDifferEntity($request, $entity, $entityId)
+    private function createMakerEntity($request, $entity, $entityId)
     {
         $input = $request->input();
 
@@ -78,12 +81,15 @@ class Workflow
 
         $controller = $this->router->currentRouteAction();
 
+        $pathParams = $this->router->current()->parameters();
+
         $differEntity = [
            Differ\Entity::ENTITY_NAME => $entity,
            Differ\Entity::ENTITY_ID   => $entityId,
            Differ\Entity::ACTOR       => $request->header(self::USER_HEADER),
            Differ\Entity::TYPE        => Differ\Type::MAKER,
            Differ\Entity::URL         => $request->getUri(),
+           Differ\Entity::PATH_PARAMS => $pathParams,
            Differ\Entity::METHOD      => $request->getMethod(),
            Differ\Entity::PAYLOAD     => $input,
            Differ\Entity::CONTROLLER  => $controller,

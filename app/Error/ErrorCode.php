@@ -297,7 +297,7 @@ class ErrorCode
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
 
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE';
-    const BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD                                 = 'BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD';
+    const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                        = 'BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD';
 
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                       = 'BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT';
     const BAD_REQUEST_BATCH_FILE_EMPTY                                              = 'BAD_REQUEST_BATCH_FILE_EMPTY';
@@ -487,6 +487,13 @@ class ErrorCode
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
 
+    // Workflow Related ErrorCodes
+    const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                                 = 'BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE';
+    const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                      = 'BAD_REQUEST_WORKFLOW_INVLID_CHECKER';
+    const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND';
+    const BAD_REQUEST_ACTION_INVALID_TYPE                                           = 'BAD_REQUEST_ACTION_INVALID_TYPE';
+    const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
+
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
     const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                    = 'BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD';
@@ -494,8 +501,9 @@ class ErrorCode
     // ES related error codes
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
 
-    const BAD_REQUEST_ACTION_INVALID_TYPE                                           = 'BAD_REQUEST_ACTION_INVALID_TYPE';
-    const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
-    const BAD_REQUEST_ACTION_NOT_FOUND                                              = 'BAD_REQUEST_ACTION_NOT_FOUND';
+    // Error code for data missing during force authorize flow
+    const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                     = 'BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING';
 
+    // File store
+    const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
 }

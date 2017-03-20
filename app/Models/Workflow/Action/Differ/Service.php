@@ -10,13 +10,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
-use Http\Client\Common\PluginClient;
-use Http\Discovery\HttpClientDiscovery;
-use Http\Client\Exception\HttpException;
-use Http\Client\Common\Plugin\ErrorPlugin;
-use Http\Client\Common\Exception\ClientErrorException;
-use Http\Client\Common\Exception\ServerErrorException;
-
 
 class Service extends Base\Service
 {
@@ -25,6 +18,8 @@ class Service extends Base\Service
     protected $baseIndex;
 
     protected $config;
+
+    protected $factory;
 
     const ES_TYPE = 'action';
 
@@ -44,6 +39,8 @@ class Service extends Base\Service
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
         $this->baseIndex = $this->config->get('database.es_workflow_action')[$mode];
+
+        $this->factory = $this->app->make('httplug.message_factory.default');
     }
 
     public function create(array $input)
@@ -58,7 +55,7 @@ class Service extends Base\Service
 
         $action = $this->$function($action);
 
-        return [ 'action_id' => $action->getId()];
+        return [ 'action_id' => $action->getId() ];
     }
 
     public function fetchDiffById(string $id)
@@ -67,10 +64,15 @@ class Service extends Base\Service
 
         if ($esResponse === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
         }
 
-        $diff = $esResponse[0]['_source'][Entity::DIFF];
+        $diff = [];
+
+        if (array_key_exists(Entity::DIFF, $esResponse[0]['_source']))
+        {
+            $diff = $esResponse[0]['_source'][Entity::DIFF];
+        }
 
         return $diff;
     }
@@ -81,7 +83,7 @@ class Service extends Base\Service
 
         if ($esResponse === null)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
         }
 
         $esObject = $esResponse[0]['_source'];
@@ -91,7 +93,7 @@ class Service extends Base\Service
         $controllerSplit = explode('@', $controller);
 
         return [
-            Entity::ENTITY_ID     => $esObject[Entity::ENTITY_ID],
+            Entity::PATH_PARAMS   => $esObject[Entity::PATH_PARAMS],
             Entity::PAYLOAD       => $esObject[Entity::PAYLOAD],
             Entity::CONTROLLER    => $controllerSplit[0],
             Entity::FUNCTION_NAME => $controllerSplit[1],
@@ -113,88 +115,47 @@ class Service extends Base\Service
         }
     }
 
-    public function makeRequest($method, $url, $headers, $content)
-    {
-        $factory = $this->app->make('httplug.message_factory.default');
-
-        $req = $factory->createRequest($method, $url, $headers, json_encode($content));
-
-        $response = null;
-
-        try
-        {
-            $response = $this->createHttpClient()->sendRequest($req);
-        }
-        catch (ClientErrorException $e)
-        {
-            $response = $e->getResponse();
-        }
-        catch (ServerErrorException $e)
-        {
-            $response = $e->getResponse();
-        }
-        catch (HttpException $e)
-        {
-            $response = $e->getResponse();
-        }
-
-        return $response;
-    }
-
-    protected function createHttpClient()
-    {
-        // Plugin to get error-exceptions from responses of httpClient
-        $errorPlugin = new ErrorPlugin();
-
-        // PluginClient is the decorator around the httpClient that manages plugins
-        // HttpClientDiscovery finds a suitable installed client that -
-        // extends HttpClient (in this case Guzzle6 client)
-        $pluginClient = new PluginClient(
-            HttpClientDiscovery::find(),
-            [$errorPlugin]
-        );
-
-        return $pluginClient;
-    }
-
     protected function makerAction(Entity $action)
     {
         $entity = $action->getEntityName();
 
         $entityId = $action->getEntityId();
 
-        $oldE = $this->repo->$entity->findByPublicId($entityId);
+        $oldEntity = $this->repo->$entity->findByPublicId($entityId);
 
-        $newE = clone $oldE;
+        $newEntity = clone $oldEntity;
 
         $validator = EntityValidator::getValidator($action->getRoute());
 
-        $newE = $newE->edit($action->getPayload(), $validator);
+        if ($validator !== null)
+        {
+            $newEntity = $newEntity->edit($action->getPayload(), $validator);
 
-        $diff = $this->createDiff($oldE->toArray(), $newE->toArray());
+            $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
 
-        $action->setDiff($diff);
+            $action->setDiff($diff);
+        }
 
         event(new DifferEvent($action->toArray()));
 
         return $action;
     }
 
-    protected function createDiff(array $oldE, array $newE)
+    protected function createDiff(array $oldEntity, array $newEntity)
     {
         $diff = [];
 
-        $keys = array_keys($oldE);
+        $keys = array_keys($oldEntity);
 
         $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
 
         foreach ($diffKeys as $key)
         {
-            if ($oldE[$key] !== $newE[$key])
+            if ($oldEntity[$key] !== $newEntity[$key])
             {
-                $diff['old'][$key] = $oldE[$key];
+                $diff['old'][$key] = $oldEntity[$key];
 
-                $diff['new'][$key] = $newE[$key];
+                $diff['new'][$key] = $newEntity[$key];
             }
         }
 

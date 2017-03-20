@@ -918,6 +918,36 @@ class Entity extends Base\PublicEntity
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
     }
 
+    /**
+     * Used for Marketplace, dashboard:
+     * Return report data for a linked account under a marketplace merchant
+     * @todo: Move this to Merchant/Account/Entity when account onboarding is merged.
+     *
+     * @return array
+     */
+    public function toArrayReport() : array
+    {
+        $data = parent::toArrayReport();
+
+        // Fields that show up on the report
+        $reportFields = [
+            self::ID,
+            self::EMAIL,
+            self::NAME,
+            self::CREATED_AT,
+            self::ACTIVATED,
+            self::ACTIVATED_AT,
+        ];
+
+        $data = array_only($data, $reportFields);
+
+        $data[self::ID] = AccountEntity::getSignedId($this->getAttribute(self::ID));
+
+        $data[self::ACTIVATED_AT] = $this->getDateInFormatDMYHMS(self::ACTIVATED_AT);
+
+        return $data;
+    }
+
     public function groups()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::MERCHANT_MAP);

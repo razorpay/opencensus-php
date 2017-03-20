@@ -5,10 +5,13 @@ namespace RZP\Models\Transfer;
 use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
+use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const TO_ID                 = 'to_id';
@@ -19,6 +22,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
     const REVERSAL_STATUS       = 'reversal_status';
     const AMOUNT_REVERSED       = 'amount_reversed';
+    const NOTES                 = 'notes';
     const ON_HOLD               = 'on_hold';
     const ON_HOLD_UNTIL         = 'on_hold_until';
     const TRANSACTION_ID        = 'transaction_id';
@@ -36,6 +40,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::AMOUNT,
         self::CURRENCY,
+        self::NOTES,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
     ];
@@ -48,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::AMOUNT_REVERSED,
+        self::NOTES,
         self::ON_HOLD,
         // self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
@@ -63,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::AMOUNT_REVERSED,
+        self::NOTES,
         self::ON_HOLD,
         // self::ON_HOLD_UNTIL,
         self::CREATED_AT,
@@ -85,6 +92,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::AMOUNT_REVERSED   => 0,
+        self::NOTES             => [],
         self::ON_HOLD           => 0,
         self::ON_HOLD_UNTIL     => null,
     ];

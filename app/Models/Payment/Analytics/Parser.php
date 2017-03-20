@@ -53,6 +53,7 @@ class Parser extends Base\Core
         Entity::LIBRARY               => 'library',
         Entity::LIBRARY_VERSION       => 'library_version',
         Entity::BROWSER               => 'browser',
+        Entity::BROWSER_VERSION       => 'browser_version',
         Entity::OS                    => 'os',
         Entity::OS_VERSION            => 'os_version',
         Entity::DEVICE                => 'device',
@@ -151,7 +152,7 @@ class Parser extends Base\Core
 
         if ($pa->getBrowser() !== null)
         {
-            $pa->setPlatformVersion($this->uAgent->version($this->uAgent->browser($ua)));
+            $pa->setBrowserVersion($this->uAgent->version($this->uAgent->browser($ua)));
         }
 
         $pa->setOs($this->getOs($ua));
