@@ -1800,6 +1800,19 @@ ALTER TABLE terminals
     ADD INDEX terminals_gateway_merchant_id_index (gateway_merchant_id),
     ADD INDEX terminals_network_category_index (network_category);
 
+ALTER TABLE gateway_status_absence
+    CHANGE COLUMN `from` `begin` INT(11),
+    CHANGE COLUMN `to` `end` INT(11) DEFAULT NULL,
+    ADD KEY `gateway_status_absence_issuer_created_at` (`created_at`),
+    ADD KEY `gateway_status_absence_reason_code` (`reason_code`),
+    ADD KEY `gateway_status_absence_source` (`source`),
+    ALTER COLUMN scheduled SET DEFAULT 0,
+    ALTER COLUMN issuer SET DEFAULT 'UNKNOWN',
+    ALTER COLUMN card_type SET DEFAULT 'UNKNOWN',
+	ALTER COLUMN gateway SET DEFAULT 'ALL',
+    ADD COLUMN public tinyint(4) NOT NULL DEFAULT '1',
+    ALTER COLUMN network SET DEFAULT 'UNKNOWN';
+
 # batch fund transfers
 ALTER TABLE settlements
     ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER batch_settlement_id,
