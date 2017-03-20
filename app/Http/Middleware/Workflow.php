@@ -34,7 +34,7 @@ class Workflow
 
         // Middleware is only used for workflow routes
         if ((in_array($routeName, array_keys(Route::$workflowRoutes), true) === false) or
-            ($this->config->get('database.es_workflow_action_mock') === false))
+            ($this->config->get('database.es_workflow_action_mock') === true))
         {
             return $next($request);
         }
