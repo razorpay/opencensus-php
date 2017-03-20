@@ -68,12 +68,21 @@ class Gateway
         self::BILLDESK,
     ];
 
-    //
-    // Gateways for which we can validate the refunds
-    // if they are successful after they are 'initiated'
-    //
+    /**
+    * Gateways for which we can validate the refunds
+    * if they are successful after they are 'initiated'
+    */
     const UNKNOWN_REFUNDS_VALIDATION_GATEWAYS = [
         self::WALLET_FREECHARGE
+    ];
+
+    /**
+    * Gateways for which we may need to force authorize payments
+    * since their verify API's stop working after a certain time
+    */
+    const FORCE_AUTHORIZE_GATEWAYS = [
+        self::AXIS_MIGS,
+        self::WALLET_JIOMONEY
     ];
 
     public static $channels = [
@@ -141,6 +150,7 @@ class Gateway
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
+            self::WALLET_JIOMONEY,
             self::WALLET_OPENWALLET,
         ],
 
