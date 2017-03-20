@@ -6,18 +6,18 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID            = 'id';
-    const ENTITY_NAME   = 'entity_name';
-    const ENTITY_ID     = 'entity_id';
-    const ACTOR         = 'actor';
-    const TYPE          = 'type';
-    const URL           = 'url';
-    const PATH_PARAMS   = 'path_params';
-    const METHOD        = 'method';
-    const PAYLOAD       = 'payload';
-    const CONTROLLER    = 'controller';
-    const ROUTE         = 'route';
-    const DIFF          = 'diff';
+    const ID           = 'id';
+    const ENTITY_NAME  = 'entity_name';
+    const ENTITY_ID    = 'entity_id';
+    const ACTOR        = 'actor';
+    const TYPE         = 'type';
+    const URL          = 'url';
+    const ROUTE_PARAMS = 'route_params';
+    const METHOD       = 'method';
+    const PAYLOAD      = 'payload';
+    const CONTROLLER   = 'controller';
+    const ROUTE        = 'route';
+    const DIFF         = 'diff';
 
     const CREATED_AT    = 'created_at';
 
@@ -31,7 +31,7 @@ class Entity extends Base\PublicEntity
         self::ACTOR ,
         self::TYPE,
         self::URL,
-        self::PATH_PARAMS,
+        self::ROUTE_PARAMS,
         self::METHOD,
         self::PAYLOAD,
         self::CONTROLLER,
@@ -46,7 +46,7 @@ class Entity extends Base\PublicEntity
         self::ACTOR ,
         self::TYPE,
         self::URL,
-        self::PATH_PARAMS,
+        self::ROUTE_PARAMS,
         self::METHOD,
         self::PAYLOAD,
         self::CONTROLLER,
@@ -62,7 +62,7 @@ class Entity extends Base\PublicEntity
         self::ACTOR ,
         self::TYPE,
         self::URL,
-        self::PATH_PARAMS,
+        self::ROUTE_PARAMS,
         self::METHOD,
         self::PAYLOAD,
         self::CONTROLLER,
@@ -76,17 +76,17 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DIFF, $diff);
     }
 
-    public function getEntityName()
+    public function getEntityName() : string
     {
         return $this->getAttribute(self::ENTITY_NAME);
     }
 
-    public function getEntityId()
+    public function getEntityId() : string
     {
         return $this->getAttribute(self::ENTITY_ID);
     }
 
-    public function getRoute()
+    public function getRoute() : string
     {
         return $this->getAttribute(self::ROUTE);
     }

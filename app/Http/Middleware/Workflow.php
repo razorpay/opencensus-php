@@ -33,44 +33,23 @@ class Workflow
         $routeName = $this->router->currentRouteName();
 
         // Middleware is only used for workflow routes
-        if (in_array($routeName, Route::$workflowRoutes, true) === false)
+        if ((in_array($routeName, array_keys(Route::$workflowRoutes), true) === false) or
+            ($this->config->get('database.es_workflow_action_mock') === true))
         {
             return $next($request);
         }
 
-        $entity = $this->getEntityName($routeName);
+        $entity = Route::$workflowRoutes[$routeName];
 
-        if (($this->config->get('database.es_workflow_action_mock') === false) and
-            ($entity !== null))
-        {
-            $pathParams = $this->router->current()->parameters();
+        $routeParams = $this->router->current()->parameters();
 
-            $entityId = array_values($pathParams)[0];
+        $entityId = array_values($routeParams)[0];
 
-            $params = $this->createMakerEntity($request, $entity, $entityId);
+        $params = $this->createMakerEntity($request, $entity, $entityId);
 
-            $request->replace($params);
+        $request->replace($params);
 
-            return App::make(self::WORKFLOW_CONTROLLER)->postCreateAction();
-        }
-        else
-        {
-            $response = $next($request);
-        }
-
-        return $response;
-    }
-
-    private function getEntityName($routeName)
-    {
-        $entity = null;
-
-        if (isset(Route::$workflowRoutes[$routeName]) === true)
-        {
-            $entity = Route::$workflowRoutes[$routeName];
-        }
-
-        return $entity;
+        return App::make(self::WORKFLOW_CONTROLLER)->postCreateAction();
     }
 
     private function createMakerEntity($request, $entity, $entityId)
@@ -81,19 +60,19 @@ class Workflow
 
         $controller = $this->router->currentRouteAction();
 
-        $pathParams = $this->router->current()->parameters();
+        $routeParams = $this->router->current()->parameters();
 
         $differEntity = [
-           Differ\Entity::ENTITY_NAME => $entity,
-           Differ\Entity::ENTITY_ID   => $entityId,
-           Differ\Entity::ACTOR       => $request->header(self::USER_HEADER),
-           Differ\Entity::TYPE        => Differ\Type::MAKER,
-           Differ\Entity::URL         => $request->getUri(),
-           Differ\Entity::PATH_PARAMS => $pathParams,
-           Differ\Entity::METHOD      => $request->getMethod(),
-           Differ\Entity::PAYLOAD     => $input,
-           Differ\Entity::CONTROLLER  => $controller,
-           Differ\Entity::ROUTE       => $routeName,
+           Differ\Entity::ENTITY_NAME  => $entity,
+           Differ\Entity::ENTITY_ID    => $entityId,
+           Differ\Entity::ACTOR        => $request->header(self::USER_HEADER),
+           Differ\Entity::TYPE         => Differ\Type::MAKER,
+           Differ\Entity::URL          => $request->getUri(),
+           Differ\Entity::ROUTE_PARAMS => $routeParams,
+           Differ\Entity::METHOD       => $request->getMethod(),
+           Differ\Entity::PAYLOAD      => $input,
+           Differ\Entity::CONTROLLER   => $controller,
+           Differ\Entity::ROUTE        => $routeName,
         ];
 
         return $differEntity;

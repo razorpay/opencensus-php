@@ -10,16 +10,16 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ENTITY_NAME => 'required|string',
-        Entity::ENTITY_ID   => 'required|string',
-        Entity::ACTOR       => 'required|string',
-        Entity::TYPE        => 'required|string|custom',
-        Entity::URL         => 'required|string',
-        Entity::PATH_PARAMS => 'required|array',
-        Entity::METHOD      => 'required|string|custom',
-        Entity::PAYLOAD     => 'required|array',
-        Entity::CONTROLLER  => 'required|string',
-        Entity::ROUTE       => 'required|string',
+        Entity::ENTITY_NAME  => 'required|string',
+        Entity::ENTITY_ID    => 'required|string',
+        Entity::ACTOR        => 'required|string',
+        Entity::TYPE         => 'required|string|custom',
+        Entity::URL          => 'required|string',
+        Entity::ROUTE_PARAMS => 'required|array',
+        Entity::METHOD       => 'required|string|custom',
+        Entity::PAYLOAD      => 'required|array',
+        Entity::CONTROLLER   => 'required|string',
+        Entity::ROUTE        => 'required|string',
     ];
 
     protected function validateType($attribute, $type)

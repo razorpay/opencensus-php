@@ -11,27 +11,18 @@ use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
-    protected $action;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->differ = new Differ\Service;
-    }
-
     public function postCreateAction()
     {
         $input = Request::all();
 
-        $result = $this->differ->create($input);
+        $result = (new Differ\Service)->create($input);
 
         return ApiResponse::json($result);
     }
 
     public function fetchDiffById(string $id)
     {
-        $result = $this->differ->fetchDiffById($id);
+        $result = (new Differ\Service)->fetchDiffById($id);
 
         return ApiResponse::json($result);
     }
@@ -40,9 +31,9 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $action = $this->differ->fetchRequest($id);
+        $action = (new Differ\Service)->fetchRequest($id);
 
-        $pathParams = $action[Differ\Entity::PATH_PARAMS];
+        $routeParams = $action[Differ\Entity::ROUTE_PARAMS];
 
         $payload = $action[Differ\Entity::PAYLOAD];
 
@@ -54,7 +45,7 @@ class WorkflowController extends Controller
 
         $controller = App::make($controller);
 
-        return call_user_func_array([$controller, $functionName], array_values($pathParams));
+        return App::call([$controller, $functionName], array_values($routeParams));
     }
 
     public function postActionChecker(string $id)
@@ -71,6 +62,8 @@ class WorkflowController extends Controller
         $input = Request::all();
 
         $data = (new Checker\Service)->fetchMultiple($id, $input);
+
+        return ApiResponse::json($data);
     }
 
     public function getActionChecker(string $id, string $checkerId)
