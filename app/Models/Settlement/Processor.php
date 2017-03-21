@@ -167,12 +167,12 @@ class Processor extends Base\Core
             $totalTxns += $setlTxnsCount;
         }
 
-        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
+        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel, false);
 
         return $response;
     }
 
-    protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel)
+    protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel, $h2h=true)
     {
         $data = [
             'count'             => $settlements->count(),
@@ -181,7 +181,7 @@ class Processor extends Base\Core
 
         if ($setlAttempts->count() > 0)
         {
-            list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts, $channel);
+            list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts, $channel, $h2h);
 
             $urls = [
                 'kotak_settlement_txt'   => $urlText,
@@ -223,13 +223,13 @@ class Processor extends Base\Core
         return [$settlements, $settledTxnsCount, $setlAttempts];
     }
 
-    protected function generateSettlementFile($setlAttempts, $channel)
+    protected function generateSettlementFile($setlAttempts, $channel, $h2h)
     {
         $data = [null, null];
 
         if ($channel === Channel::KOTAK)
         {
-            $data = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts);
+            $data = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts, $h2h);
         }
 
         return $data;

@@ -7,7 +7,7 @@ use RZP\Models\Base\Core;
 
 abstract class Handler extends Core
 {
-    abstract public function save($bucket, $fileDetails);
+    abstract public function save(array $bucket, array $fileDetails);
 
     abstract public function saveAs($bucket, $key, $filePath);
 
