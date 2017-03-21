@@ -1,0 +1,96 @@
+<div class="workflow-new-page" ng-controller="WorkflowNewCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h3 class="m-n font-thin">
+      Action Approval Workflow
+      <spinner class="inline"></spinner>
+    </h3>
+  </div>
+  <div class="wrapper-md">
+    <div class="row panel-container">
+      <div class="col-xs-4">
+        <div class="action-desc-panel panel panel-default">
+          <div class="panel-heading">
+            <strong>{{feed.makers[0]}}</strong> performed <strong>{{feed.actionName}}</strong> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+            <span class="label pending-bg-color pull-right action-state">{{feed.action_state}}</span>
+          </div>
+          <div class="wrapper clearfix">
+            <div class="h3 m-b">{{feed.action_text}}</div>
+            <div class="border-bottom m-b"></div>
+            <div class="assignment-container ">
+              <div class="strong assignee-heading">Assigned to:</div>
+              <div class="assignees-container m-b">
+                <span class="assignee-label">Ashmeet Sidhu</span>
+                <span class="assignee-label">Ashmeet Sidhu</span>
+                <span class="assignee-label">Ashmeet Sidhu</span>
+              </div>
+            </div>
+            <div class="border-bottom m-b"></div>
+            <div class="pull-left faded-text">{{feed.comments.length}} Comments</div>
+          </div>
+        </div>
+        <div class="panel panel-default wrapper">
+          <i class="fa fa-check-circle approved-color"></i> <strong>Shashank Kumar</strong> <span class="">approved</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+        </div>
+        <div class="action-desc-panel panel panel-default">
+          <div class="panel-heading">
+            <strong>{{feed.checkers[0]}}</strong> commented <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+          </div>
+          <div class="wrapper clearfix">
+            <div class="">This is a very acidic comment. pH = 0</div>
+          </div>
+        </div>
+        <div class="panel panel-default wrapper">
+          <i class="fa fa-times-circle rejected-color"></i> <strong>Ashmeet Sidhu</strong> <span class="">rejected</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+        </div>
+        <div class="panel panel-default">
+          <form class="panel-heading clearfix wrapper">
+            <textarea class="form-control wrapper-xs" rows="4" id="comment"></textarea>
+            <button class="pull-right btn btn-info m-t" type="submit">Comment</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-xs-8">
+        <div class="right-label m-b">Workflow</div>
+        <div class="action-desc-panel panel panel-default">
+          <div class="panel-heading">
+            Step 1
+          </div>
+          <div class="wrapper clearfix">
+            <div class="">Add a checker to approve the action. It could be either a team or an individual.</div>
+            <div class="assignee-list m-b">
+              <div class="">
+                <span class="assignee-label">Shashank Kumar</span>
+              </div>
+              <div class="assignee-list m-b">
+                <div class="">
+                  <span class="assignee-label">Shashank Kumar</span>
+                  <span class="help-label">Minimum approvals</span>
+                  <input type="number" min="1" max="50"/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-default">
+          +  Add a Step
+        </button>
+        <button type="button" class="btn btn-info">
+          Save Changes
+        </button>
+        <div class="right-label m-b m-t">Approved by</div>
+        <div class="assignee-list m-b">
+          <div class="">
+            <span class="assignee-label">Shashank Kumar</span>
+          </div>
+        </div>
+        <div class="right-label m-b m-t">Rejected by</div>
+        <div class="assignee-list m-b">
+          <div class="">
+            <span class="assignee-label">Shashank Kumar</span>
+          </div>
+          <div class=""><span class="assignee-label">Ashmeet Sidhu</span></div>
+        </div>
+      </div>
+    </div>  
+  </div>
+</div>

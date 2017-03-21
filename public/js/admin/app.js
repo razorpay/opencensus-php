@@ -201,15 +201,15 @@ var app = angular.module('app', [
     }).state('app.invitations.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_invitations_list.html'
-    }).state('app.workflowfeed', {
-      url: '/workflowfeed',
-      templateUrl: 'tpl/admin/app_workflow_feed.html'
-    })
-
-    // react routes
-    .state('app.workflows', {
+    }).state('app.workflows', {
       url: '/workflows',
-      templateProvider: reactTemplateProvider('<workflows-list/>')
+      template: '<div ui-view class=""></div>'
+    }).state('app.workflows.feed', {
+      url: '/feed',
+      templateUrl: 'tpl/admin/app_workflow_feed.html'
+    }).state('app.workflows.new', {
+      url: '/new',
+      templateUrl: 'tpl/admin/app_workflow_new.html'
     })
 
     //Guest Routes
