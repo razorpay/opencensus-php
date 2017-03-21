@@ -298,6 +298,11 @@ app.controller('EntitiesCtrl', [
         status: ['all', 'created', 'failed', 'processed'],
         utr: ['UTR']
       },
+      gateway_downtime: {
+        method: methodList,
+        gateway: gatewayList,
+        bank: ['Bank']
+      },
       hdfc: {
         auth: ['Auth Code'],
         gateway_transaction_id: ['Gateway Transaction Id'],
