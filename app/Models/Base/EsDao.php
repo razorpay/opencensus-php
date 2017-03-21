@@ -328,7 +328,7 @@ class EsDao
             'body'  => [
                 'query' => [
                    'match' => [
-                        'id' => $id
+                        'action_id' => $id
                     ]
                 ]
             ]
