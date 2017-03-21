@@ -53,6 +53,7 @@ export default class InvoiceLineItem extends Component {
     this.props.change(`${fieldName}.item_id`, item.id || 'NULL') // since redux-form converts falsy values into empty strings
     this.props.change(`${fieldName}.quantity`, 1)
     this.props.change(`${fieldName}.description`, item.description || '')
+    this.props.change(`${fieldName}.amount`, item.amount || 0)
     this.props.change(`${fieldName}.amountInINR`, item.amountInINR || '0.00')
   }
 
