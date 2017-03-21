@@ -35,14 +35,19 @@ class Repository extends Base\Repository
 
         $cols = $this->getAttributeWithTableName('*');
 
-        return $this->newQuery()
-                    ->select($cols)
-                    ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
-                    ->where(Entity::STATUS, '=', Status::FAILED)
-                    ->where(M\Entity::HOLD_FUNDS, '=', 0)
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
-                    ->get();
+        $setls = $this->newQuery()
+                      ->select($cols)
+                      ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
+                      ->where(Entity::STATUS, '=', Status::FAILED)
+                      ->whereIn(Entity::ID, $setlIds)
+                      ->where(M\Entity::HOLD_FUNDS, '=', 0)
+                      ->where(Entity::CHANNEL, '=', $channel)
+                      ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
+                      ->get();
+
+        assert(($setls->count() <= count($setlIds)));
+
+        return $setls;
     }
 
     public function getSettlementWithFeesAsNullOrZero()
