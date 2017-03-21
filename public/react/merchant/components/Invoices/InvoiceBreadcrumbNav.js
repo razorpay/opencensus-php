@@ -1,4 +1,4 @@
-import InvoiceStatus from 'merchant/components/Invoices/InvoiceStatus'
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel'
 
 export default ({ invoice, onBackNavClick }) => {
   let isNew = !invoice.id
@@ -17,7 +17,7 @@ export default ({ invoice, onBackNavClick }) => {
         {
           isNew ?
             <span class='label label-muted'>Unsaved</span> :
-            <InvoiceStatus status={invoice.status} />
+            <InvoiceStatusLabel status={invoice.status} />
         }
       </li>
     </ol>

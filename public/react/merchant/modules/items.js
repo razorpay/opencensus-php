@@ -11,18 +11,20 @@ const REMOVE_ITEM_HIGHLIGHT = 'REMOVE_ITEM_HIGHLIGHT'
 
 export const fetchItems = (params) => {
   return (dispatch) => {
+    let item = new Item()
     return dispatch({
       type: ITEMS_FETCH,
-      payload: Item.fetchAll(params)
+      payload: item.fetchAll(params)
     })
   }
 }
 
 export const fetchItemsForAutocomplete = () => {
   return (dispatch) => {
+    let item = new Item()
     return dispatch({
       type: ITEMS_AUTOCOMPLETE_FETCH,
-      payload: Item.fetchForAutocomplete()
+      payload: item.fetchForAutocomplete()
     })
   }
 }

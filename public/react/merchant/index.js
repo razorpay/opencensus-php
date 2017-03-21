@@ -17,6 +17,9 @@ import ItemsListContainer from './containers/Items/List'
 import InvoicesListContainer from './containers/Invoices/List'
 import InvoicesNewContainer from './containers/Invoices/New'
 import InvoiceDetailsContainer from './containers/Invoices/Details'
+import OrdersListContainer from './containers/Orders/List'
+import OrderDetailsContainer from './containers/Orders/Details'
+
 // import PlansListContainer from './containers/Plans/List'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
 // import SubscriptionsNewContainer from './containers/Subscriptions/New'
@@ -90,6 +93,8 @@ createNgDirective('invoicesList', InvoicesListContainer)
 createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
 createNgDirective('customersList', CustomersListContainer)
 createNgDirective('itemsList', ItemsListContainer)
+createNgDirective('ordersList', OrdersListContainer)
+createNgDirective('orderDetails', OrderDetailsContainer, ['id'])
 // createNgDirective('subscriptionsList', SubscriptionsListContainer)
 // createNgDirective('subscriptionsNew', SubscriptionsNewContainer)
 // createNgDirective('plansList', PlansListContainer)
