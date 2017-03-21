@@ -13,6 +13,7 @@ use RZP\Models\Card;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
@@ -60,7 +61,8 @@ class Validator extends Base\Validator
         'reverse_all'             => 'sometimes|boolean',
         'reversals'               => 'sometimes|array',
         'reversals.*.transfer'    => 'required|public_id',
-        'reversals.*.amount'      => 'required|integer|min:100'
+        'reversals.*.amount'      => 'required|integer|min:100',
+        'reversals.*.notes'       => 'sometimes|notes',
     ];
 
     protected static $transferRules = [
@@ -69,6 +71,7 @@ class Validator extends Base\Validator
         'transfers.*.account'        => 'sometimes|public_id',
         'transfers.*.amount'         => 'required|integer|min:100',
         'transfers.*.currency'       => 'required|string|size:3',
+        'transfers.*.notes'          => 'sometimes|notes',
         'transfers.*.on_hold'        => 'sometimes|boolean',
         // 'transfers.*.on_hold_until'  => 'sometimes|integer',
     ];
@@ -113,7 +116,7 @@ class Validator extends Base\Validator
         $vpaParts = explode('@', $vpa);
 
         if ((count($vpaParts) !== 2) or
-            (strlen($vpaParts[1]) > 50))
+            (ProviderCode::validate($vpaParts[1]) === false))
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
@@ -325,10 +328,6 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Attribute fee is not allowed and should not be sent');
-            }
-            else if (empty($input['fee']))
-            {
-                ;
             }
         }
         if ((isset($input['fee'])) and

@@ -199,8 +199,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
-        'setl_initiate_schedule'                  => ['post',     'settlements/initiate2/{channel?}',               'SettlementController@postSettlementInitiateV2'                     ],
-        'setl_retry'                              => ['post',     'settlements/retry/{channel?}',                   'SettlementController@postSettlementRetry'                          ],
+        'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
@@ -245,6 +244,7 @@ final class Route
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
+        'admin_get_file'                          => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                           ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
         'gateway_payment_callback_axis'           => ['post',     'callback/axis',                                  'GatewayController@callbackAxis'                                    ],
@@ -336,10 +336,10 @@ final class Route
         'gateway_fetch_priorities'                => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'               => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
         'gateway_remove_priorities'               => ['patch',    'gateway/priorities/{method}/remove',             'GatewayController@removeGatewayPriority'                           ],
-        'gateway_create_absence'                  => ['post',     'gateway/absence',                                'GatewayController@postCreateGatewayAbsence'                        ],
-        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putUpdateGatewayAbsence'                         ],
-        'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                           'GatewayController@deleteGatewayAbsence'                            ],
-        'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
+        'gateway_create_downtime'                 => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
+        'gateway_update_downtime'                 => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
+        'gateway_fetch_downtime'                  => ['get',      'gateway/downtimes',                              'GatewayController@getAbsentGateways'                               ],
+        'gateway_downtime_source_webhook'         => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
@@ -449,6 +449,10 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+
+        // Dummy routes to test Account Auth
+        'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
+        'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
     );
 
     public static $public = array(
@@ -653,7 +657,6 @@ final class Route
         'pricing_delete_plan_rule_force',
         'setl_initiate',
         'payout_initiate',
-        'setl_initiate_schedule',
         'setl_retry',
         'setl_file_generate',
         'setl_reconcile',
@@ -723,10 +726,9 @@ final class Route
         'gateway_fetch_priorities',
         'gateway_update_priorities',
         'gateway_remove_priorities',
-        'gateway_create_absence',
-        'gateway_update_absence',
-        'gateway_delete_absence',
-        'gateway_fetch_absence',
+        'gateway_create_downtime',
+        'gateway_update_downtime',
+        'gateway_fetch_downtime',
         'order_refund_multiple_authorized',
         'refund_create_gateway_record',
         'gateway_validate_unknown_refund',
@@ -760,11 +762,13 @@ final class Route
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
+        'admin_get_file',
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
         'schedule_fetch_multiple',
         'schedule_migration',
+        'internal_dummy_account_test',
     );
 
     public static $proxy = array(
@@ -867,6 +871,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'admin_dummy_account_test',
     ];
 
     public static $adminPermission = [
@@ -904,6 +909,7 @@ final class Route
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
+        'admin_dummy_account_test'       => [Permission::VIEW_MERCHANT],
     ];
 
     public static $direct = array(
@@ -929,6 +935,7 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
+        'gateway_downtime_source_webhook',
         'checkout_onyx',
         'checkout_hosted',
         'mock_event_tracker',
@@ -946,7 +953,6 @@ final class Route
         'cron' => array(
             'setl_initiate',
             'payout_initiate',
-            'setl_initiate_schedule',
             'setl_reconcile_generate',
             'setl_return_generate',
             'payment_auth_notify',
@@ -1056,6 +1062,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'admin_dummy_account_test',
     ];
 
     const RAZORPAYJS_ROUTES = array(

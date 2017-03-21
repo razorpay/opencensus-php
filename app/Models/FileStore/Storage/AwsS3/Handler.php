@@ -128,7 +128,8 @@ class Handler extends BaseHandler
      * @param string $key          File for which the signed url should be fetched
      * @param string $duration     Validity of signed url
      *
-     * @return signed Url
+     * @return string Signed url
+     * @throws \Exception
      */
     public function getSignedUrl($bucketConfig, $key, $duration = '15')
     {

@@ -319,4 +319,47 @@ return [
             'status_code' => 401,
         ],
     ],
+
+    'testAppAuthWithAccount' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/dummy/internal'
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAdminAuthWithAccount' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/dummy/admin'
+        ],
+        'response' => [
+            'content' => [
+                'id' => '10000000000000'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAccountAuthInvalidId' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/dummy/internal'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
 ];

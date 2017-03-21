@@ -51,15 +51,9 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        //TODO:: To be removed after it is tested on production
-        // Second merchant id is for Test user running test cases
-        if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
-            ($input['merchant']['id'] === '10000000000000'))
+        if ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
-            if ($input['payment']['method'] === Payment\Method::NETBANKING)
-            {
-                $request = $this->makeRequestAndGetBankUrl($request, $input);
-            }
+            $request = $this->makeRequestAndGetBankUrl($request, $input);
         }
 
         return $request;
@@ -74,16 +68,7 @@ class Gateway extends Base\Gateway
 
     protected function setReferer($terminal, array $input)
     {
-        $referer = $this->app['config']->get('app.url');
-
-        if ($terminal->isShared() === false)
-        {
-            $merchant = $input['merchant'];
-
-            $referer = $merchant->getWebsite();
-        }
-
-        $this->referer = $referer;
+        $this->referer = $this->app['config']->get('app.url');
     }
 
     public function capture(array $input)

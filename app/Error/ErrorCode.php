@@ -114,6 +114,7 @@ class ErrorCode
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                               = 'BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                                  = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                               = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET';
+    const BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID                               = 'BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                     = 'BAD_REQUEST_UNAUTHORIZED_INVALID_HASH';
     const BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_AUTHORIZE                              = 'BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_AUTHORIZE';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                              = 'BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED';
@@ -493,4 +494,10 @@ class ErrorCode
 
     // ES related error codes
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
+
+    // Error code for data missing during force authorize flow
+    const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                     = 'BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING';
+
+    // File store
+    const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
 }

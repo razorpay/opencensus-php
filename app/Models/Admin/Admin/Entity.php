@@ -286,6 +286,11 @@ class Entity extends Base\Entity
         return explode(' ', $this->getName())[0];
     }
 
+    public function getOrgId()
+    {
+        return $this->getAttribute(self::ORG_ID);
+    }
+
     public function getOAuthAccessToken()
     {
         return $this->getAttribute(self::OAUTH_ACCESS_TOKEN);
