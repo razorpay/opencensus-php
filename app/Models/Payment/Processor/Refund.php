@@ -477,32 +477,8 @@ trait Refund
             }
 
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
-        }
-        catch (Exception\GatewayTimeoutException $ex)
-        {
-            //
-            // Currently, we are running this experiment only for Billdesk.
-            // Billdesk gives us a way to find out how much amount has been refunded.
-            // We are not aware of any other gateway which
-            // provides us this feature, currently.
-            //
 
-            if (in_array($gateway, Payment\Gateway::REFUND_TIMEOUT_HANDLED_GATEWAYS, true) === false)
-            {
-                throw $ex;
-            }
-
-            $this->trace->traceException($ex);
-
-            //
-            // We just ignore the timeout and mark it as refunded on the api side.
-            // Later we would run verify for these refunds and
-            // create appropriate entries on the gateway side.
-            //
-
-            $this->trace->info(
-                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
-                ['payment_id' => $this->payment->getId()]);
+            $this->refund->setStatus(Payment\Refund\Status::SUCCESS);
         }
         catch (Exception\BaseException $e)
         {
@@ -513,7 +489,7 @@ trait Refund
                     $e->getError(),
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
-            throw $e;
+            $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
     }
 
@@ -522,6 +498,8 @@ trait Refund
         try
         {
             $this->callGatewayFunction(Payment\Action::REVERSE, $data);
+
+            $this->refund->setStatus(Payment\Refund\Status::SUCCESS);
         }
         catch (Exception\BaseException $e)
         {
@@ -531,6 +509,8 @@ trait Refund
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
     }
 
@@ -623,19 +603,6 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            if ($payment->getTransactionId() !== null)
-            {
-                $this->refundOnGateway($data);
-
-                $this->refund->setGatewayRefunded(true);
-            }
-            else if ($this->gatewaySupportsReversal($payment) === true)
-            {
-                $this->reverseOnGateway($data);
-
-                // TODO: Record this too.
-            }
-
             $refundCopy = clone $this->refund;
 
             //
@@ -658,6 +625,21 @@ trait Refund
             $this->updatePaymentRefunded();
 
             $this->sendRefundNotification($payment);
+
+            if ($payment->getTransactionId() !== null)
+            {
+                $this->refundOnGateway($data);
+
+                $this->refund->setGatewayRefunded(true);
+            }
+            else if ($this->gatewaySupportsReversal($payment) === true)
+            {
+                $this->reverseOnGateway($data);
+
+                // TODO: Record this too.
+            }
+
+            $this->repo->saveOrFail($this->refund);
         });
 
         return $this->refund;
@@ -672,18 +654,17 @@ trait Refund
 
     protected function updatePaymentRefunded()
     {
-        // Indicates buggy case where refund entity is already present
-        if ($this->verifyRefundStatus === false)
-        {
-            ; // No action required here.
-        }
-        else
+        // Indicates inverse of buggy case where
+        // refund entity is already present
+        if ($this->verifyRefundStatus !== false)
         {
             $amount = $this->refund->getAmount();
 
             $baseAmount = $this->refund->getBaseAmount();
 
             $this->payment->refundAmount($amount, $baseAmount);
+
+            $this->refund->setStatus(Payment\Refund\Status::CREATED);
         }
 
         $this->repo->transaction(function()

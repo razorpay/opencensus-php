@@ -7,4 +7,8 @@ class Status
     const NULL      = null;
     const FULL      = 'full';
     const PARTIAL   = 'partial';
+
+    const CREATED = 'created';
+    const SUCCESS = 'success';
+    const FAILED  = 'failed';
 }

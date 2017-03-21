@@ -1853,3 +1853,6 @@ UPDATE tokens
 # Prod test
 UPDATE tokens
     SET terminal_id = '1000SharpTrmnl' WHERE recurring = 1;
+
+ALTER TABLE refunds
+    ADD COLUMN status VARCHAR(255) AFTER transaction_id;

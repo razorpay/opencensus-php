@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY          = 'currency';
     const BASE_AMOUNT       = 'base_amount';
     const TRANSACTION_ID    = 'transaction_id';
+    const STATUS            = 'status';
     const NOTES             = 'notes';
     const BATCH_ID          = 'batch_id';
     const GATEWAY_REFUNDED  = 'gateway_refunded';
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::BASE_AMOUNT,
         self::TRANSACTION_ID,
+        self::STATUS,
         self::NOTES,
         self::BATCH_ID,
         self::GATEWAY_REFUNDED,
@@ -182,6 +184,11 @@ class Entity extends Base\PublicEntity
     public function setGatewayRefunded($gatewayRefunded)
     {
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
+    }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
     }
 
     public function setBaseAmount()
