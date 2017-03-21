@@ -14,6 +14,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::ADMIN_ID     => 'required|string|max:14',
         Entity::WORKFLOW_ID  => 'required|string|max:14|custom',
+        'differ'             => 'required|array',
     ];
 
     protected static $editRules = [

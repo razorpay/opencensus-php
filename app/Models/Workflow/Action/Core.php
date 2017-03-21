@@ -23,6 +23,8 @@ class Core extends Base\Core
             $this->repo->saveOrFail($action);
 
             $this->createInitialStateForAction($action);
+
+            (new Differ\Core)->create($input['differ']);
         });
 
         return $action;

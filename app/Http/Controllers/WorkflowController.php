@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use App;
 use Request;
 use ApiResponse;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Comment;
 use RZP\Models\Workflow\Action\Checker;
@@ -25,6 +26,15 @@ class WorkflowController extends Controller
         $result = (new Differ\Service)->get($id);
 
         return ApiResponse::json($result);
+    }
+
+    public function postWorkflowAction()
+    {
+        $input = Request::all();
+
+        $data = (new Action\Service)->create($input);
+
+        return ApiResponse::json($data);
     }
 
     public function postExecuteAction(string $id)

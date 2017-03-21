@@ -49,7 +49,7 @@ class Workflow
 
         $request->replace($params);
 
-        return App::make(self::WORKFLOW_CONTROLLER)->postActionDiff();
+        return App::make(self::WORKFLOW_CONTROLLER)->postWorkflowAction();
     }
 
     private function createMakerEntity($request, $entity, $entityId)
