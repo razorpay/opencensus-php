@@ -32,6 +32,7 @@ class Repository extends Base\Repository
         $merchantId = $this->manager->merchant->getAttributeWithTableName(M\Entity::ID);
 
         $settlementMerchantId = $this->getAttributeWithTableName(Settlement\Entity::MERCHANT_ID);
+        $settlementId = $this->getAttributeWithTableName(Settlement\Entity::ID);
 
         $cols = $this->getAttributeWithTableName('*');
 
@@ -39,7 +40,7 @@ class Repository extends Base\Repository
                       ->select($cols)
                       ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
                       ->where(Entity::STATUS, '=', Status::FAILED)
-                      ->whereIn(Entity::ID, $setlIds)
+                      ->whereIn($settlementId, $setlIds)
                       ->where(M\Entity::HOLD_FUNDS, '=', 0)
                       ->where(Entity::CHANNEL, '=', $channel)
                       ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
