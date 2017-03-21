@@ -4,10 +4,10 @@ export const fetchConfig = () => {
   return (dispatch) => {
     return ajax({
       url: '/user/generic',
+      appendModeInURL: false,
       data: {
         route_name: 'merchant_fetch_config'
       },
-      appendMode: false,
     }).then((response) => {
       return response.data
     })

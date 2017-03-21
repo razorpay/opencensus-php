@@ -10,9 +10,10 @@ export const REMOVE_HIGHLIGHT_INVOICE = 'REMOVE_HIGHLIGHT_INVOICE'
 
 export const fetchInvoices = (params) => {
   return (dispatch) => {
+    let invoice = new Invoice()
     return dispatch({
       type: INVOICES_FETCH,
-      payload: Invoice.fetchAll(params)
+      payload: invoice.fetchAll(params)
     })
   }
 }
