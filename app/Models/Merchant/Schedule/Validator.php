@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
+        MerchantSchedule::TYPE              => 'required|string|max:20',
         MerchantSchedule::METHOD            => 'sometimes|string|max:20|custom',
         MerchantSchedule::SCHEDULE_ID       => 'required|alpha_dash|max:20'
     ];

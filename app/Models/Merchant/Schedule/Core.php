@@ -9,11 +9,11 @@ use RZP\Models\Merchant\Schedule as MerchantSchedule;
 
 class Core extends Base\Core
 {
-    public function createOrUpdate(Merchant\Entity $merchant, $input)
+    public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
-        return $this->repo->transaction(function() use ($merchant, $input)
+        return $this->repo->transaction(function() use ($merchant, $entity, $input)
         {
-            $merchantSchedule = $this->create($merchant, $input);
+            $merchantSchedule = $this->create($merchant, $entity, $input);
 
             $currentSchedule = $this->repo->merchant_schedule
                                     ->fetchDuplicate($merchantSchedule);
@@ -27,17 +27,18 @@ class Core extends Base\Core
 
             return $merchantSchedule;
         });
-
     }
 
     /**
      * Creates merchant schedule entity
      */
-    public function create(Merchant\Entity $merchant, $input)
+    public function create(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
         $merchantSchedule = (new MerchantSchedule\Entity)->build($input);
 
         $merchantSchedule->merchant()->associate($merchant);
+
+        $merchantSchedule->entity()->associate($entity);
 
         $scheduleId = $input[MerchantSchedule\Entity::SCHEDULE_ID];
 
@@ -58,7 +59,11 @@ class Core extends Base\Core
 
         $merchantSchedule->merchant()->associate($merchant);
 
+        $merchantSchedule->entity()->associate($merchant);
+
         $merchantSchedule->schedule()->associate($schedule);
+
+        $merchantSchedule->setType($schedule->getType());
 
         $this->repo->saveOrFail($merchantSchedule);
 

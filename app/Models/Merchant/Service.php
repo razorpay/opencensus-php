@@ -356,7 +356,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchantSchedule = (new MerchantSchedule\Core)->createOrUpdate($merchant, $input);
+        $merchantSchedule = (new MerchantSchedule\Core)->createOrUpdate($merchant, $merchant, $input);
 
         return $merchantSchedule->toArrayPublic();
     }

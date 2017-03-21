@@ -495,10 +495,6 @@ class SettlementTest extends TestCase
 
     public function testSettlementFileGenerationV1()
     {
-        $this->ba->adminAuth();
-
-        $schedule = $this->createAndAssignSchedule();
-
         $this->ba->appAuth();
 
         // Create payments for old date

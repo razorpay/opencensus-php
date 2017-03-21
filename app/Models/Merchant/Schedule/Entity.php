@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     public $incrementing = true;
 
     protected $fillable = [
+        self::TYPE,
         self::METHOD,
     ];
 
@@ -79,5 +80,10 @@ class Entity extends Base\PublicEntity
     public function getScheduleId()
     {
         return $this->getAttribute(self::SCHEDULE_ID);
+    }
+
+    public function setType($type)
+    {
+        return $this->setAttribute(self::TYPE, $type);
     }
 }

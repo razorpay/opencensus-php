@@ -26,6 +26,7 @@ return [
         'url'     => '/merchants/10000000000000/schedules',
         'content' => [
             'schedule_id' => null,
+            'type' => 'settlement',
         ],
     ],
 
