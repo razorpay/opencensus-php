@@ -1048,7 +1048,7 @@ class Gateway extends Base\Gateway
         $content = [];
 
         $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
-        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['refund']['id'];
 
         $content[F::CC_CREDIT_SERVICE] = [
             F::RUN                => 'true',
@@ -1072,7 +1072,7 @@ class Gateway extends Base\Gateway
                 ],
                 [
                     'id' => '2',
-                    '_'  => $input['refund']['id']
+                    '_'  => $input['payment']['id']
                 ]
             ]
         ];
@@ -1087,7 +1087,7 @@ class Gateway extends Base\Gateway
         $content = [];
 
         $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
-        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['refund']['id'];
 
         $content[F::CC_AUTH_REVERSAL_SERVICE] = [
             F::RUN              => 'true',
@@ -1107,7 +1107,7 @@ class Gateway extends Base\Gateway
                 ],
                 [
                     'id' => '2',
-                    '_'  => $input['refund']['id']
+                    '_'  => $input['payment']['id']
                 ]
             ]
         ];

@@ -6,6 +6,6 @@ class UserDefinedField
 {
     const CURRENT_VERSION = 1;
 
-    const VERSION   = 'field1';
-    const REFUND_ID = 'field2';
+    const VERSION    = 'field1';
+    const PAYMENT_ID = 'field2';
 }
