@@ -118,7 +118,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['status'], 'Y');
+        $this->assertEquals($gatewayPayment['status'], 'S');
 
         // The BID was never saved
         $this->assertEquals($gatewayPayment['bank_payment_id'], null);

@@ -14,5 +14,5 @@ class Url
      */
     const AUTHORIZE     = '/corp/BANKAWAY?';
     const VERIFY        = '/corp/BANKAWAY?';
-    const VERIFY_BROKEN = '/Verify?';
+    const VERIFY_BROKEN = '/Verify/?';
 }

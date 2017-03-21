@@ -31,7 +31,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'verify');
 
-        $response = $this->getVerifyResponseData();
+        $response = $this->getVerifyResponseData($input);
 
         $this->content($response, 'verify');
 
@@ -51,11 +51,29 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function getVerifyResponseData()
+    protected function getVerifyResponseData(array $input)
     {
+        if (isset($input[RequestFields::BANK_PAYMENT_ID]) === false)
+        {
+            $content = [
+                $input[RequestFields::PAYMENT_ID],
+                $input[RequestFields::ITEM_CODE],
+                99999999,
+                $input[RequestFields::AMOUNT],
+                'S',
+            ];
+
+            return $this->getStringFromContent($content, '|');
+        }
+
         return
         "<HTML>
             <BODY> Y </BODY>
         </HTML>";
+    }
+
+    protected function getStringFromContent($content, $glue = '')
+    {
+        return implode($glue, $content);
     }
 }

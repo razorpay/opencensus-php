@@ -183,8 +183,9 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        // content will contain status as either Y or N
-        if ($content[ResponseFields::STATUS] === Constants::CONFIRMATION)
+        // content will contain status as either Y or N or S
+        if (($content[ResponseFields::STATUS] === Constants::CONFIRMATION) or
+            ($content[ResponseFields::STATUS] === Constants::SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -192,13 +193,32 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData(array $input)
     {
-        $data = $this->getRequestData($input);
-
         $payment = $this->repo->findByPaymentId($input['payment']['id'])
                               ->first();
 
-        $data[RequestFields::MODE]            = Constants::VERIFY_MODE;
-        $data[RequestFields::BANK_PAYMENT_ID] = $payment[Base\Entity::BANK_PAYMENT_ID];
+        if (empty($payment[Base\Entity::BANK_PAYMENT_ID]) === true)
+        {
+            $data = $this->getVerifyBrokenData($input);
+        }
+        else
+        {
+            $data = $this->getRequestData($input);
+
+            $data[RequestFields::MODE]            = Constants::VERIFY_MODE;
+            $data[RequestFields::BANK_PAYMENT_ID] = $payment[Base\Entity::BANK_PAYMENT_ID];
+        }
+
+        return $data;
+    }
+
+    protected function getVerifyBrokenData(array $input)
+    {
+        $data = [
+            RequestFields::PAYEE_ID   => $this->getMerchantId(),
+            RequestFields::PAYMENT_ID => $input['payment']['id'],
+            RequestFields::ITEM_CODE  => strtoupper($input['payment']['id']),
+            RequestFields::AMOUNT     => $input['payment']['amount'] / 100,
+        ];
 
         return $data;
     }
@@ -272,10 +292,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $attributes = [
-            Base\Entity::RECEIVED => true,
-            Base\Entity::STATUS   => $content[ResponseFields::STATUS]
-        ];
+        $attributes = $this->getVerifyAttributesToSave($content);
 
         $gatewayPayment->fill($attributes);
 
@@ -284,14 +301,70 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
+    protected function getVerifyAttributesToSave(array $content)
+    {
+        if (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true)
+        {
+            $attributes = [
+                Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::PAYMENT_ID],
+            ];
+        }
+
+        $attributes = [
+            Base\Entity::RECEIVED => true,
+            Base\Entity::STATUS   => $content[ResponseFields::STATUS]
+        ];
+
+        return $attributes;
+    }
+
     protected function parseVerifyResponse(string $body)
     {
-        $status = (array) simplexml_load_string($body);
+        //
+        // If body is XML
+        //
+        if ($body[0] === "<")
+        {
+            $status = (array) simplexml_load_string($body);
 
-        // Verify response is Y or N, so adding a key for the response
-        return [
-            ResponseFields::STATUS => trim($status[ResponseFields::VERIFY_BODY])
+            // Verify response is Y or N, so adding a key for the response
+            return [
+                ResponseFields::STATUS => trim($status[ResponseFields::VERIFY_BODY])
+            ];
+        }
+
+        return $this->parseVerifyBrokenResponse($body);
+    }
+
+    protected function parseVerifyBrokenResponse(string $body)
+    {
+        $values = explode('|', $body);
+
+        //
+        // Manually setting success to false verify response
+        // is a failure response ||||
+        //
+        if (strlen($values[0]) === 0)
+        {
+            $values[4] = Constants::FAILURE;
+        }
+
+        $keys = $this->getVerifyBrokenResponseKeys();
+
+        return array_combine($keys, $values);
+    }
+
+    protected function getVerifyBrokenResponseKeys()
+    {
+        $keys = [
+            ResponseFields::PAYMENT_ID,
+            ResponseFields::ITEM_CODE,
+            ResponseFields::BANK_PAYMENT_ID,
+            ResponseFields::AMOUNT,
+            ResponseFields::STATUS
         ];
+
+        return $keys;
     }
 
     /**
