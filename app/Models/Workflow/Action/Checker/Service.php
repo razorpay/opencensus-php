@@ -23,7 +23,7 @@ class Service extends Base\Service
     {
         $actionId = Action\Entity::verifyIdAndStripSign($actionId);
 
-        $action = $this->repo->action_checker->findOrFailPublic($actionId);
+        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
 
         $admin = $this->app['basicauth']->getAdmin();
 

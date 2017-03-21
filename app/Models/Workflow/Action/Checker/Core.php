@@ -41,7 +41,7 @@ class Core extends Base\Core
         return $checker;
     }
 
-    protected function createStateTransitionForChecker(Checker\Entity $checker)
+    protected function createStateTransitionForChecker(Entity $checker)
     {
         $state = $checker->getStatusOnAction();
 
