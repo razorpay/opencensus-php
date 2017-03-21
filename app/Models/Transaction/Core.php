@@ -245,25 +245,13 @@ class Core extends Base\Core
 
         $amount = $payment->getBaseAmount();
 
-        $oldTransaction = $this->checkIfOldPayment($payment);
-
         $txn->setFeeModel($merchant->getFeeModel());
 
         $txn->setFeeBearer($merchant->getFeeBearer());
 
         $feesSplit = new Base\PublicCollection;
 
-        if ($oldTransaction === true)
-        {
-            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
-
-            $fee = 0;
-            $serviceTax = 0;
-            $credit = $amount;
-
-            $txn->setPricingRule($pricingRuleId);
-        }
-        else if ($merchant->isPrepaid())
+        if ($merchant->isPrepaid())
         {
             list($credit, $fee, $serviceTax, $feesSplit)
                 = $this->calculatePrepaidFee($payment, $txn, $merchantBalance);
@@ -457,26 +445,27 @@ class Core extends Base\Core
         return [$credit, $fee, $serviceTax, $feesSplit];
     }
 
-    protected function checkIfOldPayment($payment)
-    {
-        if (($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
-            ($payment->transaction === null) and
-            ($payment->isAuthorized() === true))
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_TRANSACTION_OLD,
-                [
-                    'payment_id'      => $payment->getId(),
-                    'payment_created' => Carbon::createFromTimestamp($payment->getCreatedAt())
-                                               ->toDateTimeString()
-                ]
-            );
+    // This code is not required. If recon fails, we can readd it.
+    // protected function checkIfOldPayment($payment)
+    // {
+    //     if (($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
+    //         ($payment->transaction === null) and
+    //         ($payment->isAuthorized() === true))
+    //     {
+    //         $this->trace->info(
+    //             TraceCode::PAYMENT_TRANSACTION_OLD,
+    //             [
+    //                 'payment_id'      => $payment->getId(),
+    //                 'payment_created' => Carbon::createFromTimestamp($payment->getCreatedAt())
+    //                                            ->toDateTimeString()
+    //             ]
+    //         );
 
-            return true;
-        }
+    //         return true;
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
     protected function paymentOnAtomGateway(array & $txnData, $payment, $fee)
     {
