@@ -5,16 +5,24 @@ import Header from 'rzp/ui/Header'
 import store from 'merchant/store'
 import moment from 'moment'
 
+const colors = [
+  'primary',
+  'success',
+  'info',
+  'warn',
+  'danger'
+]
+
 const colorClass = {
-  failed: 'danger',
-  captured: 'success',
-  authorized: 'info',
-  refunded: 'warn'
+  captured: colors[1],
+  authorized: colors[2],
+  refunded: colors[3],
+  failed: colors[4]
 }
 
 /* TODO move to utils */
 function capitalize(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
 /* TODO move to utils */
@@ -106,6 +114,26 @@ export default class HomeContainer extends Component {
                 </div>
               </div>
             </div>
+            <div className='panel hbox hbox-auto-xs no-border'>
+              <div className='col wrapper'></div>
+              <div className='col wrapper-lg w-lg bg-light dk r-r'>
+                <h4 className='font-thin m-t-none m-b'>Transaction Types</h4>
+                {this.methodBreakup().map(methodData=> <div>
+                  {methodData ?
+                  <div>
+                    <div className='text-center-folded'>
+                      <span className='pull-right'>{methodData.value}</span>
+                      <span>{capitalize(methodData.title)}</span>
+                    </div>
+                    <div className='progress-xs m-t-sm bg-white progress'>
+                      <div className={'progress-bar progress-bar-' + methodData.bg} role='progressbar' style={{width: methodData.value}}></div>
+                    </div>
+                  </div>
+                  : 'No Data'
+                  }
+                </div>)}
+              </div>
+            </div>
             <div className='panel wrapper'>
               <div className='row'>
                 <RecentEntityTable
@@ -175,6 +203,30 @@ export default class HomeContainer extends Component {
         graph_data: values[6]
       })
     })
+  }
+
+  methodBreakup() {
+    const data = this.state.payment_breakup.data;
+    const methods = [
+      'CARD',
+      'EMI',
+      'NETBANKING',
+      'WALLET',
+      'UPI'
+    ].filter(method=> data[method])
+
+    const total = methods.reduce((prev, cur)=> {return prev + data[cur]}, 0)
+
+    if (total) {
+      return methods.map((method, index)=> {
+        return {
+          bg: colors[index],
+          title: capitalize(method),
+          value: (100*data[method]/total).toFixed(1).replace('.0', '') + '%'
+        }
+      })
+    }
+    return [null]
   }
 }
 
