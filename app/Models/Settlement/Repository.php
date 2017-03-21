@@ -45,7 +45,10 @@ class Repository extends Base\Repository
                       ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
                       ->get();
 
-        assert(($setls->count() <= count($setlIds)));
+        foreach ($setls as $setl)
+        {
+            assert(in_array($setl->getId(), $setlIds));
+        }
 
         return $setls;
     }
