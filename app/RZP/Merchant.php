@@ -13,8 +13,6 @@ use Razorpay\Api\Errors\ServerError as ServerError;
 
 class Merchant extends Entity
 {
-    const CONFIG_URL = 'account/config';
-    const CONFIG_LOGO_URL = 'account/config/logo';
     const SUBMERCHANT_CREATE_URL = 'submerchants';
     const BANK_ACCOUNT_URL = 'account/bank_account';
     const PROXY_BALANCE_URL = 'balance';
