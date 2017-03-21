@@ -466,7 +466,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::PAYMENT_TRANSACTION_OLD,
                 [
-                    'payment_id' => $payment->getId(),
+                    'payment_id'      => $payment->getId(),
                     'payment_created' => Carbon::createFromTimestamp($payment->getCreatedAt())
                                                ->toDateTimeString()
                 ]

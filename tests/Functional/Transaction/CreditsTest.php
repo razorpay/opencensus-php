@@ -61,7 +61,7 @@ class CreditsTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
         $this->assertEquals(0, $txn['service_tax']);
-        $this->assertEquals(true, $txn['gratis']);
+        $this->assertEquals(false, $txn['gratis']);
         $this->assertEquals('1ZeroPricingR2', $txn['pricing_rule_id']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
