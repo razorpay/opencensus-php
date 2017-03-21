@@ -18,7 +18,7 @@ app.controller('CreditsCtrl', [
 
       request.success(function (result) {
         if (result.success) {
-          $scope.creditsData = result.data;
+          $scope.creditsData = result;
         }
       });
     };

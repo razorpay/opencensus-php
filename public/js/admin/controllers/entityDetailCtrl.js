@@ -213,7 +213,6 @@ app.controller('EntityDetailCtrl', [
       }
     };
 
-
     $scope.toJson = function (data) {
       return angular.toJson(data, 4);
     };

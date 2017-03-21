@@ -22,7 +22,7 @@ const PaymentList = ({ payment }) => {
       <td>
         <PaymentStatusLabel status={payment.status} />
       </td>
-      <td>
+      <td class='text-right'>
         <Time
           value={payment.created_at}
           format='DD MMM YYYY, hh:mm:ss a'

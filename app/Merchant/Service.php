@@ -465,6 +465,29 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
+    public function createKey($merchant_id, $mode)
+    {
+        $errors = array();
+        $data = array();
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $data = $this->api->merchant
+                            ->fetch($merchant_id)
+                            ->keys()
+                            ->create()
+                            ->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return array($errors, $data);
+    }
+
     public function getUsersListWithInvites()
     {
         $merchantId = $this->currentUser
@@ -907,7 +930,19 @@ class Service extends Base\Service
 
     public function getPreSignupDetails($merchantId)
     {
-        return (new MerchantDetails\Service)->getPresignupDetails($merchantId);
+        $data = [];
+
+        $merchant = Merchant\Entity::findorfail($merchantId);
+
+        $referrer = $merchant->getReferrerAttribute();
+
+        if (($referrer === null) or
+            (Merchant\Entity::verifyUniqueId($referrer) === 0))
+        {
+            $data = (new MerchantDetails\Service)->getPresignupDetails($merchantId);
+        }
+
+        return $data;
     }
 
     public function createCustomer($mode, $params)

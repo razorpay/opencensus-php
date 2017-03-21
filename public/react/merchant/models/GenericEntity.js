@@ -3,7 +3,7 @@ import ajax from 'merchant/utils/ajax'
 
 // `GenericEntity will replace the `Entity` when all routes are migrated to `/generic` routes
 export default class GenericEntity extends Entity {
-  resourceUrl = '/generic'
+  resourceUrl = '/user/generic'
 
   fetchAll(params = {}) {
     const Klass = this.constructor
