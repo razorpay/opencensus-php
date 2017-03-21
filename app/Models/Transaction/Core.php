@@ -195,6 +195,8 @@ class Core extends Base\Core
     {
         $txn = new Transaction\Entity;
 
+        // In case of authCapture, a txn already exists with min data.
+        // In normal case, we create a txn and associate merchant, payment with it.
         if ($payment->hasTransaction() === true)
         {
             $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
@@ -202,14 +204,19 @@ class Core extends Base\Core
         else
         {
             $txn->generateId();
+
+            $txn->sourceAssociate($payment);
+
+            $txn->merchant()->associate($payment->merchant);
         }
 
         list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
 
-        $txnData = array(
+        $txnData = [
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
             Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
+            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK
+        ];
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
         {
@@ -218,13 +225,10 @@ class Core extends Base\Core
 
         $txn->fill($txnData);
 
-        $txn->sourceAssociate($payment);
-        $txn->merchant()->associate($payment->merchant);
-
         $this->trace->info(
             TraceCode::TRANSACTION_CREATED,
             [
-                'payment_id' => $payment->getId(),
+                'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId(),
             ]);
 
@@ -720,7 +724,7 @@ class Core extends Base\Core
 
         $payoutAmount = abs($amount + $fee);
 
-        $values = array(
+        $values = [
             Transaction\Entity::DEBIT               => $payoutAmount,
             Transaction\Entity::CREDIT              => 0,
             Transaction\Entity::CURRENCY            => 'INR',
@@ -735,7 +739,7 @@ class Core extends Base\Core
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
             Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
-        );
+        ];
 
         $txn->fillAndGenerateId($values);
 
@@ -962,18 +966,20 @@ class Core extends Base\Core
     {
         $txn = new Transaction\Entity;
 
-        $txn->generateId();
-
         $amount = $payment->getBaseAmount();
 
-        $txnData = [
-            Transaction\Entity::TYPE     => Transaction\Type::PAYMENT,
-            Transaction\Entity::CURRENCY => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL  => Transaction\Channel::KOTAK,
-            Transaction\Entity::AMOUNT   => $amount,
+        $values = [
+            Transaction\Entity::DEBIT               => 0,
+            Transaction\Entity::CREDIT              => 0,
+            Transaction\Entity::FEE                 => 0,
+            Transaction\Entity::SERVICE_TAX         => 0,
+            Transaction\Entity::AMOUNT              => $amount,
+            Transaction\Entity::CURRENCY            => Currency\Currency::INR,
+            Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
+            Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
         ];
 
-        $txn->fill($txnData);
+        $txn->fillAndGenerateId($values);
 
         $txn->sourceAssociate($payment);
 
