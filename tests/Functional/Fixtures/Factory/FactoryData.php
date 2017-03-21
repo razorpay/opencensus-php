@@ -597,6 +597,7 @@ final class FactoryData
             'type'              => 'settlement',
             'method'            => null,
             'schedule_id'       => 'factory:RZP\Models\Schedule\Entity',
+            'next_run_at'       => 1451586600,
         ]);
     }
 }

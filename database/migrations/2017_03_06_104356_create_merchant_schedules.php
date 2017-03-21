@@ -36,6 +36,8 @@ class CreateMerchantSchedules extends Migration
 
             $table->char(MerchantSchedule::SCHEDULE_ID, Schedule::ID_LENGTH);
 
+            $table->integer(MerchantSchedule::NEXT_RUN_AT);
+
             $table->integer(MerchantSchedule::CREATED_AT);
 
             $table->integer(MerchantSchedule::UPDATED_AT);

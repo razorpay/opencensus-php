@@ -13,7 +13,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         MerchantSchedule::TYPE              => 'required|string|max:20',
         MerchantSchedule::METHOD            => 'sometimes|string|max:20|custom',
-        MerchantSchedule::SCHEDULE_ID       => 'required|alpha_dash|max:20'
+        MerchantSchedule::SCHEDULE_ID       => 'required|alpha_dash|max:20',
+        MerchantSchedule::NEXT_RUN_AT       => 'sometimes|integer'
     ];
 
     protected function validateMethod($attribute, $method)

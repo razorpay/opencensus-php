@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Schedule;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -13,6 +14,7 @@ class Entity extends Base\PublicEntity
     const TYPE              = 'type';
     const METHOD            = 'method';
     const SCHEDULE_ID       = 'schedule_id';
+    const NEXT_RUN_AT       = 'next_run_at';
 
     protected $entity = 'merchant_schedule';
 
@@ -21,6 +23,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::TYPE,
         self::METHOD,
+        self::NEXT_RUN_AT,
     ];
 
     protected $visible = [
@@ -31,6 +34,9 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::METHOD,
         self::SCHEDULE_ID,
+        self::NEXT_RUN_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -40,12 +46,24 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::TYPE,
         self::METHOD,
-        self::SCHEDULE_ID
+        self::SCHEDULE_ID,
+        self::NEXT_RUN_AT
     ];
 
     protected $defaults = [
-        self::METHOD    => null,
+        self::METHOD      => null,
+        self::TYPE        => Type::SETTLEMENT,
     ];
+
+    protected static $modifiers = array(
+        self::NEXT_RUN_AT,
+    );
+
+    protected $casts = [
+        self::NEXT_RUN_AT => 'int',
+    ];
+
+    // ----------------------- Associations ------------------------------------
 
     public function merchant()
     {
@@ -61,6 +79,20 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Schedule\Entity');
     }
+
+    // ----------------------- Modifiers ---------------------------------------
+
+    protected function modifyNextRunAt(& $input)
+    {
+        if (isset($input[self::NEXT_RUN_AT]) === false)
+        {
+            $nextRunAt = Carbon::today('Asia/Kolkata')->timestamp;
+
+            $input[self::NEXT_RUN_AT] = $nextRunAt;
+        }
+    }
+
+    // ---------------------- Getters ------------------------------------------
 
     public function getMethod()
     {
@@ -82,8 +114,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SCHEDULE_ID);
     }
 
+    public function getNextRunAt()
+    {
+        return $this->getAttribute(self::NEXT_RUN_AT);
+    }
+
+    // -------------------------- Setters --------------------------------------
+
     public function setType($type)
     {
         return $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setNextRunAt($timestamp)
+    {
+        return $this->setAttribute(self::NEXT_RUN_AT, $timestamp);
     }
 }
