@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Differ;
 
-use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
 

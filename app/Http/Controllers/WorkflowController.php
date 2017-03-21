@@ -31,7 +31,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $diff = (new Differ\Core)->fetchRequest($id);
+        $diff = (new Differ\Service)->fetchRequest($id);
 
         $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
 
