@@ -83,6 +83,16 @@ class Core extends Base\Core
 
     public function fetchRequest(string $actionId)
     {
+        $action = $this->repo->action->findByPublicId($actionId);
+
+        $isActionApproved (new Action\Core)->checkAndMarkActionApproved($action);
+
+        if ($isActionApproved === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_NOT_APPROVED);
+        }
+
         $esResponse = $this->esDao->search(
             strtolower($this->baseIndex), self::ES_TYPE, $actionId);
 
@@ -104,6 +114,19 @@ class Core extends Base\Core
             Entity::CONTROLLER    => $controllerSplit[0],
             Entity::FUNCTION_NAME => $controllerSplit[1],
         ];
+    }
+
+    public function markActionAsExecuted(string $actionId)
+    {
+        $action = $this->repo->action->findByPublicId($actionId);
+
+        $input = [
+            State\Entity::ACTION_ID  => $action->getId(),
+            State\Entity::ADMIN_ID   => $action->getAdminId(),
+            State\Entity::NAME       => State\Entity::EXECUTED,
+        ];
+
+        (new State\Core)->create($input);
     }
 
     public function saveToES(array $action)

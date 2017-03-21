@@ -31,4 +31,11 @@ class Service extends Base\Service
 
         return $this->core()->fetchRequest($actionId);
     }
+
+    public function markActionAsExecuted(string $actionId)
+    {
+        Action\Entity::verifyIdAndStripSign($actionId);
+
+        $this->core()->markActionAsExecuted($actionId);
+    }
 }

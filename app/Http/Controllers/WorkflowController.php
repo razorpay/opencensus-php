@@ -55,7 +55,14 @@ class WorkflowController extends Controller
 
         $controller = App::make($controller);
 
-        return App::call([$controller, $functionName], array_values($routeParams));
+        $response = App::call([$controller, $functionName], array_values($routeParams));
+
+        if ($response->getStatusCode() === 200)
+        {
+            (new Differ\Service)->markActionAsExecuted($id);
+        }
+
+        return $response;
     }
 
     public function postActionChecker(string $id)

@@ -493,6 +493,7 @@ class ErrorCode
     const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND';
     const BAD_REQUEST_ACTION_INVALID_TYPE                                           = 'BAD_REQUEST_ACTION_INVALID_TYPE';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
+    const BAD_REQUEST_ACTION_NOT_APPROVED                                           = 'BAD_REQUEST_ACTION_NOT_APPROVED';
 
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';

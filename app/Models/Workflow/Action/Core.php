@@ -100,6 +100,7 @@ class Core extends Base\Core
 
             $stateData = [
                 State\Entity::ACTION_ID => $action->getId(),
+                State\Entity::ADMIN_ID  => $action->getAdminId(),
                 State\Entity::NAME      => State\Entity::APPROVED,
             ];
 
