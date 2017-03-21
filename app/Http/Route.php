@@ -199,8 +199,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
-        'setl_initiate_schedule'                  => ['post',     'settlements/initiate2/{channel?}',               'SettlementController@postSettlementInitiateV2'                     ],
-        'setl_retry'                              => ['post',     'settlements/retry/{channel?}',                   'SettlementController@postSettlementRetry'                          ],
+        'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
@@ -450,6 +449,10 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+
+        // Dummy routes to test Account Auth
+        'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
+        'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
     );
 
     public static $public = array(
@@ -654,7 +657,6 @@ final class Route
         'pricing_delete_plan_rule_force',
         'setl_initiate',
         'payout_initiate',
-        'setl_initiate_schedule',
         'setl_retry',
         'setl_file_generate',
         'setl_reconcile',
@@ -766,6 +768,7 @@ final class Route
         'schedule_fetch',
         'schedule_fetch_multiple',
         'schedule_migration',
+        'internal_dummy_account_test',
     );
 
     public static $proxy = array(
@@ -868,6 +871,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'admin_dummy_account_test',
     ];
 
     public static $adminPermission = [
@@ -905,6 +909,7 @@ final class Route
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
+        'admin_dummy_account_test'       => [Permission::VIEW_MERCHANT],
     ];
 
     public static $direct = array(
@@ -948,7 +953,6 @@ final class Route
         'cron' => array(
             'setl_initiate',
             'payout_initiate',
-            'setl_initiate_schedule',
             'setl_reconcile_generate',
             'setl_return_generate',
             'payment_auth_notify',
@@ -1058,6 +1062,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'admin_dummy_account_test',
     ];
 
     const RAZORPAYJS_ROUTES = array(

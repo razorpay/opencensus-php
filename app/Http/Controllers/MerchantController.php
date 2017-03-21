@@ -647,4 +647,11 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
     // == / Activation Form Handlers ==
+
+    public function getDummyAccount()
+    {
+        $response = ['id' => $this->ba->getMerchant()->getId()];
+
+        return ApiResponse::json($response);
+    }
 }

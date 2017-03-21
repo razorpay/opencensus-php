@@ -20,18 +20,24 @@ class ProviderCode
     const ANDB              = 'andb';
     const AXISBANK          = 'axisbank';
     const BARODAMPAY        = 'barodampay';
+    const CENTRALBANK       = 'centralbank';
     const CNRB              = 'cnrb';
     const CSBPAY            = 'csbpay';
     const DCB               = 'dcb';
     const DENABANK          = 'denabank';
     const FEDERAL           = 'federal';
     const HDFCBANK          = 'hdfcbank';
+    const HSBC              = 'hsbc';
     const ICICI             = 'icici';
+    const IDBI              = 'idbi';
     const IDFCBANK          = 'idfcbank';
+    const IMOBILE           = 'imobile';
     const INDIANBANK        = 'indianbank';
     const INDUS             = 'indus';
     const KAYPAY            = 'kaypay';
     const KBL               = 'kbl';
+    const KOTAK             = 'kotak';
+    const KVB               = 'kvb';
     const MAHAB             = 'mahab';
     const MAHB              = 'mahb';
     const OBC               = 'obc';
@@ -39,6 +45,8 @@ class ProviderCode
     const POCKETS           = 'pockets';
     const RBL               = 'rbl';
     const SBI               = 'sbi';
+    const SCBL              = 'scbl';
+    const SYNDICATE         = 'syndicate';
     const SIB               = 'sib';
     const TJSB              = 'tjsb';
     const UBI               = 'ubi';
@@ -61,18 +69,24 @@ class ProviderCode
         self::ANDB              => IFSC::ANDB,
         self::AXISBANK          => IFSC::UTIB,
         self::BARODAMPAY        => IFSC::BARB,
+        self::CENTRALBANK       => IFSC::CBIN,
         self::CNRB              => IFSC::CNRB,
         self::CSBPAY            => IFSC::CSBK,
         self::DCB               => IFSC::DCBL,
         self::DENABANK          => IFSC::BKDN,
         self::FEDERAL           => IFSC::FDRL,
         self::HDFCBANK          => IFSC::HDFC,
+        self::HSBC              => IFSC::HSBC,
         self::ICICI             => IFSC::ICIC,
+        self::IDBI              => IFSC::IBKL,
         self::IDFCBANK          => IFSC::IDFB,
+        self::IMOBILE           => IFSC::ICIC,
         self::INDUS             => IFSC::INDB,
         self::INDIANBANK        => IFSC::IDIB,
         self::KAYPAY            => IFSC::KKBK,
         self::KBL               => IFSC::KARB,
+        self::KOTAK             => IFSC::KKBK,
+        self::KVB               => IFSC::KVBL,
         self::MAHAB             => IFSC::MAHB,
         self::MAHB              => IFSC::MAHB,
         self::OBC               => IFSC::ORBC,
@@ -80,7 +94,9 @@ class ProviderCode
         self::POCKETS           => IFSC::ICIC,
         self::RBL               => IFSC::RATN,
         self::SBI               => IFSC::SBIN,
+        self::SCBL              => IFSC::SCBL,
         self::SIB               => IFSC::SIBL,
+        self::SYNDICATE         => IFSC::SYNB,
         self::TJSB              => IFSC::TJSB,
         self::UBI               => IFSC::UTBI,
         self::UBOI              => IFSC::UBIN,
@@ -99,5 +115,10 @@ class ProviderCode
     public static function getBankCode($provider)
     {
         return self::$bankCodes[$provider] ?? null;
+    }
+
+    public static function validate(string $provider)
+    {
+        return (self::getBankCode($provider) !== null);
     }
 }

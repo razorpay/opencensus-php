@@ -675,6 +675,7 @@ class TraceCode
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
         self::BAD_REQUEST_INVALID_API_SECRET            => 'The api secret provided is invalid',
+        self::BAD_REQUEST_INVALID_ACCOUNT_HEADER        => 'The Account ID provided is invalid',
         self::BAD_REQUEST_API_SECRET_NOT_PROVIDED       => 'API secret is not provided',
 
         self::PAYMENT_VERIFY_ALREADY_AUTHORIZED         => 'Payment being authorized is actually already authorized by some other thread',
