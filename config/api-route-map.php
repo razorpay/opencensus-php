@@ -110,5 +110,68 @@ return [
             'url'       => 'settlements/{id}/details',
             'routeName' => 'settlements_get_detail'
         ],
+
+        // Credits
+        'credits_fetch_multiple'            => 'credits',
+
+        // Balance
+        'balance_fetch'                     => [
+            'url'       => 'balance',
+            'routeName' => 'balance_get'
+        ],
+
+        // Webhooks
+        'webhook_fetch_multiple'            => [
+            'url'       => 'webhooks',
+            'routeName' => 'get_webhooks'
+        ],
+        'webhook_create'                    => [
+            'url'       => 'webhooks',
+            'routeName' => 'post_webhooks'
+        ],
+        'webhook_edit'                      => [
+            'url'       => 'webhooks/{id}',
+            'routeName' => 'edit_webhooks'
+        ],
+
+        // Config
+        'merchant_fetch_config'             => [
+            'url'       => 'account/config',
+            'routeName' => 'get_config'
+        ],
+        'merchant_edit_config'              => [
+            'url'       => 'account/config',
+            'routeName' => 'put_config'
+        ],
+
+        // Features
+        'merchant_get_features'             => 'merchants/{id}/features',
+        'merchant_update_features'          => 'merchants/{id}/features',
+    ],
+
+    // auth
+    'internal' => [
+        // Keys
+        'merchant_fetch_keys'               => [
+            'url'       => 'merchants/{id}/keys',
+            'routeName' => 'get_keys'
+        ],
+        'merchant_create_key'               => [
+            'url'       => 'merchants/{id}/keys',
+            'routeName' => 'keys_setup'
+        ],
+        'merchant_replace_key'              => [
+            'url'       => 'merchants/{merchantId}/keys/{keyId}',
+            'routeName' => 'post_keys'
+        ],
+
+        // Admin Routes
+        // Pricing
+        'pricing_get_merchant_plans'        => 'pricing/merchants',
+        'pricing_get_plan'                  => 'pricing/{id}',
+        'pricing_add_plan_rule'             => 'pricing/{id}/rule',
+        'pricing_create_plan'               => 'pricing',
+        'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
+        'pricing_supported_networks'        => 'pricing/networks',
     ],
 ];

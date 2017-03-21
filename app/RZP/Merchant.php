@@ -192,17 +192,6 @@ class Merchant extends Entity
         return $this;
     }
 
-    public function fetchConfig()
-    {
-        return $this->request('GET', self::CONFIG_URL);
-    }
-
-    // This is on proxy auth, doesn't take merchant ID
-    public function updateConfig($input)
-    {
-        return $this->request('PUT', self::CONFIG_URL, $input);
-    }
-
     public function updateLogoConfig($input)
     {
         // Makes a guzzle file request
@@ -360,23 +349,6 @@ class Merchant extends Entity
         $relativeUrl = $this->getEntityUrl().$merchantId.'/schedules';
 
         $res = $this->request('POST', $relativeUrl, $params);
-
-        return $res;
-    }
-
-    public function fetchFeatures($merchantId)
-    {
-        $relativeUrl = $this->getEntityUrl() . $merchantId . '/features';
-
-        return $this->request('GET', $relativeUrl)->toArray();
-    }
-
-
-    public function updateFeatures($merchantId, $params)
-    {
-        $relativeUrl = $this->getEntityUrl() . $merchantId . '/features';
-
-        $res = $this->request('POST', $relativeUrl, $params)->toArray();
 
         return $res;
     }

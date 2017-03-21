@@ -92,6 +92,7 @@ app.controller('EntitiesCtrl', [
       'olamoney',
       'airtelmoney',
       'freecharge',
+      'jiomoney',
       'ezeclick',
       'openwallet'
     ];
@@ -265,7 +266,14 @@ app.controller('EntitiesCtrl', [
         gateway_payment_id: ['Gateway Payment ID'],
         tdate: ['Tdate'],
       },
-      batch_settlement: {},
+      batch_fund_transfer: {
+        type: [
+          'all',
+          'settlement',
+          'payout'
+        ],
+        date: ['Date'],
+      },
       emi_plan: {
         bank: ['Bank'],
         network: ['Network']
@@ -278,6 +286,22 @@ app.controller('EntitiesCtrl', [
       file_store: {
         entity_id: ['Entity Id'],
         type: ['Type']
+      },
+      fund_transfer_attempt: {
+        batch_fund_transfer_id: ['Batch Fund Transfer Id'],
+        source_type: [
+          'all',
+          'settlement',
+          'payout'
+        ],
+        source_id: ['Source Id'],
+        status: ['all', 'created', 'failed', 'processed'],
+        utr: ['UTR']
+      },
+      gateway_downtime: {
+        method: methodList,
+        gateway: gatewayList,
+        bank: ['Bank']
       },
       hdfc: {
         auth: ['Auth Code'],
@@ -345,6 +369,7 @@ app.controller('EntitiesCtrl', [
         upi: booleanList2,
         airtelmoney: booleanList2,
         freecharge: booleanList2,
+        jiomoney: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         parent_id: ['Marketplace Parent Id'],
         receipt_email_enabled: booleanList,
@@ -378,6 +403,7 @@ app.controller('EntitiesCtrl', [
         upi: booleanList,
         airtelmoney: booleanList,
         freecharge: booleanList,
+        jiomoney: booleanList,
         merchant_id: ['Merchant Id']
       },
       netbanking: {
@@ -471,6 +497,7 @@ app.controller('EntitiesCtrl', [
         transfer_id: ['Transfer Id']
       },
       settlement: {
+        batch_fund_transfer_id: ['Batch Fund Transfer Id'],
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],

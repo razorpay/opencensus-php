@@ -18,7 +18,7 @@ app.controller('GroupDetailCtrl', [
     fetchGroup();
 
     function fetchGroup() {
-      var request = $http.get('/generic', {
+      var request = $http.get('/admin/generic', {
         ignoreErrors: true,
         params: {
           route_name: 'group_get',
@@ -37,7 +37,7 @@ app.controller('GroupDetailCtrl', [
         console.log('Fetch Group Request Failed');
       });
 
-      var requestOrgAdmins = $http.get('/generic', {
+      var requestOrgAdmins = $http.get('/admin/generic', {
         ignoreErrors: true,
         params: {
           route_name: 'admin_get_multiple',

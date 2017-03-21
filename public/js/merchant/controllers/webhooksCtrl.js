@@ -29,12 +29,17 @@ app.controller('WebhooksCtrl', [
     };
 
     $scope.createWebhook = function(webhook) {
+      var params = {
+        route_name: 'webhook_create',
+        mode: $scope.mode,
+        body: webhook
+      };
 
       var request = $http({
-        method: 'post',
-        url: '/' + $scope.mode + '/webhooks',
-        //transformRequest: transformRequestAsFormPost,
-        data: webhook
+        url: '/user/generic',
+        method: 'POST',
+        data: params,
+        transformRequest: transformRequestAsFormPost
       });
 
       request.success(function (data) {
@@ -69,10 +74,20 @@ app.controller('WebhooksCtrl', [
         payload.secret = webhook.secret;
       }
 
+      var params = {
+        route_name: 'webhook_edit',
+        mode: $scope.mode,
+        url_params: JSON.stringify({
+          '{id}': webhook.id
+        }),
+        body: payload
+      };
+
       var request = $http({
-        method: 'put',
-        url: '/' + $scope.mode + '/webhooks/' + webhook.id,
-        data: payload
+        url: '/user/generic',
+        method: 'PUT',
+        data: params,
+        transformRequest: transformRequestAsFormPost
       });
 
       request.success(function (data) {
@@ -118,9 +133,13 @@ app.controller('WebhooksCtrl', [
     };
 
     $scope.fetchWebhooks = function() {
-      var request = $http({
-        method: 'get',
-        url: '/' + $scope.mode + '/webhooks'
+      var params = {
+        route_name: 'webhook_fetch_multiple',
+        mode: $scope.mode
+      };
+
+      var request = $http.get('/user/generic', {
+        params: params
       });
 
       request.success(function (data) {

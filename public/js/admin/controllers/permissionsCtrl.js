@@ -16,7 +16,7 @@ app.controller('PermissionsCtrl', [
      */
 
     $scope.fetchPermissions = function () {
-      var request = $http.get('/generic', {
+      var request = $http.get('/admin/generic', {
         ignoreErrors: true,
         params: {
           route_name: 'permission_get_multiple',

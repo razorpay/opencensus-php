@@ -58,7 +58,7 @@ app.controller('AddGroupCtrl', [
         $scope.group_id = group_id;
 
         var request = $http({
-          url: '/generic',
+          url: '/admin/generic',
 
           method: 'GET',
 
@@ -134,7 +134,7 @@ app.controller('AddGroupCtrl', [
         // Edit
 
         request = $http({
-          url: '/generic',
+          url: '/admin/generic',
           method: 'PUT',
           params: {
             route_name: 'edit_group',
@@ -152,7 +152,7 @@ app.controller('AddGroupCtrl', [
         // Create
 
         request = $http({
-          url: '/generic',
+          url: '/admin/generic',
           method: 'POST',
           params: {
             route_name: 'group_create'
