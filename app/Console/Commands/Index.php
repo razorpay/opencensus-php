@@ -22,6 +22,8 @@ class Index extends Command
 
     protected $mode;
     protected $entity;
+    protected $trace;
+    protected $esRepo;
 
     public function fire()
     {
@@ -50,7 +52,7 @@ class Index extends Command
      */
     protected function initRepo()
     {
-        $esRepoPath   = Entity::getEntityEsRepository($this->entity);
+        $esRepoPath = Entity::getEntityEsRepository($this->entity);
         $this->esRepo = new $esRepoPath;
 
         $indexName = $this->mode . '_' . $this->entity;

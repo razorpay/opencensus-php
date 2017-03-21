@@ -85,12 +85,12 @@ class EsRepository extends Base\EsRepository
     // public function setFieldMappings()
     // {
     //     $this->fieldMappings = [
-    //         Entity::NAME                                           => Base\EsMappping::$textFieldMapping,
-    //         Entity::EMAIL                                          => Base\EsMappping::$textFieldMapping,
-    //         Entity::ACTIVATED                                      => Base\EsMappping::$booleanFieldMapping,
+    //         Entity::NAME                                           => Base\EsMapping::$textFieldMapping,
+    //         Entity::EMAIL                                          => Base\EsMapping::$textFieldMapping,
+    //         Entity::ACTIVATED                                      => Base\EsMapping::$booleanFieldMapping,
 
-    //         E::MERCHANT_DETAIL . '.' . Detail\Entity::CREATED_AT   => Base\EsMappping::$dateFieldMapping,
-    //         E::MERCHANT_DETAIL . '.' . Detail\Entity::SUBMITTED_AT => Base\EsMappping::$dateFieldMapping,
+    //         E::MERCHANT_DETAIL . '.' . Detail\Entity::CREATED_AT   => Base\EsMapping::$dateFieldMapping,
+    //         E::MERCHANT_DETAIL . '.' . Detail\Entity::SUBMITTED_AT => Base\EsMapping::$dateFieldMapping,
     //     ];
     // }
 

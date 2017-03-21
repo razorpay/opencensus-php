@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Base;
 
-class EsMappping
+class EsMapping
 {
     //
     // Default mappings for different types of fields

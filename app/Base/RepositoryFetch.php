@@ -22,7 +22,7 @@ trait RepositoryFetch
     protected $originalFetchParamRules;
 
     //
-    // Temporary: Will be removed once notes index is migrated to new flow.
+    // TODO: Temporary: Will be removed once notes index is migrated to new flow.
     //
     protected $entitiesInOldFlow = [
         Constants\Entity::ORDER,
@@ -145,7 +145,7 @@ trait RepositoryFetch
         $originalParamsKeys = array_keys($params);
         $this->mysqlParams  = $params;
 
-        if ($this->doesEsRepoExists() === false)
+        if ($this->doesEsRepoExist() === false)
         {
             return false;
         }

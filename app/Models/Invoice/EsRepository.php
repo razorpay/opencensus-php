@@ -3,7 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use RZP\Models\Base\EsRepository as BaseEsRepository;
-use RZP\Models\Base\EsMappping;
+use RZP\Models\Base\EsMapping;
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 
@@ -22,7 +22,7 @@ class EsRepository extends BaseEsRepository
         Entity::TYPE,
         Entity::CUSTOMER_NAME,
         Entity::CUSTOMER_CONTACT,
-        ENTITY::CUSTOMER_EMAIL,
+        Entity::CUSTOMER_EMAIL,
         Entity::DESCRIPTION,
         Entity::TERMS,
         Entity::NOTES,
@@ -38,7 +38,7 @@ class EsRepository extends BaseEsRepository
         Entity::TYPE,
         Entity::CUSTOMER_NAME,
         Entity::CUSTOMER_CONTACT,
-        ENTITY::CUSTOMER_EMAIL,
+        Entity::CUSTOMER_EMAIL,
         Entity::DESCRIPTION,
         Entity::TERMS,
         Entity::NOTES,
@@ -50,12 +50,12 @@ class EsRepository extends BaseEsRepository
     protected function setFieldMappings()
     {
         $this->fieldMappings = [
-            Entity::CUSTOMER_NAME    => EsMappping::$textFieldMapping,
-            Entity::CUSTOMER_CONTACT => EsMappping::$textFieldMapping,
-            Entity::CUSTOMER_EMAIL   => EsMappping::$textFieldMapping,
-            Entity::DESCRIPTION      => EsMappping::$textFieldMapping,
-            Entity::TERMS            => EsMappping::$textFieldMapping,
-            Entity::NOTES            => EsMappping::$objectFieldMapping,
+            Entity::CUSTOMER_NAME    => EsMapping::$textFieldMapping,
+            Entity::CUSTOMER_CONTACT => EsMapping::$textFieldMapping,
+            Entity::CUSTOMER_EMAIL   => EsMapping::$textFieldMapping,
+            Entity::DESCRIPTION      => EsMapping::$textFieldMapping,
+            Entity::TERMS            => EsMapping::$textFieldMapping,
+            Entity::NOTES            => EsMapping::$objectFieldMapping,
         ];
     }
 }

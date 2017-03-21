@@ -138,7 +138,7 @@ class Repository extends \Razorpay\Spine\Repository
     {
         parent::deleteOrFail($entity);
 
-        $this->syncToEs($entity, 'delete');
+        $this->syncToEs($entity, EsRepository::DELETE);
     }
 
     public function sync($entity, $relation, $ids = [])
@@ -342,7 +342,7 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
-     * DEPRECATED!
+     * @deprecated
      *
      * Saves dirtied entities to es if few conditions met.
      *
@@ -353,7 +353,7 @@ class Repository extends \Razorpay\Spine\Repository
      */
     protected function saveInEs(Models\Base\PublicEntity $entity, array $dirty)
     {
-        if ($this->doesEsRepoExists() === false)
+        if ($this->doesEsRepoExist() === false)
         {
             return;
         }
@@ -404,10 +404,10 @@ class Repository extends \Razorpay\Spine\Repository
      */
     protected function syncToEs(
         Models\Base\PublicEntity $entity,
-        string $action = EsRepository::UPSERT,
+        string $action,
         array $dirty = [])
     {
-        if ($this->doesEsRepoExists() === false)
+        if ($this->doesEsRepoExist() === false)
         {
             return;
         }
@@ -471,7 +471,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $esRepoClassPath;
     }
 
-    protected function doesEsRepoExists()
+    protected function doesEsRepoExist()
     {
         $esRepoClassPath = $this->getEsRepoClassPath();
 

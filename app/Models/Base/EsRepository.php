@@ -45,6 +45,8 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     protected $queryFields    = [];
 
+    protected $mode;
+
     public function __construct()
     {
         parent::__construct();
@@ -69,7 +71,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     /**
      * Updates the default query for fetch of models for indexing.
-     * Eg. In case of merchant, it needs join with mercant_detail, etc.
+     * Eg. In case of merchant, it needs join with merchant_detail, etc.
      *
      * @param object $query
      *
@@ -218,9 +220,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     public function createIndexIfNotExists()
     {
-        $settings = EsMappping::$indexSettings;
+        $settings = EsMapping::$indexSettings;
 
-        $mappings = EsMappping::mappings($this->fields, $this->fieldMappings);
+        $mappings = EsMapping::mappings($this->fields, $this->fieldMappings);
 
         $this->esDao->createIndexIfNotExistsInDefaultHost($this->indexName, $settings, $mappings);
     }
