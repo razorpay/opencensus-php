@@ -443,6 +443,7 @@ class ErrorCode
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                         = 'BAD_REQUEST_INVOICE_EXPIRE_FAILED';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
+    const BAD_REQUEST_INVOICE_DISABLED_FOR_CUST_FEE_BEARER_MERCHANTS                = 'BAD_REQUEST_INVOICE_DISABLED_FOR_CUST_FEE_BEARER_MERCHANTS';
 
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                    = 'BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED';
     const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
