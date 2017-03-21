@@ -48,7 +48,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Workflow\Service)->get($id, $input);
+        $data = (new Workflow\Service)->fetch($id);
 
         return ApiResponse::json($data);
     }
@@ -57,7 +57,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Workflow\Service)->create($id, $input);
+        $data = (new Workflow\Step\Service)->create($id, $input);
 
         return ApiResponse::json($data);
     }

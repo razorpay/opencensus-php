@@ -772,7 +772,7 @@ final class Route
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
         'schedule_fetch_multiple',
-        'schedule_migration',
+        'schedule_migration'
     );
 
     public static $proxy = array(
@@ -875,6 +875,9 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'workflow_create',
+        'workflow_get',
+        'workflow_step_create',
     ];
 
     public static $adminPermission = [
@@ -912,6 +915,9 @@ final class Route
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
+        'workflow_create'                => ['*'],
+        'workflow_get'                   => ['*'],
+        'workflow_step_create'           => ['*'],
     ];
 
     public static $direct = array(
