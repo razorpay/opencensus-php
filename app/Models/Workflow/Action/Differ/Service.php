@@ -20,7 +20,7 @@ class Service extends Base\Service
     {
         Action\Entity::verifyIdAndStripSign($actionId);
 
-        $diff = $this->core()->get($id);
+        $diff = $this->core()->get($actionId);
 
         return $diff;
     }

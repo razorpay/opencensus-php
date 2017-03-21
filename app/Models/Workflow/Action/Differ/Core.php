@@ -122,30 +122,30 @@ class Core extends Base\Core
         }
     }
 
-    protected function makerAction(Entity $action)
+    protected function makerAction(Entity $differ)
     {
-        $entity = $action->getEntityName();
+        $entity = $differ->getEntityName();
 
-        $entityId = $action->getEntityId();
+        $entityId = $differ->getEntityId();
 
         $oldEntity = $this->repo->$entity->findByPublicId($entityId);
 
         $newEntity = clone $oldEntity;
 
-        $validator = EntityValidator::getValidator($action->getRoute());
+        $validator = EntityValidator::getValidator($differ->getRoute());
 
         if ($validator !== null)
         {
-            $newEntity = $newEntity->edit($action->getPayload(), $validator);
+            $newEntity = $newEntity->edit($differ->getPayload(), $validator);
 
             $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
 
-            $action->setDiff($diff);
+            $differ->setDiff($diff);
         }
 
-        event(new DifferEvent($action->toArray()));
+        event(new DifferEvent($differ->toArray()));
 
-        return $action;
+        return $differ;
     }
 
     protected function createDiff(array $oldEntity, array $newEntity)
