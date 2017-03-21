@@ -905,7 +905,7 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        $schedule = (new Merchant\Schedule\Core)->getMerchantSchedule($merchant, $payment->getMethod());
+        $schedule = (new Merchant\Schedule\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
 
         if ($schedule !== null)
         {
@@ -933,11 +933,6 @@ class Core extends Base\Core
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 
         return $returnDay->timestamp;
-    }
-
-    protected function getSettlementSchedule($payment)
-    {
-        return $payment->merchant->getSettlementSchedule();
     }
 
     public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)

@@ -9,6 +9,9 @@ use RZP\Models\Merchant\Schedule as MerchantSchedule;
 
 class Core extends Base\Core
 {
+    /**
+     * Create a merchant schedule entity and deletes the existing entity if any
+     */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
         return $this->repo->transaction(function() use ($merchant, $entity, $input)
@@ -51,10 +54,13 @@ class Core extends Base\Core
         return $merchantSchedule;
     }
 
-    public function getMerchantSchedule(Merchant\Entity $merchant, $method)
+    /**
+     * Get All Settlement schedules assigned to merchant for payment method
+     */
+    public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
     {
         $merchantSchedules = $this->repo->merchant_schedule
-                                  ->fetchByMerchant($merchant);
+                                  ->fetchByMerchant($merchant, Type::SETTLEMENT);
 
         if ($merchantSchedules->count() > 0)
         {
@@ -69,6 +75,9 @@ class Core extends Base\Core
         return $schedule;
     }
 
+    /**
+     * Filter a schedule by method or default
+     */
     protected function filterAndGetScheduleByMethodOrDefault(
         $merchantSchedules,
         $method)

@@ -23,7 +23,8 @@ class Repository extends Base\Repository
     public function fetchDuplicate(MerchantSchedule\Entity $merchantSchedule)
     {
         $query = $this->newQuery()
-                      ->merchantId($merchantSchedule->getMerchantId());
+                      ->merchantId($merchantSchedule->getMerchantId())
+                      ->where(MerchantSchedule\Entity::TYPE, '=', $merchantSchedule->getType());
 
         $method = $merchantSchedule->getMethod();
 
@@ -57,10 +58,11 @@ class Repository extends Base\Repository
                      ->first();
     }
 
-    public function fetchByMerchant(Merchant\Entity $merchant)
+    public function fetchByMerchant(Merchant\Entity $merchant, $type)
     {
         return $query = $this->newQuery()
                              ->merchantId($merchant->getId())
+                             ->where(MerchantSchedule\Entity::TYPE, '=', $type)
                              ->with('schedule')
                              ->get();
     }
