@@ -823,33 +823,6 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function updateMerchantLogoConfig($merchantId, $input)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        if (isset($input['logo']) === false)
-        {
-            $error = ['Internal Server Error. Contact support for help.'];
-            return [$error, $data];
-        }
-
-        try
-        {
-            $data = $this->api->merchant->updateLogoConfig($input)->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-        catch(\Exception $e)
-        {
-            $error = ['Internal Server Error. Contact support for help.'];
-        }
-
-        return [$error, $data];
-    }
-
     /**
      * This one uses Proxy Auth
      * @return [type]
