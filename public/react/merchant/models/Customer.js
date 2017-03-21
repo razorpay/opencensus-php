@@ -3,8 +3,7 @@ import ajax from 'merchant/utils/ajax'
 import { isBlank } from 'rzp/utils/rzp-utils'
 
 export default class Customer extends Entity {
-  static resourceIdField = 'id'
-  static resourceUrl = '/customers'
+  resourceUrl = '/customers'
 
   resourceFields = [
     'id',
@@ -18,7 +17,7 @@ export default class Customer extends Entity {
   }
 
   // This will be replaced with the ES autocomplete api
-  static fetchForAutocomplete(data = {}) {
+  fetchForAutocomplete(data = {}) {
     return ajax('/customers/autocomplete', { data }).then((response) => {
       response.data.items = response.data.items.map((item) => new Customer().deserialize(item))
       return response

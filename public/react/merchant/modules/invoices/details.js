@@ -12,9 +12,10 @@ const INVOICE_EXPIRE = 'INVOICE_EXPIRE'
 
 export const fetchInvoice = (id) => {
   return (dispatch) => {
+    let invoice = new Invoice()
     return dispatch({
       type: INVOICE_FETCH,
-      payload: Invoice.fetch(id)
+      payload: invoice.fetch(id)
     })
   }
 }
