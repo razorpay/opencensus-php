@@ -114,7 +114,7 @@ app.controller('ActivationCtrl', [
       var fieldsToDrop = [
         'steps_finished', 'activation_progress', 'locked',
         'submitted', 'role', 'department', 'verification',
-        'can_submit', 'files'
+        'can_submit', 'files', 'activated'
       ];
 
       var isTimestampField = function(field) {
