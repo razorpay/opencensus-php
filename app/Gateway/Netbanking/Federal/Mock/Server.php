@@ -67,9 +67,9 @@ class Server extends Base\Mock\Server
         }
 
         return
-        "<HTML>
+        '<HTML>
             <BODY> Y </BODY>
-        </HTML>";
+        </HTML>';
     }
 
     protected function getStringFromContent($content, $glue = '')

@@ -62,9 +62,9 @@ class NetbankingFederalGatewayTest extends TestCase
         // Assert that we don't save any information into the netbanking entity
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['bank_payment_id'], null);
-        $this->assertEquals($gatewayPayment['received'], false);
-        $this->assertEquals($gatewayPayment['status'], null);
+        $this->assertEquals(null, $gatewayPayment['bank_payment_id']);
+        $this->assertEquals(false, $gatewayPayment['received']);
+        $this->assertEquals(null, $gatewayPayment['status']);
     }
 
     public function testAuthorizeFailed()
@@ -83,9 +83,9 @@ class NetbankingFederalGatewayTest extends TestCase
         // Assert that we don't save any information into the netbanking entity
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['bank_payment_id'], null);
-        $this->assertEquals($gatewayPayment['received'], false);
-        $this->assertEquals($gatewayPayment['status'], null);
+        $this->assertEquals(null, $gatewayPayment['bank_payment_id']);
+        $this->assertEquals(false, $gatewayPayment['received']);
+        $this->assertEquals(null, $gatewayPayment['status']);
     }
 
     public function testPaymentVerify()
@@ -118,11 +118,11 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['status'], 'S');
+        $this->assertEquals('S', $gatewayPayment['status']);
 
         // The BID was never saved
-        $this->assertEquals($gatewayPayment['bank_payment_id'], null);
-        $this->assertEquals($gatewayPayment['received'], true);
+        $this->assertEquals(null, $gatewayPayment['bank_payment_id']);
+        $this->assertEquals(true, $gatewayPayment['received']);
     }
 
     /**
@@ -167,7 +167,7 @@ class NetbankingFederalGatewayTest extends TestCase
         $data = $this->generateRefundsExcelForNb($this->bank);
 
         // Refund file is never generated as count is 0
-        $this->assertEquals($data['netbanking_federal']['count'], 0);
+        $this->assertEquals(0, $data['netbanking_federal']['count']);
         $this->assertFalse(array_key_exists('file', $data));
     }
 
@@ -256,8 +256,8 @@ class NetbankingFederalGatewayTest extends TestCase
         // asserting that the total number of refunds is 3
         //
         $this->assertTrue(file_exists($data['file'][1]));
-        $this->assertEquals($data['file'][0], 100000);
-        $this->assertEquals($data['count'], 3);
+        $this->assertEquals(100000, $data['file'][0]);
+        $this->assertEquals(3, $data['count']);
 
         $refundsFileContents = file($data['file'][1]);
 
@@ -284,6 +284,8 @@ class NetbankingFederalGatewayTest extends TestCase
             $rowRefundAmount = trim($refundsFileRow[6]);
             assert(in_array($rowRefundAmount, $refundAmounts));
         }
+
+        unlink($data['file'][1]);
     }
 
     protected function mockFailedVerifyResponse()
@@ -292,9 +294,9 @@ class NetbankingFederalGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content = "<HTML>
+                $content = '<HTML>
                                 <BODY> N </BODY>
-                            </HTML>";
+                            </HTML>';
             }
         });
     }

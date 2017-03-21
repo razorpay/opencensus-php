@@ -4,10 +4,10 @@ namespace RZP\Gateway\Netbanking\Federal;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
-use RZP\Models\Payment\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
@@ -145,7 +145,7 @@ class Gateway extends Base\Gateway
 
         $verify->status = $status;
 
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
         $verify->payment = $this->saveVerifyContent($verify);
     }
@@ -160,7 +160,7 @@ class Gateway extends Base\Gateway
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $status = $this->returnVerifyStatusOrThrowException($verify);
+            $status = VerifyResult::STATUS_MISMATCH;
         }
 
         return $status;
@@ -204,7 +204,7 @@ class Gateway extends Base\Gateway
         {
             $data = $this->getRequestData($input);
 
-            $data[RequestFields::MODE]            = Constants::VERIFY_MODE;
+            $data[RequestFields::MODE]            = Action::VERIFY_MODE;
             $data[RequestFields::BANK_PAYMENT_ID] = $payment[Base\Entity::BANK_PAYMENT_ID];
         }
 
@@ -228,7 +228,7 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::ACTION       => Constants::CONFIRMATION,
             RequestFields::BANK_ID      => Constants::BANK_ID,
-            RequestFields::MODE         => Constants::AUTH_MODE,
+            RequestFields::MODE         => Action::AUTH_MODE,
             RequestFields::PAYEE_ID     => $this->getMerchantId(),
             RequestFields::PAYMENT_ID   => $input['payment']['id'],
             RequestFields::ITEM_CODE    => strtoupper($input['payment']['id']),
@@ -265,7 +265,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                     $content[ResponseFields::PAYMENT_ID],
-                                    Action::AUTHORIZE);
+                                    Payment\Action::AUTHORIZE);
 
         $gatewayPayment->fill($attributes);
 
@@ -277,9 +277,11 @@ class Gateway extends Base\Gateway
         if ((isset($content[ResponseFields::PAID]) === false) or
             ($content[ResponseFields::PAID] !== Constants::CONFIRMATION))
         {
-            $this->trace->error(
+            $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
+                [
+                    'content' => $content
+                ]);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
@@ -341,8 +343,7 @@ class Gateway extends Base\Gateway
         $values = explode('|', $body);
 
         //
-        // Manually setting success to false verify response
-        // is a failure response ||||
+        // Manually setting success to failed for verify response "||||"
         //
         if (strlen($values[0]) === 0)
         {
@@ -381,7 +382,7 @@ class Gateway extends Base\Gateway
         // needs to go to a Verify Broken URL
         //
         if ((empty($gatewayPayment['bank_payment_id']) === true) and
-            ($this->action === Action::VERIFY))
+            ($this->action === Payment\Action::VERIFY))
         {
             $type = Constants::VERIFY_BROKEN;
         }
