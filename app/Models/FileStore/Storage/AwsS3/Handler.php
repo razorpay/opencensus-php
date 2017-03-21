@@ -54,7 +54,7 @@ class Handler extends BaseHandler
      *
      * @return string saved file Url
      */
-    public function save($bucketConfig, $fileDetails)
+    public function save(array $bucketConfig, array $fileDetails)
     {
         if ($this->config['mock'] === true)
         {
