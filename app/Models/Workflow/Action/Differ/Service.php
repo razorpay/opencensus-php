@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Differ;
 
-use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
 
@@ -22,7 +20,7 @@ class Service extends Base\Service
     {
         Action\Entity::verifyIdAndStripSign($actionId);
 
-        $diff = $this->core()->get($id);
+        $diff = $this->core()->get($actionId);
 
         return $diff;
     }
