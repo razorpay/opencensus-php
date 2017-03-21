@@ -11,18 +11,18 @@ use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
-    public function postCreateAction()
+    public function postActionDiff(string $id)
     {
         $input = Request::all();
 
-        $result = (new Differ\Service)->create($input);
+        $result = (new Differ\Service)->create($id, $input);
 
         return ApiResponse::json($result);
     }
 
-    public function fetchDiffById(string $id)
+    public function getActionDiff(string $id)
     {
-        $result = (new Differ\Service)->fetchDiffById($id);
+        $result = (new Differ\Service)->get($id);
 
         return ApiResponse::json($result);
     }
@@ -31,15 +31,15 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $action = (new Differ\Service)->fetchRequest($id);
+        $diff = (new Differ\Core)->fetchRequest($id);
 
-        $routeParams = $action[Differ\Entity::ROUTE_PARAMS];
+        $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
 
-        $payload = $action[Differ\Entity::PAYLOAD];
+        $payload = $diff[Differ\Entity::PAYLOAD];
 
-        $controller = $action[Differ\Entity::CONTROLLER];
+        $controller = $diff[Differ\Entity::CONTROLLER];
 
-        $functionName = $action[Differ\Entity::FUNCTION_NAME];
+        $functionName = $diff[Differ\Entity::FUNCTION_NAME];
 
         Request::replace($payload);
 
@@ -82,7 +82,7 @@ class WorkflowController extends Controller
         return ApiResponse::json($result);
     }
 
-    public function getActionComments(string $actionId)
+    public function getActionComment(string $actionId)
     {
         $result = (new Comment\Service)->fetchByActionId($actionId);
 

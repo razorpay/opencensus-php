@@ -27,7 +27,10 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        (new Action\Validator)->validateActionBelongsToAdminOrg($action, $admin);
+        // The one who is querying for the action and action's org must be same
+        // TODO put cross org access when required
+        (new Action\Validator)->validateActionBelongsToAdminOrg(
+            $action, $admin);
 
         $input[Entity::ACTION_ID] = $actionId;
 
@@ -40,7 +43,8 @@ class Service extends Base\Service
     {
         $checkerId = Entity::verifyIdAndStripSign($checkerId);
 
-        $checker = $this->repo->action_checker->findByIdAndActionId($checkerId, $actionId);
+        $checker = $this->repo->action_checker->findByIdAndActionId(
+            $checkerId, $actionId);
 
         return $checker->toArrayPublic();
     }

@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const CONTROLLER   = 'controller';
     const ROUTE        = 'route';
     const DIFF         = 'diff';
+    const ACTION_ID    = 'action_id';
 
     const CREATED_AT    = 'created_at';
 

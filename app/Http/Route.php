@@ -406,9 +406,14 @@ final class Route
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
 
         // Workflows API
-        'action_checker_create'                   => ['post',     'w-action/{id}/checker',                          'WorkflowController@postActionChecker'                              ],
-        'action_checker_multiple'                 => ['get',      'w-action/{id}/checkers',                         'WorkflowController@getActionCheckerMultiple'                       ],
-        'action_checker_get'                      => ['get',      'w-action/{id}/checker/{checkerId}',              'WorkflowController@getActionChecker'                               ],
+        'action_checker_create'                   => ['post',     'w-actions/{id}/checkers',                        'WorkflowController@postActionChecker'                              ],
+        'action_checker_multiple'                 => ['get',      'w-actions/{id}/checkers',                        'WorkflowController@getActionCheckerMultiple'                       ],
+        'action_checker_get'                      => ['get',      'w-actions/{id}/checker/{checkerId}',             'WorkflowController@getActionChecker'                               ],
+        'action_diff_create'                      => ['post',     'w-actions/{id}/diff',                            'WorkflowController@postActionDiff'                                 ],
+        'action_diff_get'                         => ['get',      'w-actions/{id}/diff',                            'WorkflowController@getActionDiff'                                  ],
+        'action_request_execute'                  => ['post',     'w-actions/{id}/execute-diff',                    'WorkflowController@postExecuteAction'                              ],
+        'action_comment_create'                   => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
+        'action_comment_fetch'                    => ['get',      'w-actions/{id}/comments',                        'WorkflowController@getActionComments'                              ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -455,11 +460,6 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
-        'action_create'                           => ['post',     'workflows/actions',                              'WorkflowController@postCreateAction'                               ],
-        'action_fetch_by_id'                      => ['get',      'workflows/actions/{id}',                         'WorkflowController@fetchDiffById'                                  ],
-        'action_execute'                          => ['post',     'workflows/actions/{id}',                         'WorkflowController@postExecuteAction'                              ],
-        'action_comment_create'                   => ['post',     'workflows/actions/{id}/comments',                'WorkflowController@postActionComment'                              ],
-        'action_comment_fetch'                    => ['get',      'workflows/actions/{id}/comments',                'WorkflowController@getActionComments'                              ]
     );
 
     public static $public = array(
@@ -776,11 +776,6 @@ final class Route
         'schedule_fetch',
         'schedule_fetch_multiple',
         'schedule_migration',
-        'action_create',
-        'action_fetch_by_id',
-        'action_execute',
-        'action_comment_create',
-        'action_comment_fetch',
     );
 
     public static $proxy = array(
