@@ -51,25 +51,6 @@ class Core extends Base\Core
         return $merchantSchedule;
     }
 
-    public function createMerchantSchedule(
-        Merchant\Entity $merchant,
-        Schedule\Entity $schedule)
-    {
-        $merchantSchedule = new MerchantSchedule\Entity;
-
-        $merchantSchedule->merchant()->associate($merchant);
-
-        $merchantSchedule->entity()->associate($merchant);
-
-        $merchantSchedule->schedule()->associate($schedule);
-
-        $merchantSchedule->setType($schedule->getType());
-
-        $this->repo->saveOrFail($merchantSchedule);
-
-        return $merchantSchedule;
-    }
-
     public function getMerchantSchedule(Merchant\Entity $merchant, $method)
     {
         $merchantSchedules = $this->repo->merchant_schedule
