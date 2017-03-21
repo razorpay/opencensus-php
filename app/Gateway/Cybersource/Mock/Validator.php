@@ -119,5 +119,6 @@ class Validator extends Base\Validator
         'purchaseTotals'                       => 'required|array',
         'purchaseTotals.currency'              => 'required|string|size:3|in:INR',
         'purchaseTotals.grandTotalAmount'      => 'required|numeric',
+        'merchantDefinedData'                  => 'sometimes|array',
     ];
 }

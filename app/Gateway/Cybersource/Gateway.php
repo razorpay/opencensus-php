@@ -214,7 +214,7 @@ class Gateway extends Base\Gateway
 
             $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
 
-            $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+            $this->createGatewayRefundEntity($gatewayAttributes, $input);
         }
         catch (SoapFault $exception)
         {
@@ -1068,6 +1068,10 @@ class Gateway extends Base\Gateway
             F::MDD_FIELD => [
                 [
                     'id' => '1',
+                    '_'  => UserDefinedField::CURRENT_VERSION
+                ],
+                [
+                    'id' => '2',
                     '_'  => $input['refund']['id']
                 ]
             ]
@@ -1092,7 +1096,20 @@ class Gateway extends Base\Gateway
 
         $content[F::PURCHASE_TOTALS] = [
             F::CURRENCY           => $input['payment']['currency'],
-            F::GRAND_TOTAL_AMOUNT => ($input['payment']['amount'] / 100)
+            F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
+        ];
+
+        $content[F::MERCHANT_DEFINED_DATA] = [
+            F::MDD_FIELD => [
+                [
+                    'id' => '1',
+                    '_'  => UserDefinedField::CURRENT_VERSION
+                ],
+                [
+                    'id' => '2',
+                    '_'  => $input['refund']['id']
+                ]
+            ]
         ];
 
         $request = $this->getStandardSoapRequest($content);
