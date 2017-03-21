@@ -1,0 +1,233 @@
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import ajax from 'merchant/utils/ajax'
+import Header from 'rzp/ui/Header'
+import store from 'merchant/store'
+import moment from 'moment'
+
+const colorClass = {
+  failed: 'danger',
+  captured: 'success',
+  authorized: 'info',
+  refunded: 'warn'
+}
+
+/* TODO move to utils */
+function capitalize(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+/* TODO move to utils */
+function formatAmount(amount) {
+  return '₹' + (amount/100).toFixed(2).replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,').replace('.00', '');
+}
+
+function formatFromNow(unixSeconds) {
+  return moment(unixSeconds * 1e3).fromNow()
+}
+
+export default class HomeContainer extends Component {
+  state = {
+    loading: true,
+
+    /* date/intervel controls */
+    from: moment().endOf('day').subtract(30, 'days').unix(),
+    to: moment().endOf('day').unix(),
+    interval: 'day',
+
+    /* top information cards */
+    entity_totals: null,
+    payment_breakup: null,
+    current_balance: null,
+
+    /* recent entity list */
+    recent_payments: null,
+    recent_refunds: null,
+    recent_settlements: null,
+
+    graph_data: null
+  }
+
+  constructor() {
+    var a = moment;
+    super(...arguments)
+  }
+
+  componentWillMount() {
+    this.fetchAggregrations()
+  }
+
+  render() {
+    let state = this.state;
+    return (
+      <div>
+        <Header
+          title='Dashboard'
+          showMode={false}
+        >
+          <div>
+            <small className='text-muted'>
+              Welcome to Razorpay.
+            </small>
+            <a className='start-tour-link'>Start Tour</a>
+          </div>
+        </Header>
+        {!this.state.loading &&
+          <div className='wrapper-md'>
+            <div className='row'>
+              <div className='col-md-12 col-lg-6'>
+                <div className='row row-sm text-center'>
+                  <HomeInfoCard
+                    content={state.entity_totals.data.settlement.successful_txn_count}
+                    title='Total Settlements'
+                  />
+                  <HomeInfoCard
+                    content={state.recent_payments.data.count ? formatFromNow(state.recent_payments.data.items[0].created_at) : 'Never'}
+                    title='Last Transaction'
+                  />
+                  <HomeInfoCard
+                    bg='info'
+                    content={state.entity_totals.data.payment.successful_txn_count}
+                    title='Total Payments'
+                  />
+                  <HomeInfoCard
+                    bg='primary'
+                    content={state.entity_totals.data.refund.successful_txn_count}
+                    title='Total Refunds'
+                  />
+                  <HomeInfoCard
+                    content={'₹' + state.entity_totals.data.payment.total_amount/100}
+                    title='Total Volume'
+                  />
+                  <HomeInfoCard
+                    content={'₹' + state.current_balance.data.balance/100}
+                    title='Current Balance'
+                  />
+                </div>
+              </div>
+            </div>
+            <div className='panel wrapper'>
+              <div className='row'>
+                <RecentEntityTable
+                  entity='payment'
+                  data={state.recent_payments.data}
+                />
+                <RecentEntityTable
+                  entity='refund'
+                  data={state.recent_refunds.data}
+                />
+                <RecentEntityTable
+                  entity='settlement'
+                  data={state.recent_settlements.data}
+                />
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    )
+  }
+
+  fetchAggregrations() {
+    Promise.all([
+      this.state.entity_totals || ajax('/analytics/aggregations'),
+      this.state.payment_breakup || ajax('/analytics/payment/aggregations'),
+      this.state.current_balance || ajax('/user/generic', {
+        appendModeInQueryParam: true,
+        data: {
+          route_name: 'balance_fetch'
+        }
+      }),
+      this.state.recent_payments || ajax('/user/generic', {
+        appendModeInQueryParam: true,
+        data: {
+          route_name: 'payment_fetch_multiple'
+        }
+      }),
+      this.state.recent_refunds || ajax('/user/generic', {
+        appendModeInQueryParam: true,
+        data: {
+          route_name: 'refund_fetch_multiple'
+        }
+      }),
+      this.state.recent_settlements || ajax('/user/generic', {
+        appendModeInQueryParam: true,
+        data: {
+          route_name: 'setl_fetch_multiple'
+        }
+      }),
+      ajax('/analytics/transactions', {
+        data: {
+          type: this.state.interval,
+          from: this.state.from,
+          to: this.state.to
+        }
+      })
+    ]).then((values) => {
+      this.setState({
+        loading: false,
+        entity_totals: values[0],
+        payment_breakup: values[1],
+        current_balance: values[2],
+        recent_payments: values[3],
+        recent_refunds: values[4],
+        recent_settlements: values[5],
+        graph_data: values[6]
+      })
+    })
+  }
+}
+
+class HomeInfoCard extends Component {
+  render() {
+    let {
+      bg,
+      content,
+      title
+    } = this.props;
+
+    let panelClass = 'panel padder-v item';
+    let textClass = 'font-thin h1';
+
+    if (bg) {
+      panelClass += ` bg-${bg}`;
+      textClass += ` text-white`;
+    }
+
+    return <div className='col-xxs-12 col-xs-6 col-sm-6 col-md-4 col-lg-6'>
+      <div className={panelClass}>
+        <div className={textClass}>{content}</div>
+        <span className='text-muted text-xs'>{title}</span>
+      </div>
+    </div>
+  }
+}
+
+class RecentEntityTable extends Component {
+  render() {
+    let {
+      entity,
+      data
+    } = this.props;
+
+    return <div className='col-md-4 b-r b-light no-border-xs'>
+      <a data-tooltip='See All Payments' className='text-muted pull-right text-lg' href='#/app/payments/list'><i className='icon-arrow-right'></i></a>
+      <h4 className='font-thin m-t-none m-b-md text-muted'>Recent {capitalize(entity)}s</h4>
+        {data.count ? data.items.slice(0, 5).map(item=> <div className='m-b m-l row'>
+              <a href='#/app/payments/pay_7VBun74YJV4Sx8'>
+                <div
+                  className={'col-xs-4 col-md-3 label text-base bg-' + (colorClass[item.status] || 'light')}
+                  data-tooltip={capitalize(item.status)} data-tooltip-placement='right'>
+                  {formatAmount(item.amount)}
+                </div>
+                <div className='col-xs-8 col-md-9'>
+                  <code className='hidden-xs'>{item.id}</code>
+                  <span className='pull-right'>{formatFromNow(item.created_at)}</span>
+                </div>
+              </a>
+            </div>)
+          : <div className='m-b m-l row'>No Recent Payments</div>
+        }
+    </div>
+  }
+}

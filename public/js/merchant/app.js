@@ -114,10 +114,6 @@ var app = angular
           },
           data: { role: 'auth' },
         })
-        .state('app.dashboard', {
-          url: '/dashboard',
-          templateUrl: 'tpl/app_dashboard.html',
-        })
         .state('app.payments', {
           url: '/payments',
           template: '<div ui-view class="fade-in-down"></div>',
@@ -160,6 +156,10 @@ var app = angular
         })
         // React
 
+        .state('app.dashboard', {
+          url: '/dashboard',
+          templateProvider: reactTemplateProvider('<merchant-home />')
+        })
         .state('app.invoices', {
           url: '/invoices',
           templateUrl: 'tpl/app_invoices.html',

@@ -12,6 +12,7 @@ import store from './store';
 
 // import './mocks/faker'
 
+import HomeContainer from './containers/HomeContainer';
 import CustomersListContainer from './containers/Customers/List';
 import ItemsListContainer from './containers/Items/List';
 import InvoicesListContainer from './containers/Invoices/List';
@@ -108,6 +109,7 @@ function createNgDirective(directiveName, component, ...args) {
   ]);
 }
 
+createNgDirective('merchantHome', HomeContainer);
 createNgDirective('invoicesNew', InvoicesNewContainer, ['id']);
 createNgDirective('invoicesList', InvoicesListContainer);
 createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id']);
