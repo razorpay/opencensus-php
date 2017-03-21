@@ -33,7 +33,9 @@ class Service extends Base\Service
 
         $input['file'] = Input::file('file') ?? null;
 
-        $input['file_name'] = Input::get('file_name') ?? '';
+        if (isset($input['file'])) {
+            $input['file_name'] = Input::get('file_name') ?? '';
+        }
 
         $autoBuildQuery = false;
 
