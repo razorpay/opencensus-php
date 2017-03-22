@@ -272,7 +272,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   => Account::TEST_ACCOUNT,
                     'contact_name'  => 'Test Account',
                     'contact_email' => 'test@razorpay.com',
-                    'created_at'    =>  $currentTime,
+                    'created_at'    =>  1488306599, // 28/02/2017, 11:59:59 PM GMT+5:30; pre signup steps are required for people signing up on/after 01/03/2017 
                     'updated_at'    =>  $currentTime,
                     )
                 );
