@@ -61,4 +61,13 @@ class WorkflowController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getActionsForChecker()
+    {
+        $input = Request::all();
+
+        $data = (new Checker\Service)->fetchActionsForChecker($input);
+
+        return ApiResponse::json($data);
+    }
 }
