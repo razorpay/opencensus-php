@@ -14,6 +14,7 @@ use Razorpay\Api\Errors\ServerError as ServerError;
 class Admin extends Entity
 {
     const RECONCILIATION_URL = 'reconciliate';
+    const UPLOAD_ACTIVATION_FILE_PREFIX_URL = 'merchant/activation/';
 
     public function fetchEntityById($entity, $id)
     {
@@ -96,32 +97,62 @@ class Admin extends Entity
 
     public function makeReconciliateRequest($input)
     {
-        // Makes a guzzle file request
-        $response = $this->makeGuzzleFileRequest($input);
+        // Makes a guzzle file request for reconciliation
+        $response = $this->makeGuzzleFileRequest($input, self::RECONCILIATION_URL);
 
         // Builds an entity from the response received
         return ApiEntity::buildEntity($response);
     }
 
-    public function makeGuzzleFileRequest($input)
+    public function uploadActivationFile(string $merchantId, array $input)
     {
-        // Creates a new Guzzle client
-        $client = new Guzzle(['base_url' => Config::get('api.url')]);
+        $url = self::UPLOAD_ACTIVATION_FILE_PREFIX_URL . $merchantId . '/files';
 
+        $response = $this->makeGuzzleActivationFileRequest($input, $url);
+
+        return ApiEntity::buildEntity($response);
+    }
+
+    protected function getGuzzleClient(array $input)
+    {
         // Sets the options for the request. Auth should be part of this.
-        $options = array(
-            // For reconciliation route, auth is not required.
-            // But, sending it just for the sake of it.
-            'auth'      => $this->getApiCredentials(),
-            'headers'   => ApiRequest::getHeaders(),
-            // TODO: Check if $postBody->setField() can be used, instead.
-            'body'      => [
-                $input
-            ]
-        );
+        $options = [
+            'defaults'  =>  [
+                'auth'      => $this->getApiCredentials(),
+                'headers'   => ApiRequest::getHeaders(),
+            ],
+            'base_url' => Config::get('api.url')
+        ];
 
-        // Creates a request instance
-        $request = $client->createRequest("POST", self::RECONCILIATION_URL, $options);
+         // Creates a new Guzzle client
+        return new Guzzle($options);
+    }
+
+    public function makeGuzzleActivationFileRequest(array $input, string $url, string $method = 'POST')
+    {
+        $fileType = key($input);
+
+        $client  = $this->getGuzzleClient($input);
+
+        $request = $client->createRequest($method, $url);
+
+        $postBody = $request->getBody();
+
+        $filePath = $input[$fileType]->getRealPath();
+
+        $postFile = new PostFile($fileType, fopen($filePath, 'r'));
+
+        // Inserts file into the post body data
+        $postBody->addFile($postFile);
+
+        return $this->sendGuzzleFileRequest($client, $request, [$filePath]);
+    }
+
+    public function makeGuzzleFileRequest(array $input, string $url, string $method = 'POST')
+    {
+        $client = $this->getGuzzleClient($input);
+
+        $request = $client->createRequest($method, $url);
 
         // Creates an object to insert post body data
         $postBody = $request->getBody();
@@ -134,6 +165,12 @@ class Admin extends Entity
     protected function addFilesToRequest($postBody, $input)
     {
         $filePaths = [];
+
+        // This is used in case of Make API Call in actions tab
+        if (!isset($input['attachment-count']))
+        {
+            return $filePaths;
+        }
 
         foreach (range(1, $input['attachment-count']) as $attachmentNumber)
         {
