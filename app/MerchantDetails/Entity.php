@@ -247,10 +247,10 @@ class Entity extends Base\Entity
         // using user input
         $field = self::UPLOAD_KEYS[key($input)];
 
-        $value = current($input);
-
         return [
-            $field => $value
+            'key'   => key($input),
+            'file'  => current($input),
+            'field' => $field
         ];
     }
 

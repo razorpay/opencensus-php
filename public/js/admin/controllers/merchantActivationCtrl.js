@@ -1,129 +1,72 @@
-"use strict";
-
 //Merchant Activation Detail Display Controller
 app.controller('MerchantActivationCtrl', [
   '$scope',
   '$http',
-  '$controller',
   '$stateParams',
-  function ($scope, $http, $controller, $stateParams) {
-
-    $controller('ActivationCtrl', {$scope: $scope});
-
+  'alertsFactory',
+  function ($scope, $http, $stateParams, alertsFactory) {
+    $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = { id: $stateParams.id };
-
+    $scope.check = {};
+    $scope.data = {
+      1: {},
+      2: {},
+      3: {},
+      4: {},
+      5: {},
+      6: {}
+    };
     $scope.files = {};
+    $scope.locked = true;
     $scope.companyInfo = null;
+
     $scope.panVerified = false;
+    getData();
 
-    // This decides whether the admin context
-    // options will be shown or not.
-    $scope.admin = true;
-    $scope.admin_force_edit = false;
-
-    $scope.verificationToolTip = {
-      true: 'Business Name matches Company Register',
-      false: "Business Name doesn't match company register",
-      'pending': "Click the verify button to fetch company data and verify"
-    };
-
-    /**
-     * Either the edits must be forced, or the form must
-     * be unlocked
-     * @return bool
-     */
-    $scope.editable = function() {
-      return ($scope.admin_force_edit || $scope.data.locked === false);
-    };
-
-    $scope.verifyBusinessName = function() {
-      var company = null;
-      try {
-        company = $scope.companyInfo.company['Company Name'];
-      }
-      catch(TypeError) {
-        return 'pending';
-      }
-
-      var canonicalize = function(str) {
-        return str.replace(/\s/g, '').toUpperCase();
-      };
-
-      var bn1 = canonicalize($scope.data.business_name);
-      var bn2 = canonicalize(company);
-
-      return (bn1 === bn2);
-    };
-
-    $scope.getUrl = function(name) {
-      switch(name) {
-        case 'fetch_details':
-          return '/admin/merchant/' + $scope.merchant.id + '/activation';
-
-        case 'fetch_merchant_details':
-          return '/admin/merchant/' + $scope.merchant.id + '/details';
-
-        case 'upload_file':
-          return '/admin/merchant/' + $scope.merchant.id + '/files';
-
-        case 'submit_form':
-          return '/activation';
-
-        case 'save_step':
-          return '/admin/merchant/' + $scope.merchant.id + '/details';
-      }
-    };
-
-    /**
-     * This fetches details like merchant Name, email
-     * to show in the top section. Also includes
-     * the activation form details
-     */
-    var fetchMerchantDetails = function() {
-      var request = $http.get($scope.getUrl('fetch_merchant_details'));
-      request.success(function (data) {
-        if (data.success) {
-          $scope.merchant = data.data.merchant;
-          $scope.files = data.data.activation.files;
-        } else {
-          $scope.alerts.addAlert('danger', 'Merchant Info could not be fetched');
+    $scope.verifyPAN = function (signatories, pan_name, pan_number) {
+      for (var i in signatories) {
+        var person = signatories[i];
+        if (person.PAN_DIN.toUpperCase() === pan_number.toUpperCase() && person.Name.toUpperCase() === pan_name.toUpperCase()) {
+          $scope.panVerified = true;
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', 'Merchant Info could not be fetched');
-      });
-    };
-
-    fetchMerchantDetails();
-
-    $scope.verifySignatoryPAN = function() {
-      var cin = $scope.data.company_cin;
-      var promoter_pan = $scope.data.promoter_pan;
-
-      var request = $http.get('/admin/companies/' + cin + '/signatories/' + promoter_pan);
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.directorInfo = data.data;
-          $scope.panVerified = data.data.match;
-        } else {
-          $scope.alerts.addAlert('danger', 'PAN could not be verified. The promoter PAN was not found in any of the company signatories');
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', 'Director Info could not be fetched');
-      });
-    };
+      }
+    }
 
     $scope.getCompanyData = function(cin) {
       var request = $http.get('/admin/companies/' + cin + '/info');
       request.success(function (data) {
         if (data.success) {
           $scope.companyInfo = data.data;
+          $scope.verifyPAN(data.data.signatories, $scope.data['2'].promoter_pan_name, $scope.data['2'].promoter_pan);
         } else {
           $scope.alerts.addAlert('danger', 'Company Info could not be fetched');
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', 'Company Info could not be fetched');
       });
-    };
+    }
+
+    function getData() {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/details');
+      request.success(function (data) {
+        if (data.success) {
+          angular.forEach(data.data.merchant.steps_finished, function (value, key) {
+            $scope.check[value] = true;
+          });
+          angular.forEach(data.data.merchant.merchant_details, function (value, key) {
+            $scope.data[key] = value;
+          });
+          angular.forEach(data.data.activation.files, function (value, key) {
+            $scope.files[key] = value;
+          });
+          $scope.merchant = data.data.merchant;
+          $scope.locked = $scope.data['locked'];
+        } else {
+          $scope.alerts.addAlert('danger');
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger');
+      });
+    }
   }
 ]);
