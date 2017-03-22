@@ -36,16 +36,4 @@ class Invoice extends Entity
         $relativeUrl = 'invoices/' . $id . '/notify/' . $medium;
         return $this->request('POST', $relativeUrl, []);
     }
-
-    public function markAsIssued($id)
-    {
-        $relativeUrl = 'invoices/' . $id . '/issue';
-        return $this->request('POST', $relativeUrl, []);
-    }
-
-    public function markAsExpired($id)
-    {
-        $relativeUrl = 'invoices/' . $id . '/expire';
-        return $this->request('POST', $relativeUrl, []);
-    }
 }
