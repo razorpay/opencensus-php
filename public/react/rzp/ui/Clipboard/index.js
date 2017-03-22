@@ -1,7 +1,6 @@
 import { Component } from 'react'
 import { findDOMNode } from 'react-dom'
 import { Field } from 'redux-form'
-import ReactTooltip from 'react-tooltip'
 import './Clipboard.styl'
 
 export default class Clipboard extends Component {
@@ -24,16 +23,9 @@ export default class Clipboard extends Component {
     }
   }
 
-  componentDidMount() {
-    ReactTooltip.rebuild()
-  }
-
   copyToClipboard() {
     this.selectValue()
     document.execCommand('copy')
-    setTimeout(() => {
-      ReactTooltip.hide(findDOMNode(this.copyCta))
-    }, 2000)
   }
 
   render() {
@@ -49,21 +41,14 @@ export default class Clipboard extends Component {
         {
           this.supported &&
           <span
-            ref={(copyCta) => this.copyCta = copyCta }
             class='input-group-addon'
             onClick={this.copyToClipboard}
             data-tip='Copied'
-            data-delay-show='150'
-            data-event='click'
-            data-place='top'
+            data-event='active'
           >
             Copy Link
           </span>
         }
-        <ReactTooltip
-          effect='solid'
-          isCapture={true}
-        />
       </div>
     )
   }
