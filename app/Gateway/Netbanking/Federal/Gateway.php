@@ -344,10 +344,16 @@ class Gateway extends Base\Gateway
 
         //
         // Manually setting success to failed for verify response "||||"
+        // In the success case, eliminating the \n0000's to clean the data
         //
         if (strlen($values[0]) === 0)
         {
             $values[4] = Constants::FAILURE;
+        }
+        else
+        {
+            // Cleaning data
+            $values[4] = $values[4][0];
         }
 
         $keys = $this->getVerifyBrokenResponseKeys();
