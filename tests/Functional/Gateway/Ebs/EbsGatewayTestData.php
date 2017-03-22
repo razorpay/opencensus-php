@@ -171,22 +171,6 @@ return [
         ],
     ],
 
-    'testPaymentInvalidRefund' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => 'BAD_REQUEST_ERROR',
-                    'description'   => 'Account Balance is insufficient',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE',
-        ],
-    ],
-
     'testHackedPayment' => [
         'response'  => [
             'content'     => [

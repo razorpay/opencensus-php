@@ -222,10 +222,7 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $this->mockRefundFailure();
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->refundPayment($payment['id'], 100);
-        });
+        $this->refundPayment($payment['id'], 100);
     }
 
     public function testAuthResponseHashFailure()

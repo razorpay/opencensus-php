@@ -301,9 +301,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->getErrorInReturn();
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->refundpayment($payment['id']);
-        });
+        $this->refundpayment($payment['id']);
     }
 
     public function testFailedCapture()

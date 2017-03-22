@@ -72,6 +72,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::NOTES             => [],
+        self::STATUS            => Status::CREATED,
         self::GATEWAY_REFUNDED  => null,
     ];
 
