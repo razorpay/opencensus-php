@@ -79,6 +79,26 @@ class TransactionTest extends TestCase
         return $payment;
     }
 
+    public function testFetchPaymentTransaction()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $request = [
+            'url'     => '/payments/'.$payment['id'].'/transaction',
+            'method'  => 'GET',
+            'content' => [],
+        ];
+
+        $this->ba->privateAuth();
+
+        $txn = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($txn['entity_id'], $payment['id']);
+        $this->assertEquals($txn['type'], 'payment');
+
+        return $payment;
+    }
+
     public function testTransactionCreateForOldPayment()
     {
         $this->fixtures->create('pricing:zero_pricing_plan');

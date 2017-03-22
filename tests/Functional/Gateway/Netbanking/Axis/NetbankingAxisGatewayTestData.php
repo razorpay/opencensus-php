@@ -105,6 +105,22 @@ return [
         ],
     ],
 
+    'testAuthFailedVerifyNullResponse' => [
+        'gateway' => [
+            'status'                => 'status_match',
+            'gateway'               => 'netbanking_axis',
+            'verifyResponseContent' => "",
+            'apiSuccess'            => false,
+            'gatewaySuccess'        => false,
+            'gatewayPayment'        => [
+                'action' => 'authorize',
+                'bank'   => 'UTIB',
+                'status' => 'N',
+                'received' => true,
+            ],
+        ],
+    ],
+
     'testVerifyMismatch' => [
         'response'  => [
             'content'     => [

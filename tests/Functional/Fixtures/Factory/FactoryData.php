@@ -7,6 +7,7 @@ use Config;
 use Eloquent;
 use RZP\Tests\TestDummy\Factory;
 use RZP\Models;
+use Carbon\Carbon;
 
 final class FactoryData
 {
@@ -14,7 +15,8 @@ final class FactoryData
     {
         $factory(\RZP\Models\Merchant\Entity::class, [
             'id' => $faker->uniqueid,
-            'org_id' => 'RazorpayOrgnId',
+            'org_id' => '100000razorpay',
+            'parent_id' => null,
             'name' => $faker->word,
             'email' => $faker->email,
             'activated' => 0,
@@ -33,7 +35,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Terminal\Entity::class, [
             'id'                        => $faker->uniqueid,
-            'merchant_id'               => 'factory:\RZP\Models\Merchant\Entity',
+            'merchant_id'               => 'factory:RZP\Models\Merchant\Entity',
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
@@ -92,7 +94,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Key\Entity::class, [
             'id' => '1DP5mmOlF5G5ag',
-            'merchant_id' => 'factory:\RZP\Models\Merchant\Entity',
+            'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
             'secret' => 'eyJpdiI6InFjMFFDMkszYzRLeU5UZ2VnajhoMEE9PSIsInZhbHVlIjoiZzY3c0Zkd0VMQkE0cjU1T3hVQXZSSzBub1h4aHJkaThBRlwvZWJwMm5wdkE9IiwibWFjIjoiZmEyZWM5MzIyODBjMmU3N2RhMmQ2ZjA2ODA3OTk5ZjI0ZTY2ZTQ3ZGNiYzJjOTE4ODc5ZWNkYzY4MGQwYTZhZiJ9',
             'expired_at' => null,
         ]);
@@ -117,6 +119,7 @@ final class FactoryData
             'auto_captured' => 0,
             'captured_at' => null,
             'transaction_id' => null,
+            'on_hold' => 0,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
         ]);
@@ -124,7 +127,7 @@ final class FactoryData
         $factory(\RZP\Models\Payment\Refund\Entity::class, [
             'id' => $faker->uniqueid,
             'payment_id' => 'factory:\RZP\Models\Payment\Entity',
-            'merchant_id' => 'factory:\RZP\Models\Merchant\Entity',
+            'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
             'amount' => 100,
             'currency' => 'INR',
             'base_amount' => 100,
@@ -149,7 +152,7 @@ final class FactoryData
             'id' => $faker->uniqueid,
             'entity_id' => $faker->uniqueid,
             'type' => 'payment',
-            'merchant_id' => 'factory:\RZP\Models\Merchant\Entity',
+            'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
             'amount' => $faker->randomNumber,
             'fee' => $faker->randomNumber,
             'pricing_rule_id' => null,
@@ -158,13 +161,14 @@ final class FactoryData
             'debit' => 0,
             'balance' => $faker->randomNumber,
             'gateway_fee' => null,
+            'on_hold'   => 0,
             'gratis' => false,
             'channel' => 'kotak'
         ]);
 
         $factory(\RZP\Models\Settlement\Entity::class, [
             'id' => $faker->uniqueid,
-            'merchant_id' => 'factory:\RZP\Models\Merchant\Entity',
+            'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
             'amount' => $faker->randomNumber,
             'status' => 'created',
             'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
@@ -174,9 +178,17 @@ final class FactoryData
             'return_utr' => null,
         ]);
 
+        $factory(\RZP\Models\FundTransfer\Attempt\Entity::class, [
+            'id' => $faker->uniqueid,
+            'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
+            'entity_type' => 'settlement',
+            'channel' => 'kotak',
+            'version' => 'V2',
+        ]);
+
         $factory(\RZP\Models\Adjustment\Entity::class, [
             'id' => $faker->uniqueid,
-            'merchant_id' => 'factory:\RZP\Models\Merchant\Entity',
+            'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
             'amount' => $faker->randomNumber,
             'currency' => 'INR',
             'channel' => 'kotak',
@@ -459,8 +471,31 @@ final class FactoryData
             'contact_email' => $faker->email,
         ]);
 
+        $factory(\RZP\Models\Customer\Balance\Entity::class, [
+            'customer_id'   => 'factory:RZP\Models\Customer\Entity',
+            'merchant_id'   => '10000000000000',
+            'balance'       => 0,
+            'daily_usage'   => 0,
+            'weekly_usage'  => 0,
+            'monthly_usage' => 0,
+            'max_balance'   => 2000000,
+        ]);
+
+        $factory(\RZP\Models\Customer\Transaction\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'status'            => 'transferred',
+            'amount'            => 100,
+            'debit'             => 100,
+            'credit'            => 10,
+            'balance'           => 0,
+            'description'       => 'NA',
+        ]);
+
         $factory(\RZP\Models\Offer\Entity::class, [
-            'id'    => $faker->uniqueid,
+            'id'        => $faker->uniqueid,
+            'active'    => true,
+            'terms'     => 'Terms and Condition'
         ]);
 
         $factory(\RZP\Models\Device\Entity::class, [
@@ -515,6 +550,43 @@ final class FactoryData
             'channel'            => 'kotak',
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Transfer\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'source_type'        => 'payment',
+            'to_type'            => 'merchant',
+            'amount'             => 200,
+            'currency'           => 'INR',
+            'amount_reversed'    => 0,
+            'notes'              => null,
+            'on_hold'            => 0,
+            'on_hold_until'      => null,
+            'merchant_id'        => '10000000000000',
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Reversal\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'amount'             => 200,
+            'currency'           => 'INR',
+            'notes'              => null,
+            'merchant_id'        => '10000000000000',
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Schedule\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '100000Razorpay',
+            'name'              => 'Basic T3',
+            'type'              => 'settlement',
+            'period'            => 'daily',
+            'interval'          => 1,
+            'delay'             => 3,
+            'hour'              => 5,
+            'next_run'          => 1451586600,
         ]);
     }
 }

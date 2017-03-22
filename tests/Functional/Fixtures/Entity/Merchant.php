@@ -38,6 +38,10 @@ class Merchant extends Base
 
         $this->fixtures->on('test')->create('merchant:bank_account');
 
+        $schedule = $this->fixtures->create('merchant:merchant_schedule');
+
+        $this->edit('10000000000000', ['settlement_schedule_id' => $schedule['id']]);
+
         $this->fixtures->merchant->enableInternational();
     }
 
@@ -57,6 +61,40 @@ class Merchant extends Base
     {
         $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::API_FEE_ACCOUNT]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::API_FEE_ACCOUNT, 'balance' => '1000000']);
+    }
+
+    public function createMarketplaceAccount($data = null)
+    {
+        $accountId = $data['id'] ?? '10000000000001';
+
+        $merchant = $this->fixtures->create(
+            'merchant',
+            [
+                'id' => $accountId,
+                'parent_id' => '10000000000000',
+                'pricing_plan_id' => '1hDYlICobzOCYt'
+            ]);
+
+        $balance = 0;
+
+        if (isset($data['balance']) === true)
+        {
+            $balance = $data['balance'];
+        }
+
+        $this->fixtures->on('test')->create('balance', ['id' => $accountId, 'balance' => $balance]);
+
+        $this->fixtures->on('live')->create('balance', ['id' => $accountId, 'balance' => $balance]);
+
+        $this->fixtures->on('live')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
+
+        $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
+
+       $schedule = $this->fixtures->create('merchant:merchant_schedule');
+
+        $this->edit($accountId, ['settlement_schedule_id' => $schedule['id']]);
+
+        return $merchant;
     }
 
     public function createWithBalanceTerminalsStandardPricing()
@@ -128,6 +166,13 @@ class Merchant extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         $this->fixtures->create('methods', $attributes);
+    }
+
+    public function createMerchantSchedule(array $attributes = array())
+    {
+        $schedule = $this->fixtures->create('schedule', $attributes);
+
+        return $schedule;
     }
 
     public function activate($id = '10000000000000')

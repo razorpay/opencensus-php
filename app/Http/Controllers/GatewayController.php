@@ -2,16 +2,16 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
-use Redirect;
 use Request;
+use Redirect;
+use ApiResponse;
 use RZP\Exception;
-use RZP\Models\GatewayStatus\Absence;
 use RZP\Models\Payment;
-use RZP\Models\Gateway\Priority as GatewayPriority;
-use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Base\RuntimeManager;
 use RZP\Trace\TraceCode;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Gateway\Downtime;
+use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\Gateway\Priority as GatewayPriority;
 
 class GatewayController extends Controller
 {
@@ -24,7 +24,7 @@ class GatewayController extends Controller
     {
         $gateway = $this->app['gateway']->gateway($gateway);
 
-        // Some gateways may need some preprocessing on the input
+        // Some gateways may need some pre-processing on the input
         // to be able to call the next few methods.
         //
         // Eg: gateway request needs to be decrypted
@@ -195,55 +195,61 @@ class GatewayController extends Controller
     }
 
     /**
-     * Method to create a gateway absence entity
+     * Method to create a gateway downtime entity
+     *
+     * @param Downtime\Service $service
+     *
      * @return \Symfony\Component\HttpFoundation\Response
-     * @internal param string $gateway
      */
-    public function postCreateGatewayAbsence()
+    public function postGatewayDowntime(Downtime\Service $service)
     {
         $input = Request::all();
 
-        $data = (new Absence\Service)->create($input);
+        $data = $service->create($input);
 
         return ApiResponse::json($data);
     }
 
     /**
-     * Method to update gateway absence entity
-     * @param integer $id
+     * Method to update gateway downtime entity
+     *
+     * @param Downtime\Service $service
+     * @param string $id
+     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function putUpdateGatewayAbsence($id)
+    public function putGatewayDowntime(Downtime\Service $service, string $id)
     {
         $input = Request::all();
 
-        $data = (new Absence\Service)->edit($id, $input);
+        $data = $service->edit($id, $input);
 
         return ApiResponse::json($data);
     }
-
-    /**
-     * Method to delete gateway absence entity
-     * @param integer $id
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function deleteGatewayAbsence($id)
-    {
-        $data = (new Absence\Service)->delete($id);
-
-        return ApiResponse::json($data);
-    }
-
 
     /**
      * Method to get absent gateways across multiple search params
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function getAbsentGateways()
+    public function getAbsentGateways(Downtime\Service $service)
     {
         $input = Request::all();
 
-        $data = (new Absence\Service)->findAbsentGateways($input);
+        $data = $service->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * Method to handle webhook from statuscake
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function postGatewayDowntimeWebhook(Downtime\Service $service, $source)
+    {
+        $input = Request::all();
+
+        $data = $service->processGatewayDowntimeWebhook($source, $input);
 
         return ApiResponse::json($data);
     }
@@ -253,7 +259,7 @@ class GatewayController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function fillUpiProviderCode()
+    public function fillUpiBank()
     {
         RuntimeManager::setMaxExecTime(1800);
 
@@ -267,7 +273,7 @@ class GatewayController extends Controller
 
         while (true)
         {
-            $recordsToUpdate = $this->repo->upi->fetchAllForProviderUpdate($batchSize, $lastId);
+            $recordsToUpdate = $this->repo->upi->fetchAllForBankUpdate($batchSize, $lastId);
 
             $currentBatchCount = count($recordsToUpdate);
 
@@ -282,11 +288,20 @@ class GatewayController extends Controller
             {
                 $provider = $upiRecord->extractProviderFromVpa();
 
-                $upiRecord->setProvider($provider);
+                $bankCode = ProviderCode::getBankCode($provider);
 
-                $upiRecord->setBank(ProviderCode::getBankCode($provider));
+                if ($bankCode === null)
+                {
+                    $failedCount++;
 
-                $upiRecord->setAcquirer('icici');
+                    $failedIds[] = $upiRecord->getId();
+
+                    $lastId = $upiRecord->getId();
+
+                    continue;
+                }
+
+                $upiRecord->setBank($bankCode);
 
                 try
                 {

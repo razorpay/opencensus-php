@@ -57,6 +57,8 @@ class Base
         'invoice'       => \RZP\Models\Invoice\Entity::class,
         'line_item'     => \RZP\Models\LineItem\Entity::class,
         'device'        => \RZP\Models\Device\Entity::class,
+        'schedule'      => \RZP\Models\Schedule\Entity::class,
+        'transfer'      => \RZP\Models\Transfer\Entity::class,
     );
 
     protected static $liveAndTest = array(
@@ -207,7 +209,7 @@ class Base
         });
     }
 
-    protected function stripSign(& $id)
+    public function stripSign(& $id)
     {
         $ix = strpos($id, '_');
 

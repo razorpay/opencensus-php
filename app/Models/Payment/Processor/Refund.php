@@ -17,12 +17,12 @@ use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Feature\Constants as Feature;
 
 trait Refund
 {
     /**
      * Refunds a payment
+     *
      * @param  Payment\Entity   $payment     Payment Id
      * @param  array            $input  Refund input params
      * @param  Batch\Entity     $batch
@@ -113,10 +113,9 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC and Billdesk. In case when other gateways start
-        // getting similar issues, we will start supporting for them too.
-        assert (($payment->getGateway() === Payment\Gateway::HDFC) or
-                ($payment->getGateway() === Payment\Gateway::BILLDESK));
+        $gateway = $payment->getGateway();
+
+        Payment\Refund\Validator::validateManualGatewayRefundAllowed($gateway);
 
         // The refund should have already been successful and everything on the api side.
         assert ($refund->getTransactionId() !== null);
@@ -231,6 +230,31 @@ trait Refund
         return $this->refundCapturedPayment($payment, $input);
     }
 
+    /**
+     * Process refund on a payment that has Marketplace transfers
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function processRefundWithTransfers(array $input)
+    {
+        if (isset($input['reversals']) === false)
+        {
+            return;
+
+            // throw new Exception\BadRequestValidationFailureException(
+            //         'The reversals parameter is required for this refund request');
+        }
+
+        $this->repo->transaction(function () use ($input)
+        {
+            $this->processReversals($input['reversals']);
+
+            unset($input['reversals']);
+        });
+    }
+
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
     {
         //
@@ -317,6 +341,27 @@ trait Refund
         }
 
         return null;
+    }
+
+    /**
+     * Get the type of refund being processed - FULL / PARTIAL,
+     * based on the refund amount and amount already refunded
+     *
+     * @param array $input
+     *
+     * @return string
+     */
+    protected function getPaymentRefundType(array $input)
+    {
+        $type = Payment\Refund\Status::PARTIAL;
+
+        if ((isset($input['amount']) === false) or
+            ((int) $input['amount'] === $this->payment->getAmountUnrefunded()))
+        {
+            $type = Payment\Refund\Status::FULL;
+        }
+
+        return $type;
     }
 
     protected function callGatewayForVerifyRefund($data)
@@ -421,6 +466,13 @@ trait Refund
             $refAmount = $data['amount'];
 
             if (($paymentId === '6pHu2RnPzTeI51') and ($refAmount === 784000))
+            {
+                return;
+            }
+
+            // AirtelMoney refunds which failed because they upgraded their
+            // wallet. We have to create gateway refund records later.
+            if (($paymentId === '6wbhijioS7aZRF') and ($refAmount === 19724))
             {
                 return;
             }
@@ -537,13 +589,6 @@ trait Refund
 
     protected function buildRefundEntity(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
-        $this->trace->info(
-            TraceCode::PAYMENT_REFUND_REQUEST,
-            [
-                'payment_id' => $payment->getId(),
-                'input' => $input
-            ]);
-
         $this->setPayment($payment);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
@@ -552,7 +597,7 @@ trait Refund
 
         $refund->setBaseAmount();
 
-        if ($this->payment->isCaptured())
+        if ($this->payment->isCaptured() === true)
         {
             $this->validateMerchantBalance($refund);
         }
@@ -570,7 +615,7 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($this->refund, $payment);
 
-        if ($payment->isMethodCardOrEmi())
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $this->repo->card->fetchForPayment($this->refund->payment);
 
@@ -602,7 +647,7 @@ trait Refund
             $success = $this->recordTransactionForRefund();
 
             //
-            // `recordTransactionForRefund` may have made modifications to the refund
+            // `recordTransactionForRefund()` may have made modifications to the refund
             // entity which we don't want to update, since recording transaction failed.
             //
             if ($success === false)
@@ -645,6 +690,7 @@ trait Refund
         $this->repo->transaction(function()
         {
             $this->repo->saveOrFail($this->payment);
+
             $this->repo->saveOrFail($this->refund);
         });
 
@@ -723,7 +769,32 @@ trait Refund
 
     protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {
-        if ($payment->isFullyRefunded())
+        $this->validatePaymentForRefund($payment);
+
+        // Captured payments of method=transfer cannot be refunded via direct API requests
+        if ($payment->isTransfer() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+        }
+
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
+        {
+            // Determine if transfer reversals should be processed along with the refund
+            $processReversals = $this->shouldProcessReversals($payment, $input);
+
+            if ($processReversals === true)
+            {
+                $this->processRefundWithTransfers($input);
+            }
+        });
+
+        return $this->refund($payment, $input, $batch);
+    }
+
+    protected function validatePaymentForRefund(Payment\Entity $payment)
+    {
+        if ($payment->isFullyRefunded() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
@@ -734,8 +805,6 @@ trait Refund
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
-
-        return $this->refund($payment, $input, $batch);
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)

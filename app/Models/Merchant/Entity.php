@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
     const EMAIL                     = 'email';
+    const PARENT_ID                 = 'parent_id';
     const ACTIVATED                 = 'activated';
     const ACTIVATED_AT              = 'activated_at';
     const LIVE                      = 'live';
@@ -67,10 +68,11 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
-    protected static $generators = array(
-        self::TRANSACTION_REPORT_EMAIL);
+    protected static $generators = [
+        self::TRANSACTION_REPORT_EMAIL
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::NAME,
         self::EMAIL,
@@ -94,18 +96,18 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::SETTLEMENT_SCHEDULE_ID,
         self::TRANSACTION_REPORT_EMAIL,
-    );
+    ];
 
     // Requires PHP 5.6
-    const CONFIG_LIST = array(
+    const CONFIG_LIST = [
         self::ID,
         self::BRAND_COLOR,
         self::TRANSACTION_REPORT_EMAIL,
         self::LOGO_URL,
         self::AUTO_CAPTURE_LATE_AUTH,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::NAME,
@@ -115,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::LIVE,
         self::HOLD_FUNDS,
         self::PRICING_PLAN_ID,
+        self::PARENT_ID,
         self::WEBSITE,
         self::CATEGORY,
         self::CATEGORY2,
@@ -141,9 +144,10 @@ class Entity extends Base\PublicEntity
         self::ORG_ID,
         'groups',
         'admins',
-     );
+     ];
 
-    protected $defaults = array(
+    protected $defaults = [
+        self::PARENT_ID              => null,
         self::CATEGORY2              => null,
         self::LIVE                   => false,
         self::ACTIVATED              => false,
@@ -164,15 +168,15 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
-    );
+    ];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::LOGO_URL,
-    );
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::ACTIVATED                 => 'bool',
         self::LIVE                      => 'bool',
         self::INTERNATIONAL             => 'bool',
@@ -182,7 +186,7 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_SCHEDULE       => 'int',
         self::CONVERT_CURRENCY          => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
-    );
+    ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
 
@@ -228,6 +232,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
+    // Is the merchant a linked-account under Marketplace
+    public function isLinkedAccount()
+    {
+        return $this->isAttributeNotNull(self::PARENT_ID);
+    }
+
+    public function isMarketplace()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
+    }
+
     public function isEducationCategory()
     {
         $eduCategories = array(
@@ -243,11 +258,21 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        $assignedFeatures = $this->features
-                                 ->pluck(\RZP\Models\Feature\Entity::NAME)
-                                 ->toArray();
+        $assignedFeatures = $this->getEnabledFeatures();
 
         return (in_array($feature, $assignedFeatures, true) === true);
+    }
+
+    /**
+     * Return an array of features enabled for the merchant entity
+     *
+     * @return array
+     */
+    public function getEnabledFeatures()
+    {
+        return $this->features
+                    ->pluck(Feature\Entity::NAME)
+                    ->toArray();
     }
 
     public function activate()
@@ -337,6 +362,18 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
+    // Linked-accounts belonging to the Marketplace
+    public function accounts()
+    {
+        return $this->hasMany('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
+    }
+
+    // Marketplace owner
+    public function parent()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
+    }
+
     public function balance()
     {
         return $this->hasOne(
@@ -382,6 +419,11 @@ class Entity extends Base\PublicEntity
     public function features()
     {
         return $this->morphMany('RZP\Models\Feature\Entity', 'entity');
+    }
+
+    public function transfers()
+    {
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
     }
 
     public function merchantDetail()
@@ -452,7 +494,7 @@ class Entity extends Base\PublicEntity
 
     public function offers()
     {
-        return $this->belongsToMany('RZP\Models\Offer\Entity', Table::MERCHANT_OFFER);
+        return $this->hasMany('RZP\Models\Offer\Entity');
     }
 
     protected function getMaxPaymentAmountAttribute()
@@ -644,6 +686,11 @@ class Entity extends Base\PublicEntity
         $awsLogoUrl = $this->getLogoUrlBasedOnSize($baseAwsLogoUrl, $size);
 
         return $awsLogoUrl;
+    }
+
+    public function getParentId()
+    {
+        return $this->getAttribute(self::PARENT_ID);
     }
 
     protected function getLogoUrlBasedOnSize($logoUrl, $size)
@@ -871,6 +918,36 @@ class Entity extends Base\PublicEntity
         return array_only($this->toArrayPublic(), self::CONFIG_LIST);
     }
 
+    /**
+     * Used for Marketplace, dashboard:
+     * Return report data for a linked account under a marketplace merchant
+     * @todo: Move this to Merchant/Account/Entity when account onboarding is merged.
+     *
+     * @return array
+     */
+    public function toArrayReport() : array
+    {
+        $data = parent::toArrayReport();
+
+        // Fields that show up on the report
+        $reportFields = [
+            self::ID,
+            self::EMAIL,
+            self::NAME,
+            self::CREATED_AT,
+            self::ACTIVATED,
+            self::ACTIVATED_AT,
+        ];
+
+        $data = array_only($data, $reportFields);
+
+        $data[self::ID] = AccountEntity::getSignedId($this->getAttribute(self::ID));
+
+        $data[self::ACTIVATED_AT] = $this->getDateInFormatDMYHMS(self::ACTIVATED_AT);
+
+        return $data;
+    }
+
     public function groups()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Group\Entity', 'entity', Table::MERCHANT_MAP);
@@ -879,16 +956,5 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
-    }
-
-    public function toArrayPublic()
-    {
-         $merchant = parent::toArrayPublic();
-
-         $groups = $this->groups;
-
-         $merchant['groups'] = $groups->toArrayPublicEmbedded();
-
-         return $merchant;
     }
 }

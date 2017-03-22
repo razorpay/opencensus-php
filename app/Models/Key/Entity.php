@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
     {
         $expiredAt = $this->getAttribute(self::EXPIRED_AT);
 
+        if ($expiredAt === null)
+        {
+            return false;
+        }
+
         return ($expiredAt <= time());
     }
 
@@ -186,7 +191,7 @@ class Entity extends Base\PublicEntity
         return $id;
     }
 
-    protected static function stripSign(& $id)
+    public static function stripSign(& $id)
     {
         $mode = \BasicAuth::getMode();
         $prefix = 'rzp_' . $mode . '_';

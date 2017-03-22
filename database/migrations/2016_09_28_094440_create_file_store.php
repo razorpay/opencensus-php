@@ -48,6 +48,8 @@ class CreateFileStore extends Migration
 
             $table->string(FileStore::BUCKET)->nullable();
 
+            $table->string(FileStore::REGION)->nullable();
+
             $table->string(FileStore::PERMISSION)->nullable();
 
             $table->string(FileStore::ENCRYPTION_METHOD)->nullable();

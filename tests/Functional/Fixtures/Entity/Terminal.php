@@ -18,6 +18,7 @@ class Terminal extends Base
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
+        $this->createSharedNetbankingIciciTerminal();
         $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
@@ -698,6 +699,36 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingIciciTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_ICICI_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_icici',
+            'gateway_merchant_id'       => 'razorpay_icici',
+            'gateway_merchant_id2'      => 'razorpay_submerchant',
+            'gateway_secure_secret'     => 'razorpay_password',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingIciciTpvTerminal()
+    {
+        $attributes = [
+            'id'                => Shared::NETBANKING_ICICI_TPV_TERMINAL,
+            'network_category'  => 'securities',
+        ];
+
+        return $this->createSharedNetbankingIciciTerminal($attributes);
+    }
+
     public function createSharedNetbankingAirtelTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
@@ -814,6 +845,22 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpay upi',
             'gateway_terminal_id'       => 'nodal account upi icici',
             'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedOpenwalletTerminal(array $attributes = [])
+    {
+        $terminalId = Shared::OPENWALLET_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $terminalId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'wallet_openwallet',
+            'shared'                    => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

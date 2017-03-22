@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
+use RZP\Models\Base\PublicEntity;
 
 class BasicAuth
 {
@@ -41,6 +42,15 @@ class BasicAuth
     const HMAC_ALGO = 'sha256';
 
     /**
+     * To support Account Auth: Allows API requests to be served under the
+     * scope of a merchant ID that is sent as the value to this header
+     *
+     * With admin auth and privilege auth   - set scope to any merchant under the current org
+     * For private auth (marketplace)       - set scope to any linked account
+     */
+    const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -50,12 +60,17 @@ class BasicAuth
     /**
      * Key and secret sent by client for
      * basic auth.
+     *
+     * account_id   -> value passed in the ACCOUNT_HEADER_KEY, for account auth
+     *
      * @var array
      */
-    private $creds = array(
-        'key' => '',
-        'public_key' => '',
-        'secret' => '');
+    private $creds = [
+        'key'           => '',
+        'public_key'    => '',
+        'secret'        => '',
+        'account_id'    => '',
+    ];
 
     /**
      * Key used for authentication
@@ -202,9 +217,20 @@ class BasicAuth
         }
 
         $this->creds['secret'] = $secret;
+
         $this->creds['public_key'] = $key;
 
-        return $this->checkAndSetKeyId($key);
+        $keyError = $this->checkAndSetKeyId($key);
+
+        if ($keyError !== null)
+        {
+            return $keyError;
+        }
+
+        // Fetch ID sent in the account auth header
+        $accountId = $this->request->headers->get(self::ACCOUNT_HEADER_KEY);
+
+        return $this->checkAndSetAccountId($accountId);
     }
 
     public function checkAndSetKeyId($key)
@@ -227,6 +253,31 @@ class BasicAuth
         $this->creds['key'] = $keyId;
     }
 
+    /**
+     * If Account ID was sent, verify and set its value in $this->creds[]
+     *
+     * @param  string|null      $accountId
+     * @return ApiResponse|null
+     */
+    protected function checkAndSetAccountId($accountId)
+    {
+        if ($accountId === null)
+        {
+            $this->creds['account_id'] = '';
+
+            return null;
+        }
+
+        if ($this->verifyAccountId($accountId) === false)
+        {
+            return $this->invalidAccountId($accountId);
+        }
+
+        $this->creds['account_id'] = $accountId;
+
+        return null;
+    }
+
 // --------------------- Basic Auths -------------------------------------------
 
     public function privateAuth()
@@ -240,13 +291,20 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->verifyKeyExistence() === true)
+        if ($this->isKeyExisting() === true)
         {
+            $response = $this->verifyKeyNotExpired();
+
+            if ($response !== true)
+            {
+                return $response;
+            }
+
             $response = $this->verifySecret();
 
             if ($response === true)
             {
-                return;
+                return $this->checkAndSetAccountScope();
             }
 
             return $response;
@@ -257,7 +315,7 @@ class BasicAuth
 
             $this->setProxyTrue();
 
-            return;
+            return $this->checkAndSetAccountScope();
         }
 
         return $this->invalidApiKey();
@@ -290,7 +348,7 @@ class BasicAuth
         {
             $this->admin = $adminToken->admin;
 
-            return;
+            return $this->checkAndSetAccountScope();
         }
 
         return $this->invalidApiKey();
@@ -321,9 +379,11 @@ class BasicAuth
                 return $res;
         }
 
-        if ($this->verifyKeyExistence() !== true)
+        $response = $this->verifyKeyExistence();
+
+        if ($response !== true)
         {
-            return $this->invalidApiKey();
+            return $response;
         }
 
         if (($this->getSecret() !== '') and
@@ -375,7 +435,7 @@ class BasicAuth
 
             $this->setDashboardHeaders();
 
-            return;
+            return $this->checkAndSetAccountScope();
         }
 
         // Say invalid route for whenever
@@ -419,21 +479,23 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->verifyKeyExistence() === true)
+        $response = $this->verifyKeyExistence();
+
+        if ($response !== true)
         {
-            $this->fetchMerchantOfKey($this->key);
-
-            $response = $this->verifyDeviceToken();
-
-            if ($response === true)
-            {
-                return;
-            }
-
             return $response;
         }
 
-        return $this->invalidApiKey();
+        $this->fetchMerchantOfKey($this->key);
+
+        $response = $this->verifyDeviceToken();
+
+        if ($response === true)
+        {
+            return;
+        }
+
+        return $response;
     }
 
     /**
@@ -468,6 +530,13 @@ class BasicAuth
             return $this->invalidApiKey();
         }
 
+        $response = $this->verifyKeyNotExpired();
+
+        if ($response !== true)
+        {
+            return $response;
+        }
+
         if (($this->getSecret() !== '') and
             ($this->getSecret() !== null))
         {
@@ -488,22 +557,28 @@ class BasicAuth
 // --------------------- Verifiers ---------------------------------------------
 
     /**
-     * Checks if the accessed route is a beta feature route, if yes
+     * Checks if the accessed route is a feature route, if yes
      * checks if the merchant has access to the feature
      */
     public function verifyFeatureAccess()
     {
-        $route = $this->getCurrentRouteName();
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features mapped to the route
+        //
+        $features = $this->route->getFeaturesForRoute();
 
-        if ($this->route->isCurrentRouteInFeatureMap() === true)
+        if (empty($features) === false)
         {
             //
-            // Current route is in feature map list.
+            // If the merchant has at least one of the features
+            // in the $features array enabled, we allow the request
             //
+            $merchantFeatures = $this->merchant->getEnabledFeatures();
 
-            $accessedFeature = Route::$routeNameToFeatureMap[$route];
+            $commonFeatures = array_intersect($merchantFeatures, $features);
 
-            if ($this->merchant->isFeatureEnabled($accessedFeature))
+            if (empty($commonFeatures) === false)
             {
                 return null;
             }
@@ -512,6 +587,20 @@ class BasicAuth
         }
 
         return null;
+    }
+
+    protected function verifyAccountId(string & $accountId)
+    {
+        try
+        {
+            Merchant\AccountEntity::verifyIdAndSilentlyStripSign($accountId);
+        }
+        catch (\Exception $e)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function verifyKeyLength($key)
@@ -560,10 +649,22 @@ class BasicAuth
      */
     protected function verifyKeyExistence()
     {
+        if ($this->isKeyExisting() === false)
+        {
+            return $this->invalidApiKey();
+        }
+
+        return $this->verifyKeyNotExpired();
+    }
+
+    protected function isKeyExisting()
+    {
         $keyId = $this->getKey();
 
         if ($keyId === '')
+        {
             return;
+        }
 
         //
         // For keys sent by merchants, make sure they exist in db.
@@ -611,6 +712,17 @@ class BasicAuth
         return true;
     }
 
+    protected function verifyKeyNotExpired()
+    {
+        if ($this->key->isExpired() === true)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED);
+        }
+
+        return true;
+    }
+
     /**
      * Used for device verification. Checks
      * that the device exists and belongs
@@ -635,7 +747,6 @@ class BasicAuth
         $device = $this->repo->device->findByAuthToken($deviceToken);
 
         $this->device = $device;
-
 
         if (($device === null) or
             ($keyEntity->merchant->getId() !== $device->merchant->getId()))
@@ -804,6 +915,11 @@ class BasicAuth
     private function getSecret()
     {
         return $this->creds['secret'];
+    }
+
+    protected function getAccountId()
+    {
+        return $this->creds['account_id'];
     }
 
     public function getMode()
@@ -977,7 +1093,7 @@ class BasicAuth
 
     protected function fetchKey($keyId)
     {
-        $this->key = $this->repo->key->findNotExpired($keyId);
+        $this->key = $this->repo->key->find($keyId);
 
         return $this->key;
     }
@@ -998,6 +1114,30 @@ class BasicAuth
         $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
 
         return $this->adminToken;
+    }
+
+    /**
+     * Fetch merchant by ID and sets it to $this->merchant
+     * for the current request
+     */
+    protected function checkAndSetAccountScope()
+    {
+        if ($this->isAccountAuthAllowed() === false)
+        {
+            return;
+        }
+
+        $account = $this->repo
+                        ->merchant
+                        ->find($this->getAccountId());
+
+        if (($account === null) or
+            ($this->validateAccountForCurrentAuthType($account) === false))
+        {
+            return $this->invalidAccountId($this->getAccountId());
+        }
+
+        $this->merchant = $account;
     }
 
     protected function checkMerchantActivatedForLive()
@@ -1025,6 +1165,20 @@ class BasicAuth
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 
+    protected function invalidAccountId(string $accountId)
+    {
+        $this->trace->info(
+            TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER,
+            [
+                'auth_type'     => $this->getAuthType(),
+                'key_id'        => $this->getKey(),
+                'account_id'    => $accountId,
+            ]);
+
+        return ApiResponse::unauthorized(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
+    }
+
     protected function isKeyBlank()
     {
         return ($this->getKey() === '');
@@ -1040,5 +1194,71 @@ class BasicAuth
         $secret = Crypt::decrypt($this->key->getSecret());
 
         return hash_hmac(self::HMAC_ALGO, $str, $secret);
+    }
+
+    /**
+     * Check pre-conditions for setting account auth via
+     * the `X-Razorpay-Account` header
+     *
+     * @return bool
+     */
+    protected function isAccountAuthAllowed() : bool
+    {
+        $authType = $this->getAuthType();
+
+        if (($this->getAccountId() === '') or
+            (empty($authType) === true))
+        {
+            return false;
+        }
+
+        if ($this->isPrivilegeAuth() === true)
+        {
+            return true;
+        }
+
+        // For Admin auth requests - $this->admin should be set
+        if (($this->isAdminAuth() === true) and
+            (empty($this->admin) === false))
+        {
+            return true;
+        }
+
+        // For Private auth requests - $this->merchant should be set
+        if (($this->isPrivateAuth() === true) and
+            (empty($this->merchant) === false))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns true if the account fetched can be set as merchant
+     * for the current auth type
+     *
+     * @param $account
+     *
+     * @return bool
+     */
+    protected function validateAccountForCurrentAuthType(Merchant\Entity $account) : bool
+    {
+        $authType = $this->getAuthType();
+
+        switch ($authType)
+        {
+            case Type::PRIVATE_AUTH:
+                return ($account->getParentId() === $this->getMerchant()->getId());
+
+            case Type::ADMIN_AUTH:
+                return ($account->getOrgId() === $this->getAdmin()->getOrgId());
+
+            case Type::PRIVILEGE_AUTH:
+                return true;
+
+            default:
+                return false;
+        }
     }
 }

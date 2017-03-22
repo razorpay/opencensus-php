@@ -35,6 +35,8 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = true;
 
+    protected $referer = '';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -49,18 +51,24 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        //TODO:: To be removed after it is tested on production
-        // Second merchant id is for Test user running test cases
-        if (($input['merchant']['id'] === '4izmfM9TFCAgFN') or
-            ($input['merchant']['id'] === '10000000000000'))
+        if ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
-            if ($input['payment']['method'] === Payment\Method::NETBANKING)
-            {
-                $request = $this->makeRequestAndGetBankUrl($request, $input);
-            }
+            $request = $this->makeRequestAndGetBankUrl($request, $input);
         }
 
         return $request;
+    }
+
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->setReferer($terminal, $input);
+    }
+
+    protected function setReferer($terminal, array $input)
+    {
+        $this->referer = $this->app['config']->get('app.url');
     }
 
     public function capture(array $input)
@@ -238,7 +246,7 @@ class Gateway extends Base\Gateway
     {
         $request['options']['follow_redirects'] = false;
 
-        $request['headers']['Referer'] = $this->app['config']->get('app.url');
+        $request['headers']['Referer'] = $this->referer;
     }
 
     protected function sendFirstGatewayRequestForEbsAuthorize($request)

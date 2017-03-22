@@ -215,7 +215,7 @@ class Gateway extends Base\Gateway
         //
         // There should be exactly one record for the payment ID.
         // This one record should be of a successful authorization.
-        // Anything more than one is not expected and could be som
+        // Anything more than one is not expected and could be some
         // kind of bug.
         //
 
@@ -1050,9 +1050,9 @@ class Gateway extends Base\Gateway
         $this->tpv = $gatewayPayment->isTpv();
     }
 
-    public function setTerminal($terminal)
+    public function setGatewayParams($input, $mode, $terminal)
     {
-        parent::setTerminal($terminal);
+        parent::setGatewayParams($input, $mode, $terminal);
 
         $this->setAccountType($terminal);
     }

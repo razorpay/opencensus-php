@@ -13,6 +13,8 @@ class Component
     const FEE           = 'fee';
     const SERVICE_TAX   = 'service_tax';
     const FEE_CREDITS   = 'fee_credits';
+    const TRANSFER      = 'transfer';
+    const REVERSAL      = 'reversal';
 
     public static function validateComponent($component)
     {
@@ -21,5 +23,20 @@ class Component
             throw new Exception\InvalidArgumentException(
                 'Not a valid settlemnt component: ' . $component);
         }
+    }
+
+    public static function getAllComponents()
+    {
+        return [
+            self::PAYMENT,
+            self::REFUND,
+            self::ADJUSTMENT,
+            self::PAYOUT,
+            self::SERVICE_TAX,
+            self::FEE,
+            self::FEE_CREDITS,
+            self::TRANSFER,
+            self::REVERSAL,
+        ];
     }
 }

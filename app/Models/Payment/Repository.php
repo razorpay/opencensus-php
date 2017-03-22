@@ -48,6 +48,7 @@ class Repository extends Base\Repository
         Entity::GATEWAY            => 'sometimes',
         Entity::EMAIL              => 'sometimes|email',
         Entity::MERCHANT_ID        => 'sometimes|alpha_num',
+        Entity::TRANSFER_ID        => 'sometimes|alpha_num|size:14',
         Entity::CARD_ID            => 'sometimes|alpha_num|size:14',
         Entity::CAPTURED           => 'sometimes|in:0,1',
         Entity::WALLET             => 'sometimes|custom',
@@ -720,6 +721,14 @@ class Repository extends Base\Repository
                        'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
+    }
+
+    public function findByTransferIdAndMerchant(string $transferId, string $accountId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TRANSFER_ID, $transferId)
+                    ->merchantId($accountId)
+                    ->firstOrFailPublic();
     }
 
     public function fetchCapturedSummaryBetweenTimestamp($from, $to)

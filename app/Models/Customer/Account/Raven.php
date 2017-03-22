@@ -57,6 +57,11 @@ class Raven
             ]
         );
 
+        if (empty($input['template']) === false)
+        {
+            $request['template'] = $input['template'];
+        }
+
         return $request;
     }
 

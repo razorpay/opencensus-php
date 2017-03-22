@@ -16,7 +16,7 @@ class ScheduleTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->testScheduleBody = $request = $this->testData['testScheduleBody'];
     }
@@ -131,22 +131,27 @@ class ScheduleTest extends TestCase
         $request['content'] = $data;
         $request['url'] .= $payment->getPublicId() . '/capture';
 
-        // Capturing this payment should result in settled_at still set to midnight
+        // Capturing this payment should result in settled_at set to hour value
+        // in the schedule entity
         $response = $this->makeRequestAndGetContent($request);
 
         $txn = $this->getLastTransaction(true);
 
         $time = Carbon::createFromTimestamp($txn['settled_at'], 'Asia/Kolkata');
 
-        // Check if time is midnight
-        $this->assertEquals(0, $time->hour);
+        // Check if time is set to hour value in schedule
+        $this->assertEquals(12, $time->hour);
     }
 
     public function testGetSchedule()
     {
         $schedule = $this->createSchedule();
 
+        $this->ba->appAuth();
+
         $response = $this->fetchSchedule($schedule['id']);
+
+        $this->ba->adminAuth();
 
         $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
     }
@@ -189,7 +194,11 @@ class ScheduleTest extends TestCase
 
         $this->assertNotNull($response['settlement_schedule_id']);
 
+        $this->ba->appAuth();
+
         $response = $this->fetchSchedule($response['settlement_schedule_id']);
+
+        $this->ba->adminAuth();
 
         $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
     }

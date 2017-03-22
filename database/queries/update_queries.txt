@@ -91,3 +91,11 @@ UPDATE transactions SET reconciled_at = 1467719197, gateway_fee = 10320, gateway
 UPDATE payments SET transaction_id = '59TRu4jEt06jxw' WHERE id = '59TOmc805gVS7i'
 DELETE FROM fees_breakup WHERE id in ('6eiYxS2iRdjiiX', '6eiYxSHKXXuhSw', '6eiYxSVOCEEbXF') AND transaction_id = '59TRvHDeSgNyiX';
 DELETE FROM transactions WHERE id = '59TRvHDeSgNyiX';
+
+UPDATE billdesk SET RefundId = 'IICI51854029631' WHERE id = 1075644;
+UPDATE billdesk SET RefundId = 'IYBK51905388691' WHERE id = 1087859;
+UPDATE billdesk SET RefundId = 'IICI51813818221' WHERE id = 1083918;
+UPDATE billdesk SET RefundId = 'ISBI51846870321' WHERE id = 1083917;
+UPDATE billdesk SET RefundId = 'HICI50897787121' WHERE id = 1034628;
+UPDATE billdesk SET RefundId = 'HSBI51724591941' WHERE id = 1034627;
+UPDATE billdesk SET RefundId = 'HSBJ51362574311' WHERE id = 1034626;

@@ -9,10 +9,35 @@ use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 
 class Handler extends BaseHandler
 {
+    /**
+     * Directory prefix where all files should be stored
+     */
     const STORAGE_DIRECTORY = 'files/';
 
-    public function save($directory, $fileDetails)
+    /*
+     * config for the Handler instance
+     */
+    protected $config;
+
+    public function __construct()
     {
+        parent::__construct();
+
+        $this->config = $this->app['config']->get('filestore.local');
+    }
+
+    /**
+     * save file to given directory
+     *
+     * @param array $bucketConfig Directory name and region(unused in LOCAL)
+     * @param array $filedetails  File details array
+     *
+     * @return file full path
+     */
+    public function save(array $bucketConfig, array $fileDetails)
+    {
+        $directory = $bucketConfig['name'];
+
         $content = file_get_contents($fileDetails['path']);
 
         $fileName = self::STORAGE_DIRECTORY . $directory . '/' . $fileDetails['key'];
@@ -32,12 +57,5 @@ class Handler extends BaseHandler
         $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
 
         return $path;
-    }
-
-    public function getSubDirectory($type, $env = 'production')
-    {
-        $bucketName = Bucket::getBucketConfigName($type, $env);
-
-        return $bucketName;
     }
 }

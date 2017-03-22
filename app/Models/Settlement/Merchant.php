@@ -8,22 +8,30 @@ use RZP\Models;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Adjustment;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
+use RZP\Models\Settlement\Details\Component as SetlComponent;
+use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Merchant
 {
+    use BatchFundTransferTrait;
+
     protected $merchant;
     protected $amount;
     protected $apiFee;
     protected $setl;
     protected $setlTransaction;
+    protected $bankTransferAtpt;
     protected $txns;
     protected $setlDetails;
     protected $fee;
     protected $serviceTax;
+    protected $setlTime;
+    protected $setlDetailAmounts;
 
     public function __construct($merchant, $channel, $repo = null)
     {
@@ -37,18 +45,46 @@ class Merchant
         $this->attachMerchantBankAccount();
     }
 
-    public function settle($txns, $amount, $fee, $apiFee, $serviceTax)
+    public function retryFailedSettlement(Settlement\Entity $setl)
+    {
+        $this->setl = $setl;
+
+        $this->txns = $this->setl->setlTransactions;
+
+        // Update Settlement Entity
+        $this->updateSettlementEntity();
+
+        // Create Settlement attempt entity
+        $this->createSettlementAttemptEntity();
+
+        return [$this->setl, $this->bankTransferAtpt];
+    }
+
+    public function settle(
+        $txns,
+        $amount,
+        $fee,
+        $apiFee,
+        $serviceTax,
+        $setlTime,
+        array $setlDetailAmounts): array
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
         $this->fee = $fee;
         $this->txns = $txns;
-        $this->serviceTax = $serviceTax;
 
-        $setl = $this->createSetlEntityAndTxn();
-        $this->setlDetails = new Base\PublicCollection;
+        $this->serviceTax = $serviceTax;
+        $this->setlTime = $setlTime;
+        $this->setlDetailAmounts = $setlDetailAmounts;
+
+        $this->createSetlEntityAndTxn();
+
+        // Create Settlement attempt entity
+        $this->createSettlementAttemptEntity();
 
         // Create Settlement Details entity
+        $this->setlDetails = new Base\PublicCollection;
         $this->createSettlementDetailsEntities();
 
         // Updates merchant and api balance
@@ -56,10 +92,25 @@ class Merchant
 
         $this->saveChangesToDb();
 
-        return $setl;
+        // Update transactions
+        $this->updateTransactions();
+
+        return [$this->setl, $this->bankTransferAtpt];
     }
 
-    public function collectApiFees($apiFee)
+    protected function updateTransactions()
+    {
+        // Update transactions
+        $values = [
+            Transaction\Entity::SETTLED_AT      => $this->setlTime,
+            Transaction\Entity::SETTLED         => true,
+            Transaction\Entity::SETTLEMENT_ID   => $this->setl->getId(),
+        ];
+
+        $this->repo->transaction->settled($this->txns, $values);
+    }
+
+    protected function collectApiFees($apiFee): array
     {
         $this->amount = $apiFee;
         $this->fee = 0;
@@ -93,24 +144,18 @@ class Merchant
 
         $this->setlDetails = new Base\PublicCollection;
 
+        $this->setlDetailAmounts = $this->calculateSettlementDetailAmounts($this->txns);
+
         $this->createSettlementDetailsEntities();
 
         $this->repo->saveOrFailCollection($this->setlDetails);
     }
 
-    protected function createSettlementDetailsEntities()
+    public function calculateSettlementDetailAmounts($txns): array
     {
-        $entityTypes = array(
-            SetlDetails\Component::PAYMENT,
-            SetlDetails\Component::REFUND,
-            SetlDetails\Component::ADJUSTMENT,
-            SetlDetails\Component::PAYOUT,
-        );
+        $entityTypes = SetlComponent::getAllComponents();
 
         $details = [];
-        $totalServiceTax = 0;
-        $totalFee = 0;
-        $totalFeeCredits = 0;
 
         foreach ($entityTypes as $componentType)
         {
@@ -119,84 +164,91 @@ class Merchant
             $details[$componentType]['count'] = 0;
         }
 
-        foreach ($this->txns as $txn)
+        foreach ($txns as $txn)
         {
             $componentType = $txn->getType();
 
             $details[$componentType]['count'] += 1;
 
-            if ($txn->getType() === Transaction\Type::PAYMENT)
+            switch ($componentType)
             {
-                $details[$componentType]['amount'] += $txn->getAmount();
-            }
-            else if ($txn->getType() === Transaction\Type::REFUND)
-            {
-                $details[$componentType]['amount'] -= $txn->getAmount();
-            }
-            else if ($txn->getType() === Transaction\Type::ADJUSTMENT)
-            {
-                $details[$componentType]['amount'] += $txn->getCredit();
+                case Transaction\Type::PAYMENT:
+                case Transaction\Type::REVERSAL:
+                    $details[$componentType]['amount'] += $txn->getAmount();
+                    break;
 
-                $details[$componentType]['amount'] -= $txn->getDebit();
-            }
-            else if ($txn->getType() === Transaction\Type::PAYOUT)
-            {
-                $details[$componentType]['amount'] -= $txn->getAmount();
+                case Transaction\Type::REFUND:
+                case Transaction\Type::PAYOUT:
+                case Transaction\Type::TRANSFER:
+                    $details[$componentType]['amount'] -= $txn->getAmount();
+                    break;
+
+                case Transaction\Type::ADJUSTMENT:
+                    $details[$componentType]['amount'] += $txn->getCredit();
+                    $details[$componentType]['amount'] -= $txn->getDebit();
+                    break;
+                default:
+                    throw new Exception\LogicException('Invalid Settlement-component-type:' . $componentType);
             }
 
-            $totalServiceTax += $txn->getServiceTax();
+            $details[SetlComponent::SERVICE_TAX]['amount'] += $txn->getServiceTax();
 
-            $totalFee += ($txn->getFee() - $txn->getServiceTax());
+            $details[SetlComponent::FEE]['amount'] += ($txn->getFee() - $txn->getServiceTax());
 
             // FeeCredits is either zero or equal to fees.
-            $totalFeeCredits += $txn->getFeeCredits();
-
+            $details[SetlComponent::FEE_CREDITS]['amount'] += $txn->getFeeCredits();
         }
 
-        foreach ($entityTypes as $componentType)
+        return $details;
+    }
+
+    protected function createSettlementDetailsEntities()
+    {
+        foreach ($this->setlDetailAmounts as $componentType => $detail)
         {
-            $txnType = 'credit';
-
-            if ($details[$componentType]['amount'] < 0)
+            switch ($componentType)
             {
-                $details[$componentType]['amount'] = abs($details[$componentType]['amount']);
+                case SetlDetails\Component::FEE:
+                case SetlDetails\Component::SERVICE_TAX:
 
-                $txnType = 'debit';
+                    $this->createSetlDetailsEntity(
+                        $componentType,
+                        'debit',
+                        null,
+                        $detail['amount']);
+
+                    break;
+
+                case SetlDetails\Component::FEE_CREDITS:
+                    if ($detail['amount'] > 0)
+                    {
+                        $this->createSetlDetailsEntity(
+                            $componentType,
+                            'credit',
+                            null,
+                            $detail['amount']);
+                    }
+
+                    break;
+
+                default:
+                    $txnType = $detail['amount'] < 0 ? 'debit' : 'credit';
+
+                    if ($detail['count'] !== 0)
+                    {
+                        $this->createSetlDetailsEntity(
+                            $componentType,
+                            $txnType,
+                            $detail['count'],
+                            abs($detail['amount']));
+                    }
+
+                    break;
             }
-
-            if ($details[$componentType]['count'] !== 0)
-            {
-                $this->createSetlDetailsEntity(
-                    $componentType,
-                    $txnType,
-                    $details[$componentType]['count'],
-                    $details[$componentType]['amount']);
-            }
-        }
-
-        $this->createSetlDetailsEntity(
-            SetlDetails\Component::SERVICE_TAX,
-            'debit',
-            null,
-            $totalServiceTax);
-
-        $this->createSetlDetailsEntity(
-            SetlDetails\Component::FEE,
-            'debit',
-            null,
-            $totalFee);
-
-        if ($totalFeeCredits > 0)
-        {
-            $this->createSetlDetailsEntity(
-                SetlDetails\Component::FEE_CREDITS,
-                'credit',
-                null,
-                $totalFeeCredits);
         }
     }
 
-    protected function createSetlDetailsEntity($component, $type, $count, $amount)
+    protected function createSetlDetailsEntity($component, $type, $count, $amount): SetlDetails\Entity
     {
         $input = array(
             SetlDetails\Entity::COMPONENT => $component,
@@ -219,14 +271,12 @@ class Merchant
     protected function createSetlEntityAndTxn()
     {
         // Create settlement transaction
-        $setlTransaction = $this->newSettlementTransaction();
+        $this->newSettlementTransaction();
 
         // Create settlement entity
-        $setl = $this->newSettlementEntity();
+        $this->newSettlementEntity();
 
-        $setlTransaction->source()->associate($setl);
-
-        return $setl;
+        $this->setlTransaction->source()->associate($this->setl);
     }
 
     protected function newSettlementTransaction()
@@ -252,8 +302,6 @@ class Merchant
         $txn->merchant()->associate($this->merchant);
 
         $this->setlTransaction = $txn;
-
-        return $txn;
     }
 
     protected function newSettlementEntity()
@@ -269,28 +317,59 @@ class Merchant
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
 
-        if ($this->bankAccount->getId() !== null)
-        {
-            $setl->bankAccount()->associate($this->bankAccount);
-        }
+        $setl->bankAccount()->associate($this->bankAccount);
 
         $this->setl = $setl;
+    }
 
-        return $setl;
+    protected function updateSettlementEntity()
+    {
+        $setl = $this->setl;
+
+        // try the settlment with current merchant bank account as that might
+        // have been the reason for settlement failure
+        $setl->bankAccount()->associate($this->bankAccount);
+
+        // set the settlement status back to created, and other fields to null
+        $setl->setStatus(Status::CREATED);
+        $setl->setFailureReason(null);
+        $setl->setUtr(null);
+        $setl->setRemarks(null);
+
+        $this->setl = $setl;
+    }
+
+    protected function createSettlementAttemptEntity()
+    {
+        $fundTransferAttempt = new FundTransferAttempt\Entity;
+
+        $values = [
+            FundTransferAttempt\Entity::CHANNEL         => $this->channel,
+            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V2,
+            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
+        ];
+
+        $fundTransferAttempt->fillAndGenerateId($values);
+
+        $fundTransferAttempt->source()->associate($this->setl);
+
+        $fundTransferAttempt->bankAccount()->associate($this->bankAccount);
+
+        $this->bankTransferAtpt = $fundTransferAttempt;
     }
 
     protected function saveChangesToDb()
     {
-        // Saves to db
         $this->repo->saveOrFail($this->setlTransaction);
+
         $this->repo->saveOrFail($this->setl);
 
-        $this->repo->saveOrFailCollection($this->setlDetails);
+        $this->repo->saveOrFail($this->bankTransferAtpt);
 
-        $this->repo->transaction->updateSettlementId($this->txns, $this->setl->getId());
+        $this->repo->saveOrFailCollection($this->setlDetails);
     }
 
-    protected function updateBalances()
+    protected function updateBalances(): Transaction\Entity
     {
         return (new Transaction\Core)->updateBalances($this->setlTransaction);
     }
@@ -298,7 +377,7 @@ class Merchant
     /**
      * Attaches bank account to merchant entity
      */
-    protected function attachMerchantBankAccount()
+    protected function attachMerchantBankAccount(): BankAccount\Entity
     {
         $mode = BasicAuth::getMode();
 
@@ -319,10 +398,11 @@ class Merchant
         }
 
         $this->bankAccount = $ba;
+
         return $ba;
     }
 
-    protected function attachTestBank($merchant)
+    protected function attachTestBank($merchant): BankAccount\Entity
     {
         $attributes = array(
             'ifsc_code'             => BankAccount\Entity::SPECIAL_IFSC_CODE,
@@ -343,9 +423,11 @@ class Merchant
 
         $ba->associateMerchant($merchant);
 
+        $ba->generateBeneficiaryCode();
+
         $merchant->setRelation('bankAccount', $ba);
 
-        $this->repo->bank_account->save($ba);
+        $this->repo->saveOrFail($ba);
 
         return $ba;
     }

@@ -229,6 +229,13 @@ trait RequestResponseFlowTrait
             $request['content']['key_id'] = $this->ba->getKey();
         }
 
+        if ($this->ba->isAccountAuth() === true)
+        {
+            $accountHeader = $this->ba->getAccountHeader();
+
+            $request['server'] += $this->transformHeadersToServerVars($accountHeader);
+        }
+
         /**
          * This is the function signature
          *
