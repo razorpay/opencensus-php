@@ -101,8 +101,6 @@ trait Capture
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 $customProperties);
 
-            $this->repo->saveOrFail($payment);
-
             // We are not re-throwing $e because we don't want the
             // customer to know that it was a capture error.
             throw new Exception\BadRequestException(
