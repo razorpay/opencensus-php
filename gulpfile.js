@@ -2,7 +2,7 @@
 
 const gulp = require('gulp');
 const webpack = require('webpack');
-const through = require('through');
+const through = require('through2').obj;
 const plumber = require('gulp-plumber');
 const run = require('run-sequence');
 const lazypipe = require('lazypipe');
@@ -140,10 +140,11 @@ gulp.task('js:prod', () => {
 
 gulp.task('tmpl', ()=> {
   gulp.src('resources/views/**/*.blade.php.tmpl')
-    .pipe(through(function(file) {
+    .pipe(through(function(file, enc, cb) {
       file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1')
       file.contents = new Buffer(interpolate(String(file.contents)))
-      this.emit('data', file)
+      this.push(file);
+      cb();
     }))
     .pipe(gulp.dest('resources/views'));
 });
@@ -154,9 +155,10 @@ gulp.task('dev', ()=> {
 
 gulp.task('reactRevReplace', () => {
   return gulp.src(`public/${revMap['js/generated/merchant.js']}`)
-    .pipe(through(function(file) {
+    .pipe(through(function(file, enc, cb) {
       file.contents = new Buffer(interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g))
-      this.emit('data', file)
+      this.push(file);
+      cb();
     }))
     .pipe(gulp.dest('public/js/generated'));
 });
@@ -175,7 +177,15 @@ const runWebpack = (webpackConfig, cb) => {
 
 gulp.task('webpack', (cb) => {
   runWebpack(Object.create(webpackConfig), cb);
-});
+})
+
+gulp.task('webpack:watch', ()=> {
+  webpack(Object.assign({}, webpackConfig, {watch: true}), (err, stats) => {
+    console.log(stats.toString({
+      colors: true
+    }))
+  })
+})
 
 gulp.task('webpack:prod', (cb) => {
   let config = Object.create(webpackConfig);
@@ -213,7 +223,7 @@ gulp.task('dev', (cb) => {
 });
 
 gulp.task('dev:webpack', ['dev:setENV'], (cb) => {
-  run('webpack', 'dev', cb);
+  run('webpack:watch', 'dev', cb);
 });
 
 gulp.task('watch:full', ['dev:webpack'], () => {
