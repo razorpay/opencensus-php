@@ -48,15 +48,9 @@ export default class Invoice extends GenericEntity {
   }
 
   notify(type) {
-    return this.makeGenericAjaxCall({
+    return ajax({
+      url: `/invoices/${this.id}/notify/${type}`,
       method: 'post',
-      data: {
-        route_name: 'invoice_notify',
-        url_params: JSON.stringify({
-          '{id}': this.id,
-          type,
-        }),
-      }
     })
   }
 
