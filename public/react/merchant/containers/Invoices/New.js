@@ -109,7 +109,6 @@ export default class InvoicesNewContainer extends Component {
     this.quickCreateCustomer = ::this.quickCreateCustomer
     this.resendInvoice = ::this.resendInvoice
     this.deleteInvoice = ::this.deleteInvoice
-    this.downloadInvoicePDF = ::this.downloadInvoicePDF
     this.expireInvoice = ::this.expireInvoice
     this.addInternalNote = ::this.addInternalNote
     this.handleBackNavClick = ::this.handleBackNavClick
@@ -285,10 +284,6 @@ export default class InvoicesNewContainer extends Component {
         }}
       />
     })
-  }
-
-  downloadInvoicePDF(invoice) {
-    // TODO: handle download
   }
 
   navigateToList() {
@@ -655,19 +650,6 @@ export default class InvoicesNewContainer extends Component {
                                 <span>Save Invoice</span>
                               </AsyncButton>
                           }
-
-                          {/*
-                            !(isNew || isDraft) &&
-                              <button
-                                type='button'
-                                class='btn btn-default btn-block btn-lg'
-                                onClick={this.downloadInvoicePDF}
-                              >
-                                <i class='fa fa-download'></i>
-                                <span>Download PDF</span>
-                              </button>
-                          */}
-
                           {
                             (isNew || isDraft) &&
                               <button

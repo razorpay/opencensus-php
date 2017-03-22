@@ -48,15 +48,15 @@ export default class Invoice extends GenericEntity {
   }
 
   notify(type) {
-    return ajax({
-      url: `${this.getResourceUrl()}/notify/${type}`,
-      method: 'post'
-    })
-  }
-
-  download() {
-    return ajax({
-      url: `${this.getResourceUrl()}/pdf?download=1`
+    return this.makeGenericAjaxCall({
+      method: 'post',
+      data: {
+        route_name: 'invoice_notify',
+        url_params: JSON.stringify({
+          '{id}': this.id,
+          type,
+        }),
+      }
     })
   }
 
