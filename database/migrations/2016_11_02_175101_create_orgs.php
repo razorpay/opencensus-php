@@ -36,7 +36,8 @@ class CreateOrgs extends Migration
 
             $table->text(Org::EMAIL_DOMAINS);
 
-            $table->boolean(Org::ALLOW_SIGN_UP);
+            $table->boolean(Org::ALLOW_SIGN_UP)
+                  ->default(0);
 
             $table->boolean(Org::CROSS_ORG_ACCESS)
                   ->default(0);
