@@ -469,7 +469,7 @@ class Creator extends Base\Core
             $fileNameWithoutExt,
             $this->columnFormat,
             $this->file->getExtension(),
-            self::DEFAULT_STORE);
+            $this->getStorageDir());
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
     }

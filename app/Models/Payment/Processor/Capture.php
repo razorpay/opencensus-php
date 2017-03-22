@@ -81,11 +81,13 @@ trait Capture
         }
         catch (Exception\RecoverableException $e)
         {
-            $this->trace->error(
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 [
                     'auto_capture' => true,
-                    'payment_id' => $payment->getPublicId()
+                    'payment_id'   => $payment->getPublicId(),
                 ]);
 
             $customProperties = [
@@ -95,8 +97,8 @@ trait Capture
             ];
 
             $this->app['segment']->trackPayment($payment,
-                                                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
-                                                $customProperties);
+                TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
+                $customProperties);
 
             $this->repo->saveOrFail($payment);
 

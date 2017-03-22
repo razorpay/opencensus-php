@@ -470,6 +470,13 @@ trait Refund
                 return;
             }
 
+            // AirtelMoney refunds which failed because they upgraded their
+            // wallet. We have to create gateway refund records later.
+            if (($paymentId === '6wbhijioS7aZRF') and ($refAmount === 19724))
+            {
+                return;
+            }
+
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\GatewayTimeoutException $ex)
@@ -763,6 +770,13 @@ trait Refund
     protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {
         $this->validatePaymentForRefund($payment);
+
+        // Captured payments of method=transfer cannot be refunded via direct API requests
+        if ($payment->isTransfer() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+        }
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
         {

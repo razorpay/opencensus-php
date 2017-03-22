@@ -2,11 +2,13 @@
 
 namespace RZP\Models\FileStore;
 
+use App;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\Collection;
 use RZP\Models\Merchant\Account;
-use RZP\Trace\TraceCode;
 
 class Accessor extends Base\Core
 {
@@ -21,6 +23,15 @@ class Accessor extends Base\Core
     protected $id = null;
 
     protected $merchantId;
+
+    protected $auth;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->auth = $this->app['basicauth'];
+    }
 
     /**
      * Set the Id in Query Param
@@ -157,6 +168,13 @@ class Accessor extends Base\Core
         }
 
         return $urls;
+    }
+
+    public function getSignedUrlOfFile($file)
+    {
+        $signedUrl = $this->getUrl($file);
+
+        return $signedUrl;
     }
 
     /**
