@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const WORKFLOW_ID    = 'workflow_id';
     const ADMIN_ID       = 'admin_id';
     const APPROVED       = 'approved';
+    const CURRENT_LEVEL  = 'current_level';
 
     protected static $sign = 'w_action';
 
@@ -40,11 +41,13 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::APPROVED => false,
+        self::APPROVED      => false,
+        self::CURRENT_LEVEL => 1,
     ];
 
     protected $casts = [
-        self::APPROVED => 'boolean',
+        self::APPROVED      => 'boolean',
+        self::CURRENT_LEVEL => 'integer',
     ];
 
     public function workflow()

@@ -16,7 +16,6 @@ class Entity extends Base\PublicEntity
 
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';
-    const PERMISSION_ID  = 'permission_id'; // Ignoring permission id for now
     const LEVEL          = 'level';
     const ROLE_ID        = 'role_id';
     const REVIEWER_COUNT = 'reviewer_count';
@@ -31,7 +30,6 @@ class Entity extends Base\PublicEntity
         self::LEVEL,
         self::REVIEWER_COUNT,
         self::ROLE_ID,
-        self::PERMISSION_ID,
         self::WORKFLOW_ID,
     ];
 
@@ -39,7 +37,6 @@ class Entity extends Base\PublicEntity
         self::LEVEL,
         self::REVIEWER_COUNT,
         self::ROLE_ID,
-        self::PERMISSION_ID,
         self::WORKFLOW_ID,
     ];
 
@@ -47,7 +44,6 @@ class Entity extends Base\PublicEntity
         self::LEVEL,
         self::REVIEWER_COUNT,
         self::ROLE_ID,
-        self::PERMISSION_ID,
         self::WORKFLOW_ID,
     ];
 
@@ -56,7 +52,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::LEVEL => 0,
+        self::LEVEL => 1,
     ];
 
     public function workflow()
@@ -72,5 +68,10 @@ class Entity extends Base\PublicEntity
     public function permission()
     {
         return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
+    }
+
+    public function getLevel() : integer
+    {
+        return $this->getAttribute(self::LEVEL);
     }
 }

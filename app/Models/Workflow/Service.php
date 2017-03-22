@@ -10,7 +10,7 @@ class Service extends Base\Service
     {
         $workflow = $this->core()->create($input);
 
-        return $workflow->toArrayPublic();
+        return ['success' => true];
     }
 
     public function fetch(string $id)

@@ -44,6 +44,8 @@ class Core extends Base\Core
     public function checkAndMarkActionApproved(Entity $action)
     {
         // Number of checks done on the action
+        // TODO fetch the checker count instead of all the checkers
+        // save query time
         $checkers = $this->repo->action_checker->fetchByActionId(
             $action->getId());
 
@@ -104,5 +106,14 @@ class Core extends Base\Core
         });
 
         return $action;
+    }
+
+    public function updateCurrentLevelIfNeeded($level = null)
+    {
+        // get all the checkers in the current level
+        // fetch the reviewer count in the current level of steps
+        // if checkers === reviewer count, update the current level
+
+        // Recursively do it till the level update it not needed
     }
 }

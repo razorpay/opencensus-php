@@ -31,6 +31,9 @@ class CreateWorkflowAction extends Migration
             $table->boolean(Action::APPROVED)
                   ->default(0);
 
+            $table->tinyInteger(Action::CURRENT_LEVEL)
+                  ->nullable();
+
             $table->foreign(Action::WORKFLOW_ID)
                   ->references(Workflow::ID)
                   ->on(Table::WORKFLOW)

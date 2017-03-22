@@ -27,7 +27,6 @@ class CreateWorkflowSteps extends Migration
 
             $table->char(Step::ROLE_ID, Step::ID_LENGTH);
             $table->char(Step::WORKFLOW_ID, Step::ID_LENGTH);
-            $table->char(Step::PERMISSION_ID, Step::ID_LENGTH);
 
             $table->tinyInteger(Step::LEVEL)
                   ->default(0);
@@ -40,11 +39,6 @@ class CreateWorkflowSteps extends Migration
             $table->foreign(Step::WORKFLOW_ID)
                   ->references(Workflow::ID)
                   ->on(Table::WORKFLOW)
-                  ->on_delete('restrict');
-
-            $table->foreign(Step::PERMISSION_ID)
-                  ->references(Permission::ID)
-                  ->on(Table::PERMISSION)
                   ->on_delete('restrict');
 
             $table->integer(Step::CREATED_AT);
@@ -63,8 +57,6 @@ class CreateWorkflowSteps extends Migration
         Schema::table(Table::WORKFLOW_STEP, function($table)
         {
             $table->dropForeign(Table::WORKFLOW_STEP . '_' . Step::ROLE_ID . '_foreign');
-
-            $table->dropForeign(Table::WORKFLOW_STEP . '_' . Step::PERMISSION_ID . '_foreign');
 
             $table->dropForeign(Table::WORKFLOW_STEP . '_' . Step::WORKFLOW_ID . '_foreign');
         });

@@ -7,7 +7,7 @@ use RZP\Models\Workflow;
 
 class Core extends Base\Core
 {
-    public function create(Workflow\Entity $workflow, array $input)
+    public function create(array $input)
     {
         $step = new Entity;
 
@@ -15,10 +15,7 @@ class Core extends Base\Core
 
         $step->build($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use($step)
-        {
-            $this->repo->saveOrFail($step);
-        });
+        $this->repo->saveOrFail($step);
 
         return $step;
     }
