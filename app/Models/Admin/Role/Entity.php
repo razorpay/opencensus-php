@@ -111,7 +111,7 @@ class Entity extends Base\Entity
     public function isSuperAdminRole()
     {
         // Default role is SuperAdmin
-        if (config('heimdall.default_role_name') === $this->getName())
+        if (strtolower(config('heimdall.default_role_name')) === strtolower($this->getName()))
         {
             return true;
         }
