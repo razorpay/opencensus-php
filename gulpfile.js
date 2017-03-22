@@ -131,6 +131,8 @@ const concatJs = lazypipe()
     'js/generated/admin.js': [
       'public/js/admin/**/*.js',
       'public/js/*.js',
+      // We share the merchant activation controller code
+      'public/js/merchant/controllers/activationCtrl.js',
       'node_modules/moment/min/moment.min.js'
     ]
   });
