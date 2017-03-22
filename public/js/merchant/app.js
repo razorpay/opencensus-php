@@ -126,15 +126,6 @@ var app = angular.module('app', [
     }).state('app.batch.list', {
       url: '/list',
       templateUrl: 'tpl/app_batch_list.html'
-    // }).state('app.settlements', {
-    //   url: '/settlements',
-    //   template: '<div ui-view class="fade-in-down"></div>'
-    // }).state('app.settlements.list', {
-    //   url: '/list',
-    //   templateUrl: 'tpl/app_settlements.html'
-    // }).state('app.settlements.detail', {
-    //   url: '/:id',
-    //   templateUrl: 'tpl/app_settlement_detail.html'
     }).state('app.transactions', {
       url: '/transactions',
       template: '<div ui-view class="fade-in-down"></div>'
