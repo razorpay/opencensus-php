@@ -964,7 +964,7 @@ class Core extends Base\Core
             Transaction\Entity::SERVICE_TAX         => 0,
             Transaction\Entity::AMOUNT              => $amount,
             Transaction\Entity::CURRENCY            => Currency\Currency::INR,
-            Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
+            Transaction\Entity::TYPE                => Transaction\Type::PAYMENT,
             Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
         ];
 
