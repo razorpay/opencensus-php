@@ -270,29 +270,6 @@ return [
         ],
     ],
 
-    'testLockMerchantWithInvalidParams' => [
-        'request' => [
-            'content' =>[
-                'contact_name' => 'abcd',
-            ],
-            'url' => '/merchant/activation/lock',
-            'method' => 'PUT'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'contact_name is/are not required and should not be sent',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\ExtraFieldsException',
-            'internal_error_code' => 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED',
-        ],
-    ],
-
     'testUnlockMerchant' => [
         'request' => [
             'content' =>[
