@@ -99,3 +99,7 @@ UPDATE billdesk SET RefundId = 'ISBI51846870321' WHERE id = 1083917;
 UPDATE billdesk SET RefundId = 'HICI50897787121' WHERE id = 1034628;
 UPDATE billdesk SET RefundId = 'HSBI51724591941' WHERE id = 1034627;
 UPDATE billdesk SET RefundId = 'HSBJ51362574311' WHERE id = 1034626;
+
+# Queries to fix invoices data: Initially few invoices were created with type=null,
+# it is being updated to 'link' as in v1 all invoices were supposed to be link.
+UPDATE invoices SET type = 'link' WHERE type IS NULL LIMIT 1;

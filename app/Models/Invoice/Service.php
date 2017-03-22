@@ -27,9 +27,11 @@ class Service extends Base\Service
 
     public function create($input)
     {
-        // Appends USER_ID in create input if available in headers via dashboard.
-        // We'd always want to capture this info.
-        if ($this->userId !== null)
+        // Appends USER_ID in create input:
+        // - if not already set, and
+        // - if available in headers via dashboard
+        if ((isset($input[Entity::USER_ID]) === false) and
+            ($this->userId !== null))
         {
             $input[Entity::USER_ID] = $this->userId;
         }
