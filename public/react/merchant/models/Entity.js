@@ -29,7 +29,7 @@ export default class Entity extends Base {
     }
 
     return ajax(this.resourceUrl, { data }).then((response) => {
-      response.data.items = response.data.items.map((item) => new Klass(item))
+      response.data.items = response.data.items.map((item) => new Klass().deserialize(item))
       return response
     })
   }
@@ -37,7 +37,7 @@ export default class Entity extends Base {
   fetch(id, data = {}) {
     const Klass = this.constructor
     return ajax(`${this.resourceUrl}/${id}`, { data }).then((response) => {
-      return new Klass(response.data.items[0])
+      return new Klass().deserialize(response.data.items[0])
     })
   }
 
@@ -48,7 +48,7 @@ export default class Entity extends Base {
     let [ url, method ] = this.getResourceUrlAndMethod()
 
     return ajax({ url, method, data }).then((response) => {
-      return new Klass(response.data)
+      return new Klass().deserialize(response.data)
     })
   }
 
