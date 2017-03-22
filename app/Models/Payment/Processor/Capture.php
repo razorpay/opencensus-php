@@ -80,7 +80,7 @@ trait Capture
         {
             $payment = $this->capturePayment($payment, $amount, $currency);
         }
-        catch (Exception\RecoverableException $e)
+        catch (Exception\BaseException $e)
         {
             $this->trace->traceException(
                 $e,
