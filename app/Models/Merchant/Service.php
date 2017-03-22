@@ -364,6 +364,8 @@ class Service extends Base\Service
 
         $merchantSchedule = (new MerchantSchedule\Core)->createOrUpdate($merchant, $merchant, $input);
 
+        $this->traceAndNotifyScheduleAssignment($merchantSchedule);
+
         return $merchantSchedule->toArrayPublic();
     }
 
@@ -390,19 +392,18 @@ class Service extends Base\Service
         }
     }
 
-    protected function traceAndNotifyScheduleAssignment($schedule, $merchant)
+    protected function traceAndNotifyScheduleAssignment($merchantSchedule)
     {
-        $data = [
-            "schedule"    => $schedule->getName(),
-            "schedule_id" => $schedule->getId(),
-            "merchant"    => $merchant->getBillingLabelElseName(),
-            "merchant_id" => $merchant->getId(),
-        ];
+        $data = $merchantSchedule->toArrayPublic();
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
 
+        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+
+        $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
+
         $this->slack->queue(
-                "Schedule assigned to Merchant",
+                "Schedule assigned to Merchant by $user",
                 $data,
                 [
                     'channel'  => Config::get('slack.channels.operations_log'),
