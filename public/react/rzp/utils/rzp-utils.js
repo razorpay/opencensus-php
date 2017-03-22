@@ -55,6 +55,14 @@ export const pipe = (...funcs) => {
 
 export const normalizeDate = date => (moment(date).format('D/M/Y'))
 
+export const normalizeBoolean = (bool) => {
+  if (bool === undefined) {
+    return bool
+  }
+
+  return bool ? 1 : 0
+}
+
 export const getFixedINRAmount = (amount) => (Number(amount)/100).toFixed(2)
 
 
