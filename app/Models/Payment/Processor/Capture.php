@@ -10,6 +10,7 @@ use RZP\Models\Order;
 use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
 
