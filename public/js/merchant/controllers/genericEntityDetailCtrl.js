@@ -61,34 +61,5 @@ app.controller('GenericEntityDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
-
-    // For settlement breakup
-    $scope.showSettlementDetails = function () {
-      if ($scope.isSettlementDetailsCollapsed === false) {
-        $scope.isSettlementDetailsCollapsed = true;
-        return;
-      }
-
-      var params = {};
-      params.route_name = 'setl_get_details';
-      params.mode = $scope.mode;
-      params.url_params = {
-        '{id}': $scope.entity.id
-      };
-
-      var request = $http.get('/user/generic', {
-        params: params
-      });
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.isSettlementDetailsCollapsed = false;
-
-          $scope.breakupDetails = data.data.items;
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-    };
   }
 ]);

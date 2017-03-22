@@ -386,61 +386,12 @@
           Methods
         </div>
         <div ng-init="isMethodsCollapsed = true" collapse="isMethodsCollapsed" class="panel-body">
-          <!-- TODO: Convert this to a ng-repeat. Make sure you maintain the labels and order -->
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.amex == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.amex == true, 'fa-times text-danger':merchant.details.methods.amex == false}"></i></span>
-            Amex <i class="fa fa-cc-amex"></i>
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.debit_card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.debit_card == true, 'fa-times text-danger':merchant.details.methods.debit_card == false}"></i></span>
-            Debit Card <i class="fa fa-credit-card-alt"></i>
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.credit_card == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa " ng-class="{'fa-check text-success': merchant.details.methods.credit_card == true, 'fa-times text-danger':merchant.details.methods.credit_card == false}"></i></span>
-            Credit Card <i class="fa fa-credit-card-alt"></i>
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.netbanking == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.netbanking == true, 'fa-times text-danger':merchant.details.methods.netbanking == false}"></i></span>
-            Netbanking <i class="fa fa-university"></i>
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.airtelmoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.airtelmoney == true, 'fa-times text-danger':merchant.details.methods.airtelmoney == false}"></i></span>
-            AirtelMoney
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.freecharge === true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.freecharge === true, 'fa-times text-danger': merchant.details.methods.freecharge === false}"></i></span>
-            Freecharge
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.mobikwik == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.mobikwik == true, 'fa-times text-danger':merchant.details.methods.mobikwik == false}"></i></span>
-            Mobikwik
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.olamoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.olamoney == true, 'fa-times text-danger':merchant.details.methods.olamoney == false}"></i></span>
-            Olamoney
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.payumoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.payumoney == true, 'fa-times text-danger':merchant.details.methods.payumoney == false}"></i></span>
-            PayUMoney
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.payzapp == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.payzapp == true, 'fa-times text-danger':merchant.details.methods.payzapp == false}"></i></span>
-            Payzapp
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.jiomoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.jiomoney == true, 'fa-times text-danger':merchant.details.methods.jiomoney == false}"></i></span>
-            Jiomoney
-          </div>
-          <div class="list-group-item">
-            <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
-            UPI
+          <div class="list-group-item" ng-repeat="methodKey in sortMethods(merchant.details.methods)">
+            <span class="pull-right" tooltip="{{merchant.details.methods[methodKey] == true ? 'Enabled' : 'Disabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods[methodKey] == true, 'fa-times text-danger':merchant.details.methods[methodKey] == false}"></i></span>
+            <i aria-hidden="true" class="fa {{getMethodIconClass(methodKey)}}"></i>
+            {{getMethodLabel(methodKey)}}
           </div>
         </div>
-        <!-- <a href class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
-          Paytm
-        </a> -->
-
         <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.archived_at == null ? 'Not Archived' : 'Archived'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.archived_at != null, 'fa-times text-danger':merchant.details.archived_at == null}"></i></span>
           Archived

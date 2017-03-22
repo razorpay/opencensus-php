@@ -117,11 +117,18 @@ app.controller('ConfigCtrl', [
         return;
       }
       $scope.alerts.addAlert('info', 'Uploading...', true);
+
+      var params = {
+        route_name: 'merchant_edit_config_logo',
+        mode: $scope.mode,
+        file_name: fieldname
+      };
+
       var request = $upload.upload({
-        url: '/config/logo',
+        url: '/user/generic',
         method: 'POST',
+        data: params,
         file: file,
-        fileFormDataName: fieldname,
         formDataAppender: function (fd, key, val) {
           if (angular.isArray(val)) {
             angular.forEach(val, function (v) {

@@ -95,8 +95,8 @@ class MerchantDetail extends Entity
 
         // Creates a new Guzzle client
         $client = new Guzzle([
-                                'base_url' => Config::get('api.url')
-                            ]);
+            'base_url' => Config::get('api.url')
+        ]);
 
         // Sets the options for the request. Auth should be part of this.
         $options = [
