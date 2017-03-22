@@ -41,18 +41,22 @@ class Repository extends Base\Repository
      * @param string          $id
      * @param Merchant\Entity $merchant
      * @param string|null     $userId
+     * @param string|null     $userRole
      *
      * @return Entity
      * @throws Exception\BadRequestException
      */
-    public function findByPublicIdAndMerchantAndUserId(
+    public function findByPublicIdAndMerchantAndUser(
         string $id,
         Merchant\Entity $merchant,
-        string $userId = null)
+        string $userId = null,
+        string $userRole = null)
     {
         $invoice = $this->findByPublicIdAndMerchant($id, $merchant);
 
-        if (($userId !== null) and ($invoice->getUserId() !== $userId))
+        if (($userId !== null) and
+            ($userRole === 'sellerapp') and
+            ($invoice->getUserId() !== $userId))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }

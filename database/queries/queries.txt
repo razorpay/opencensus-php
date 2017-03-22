@@ -1836,3 +1836,20 @@ ALTER TABLE reversals
 
 DELETE FROM migrations WHERE migration = '2016_08_05_131651_create_gateway_absence';
 DROP TABLE `gateway_status_absence`;
+
+# -----
+# Queries to fix invoices data
+# 1. Initially few invoices were created with type=null, it is being updated to
+#    'link' as in v1 all invoices were supposed to be link.
+# 2. There is one merchant who didn't send type field(='link') while creating
+#    payment link (despite explicitly stating to do so in doc).
+#    And in recent pr default for type was made 'invoice'. And he started using
+#    invoice view unintentionally. Nothing impacted operationally.
+
+SELECT count(*) FROM invoices WHERE type IS NULL
+SELECT count(*) FROM invoices WHERE merchant_id = '6nKFg2YiV83HSN' AND type = 'invoice';
+SELECT count(*) FROM invoices WHERE merchant_id = '6OgP78ClAADbcr' AND type = 'invoice';
+
+UPDATE invoices SET type = 'link' WHERE type IS NULL LIMIT 1;
+UPDATE invoices SET type = 'link' WHERE merchant_id = '6nKFg2YiV83HSN' AND type = 'invoice' LIMIT 1;
+UPDATE invoices SET type = 'link' WHERE merchant_id = '6OgP78ClAADbcr' AND type = 'invoice' LIMIT 1;
