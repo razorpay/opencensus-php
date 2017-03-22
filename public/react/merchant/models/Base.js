@@ -19,7 +19,7 @@ export default class BaseModel {
 
   constructor(props = {}) {
     Object.assign(this, props)
-    this.deserialize(props)
+    this.stashPayload(props)
   }
 
   get isNew() {

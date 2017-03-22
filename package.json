@@ -17,9 +17,7 @@
     "css-loader": "^0.26.1",
     "dot": "^1.1.1",
     "gulp": "^3.9.1",
-    "gulp-autoprefixer": "^3.1.1",
     "gulp-concat-multi": "^1.0.1",
-    "gulp-cssnano": "^2.1.2",
     "gulp-plumber": "^1.1.0",
     "gulp-rev": "^7.1.2",
     "gulp-stylus": "^2.6.0",
@@ -28,12 +26,13 @@
     "run-sequence": "^1.2.2",
     "style-loader": "^0.13.1",
     "stylus-loader": "^2.5.0",
-    "through": "^2.3.8",
     "webpack": "^2.2.1"
   },
   "dependencies": {
+    "autoprefixer-stylus": "^0.13.0",
     "babel-runtime": "^6.23.0",
     "classnames": "^2.2.5",
+    "csso-stylus": "^0.0.3",
     "dfaqapi": "^0.0.2",
     "moment": "^2.17.1",
     "ngreact": "^0.3.0",
@@ -51,6 +50,7 @@
     "react-tooltip": "^3.2.7",
     "redux": "^3.6.0",
     "redux-form": "^6.5.0",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.2.0",
+    "through2": "^2.0.3"
   }
 }

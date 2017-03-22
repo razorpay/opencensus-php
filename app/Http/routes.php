@@ -91,8 +91,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/keys/csv', 'MerchantController@getCsv');
         Route::get('/apihost', 'MerchantController@getApihost');
 
-        Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo')->name('post_config_logo');
-
         Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
 
         // This also returns credits

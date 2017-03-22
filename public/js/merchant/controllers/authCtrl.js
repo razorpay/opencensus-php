@@ -189,17 +189,16 @@ app.controller('AuthCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.isLoggedIn = true;
-          user.identity(true).then(function() {
-            hideSpinner();
-            $state.transitionTo('access.pre_signup', {}, {
-              notify: false,
-            });
-
-            if ($scope.signup.data.invitation) {
-              $('.auth-step-questions').hide();
+          user.identity(true).then(function(data) {
+            if (data.user.confirmed) {
+              $scope.goToDashboard(data.user.merchants[0].pivot.role)
+            } else {
+              hideSpinner();
+              $state.transitionTo('access.pre_signup', {}, {
+                notify: false,
+              });
+              $scope.goToSignupStep(1);
             }
-
-            $scope.goToSignupStep(1);
           });
         } else {
           hideSpinner();
