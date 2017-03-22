@@ -57,10 +57,14 @@ class WorkflowController extends Controller
 
         $response = App::call([$controller, $functionName], array_values($routeParams));
 
-        if ($response->getStatusCode() === 200)
+        $state = State\Entity::EXECUTED;
+
+        if ($response->getStatusCode() !== 200)
         {
-            (new Differ\Service)->markActionAsExecuted($id);
+            $state = State\Entity::FAILED;
         }
+
+        (new Differ\Service)->changeActionState($id, $state);
 
         return $response;
     }

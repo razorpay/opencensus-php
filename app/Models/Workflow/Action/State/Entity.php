@@ -18,12 +18,14 @@ class Entity extends Base\PublicEntity
     const EXECUTED     = 'executed';
     const OPEN         = 'open';
     const CLOSED       = 'closed';
+    const FAILED       = 'failed';
 
     // Action States post which we do not accept any state changes
     const CLOSED_STATES = [
         self::REJECTED,
         self::EXECUTED,
         self::CLOSED,
+        self::FAILED,
     ];
 
     protected static $sign = 'a_state';

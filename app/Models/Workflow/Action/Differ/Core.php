@@ -116,14 +116,14 @@ class Core extends Base\Core
         ];
     }
 
-    public function markActionAsExecuted(string $actionId)
+    public function changeActionState(string $actionId, State\Entity $state)
     {
         $action = $this->repo->action->findByPublicId($actionId);
 
         $input = [
             State\Entity::ACTION_ID  => $action->getId(),
             State\Entity::ADMIN_ID   => $action->getAdminId(),
-            State\Entity::NAME       => State\Entity::EXECUTED,
+            State\Entity::NAME       => $state,
         ];
 
         (new State\Core)->create($input);
