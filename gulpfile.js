@@ -180,16 +180,17 @@ gulp.task('webpack', (cb) => {
 })
 
 var webpackCompiler = null;
-gulp.task('webpack:watch', ()=> {
+gulp.task('webpack:watch', (cb)=> {
   if (!webpackCompiler) {
     webpackCompiler = webpack(Object.assign({}, webpackConfig));
-    const watching = webpackCompiler.watch({}, (err, stats) => {
-      console.log(stats.toString({
-        colors: true,
-        chunks: false
-      }))
-    });
   }
+  webpackCompiler.run(function(err, stats) {
+    console.log(stats.toString({
+      colors: true,
+      chunks: false
+    }))
+    cb();
+  })
 })
 
 gulp.task('webpack:prod', (cb) => {
