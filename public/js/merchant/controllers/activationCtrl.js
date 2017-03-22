@@ -24,6 +24,16 @@ app.controller('ActivationCtrl', [
       6: {}
     };
 
+    /**
+     * TODO: Fix the merchant activation page
+     * so this uses true/false as well
+     *
+     * @see $scope.editable in merchantActivationCtrl.js
+     */
+    $scope.editable = function() {
+      return ($scope.data.locked === 0);
+    };
+
     $scope.formAlerts = alertsFactory.getHandler();
     $scope.alerts = {
       1: alertsFactory.getHandler(),
@@ -65,28 +75,84 @@ app.controller('ActivationCtrl', [
         $scope.data.business_operation_pin = $scope.data.business_registered_pin;
       }
     };
+
     $scope.changeOperationalAddress = function (input) {
       if (addressCopyToggle && input.substr(0,19) === 'business_registered') {
         $scope.data[input.replace('registered', 'operation')] = $scope.data[input];
       }
     };
-    getData();
-    function getData() {
-      var url = '/activation/details';
+
+    $scope.getUrl = function(name, params) {
+      var url = null;
+      switch(name) {
+        case 'fetch_details':
+          url = '/activation/details';
+          break;
+
+        case 'upload_file':
+          url = '/activation/save/file';
+          break;
+
+        case 'submit_form':
+          url= '/activation';
+      	  break;
+
+        case 'save_step':
+          url = '/activation/save/step/' + params.step;
+          break;
+      }
+
+      // Marketplace specific
       if ($scope.accountDetails) {
         url += '/' + $scope.account;
       }
 
-      var request = $http.get(url);
+      return url;
+    };
 
+    $scope.getDataFields = function(data) {
+      var fieldsToDrop = [
+        'steps_finished', 'activation_progress', 'locked',
+        'submitted', 'role', 'department', 'verification',
+        'can_submit', 'files', 'activated'
+      ];
+
+      var isTimestampField = function(field) {
+        return (field.substr(-3) === '_at');
+      };
+
+      var isUrlField = function(field) {
+        return (field.substr(-4) === '_url');
+      };
+
+      // Reject any fields that match either of the
+      // three critera
+      return Object.keys(data).filter(function(key) {
+        return !((fieldsToDrop.indexOf(key) !== -1) ||
+          (isTimestampField(key)) ||
+          (isUrlField(key))
+        );
+      });
+    };
+
+
+    $scope.getData = function() {
+      var request = $http.get($scope.getUrl('fetch_details'));
       request.success(function (data) {
+
         var steps_finished = data.data.steps_finished;
+
         angular.forEach(steps_finished, function (value) {
           $scope.check[value] = true;
         });
+
         angular.forEach(data.data, function (value, key) {
           $scope.data[key] = value;
         });
+
+        // This is the list of data fields. These can be
+        // safely sent back whenever we edit something
+        $scope.dataFields = $scope.getDataFields(data.data);
         $scope.data.bank_account_number_confirmation = $scope.data.bank_account_number;
 
         angular.forEach(data.data.files, function (key) {
@@ -118,40 +184,55 @@ app.controller('ActivationCtrl', [
           }
         }
       });
-    }
-    function saveStep(step) {
+    };
+
+    /**
+     * Returns an object with only save-able
+     * data fields inside it. This drops lots of
+     * fields as per $scope.dataFields
+     * which is set by getDataFields method above
+     * @return Object
+     */
+    var getDataToSave = function() {
+      var data = angular.copy($scope.data, {});
+
+      return $scope.dataFields.reduce(function (a, b){
+        a[b] = data[b];
+        return a;
+      },{});
+    };
+
+    function validateSave() {
       var data = $scope.data;
+      if (data.bank_account_number !== data.bank_account_number_confirmation) {
+        return 'Bank Account Number doesn\'t match';
+      }
+    }
 
-      var bankStep = 4;
-      if ($scope.accountDetails) {
-        bankStep = 2;
+    function saveStep(step) {
+      var error = validateSave();
+
+      if (error) {
+        $scope.alerts[step].addAlert('danger', error);
+        return;
       }
 
-      if (step === bankStep) {
-        if (data.bank_account_number !== data.bank_account_number_confirmation) {
-          $scope.alerts[step].addAlert('danger', 'Bank Account Number doesn\'t match');
-          return;
-        }
-        data = angular.copy(data, {});
-        delete data.bank_account_number_confirmation;
-      }
-
-      var url = '/activation/save/step/' + step;
-      if ($scope.accountDetails) {
-        url += '/' + $scope.account;
-      }
+      var data = getDataToSave();
 
       var request = $http({
         method: 'post',
-        url: url,
+        url: $scope.getUrl('save_step', {step: step}),
         transformRequest: transformRequestAsFormPost,
         data: data
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts[step].addAlert('success', 'Step Saved Successfully', true);
           $scope.check[step] = true;
-          $scope.refreshUser(true);
+          if (!$scope.admin) {
+            $scope.refreshUser(true);
+          }
         } else {
           $scope.alerts[step].resetAlerts();
           angular.forEach(data.errors, function (value) {
@@ -182,14 +263,8 @@ app.controller('ActivationCtrl', [
       }
       $scope.locked = true;
       $scope.fileAlerts[fieldname].addAlert('info', 'Uploading...', true);
-
-      var url = '/activation/save/file' ;
-      if ($scope.accountDetails) {
-        url += '/' + $scope.account;
-      }
-
       var request = $upload.upload({
-        url: url,
+        url: $scope.getUrl('upload_file'),
         method: 'POST',
         file: file,
         fileFormDataName: fieldname,
@@ -218,6 +293,7 @@ app.controller('ActivationCtrl', [
         $scope.locked = false;
       });
     }
+
     function checkInputDateSupport() {
       var input = document.createElement('input');
       input.setAttribute('type', 'date');
@@ -225,27 +301,22 @@ app.controller('ActivationCtrl', [
       input.setAttribute('value', notADateValue);
       return (input.value !== notADateValue);
     }
+
     function submitForm(step) {
       if ($scope.data.agree_terms !== true) {
         $scope.alerts[step].addAlert('danger', 'You must agree to the terms & conditions to use Razorpay services', true);
         return;
       }
-
-      var url = '/activation' ;
-      if ($scope.accountDetails) {
-        url += '/' + $scope.account;
-      }
-
       var request = $http({
         method: 'post',
-        url: url,
+        url: $scope.getUrl('submit_form'),
         transformRequest: transformRequestAsFormPost
       });
       request.success(function (data) {
         if (data.success) {
           $scope.alerts[step].addAlert('success', 'Form submitted Successfully!', true);
           $scope.check[step] = true;
-          getData();
+          $scope.getData();
         } else {
           $scope.alerts[step].resetAlerts();
           angular.forEach(data.errors, function (value) {
