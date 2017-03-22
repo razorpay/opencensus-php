@@ -24,7 +24,7 @@ export default class GenericEntity extends Entity {
 
     data.route_name = this.listRouteName
     return this.makeGenericAjaxCall(data).then((response) => {
-      response.data.items = response.data.items.map((item) => new Klass(item))
+      response.data.items = response.data.items.map((item) => new Klass().deserialize(item))
       return response
     })
   }
@@ -36,7 +36,7 @@ export default class GenericEntity extends Entity {
     })
     data.route_name = this.detailsRouteName
     return this.makeGenericAjaxCall(data).then((response) => {
-      return new Klass(response.data)
+      return new Klass().deserialize(response.data)
     })
   }
 
@@ -66,7 +66,7 @@ export default class GenericEntity extends Entity {
       data,
       appendModeInQueryParam: true,
     }).then((response) => {
-      return new Klass(response.data)
+      return new Klass().deserialize(response.data)
     })
   }
 

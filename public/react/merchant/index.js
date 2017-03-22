@@ -105,7 +105,7 @@ createNgDirective('orderDetails', OrderDetailsContainer, ['id'])
 createNgDirective('settlementsList', SettlementsListContainer)
 createNgDirective('settlementDetails', SettlementDetailsContainer, ['id'])
 
-createNgDirective('apiWebhooks', WebhooksContainer)
+createNgDirective('webhooksList', WebhooksContainer)
 
 
 // createNgDirective('subscriptionsList', SubscriptionsListContainer)

@@ -48,8 +48,6 @@ var app = angular.module('app', [
       $state.go('500');
     });
 
-
-
     $rootScope.tour = jqTourbusService;
   }
 ]).config([
@@ -229,9 +227,9 @@ var app = angular.module('app', [
         $scope.id = $stateParams.id;
       }],
       templateProvider: reactTemplateProvider('<settlement-details id="id" />')
-    })}).state('app.webhooks', {
+    }).state('app.webhooks', {
       url: '/webhooks',
-      templateProvider: reactTemplateProvider('<api-webhooks />')
+      templateProvider: reactTemplateProvider('<webhooks-list />')
     })
 
       //Guest Routes
