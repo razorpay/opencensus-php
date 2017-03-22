@@ -212,6 +212,11 @@ class ErrorCodes
         'N:100',
         'N:-100',
 
+        // Invalid StoreId
+        // For some reason, FirstData is not recognising the MID they provided
+        'N:03',
+        'N:3',
+
         // terminal_state_code error
         // Usually happens when Rupay/Maestro are not enabled for the terminal
         // Notify pghelpdesk, with the gateway_merchant_id
