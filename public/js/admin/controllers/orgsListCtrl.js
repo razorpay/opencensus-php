@@ -6,6 +6,8 @@ app.controller('OrgsListCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+    $scope.alerts = alertsFactory.getHandler();
+
     $scope.organizations = [];
     $scope.count = 0;
 

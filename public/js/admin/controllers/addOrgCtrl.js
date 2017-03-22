@@ -32,35 +32,6 @@ app.controller('AddOrgCtrl', [
       $scope.fetchOrg($stateParams.id)
     }
 
-    $scope.editOrg = function(data) {
-      if (data.body.allow_sign_up == false) {
-        data.body.allow_sign_up = "0";
-      } else {
-        data.body.allow_sign_up = "1";
-      }
-      var request = $http.put('/admin/generic', data, {
-        params: {
-          route_name: 'org_edit',
-          url_params: {
-            '{id}' : $scope.organization.id
-          }
-        }
-      });
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Organization updated', true);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      });
-
-      return request
-    }
-
     $scope.uploadFile = function (file, fieldName, type) {
       return $upload.upload({
         url: '/admin/org/' + $scope.organization.id,
@@ -100,6 +71,8 @@ app.controller('AddOrgCtrl', [
 
     $scope.save = function(organization) {
       var data = {};
+
+      // edit
       if (organization.id) {
         data.body = jQuery.extend(true, {}, organization);
         delete data.body.id;
@@ -107,23 +80,35 @@ app.controller('AddOrgCtrl', [
         delete data.body.admin;
         delete data.body.entity;
 
-        return $scope.editOrg(data)
+        var request = $http.put('/admin/generic', data, {
+          params: {
+            route_name: 'org_edit',
+            url_params: {
+              '{id}' : $scope.organization.id
+            }
+          }
+        });
       }
+      // add
+      else {
+        data.body = organization;
+        data.route_name = 'org_create';
 
-      data.body = organization;
-      data.route_name = 'org_create';
-
-      var request = $http({
-        method: 'post',
-        url: '/admin/generic',
-        data: data
-      });
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data
+        });
+      }
 
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Organization created successfully.', true);
+          $scope.alerts.addAlert('success', 'Organization saved successfully.', true);
         } else {
-          $scope.alerts.addAlert('danger', null, true);
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
