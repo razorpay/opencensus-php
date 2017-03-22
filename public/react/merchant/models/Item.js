@@ -1,9 +1,10 @@
-import Entity from './Entity'
+import GenericEntity from './GenericEntity'
 import ajax from 'merchant/utils/ajax'
 import { getFixedINRAmount } from 'rzp/utils/rzp-utils'
 
-export default class Item extends Entity {
-  resourceUrl = '/items'
+export default class Item extends GenericEntity {
+  listRouteName = 'item_fetch_multiple'
+  deleteRouteName = 'item_delete'
   resourceFields = [
     'id',
     'name',
@@ -12,6 +13,10 @@ export default class Item extends Entity {
     'description'
   ]
   currency = 'INR'
+
+  getRouteName() {
+    return this.isNew ? 'item_create' : 'item_update'
+  }
 
   // This will be replaced with the ES autocomplete api
   fetchForAutocomplete(data = {}) {

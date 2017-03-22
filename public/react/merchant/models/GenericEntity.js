@@ -23,7 +23,7 @@ export default class GenericEntity extends Entity {
     }
 
     data.route_name = this.listRouteName
-    return this.makeGenericAjaxCall(data).then((response) => {
+    return this.makeGenericAjaxCall({ data }).then((response) => {
       response.data.items = response.data.items.map((item) => new Klass().deserialize(item))
       return response
     })
@@ -35,7 +35,7 @@ export default class GenericEntity extends Entity {
       '{id}': id
     })
     data.route_name = this.detailsRouteName
-    return this.makeGenericAjaxCall(data).then((response) => {
+    return this.makeGenericAjaxCall({ data }).then((response) => {
       return new Klass().deserialize(response.data)
     })
   }
@@ -60,18 +60,30 @@ export default class GenericEntity extends Entity {
       })
     }
 
-    return ajax({
-      url,
+    return this.makeGenericAjaxCall({
       method,
       data,
-      appendModeInQueryParam: true,
     }).then((response) => {
       return new Klass().deserialize(response.data)
     })
   }
 
-  makeGenericAjaxCall(data) {
-    return ajax(this.resourceUrl, {
+  delete() {
+    return this.makeGenericAjaxCall({
+      method: 'delete',
+      data: {
+        route_name: this.deleteRouteName,
+        url_params: JSON.stringify({
+          '{id}': this.id,
+        })
+      }
+    })
+  }
+
+  makeGenericAjaxCall({ data, method='get' }) {
+    return ajax({
+      url: this.resourceUrl,
+      method,
       data,
       appendModeInQueryParam: true
     })
