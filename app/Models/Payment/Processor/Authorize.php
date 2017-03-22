@@ -648,6 +648,8 @@ trait Authorize
 
             $this->autoCapturePaymentIfApplicable($payment);
 
+            $this->repo->saveOrFail($payment);
+
             $this->setPayment($payment);
         });
     }
