@@ -43,17 +43,4 @@ class Service extends Base\Service
 
         return $this->repo->action_checker->findByIdAndActionId($checkerId, $actionId);
     }
-
-    public function fetchActionsForChecker(array $input)
-    {
-        $admin = $this->app['basicauth']->getAdmin();
-
-        $roleId  = $admin->role->getId();
-
-        // - Action on maker need to trigger a workflow.
-        // - Once triggered on every check action corresponding
-        //   values should be set in cache and cleared from cache
-        //   as necessary.
-        // - Here just pull from the corresponding cache.
-    }
 }

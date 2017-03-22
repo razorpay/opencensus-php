@@ -405,7 +405,6 @@ final class Route
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
 
         // Workflows API
-        'checker_actions'                         => ['get',      'w-action/checker',                               'WorkflowController@getActionsForChecker'                           ],
         'action_checker_create'                   => ['post',     'w-action/{id}/checker',                          'WorkflowController@postActionChecker'                              ],
         'action_checker_multiple'                 => ['get',      'w-action/{id}/checkers',                         'WorkflowController@getActionCheckerMultiple'                       ],
         'action_checker_get'                      => ['get',      'w-action/{id}/checker/{checkerId}',              'WorkflowController@getActionChecker'                               ],
@@ -879,7 +878,6 @@ final class Route
         'workflow_create',
         'workflow_get',
         'workflow_step_create',
-        'checker_action',
     ];
 
     public static $adminPermission = [
@@ -920,7 +918,6 @@ final class Route
         'workflow_create'                => ['*'], // Fix permissions
         'workflow_get'                   => ['*'],
         'workflow_step_create'           => ['*'],
-        'checker_action'                 => ['*'],
     ];
 
     public static $direct = array(
