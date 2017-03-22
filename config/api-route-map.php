@@ -169,10 +169,6 @@ return [
             'url'       => 'invoices/{id}',
             'routeName' => 'invoice_delete'
         ],
-        'invoice_send_notification'         => [
-            'url'       => 'invoices/{id}/notify/{medium}',
-            'routeName' => 'invoices_send_notification'
-        ],
         'invoice_issue'                     => [
             'url'       => 'invoices/{id}/issue',
             'routeName' => 'invoice_issue'
@@ -187,10 +183,6 @@ return [
             'url'       => 'customers',
             'routeName' => 'customer_fetch_all'
         ],
-        // 'customer_fetch_multiple'           => [
-        //     'url'       => 'customers',
-        //     'routeName' => 'customer_autocomplete'
-        // ],
         'customer_create'                   => [
             'url'       => 'customers',
             'routeName' => 'customer_create'
@@ -209,10 +201,6 @@ return [
             'url'       => 'items',
             'routeName' => 'item_fetch_all'
         ],
-        // 'item_fetch_multiple'               => [
-        //     'url'       => 'items',
-        //     'routeName' => 'item_autocomplete'
-        // ],
         'item_create'                       => [
             'url'       => 'items',
             'routeName' => 'item_create'
