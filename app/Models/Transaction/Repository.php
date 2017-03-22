@@ -103,6 +103,14 @@ class Repository extends Base\Repository
                                       ->merchant_schedule
                                       ->getAttributeWithTableName(MerchantSchedule\Entity::SCHEDULE_ID);
 
+        $merScheduleType = $this->manager
+                                ->merchant_schedule
+                                ->getAttributeWithTableName(MerchantSchedule\Entity::TYPE);
+
+        $merScheduleNextRunAt = $this->manager
+                                     ->merchant_schedule
+                                     ->getAttributeWithTableName(MerchantSchedule\Entity::NEXT_RUN_AT);
+
         $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
         $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
         $transactionType = $this->getAttributeWithTableName(Transaction\Entity::TYPE);
@@ -110,8 +118,8 @@ class Repository extends Base\Repository
 
         $txns = $this->newQuery()
                     ->select($transactionData)
-                    ->join(TABLE::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->join(TABLE::MERCHANT_SCHEDULE, $merchantId, '=', $merScheduleMerchantId)
+                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
+                    ->join(Table::MERCHANT_SCHEDULE, $merchantId, '=', $merScheduleMerchantId)
                     ->join(Table::SCHEDULE, $scheduleId, '=', $merScheduleScheduleId)
                     ->where(Entity::ON_HOLD, 0)
                     ->where(Entity::SETTLED_AT, '<', $timestamp)
@@ -119,19 +127,12 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->where($transactionType, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->where(Schedule\Entity::NEXT_RUN, '<', $timestamp)
+                    ->where($merScheduleType, '=', MerchantSchedule\Type::SETTLEMENT)
+                    ->where($merScheduleNextRunAt, '<', $timestamp)
                     ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
                     ->get();
-
-        // $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
-        //             $txns,
-        //             'source',
-        //             [
-        //                 E::PAYMENT => [],
-        //                 E::REFUND => [E::PAYMENT]
-        //             ]);
 
         return $txns;
     }
