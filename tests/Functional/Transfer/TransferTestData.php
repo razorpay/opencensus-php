@@ -21,6 +21,10 @@ return [
         'account'       => 'acc_10000000000001',
         'amount'        => 1000,
         'currency'      => 'INR',
+        'notes'         => [
+            'order_info'    => 'random_string',
+            'version'       => 2,
+        ],
         'on_hold'       => '1',
         // 'on_hold_until' => 1586055431,
     ],
@@ -29,6 +33,10 @@ return [
         'customer'      => 'cust_200000customer',
         'amount'        => 1000,
         'currency'      => 'INR',
+        'notes'         => [
+            'order_info'    => 'random_string',
+            'version'       => 2,
+        ],
         'on_hold'       => '1',
         // 'on_hold_until' => 1586055431,
     ],
@@ -195,4 +203,20 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSFER_REVERSAL_AMOUNT_GREATER_THAN_UNREVERSED,
         ],
     ],
+
+    'testLiveTransferFundsOnHold' => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
+        ],
+    ]
 ];

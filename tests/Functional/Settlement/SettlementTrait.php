@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
+use RZP\Models\FundTransfer\Attempt;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use AWS;
 
@@ -15,8 +16,9 @@ trait SettlementTrait
     protected function getDaysForSettlementHolidayTests()
     {
         return [
-            'payment_created_at'    => '5 july 2016',
-            'payment_settlement_on' => '9 july 2016',
+            'payment_created_at'        => '5 july 2016',
+            'payment_settlment_holiday' => '9 july 2016 7:00:00',
+            'payment_settlement_on'     => '11 july 2016 7:00:00',
         ];
     }
 
@@ -28,7 +30,7 @@ trait SettlementTrait
     {
         return [
            'payment_created_at'    => '12 july 2016',
-           'payment_settlement_on' => '15 july 2016',
+           'payment_settlement_on' => '15 july 2016 7:00:00',
         ];
     }
 
@@ -69,6 +71,23 @@ trait SettlementTrait
         ];
 
         $this->ba->appAuthMode();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function retryIntiateSettlements(array $setlIds)
+    {
+        $request = [
+            'url'     => '/settlements/retry',
+            'method'  => 'POST',
+            'content' => [
+                'settlement_ids' => $setlIds
+            ]
+        ];
+
+        $this->ba->appAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

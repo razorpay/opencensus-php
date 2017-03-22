@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction;
 
 use RZP\Constants\Table;
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
@@ -17,12 +18,16 @@ class Repository extends Base\Repository
 {
     protected $entity = 'transaction';
 
+    protected $signedIds = [
+        Entity::SETTLEMENT_ID,
+    ];
+
     protected $appFetchParamRules = array(
         Entity::SETTLED         => 'sometimes|in:0,1',
         Entity::ON_HOLD         => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
-        Entity::SETTLEMENT_ID   => 'sometimes|alpha_num',
-        Entity::ENTITY_ID       => 'sometimes|string|min:14',
+        Entity::SETTLEMENT_ID   => 'sometimes|alpha_dash|min:14|max:19',
+        Entity::ENTITY_ID       => 'sometimes|alpha_dash|min:14',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::RECONCILED      => 'sometimes|in:0,1',
     );
@@ -60,7 +65,7 @@ class Repository extends Base\Repository
         $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
         $transactionData = $this->getAttributeWithTableName('*');
 
-        return $this->newQuery()
+        $txns = $this->newQuery()
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
@@ -68,13 +73,23 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->with('merchant')
+                    ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
                     ->get();
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
+                    $txns,
+                    'source',
+                    [
+                        E::PAYMENT => [],
+                        E::REFUND => [E::PAYMENT]
+                    ]);
+
+        return $txns;
     }
 
-    public function fetchUnsettledTxnsForDueSchedules($timestamp)
+    public function fetchUnsettledTxnsForDueSchedules($timestamp, $channel)
     {
         $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
         $merchantScheduleId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::SETTLEMENT_SCHEDULE_ID);
@@ -86,20 +101,31 @@ class Repository extends Base\Repository
         $transactionType = $this->getAttributeWithTableName(Transaction\Entity::TYPE);
         $transactionData = $this->getAttributeWithTableName('*');
 
-        return $this->newQuery()
+        $txns = $this->newQuery()
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->join(Table::SCHEDULE, $scheduleId, '=', $merchantScheduleId)
                     ->where(Entity::ON_HOLD, 0)
                     ->where(Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Entity::SETTLED, '=', 0)
+                    ->where(Entity::CHANNEL, '=', $channel)
                     ->where($transactionType, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
                     ->where(Schedule\Entity::NEXT_RUN, '<', $timestamp)
-                    ->with('merchant')
+                    ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
                     ->get();
+
+        // $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
+        //             $txns,
+        //             'source',
+        //             [
+        //                 E::PAYMENT => [],
+        //                 E::REFUND => [E::PAYMENT]
+        //             ]);
+
+        return $txns;
     }
 
     public function fetchUnsettledTransactionsForMerchant($timestamp, $merchant)
@@ -291,7 +317,11 @@ class Repository extends Base\Repository
                     ->update([Transaction\Entity::SETTLED_AT  => 1]);
     }
 
-    public function settled($txns, $settledAt)
+    /**
+     * @param $txns - Array of transaction entities to be updated
+     * @param $values - Array. Key - Column name, Value - Column value
+     */
+    public function settled($txns, array $values)
     {
         if ($txns->count() === 0)
         {
@@ -299,10 +329,6 @@ class Repository extends Base\Repository
         }
 
         $ids = $txns->getIds();
-
-        $values = array(
-            Transaction\Entity::SETTLED_AT  => $settledAt,
-            Transaction\Entity::SETTLED     => true);
 
         $count = $this->newQuery()
                       ->whereIn(Transaction\Entity::ID, $ids)

@@ -46,7 +46,7 @@ return [
         ],
     ],
 
-    'testInvalidVPA'   => [
+    'testInvalidVpa'   => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -62,7 +62,7 @@ return [
         ],
     ],
 
-    'testUpiVPA'   => [
+    'testUpiVpa'   => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -78,7 +78,7 @@ return [
         ],
     ],
 
-    'testInvalidVPAError'   => [
+    'testInvalidVpaError'   => [
         'response'  => [
             'content'     => [
                 'error' => [

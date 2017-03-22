@@ -14,7 +14,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::CONTACT             => 'sometimes|contact_syntax',
-        Entity::NAME                => 'sometimes|alpha_space_num|max:50',
+        Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50',
         Entity::EMAIL               => 'sometimes|email',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
@@ -44,6 +44,13 @@ class Validator extends Base\Validator
         'skip'                  => 'sometimes|integer'
     );
 
+    protected static $walletAppCreateRules = [
+        Entity::CONTACT         => 'required|contact_syntax',
+        Entity::EMAIL           => 'sometimes|email',
+        Entity::NAME            => 'sometimes|string|max:50',
+        'otp'                   => 'required|string|regex:"^\d{4,8}$"',
+    ];
+
     public static function validateAndParseContact($contact)
     {
         (new static)->validateInput('contact', ['contact' => $contact]);
@@ -64,9 +71,12 @@ class Validator extends Base\Validator
      * Wallets can only be created for customers having
      * Indian mobile numbers
      */
-    public function validateIndianContact()
+    public function validateIndianContact($number = null)
     {
-        $number = $this->entity->getContact();
+        if ($number === null)
+        {
+            $number = $this->entity->getContact();
+        }
 
         if (empty($number) === true)
         {
@@ -93,5 +103,10 @@ class Validator extends Base\Validator
     public static function validateGlobalCustomerCreateInput($input)
     {
         (new static)->validateInput('global_create', $input);
+    }
+
+    public static function validateWalletAppCustomerCreateInput($input)
+    {
+        (new static)->validateInput('wallet_app_create', $input);
     }
 }

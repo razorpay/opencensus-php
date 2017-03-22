@@ -12,7 +12,6 @@
         "mailgun/mailgun-php": "~2.0",
         "aws/aws-sdk-php-laravel": "3.1.0",
         "symfony/event-dispatcher": "~2.2",
-        "maknz/slack": "dev-f/queue-with-retry",
         "cebe/markdown": "~1.0.1",
         "elasticsearch/elasticsearch": "^5.1",
         "razorpay/ifsc": "~0.2",
@@ -31,16 +30,15 @@
         "mikehaertl/phpwkhtmltopdf": "^2.2",
         "mustache/mustache": "^2.11",
         "php-http/laravel-httplug": "^0.1.0",
-        "maxmind/minfraud": "^1.3"
+        "maxmind/minfraud": "^1.3",
+        "php-http/discovery": "^1.2",
+        "razorpay/slack-laravel": "1.2.0",
+        "ext-gmp": "*"
     },
     "repositories": [
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/spine.git"
-        },
-        {
-            "type": "vcs",
-            "url": "git@github.com:razorpay/slack.git"
         },
         {
             "type": "vcs",
@@ -54,7 +52,8 @@
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",
         "tijsverkoyen/css-to-inline-styles": "^1.5",
-        "orchestra/testbench": "3.2.*"
+        "orchestra/testbench": "3.2.*",
+        "php-http/mock-client": "^0.3.3"
     },
     "autoload": {
         "classmap": [

@@ -2,21 +2,57 @@
 
 namespace RZP\Models\Settlement;
 
+use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Merchant as M;
 use RZP\Models\Settlement;
+use RZP\Models\Transaction;
+use RZP\Models\BankAccount;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'settlement';
 
-    protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID         => 'sometimes|alpha_num|max:14',
-        Entity::BANK_ACCOUNT_ID     => 'sometimes|alpha_num|max:14',
-        Entity::BATCH_SETTLEMENT_ID => 'sometimes|alpha_num|max:14',
-        Entity::TRANSACTION_ID      => 'sometimes|alpha_num|max:14',
-        Entity::STATUS              => 'sometimes|in:created,processed,failed',
-        Entity::UTR                 => 'sometimes|alpha_num',
-    );
+    protected $signedIds = [
+        Entity::BANK_ACCOUNT_ID,
+        Entity::TRANSACTION_ID,
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID            => 'sometimes|alpha_num|size:14',
+        Entity::BANK_ACCOUNT_ID        => 'sometimes|alpha_dash|min:14|max:17',
+        Entity::BATCH_FUND_TRANSFER_ID => 'sometimes|alpha_num|max:14',
+        Entity::TRANSACTION_ID         => 'sometimes|alpha_dash|min:14|max:18',
+        Entity::STATUS                 => 'sometimes|in:created,processed,failed',
+        Entity::UTR                    => 'sometimes|alpha_num',
+    ];
+
+    public function getFailedSettlementsForRetry(array $setlIds, $channel)
+    {
+        $merchantId = $this->manager->merchant->getAttributeWithTableName(M\Entity::ID);
+
+        $settlementMerchantId = $this->getAttributeWithTableName(Settlement\Entity::MERCHANT_ID);
+        $settlementId = $this->getAttributeWithTableName(Settlement\Entity::ID);
+
+        $cols = $this->getAttributeWithTableName('*');
+
+        $setls = $this->newQuery()
+                      ->select($cols)
+                      ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
+                      ->where(Entity::STATUS, '=', Status::FAILED)
+                      ->whereIn($settlementId, $setlIds)
+                      ->where(M\Entity::HOLD_FUNDS, '=', 0)
+                      ->where(Entity::CHANNEL, '=', $channel)
+                      ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
+                      ->get();
+
+        foreach ($setls as $setl)
+        {
+            assert(in_array($setl->getId(), $setlIds));
+        }
+
+        return $setls;
+    }
 
     public function getSettlementWithFeesAsNullOrZero()
     {
@@ -26,7 +62,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-
     public function getSettlementWithServiceTaxNullOrZero()
     {
         return $this->newQuery()
@@ -35,10 +70,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getSettlementsByBatchSettlementId($batchSettlementId)
+    public function getSettlementsByBatchFundTransferId($batchFundTransferId)
     {
         return $this->newQuery()
-                    ->where(Entity::BATCH_SETTLEMENT_ID, '=', $batchSettlementId)
+                    ->where(Entity::BATCH_FUND_TRANSFER_ID, '=', $batchFundTransferId)
                     ->get();
     }
 

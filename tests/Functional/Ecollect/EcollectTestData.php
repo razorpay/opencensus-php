@@ -24,8 +24,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid'   => true,
-                'message' => null,
+                'valid'          => true,
+                'message'        => null,
+                'transaction_id' => 'vba_1234',
             ],
         ],
     ],
@@ -40,7 +41,7 @@ return [
                 'payer_account'  => '765432346787812',
                 'payer_ifsc'     => 'IFSC0001234',
                 'mode'           => 'neft',
-                'transaction_id' => 'vba_1234',
+                'transaction_id' => 'vba_2345',
                 'time'           => 1484155440,
                 'amount'         => 5000000,
                 'description'    => 'NEFT payment of 50,000 rupees',
@@ -48,8 +49,34 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid'   => true,
-                'message' => null,
+                'valid'          => true,
+                'message'        => null,
+                'transaction_id' => 'vba_2345',
+            ],
+        ],
+    ],
+
+    'testEcollectValidateDuplicateUtr' => [
+        'request' => [
+            'url' => '/ecollect/validate',
+            'method' => 'post',
+            'content' => [
+                'payee_account'  => 'RAZORP1234567890',
+                'payee_ifsc'     => 'IFSC0009876',
+                'payer_account'  => '765432346787812',
+                'payer_ifsc'     => 'IFSC0001234',
+                'mode'           => 'neft',
+                'transaction_id' => 'vba_duplicate',
+                'time'           => 1484155440,
+                'amount'         => 5000000,
+                'description'    => 'NEFT payment of 50,000 rupees',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid'          => false,
+                'message'        => 'Duplicate UTR received',
+                'transaction_id' => 'vba_duplicate',
             ],
         ],
     ],
@@ -64,7 +91,7 @@ return [
                 'payer_account'  => '765432346787812',
                 'payer_ifsc'     => 'IFSC0001234',
                 'mode'           => 'neft',
-                'transaction_id' => 'vba_1234',
+                'transaction_id' => 'vba_3456',
                 'time'           => 1484155440,
                 'amount'         => 5000000,
                 'description'    => 'NEFT payment of 50,000 rupees',
@@ -72,8 +99,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid'   => false,
-                'message' => 'Invalid account number',
+                'valid'          => false,
+                'message'        => 'Invalid account number',
+                'transaction_id' => 'vba_3456',
             ],
         ],
     ],
@@ -88,7 +116,7 @@ return [
                 'payer_account'  => '765432346787812',
                 'payee_ifsc'     => 'IFSC0001234',
                 'mode'           => 'neft',
-                'transaction_id' => 'vba_1234',
+                'transaction_id' => 'vba_4567',
                 'time'           => 1484155440,
                 'amount'         => 5000000,
                 'description'    => 'NEFT payment of 50,000 rupees',
@@ -120,14 +148,18 @@ return [
                 'payer_account'  => '765432346787812',
                 'payer_ifsc'     => 'IFSC0001234',
                 'mode'           => 'neft',
-                'transaction_id' => 'vba_1234',
+                'transaction_id' => 'vba_5678',
                 'time'           => 1484155440,
                 'amount'         => 5000000,
                 'description'    => 'NEFT payment of 50,000 rupees',
             ],
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'success'        => true,
+                'message'        => null,
+                'transaction_id' => 'vba_5678',
+            ],
         ],
     ],
 

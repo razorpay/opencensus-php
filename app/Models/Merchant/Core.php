@@ -39,6 +39,9 @@ class Core extends Base\Core
             $this->repo->sync($merchant, 'groups', $input['groups']);
         }
 
+        // Updating the existing customer info and setting activated to false
+        $this->app['drip']->sendDripMerchantInfo(Merchant\Action::CREATED, $merchant);
+
         return $merchant;
     }
 
@@ -127,7 +130,10 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
-            $input);
+            [
+                'merchant_id' => $merchant->getId(),
+                'input'       => $input,
+            ]);
 
         return $merchant;
     }
@@ -166,7 +172,10 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
-            $input);
+            [
+                'merchant_id' => $merchant->getId(),
+                'input'       => $input,
+            ]);
 
         $merchant->edit($input, 'editConfig');
 
