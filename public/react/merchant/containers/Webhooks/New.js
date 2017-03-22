@@ -8,10 +8,11 @@ import ModalHeader from 'rzp/ui/ModalHeader'
 import { required } from 'rzp/utils/validators'
 import { saveWebhook } from 'merchant/modules/webhooks'
 import * as ModalActions from 'merchant/modules/modals'
+import * as NotificationsActions from 'merchant/modules/notifications'
 
 @connect(
   null,
-  { saveWebhook, ...ModalActions }
+  { saveWebhook, ...ModalActions, ...NotificationsActions }
 )
 @reduxForm({
   form: 'newWebhook',
@@ -35,6 +36,10 @@ export default class AddWebhook extends Component {
   save(props) {
     return this.props.saveWebhook(props).then((webhook) => {
       this.props.onSave(webhook)
+      this.props.showNotification({
+        type: 'success',
+        message: 'Webhook saved successfully'
+      })
     }).catch((err) => {
       this.setState({
         errors: err.errors
