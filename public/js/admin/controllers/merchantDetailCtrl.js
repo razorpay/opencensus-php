@@ -12,8 +12,7 @@ app.controller('MerchantDetailCtrl', [
   '$upload',
   'organization',
   'displayValue',
-  '$filter',
-  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, admin, $upload, organization, displayValue, $filter) {
+  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, admin, $upload, organization, displayValue) {
     admin.identity().then(function (data) {
       $scope.admin = data;
     });
@@ -79,69 +78,6 @@ app.controller('MerchantDetailCtrl', [
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
-      });
-    };
-
-    $scope.getMethodIconClass = function (method) {
-      var classes = {
-        amex: 'fa-cc-amex',
-        debit_card: 'fa-credit-card-alt',
-        credit_card: 'fa-credit-card-alt',
-        netbanking: 'fa-university',
-        emi: 'fa-calculator',
-      };
-
-      var def = 'fa-money';
-
-      return (classes[method] ? classes[method] : def);
-    };
-
-    $scope.getMethodLabel = function (method) {
-      var labels = {
-        payumoney: 'PayUMoney',
-        jiomoney: 'Jio Money',
-        upi: 'UPI',
-        airtelmoney: 'Airtel Money',
-        emi: 'EMI',
-        openwallet: 'Open Wallet'
-      };
-
-      var def = $filter('titlecase')(method);
-
-      return (labels[method] ? labels[method] : def);
-    };
-
-    // Returns sorted method keys
-    $scope.sortMethods = function(methods) {
-
-      if (typeof methods === 'undefined') {
-        return {};
-      }
-
-      // Wallets are given a weight of 1 by default
-      // and we sort in descending order
-      var weights = {
-        'card': 4,
-        'credit_card': 3,
-        'debit_card': 3,
-        'upi': 2,
-        'netbanking': 2,
-        'amex': 2,
-        'emi': 2,
-        'openwallet': 2,
-        'paytm': -10
-      };
-
-      // First drop any extra non-boolean fields
-      // like merchant_id and banks
-      return Object.keys(methods).filter(function(m) {
-        return (typeof methods[m] === 'boolean');
-      }).sort(function(m1, m2) {
-        // Then sort it by the weights table above
-        var w1 = weights[m1] ? weights[m1] : 1;
-        var w2 = weights[m2] ? weights[m2] : 1;
-
-        return w2 - w1;
       });
     };
 

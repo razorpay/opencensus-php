@@ -408,17 +408,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    /**
-     * This route returns the same response as `get_activation_details`
-     * @param  string $id
-     */
-    public function getMerchantActivationDetails($id)
-    {
-        list($error, $data) = (new Admin\Service)->fetchMerchantActivationDetails($id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getEntityFeatures($entityId)
     {
         list($error, $data) = (new Admin\Service)->fetchEntityFeatures($entityId);
@@ -445,24 +434,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postEditMerchant($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postUpdateMerchantDetails(string $id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->updateMerchantDetails($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postSaveActivationFile(string $merchantId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->saveActivationFile($merchantId, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -943,16 +914,6 @@ class AdminController extends Controller
     {
         $company = new Admin\Company($cin);
         return AppResponse::jsonResponse([], $company->fetch());
-    }
-
-    public function verifySignatoryPAN(string $cin, string $pan)
-    {
-        $company = new Admin\Company($cin);
-        $info = $company->verifyDirector($pan);
-
-        $error = $info['match'] === true ? null : ['Not Found'];
-
-        return AppResponse::jsonResponse($error, $info);
     }
 
     public function getMerchantBankAccount($merchantId)

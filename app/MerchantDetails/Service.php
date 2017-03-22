@@ -221,7 +221,7 @@ class Service extends Base\Service
         //
         if (($this->merchant->isActive()) and ($step === $bankStep))
         {
-            return ["Bank account updation not allowed after account is activated"];
+            return ["Bank account updation not allowed after account is updated"];
         }
 
         $operation = 'step' . $step;
@@ -328,7 +328,11 @@ class Service extends Base\Service
         {
             $data = Entity::getFileUploadData($input);
 
-            $this->uploadFileToAPI($data);
+            $params = [
+                $data['field'] => $data['file']
+            ];
+
+            $this->uploadFileToAPI($params);
         }
 
         return $error;
@@ -457,12 +461,8 @@ class Service extends Base\Service
         return [$error, $merchantDetails];
     }
 
-    // TODO: Move this from MerchantDetails/Core
-    // @see https://razorpay.slack.com/archives/tech_dashboard/p1489045480941705
     public function updateMerchantByAdminOnAPI(array $input, $merchantId)
     {
-        $input = $this->unsetExtraValues($input);
-
         $this->setApiCredentials();
 
         list($error, $merchantDetails) = $this->api
@@ -502,11 +502,25 @@ class Service extends Base\Service
 
     protected function unsetExtraValues(array $input)
     {
+        $fieldsToDrop = [
+            '1', '2', '3', '4', '5', '6',
+            'steps_finished', 'submitted', 'submitted_at', 'created_at', 'updated_at', 'verification',
+            'can_submit', 'bank_account_number_confirmation', 'locked', 'activation_progress',
+            'agree_terms', 'files', 'business_proof_url', 'business_operation_proof_url',
+            'business_pan_url', 'address_proof_url', 'promoter_proof_url', 'promoter_pan_url', 'promoter_address_url',
+            'activated'
+        ];
+
         $dropIfEmpty = [
             'transaction_volume',
             'transaction_value',
             'business_international',
         ];
+
+        foreach ($fieldsToDrop as $key)
+        {
+            unset($input[$key]);
+        }
 
         foreach ($dropIfEmpty as $key)
         {
