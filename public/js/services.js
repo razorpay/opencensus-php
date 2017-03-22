@@ -50,7 +50,7 @@ angular.module('app.services', [])
           if (data.data.steps_finished) {
             _identity.activation_progress = data.data.activation_progress;
           }
-          if(_identity.pre_signup.length === 0){
+          if((!_identity.user.merchants.length) || (_identity.pre_signup.length === 0)){
                _isPreSignupDone = true;
           }
           else{

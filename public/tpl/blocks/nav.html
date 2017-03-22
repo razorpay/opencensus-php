@@ -49,12 +49,21 @@
         <b class="badge bg-success dk pull-right ng-binding">new</b>
       </a>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp support" ui-sref="app.settlements.list" ui-sref-active="active">
-      <a id="settlementsNav" ui-sref="app.settlements.list" ui-sref-active="active">
+
+    <li ng-show="merchant"
+      not-my-role="sellerapp support"
+      ui-sref="app.settlements.list"
+      ng-class="{active: ('app.settlements.list' | includedByState) || ('app.settlements.detail' | includedByState)}"
+    >
+      <a id="settlementsNav"
+        ui-sref="app.settlements.list"
+        ng-class="{active: ('app.settlements.list' | includedByState) || ('app.settlements.detail' | includedByState)}"
+      >
         <i class="fa  fa-check-square-o icon text-success"></i>
         <span>Settlements</span>
       </a>
     </li>
+
     <!--
     <li>
       <a id="transactionsNav" ui-sref="app.transactions.list">

@@ -2,15 +2,17 @@
 
 const gulp = require('gulp');
 const webpack = require('webpack');
-const through = require('through');
+const through = require('through2').obj;
 const plumber = require('gulp-plumber');
 const run = require('run-sequence');
 const lazypipe = require('lazypipe');
 const dot = require('dot');
+
 const stylus = require('gulp-stylus');
-const cssnano = require('gulp-cssnano');
+const autoprefixer = require('autoprefixer-stylus');
+const csso = require('csso-stylus');
 const bootstrap = require('bootstrap-styl');
-const autoprefixer = require('gulp-autoprefixer');
+
 const concatMulti = require('gulp-concat-multi');
 const uglify = require('gulp-uglify');
 const rev = require('gulp-rev');
@@ -37,33 +39,43 @@ function interpolate(template, pattern) {
   })
 }
 
-function revReference(file) {
+function revReference(file, enc, cb) {
   var list = JSON.parse(String(file.contents))
   for (let i in list) {
     revMap[i] = list[i]
   }
-  this.emit('data', file)
+  this.push(file);
+  cb();
 }
 
-const stylus2css = lazypipe()
-  .pipe(plumber)
-  .pipe(stylus, {
-    'include css': true,
-    use: bootstrap()
-  });
-
+function handleError(err) {
+  console.log(err.toString());
+  this.emit('end');
+}
 
 gulp.task('css', ()=> {
   gulp.src('public/css/style.styl')
-    .pipe(stylus2css())
+    .pipe(plumber({errorHandler: handleError}))
+    .pipe(stylus({
+      'include css': true,
+      use: [
+        bootstrap()
+      ]
+    }))
     .pipe(gulp.dest('public/css/generated'));
 });
 
 gulp.task('css:prod', ()=> {
   return gulp.src('public/css/style.styl')
-    .pipe(stylus2css())
-    .pipe(cssnano())
-    .pipe(autoprefixer())
+    .pipe(stylus({
+      'include css': true,
+      compress: true,
+      use: [
+        bootstrap(),
+        autoprefixer(),
+        csso()
+      ]
+    }))
     .pipe(rev())
     .pipe(gulp.dest('public/css/generated'))
     .pipe(rev.manifest())
@@ -119,6 +131,8 @@ const concatJs = lazypipe()
     'js/generated/admin.js': [
       'public/js/admin/**/*.js',
       'public/js/*.js',
+      // We share the merchant activation controller code
+      'public/js/merchant/controllers/activationCtrl.js',
       'node_modules/moment/min/moment.min.js'
     ]
   });
@@ -140,10 +154,11 @@ gulp.task('js:prod', () => {
 
 gulp.task('tmpl', ()=> {
   gulp.src('resources/views/**/*.blade.php.tmpl')
-    .pipe(through(function(file) {
+    .pipe(through(function(file, enc, cb) {
       file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1')
       file.contents = new Buffer(interpolate(String(file.contents)))
-      this.emit('data', file)
+      this.push(file);
+      cb();
     }))
     .pipe(gulp.dest('resources/views'));
 });
@@ -154,9 +169,10 @@ gulp.task('dev', ()=> {
 
 gulp.task('reactRevReplace', () => {
   return gulp.src(`public/${revMap['js/generated/merchant.js']}`)
-    .pipe(through(function(file) {
+    .pipe(through(function(file, enc, cb) {
       file.contents = new Buffer(interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g))
-      this.emit('data', file)
+      this.push(file);
+      cb();
     }))
     .pipe(gulp.dest('public/js/generated'));
 });
@@ -175,7 +191,21 @@ const runWebpack = (webpackConfig, cb) => {
 
 gulp.task('webpack', (cb) => {
   runWebpack(Object.create(webpackConfig), cb);
-});
+})
+
+var webpackCompiler = null;
+gulp.task('webpack:watch', (cb)=> {
+  if (!webpackCompiler) {
+    webpackCompiler = webpack(Object.assign({}, webpackConfig));
+  }
+  webpackCompiler.run(function(err, stats) {
+    console.log(stats.toString({
+      colors: true,
+      chunks: false
+    }))
+    cb();
+  })
+})
 
 gulp.task('webpack:prod', (cb) => {
   let config = Object.create(webpackConfig);
@@ -185,7 +215,6 @@ gulp.task('webpack:prod', (cb) => {
         NODE_ENV: JSON.stringify('production')
       }
     }),
-    new webpack.optimize.DedupePlugin(),
     new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false
@@ -213,7 +242,7 @@ gulp.task('dev', (cb) => {
 });
 
 gulp.task('dev:webpack', ['dev:setENV'], (cb) => {
-  run('webpack', 'dev', cb);
+  run('webpack:watch', 'dev', cb);
 });
 
 gulp.task('watch:full', ['dev:webpack'], () => {
