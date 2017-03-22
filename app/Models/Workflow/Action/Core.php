@@ -16,6 +16,10 @@ class Core extends Base\Core
 
         $action->generateId();
 
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $input[Entity::ORG_ID] = $admin->getOrgId();
+
         $action->build($input);
 
         $this->repo->transactionOnLiveAndTest(function() use($action) {
@@ -108,12 +112,29 @@ class Core extends Base\Core
         return $action;
     }
 
-    public function updateCurrentLevelIfNeeded($level = null)
+    public function updateCurrentLevelIfNeeded(Entity $action)
     {
+        //
         // get all the checkers in the current level
         // fetch the reviewer count in the current level of steps
         // if checkers === reviewer count, update the current level
+        //
 
-        // Recursively do it till the level update it not needed
+        $level = $action->getCurrentLevel();
+
+        $requiredCheckers = $this->repo->workflow_step->getNumCheckerByLevel(
+            $level, $action->getWorkflowId());
+
+        $numCheckers = $this->repo->action_checker->fetchCountByActionId(
+            $action->getId());
+
+        // If all the checkers in the same level have given their review,
+        // increment the level
+        if ($numCheckers === $requiredCheckers)
+        {
+            $action->incrementCurrentLevel();
+
+            $this->repo->saveOrFail($action);
+        }
     }
 }

@@ -25,6 +25,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchCountByActionId()
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACTION_ID, '=', $actionId)
+                    ->whereNotNull(Entity::APPROVED)
+                    ->count();
+    }
+
     public function findByIdAndActionId($checkerId, $actionId)
     {
         Action\Entity::verifyIdAndSilentlyStripSign($actionId);

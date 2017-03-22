@@ -26,4 +26,24 @@ class Repository extends Base\Repository
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->sum(Entity::REVIEWER_COUNT);
     }
+
+    public function findByLevelAndWorkflowId(
+        string $level,
+        string $workflowId,
+        $columns = array('*'))
+    {
+        return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                    ->where(Entity::LEVEL, '=', $level)
+                    ->get($columns);
+
+    }
+
+    public function getNumCheckersByLevel(string $level, string $workflowId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::LEVEL, '=', $level)
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                    ->sum(Entity::REVIEWER_COUNT);
+    }
 }
