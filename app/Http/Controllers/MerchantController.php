@@ -608,7 +608,16 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Detail\Service)->uploadActivationFile($input);
+        $response = (new Detail\Service)->uploadActivationFileMerchant($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postUploadActivationFileAdmin($merchantId)
+    {
+        $input = Request::all();
+
+        $response = (new Detail\Service)->uploadActivationFileAdmin($merchantId, $input);
 
         return ApiResponse::json($response);
     }

@@ -10,6 +10,7 @@ use RZP\Models\Order;
 use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
 
@@ -80,11 +81,13 @@ trait Capture
         }
         catch (Exception\RecoverableException $e)
         {
-            $this->trace->error(
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 [
                     'auto_capture' => true,
-                    'payment_id' => $payment->getPublicId()
+                    'payment_id'   => $payment->getPublicId(),
                 ]);
 
             $customProperties = [

@@ -377,7 +377,7 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+        $transaction = $this->repo->transaction->findByEntityId($payment->getId(), $this->merchant, true);
 
         return $transaction->toArrayPublic();
     }
