@@ -179,12 +179,17 @@ gulp.task('webpack', (cb) => {
   runWebpack(Object.create(webpackConfig), cb);
 })
 
+var webpackCompiler = null;
 gulp.task('webpack:watch', ()=> {
-  webpack(Object.assign({}, webpackConfig, {watch: true}), (err, stats) => {
-    console.log(stats.toString({
-      colors: true
-    }))
-  })
+  if (!webpackCompiler) {
+    webpackCompiler = webpack(Object.assign({}, webpackConfig));
+    const watching = webpackCompiler.watch({}, (err, stats) => {
+      console.log(stats.toString({
+        colors: true,
+        chunks: false
+      }))
+    });
+  }
 })
 
 gulp.task('webpack:prod', (cb) => {
