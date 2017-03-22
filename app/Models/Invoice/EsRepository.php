@@ -2,12 +2,11 @@
 
 namespace RZP\Models\Invoice;
 
-use RZP\Models\Base\EsRepository as BaseEsRepository;
-use RZP\Models\Base\EsMapping;
+use RZP\Models\Base\Es;
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 
-class EsRepository extends BaseEsRepository
+class EsRepository extends Es\Repository
 {
     protected static $table = Table::INVOICE;
 
@@ -50,12 +49,12 @@ class EsRepository extends BaseEsRepository
     protected function setFieldMappings()
     {
         $this->fieldMappings = [
-            Entity::CUSTOMER_NAME    => EsMapping::$textFieldMapping,
-            Entity::CUSTOMER_CONTACT => EsMapping::$textFieldMapping,
-            Entity::CUSTOMER_EMAIL   => EsMapping::$textFieldMapping,
-            Entity::DESCRIPTION      => EsMapping::$textFieldMapping,
-            Entity::TERMS            => EsMapping::$textFieldMapping,
-            Entity::NOTES            => EsMapping::$objectFieldMapping,
+            Entity::CUSTOMER_NAME    => Es\Mapping::$textFieldMapping,
+            Entity::CUSTOMER_CONTACT => Es\Mapping::$textFieldMapping,
+            Entity::CUSTOMER_EMAIL   => Es\Mapping::$textFieldMapping,
+            Entity::DESCRIPTION      => Es\Mapping::$textFieldMapping,
+            Entity::TERMS            => Es\Mapping::$textFieldMapping,
+            Entity::NOTES            => Es\Mapping::$objectFieldMapping,
         ];
     }
 }

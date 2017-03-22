@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Models\Base\Traits\Es;
 
 /**
  * Converts es results (array) back to model collections.
@@ -8,7 +8,7 @@ namespace RZP\Models\Base;
  * This ensures that the interface to repo's fetch() is intact and returns
  * actual model collection in all cases (searched from es or MySQL).
  */
-trait EsHydrator
+trait Hydrator
 {
     protected function hydrate(array $items)
     {
@@ -64,7 +64,7 @@ trait EsHydrator
     {
         if (array_key_exists('notes', $item))
         {
-            $item['notes'] = json_encode($item['notes']);
+            $item['notes'] = json_encode($item['notes'], JSON_FORCE_OBJECT);
         }
     }
 }

@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Models\Base\Es;
 
-class EsMapping
+class Mapping
 {
     //
     // Default mappings for different types of fields

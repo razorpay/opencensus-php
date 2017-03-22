@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 
-class EsRepository extends Base\EsRepository
+class EsRepository extends Base\Es\Repository
 {
 
     //
@@ -85,12 +85,12 @@ class EsRepository extends Base\EsRepository
     // public function setFieldMappings()
     // {
     //     $this->fieldMappings = [
-    //         Entity::NAME                                           => Base\EsMapping::$textFieldMapping,
-    //         Entity::EMAIL                                          => Base\EsMapping::$textFieldMapping,
-    //         Entity::ACTIVATED                                      => Base\EsMapping::$booleanFieldMapping,
+    //         Entity::NAME                                           => Base\Es\Mapping::$textFieldMapping,
+    //         Entity::EMAIL                                          => Base\Es\Mapping::$textFieldMapping,
+    //         Entity::ACTIVATED                                      => Base\Es\Mapping::$booleanFieldMapping,
 
-    //         E::MERCHANT_DETAIL . '.' . Detail\Entity::CREATED_AT   => Base\EsMapping::$dateFieldMapping,
-    //         E::MERCHANT_DETAIL . '.' . Detail\Entity::SUBMITTED_AT => Base\EsMapping::$dateFieldMapping,
+    //         E::MERCHANT_DETAIL . '.' . Detail\Entity::CREATED_AT   => Base\Es\Mapping::$dateFieldMapping,
+    //         E::MERCHANT_DETAIL . '.' . Detail\Entity::SUBMITTED_AT => Base\Es\Mapping::$dateFieldMapping,
     //     ];
     // }
 

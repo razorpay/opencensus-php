@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Models\Base\Es;
 
 use App;
 use RZP\Exception;
@@ -10,10 +10,10 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
 
-class EsRepository extends \Razorpay\Spine\Repository
+class Repository extends \Razorpay\Spine\Repository
 {
-    use EsQuery;
-    use EsHydrator;
+    use Base\Traits\Es\Query;
+    use Base\Traits\Es\Hydrator;
 
     protected $esDao;
     protected $indexName;
@@ -61,7 +61,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->setFieldMappings();
 
-        $this->esDao = new EsDao();
+        $this->esDao = new Base\EsDao();
     }
 
     /**
@@ -220,9 +220,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     public function createIndexIfNotExists()
     {
-        $settings = EsMapping::$indexSettings;
+        $settings = Mapping::$indexSettings;
 
-        $mappings = EsMapping::mappings($this->fields, $this->fieldMappings);
+        $mappings = Mapping::mappings($this->fields, $this->fieldMappings);
 
         $this->esDao->createIndexIfNotExistsInDefaultHost($this->indexName, $settings, $mappings);
     }

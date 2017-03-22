@@ -1,8 +1,8 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Models\Base\Traits\Es;
 
-trait EsQuery
+trait Query
 {
     protected $index;
 
