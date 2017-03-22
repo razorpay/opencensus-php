@@ -277,16 +277,21 @@ class Validator extends Base\Validator
      */
     public function validateMerchantSpecificData()
     {
-        $merchant = $this->entity->merchant;
+        $invoice = $this->entity;
+        $merchant = $invoice->merchant;
 
-        $merchantId = $merchant->getId();
+        $this->validateMerchantHasKeys($merchant);
+        $this->validateMerchantIsNotFeeBearer($merchant, $invoice);
+    }
 
+    protected function validateMerchantHasKeys(Merchant\Entity $merchant)
+    {
         //
-        // Validates if merchant has api keys
-        // - This is being done because dashboard can create an invoice
-        // for the merchant even if the merchant has not generated
-        // any keys at all.
+        // Validates if merchant has API keys generated in advance before using
+        // invoices. This is done because hosted page (invoice payment) will
+        // break if Invoice gets created without merchant having API keys.
         //
+
         $keys = $merchant->keys->filter(
                     function($key, $index)
                     {
@@ -299,21 +304,28 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
                 null,
                 [
-                    'merchant_id' => $merchantId,
+                    'merchant_id' => $merchant->getId(),
                 ]);
         }
+    }
 
+    protected function validateMerchantIsNotFeeBearer(
+        Merchant\Entity $merchant,
+        Entity $invoice)
+    {
         //
         // If merchant is a customer-fee-bearer client, for now don't allow
         // him to create invoices of type=invoice.
         //
-        if ($merchant->isFeeBearerCustomer() and $invoice->isTypeInvoice())
+
+        if (($merchant->isFeeBearerCustomer() === true) and
+            ($invoice->isTypeInvoice() === true))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVOICE_DISABLED_FOR_CUST_FEE_BEARER_MERCHANTS,
                 null,
                 [
-                    'merchant_id' => $merchantId,
+                    'merchant_id' => $merchant->getId(),
                 ]);
         }
     }

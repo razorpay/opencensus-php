@@ -34,9 +34,8 @@ class Repository extends Base\Repository
     ];
 
     /**
-     * - Fetches invoice entity for given public id and merchant.
-     * - Follows by a check if the invoice's user id is same as the passed user
-     *   id, failing which it throws a 403.
+     * - Fetches invoice entity for given public id and merchant followed by
+     *   and access check for user info (userId and userRole) passed.
      *
      * @param string          $id
      * @param Merchant\Entity $merchant
@@ -54,8 +53,12 @@ class Repository extends Base\Repository
     {
         $invoice = $this->findByPublicIdAndMerchant($id, $merchant);
 
+        //
+        // If userId is set and userRole is sellerapp we throw 403 if invoice's
+        // user id is not same as passed userId.
+        //
         if (($userId !== null) and
-            ($userRole === 'sellerapp') and
+            ($userRole === Constants::SELLERAPP_ROLE) and
             ($invoice->getUserId() !== $userId))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);

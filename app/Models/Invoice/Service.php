@@ -10,6 +10,9 @@ class Service extends Base\Service
 {
     protected $core;
 
+    // This is dashboard's userId and userRole. Used to support access control
+    // for one specific use case of sellerapp.
+    // Ref: https://github.com/razorpay/api/issues/2397
     protected $userId   = null;
     protected $userRole = null;
 
@@ -24,8 +27,12 @@ class Service extends Base\Service
 
     public function create($input)
     {
-        // Appends USER_ID in create input if available.
-        if ($this->userId !== null) { $input[Entity::USER_ID] = $this->userId; }
+        // Appends USER_ID in create input if available in headers via dashboard.
+        // We'd always want to capture this info.
+        if ($this->userId !== null)
+        {
+            $input[Entity::USER_ID] = $this->userId;
+        }
 
         $invoice = $this->core->create($input, $this->merchant);
 
@@ -40,13 +47,16 @@ class Service extends Base\Service
                                             $this->userId,
                                             $this->userRole);
 
-
         return $invoice->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
     {
-        if (($this->userId !== null) and ($this->userRole === 'sellerapp'))
+        // Appends USER_ID in query input if userId available in headers via
+        // dashboard given userRole is sellerapp so only invoices created by
+        // that user is visible in fetched list.
+        if (($this->userId !== null)
+            and ($this->userRole === Constants::SELLERAPP_ROLE))
         {
             $input[Entity::USER_ID] = $this->userId;
         }
@@ -266,7 +276,8 @@ class Service extends Base\Service
     }
 
     /**
-     * Ref: https://github.com/razorpay/api/issues/2397
+     * Sets userId and userRole members of this class by reading values from
+     * request headers sent from dashboard.
      *
      * @return null
      */
