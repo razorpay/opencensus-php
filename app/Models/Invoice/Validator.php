@@ -284,12 +284,25 @@ class Validator extends Base\Validator
         $this->validateMerchantIsNotFeeBearer($merchant, $invoice);
     }
 
+    /**
+     * Validates if merchant has API keys generated in advance before using
+     * invoices.
+     * This is done because hosted page (invoice payment) will not load
+     * and will throw an exception if Invoice gets created without
+     * merchant having API keys.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @throws BadRequestException
+     */
     protected function validateMerchantHasKeys(Merchant\Entity $merchant)
     {
         //
         // Validates if merchant has API keys generated in advance before using
-        // invoices. This is done because hosted page (invoice payment) will
-        // break if Invoice gets created without merchant having API keys.
+        // invoices.
+        // This is done because hosted page (invoice payment) will not load
+        // and will throw an exception if Invoice gets created without
+        // merchant having API keys.
         //
 
         $keys = $merchant->keys->filter(
@@ -322,7 +335,7 @@ class Validator extends Base\Validator
             ($invoice->isTypeInvoice() === true))
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_DISABLED_FOR_CUST_FEE_BEARER_MERCHANTS,
+                ErrorCode::BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER,
                 null,
                 [
                     'merchant_id' => $merchant->getId(),

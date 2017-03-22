@@ -34,8 +34,8 @@ class Repository extends Base\Repository
     ];
 
     /**
-     * - Fetches invoice entity for given public id and merchant followed by
-     *   and access check for user info (userId and userRole) passed.
+     * Fetches invoice entity for given public id and merchant, followed by
+     * an access check for user info (userId and userRole) passed.
      *
      * @param string          $id
      * @param Merchant\Entity $merchant

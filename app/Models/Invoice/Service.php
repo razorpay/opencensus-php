@@ -55,8 +55,8 @@ class Service extends Base\Service
         // Appends USER_ID in query input if userId available in headers via
         // dashboard given userRole is sellerapp so only invoices created by
         // that user is visible in fetched list.
-        if (($this->userId !== null)
-            and ($this->userRole === Constants::SELLERAPP_ROLE))
+        if (($this->userId !== null) and
+            ($this->userRole === Constants::SELLERAPP_ROLE))
         {
             $input[Entity::USER_ID] = $this->userId;
         }
