@@ -105,7 +105,7 @@ class NetbankingFederalGatewayTest extends TestCase
     {
         $this->testAuthorizeFailed();
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -131,7 +131,7 @@ class NetbankingFederalGatewayTest extends TestCase
      */
     public function testAuthSuccessVerifyFailed()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->testPayment();
 
@@ -145,6 +145,38 @@ class NetbankingFederalGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment['id']);
             });
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals('N', $gatewayPayment['status']);
+
+        // The BID was never saved
+        $this->assertEquals(true, $gatewayPayment['received']);
+    }
+
+    public function testAuthSuccessVerifyBrokenFailed()
+    {
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->testPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockFailedVerifyBrokenResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals('N', $gatewayPayment['status']);
+
+        // The BID was never saved
+        $this->assertEquals(true, $gatewayPayment['received']);
     }
 
     public function testExcelRefundFileGeneration()
@@ -297,6 +329,17 @@ class NetbankingFederalGatewayTest extends TestCase
                 $content = '<HTML>
                                 <BODY> N </BODY>
                             </HTML>';
+            }
+        });
+    }
+
+    protected function mockFailedVerifyBrokenResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = '||||';
             }
         });
     }
