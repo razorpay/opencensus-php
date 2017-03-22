@@ -199,31 +199,3 @@ app.controller('EntityListCtrl', [
 
   }
 ])
-.controller('settlementBreakupModalCtrl', [
-  '$scope',
-  '$modalInstance',
-  '$http',
-  'settlement_id',
-  'baseURL',
-  function($scope, $modalInstance, $http, settlement_id, baseURL) {
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
-
-    $scope.settlement_id = settlement_id;
-
-    // TODO: Caching
-
-    var request = $http.get(baseURL + '/' + settlement_id + '/details');
-
-    request.success(function (data) {
-
-      if (data.success) {
-        $scope.breakupDetails = data.data.items;
-      }
-
-    }).error(function () {
-      $scope.alerts.addAlert('danger', null, true);
-    });
-  }
-]);
