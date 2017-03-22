@@ -19,10 +19,13 @@ class Server extends Base\Mock\Server
 
         $this->content($response, 'authorize');
 
-        $callbackUrl = $input[RequestFields::RETURN_URL] . '?' .
-                        http_build_query($response);
+        $request = [
+            'url' => $input[RequestFields::RETURN_URL],
+            'content' => $response,
+            'method' => 'post',
+        ];
 
-        return $callbackUrl;
+        return $this->makePostResponse($request);
     }
 
     public function verify($input)
