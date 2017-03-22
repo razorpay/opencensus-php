@@ -516,8 +516,14 @@ class CybersourceGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertNull($payment['captured_at']);
+        $this->assertNull($payment['transaction_id']);
         $this->assertEquals(false, $payment['auto_captured']);
         $this->assertEquals('authorized', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals(true, $order['authorized']);
     }
 
     // @todo: refactor
