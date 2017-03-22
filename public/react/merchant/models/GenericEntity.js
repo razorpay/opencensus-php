@@ -40,6 +40,36 @@ export default class GenericEntity extends Entity {
     })
   }
 
+  save() {
+    const Klass = this.constructor
+    let params = this.serialize()
+    let url = this.resourceUrl
+    let method = this.getResourceMethod()
+    let {
+      id = this.id,
+      ...bodyParams
+    } = params
+    let data = {
+      body: bodyParams,
+      route_name: this.getRouteName()
+    }
+
+    if (id) {
+      data.url_params = JSON.stringify({
+        '{id}': id
+      })
+    }
+
+    return ajax({
+      url,
+      method,
+      data,
+      appendModeInQueryParam: true,
+    }).then((response) => {
+      return new Klass(response.data)
+    })
+  }
+
   makeGenericAjaxCall(data) {
     return ajax(this.resourceUrl, {
       data,

@@ -10,9 +10,10 @@ import plansReducer from 'merchant/modules/plans'
 import customersReducer from 'merchant/modules/customers'
 import itemsReducer from 'merchant/modules/items'
 import ordersReducer from 'merchant/modules/orders/list'
-import orderReducer from 'merchant/modules/orders/details'
+import orderReducer from 'merchant/modules/orders/details''
 import settlementsReducer from 'merchant/modules/settlements/list'
 import settlementReducer from 'merchant/modules/settlements/details'
+import webhooksReducer from 'merchant/modules/webhooks
 
 export default combineReducers({
   form: formReducer,
@@ -29,4 +30,5 @@ export default combineReducers({
   order: orderReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
+  webhooks: webhooksReducer,
 })

@@ -48,7 +48,7 @@ var app = angular.module('app', [
       $state.go('500');
     });
 
-        
+
 
     $rootScope.tour = jqTourbusService;
   }
@@ -153,9 +153,9 @@ var app = angular.module('app', [
     }).state('app.activation', {
       url: '/activation',
       templateUrl: 'tpl/app_activation.html'
-    }).state('app.webhooks', {
-      url: '/webhooks',
-      templateUrl: 'tpl/app_webhooks.html'
+    // }).state('app.webhooks', {
+    //   url: '/webhooks',
+    //   templateUrl: 'tpl/app_webhooks.html'
     }).state('app.referrals', {
       url: '/referral',
       templateUrl: 'tpl/app_referrals.html'
@@ -229,8 +229,10 @@ var app = angular.module('app', [
         $scope.id = $stateParams.id;
       }],
       templateProvider: reactTemplateProvider('<settlement-details id="id" />')
+    })}).state('app.webhooks', {
+      url: '/webhooks',
+      templateProvider: reactTemplateProvider('<api-webhooks />')
     })
-
 
       //Guest Routes
     .state('access', {
