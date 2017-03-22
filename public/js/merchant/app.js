@@ -151,9 +151,6 @@ var app = angular.module('app', [
     }).state('app.activation', {
       url: '/activation',
       templateUrl: 'tpl/app_activation.html'
-    // }).state('app.webhooks', {
-    //   url: '/webhooks',
-    //   templateUrl: 'tpl/app_webhooks.html'
     }).state('app.referrals', {
       url: '/referral',
       templateUrl: 'tpl/app_referrals.html'
