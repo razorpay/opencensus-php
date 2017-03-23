@@ -56,23 +56,15 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponseData(array $input)
     {
-        if (isset($input[RequestFields::BANK_PAYMENT_ID]) === false)
-        {
-            $content = [
-                $input[RequestFields::PAYMENT_ID],
-                $input[RequestFields::ITEM_CODE],
-                99999999,
-                $input[RequestFields::AMOUNT],
-                'S',
-            ];
+        $content = [
+            $input[RequestFields::PAYMENT_ID],
+            $input[RequestFields::ITEM_CODE],
+            99999999,
+            $input[RequestFields::AMOUNT],
+            'S',
+        ];
 
-            return $this->getStringFromContent($content, '|');
-        }
-
-        return
-        '<HTML>
-            <BODY> Y </BODY>
-        </HTML>';
+        return $this->getStringFromContent($content, '|');
     }
 
     protected function getStringFromContent($content, $glue = '')

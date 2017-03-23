@@ -33,9 +33,29 @@ return [
 
     'testPaymentNetbankingEntity' => [
         'bank_payment_id' => '99999999',
-        'status'          => 'Y',
         'received'        => true,
         'bank'            => 'FDRL',
+        'status'          => 'Y',
+    ],
+
+    'testPaymentVerifySuccessEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        => true,
+        'bank'            => 'FDRL',
+        'status'          => 'S'
+    ],
+
+    'testPaymentFailedNetbankingEntity' => [
+        'bank_payment_id' => null,
+        'received'        => false,
+        'bank'            => 'FDRL',
+        'status'          => null
+    ],
+
+    'testVerifyFailedNetbankingEntity' => [
+        'received'        => true,
+        'bank'            => 'FDRL',
+        'status'          => 'N'
     ],
 
     'testTamperedPayment' => [

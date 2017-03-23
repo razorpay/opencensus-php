@@ -13,6 +13,5 @@ class Url
      * while making verify call
      */
     const AUTHORIZE     = '/corp/BANKAWAY?';
-    const VERIFY        = '/corp/BANKAWAY?';
-    const VERIFY_BROKEN = '/Verify/?';
+    const VERIFY        = '/Verify/?';
 }

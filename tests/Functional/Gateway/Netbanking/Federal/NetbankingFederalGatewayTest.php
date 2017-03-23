@@ -44,7 +44,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
     /**
      * Test a payment that was tampered with in the authorize step
-     * This case should throw PaymentVerificationException
+     * This case should throw PaymentVerificationException during verify broken
      */
     public function testTamperedPayment()
     {
@@ -62,9 +62,7 @@ class NetbankingFederalGatewayTest extends TestCase
         // Assert that we don't save any information into the netbanking entity
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals(null, $gatewayPayment['bank_payment_id']);
-        $this->assertEquals(false, $gatewayPayment['received']);
-        $this->assertEquals(null, $gatewayPayment['status']);
+        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
     }
 
     public function testAuthorizeFailed()
@@ -83,9 +81,7 @@ class NetbankingFederalGatewayTest extends TestCase
         // Assert that we don't save any information into the netbanking entity
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals(null, $gatewayPayment['bank_payment_id']);
-        $this->assertEquals(false, $gatewayPayment['received']);
-        $this->assertEquals(null, $gatewayPayment['status']);
+        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
     }
 
     public function testPaymentVerify()
@@ -98,7 +94,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
+        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
     public function testAuthFailedVerifySuccess()
@@ -118,11 +114,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals('S', $gatewayPayment['status']);
-
-        // The BID was never saved
-        $this->assertEquals(null, $gatewayPayment['bank_payment_id']);
-        $this->assertEquals(true, $gatewayPayment['received']);
+        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
     /**
@@ -148,35 +140,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals('N', $gatewayPayment['status']);
-
-        // The BID was never saved
-        $this->assertEquals(true, $gatewayPayment['received']);
-    }
-
-    public function testAuthSuccessVerifyBrokenFailed()
-    {
-        $data = $this->testData['testVerifyMismatch'];
-
-        $this->testPayment();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->mockFailedVerifyBrokenResponse();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment['id']);
-            });
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertEquals('N', $gatewayPayment['status']);
-
-        // The BID was never saved
-        $this->assertEquals(true, $gatewayPayment['received']);
+        $this->assertTestResponse($gatewayPayment, 'testVerifyFailedNetbankingEntity');
     }
 
     public function testExcelRefundFileGeneration()
@@ -321,19 +285,6 @@ class NetbankingFederalGatewayTest extends TestCase
     }
 
     protected function mockFailedVerifyResponse()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === 'verify')
-            {
-                $content = '<HTML>
-                                <BODY> N </BODY>
-                            </HTML>';
-            }
-        });
-    }
-
-    protected function mockFailedVerifyBrokenResponse()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
         {

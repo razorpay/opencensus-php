@@ -121,8 +121,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'gateway' => $this->gateway,
-                'request' => $request,
+                'gateway'    => $this->gateway,
+                'request'    => $request,
                 'payment_id' => $verify->input['payment']['id'],
             ]
         );
@@ -132,8 +132,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'gateway' => $this->gateway,
-                'response' => $response->body,
+                'gateway'    => $this->gateway,
+                'response'   => $response->body,
                 'payment_id' => $verify->input['payment']['id'],
             ]
         );
@@ -188,34 +188,13 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         // content will contain status as either Y or N or S
-        if (($content[ResponseFields::STATUS] === Status::YES) or
-            ($content[ResponseFields::STATUS] === Status::SUCCESS))
+        if ($content[ResponseFields::STATUS] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }
     }
 
     protected function getVerifyRequestData(array $input)
-    {
-        $payment = $this->repo->findByPaymentId($input['payment']['id'])
-                              ->first();
-
-        if (empty($payment[Base\Entity::BANK_PAYMENT_ID]) === true)
-        {
-            $data = $this->getVerifyBrokenData($input);
-        }
-        else
-        {
-            $data = $this->getRequestData($input);
-
-            $data[RequestFields::MODE]            = Action::VERIFY_MODE;
-            $data[RequestFields::BANK_PAYMENT_ID] = $payment[Base\Entity::BANK_PAYMENT_ID];
-        }
-
-        return $data;
-    }
-
-    protected function getVerifyBrokenData(array $input)
     {
         $data = [
             RequestFields::PAYEE_ID   => $this->getMerchantId(),
@@ -298,7 +277,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $attributes = $this->getVerifyAttributesToSave($content);
+        $attributes = $this->getVerifyAttributesToSave($content, $gatewayPayment);
 
         $gatewayPayment->fill($attributes);
 
@@ -307,42 +286,26 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributesToSave(array $content)
+    protected function getVerifyAttributesToSave(array $content, $gatewayPayment)
     {
-        if (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true)
-        {
-            $attributes = [
-                Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::PAYMENT_ID],
-            ];
-        }
-
         $attributes = [
             Base\Entity::RECEIVED => true,
             Base\Entity::STATUS   => $content[ResponseFields::STATUS]
         ];
 
+        //
+        // Saving BID from Verify response only if BID from authorize hasn't been saved
+        //
+        if ((isset($content[ResponseFields::BANK_PAYMENT_ID]) === true) and
+            (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true))
+        {
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_PAYMENT_ID];
+        }
+
         return $attributes;
     }
 
     protected function parseVerifyResponse(string $body)
-    {
-        //
-        // If body is XML
-        //
-        if ($body[0] === '<')
-        {
-            $status = (array) simplexml_load_string($body);
-
-            // Verify response is Y or N, so adding a key for the response
-            return [
-                ResponseFields::STATUS => trim($status[ResponseFields::VERIFY_BODY])
-            ];
-        }
-
-        return $this->parseVerifyBrokenResponse($body);
-    }
-
-    protected function parseVerifyBrokenResponse(string $body)
     {
         $values = explode('|', $body);
 
@@ -360,12 +323,12 @@ class Gateway extends Base\Gateway
             $values[4] = $values[4][0];
         }
 
-        $keys = $this->getVerifyBrokenResponseKeys();
+        $keys = $this->getVerifyResponseKeys();
 
         return array_combine($keys, $values);
     }
 
-    protected function getVerifyBrokenResponseKeys()
+    protected function getVerifyResponseKeys()
     {
         $keys = [
             ResponseFields::PAYMENT_ID,
@@ -376,32 +339,6 @@ class Gateway extends Base\Gateway
         ];
 
         return $keys;
-    }
-
-    /**
-     * Overriding parent class's method
-     */
-    protected function getUrlType($type)
-    {
-        $paymentId = $this->input['payment']['id'];
-
-        $gatewayPayment = $this->repo->findByPaymentId($paymentId);
-
-        //
-        // If the BID was never saved, verify request
-        // needs to go to a Verify Broken URL
-        //
-        if ((empty($gatewayPayment['bank_payment_id']) === true) and
-            ($this->action === Payment\Action::VERIFY))
-        {
-            $type = Constants::VERIFY_BROKEN;
-        }
-        else
-        {
-            $type = $this->action;
-        }
-
-        return $type;
     }
 
     protected function getMerchantId()
