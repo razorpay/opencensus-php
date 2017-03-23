@@ -214,8 +214,6 @@ class Repository extends \Razorpay\Spine\Repository
         $this->indexName = $indexName;
 
         $this->esDao->setIndexNameByValue($this->indexName);
-
-        return $this;
     }
 
     public function createIndexIfNotExists()
@@ -304,9 +302,9 @@ class Repository extends \Razorpay\Spine\Repository
         //
         // Else, gets the ids and queries db and returns the PublicCollection
         //
-        $ids = collect($hits)->pluck('id')->all();
+        $ids = array_column($hits, 'id');
 
-        $entities = $this->newQuery()->findMany($ids, array('*'));
+        $entities = $this->newQuery()->findMany($ids, ['*']);
 
         //
         // Raises and alert if there are entities in ES which are not in MySQL

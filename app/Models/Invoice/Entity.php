@@ -625,11 +625,6 @@ class Entity extends Base\PublicEntity
 
     protected function getPaymentIdAttribute()
     {
-        if (array_key_exists(self::PAYMENT_ID, $this->attributes))
-        {
-            return $this->attributes[self::PAYMENT_ID];
-        }
-
         $orderId = $this->getOrderId();
 
         //

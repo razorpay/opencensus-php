@@ -347,7 +347,10 @@ class EsDao
     {
         $indexExists = $this->es->indexExists(['index' => $indexName]);
 
-        if ($indexExists) return;
+        if ($indexExists)
+        {
+            return;
+        }
 
         $this->createIndex($indexName, $settings, $mappings);
     }

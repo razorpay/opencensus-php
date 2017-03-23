@@ -39,24 +39,24 @@ class EsSync extends Job implements ShouldQueue
 
     public function handle()
     {
-        $this->init();
-
-        $tracePayload = [
-            'job_attempts' => $this->attempts(),
-            'mode'         => $this->mode,
-            'action'       => $this->action,
-            'entity'       => $this->entity,
-            'id'           => $this->id,
-        ];
-
-        $this->trace->debug(TraceCode::ES_SAVE_REQUEST, $tracePayload);
-
-        $this->esRepo->setIndexName($this->mode . '_' . $this->entity);
-
-        $this->esRepo->createIndexIfNotExists();
-
         try
         {
+            $this->init();
+
+            $tracePayload = [
+                'job_attempts' => $this->attempts(),
+                'mode'         => $this->mode,
+                'action'       => $this->action,
+                'entity'       => $this->entity,
+                'id'           => $this->id,
+            ];
+
+            $this->trace->debug(TraceCode::ES_SAVE_REQUEST, $tracePayload);
+
+            $this->esRepo->setIndexName($this->mode . '_' . $this->entity);
+
+            $this->esRepo->createIndexIfNotExists();
+
             $this->sync();
 
             $this->delete();
@@ -66,7 +66,8 @@ class EsSync extends Job implements ShouldQueue
             $this->trace->traceException(
                 $e, Trace::ERROR, TraceCode::ES_SAVE_FAILED, $tracePayload);
 
-            if ($this->attempts() > Es\Repository::MAX_JOB_ATTEMPTS)
+            if (($e instanceof LogicException) or
+                ($this->attempts() > Es\Repository::MAX_JOB_ATTEMPTS))
             {
                 $this->delete();
             }
@@ -101,7 +102,10 @@ class EsSync extends Job implements ShouldQueue
 
         $this->esRepo = $this->repo->getEsRepoIfExistElseNull();
 
-        // Throw logic error if esRepo is null
+        if ($this->esRepo === null)
+        {
+            throw new LogicException('EsSync: Es repo not found.');
+        }
     }
 
     protected function sync()
@@ -123,8 +127,8 @@ class EsSync extends Job implements ShouldQueue
                 break;
 
             default:
-                // Throw logic exception
-                break;
+
+                throw new LogicException('EsSync: Invalid action.');
         }
     }
 }
