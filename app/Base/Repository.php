@@ -2,8 +2,10 @@
 
 namespace RZP\Base;
 
+use Config;
 use DB;
 use Illuminate\Support\Facades\App;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Models;
 use RZP\Models\Base\Es\Repository as EsRepository;
@@ -11,10 +13,12 @@ use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\EsSync;
 
 class Repository extends \Razorpay\Spine\Repository
 {
     use RepositoryFetch;
+    use DispatchesJobs;
 
     protected $app;
 
@@ -349,6 +353,20 @@ class Repository extends \Razorpay\Spine\Repository
         return $query->findOrFail($id);
     }
 
+    public function getEsRepoIfExistElseNull()
+    {
+        $esRepoClassPath = $this->getEsRepoClassPath();
+
+        if (class_exists($esRepoClassPath) === true)
+        {
+            return (new $esRepoClassPath);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
     protected function getFetchBetweenTimestampQuery($merchantId, $from, $to)
     {
         return $this->newQuery()
@@ -444,24 +462,25 @@ class Repository extends \Razorpay\Spine\Repository
 
         try
         {
-            $esRepoClass = E::getEntityEsRepository($entity->getEntity());
+            $mode = $this->app['rzp.mode'];
 
-            $queueData = [
-                'mode'   => $this->app['rzp.mode'],
-                'id'     => $entity->getId(),
-                'action' => $action,
-            ];
+            $job = (new EsSync(
+                        $mode,
+                        $action,
+                        $entity->getEntity(),
+                        $entity->getId()
+                    ))->delay(3);
 
-            //
-            // Enhancement:
-            //
-            // - Should use different queue for ES sync.
-            // - Also, add a delay of min. 3 secs for avoiding sync miss. For the
-            //   case when saveOrFail is wrapped in transaction and it commits
-            //   after a few more operations.
-            //
+            $mock = Config::get('queue.mock');
 
-            $this->queue->push($esRepoClass . '@fireSync', $queueData);
+            if ($mock === false)
+            {
+                $queue = Config::get('queue.sqs_es_sync');
+
+                $job->onConnection('sqs_multi_default')->onQueue($queue);
+            }
+
+            $this->dispatch($job);
         }
         catch (\Throwable $e)
         {
@@ -484,20 +503,6 @@ class Repository extends \Razorpay\Spine\Repository
         $esRepoClassPath = $parentNamespace . '\\' . 'EsRepository';
 
         return $esRepoClassPath;
-    }
-
-    protected function getEsRepoIfExistElseNull()
-    {
-        $esRepoClassPath = $this->getEsRepoClassPath();
-
-        if (class_exists($esRepoClassPath) === true)
-        {
-            return (new $esRepoClassPath);
-        }
-        else
-        {
-            return null;
-        }
     }
 
     protected function getParentNamespace()

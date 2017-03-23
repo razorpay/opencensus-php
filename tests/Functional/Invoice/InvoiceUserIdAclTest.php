@@ -53,15 +53,8 @@ class InvoiceUserIdAclTest extends TestCase
         $this->createDraftInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
         $this->createDraftInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
 
-        $esMock = $this->createEsMock(['search']);
-
         $expectedSearchParams = $this->testData[__FUNCTION__ . 'EsExpectedSearchParams'];
         $expectedSearchRes    = $this->testData[__FUNCTION__ . 'EsExpectedSearchResponse'];
-
-        $esMock->expects($this->once())
-               ->method('search')
-               ->with($expectedSearchParams)
-               ->willReturn($expectedSearchRes);
 
         $this->startTest();
     }

@@ -26,6 +26,7 @@ return [
     'sqs_webhooks_test'     => env('AWS_WEBHOOK_TEST_QUEUE'),
     'sqs_webhooks_failure'  => env('AWS_WEBHOOK_FAILURE_QUEUE'),
     'sqs_invoice_emails'    => env('AWS_INVOICE_EMAILS_QUEUE'),
+    'sqs_es_sync'           => env('AWS_ES_SYNC_QUEUE'),
 
 
     /*

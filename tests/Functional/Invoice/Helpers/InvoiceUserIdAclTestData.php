@@ -122,10 +122,10 @@ return [
                 'count' => 2,
                 'items' => [
                     [
-                        'id' => 'inv_1000000invoice',
+                        'id' => 'inv_1000001invoice',
                     ],
                     [
-                        'id' => 'inv_1000001invoice',
+                        'id' => 'inv_1000000invoice',
                     ]
                 ]
             ],

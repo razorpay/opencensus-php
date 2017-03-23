@@ -179,7 +179,7 @@ class Repository extends \Razorpay\Spine\Repository
             // Creating a new EsDao object because,
             // in the queue flow, the mode needs to be passed
             // to the constructor.
-            $esDao = new EsDao($mode);
+            $esDao = new Base\EsDao($mode);
             // Calls the entity es repository
             $this->storeEntity($esType, $entityArray, $esDao);
 
@@ -382,82 +382,5 @@ class Repository extends \Razorpay\Spine\Repository
                 return $this->serialize($v);
             },
             $collection->all());
-    }
-
-    /**
-     * Called through queue from Base/Repository's saveOrFail and deleteOfFail.
-     *
-     * @param mixed $job
-     * @param array $data
-     *
-     * @return null
-     */
-    public function fireSync($job, $data)
-    {
-        $tracePayload = [
-            'job_attempts' => $job->attempts(),
-            'class'        => get_class($this),
-            'data'         => $data,
-        ];
-
-        $this->trace->debug(TraceCode::ES_SAVE_REQUEST, $tracePayload);
-
-        $id     = $data['id'];
-        $mode   = $data['mode'];
-        $action = $data['action'];
-
-        \Database\DefaultConnection::set($mode);
-
-        $class = $this->getEntityClass();
-
-        $model = new $class;
-
-        $this->setIndexName($mode . '_' . $model->getEntity());
-
-        $this->createIndexIfNotExists();
-
-        try
-        {
-            $this->sync($id, $action);
-
-            $job->delete();
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->traceException(
-                $e, Trace::ERROR, TraceCode::ES_SAVE_FAILED, $tracePayload);
-
-            if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
-            {
-                $job->delete();
-            }
-            else
-            {
-                $job->release(self::JOB_RELEASE_WAIT);
-            }
-        }
-    }
-
-    protected function sync(string $id, string $action)
-    {
-        switch ($action) {
-            case self::UPSERT:
-
-                $document = $this->findForIndex($id);
-
-                $this->bulkUpdate([$document]);
-
-                break;
-
-            case self::DELETE:
-
-                $this->deleteDocument($id);
-
-                break;
-
-            default:
-
-                break;
-        }
     }
 }
