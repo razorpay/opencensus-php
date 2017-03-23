@@ -13,7 +13,7 @@ class EcollectController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service('ecollect')->validate($input);
+        $response = (new Ecollect\Service)->validate($input);
 
         return ApiResponse::json($response);
     }
@@ -22,7 +22,7 @@ class EcollectController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service('ecollect')->pay($input);
+        $response = (new Ecollect\Service)->pay($input);
 
         return ApiResponse::json($response);
     }
