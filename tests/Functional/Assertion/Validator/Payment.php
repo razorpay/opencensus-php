@@ -13,7 +13,7 @@ class Payment extends Validator
         Entity::CURRENCY            => 'required|in:INR,USD',
         Entity::BASE_AMOUNT         => 'required|integer',
         Entity::STATUS              => 'required|in:created,authorized,captured,failed,refunded',
-        Entity::TWO_FACTOR_AUTH     => 'sometimes|in:passed,skipped,unknown,failed,not_applicable,unavailable',
+        Entity::TWO_FACTOR_AUTH     => 'sometimes|nullable|in:passed,skipped,unknown,failed,not_applicable,unavailable',
         Entity::METHOD              => 'required|in:card,netbanking,wallet,emi,transfer',
         Entity::CAPTURED            => 'required|boolean',
         Entity::AMOUNT_REFUNDED     => 'sometimes|',
@@ -33,9 +33,9 @@ class Payment extends Validator
         Entity::INTERNATIONAL       => 'sometimes|',
         Entity::ERROR_CODE          => 'sometimes|',
         Entity::ERROR_DESCRIPTION   => 'sometimes|',
-        Entity::FEE                 => 'required_if:status,captured,refunded|integer',
+        Entity::FEE                 => 'required_if:status,captured,refunded|nullable|integer',
         Entity::SERVICE_TAX         => 'sometimes|',
         Entity::CREATED_AT          => 'sometimes|',
-        Entity::INVOICE_ID          => 'sometimes|string|size:18',
+        Entity::INVOICE_ID          => 'sometimes|nullable|string|size:18',
     );
 }

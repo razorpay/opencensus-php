@@ -13,15 +13,15 @@ class Validator extends Base\Validator
         RequestFields::CHANNEL                                         => 'required|in:WEB',
         RequestFields::CALLBACK_URL                                    => 'required|url',
         RequestFields::TOKEN                                           => 'present',
-        RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID   => 'required|string',
-        RequestFields::TRANSACTION . '.' . RequestFields::TIMESTAMP    => 'required|string|size:14',
-        RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE     => 'required|in:PURCHASE',
-        RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT       => 'required|string',
-        RequestFields::TRANSACTION . '.' . RequestFields::CURRENCY     => 'required|in:INR',
-        RequestFields::SUBSCRIBER . '.' . RequestFields::CUSTOMER_NAME => 'required|string',
-        RequestFields::SUBSCRIBER . '.' . RequestFields::EMAIL         => 'required|email',
-        RequestFields::SUBSCRIBER . '.' . RequestFields::CONTACT       => 'required|string',
-        RequestFields::CHECKSUM                                        => 'required|string'
+        RequestFields::TRANSACTION . '.' . RequestFields::PAYMENT_ID   => 'sometimes|string',
+        RequestFields::TRANSACTION . '.' . RequestFields::TIMESTAMP    => 'sometimes|string|size:14',
+        RequestFields::TRANSACTION . '.' . RequestFields::TXN_TYPE     => 'sometimes|in:PURCHASE',
+        RequestFields::TRANSACTION . '.' . RequestFields::AMOUNT       => 'sometimes|string',
+        RequestFields::TRANSACTION . '.' . RequestFields::CURRENCY     => 'sometimes|in:INR',
+        RequestFields::SUBSCRIBER . '.' . RequestFields::CUSTOMER_NAME => 'sometimes|string',
+        RequestFields::SUBSCRIBER . '.' . RequestFields::EMAIL         => 'sometimes|email',
+        RequestFields::SUBSCRIBER . '.' . RequestFields::CONTACT       => 'sometimes|string',
+        RequestFields::CHECKSUM                                        => 'sometimes|string'
     ];
 
     protected static $refundRules = [
