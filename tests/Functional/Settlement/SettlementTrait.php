@@ -51,7 +51,7 @@ trait SettlementTrait
 
             $response = $this->sendRequest($request);
 
-            $this->assertResponseStatus(200);
+            $this->assertResponseOk($response);
         }
     }
 

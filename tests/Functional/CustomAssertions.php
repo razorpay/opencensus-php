@@ -103,4 +103,9 @@ trait CustomAssertions
 
         $this->assertEquals($type, $contentType);
     }
+
+    public function assertResponseOk($response)
+    {
+        $this->assertEquals(200, $response->getStatusCode());
+    }
 }

@@ -1129,7 +1129,7 @@ class InvoiceTest extends TestCase
 
         $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
 
-        $this->assertResponseOk();
+        $this->assertResponseOk($response);
     }
 
     public function testGetInvoiceView()
@@ -1141,7 +1141,7 @@ class InvoiceTest extends TestCase
 
         $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
 
-        $this->assertResponseOk();
+        $this->assertResponseOk($response);
     }
 
     public function testPayExpiredInvoice()
