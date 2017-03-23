@@ -111,6 +111,8 @@ trait RepositoryFetch
 
         if ($esRepo === null)
         {
+            $this->mysqlParams = $params;
+
             return null;
         }
 

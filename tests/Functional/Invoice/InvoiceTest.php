@@ -388,7 +388,6 @@ class InvoiceTest extends TestCase
 
                             $this->assertNotEmpty($actual['body'][0]['index']['_id']);
                             $this->assertNotEmpty($actual['body'][1]['id']);
-                            $this->assertNotEmpty($actual['body'][1]['order_id']);
 
                             return true;
                         }));
@@ -546,7 +545,6 @@ class InvoiceTest extends TestCase
             [
                 'id'      => $invoice->getId(),
                 'receipt' => 'inv_receipt_0001',
-                'status'  => 'draft',
                 'terms'   => 'Updated terms & conditions',
             ]);
 

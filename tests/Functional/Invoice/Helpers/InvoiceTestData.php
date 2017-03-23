@@ -2322,7 +2322,6 @@ return [
             'method'  => 'get',
             'content' => [
                 'customer_name' => 'tes',
-                'status'        => 'draft',
             ],
         ],
         'response' => [
@@ -2365,7 +2364,6 @@ return [
             'method'  => 'get',
             'content' => [
                 'customer_name' => 'tes',
-                'status'        => 'draft',
                 'search_hits'   => '1',
             ],
         ],
@@ -2687,14 +2685,6 @@ return [
                                 ],
                             ],
                         ],
-                        [
-                            'term' => [
-                                'status' => [
-                                    'value' =>'draft',
-                                    'boost' => 2,
-                                ],
-                            ],
-                        ],
                     ],
                     'filter' => [
                         'bool' => [
@@ -2745,14 +2735,6 @@ return [
                                 ],
                             ],
                         ],
-                        [
-                            'term' => [
-                                'status' => [
-                                    'value' =>'draft',
-                                    'boost' => 2,
-                                ],
-                            ],
-                        ],
                     ],
                     'filter' => [
                         'bool' => [
@@ -2782,7 +2764,6 @@ return [
                         'customer_contact' => '1234567890',
                         'customer_name'    => 'test',
                         'receipt'          => null,
-                        'status'           => 'draft',
                     ],
                 ],
                 [
@@ -2792,7 +2773,6 @@ return [
                         'customer_contact' => '1234567890',
                         'customer_name'    => 'test',
                         'receipt'          => null,
-                        'status'           => 'draft',
                     ],
                 ]
             ],
@@ -2867,23 +2847,11 @@ return [
                         'merchant_id' => [
                             'type' => 'keyword',
                         ],
-                        'payment_id' => [
-                            'type' => 'keyword',
-                        ],
-                        'order_id' => [
-                            'type' => 'keyword',
-                        ],
-                        'user_id' => [
-                            'type' => 'keyword',
-                        ],
                         'receipt' => [
-                            'type' => 'keyword',
-                        ],
-                        'status' => [
-                            'type' => 'keyword',
-                        ],
-                        'type' => [
-                            'type' => 'keyword',
+                            'type'            => 'text',
+                            'analyzer'        => 'edge_ngram_analyzer',
+                            'search_analyzer' => 'standard',
+                            'index_options'   => 'offsets',
                         ],
                     ],
                     'dynamic_templates' => [
@@ -2922,16 +2890,12 @@ return [
                 'receipt'          => null,
                 // 'order_id'         => '7KoRT8ar0gbHb7',
                 'merchant_id'      => '10000000000000',
-                'status'           => 'issued',
                 'customer_name'    => 'test',
                 'customer_email'   => 'test@razorpay.com',
                 'customer_contact' => '1234567890',
                 'description'      => null,
                 'terms'            => null,
                 'notes'            => [],
-                'type'             => 'invoice',
-                'user_id'          => null,
-                'payment_id'       => null,
             ],
         ],
     ],
