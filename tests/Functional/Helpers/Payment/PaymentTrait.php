@@ -1111,7 +1111,7 @@ trait PaymentTrait
         }
         else if ($this->isResponseInstanceType($response, 'json'))
         {
-            list($url, $method, $values) = $this->getFormDataFromJsonResponse($response);
+            list($url, $method, $values) = $this->getFormDataFromJsonResponse($response->baseResponse);
         }
         else
         {

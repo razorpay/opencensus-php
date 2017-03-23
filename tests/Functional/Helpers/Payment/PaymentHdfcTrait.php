@@ -79,14 +79,14 @@ trait PaymentHdfcTrait
         if ($callback === null)
         {
             $tds = ((json_decode($content) === null) and
-                    (get_class($response) === 'Illuminate\Http\Response') and
+                    (get_class($response->baseResponse) === 'Illuminate\Http\Response') and
                     ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
                     ($response->getStatusCode() === 200));
         }
         else
         {
             $tds = ((json_decode($content) === null) and
-                    (get_class($response) === 'Illuminate\Http\JsonResponse') and
+                    (get_class($response->baseResponse) === 'Illuminate\Http\JsonResponse') and
                     ($response->headers->get('content-type') === 'text/javascript; charset=UTF-8') and
                     ($response->getStatusCode() === 200));
 
