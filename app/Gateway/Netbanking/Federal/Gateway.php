@@ -352,7 +352,7 @@ class Gateway extends Base\Gateway
         //
         if (strlen($values[0]) === 0)
         {
-            $values[4] = Status::FAILURE;
+            $values[4] = Status::NO;
         }
         else
         {
