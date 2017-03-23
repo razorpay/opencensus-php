@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Netbanking\Federal\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\Netbanking\Federal\Constants;
+use RZP\Gateway\Netbanking\Federal\Status;
 use RZP\Gateway\Netbanking\Federal\RequestFields;
 use RZP\Gateway\Netbanking\Federal\ResponseFields;
 
@@ -50,7 +50,7 @@ class Server extends Base\Mock\Server
             ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
             ResponseFields::STATE_FLAG      => $input[RequestFields::STATE_FLAG],
             ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
-            ResponseFields::PAID            => Constants::CONFIRMATION,
+            ResponseFields::PAID            => Status::YES,
         ];
     }
 
