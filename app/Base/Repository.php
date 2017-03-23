@@ -368,14 +368,14 @@ class Repository extends \Razorpay\Spine\Repository
      */
     protected function saveInEs(Models\Base\PublicEntity $entity, array $dirty)
     {
-        if ($this->doesEsRepoExist() === false)
+        $esRepo = $this->getEsRepoIfExistElseNull();
+
+        if ($esRepo === null)
         {
             return;
         }
 
-        $this->setEsRepo();
-
-        $esFields = $this->esRepo->getFields();
+        $esFields = $esRepo->getFields();
 
         if (empty(array_intersect(array_keys($dirty), $esFields)) === true)
         {
@@ -422,14 +422,14 @@ class Repository extends \Razorpay\Spine\Repository
         string $action,
         array $dirty = [])
     {
-        if ($this->doesEsRepoExist() === false)
+        $esRepo = $this->getEsRepoIfExistElseNull();
+
+        if ($esRepo === null)
         {
             return;
         }
 
-        $this->setEsRepo();
-
-        $esFields = $this->esRepo->getFields();
+        $esFields = $esRepo->getFields();
 
         if (count($esFields) === 0)
         {
@@ -486,18 +486,18 @@ class Repository extends \Razorpay\Spine\Repository
         return $esRepoClassPath;
     }
 
-    protected function doesEsRepoExist()
+    protected function getEsRepoIfExistElseNull()
     {
         $esRepoClassPath = $this->getEsRepoClassPath();
 
-        return class_exists($esRepoClassPath);
-    }
-
-    protected function setEsRepo()
-    {
-        $esRepoClassPath = $this->getEsRepoClassPath();
-
-        $this->esRepo = (new $esRepoClassPath);
+        if (class_exists($esRepoClassPath) === true)
+        {
+            return (new $esRepoClassPath);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     protected function getParentNamespace()

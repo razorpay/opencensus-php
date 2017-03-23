@@ -126,7 +126,7 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $params['merchant_id'] = $merchantId;
 
-        $entities = new PublicCollection;
+        $entities = new Base\PublicCollection;
 
         // Returns all the entity IDs matching the notes search.
         $entityIds = $this->esDao->getNotes($typeName, $params);
@@ -289,7 +289,7 @@ class Repository extends \Razorpay\Spine\Repository
         //
         if (count($hits) === 0)
         {
-            return new PublicCollection;
+            return new Base\PublicCollection;
         }
 
         //

@@ -476,7 +476,6 @@ class TraceCode
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
     const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
-    const ES_FETCH_FAILED                           = 'ES_FETCH_FAILED';
     const ES_MYSQL_RESULTS_MISMATCH                 = 'ES_MYSQL_RESULTS_MISMATCH';
 
     const RECON_ALERT                               = 'RECON_ALERT';

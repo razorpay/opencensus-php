@@ -85,36 +85,11 @@ trait RepositoryFetch
         // modify params if required
         $this->modifyFetchParams($params);
 
-        //
-        // Checks if need to fetch from ES.
-        // This is done based on fetch params sent.
-        // Also, splits params and sets esParams and mysqlParams for further usage.
-        //
-        // Also, if es fetch fails for some reason (rare case), just log and
-        // return MySQL fetch results.
-        //
+        $result = $this->runEsFetchIfNeededElseNull($params, $merchantId);
 
-        // Check if the params need to be searched via ES.
-        $isEs = $this->isEsFetch($params);
-
-        if ($isEs === true)
+        if ($result !== null)
         {
-            try
-            {
-                return $this->runEsFetch($this->esParams, $merchantId);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::ES_FETCH_FAILED,
-                    [
-                        'entity'      => $this->getEntityClass(),
-                        'merchant_id' => $merchantId,
-                        'params'      => $params,
-                    ]);
-            }
+            return $result;
         }
 
         //
@@ -130,100 +105,52 @@ trait RepositoryFetch
         return $query->get();
     }
 
-    /**
-     * Checks if fetch needs to happen via ES or not.
-     * It also splits params and sets mysqlParams and esParams.
-     *
-     * @param array $params
-     *
-     * @return boolean
-     */
-    protected function isEsFetch(array $params)
+    protected function runEsFetchIfNeededElseNull(array $params, string $merchantId = null)
     {
-        $originalParams     = $params;
-        $originalParamsKeys = array_keys($params);
-        $this->mysqlParams  = $params;
+        $esRepo = $this->getEsRepoIfExistElseNull();
 
-        if ($this->doesEsRepoExist() === false)
+        if ($esRepo === null)
         {
-            return false;
+            return null;
         }
 
-        $this->setEsRepo();
+        $this->esParams = array_intersect_key($params, array_flip($esRepo->getPossibleFieldsInParam()));
 
-        //
-        // Removes common params, eg. count, skip etc.
-        // Also, removes additional default params from repository class.
-        //
+        $this->mysqlParams = array_diff_key($params, $this->esParams);
 
-        $params = array_diff_key($params, $this->originalFetchParamRules);
-
-        //
-        // Split params into esParams and mysqlParams.
-        // And currently, we prefer Es even if one param is found to be for es.
-        //
-
-        $esFields = $this->esRepo->getPossibleFieldsInParam();
-
-        foreach ($params as $k => $v)
+        if (count($this->esParams) === 0)
         {
-            if (in_array($k, $esFields, true) === true)
-            {
-                $this->esParams[$k] =  $v;
-
-                unset($this->mysqlParams[$k]);
-            }
+            return null;
         }
 
-        $isEsFetch = count($this->esParams) > 0;
+        $mysqlParamsWithoutDefaults = array_diff_key($this->mysqlParams, $this->originalFetchParamRules);
 
-        //
-        // If isEsFetch, just append the original params to it, eg. count,skip etc.
-        //
-        if ($isEsFetch)
+        if (count($mysqlParamsWithoutDefaults) > 0)
         {
-            foreach ($this->originalFetchParamRules as $k => $v)
-            {
-                if (in_array($k, $originalParamsKeys, true) === true)
-                {
-                    $this->esParams[$k] = $originalParams[$k];
-                }
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                implode(', ', array_keys($mysqlParamsWithoutDefaults)) . ' not expected with other params sent');
         }
 
-        return  $isEsFetch;
+        $this->esParams += array_diff_key($params, $this->originalFetchParamRules);
+
+        return $this->runEsFetch($esRepo, $params, $merchantId);
     }
 
-    protected function runEsFetch($params, $merchantId)
+    protected function runEsFetch($esRepo, $params, $merchantId)
     {
         $entity = $this->entity;
 
         if ($this->isEntityInOldEsFlow($entity) === true)
         {
-            return $this->esRepo->fetch($params, $merchantId);
+            return $esRepo->fetch($params, $merchantId);
         }
 
-        return $this->esRepo->buildQueryAndSearch($entity, $params, $merchantId);
+        return $esRepo->buildQueryAndSearch($entity, $params, $merchantId);
     }
 
     protected function isEntityInOldEsFlow(string $entity)
     {
         return in_array($entity, $this->entitiesInOldFlow, true);
-    }
-
-    protected function getEsRepoClass()
-    {
-        $entity = explode('\\', get_called_class(), -1);
-
-        $entity = $entity[count($entity) - 1];
-
-        $entity = strtolower($entity);
-
-        $esRepoClass = Constants\Entity::getEntityEsRepository($entity);
-
-        $esRepo = new $esRepoClass;
-
-        return $esRepo;
     }
 
     protected function buildFetchQuery($query, $params)
@@ -344,19 +271,6 @@ trait RepositoryFetch
                           ->validate();
 
         $this->validateAdditional($params);
-    }
-
-    protected function customEsValidations($params)
-    {
-        foreach ($params as $key => $value)
-        {
-            $func = 'validateParam' . studly_case($key);
-
-            if (method_exists($this->esRepo, $func))
-            {
-                $this->esRepo->$func([$key => $value]);
-            }
-        }
     }
 
     protected function unsetEmptyParams(array $params)

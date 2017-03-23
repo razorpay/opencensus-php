@@ -13,12 +13,7 @@ class EsRepository extends Es\Repository
     protected $fields = [
         Entity::ID,
         Entity::MERCHANT_ID,
-        Entity::PAYMENT_ID,
-        Entity::ORDER_ID,
-        Entity::USER_ID,
         Entity::RECEIPT,
-        Entity::STATUS,
-        Entity::TYPE,
         Entity::CUSTOMER_NAME,
         Entity::CUSTOMER_CONTACT,
         Entity::CUSTOMER_EMAIL,
@@ -28,19 +23,10 @@ class EsRepository extends Es\Repository
     ];
 
     protected $queryFields = [
-        Entity::MERCHANT_ID,
-        Entity::PAYMENT_ID,
-        Entity::ORDER_ID,
-        Entity::USER_ID,
         Entity::RECEIPT,
-        Entity::STATUS,
-        Entity::TYPE,
         Entity::CUSTOMER_NAME,
         Entity::CUSTOMER_CONTACT,
         Entity::CUSTOMER_EMAIL,
-        Entity::DESCRIPTION,
-        Entity::TERMS,
-        Entity::NOTES,
         Entity::DESCRIPTION,
         Entity::TERMS,
         Entity::NOTES . '.*',
@@ -49,6 +35,7 @@ class EsRepository extends Es\Repository
     protected function setFieldMappings()
     {
         $this->fieldMappings = [
+            Entity::RECEIPT          => Es\Mapping::$textFieldMapping,
             Entity::CUSTOMER_NAME    => Es\Mapping::$textFieldMapping,
             Entity::CUSTOMER_CONTACT => Es\Mapping::$textFieldMapping,
             Entity::CUSTOMER_EMAIL   => Es\Mapping::$textFieldMapping,
