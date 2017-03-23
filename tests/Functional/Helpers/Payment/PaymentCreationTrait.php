@@ -155,7 +155,7 @@ trait PaymentCreationTrait
             {
                 // Now check for redirect
                 $redirect = (($this->isResponseInstanceType($response, 'redirect')) and
-                        ($response->getStatusCode() === 302));
+                             ($response->getStatusCode() === 302));
 
                 if ($redirect === true)
                 {

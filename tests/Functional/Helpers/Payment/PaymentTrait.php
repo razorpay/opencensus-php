@@ -1192,6 +1192,8 @@ trait PaymentTrait
      */
     protected function isResponseInstanceType($response, $type = 'json')
     {
+        $response = $response->baseResponse;
+
         $match = 'Response';
 
         if ($type !== 'http')
