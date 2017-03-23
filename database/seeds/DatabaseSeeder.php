@@ -272,7 +272,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   => Account::TEST_ACCOUNT,
                     'contact_name'  => 'Test Account',
                     'contact_email' => 'test@razorpay.com',
-                    'created_at'    =>  1488306599, // 28/02/2017, 11:59:59 PM GMT+5:30; pre signup steps are required for people signing up on/after 01/03/2017 
+                    'created_at'    =>  1488306599, // 28/02/2017, 11:59:59 PM GMT+5:30; pre signup steps are required for people signing up on/after 01/03/2017
                     'updated_at'    =>  $currentTime,
                     )
                 );
@@ -1162,7 +1162,7 @@ class DatabaseSeeder extends Seeder
     protected function createNetbankingAxisTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                    => Terminal\Shared::NETBANKING_AXIS_TERMINAL,
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_AXIS,
@@ -1173,14 +1173,14 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 0,
                 'created_at'            => time(),
                 'updated_at'            => time(),
-            )
+            ]
         );
     }
 
     protected function createNetbankingFederalTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                    => Terminal\Shared::NETBANKING_FEDERAL_TERMINAL,
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_FEDERAL,
@@ -1191,14 +1191,14 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 0,
                 'created_at'            => time(),
                 'updated_at'            => time(),
-            )
+            ]
         );
     }
 
     protected function createAmexTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                    => '2eBIhcdN74TBMd',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::AMEX,
@@ -1210,8 +1210,8 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
-                )
-            );
+            ]
+        );
 
         DB::table(Table::TERMINAL)->insert(
             array(
