@@ -11,18 +11,9 @@ use View;
 
 class PaymentController extends Controller
 {
-    protected $payment;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->payment = new Payment\Service;
-    }
-
     public function getPayment($id)
     {
-        $payment = $this->payment->fetch($id);
+        $payment = $this->service('payment')->fetch($id);
 
         return ApiResponse::json($payment);
     }
@@ -34,14 +25,14 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payments = $this->payment->fetchMultiple($input);
+        $payments = $this->service('payment')->fetchMultiple($input);
 
         return ApiResponse::json($payments);
     }
 
     public function getVerify($id)
     {
-        $data = $this->payment->verify($id);
+        $data = $this->service('payment')->verify($id);
 
         return ApiResponse::json($data);
     }
@@ -54,7 +45,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->payment->refund($id, $input);
+        $payment = $this->service('payment')->refund($id, $input);
 
         return ApiResponse::json($payment);
     }
@@ -63,7 +54,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->payment->refundAuthorized($id, $input);
+        $payment = $this->service('payment')->refundAuthorized($id, $input);
 
         return ApiResponse::json($payment);
     }
@@ -72,7 +63,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $summary = $this->payment->refundAuthorizedInBulk($input);
+        $summary = $this->service('payment')->refundAuthorizedInBulk($input);
 
         return ApiResponse::json($summary);
     }
@@ -81,21 +72,21 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->payment->forceAuthorizeFailed($id, $input);
+        $payment = $this->service('payment')->forceAuthorizeFailed($id, $input);
 
         return ApiResponse::json($payment);
     }
 
     public function postRefundOldAuthorizedPayments()
     {
-        $data = $this->payment->refundOldAuthorizedPayments();
+        $data = $this->service('payment')->refundOldAuthorizedPayments();
 
         return ApiResponse::json($data);
     }
 
     public function postAuthorizeFailedPayment($id)
     {
-        $data = $this->payment->authorizeFailed($id);
+        $data = $this->service('payment')->authorizeFailed($id);
 
         return ApiResponse::json($data);
     }
@@ -104,7 +95,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->payment->fixAuthorizeAt($input);
+        $data = $this->service('payment')->fixAuthorizeAt($input);
 
         return ApiResponse::json($data);
     }
@@ -118,14 +109,14 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->payment->capture($id, $input);
+        $payment = $this->service('payment')->capture($id, $input);
 
         return ApiResponse::json($payment);
     }
 
     public function getPaymentStatusForAsyncPayments($id)
     {
-        $data = $this->payment->fetchStatus($id);
+        $data = $this->service('payment')->fetchStatus($id);
 
         return ApiResponse::json($data);
     }
@@ -134,7 +125,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->payment->cancel($id, $input);
+        $data = $this->service('payment')->cancel($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -143,7 +134,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->payment->payout($id, $input);
+        $data = $this->service('payment')->payout($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -154,42 +145,42 @@ class PaymentController extends Controller
      */
     public function postAutoCapture()
     {
-        $data = $this->payment->autoCaptureOldAuthorizedPayments();
+        $data = $this->service('payment')->autoCaptureOldAuthorizedPayments();
 
         return ApiResponse::json($data);
     }
 
     public function getCardForPayment($id)
     {
-        $card = $this->payment->getCardForPayment($id);
+        $card = $this->service('payment')->getCardForPayment($id);
 
         return ApiResponse::json($card);
     }
 
     public function getRefundsForPayment($paymentId)
     {
-        $refunds = $this->payment->retrieveRefundsForPayment($paymentId);
+        $refunds = $this->service('payment')->retrieveRefundsForPayment($paymentId);
 
         return ApiResponse::json($refunds);
     }
 
     public function getRefundByRefundAndPaymentId($paymentId, $rfndId)
     {
-        $refunds = $this->payment->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
+        $refunds = $this->service('payment')->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
 
         return ApiResponse::json($refunds);
     }
 
     public function getTransactionForPayment($paymentId)
     {
-        $transaction = $this->payment->fetchTransactionByPaymentId($paymentId);
+        $transaction = $this->service('payment')->fetchTransactionByPaymentId($paymentId);
 
         return ApiResponse::json($transaction);
     }
 
     public function postTimeout()
     {
-        $data = $this->payment->timeoutOldPayments();
+        $data = $this->service('payment')->timeoutOldPayments();
 
         return ApiResponse::json($data);
     }
@@ -221,14 +212,14 @@ class PaymentController extends Controller
 
     public function getAuthNotify()
     {
-        $data = $this->payment->notifyAuthorizedPayments();
+        $data = $this->service('payment')->notifyAuthorizedPayments();
 
         return ApiResponse::json($data);
     }
 
     public function getAutoCaptureEmail()
     {
-        $data = $this->payment->deliverAutoCaptureEmail();
+        $data = $this->service('payment')->deliverAutoCaptureEmail();
 
         return ApiResponse::json($data);
     }
@@ -237,7 +228,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->payment->verifyMultiplePayments($filter, $input);
+        $data = $this->service('payment')->verifyMultiplePayments($filter, $input);
 
         return ApiResponse::json($data);
     }
@@ -267,35 +258,35 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->payment->addPaymentMetadata($id, $input);
+        $data = $this->service('payment')->addPaymentMetadata($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function postCaptureVerify($id)
     {
-        $data = $this->payment->verifyCapture($id);
+        $data = $this->service('payment')->verifyCapture($id);
 
         return ApiResponse::json($data);
     }
 
     public function postManualGatewayCapture($id)
     {
-        $data = $this->payment->manualGatewayCapture($id);
+        $data = $this->service('payment')->manualGatewayCapture($id);
 
         return ApiResponse::json($data);
     }
 
     public function postRefundMultipleAuthorizedPaymentsForOrders()
     {
-        $data = $this->payment->refundMultipleAuthorizedPaymentsForOrders();
+        $data = $this->service('payment')->refundMultipleAuthorizedPaymentsForOrders();
 
         return ApiResponse::json($data);
     }
 
     public function postAuthorizeLockTimeOut($paymentIds)
     {
-        $data = $this->payment->authorizeLockTimeOutPayments($paymentIds);
+        $data = $this->service('payment')->authorizeLockTimeOutPayments($paymentIds);
 
         return ApiResponse::json($data);
     }
@@ -309,7 +300,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $transfers = $this->payment->transfer($paymentId, $input);
+        $transfers = $this->service('payment')->transfer($paymentId, $input);
 
         return ApiResponse::json($transfers);
     }
@@ -321,7 +312,7 @@ class PaymentController extends Controller
      */
     public function getTransfers(string $paymentId)
     {
-        $transfers = $this->payment->getTransfers($paymentId);
+        $transfers = $this->service('payment')->getTransfers($paymentId);
 
         return ApiResponse::json($transfers);
     }

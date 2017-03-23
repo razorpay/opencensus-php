@@ -9,17 +9,10 @@ use RZP\Models\Currency;
 
 class CurrencyController extends Controller
 {
-    protected $currency;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->currency = new Currency\Core;
-    }
-
     public function postCurrencyRates($currency)
     {
+        $this->currency = new Currency\Core;
+
         $data = $this->currency->updateRates($currency);
 
         return ApiResponse::json($data);
@@ -27,6 +20,8 @@ class CurrencyController extends Controller
 
     public function getCurrencyRates($currency)
     {
+        $this->currency = new Currency\Core;
+
         $data = $this->currency->getRates($currency);
 
         return ApiResponse::json($data);

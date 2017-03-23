@@ -8,18 +8,9 @@ use RZP\Models\Transfer;
 
 class TransferController extends Controller
 {
-    protected $service;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->service = new Transfer\Service;
-    }
-
     public function getTransfer(string $id)
     {
-        $transfer = $this->service->fetch($id);
+        $transfer = $this->service('transfer')->fetch($id);
 
         return ApiResponse::json($transfer);
     }
@@ -28,7 +19,7 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
-        $transfers = $this->service->fetchMultiple($input);
+        $transfers = $this->service('transfer')->fetchMultiple($input);
 
         return ApiResponse::json($transfers);
     }
@@ -37,7 +28,7 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
-        $transfer = $this->service->create($input);
+        $transfer = $this->service('transfer')->create($input);
 
         return ApiResponse::json($transfer);
     }
@@ -46,7 +37,7 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
-        $reversal = $this->service->reverse($id, $input);
+        $reversal = $this->service('transfer')->reverse($id, $input);
 
         return ApiResponse::json($reversal);
     }
@@ -55,7 +46,7 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
-        $transfer = $this->service->edit($id, $input);
+        $transfer = $this->service('transfer')->edit($id, $input);
 
         return ApiResponse::json($transfer);
     }

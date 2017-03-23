@@ -9,16 +9,9 @@ use RZP\Models\Payout;
 
 class PayoutController extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->service = new Payout\Service;
-    }
-
     public function getPayout(string $id)
     {
-        $data = $this->service->fetch($id);
+        $data = $this->service('payout')->fetch($id);
 
         return ApiResponse::json($data);
     }
@@ -27,7 +20,7 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service->fetchMultiple($input);
+        $data = $this->service('payout')->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
@@ -36,7 +29,7 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service->create($input);
+        $data = $this->service('payout')->create($input);
 
         return ApiResponse::json($data);
     }
@@ -45,7 +38,7 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service->initiatePayouts($input, $channel);
+        $data = $this->service('payout')->initiatePayouts($input, $channel);
 
         return ApiResponse::json($data);
     }

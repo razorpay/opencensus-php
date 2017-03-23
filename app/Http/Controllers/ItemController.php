@@ -22,14 +22,14 @@ class ItemController extends Controller
     {
         $input = Request::all();
 
-        $item = $this->service->create($input);
+        $item = $this->service('item')->create($input);
 
         return ApiResponse::json($item);
     }
 
     public function getItem($id)
     {
-        $item = $this->service->fetch($id);
+        $item = $this->service('item')->fetch($id);
 
         return ApiResponse::json($item);
     }
@@ -38,7 +38,7 @@ class ItemController extends Controller
     {
         $input = Request::all();
 
-        $items = $this->service->fetchMultiple($input);
+        $items = $this->service('item')->fetchMultiple($input);
 
         return ApiResponse::json($items);
     }
@@ -47,14 +47,14 @@ class ItemController extends Controller
     {
         $input = Request::all();
 
-        $item = $this->service->update($id, $input);
+        $item = $this->service('item')->update($id, $input);
 
         return ApiResponse::json($item);
     }
 
     public function deleteItem($id)
     {
-        $response = $this->service->delete($id);
+        $response = $this->service('item')->delete($id);
 
         return ApiResponse::json($response);
     }

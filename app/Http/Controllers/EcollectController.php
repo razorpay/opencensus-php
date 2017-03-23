@@ -9,18 +9,11 @@ use Request;
 
 class EcollectController extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->service = new Ecollect\Service;
-    }
-
     public function validateEcollect()
     {
         $input = Request::all();
 
-        $response = $this->service->validate($input);
+        $response = $this->service('ecollect')->validate($input);
 
         return ApiResponse::json($response);
     }
@@ -29,7 +22,7 @@ class EcollectController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service->pay($input);
+        $response = $this->service('ecollect')->pay($input);
 
         return ApiResponse::json($response);
     }

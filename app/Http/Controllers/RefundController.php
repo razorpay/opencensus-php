@@ -9,27 +9,18 @@ use Request;
 
 class RefundController extends Controller
 {
-    protected $refund;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->refund = new Payment\Refund\Service;
-    }
-
     public function postRefundCreate()
     {
         $input = Request::all();
 
-        $refund = $this->refund->create($input);
+        $refund = $this->service('refund')->create($input);
 
         return ApiResponse::json($refund);
     }
 
     public function getRefund($id)
     {
-        $refunds = $this->refund->fetch($id);
+        $refunds = $this->service('refund')->fetch($id);
 
         return ApiResponse::json($refunds);
     }
@@ -38,7 +29,7 @@ class RefundController extends Controller
     {
         $input = Request::all();
 
-        $refunds = $this->refund->fetchMultiple($input);
+        $refunds = $this->service('refund')->fetchMultiple($input);
 
         return ApiResponse::json($refunds);
     }
@@ -50,7 +41,7 @@ class RefundController extends Controller
         // once properly deployed
         $input['method'] = 'netbanking';
 
-        $refundExcel = $this->refund->getRefundsFile($input);
+        $refundExcel = $this->service('refund')->getRefundsFile($input);
 
         return ApiResponse::json($refundExcel);
     }
@@ -59,14 +50,14 @@ class RefundController extends Controller
     {
         $input = Request::all();
 
-        $refundExcel = $this->refund->getRefundsFile($input);
+        $refundExcel = $this->service('refund')->getRefundsFile($input);
 
         return ApiResponse::json($refundExcel);
     }
 
     public function postRefundVerify($ids)
     {
-        $data = $this->refund->verify($ids);
+        $data = $this->service('refund')->verify($ids);
 
         return ApiResponse::json($data);
     }
@@ -76,21 +67,21 @@ class RefundController extends Controller
      */
     public function postRefundsTransactions()
     {
-        $summary = $this->refund->createMissingTransactions();
+        $summary = $this->service('refund')->createMissingTransactions();
 
         return ApiResponse::json($summary);
     }
 
     public function postGatewayRefundedTransactions()
     {
-        $data = $this->refund->createMissingTransactionsForGatewayRefunded();
+        $data = $this->service('refund')->createMissingTransactionsForGatewayRefunded();
 
         return ApiResponse::json($data);
     }
 
     public function postManualGatewayRefund($refundIds)
     {
-        $data = $this->refund->manualGatewayRefund($refundIds);
+        $data = $this->service('refund')->manualGatewayRefund($refundIds);
 
         return ApiResponse::json($data);
     }
@@ -111,7 +102,7 @@ class RefundController extends Controller
      */
     public function postGatewayRefundRecord($gateway)
     {
-        $data = $this->refund->createGatewayRefundRecords($gateway);
+        $data = $this->service('refund')->createGatewayRefundRecords($gateway);
 
         return ApiResponse::json($data);
     }
@@ -128,14 +119,14 @@ class RefundController extends Controller
      */
     public function postCreateBilldeskCancelledRefunds()
     {
-        $data = $this->refund->createBilldeskCancelledRefunds();
+        $data = $this->service('refund')->createBilldeskCancelledRefunds();
 
         return ApiResponse::json($data);
     }
 
     public function postGatewayValidateRefund(string $gateway)
     {
-        $data = $this->refund->validateUnknownGatewayRefunds($gateway);
+        $data = $this->service('refund')->validateUnknownGatewayRefunds($gateway);
 
         return ApiResponse::json($data);
     }

@@ -8,18 +8,11 @@ use RZP\Models\Order;
 
 class OrderController extends Controller
 {
-    protected $order;
-
-    public function __construct()
-    {
-        $this->order = new Order\Service;
-    }
-
     public function createOrder()
     {
         $input = Request::all();
 
-        $data = $this->order->create($input);
+        $data = $this->service('order')->create($input);
 
         return ApiResponse::json($data);
     }
@@ -28,21 +21,21 @@ class OrderController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->order->fetchMultiple($input);
+        $data = $this->service('order')->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
     public function fetchOrderById($id)
     {
-        $data = $this->order->fetch($id);
+        $data = $this->service('order')->fetch($id);
 
         return ApiResponse::json($data);
     }
 
     public function fetchPayments($id)
     {
-        $payments = $this->order->fetchPaymentsFor($id);
+        $payments = $this->service('order')->fetchPaymentsFor($id);
 
         return ApiResponse::json($payments);
     }

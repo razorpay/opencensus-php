@@ -14,25 +14,18 @@ class DeviceController extends Controller
 {
     protected $service;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->service = new Device\Service;
-    }
-
     public function createDevice()
     {
         $input = Request::all();
 
-        $device = $this->service->create($input);
+        $device = $this->service('device')->create($input);
 
         return ApiResponse::json($device);
     }
 
     public function getDevice($deviceId)
     {
-        $invoice = $this->service->fetch($deviceId);
+        $invoice = $this->service('device')->fetch($deviceId);
 
         return ApiResponse::json($invoice);
     }
@@ -41,7 +34,7 @@ class DeviceController extends Controller
     {
         $input = Request::all();
 
-        $this->service->verify($input);
+        $this->service('device')->verify($input);
 
         return ApiResponse::json([], 200);
     }
@@ -50,7 +43,7 @@ class DeviceController extends Controller
     {
         $input = Request::all();
 
-        $this->service->refreshToken($input);
+        $this->service('device')->refreshToken($input);
 
         return ApiResponse::json([], 204);
     }

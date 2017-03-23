@@ -15,17 +15,10 @@ use RZP\Models\Upi;
 
 class UpiController extends Controller
 {
-    protected $core;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->core = new Upi\Core;
-    }
-
     public function newHandle(string $api, string $id)
     {
+        $this->core = new Upi\Core;
+
         $body = Request::getContent();
         if (substr($id, 0, 3) == 'RAY')
         {
@@ -47,6 +40,8 @@ class UpiController extends Controller
 
     public function zeroCall($method)
     {
+        $this->core = new Upi\Core;
+
         return $this->core->callUpiGateway('makeRequest', ['method' => $method, 'params' => []]);
     }
 
@@ -84,6 +79,8 @@ class UpiController extends Controller
 
     public function getVpas()
     {
+        $this->core = new Upi\Core;
+
         $data = $this->core->getVpas();
 
         return ApiResponse::json($data);
@@ -91,6 +88,8 @@ class UpiController extends Controller
 
     public function getVpa(string $id)
     {
+        $this->core = new Upi\Core;
+
         $data = $this->core->getVpa($id);
 
         return ApiResponse::json($data);
@@ -98,6 +97,8 @@ class UpiController extends Controller
 
     public function getVpaPrivate(string $id)
     {
+        $this->core = new Upi\Core;
+
         $data = $this->core->getVpaPrivate($id);
 
         return ApiResponse::json($data);
@@ -105,6 +106,8 @@ class UpiController extends Controller
 
     public function deleteVpa($id)
     {
+        $this->core = new Upi\Core;
+
         $data = $this->core->deleteVpa($id);
 
         return ApiResponse::json($data);
@@ -114,6 +117,8 @@ class UpiController extends Controller
     {
         $input = Request::all();
 
+        $this->core = new Upi\Core;
+
         $data = $this->core->editVpa($id, $input);
 
         return ApiResponse::json($data);
@@ -121,6 +126,8 @@ class UpiController extends Controller
 
     public function isValidVpa($vpa)
     {
+        $this->core = new Upi\Core;
+
         $data = $this->core->isValidVpa($vpa);
 
         return ApiResponse::json($data);
@@ -128,6 +135,8 @@ class UpiController extends Controller
 
     public function isAvailableVpa($vpa)
     {
+        $this->core = new Upi\Core;
+
         $data = $this->core->isAvailableVpa($vpa);
 
         return ApiResponse::json($data);
@@ -144,6 +153,8 @@ class UpiController extends Controller
     {
         $input = Request::all();
 
+        $this->core = new Upi\Core;
+
         $data = $this->core->disallowVpaPsp($input);
 
         return ApiResponse::json($data);
@@ -152,6 +163,8 @@ class UpiController extends Controller
     public function postPspAllow()
     {
         $input = Request::all();
+
+        $this->core = new Upi\Core;
 
         $data = $this->core->allowVpaPsp($input);
 

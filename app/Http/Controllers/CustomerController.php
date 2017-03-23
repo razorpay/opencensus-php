@@ -15,17 +15,6 @@ class CustomerController extends Controller
 
     protected $service = Customer\Service::class;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->middleware('auth');
-
-        $this->customer = new Customer\Service;
-
-        $this->token = new Customer\Token\Service;
-    }
-
     public function createLocalCustomer()
     {
         $input = Request::all();

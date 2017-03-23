@@ -10,20 +10,11 @@ use RZP\Reconciliator;
 
 class ReconciliatorController extends Controller
 {
-    protected $orchestrator;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->orchestrator = new Orchestrator();
-    }
-
     public function postReconciliation()
     {
         $input = Request::all();
 
-        $summary = $this->orchestrator->initiateReconciliationProcess($input);
+        $summary = (new Orchestrator)->initiateReconciliationProcess($input);
 
         return ApiResponse::generateResponse($summary);
     }
