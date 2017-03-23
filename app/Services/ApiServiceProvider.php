@@ -67,7 +67,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('exception.handler', function($app)
         {
-            return new \RZP\Exception\Handler($app['trace']);
+            return new \RZP\Exception\Handler($app);
         });
 
         $this->app->singleton('card.tokenex', function($app)
