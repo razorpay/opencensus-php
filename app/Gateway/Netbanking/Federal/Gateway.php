@@ -55,6 +55,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
+                'gateway'          => $this->gateway,
                 'gateway_response' => $content,
                 'payment_id'       => $input['payment']['id']
             ]
@@ -120,7 +121,9 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
+                'gateway' => $this->gateway,
                 'request' => $request,
+                'payment_id' => $verify->input['payment']['id'],
             ]
         );
 
@@ -129,6 +132,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
+                'gateway' => $this->gateway,
                 'response' => $response->body,
                 'payment_id' => $verify->input['payment']['id'],
             ]
@@ -184,8 +188,8 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         // content will contain status as either Y or N or S
-        if (($content[ResponseFields::STATUS] === Constants::CONFIRMATION) or
-            ($content[ResponseFields::STATUS] === Constants::SUCCESS))
+        if (($content[ResponseFields::STATUS] === Status::YES) or
+            ($content[ResponseFields::STATUS] === Status::SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -226,7 +230,7 @@ class Gateway extends Base\Gateway
     protected function getRequestData(array $input)
     {
         $data = [
-            RequestFields::ACTION       => Constants::CONFIRMATION,
+            RequestFields::ACTION       => Status::YES,
             RequestFields::BANK_ID      => Constants::BANK_ID,
             RequestFields::MODE         => Action::AUTH_MODE,
             RequestFields::PAYEE_ID     => $this->getMerchantId(),
@@ -238,7 +242,7 @@ class Gateway extends Base\Gateway
             RequestFields::STATE_FLAG   => Constants::STATE_FLAG,
             RequestFields::USER_TYPE    => Constants::USER_TYPE,
             RequestFields::APP_TYPE     => Constants::APP_TYPE,
-            RequestFields::CONFIRMATION => Constants::CONFIRMATION,
+            RequestFields::CONFIRMATION => Status::YES,
         ];
 
         return $data;
@@ -275,7 +279,7 @@ class Gateway extends Base\Gateway
     protected function checkCallbackStatus(array $content)
     {
         if ((isset($content[ResponseFields::PAID]) === false) or
-            ($content[ResponseFields::PAID] !== Constants::CONFIRMATION))
+            ($content[ResponseFields::PAID] !== Status::YES))
         {
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -325,7 +329,7 @@ class Gateway extends Base\Gateway
         //
         // If body is XML
         //
-        if ($body[0] === "<")
+        if ($body[0] === '<')
         {
             $status = (array) simplexml_load_string($body);
 
@@ -348,7 +352,7 @@ class Gateway extends Base\Gateway
         //
         if (strlen($values[0]) === 0)
         {
-            $values[4] = Constants::FAILURE;
+            $values[4] = Status::FAILURE;
         }
         else
         {
