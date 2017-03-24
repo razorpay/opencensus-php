@@ -24,13 +24,13 @@ class CreateWorkflowPermission extends Migration
             //
             $table->engine = 'InnoDB';
 
-            $table->char(self::WORKFLOW_ID, Merchant::ID_LENGTH);
+            $table->char(self::WORKFLOW_ID, Workflow::ID_LENGTH);
 
-            $table->char(self::PERMISSION_ID, Terminal::ID_LENGTH);
+            $table->char(self::PERMISSION_ID, Permission::ID_LENGTH);
 
             $table->foreign(self::WORKFLOW_ID)
-                    ->references(Merchant::ID)
-                    ->on(Table::MERCHANT)
+                    ->references(Workflow::ID)
+                    ->on(Table::WORKFLOW)
                     ->onDelete('cascade');
 
             $table->foreign(self::PERMISSION_ID)

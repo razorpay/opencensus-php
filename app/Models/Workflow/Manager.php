@@ -2,6 +2,14 @@
 
 namespace RZP\Models\Workflow;
 
+
+/****
+ * Workflow Manager manages all workflows and activities relating to it.
+ *
+ * It has functions which are universal to all the project's models not only of
+ * workflows entity
+ */
+
 class Manager
 {
     protected $app;
@@ -26,7 +34,7 @@ class Manager
         $this->repo = $this->app['repo'];
     }
 
-    public function getActionsForChecker($admin = null)
+    public function getActionsForAdmin($admin = null)
     {
         //
         // Get all the actions in the admin's org
@@ -52,7 +60,7 @@ class Manager
 
         $actionsForAdmin = [];
 
-        // TODO simplify the number of db calls by fetching in bulk and sorting
+        // TODO simplify the number of db calls by fetching in bulk and mapping
         // in memory
         foreach ($actions as $action)
         {

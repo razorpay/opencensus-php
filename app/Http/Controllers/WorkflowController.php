@@ -123,15 +123,6 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getActionsForChecker()
-    {
-        $input = Request::all();
-
-        $data = (new Checker\Service)->fetchActionsForChecker($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function postActionComment(string $actionId)
     {
         $input = Request::all();
@@ -146,5 +137,20 @@ class WorkflowController extends Controller
         $result = (new Comment\Service)->fetchByActionId($actionId);
 
         return ApiResponse::json($result);
+    }
+
+    // Workflow Manager API
+    public function getActionsForChecker()
+    {
+        $data = (new Workflow\Service)->getActionsForChecker();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getActionsByMaker()
+    {
+        $data = (new Workflow\Service)->getActionsByMaker();
+
+        return ApiResponse::json($data);
     }
 }

@@ -21,4 +21,18 @@ class Service extends Base\Service
 
         return $workflow->toArrayPublic();
     }
+
+    public function getActionsForChecker()
+    {
+        $data = (new Manager)->getActionsForAdmin();
+
+        return $data;
+    }
+
+    public function getActionsByMaker()
+    {
+        $actions = (new Manager)->getActionsByMaker();
+
+        return $actions->toArrayPublic();
+    }
 }
