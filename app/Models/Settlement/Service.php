@@ -7,8 +7,8 @@ use RZP\Models\Base;
 use RZP\Models\Report\BasicEntityReport;
 use RZP\Constants\Entity as E;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Icici;
-use RZP\Models\Settlement\Kotak;
+use RZP\Models\FundTransfer\Icici;
+use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
 use RZP\Exception;
 
@@ -16,27 +16,51 @@ class Service extends Base\Service
 {
     public function initiateSettlements($input, $channel = null)
     {
-        $settler = new Settler();
-
-        return $settler->settle($input, $channel);
-    }
-
-    public function initiateSettlementsV2($input, $channel)
-    {
         $data = (new Settlement\Processor)->process($input, $channel);
 
         return $data;
     }
 
+    public function processFailedSettlements($input)
+    {
+        $data = (new Settlement\Processor)->processFailedSettlements($input);
+
+        return $data;
+    }
+
+    /** Generates settlement file for a given batch_fund_transfer_id
+      * Uses settlement entities / fund_transfer_attempt entities to generate
+      * file depending on the created_at timestamp of the batch.
+      * If the batch was created before the timestamp (i.e. before rolling out
+      * attempt base file generation) settlement entities are used.
+      * Else corresponding attempt entities are used.
+      */
     public function generateSettlementFile($input)
     {
         (new Settlement\Validator)->validateInput('batch_fetch', $input);
 
-        $batchSettlementId = $input['batch_settlement_id'];
+        $batchId = $input['batch_fund_transfer_id'];
 
-        $setls = $this->repo->settlement->getSettlementsByBatchSettlementId($batchSettlementId);
+        $batch = $this->repo->batch_fund_transfer->findOrFailPublic($batchId);
 
-        $urls = (new Kotak\Service)->generateSettlementFile($setls);
+        $versionV2RolloutTimestamp = 1489170600; // Date 1st March 2017 IST
+
+        $currentTimestamp = Carbon::now('Asia/Kolkata')->timestamp;
+
+        if ($batch->getCreatedAt() < $versionV2RolloutTimestamp)
+        {
+            $entities = $this->repo->settlement->getSettlementsByBatchFundTransferId($batchId);
+        }
+        else
+        {
+            $entities = $this->repo
+                             ->fund_transfer_attempt
+                             ->getFundTransferAttemptsByBatchIdWithRelations(
+                                $batchId,
+                                ['source', 'source.merchant', 'source.merchant.bankAccount']);
+        }
+
+        $urls = (new Kotak\Service)->generateSettlementFile($entities);
 
         return $urls;
     }

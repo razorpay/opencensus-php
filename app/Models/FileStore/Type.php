@@ -14,7 +14,11 @@ class Type
 
     const HDFC_NETBANKING_REFUND            = 'hdfc_netbanking_refund';
 
+    const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
+
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
+
+    const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
@@ -55,7 +59,9 @@ class Type
             self::KOTAK_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
+            self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
+            self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
@@ -89,7 +95,9 @@ class Type
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
+        self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
+        self::AXIS_NETBANKING_CLAIMS,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
@@ -104,6 +112,7 @@ class Type
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
+            self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,

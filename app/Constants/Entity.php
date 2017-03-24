@@ -51,11 +51,11 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
-    const GATEWAY_ABSENCE       = 'gateway_absence';
+    const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const MERCHANT_DETAIL       = 'merchant_detail';
-    const BATCH_SETTLEMENT      = 'batch_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const ORG                   = 'org';
     const ORG_HOSTNAME          = 'org_hostname';
     const ROLE                  = 'role';
@@ -65,7 +65,7 @@ class Entity
     const ADMIN_LEAD            = 'admin_lead';
     const ADMIN_TOKEN           = 'admin_token';
     const ORG_FIELD_MAP         = 'org_field_map';
-
+    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TRANSFER              = 'transfer';
     const REVERSAL              = 'reversal';
@@ -97,13 +97,14 @@ class Entity
     const CYBERSOURCE           = 'cybersource';
     const UPI_ICICI             = 'upi_icici';
     const UPI_IDFC              = 'upi_idfc';
+    const NETBANKING_HDFC       = 'netbanking_hdfc';
+    const NETBANKING_KOTAK      = 'netbanking_kotak';
+    const NETBANKING_ICICI      = 'netbanking_icici';
+    const NETBANKING_AXIS       = 'netbanking_axis';
+    const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
-    const NETBANKING_HDFC       = 'netbanking_hdfc';
-    const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
-    const NETBANKING_KOTAK      = 'netbanking_kotak';
-    const NETBANKING_AXIS       = 'netbanking_axis';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
     const WALLET_JIOMONEY       = 'wallet_jiomoney';
@@ -151,13 +152,14 @@ class Entity
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
-        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
-        self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
+        self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
-        self::BATCH_SETTLEMENT      => \RZP\Models\Settlement\Batch::class,
+        self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
+        self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
@@ -178,12 +180,14 @@ class Entity
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
         self::ADMIN_LEAD            => \RZP\Models\Admin\AdminLead::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
+        self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
     ];
 
     protected static $repository = [
         self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_ICICI   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,

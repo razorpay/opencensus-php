@@ -31,6 +31,7 @@ class MinAmount
                 Category::GOVT_EDUCATION => 200000,
                 Category::PVT_EDUCATION  => 200000,
                 Category::CORPORATE      => 200000,
+                Category::LENDING        => 150000,
             ],
         ],
         Method::CARD => [

@@ -220,6 +220,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getBeneficiaryCode()
+    {
+        return $this->getAttribute(self::BENEFICIARY_CODE);
+    }
+
     public function getMpin()
     {
         return $this->getAttribute(self::MPIN);
@@ -301,7 +306,7 @@ class Entity extends Base\PublicEntity
      *
      * @return string Beneficiary code in 10 characters.
      */
-    public function getKotakBeneficaryCode()
+    protected function getKotakBeneficaryCode()
     {
         $id = $this->getAttribute(self::ID);
 

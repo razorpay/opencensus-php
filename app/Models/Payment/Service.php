@@ -128,6 +128,13 @@ class Service extends Base\Service
      */
     public function refund($id, array $input)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_REQUEST,
+            [
+                'payment_id' => $id,
+                'input'      => $input
+            ]);
+
         $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 
         return $refund->toArrayPublic();
@@ -370,7 +377,7 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+        $transaction = $this->repo->transaction->findByEntityId($payment->getId(), $this->merchant, true);
 
         return $transaction->toArrayPublic();
     }
@@ -905,12 +912,16 @@ class Service extends Base\Service
         {
             $this->merchant = $payment->merchant;
 
-            $res = $this->getNewProcessor()->autoCapturePayment($payment);
-
-            if ($res)
+            try
             {
-                $count++;
+                $this->getNewProcessor()->autoCapturePayment($payment);
             }
+            catch (Exception\RecoverableException $e)
+            {
+                continue;
+            }
+
+            $count++;
         }
 
         return ['count' => $count];

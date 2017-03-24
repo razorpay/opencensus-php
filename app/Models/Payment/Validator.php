@@ -13,37 +13,41 @@ use RZP\Models\Card;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        'amount'                  =>  'required|integer',
-        'currency'                =>  'required|size:3',
-        'method'                  =>  'custom',
-        'vpa'                     =>  'required_if:method,upi|max:100|custom',
-        'card'                    =>  'sometimes',
-        'bank'                    =>  'required_if:method,netbanking',
-        'wallet'                  =>  'required_if:method,wallet|custom',
-        'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'             =>  'sometimes',
-        'email'                   =>  'sometimes|email',
-        'contact'                 =>  'sometimes|contact_syntax',
-        'signature'               =>  'sometimes',
-        'notes'                   =>  'sometimes|notes',
-        'notes.merchant_order_id' =>  'required_with:signature',
-        'callback_url'            =>  'sometimes|url',
-        'order_id'                =>  'sometimes|filled',
-        'customer_id'             =>  'required_if:wallet,openwallet|public_id|filled',
-        'app_token'               =>  'sometimes',
-        'token'                   =>  'sometimes',
-        'save'                    =>  'sometimes|in:0,1',
-        'recurring'               =>  'sometimes_if:method,card|in:0,1',
-        'fee'                     =>  'sometimes|filled|integer|max:50000000',
-        'service_tax'             =>  'sometimes|filled|integer|max:50000000',
-        'on_hold'                 =>  'sometimes|boolean',
-        // 'on_hold_until'           =>  'sometimes|integer',
-        '_'                       =>  'sometimes'
+        'amount'                  => 'required|integer',
+        'currency'                => 'required|size:3',
+        'method'                  => 'custom',
+        'vpa'                     => 'required_if:method,upi|max:100|custom',
+        'card'                    => 'sometimes',
+        'bank'                    => 'required_if:method,netbanking',
+        'wallet'                  => 'required_if:method,wallet|custom',
+        'emi_duration'            => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
+        'description'             => 'sometimes',
+        'email'                   => 'sometimes|email',
+        'contact'                 => 'sometimes|contact_syntax',
+        'signature'               => 'sometimes',
+        'notes'                   => 'sometimes|notes',
+        'notes.merchant_order_id' => 'required_with:signature',
+        'callback_url'            => 'sometimes|url',
+        'order_id'                => 'sometimes|filled',
+        'customer_id'             => 'required_if:wallet,openwallet|public_id|filled',
+        'app_token'               => 'sometimes',
+        'token'                   => 'sometimes',
+        'save'                    => 'sometimes|in:0,1',
+        'recurring'               => 'sometimes_if:method,card|in:0,1',
+        'fee'                     => 'sometimes|filled|integer|max:50000000',
+        'service_tax'             => 'sometimes|filled|integer|max:50000000',
+        'on_hold'                 => 'sometimes|boolean',
+        // 'on_hold_until'           => 'sometimes|integer',
+        'ip'                      => 'sometimes|ip',
+        'referer'                 => 'sometimes|string|max:2083',
+        'user_agent'              => 'sometimes|string',
+        '_'                       => 'sometimes|array',
     ];
 
     protected static $captureRules = [
@@ -57,7 +61,8 @@ class Validator extends Base\Validator
         'reverse_all'             => 'sometimes|boolean',
         'reversals'               => 'sometimes|array',
         'reversals.*.transfer'    => 'required|public_id',
-        'reversals.*.amount'      => 'required|integer|min:100'
+        'reversals.*.amount'      => 'required|integer|min:100',
+        'reversals.*.notes'       => 'sometimes|notes',
     ];
 
     protected static $transferRules = [
@@ -66,6 +71,7 @@ class Validator extends Base\Validator
         'transfers.*.account'        => 'sometimes|public_id',
         'transfers.*.amount'         => 'required|integer|min:100',
         'transfers.*.currency'       => 'required|string|size:3',
+        'transfers.*.notes'          => 'sometimes|notes',
         'transfers.*.on_hold'        => 'sometimes|boolean',
         // 'transfers.*.on_hold_until'  => 'sometimes|integer',
     ];
@@ -110,7 +116,7 @@ class Validator extends Base\Validator
         $vpaParts = explode('@', $vpa);
 
         if ((count($vpaParts) !== 2) or
-            (strlen($vpaParts[1]) > 50))
+            (ProviderCode::validate($vpaParts[1]) === false))
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
@@ -322,10 +328,6 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Attribute fee is not allowed and should not be sent');
-            }
-            else if (empty($input['fee']))
-            {
-                ;
             }
         }
         if ((isset($input['fee'])) and

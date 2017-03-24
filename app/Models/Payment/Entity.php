@@ -233,17 +233,22 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID,
     ];
 
-    protected $guarded = array(self::ID);
+    protected $guarded = [self::ID];
 
-    protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
+    protected $appends = [self::PUBLIC_ID, self::CAPTURED];
 
-    protected static $modifiers = array(
+    protected static $modifiers = [
         self::CONTACT,
         self::BANK,
         'method_based_input',
-        'convert_empty_strings_to_null');
+        'convert_empty_strings_to_null'
+    ];
 
-    protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
+    protected static $generators = [
+        'metadata',
+    ];
+
+    protected $dates = [self::AUTHORIZED_AT, self::CAPTURED_AT];
 
     protected $defaults = [
         self::STATUS               => Status::CREATED,
@@ -320,6 +325,17 @@ class Entity extends Base\PublicEntity
 
     protected function modifyContact(& $input)
     {
+        // We need to remove this once they fix it on their end.
+        $app = \App::getFacadeRoot();
+        // We are currently doing this for GoIbibo and beta test merchant
+        $excludedMerchants = ['6ZLE5BE57SExGF', '7FloNFaK7P4MMo'];
+
+        if ((in_array($app['basicauth']->getMerchantId(), $excludedMerchants, true) === true) and
+            (empty($input['contact']) === true))
+        {
+            $input['contact'] = '+919999999999';
+        }
+
         if (isset($input['contact']) === false)
         {
             return;
@@ -411,6 +427,28 @@ class Entity extends Base\PublicEntity
     }
 
 // --------------------- Modifiers Ends ----------------------------------------
+
+// --------------------- Generators Ends ---------------------------------------
+
+    protected function generateMetadata(&$input)
+    {
+        $this->metadata = $input['_'] ?? [];
+
+        // Overriding extra attributes for S2S integration
+        $this->metadata['ip'] = $input['ip'] ?? null;
+        $this->metadata['user_agent'] = $input['user_agent'] ?? null;
+
+        // We should only set referer if input['referer'] is defined
+        // and metadata['referer'] is false because checkout also
+        // sends us the referer info and we don't want to override it
+        if ((isset($input['referer']) === true) and
+            (isset($this->metadata['referer']) === false))
+        {
+            $this->metadata['referer'] = $input['referer'];
+        }
+    }
+
+// --------------------- Generators Ends ---------------------------------------
 
 // ----------------------- Setters ---------------------------------------------
 
@@ -596,11 +634,6 @@ class Entity extends Base\PublicEntity
     public function setEmailAttribute($email)
     {
         $this->attributes[self::EMAIL] = mb_strtolower($email);
-    }
-
-    public function setMetadata($metadata)
-    {
-        $this->metadata = $metadata;
     }
 
     public function setSave($save)

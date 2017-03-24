@@ -30,6 +30,8 @@ class Inferno
 
     protected $event;
 
+    protected $client = null;
+
     const HASH_ALGO = 'sha256';
 
     const WEBHOOK_FAILURE_HOURS = 24;
@@ -231,11 +233,21 @@ class Inferno
         // HttpClientDiscovery finds a suitable installed client that -
         // extends HttpClient (in this case Guzzle6 client)
         $pluginClient = new PluginClient(
-            HttpClientDiscovery::find(),
+            $this->getClient(),
             [$errorPlugin]
         );
 
         return $pluginClient;
+    }
+
+    public function getClient()
+    {
+        if ($this->client === null)
+        {
+            $this->client = HttpClientDiscovery::find();
+        }
+
+        return $this->client;
     }
 
     public function sendRequest($request, $webhook)
@@ -246,8 +258,9 @@ class Inferno
         $this->trace->info(
             TraceCode::WEBHOOK_FIRING,
             [
-                'webhook_id' => $webhook->getId(),
-                'request'    => $request
+                'webhook_id'  => $webhook->getId(),
+                'merchant_id' => $webhook->merchant->getId(),
+                'request'     => $request
             ]);
 
         try
@@ -261,8 +274,9 @@ class Inferno
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
-                    'webhook' => $webhook->getId(),
-                    'exception' => $this->errorMessage,
+                    'webhook_id'  => $webhook->getId(),
+                    'merchant_id' => $webhook->merchant->getId(),
+                    'exception'   => $this->errorMessage,
                 ]);
 
             return false;
@@ -274,8 +288,9 @@ class Inferno
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
-                    'webhook' => $webhook->getId(),
-                    'exception' => $this->errorMessage,
+                    'webhook_id'  => $webhook->getId(),
+                    'merchant_id' => $webhook->merchant->getId(),
+                    'exception'   => $this->errorMessage,
                 ]);
 
             return false;
@@ -287,8 +302,9 @@ class Inferno
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
-                    'webhook' => $webhook->getId(),
-                    'exception' => $this->errorMessage,
+                    'webhook_id'  => $webhook->getId(),
+                    'merchant_id' => $webhook->merchant->getId(),
+                    'exception'   => $this->errorMessage,
                 ]);
 
             return false;
@@ -299,7 +315,8 @@ class Inferno
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
-                    'webhook' => $webhook->getId(),
+                    'webhook_id'    => $webhook->getId(),
+                    'merchant_id'   => $webhook->merchant->getId(),
                     'response_code' => $response->getStatusCode(),
                     'response_body' => $response->getReasonPhrase(),
                 ]
@@ -314,7 +331,8 @@ class Inferno
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
                 [
-                    'webhook' => $webhook->getId(),
+                    'webhook_id'    => $webhook->getId(),
+                    'merchant_id'   => $webhook->merchant->getId(),
                     'response_code' => $response->getStatusCode(),
                 ]);
         }
@@ -388,7 +406,10 @@ class Inferno
             {
                 $this->trace->info(
                     TraceCode::WEBHOOK_DEACTIVATE,
-                    ['webhook' => $webhook->getId()]
+                    [
+                        'webhook_id'  => $webhook->getId(),
+                        'merchant_id' => $webhook->merchant->getId(),
+                    ]
                 );
 
                 $webhook->deactivate();

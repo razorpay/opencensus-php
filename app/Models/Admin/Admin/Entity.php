@@ -281,6 +281,11 @@ class Entity extends Base\Entity
         return explode(' ', $this->getName())[0];
     }
 
+    public function getOrgId()
+    {
+        return $this->getAttribute(self::ORG_ID);
+    }
+
     public function getOAuthAccessToken()
     {
         return $this->getAttribute(self::OAUTH_ACCESS_TOKEN);
@@ -456,11 +461,6 @@ class Entity extends Base\Entity
         $orgId = $this->getAttribute(self::ORG_ID);
 
         return Org\Entity::getSignedId($orgId);
-    }
-
-    public function getOrgId()
-    {
-        return $this->getAttribute(self::ORG_ID);
     }
 
     public function getInputFields() : array

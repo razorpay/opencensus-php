@@ -5,7 +5,6 @@ namespace RZP\Models\Customer\Balance;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
-use RZP\Models\Wallet;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 
@@ -76,7 +75,7 @@ class Core extends Base\Core
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->findByCustomerAndMerchantSilent($customer, $merchant);
+                        ->findByCustomerIdAndMerchantSilent($customer->getId(), $merchant, true);
 
         if ($balance !== null)
         {

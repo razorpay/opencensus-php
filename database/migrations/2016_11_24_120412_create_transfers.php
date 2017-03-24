@@ -42,6 +42,8 @@ class CreateTransfers extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->text(Entity::NOTES);
+
             $table->tinyInteger(Entity::ON_HOLD)
                   ->default(0);
 

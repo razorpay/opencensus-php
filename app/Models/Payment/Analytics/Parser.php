@@ -53,6 +53,7 @@ class Parser extends Base\Core
         Entity::LIBRARY               => 'library',
         Entity::LIBRARY_VERSION       => 'library_version',
         Entity::BROWSER               => 'browser',
+        Entity::BROWSER_VERSION       => 'browser_version',
         Entity::OS                    => 'os',
         Entity::OS_VERSION            => 'os_version',
         Entity::DEVICE                => 'device',
@@ -151,7 +152,7 @@ class Parser extends Base\Core
 
         if ($pa->getBrowser() !== null)
         {
-            $pa->setPlatformVersion($this->uAgent->version($this->uAgent->browser($ua)));
+            $pa->setBrowserVersion($this->uAgent->version($this->uAgent->browser($ua)));
         }
 
         $pa->setOs($this->getOs($ua));
@@ -162,7 +163,7 @@ class Parser extends Base\Core
 
         $pa->setIp($this->getIp($pa));
 
-        $pa->setReferer($this->getRefererUrl($pa));
+        $pa->setReferer($this->getRefererUrl());
 
         $ua = $ua ?: $this->request->header(RequestHeader::USER_AGENT);
 
@@ -224,14 +225,9 @@ class Parser extends Base\Core
         }
     }
 
-    protected function getRefererUrl(Entity $pa)
+    protected function getRefererUrl()
     {
         $reqReferer = $this->request->header(RequestHeader::REFERER);
-
-        if ($this->ba->isPrivateAuth() === true)
-        {
-            $reqReferer = $pa->payment->getMetadata('referer', $reqReferer);
-        }
 
         if ($reqReferer === null)
         {
