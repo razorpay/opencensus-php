@@ -5,6 +5,9 @@ namespace RZP\Http\Controllers;
 use App;
 use Request;
 use ApiResponse;
+
+use RZP\Exception;
+use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Comment;
@@ -40,6 +43,15 @@ class WorkflowController extends Controller
     public function postExecuteAction(string $id)
     {
         $input = Request::all();
+
+        // Do not execute the action if it is not approved by all checkers
+        $isActionApproved (new Action\Core)->checkAndMarkActionApproved($action);
+
+        if ($isActionApproved === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_NOT_APPROVED);
+        }
 
         $diff = (new Differ\Service)->fetchRequest($id);
 
@@ -94,6 +106,33 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createWorkflow()
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Service)->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getWorkflow(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Service)->fetch($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createWorkflowStep(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Step\Service)->create($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postActionComment(string $actionId)
     {
         $input = Request::all();
@@ -108,5 +147,20 @@ class WorkflowController extends Controller
         $result = (new Comment\Service)->fetchByActionId($actionId);
 
         return ApiResponse::json($result);
+    }
+
+    // Workflow Manager API
+    public function getActionsForChecker()
+    {
+        $data = (new Workflow\Service)->getActionsForChecker();
+
+        return ApiResponse::json($data);
+    }
+
+    public function getActionsByMaker()
+    {
+        $data = (new Workflow\Service)->getActionsByMaker();
+
+        return ApiResponse::json($data);
     }
 }

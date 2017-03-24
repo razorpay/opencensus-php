@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Workflow\Action\Differ;
 
-use RZP\Models\Base;
+use RZP\Models\Workflow\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     const ID           = 'id';
     const ENTITY_NAME  = 'entity_name';

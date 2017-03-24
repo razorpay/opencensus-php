@@ -20,4 +20,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($actionState);
     }
+
+    public function changeActionState(Action\Entity $action, string $state)
+    {
+        $input = [
+            State\Entity::ACTION_ID  => $action->getId(),
+            State\Entity::ADMIN_ID   => $action->getAdminId(),
+            State\Entity::NAME       => $state,
+        ];
+
+        $this->create($input);
+    }
 }

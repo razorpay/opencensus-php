@@ -16,6 +16,10 @@ class Core extends Base\Core
 
         $action->generateId();
 
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $input[Entity::ORG_ID] = $admin->getOrgId();
+
         $action->build($input);
 
         $this->repo->transactionOnLiveAndTest(function() use($action) {
@@ -46,6 +50,8 @@ class Core extends Base\Core
     public function checkAndMarkActionApproved(Entity $action)
     {
         // Number of checks done on the action
+        // TODO fetch the checker count instead of all the checkers
+        // save query time
         $checkers = $this->repo->action_checker->fetchByActionId(
             $action->getId());
 
@@ -108,5 +114,37 @@ class Core extends Base\Core
         });
 
         return $action;
+    }
+
+    public function updateCurrentLevelIfNeeded(Entity $action)
+    {
+        //
+        // get all the checkers in the current level
+        // fetch the reviewer count in the current level of steps
+        // if checkers === reviewer count, update the current level
+        //
+
+        $level = $action->getCurrentLevel();
+
+        $requiredCheckers = $this->repo->workflow_step->getNumCheckerByLevel(
+            $level, $action->getWorkflowId());
+
+        $numCheckers = $this->repo->action_checker->fetchCountByActionId(
+            $action->getId());
+
+        // If all the checkers in the same level have given their review,
+        // increment the level
+        if ($numCheckers === $requiredCheckers)
+        {
+            $action->incrementCurrentLevel();
+
+            $this->repo->saveOrFail($action);
+        }
+    }
+
+
+    public function get(string $id)
+    {
+        return $this->repo->workflow_action->findOrFailPublic($id);
     }
 }

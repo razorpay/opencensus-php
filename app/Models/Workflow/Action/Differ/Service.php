@@ -4,12 +4,15 @@ namespace RZP\Models\Workflow\Action\Differ;
 
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Workflow\Action\State;
 
 class Service extends Base\Service
 {
     public function create(string $actionId, array $input)
     {
         Action\Entity::verifyIdAndStripSign($actionId);
+
+        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
 
         $diff = $this->core()->create($actionId, $input);
 
@@ -20,6 +23,8 @@ class Service extends Base\Service
     {
         Action\Entity::verifyIdAndStripSign($actionId);
 
+        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
+
         $diff = $this->core()->get($actionId);
 
         return $diff;
@@ -29,13 +34,17 @@ class Service extends Base\Service
     {
         Action\Entity::verifyIdAndStripSign($actionId);
 
-        return $this->core()->fetchRequest($actionId);
+        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
+
+        return $this->core()->fetchRequest($action);
     }
 
     public function changeActionState(string $actionId, State\Entity $state)
     {
         Action\Entity::verifyIdAndStripSign($actionId);
 
-        $this->core()->changeActionState($actionId, $state);
+        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
+
+        (new State\Core)->changeActionState($action, $state);
     }
 }

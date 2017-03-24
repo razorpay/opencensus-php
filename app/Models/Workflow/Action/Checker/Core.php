@@ -35,8 +35,11 @@ class Core extends Base\Core
 
         });
 
+        (new Action\Core)->updateCurrentLevelIfNeeded();
+
         // TODO can do it async using laravel events
         (new Action\Core)->checkAndMarkActionApproved();
+
 
         return $checker;
     }

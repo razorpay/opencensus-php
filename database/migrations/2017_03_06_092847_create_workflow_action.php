@@ -6,8 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin\Entity as Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
-use RZP\Models\Workflow\Action\Comment\Entity as Comment;
 use RZP\Models\Workflow\Entity as Workflow;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class CreateWorkflowAction extends Migration
 {
@@ -27,9 +27,13 @@ class CreateWorkflowAction extends Migration
 
             $table->char(Action::WORKFLOW_ID, Action::ID_LENGTH);
             $table->char(Action::ADMIN_ID, Action::ID_LENGTH);
+            $table->char(Action::ORG_ID, Action::ID_LENGTH);
 
             $table->boolean(Action::APPROVED)
                   ->default(0);
+
+            $table->tinyInteger(Action::CURRENT_LEVEL)
+                  ->nullable();
 
             $table->foreign(Action::WORKFLOW_ID)
                   ->references(Workflow::ID)
@@ -39,6 +43,11 @@ class CreateWorkflowAction extends Migration
             $table->foreign(Action::ADMIN_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN)
+                  ->on_delete('restrict');
+
+            $table->foreign(Action::ORG_ID)
+                  ->references(Org::ID)
+                  ->on(Table::ORG)
                   ->on_delete('restrict');
 
             $table->integer(Action::CREATED_AT);
@@ -58,6 +67,8 @@ class CreateWorkflowAction extends Migration
             $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::WORFLOW_ID . '_foreign');
 
             $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::ADMIN_ID . '_foreign');
+
+            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::ORG_ID . '_foreign');
         });
 
         Schema::drop(Table::WORKFLOW_ACTION);

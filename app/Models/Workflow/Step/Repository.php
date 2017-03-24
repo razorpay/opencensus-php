@@ -2,18 +2,13 @@
 
 namespace RZP\Models\Workflow\Step;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Models\Admin\Base;
-use RZP\Models\Admin\Group;
-use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Role;
+use RZP\Models\Workflow\Base;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'workflow_step';
 
-    protected $appFetchParamRules = [
+    protected $adminFetchParamRules = [
         Entity::WORKFLOW_ID   => 'sometimes|string|max:14',
         Entity::ROLE_ID       => 'sometimes|string|max:14',
         Entity::PERMISSION_ID => 'sometimes|string|max:14',
@@ -23,6 +18,26 @@ class Repository extends Base\Repository
     public function getNumCheckersForAction(string $workflowId)
     {
         return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                    ->sum(Entity::REVIEWER_COUNT);
+    }
+
+    public function findByLevelAndWorkflowId(
+        string $level,
+        string $workflowId,
+        $columns = array('*'))
+    {
+        return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                    ->where(Entity::LEVEL, '=', $level)
+                    ->get($columns);
+
+    }
+
+    public function getNumCheckersByLevel(string $level, string $workflowId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::LEVEL, '=', $level)
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->sum(Entity::REVIEWER_COUNT);
     }

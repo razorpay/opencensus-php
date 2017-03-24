@@ -3,12 +3,13 @@
 namespace RZP\Models\Workflow\Step;
 
 use App;
-use Hash;
 use Carbon\Carbon;
-use RZP\Constants\Table;
-use RZP\Models\Base;
+use Hash;
 
-class Entity extends Base\PublicEntity
+use RZP\Constants\Table;
+use RZP\Models\Workflow\Base;
+
+class Entity extends Base\Entity
 {
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';
@@ -48,7 +49,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::LEVEL => 0,
+        self::LEVEL => 1,
     ];
 
     public function workflow()
@@ -64,5 +65,10 @@ class Entity extends Base\PublicEntity
     public function permission()
     {
         return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
+    }
+
+    public function getLevel() : integer
+    {
+        return $this->getAttribute(self::LEVEL);
     }
 }

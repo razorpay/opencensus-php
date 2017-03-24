@@ -3,14 +3,16 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Constants\Table;
-use RZP\Models\Base;
+use RZP\Models\Workflow\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';
     const ADMIN_ID       = 'admin_id';
+    const ORG_ID         = 'org_id';
     const APPROVED       = 'approved';
+    const CURRENT_LEVEL  = 'current_level';
 
     protected static $sign = 'w_action';
 
@@ -26,6 +28,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::WORKFLOW_ID,
         self::ADMIN_ID,
+        self::ORG_ID,
         self::APPROVED,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -34,17 +37,20 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::WORKFLOW_ID,
         self::ADMIN_ID,
+        self::ORG_ID,
         self::APPROVED,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
     protected $defaults = [
-        self::APPROVED => false,
+        self::APPROVED      => false,
+        self::CURRENT_LEVEL => 1,
     ];
 
     protected $casts = [
-        self::APPROVED => 'boolean',
+        self::APPROVED      => 'boolean',
+        self::CURRENT_LEVEL => 'integer',
     ];
 
     public function workflow()
@@ -57,6 +63,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Workflow\Action\State\Entity');
     }
 
+    public function org()
+    {
+        return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+    }
+
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
@@ -65,6 +76,16 @@ class Entity extends Base\PublicEntity
     public function setApproved(boolean $status)
     {
         $this->setAttribute(self::APPROVED);
+    }
+
+    public function setCurrentLevel(int $level)
+    {
+        $this->setAttribute(self::CURRENT_LEVEL, $level);
+    }
+
+    public function getCurrentLevel() : integer
+    {
+        return $this->getAttribute(self::CURRENT_LEVEL);
     }
 
     public function getWorkflowId() : string
@@ -102,5 +123,14 @@ class Entity extends Base\PublicEntity
         }
 
         return true;
+    }
+
+    public function incrementCurrentLevel()
+    {
+        $level = $this->getAttribute(self::CURRENT_LEVEL);
+
+        $level += 1;
+
+        $this->setCurrentLevel($level);
     }
 }

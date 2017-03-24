@@ -73,6 +73,7 @@ class Table
     const ACTION_COMMENT        = 'action_comments';
     const ACTION_STATE          = 'action_state';
     const ACTION_CHECKER        = 'action_checker';
+    const WORKFLOW_PERMISSION   = 'workflow_permissions';
 
     // Gateway related
     const EBS                   = 'ebs';
