@@ -4,13 +4,20 @@ namespace RZP\Reconciliator\NetbankingIcici;
 
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
-// use RZP\Gateway\Netbanking\Icici;
+use RZP\Gateway\Netbanking\Icici;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     const COLUMN_PAYMENT_REF_NO  = 'PRN';
     const COLUMN_BANK_PAYMENT_ID = 'BID';
     const COLUMN_PAYMENT_DATE    = 'Date';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->netbankingRepo = $this->repo->netbanking;
+    }
 
     protected function getPaymentId($row)
     {
@@ -32,13 +39,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return null;
     }
 
-    protected function getGatewayPaymentDate($row)
+    protected function getGatewayPayment($paymentId)
     {
-        if (isset($row[self::COLUMN_PAYMENT_DATE]) === true)
-        {
-            return $row[self::COLUMN_PAYMENT_DATE];
-        }
+        $statuses = [Icici\Confirmation::YES, Icici\Status::SUCCESS];
 
-        return null;
+        return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
+                                                                     Action::AUTHORIZE,
+                                                                     $statuses);
     }
 }
