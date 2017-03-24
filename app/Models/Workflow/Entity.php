@@ -13,7 +13,6 @@ class Entity extends Base\PublicEntity
     const ID            = 'id';
     const NAME          = 'name';
     const ORG_ID        = 'org_id';
-    const PERMISSION_ID = 'permission_id';
 
     protected static $sign = 'workflow';
 
@@ -25,14 +24,12 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::ORG_ID,
-        self::PERMISSION_ID,
     ];
 
     protected $visible = [
         self::ID,
         self::NAME,
         self::ORG_ID,
-        self::PERMISSION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -41,7 +38,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::ORG_ID,
-        self::PERMISSION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -56,9 +52,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
 
-    public function permission()
+    public function permissions()
     {
-        return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
+        return $this->belongsToMany(
+            'RZP\Models\Admin\Permission\Entity',
+            Table::WORKFLOW_PERMISSION);
     }
 
     public function getOrgId()

@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Step;
 
 class Core extends Base\Core
@@ -30,6 +31,11 @@ class Core extends Base\Core
 
                 (new Step\Core)->create($step);
             }
+
+            $permissionIds = Permission\Entity::verifyIdAndStripSignMultiple(
+                $input['permissions']);
+
+            $workflow->permissions()->sync($permissionIds);
         });
 
         return $workflow;
