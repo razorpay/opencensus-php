@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         string $orgId,
         string $entity = null)
     {
-        $rules = $this->getRulesVariableForOrg($operation, $orgId, $entity);
+        $rules = $this->getRulesForOrg($operation, $orgId, $entity);
 
         // We check for valid keys because single entity stores unique
         // fields for many orgs which should not be errorneously filled.
@@ -34,7 +34,7 @@ class Validator extends Base\Validator
         $this->runValidators($operation, $input);
     }
 
-    protected function getRulesVariableForOrg(
+    protected function getRulesForOrg(
         string $operation,
         string $orgId,
         string $entity = null)
@@ -77,7 +77,7 @@ class Validator extends Base\Validator
         string $orgCode,
         string $entity = null)
     {
-        $rules = $this->getRulesVariableForOrg($operation, $orgCode, $entity);
+        $rules = $this->getRulesForOrg($operation, $orgCode, $entity);
 
         $customAttributes = $this->getCustomAttributes($operation);
 

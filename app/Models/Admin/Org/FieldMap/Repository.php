@@ -12,16 +12,16 @@ class Repository extends Base\Repository
     protected $merchantIdRequiredForMultipleFetch = false;
 
     // These are proxy allowed params to search on.
-    protected $proxyFetchParamRules = array(
-        Entity::ENTITY_NAME           => 'sometimes|string',
-        Entity::ORG_ID                => 'sometimes|string|max:20',
-    );
+    protected $proxyFetchParamRules = [
+        Entity::ENTITY_NAME => 'sometimes|string',
+        Entity::ORG_ID      => 'sometimes|string|max:14',
+    ];
 
     // These are admin allowed params to search on.
-    protected $appFetchParamRules = array(
-        Entity::ENTITY_NAME           => 'sometimes|string',
-        Entity::ORG_ID                => 'sometimes|string|max:20',
-    );
+    protected $adminFetchParamRules = [
+        Entity::ENTITY_NAME => 'sometimes|string',
+        Entity::ORG_ID      => 'sometimes|string|max:14',
+    ];
 
     public function isMerchantIdRequiredForFetch()
     {

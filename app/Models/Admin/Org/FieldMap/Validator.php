@@ -9,8 +9,8 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ENTITY_NAME         => 'required|string|max:255|custom',
-        Entity::ORG_ID              => 'required|string|max:20',
+        Entity::ENTITY_NAME         => 'required|string|max:250|custom',
+        Entity::ORG_ID              => 'required|string|max:14',
         Entity::FIELDS              => 'required|array',
     ];
 
@@ -69,6 +69,5 @@ class Validator extends Base\Validator
                 'Few fields are invalid for the given entity',
                 $data);
         }
-
     }
 }

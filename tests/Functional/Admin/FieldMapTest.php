@@ -39,7 +39,7 @@ class FieldMapTest extends TestCase
         $this->startTest();
     }
 
-    protected function getDefaultFieldMap()
+    protected function createDefaultFieldMap()
     {
         return $this->fixtures->create(
             'org_field_map',
@@ -52,7 +52,7 @@ class FieldMapTest extends TestCase
 
     public function testGetFieldMap()
     {
-        $fieldMap = $this->getDefaultFieldMap();
+        $fieldMap = $this->createDefaultFieldMap();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -66,7 +66,7 @@ class FieldMapTest extends TestCase
 
     public function testPutFieldMap()
     {
-        $fieldMap = $this->getDefaultFieldMap();
+        $fieldMap = $this->createDefaultFieldMap();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -76,5 +76,19 @@ class FieldMapTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testDeleteFieldMap()
+    {
+        $fieldMap = $this->createDefaultFieldMap();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(),
+                        $fieldMap->getNameOfEntity());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
     }
 }

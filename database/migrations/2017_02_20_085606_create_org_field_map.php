@@ -23,7 +23,7 @@ class CreateOrgFieldMap extends Migration
             $table->char(FieldMap::ID, FieldMap::ID_LENGTH)
                   ->primary();;
 
-            $table->char(FieldMap::ORG_ID, FieldMap::ID_LENGTH);
+            $table->char(FieldMap::ORG_ID, Org::ID_LENGTH);
 
             $table->string(FieldMap::ENTITY_NAME, 250);
 

@@ -74,4 +74,18 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testDeleteFieldMap' => [
+        'request' => [
+            'url' => '/orgs/%s/field-map/%s',
+            'method' => 'delete',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'deleted' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

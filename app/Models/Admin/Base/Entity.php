@@ -32,6 +32,9 @@ class Entity extends BaseModel\PublicEntity
 
         $validator = $this->getValidator();
 
+        // if the entity has different fields for differnt orgs
+        // validation for each org will be different
+        // this flags checks if validation supports different orgs
         if ((isset($validator->isOrgSpecificValidationSupported) === true) and
             ($validator->isOrgSpecificValidationSupported === true))
         {

@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Models\Admin;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Org\FieldMap;
 
 class OrganizationController extends Controller
 {
@@ -244,34 +245,34 @@ class OrganizationController extends Controller
 
 // --------------------- CRUD for Org FieldMap ----------------------------------------
 
-    public function postOrgFieldMap(string $id)
+    public function postOrgFieldMap(string $orgId)
     {
         $input = Request::all();
 
-        $data = (new Admin\Org\FieldMap\Service)->createFieldMapForEntity($id, $input);
+        $data = (new FieldMap\Service)->createFieldMapForEntity($orgId, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function putOrgFieldMap(string $id, string $entity)
+    public function putOrgFieldMap(string $orgId, string $entity)
     {
         $input = Request::all();
 
-        $data = (new Admin\Org\FieldMap\Service)->editFieldMapForEntity($id, $entity, $input);
+        $data = (new FieldMap\Service)->editFieldMapForEntity($orgId, $entity, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getOrgFieldMap(string $id, string $entity)
+    public function getOrgFieldMap(string $orgId, string $entity)
     {
-        $data = (new Admin\Org\FieldMap\Service)->getFieldsForEntity($id, $entity);
+        $data = (new FieldMap\Service)->getFieldsForEntity($orgId, $entity);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteOrgFieldMap(string $id, string $entity)
+    public function deleteOrgFieldMap(string $orgId, string $entity)
     {
-        $data = (new Admin\Org\FieldMap\Service)->getFieldsForEntity($id, $input);
+        $data = (new FieldMap\Service)->deleteFieldMapForEntity($orgId, $entity);
 
         return ApiResponse::json($data);
     }

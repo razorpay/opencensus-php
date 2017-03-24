@@ -36,7 +36,6 @@ class Entity extends Base\Entity
         self::ID,
         self::ADMIN_ID,
         self::ORG_ID,
-        self::TOKEN,
         self::EMAIL,
         self::FORM_DATA,
         self::CREATED_AT,
@@ -70,11 +69,11 @@ class Entity extends Base\Entity
 
     public function setPublicAdminIdAttribute(array &$attributes)
     {
-        $adminId = $this->getAttribute(static::ADMIN_ID);
+        $adminId = $this->getAdminId();
 
         if ($adminId !== null)
         {
-            $attributes[static::ADMIN_ID] = Admin\Entity::getSignedId($adminId);
+            $attributes[self::ADMIN_ID] = Admin\Entity::getSignedId($adminId);
         }
     }
 
@@ -98,6 +97,11 @@ class Entity extends Base\Entity
     public function getOrgId() : string
     {
         return $this->getAttribute(self::ORG_ID);
+    }
+
+    public function getAdminId() : string
+    {
+        return $this->getAttribute(self::ADMIN_ID);
     }
 
     public function getEmail() : string

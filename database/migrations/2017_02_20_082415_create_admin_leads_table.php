@@ -21,15 +21,17 @@ class CreateAdminLeadsTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(AdminLead::ID, AdminLead::ID_LENGTH)->primary();
+            $table->char(AdminLead::ID, AdminLead::ID_LENGTH)
+                  ->primary();
 
-            $table->char(AdminLead::ADMIN_ID, AdminLead::ID_LENGTH);
+            $table->char(AdminLead::ADMIN_ID, Admin::ID_LENGTH);
 
-            $table->char(AdminLead::ORG_ID, AdminLead::ID_LENGTH);
+            $table->char(AdminLead::ORG_ID, Org::ID_LENGTH);
 
-            $table->string(AdminLead::TOKEN, 250)->unique();
+            $table->string(AdminLead::TOKEN, 250)
+                  ->unique();
 
-            $table->string(AdminLead::EMAIL, 250);
+            $table->string(AdminLead::EMAIL, 255);
 
             $table->text(AdminLead::FORM_DATA);
 

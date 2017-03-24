@@ -15,13 +15,13 @@ class Repository extends Base\Repository
     protected $entity = 'admin_lead';
 
     protected $appFetchParamRules = [
-        Entity::ADMIN_ID => 'sometimes|string|max:25',
+        Entity::ADMIN_ID => 'sometimes|string|max:14',
         Entity::EMAIL    => 'sometimes|email',
-        Entity::ORG_ID   => 'sometimes|string|max:25',
+        Entity::ORG_ID   => 'sometimes|string|max:14',
     ];
 
     protected $adminFetchParamRules = [
-        Entity::ADMIN_ID => 'sometimes|string|max:25',
+        Entity::ADMIN_ID => 'sometimes|string|max:14',
         Entity::EMAIL    => 'sometimes|email',
     ];
 }

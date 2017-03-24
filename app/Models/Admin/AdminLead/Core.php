@@ -31,7 +31,7 @@ class Core extends Base\Core
         return $lead;
     }
 
-    public function sendInvitationEmail(Admin\Entity $admin, $invitation)
+    public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation)
     {
         $orgName = $admin->org->getDisplayName();
 
