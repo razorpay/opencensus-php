@@ -12,6 +12,6 @@ class Url
      * is not present In the DB
      * while making verify call
      */
-    const AUTHORIZE     = '/corp/BANKAWAY?';
-    const VERIFY        = '/Verify/?';
+    const AUTHORIZE     = '/corp/BANKAWAY';
+    const VERIFY        = '/Verify';
 }

@@ -32,7 +32,7 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->validateActionInput($input, 'verify');
+        $this->validateActionInput($input);
 
         $response = $this->getVerifyResponseData($input);
 

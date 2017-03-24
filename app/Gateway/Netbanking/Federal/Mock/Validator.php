@@ -12,8 +12,8 @@ class Validator extends Base\Validator
         RequestFields::BANK_ID      => 'required|string|in:049',
         RequestFields::MODE         => 'required|string|in:P',
         RequestFields::PAYEE_ID     => 'required|string',
-        RequestFields::PAYMENT_ID   => 'required|string|size:14',
-        RequestFields::ITEM_CODE    => 'required|string|size:14',
+        RequestFields::PAYMENT_ID   => 'required|alpha_num|size:14',
+        RequestFields::ITEM_CODE    => 'required|alpha_num|size:14',
         RequestFields::AMOUNT       => 'required',
         RequestFields::CURRENCY     => 'required|in:INR',
         RequestFields::LANGUAGE_ID  => 'required|in:001',
@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         RequestFields::USER_TYPE    => 'required|in:1',
         RequestFields::APP_TYPE     => 'required|string|in:corporate',
         RequestFields::CONFIRMATION => 'required|in:Y',
-        RequestFields::RETURN_URL   => 'required',
+        RequestFields::RETURN_URL   => 'required|url',
     ];
 
     protected static $verifyRules = [
@@ -29,8 +29,8 @@ class Validator extends Base\Validator
         RequestFields::BANK_ID         => 'sometimes|string|in:049',
         RequestFields::MODE            => 'sometimes|string|in:V',
         RequestFields::PAYEE_ID        => 'required|string',
-        RequestFields::PAYMENT_ID      => 'required|string|size:14',
-        RequestFields::ITEM_CODE       => 'required|string|size:14',
+        RequestFields::PAYMENT_ID      => 'required|alpha_num|size:14',
+        RequestFields::ITEM_CODE       => 'required|alpha_num|size:14',
         RequestFields::AMOUNT          => 'required',
         RequestFields::CURRENCY        => 'sometimes|in:INR',
         RequestFields::LANGUAGE_ID     => 'sometimes|in:001',
