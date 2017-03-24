@@ -13,13 +13,12 @@ class Core extends Base\Core
     {
         $admin = $this->app['basicauth']->getAdmin();
 
+        // Maker is the authorized admin from whom we got the request
         $input[Entity::ADMIN_ID] = $admin->getId();
 
         $checker = new Entity;
 
         $checker->generateId();
-
-        $validator = $checker->getValidator();
 
         $action = $this->repo->workflow_action->findByPublicId(
             $input[Entity::ACTION_ID]);
@@ -30,6 +29,8 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($checker);
 
+            // If the checker is final approver or rejects an action,
+            // Create a state transition for the action
             $this->createStateTransitionForChecker($checker);
 
         });
@@ -43,7 +44,7 @@ class Core extends Base\Core
         return $checker;
     }
 
-    protected function createStateTransitionForChecker(Checker\Entity $checker)
+    protected function createStateTransitionForChecker(Entity $checker)
     {
         $state = $checker->getStatusOnAction();
 

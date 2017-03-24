@@ -245,6 +245,7 @@ final class Route
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
+        'admin_get_file'                          => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                           ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
         'gateway_payment_callback_axis'           => ['post',     'callback/axis',                                  'GatewayController@callbackAxis'                                    ],
@@ -336,10 +337,10 @@ final class Route
         'gateway_fetch_priorities'                => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'               => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
         'gateway_remove_priorities'               => ['patch',    'gateway/priorities/{method}/remove',             'GatewayController@removeGatewayPriority'                           ],
-        'gateway_create_absence'                  => ['post',     'gateway/absence',                                'GatewayController@postCreateGatewayAbsence'                        ],
-        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putUpdateGatewayAbsence'                         ],
-        'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                           'GatewayController@deleteGatewayAbsence'                            ],
-        'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
+        'gateway_create_downtime'                 => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
+        'gateway_update_downtime'                 => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
+        'gateway_fetch_downtime'                  => ['get',      'gateway/downtimes',                              'GatewayController@getAbsentGateways'                               ],
+        'gateway_downtime_source_webhook'         => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
@@ -405,12 +406,17 @@ final class Route
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
 
         // Workflows API
-        'action_checker_create'                   => ['post',     'w-action/{id}/checker',                          'WorkflowController@postActionChecker'                              ],
-        'action_checker_multiple'                 => ['get',      'w-action/{id}/checkers',                         'WorkflowController@getActionCheckerMultiple'                       ],
-        'action_checker_get'                      => ['get',      'w-action/{id}/checker/{checkerId}',              'WorkflowController@getActionChecker'                               ],
         'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                            => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
         'workflow_step_create'                    => ['post',     'workflows/{id}/steps',                           'WorkflowController@createWorkflowStep'                             ],
+        'action_checker_create'                   => ['post',     'w-actions/{id}/checkers',                        'WorkflowController@postActionChecker'                              ],
+        'action_checker_multiple'                 => ['get',      'w-actions/{id}/checkers',                        'WorkflowController@getActionCheckerMultiple'                       ],
+        'action_checker_get'                      => ['get',      'w-actions/{id}/checker/{checkerId}',             'WorkflowController@getActionChecker'                               ],
+        'action_diff_create'                      => ['post',     'w-actions/{id}/diff',                            'WorkflowController@postActionDiff'                                 ],
+        'action_diff_get'                         => ['get',      'w-actions/{id}/diff',                            'WorkflowController@getActionDiff'                                  ],
+        'action_request_execute'                  => ['post',     'w-actions/{id}/execute-diff',                    'WorkflowController@postExecuteAction'                              ],
+        'action_comment_create'                   => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
+        'action_comment_fetch'                    => ['get',      'w-actions/{id}/comments',                        'WorkflowController@getActionComments'                              ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -731,10 +737,9 @@ final class Route
         'gateway_fetch_priorities',
         'gateway_update_priorities',
         'gateway_remove_priorities',
-        'gateway_create_absence',
-        'gateway_update_absence',
-        'gateway_delete_absence',
-        'gateway_fetch_absence',
+        'gateway_create_downtime',
+        'gateway_update_downtime',
+        'gateway_fetch_downtime',
         'order_refund_multiple_authorized',
         'refund_create_gateway_record',
         'gateway_validate_unknown_refund',
@@ -768,6 +773,7 @@ final class Route
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
+        'admin_get_file',
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
@@ -943,6 +949,7 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
+        'gateway_downtime_source_webhook',
         'checkout_onyx',
         'checkout_hosted',
         'mock_event_tracker',
@@ -1070,6 +1077,14 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+    ];
+
+    /**
+     * Routes for all maker & checker actions.
+     * Its the map of the entity vs route name
+     */
+    public static $workflowRoutes = [
+       'merchant_edit_email' => 'merchant',
     ];
 
     const RAZORPAYJS_ROUTES = array(

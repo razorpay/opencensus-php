@@ -70,7 +70,6 @@ class Table
     const WORKFLOW              = 'workflows';
     const WORKFLOW_STEP         = 'workflow_steps';
     const WORKFLOW_ACTION       = 'workflow_actions';
-    const ACTION_PAYLOAD        = 'action_payloads';
     const ACTION_COMMENT        = 'action_comments';
     const ACTION_STATE          = 'action_state';
     const ACTION_CHECKER        = 'action_checker';
@@ -98,7 +97,7 @@ class Table
     // Terminal Performance
 
     const TERMINAL_ACTION       = 'terminal_action_logs';
-    const GATEWAY_ABSENCE       = 'gateway_status_absence';
+    const GATEWAY_DOWNTIME      = 'gateway_downtimes';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

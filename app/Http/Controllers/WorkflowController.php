@@ -2,14 +2,75 @@
 
 namespace RZP\Http\Controllers;
 
+use App;
 use Request;
 use ApiResponse;
 
 use RZP\Models\Workflow;
+use RZP\Models\Workflow\Action;
+use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Workflow\Action\Comment;
 use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
+    public function postActionDiff(string $id)
+    {
+        $input = Request::all();
+
+        $result = (new Differ\Service)->create($id, $input);
+
+        return ApiResponse::json($result);
+    }
+
+    public function getActionDiff(string $id)
+    {
+        $result = (new Differ\Service)->get($id);
+
+        return ApiResponse::json($result);
+    }
+
+    public function postWorkflowAction()
+    {
+        $input = Request::all();
+
+        $data = (new Action\Service)->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postExecuteAction(string $id)
+    {
+        $input = Request::all();
+
+        $diff = (new Differ\Service)->fetchRequest($id);
+
+        $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
+
+        $payload = $diff[Differ\Entity::PAYLOAD];
+
+        $controller = $diff[Differ\Entity::CONTROLLER];
+
+        $functionName = $diff[Differ\Entity::FUNCTION_NAME];
+
+        Request::replace($payload);
+
+        $controller = App::make($controller);
+
+        $response = App::call([$controller, $functionName], array_values($routeParams));
+
+        $state = State\Entity::EXECUTED;
+
+        if ($response->getStatusCode() !== 200)
+        {
+            $state = State\Entity::FAILED;
+        }
+
+        (new Differ\Service)->changeActionState($id, $state);
+
+        return $response;
+    }
+
     public function postActionChecker(string $id)
     {
         $input = Request::all();
@@ -69,5 +130,21 @@ class WorkflowController extends Controller
         $data = (new Checker\Service)->fetchActionsForChecker($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function postActionComment(string $actionId)
+    {
+        $input = Request::all();
+
+        $result = (new Comment\Service)->create($actionId, $input);
+
+        return ApiResponse::json($result);
+    }
+
+    public function getActionComment(string $actionId)
+    {
+        $result = (new Comment\Service)->fetchByActionId($actionId);
+
+        return ApiResponse::json($result);
     }
 }

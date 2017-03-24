@@ -24,10 +24,16 @@ class CreateWorkflows extends Migration
                   ->primary();
 
             $table->char(Workflow::ORG_ID, Workflow::ID_LENGTH);
+            $table->char(Workflow::PERMISSION_ID, Workflow::ID_LENGTH);
 
             $table->foreign(Workflow::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG)
+                  ->on_delete('restrict');
+
+            $table->foreign(Workflow::PERMISSION_ID)
+                  ->references(Permission::ID)
+                  ->on(Table::PERMISSION)
                   ->on_delete('restrict');
 
             $table->char(Workflow::NAME, 255);
@@ -48,7 +54,7 @@ class CreateWorkflows extends Migration
         {
             $table->dropForeign(Table::WORKFLOW . '_' . Workflow::ORG_ID . '_foreign');
 
-            $table->dropForeign(Table::WORKFLOW . '_' . Workflow::ORG_ID . '_foreign');
+            $table->dropForeign(Table::WORKFLOW . '_' . Workflow::PERMISSION_ID . '_foreign');
         });
 
         //

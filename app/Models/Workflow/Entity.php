@@ -7,16 +7,13 @@ use Hash;
 use Carbon\Carbon;
 use RZP\Constants\Table;
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\PublicEntity
 {
-    // enable revisioning on this entity
-    use RevisionableTrait;
-
-    const ID     = 'id';
-    const NAME   = 'name';
-    const ORG_ID = 'org_id';
+    const ID            = 'id';
+    const NAME          = 'name';
+    const ORG_ID        = 'org_id';
+    const PERMISSION_ID = 'permission_id';
 
     protected static $sign = 'workflow';
 
@@ -28,12 +25,14 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::ORG_ID,
+        self::PERMISSION_ID,
     ];
 
     protected $visible = [
         self::ID,
         self::NAME,
         self::ORG_ID,
+        self::PERMISSION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -41,6 +40,8 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::NAME,
+        self::ORG_ID,
+        self::PERMISSION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -53,6 +54,11 @@ class Entity extends Base\PublicEntity
     public function org()
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+    }
+
+    public function permission()
+    {
+        return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
     }
 
     public function getOrgId()

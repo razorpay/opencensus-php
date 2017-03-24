@@ -7,13 +7,9 @@ use Hash;
 use Carbon\Carbon;
 use RZP\Constants\Table;
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\PublicEntity
 {
-    // enable revisioning on this entity
-    use RevisionableTrait;
-
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';
     const LEVEL          = 'level';

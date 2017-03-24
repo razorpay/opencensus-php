@@ -7,17 +7,17 @@ use Carbon\Carbon;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Gateway\Wallet\Base;
-use RZP\Gateway\Base\Verify;
-use RZP\Models\Payment\Entity as Payment;
-use RZP\Models\Payment\Status;
-use RZP\Models\Currency\Currency;
-use RZP\Gateway\Base\VerifyResult;
+use RZP\Exception;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Wallet\Base\Entity;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Status;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -148,6 +148,82 @@ class Gateway extends Base\Gateway
         {
             $this->handleRefundFailure($content);
         }
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $gatewayRefundEntities = $this->repo->findSuccessfulRefundByRefundId($refundId, Wallet::JIOMONEY);
+
+        if ($gatewayRefundEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $gatewayRefundEntity = $gatewayRefundEntities->first();
+
+        $gatewayRefundEntityPaymentId = $gatewayRefundEntity->getPaymentId();
+        $gatewayRefundEntityRefundAmount = $gatewayRefundEntity->getAmount();
+        $gatewayRefundEntityStatusCode = $gatewayRefundEntity->getStatusCode();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $gatewayRefundEntityPaymentId,
+                'gateway_refund_amount' => $gatewayRefundEntityRefundAmount,
+                'status_code'           => $gatewayRefundEntityStatusCode,
+            ]);
+
+        $gatewayRefundSuccess = ($gatewayRefundEntityStatusCode === StatusCode::SUCCESS);
+
+        if (($gatewayRefundEntityPaymentId !== $paymentId) or
+            ($gatewayRefundEntityRefundAmount !== $refundAmount) or
+            ($gatewayRefundSuccess === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                                                            $input['payment']['id'],
+                                                            Action::AUTHORIZE);
+
+        // Return true if already authorized on gateway
+        if (($gatewayPayment->getGatewayPaymentId() !== null) and
+            ($gatewayPayment->getStatusCode() === StatusCode::SUCCESS))
+        {
+            return true;
+        }
+
+        if ((empty($input['gateway']['gateway_payment_id']) === true) or
+            (empty($input['gateway']['gateway_payment_date']) === true))
+        {
+            throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING,
+                        null,
+                        $input);
+        }
+
+        $contentToSave = [
+            Entity::GATEWAY_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
+            Entity::DATE               => $input['gateway']['gateway_payment_date'],
+            Entity::STATUS_CODE        => StatusCode::SUCCESS,
+            Entity::RESPONSE_CODE      => ResponseCode::SUCCESS
+        ];
+
+        $gatewayPayment->fill($contentToSave);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 
     //------------------Authorize helper methods begin--------------------------
@@ -496,7 +572,7 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
-        if ($this->validatePaymentVerificationSuccess($content, $input) === true)
+        if ($this->validatePaymentVerificationSuccess($content) === true)
         {
             $verify->gatewaySuccess = true;
         }
@@ -524,6 +600,11 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
+        //
+        // We always update wallet entity with verify response content as we need
+        // the gateway payment date during refund. So if that is not present in
+        // wallet entity we get it from verify
+        //
         $verify->content = $this->getVerifyWalletAttributes($verify);
 
         $gatewayPayment->fill($verify->content);
@@ -533,16 +614,24 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyWalletAttributes($verify)
     {
-        $payment = $this->input['payment'];
+        $gatewayPayment = $verify->payment;
 
         $content = $verify->verifyResponseContent;
 
+        $gatewayResponseCode = $this->getGatewayResponseCode($content);
+
+        $gatewayStatusCode = $this->getGatewayStatusCodeFromResponseCode($gatewayResponseCode);
+
         $contentToSave = [
-            Entity::RECEIVED             => true,
-            Entity::RESPONSE_CODE        => $this->getGatewayTxnStatus($content),
-            Entity::DATE                 => $this->getGatewayPaymentDate($content, $payment),
-            Entity::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content, $payment)
+            Entity::RESPONSE_CODE      => $gatewayResponseCode,
+            Entity::DATE               => $this->getGatewayPaymentDate($content),
+            Entity::GATEWAY_PAYMENT_ID => $this->getGatewayPaymentId($content)
         ];
+
+        if ($gatewayPayment->getStatusCode() === null)
+        {
+            $contentToSave[Entity::STATUS_CODE] = $gatewayStatusCode;
+        }
 
         return $contentToSave;
     }
@@ -567,14 +656,14 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function validatePaymentVerificationSuccess(array $content, array $input)
+    protected function validatePaymentVerificationSuccess(array $content)
     {
-        $txnStatus = $this->getGatewayTxnStatus($content);
+        $responseCode = $this->getGatewayResponseCode($content);
 
-        return ($txnStatus === StatusCode::API_SUCCESS);
+        return ($responseCode === ResponseCode::SUCCESS);
     }
 
-    protected function getGatewayTxnStatus(array $content)
+    protected function getGatewayResponseCode(array $content)
     {
         if ($this->verifiedUsingStatusQuery === true)
         {
@@ -590,6 +679,16 @@ class Gateway extends Base\Gateway
         return null;
     }
 
+    public function getGatewayStatusCodeFromResponseCode($responseCode)
+    {
+        if ($responseCode !== null)
+        {
+            return ($responseCode === ResponseCode::SUCCESS) ? StatusCode::SUCCESS : StatusCode::INTERNAL_ERROR;
+        }
+
+        return null;
+    }
+
     /**
      * Fetches the gateway payment date from the verify response
      * Jiomoney only returns the timestamp in CHECKPAYMENTSTATUS response and
@@ -597,10 +696,9 @@ class Gateway extends Base\Gateway
      * API we return the payment created at timestamp, else we return null
      *
      * @param  array  $content verify response content
-     * @param  array  $payment payment array
      * @return string          gateway payment timestamp
      */
-    public function getGatewayPaymentDate(array $content, array $payment)
+    public function getGatewayPaymentDate(array $content)
     {
         if ($this->verifiedUsingCheckPaymentStatus === true)
         {
@@ -612,7 +710,7 @@ class Gateway extends Base\Gateway
         return null;
     }
 
-    protected function getGatewayPaymentId(array $content, array $payment)
+    protected function getGatewayPaymentId(array $content)
     {
         if ($this->verifiedUsingStatusQuery === true)
         {

@@ -1,0 +1,55 @@
+{
+  "settings": {
+
+  },
+  "mappings": {
+    "audit_log": {
+      "_all": {
+        "enabled": false
+      },
+      "properties": {
+      	 "id": {
+            "type": "string"
+        },
+        "type": {
+            "type": "string"
+        },
+        "url": {
+            "type": "string"
+        },
+        "method": {
+            "type": "string"
+        },
+        "entity_name": {
+            "type": "string"
+        },
+        "entity_id": {
+            "type": "string"
+        },
+        "payload": {
+            "type": "object"
+        },
+        "actor": {
+            "type": "string"
+        },
+        "headers": {
+            "type": "object"
+        },
+        "diff": {
+            "type": "object",
+            "properties": {
+                "old": {
+                    "type": "object"
+                },
+                "new": {
+                    "type": "object"
+                }
+            }
+        },
+        "created_at":{
+        	"type": "integer"
+        }
+      }
+    }
+  }
+}

@@ -27,6 +27,8 @@ class Core extends Base\Core
             $this->repo->saveOrFail($action);
 
             $this->createInitialStateForAction($action);
+
+            (new Differ\Core)->create($input['differ']);
         });
 
         return $action;
@@ -66,7 +68,7 @@ class Core extends Base\Core
             return;
         }
 
-        $actionApproved = false;
+        $actionApprovedByCheckers = false;
 
         // If all the checkers have reviewed and approved
         // approve the action for execution
@@ -74,13 +76,13 @@ class Core extends Base\Core
         {
             if ($checker->getStatus() !== State\Entity::APPROVED)
             {
-                $actionApproved = false;
+                $actionApprovedByCheckers = false;
 
                 return false;
             }
         }
 
-        if ($actionApproved === true)
+        if ($actionApprovedByCheckers === true)
         {
             $action = $this->approveAction($action);
         }
@@ -90,7 +92,8 @@ class Core extends Base\Core
 
     protected function approveAction(Entity $action)
     {
-        // Set the action as approved and create a state change
+        // Set the action as approved and create a state change that it has
+        // been moved to approved.
         $this->repo->transactionOnLiveAndTest(function() use($action)
         {
             $data = [
@@ -103,6 +106,7 @@ class Core extends Base\Core
 
             $stateData = [
                 State\Entity::ACTION_ID => $action->getId(),
+                State\Entity::ADMIN_ID  => $action->getAdminId(),
                 State\Entity::NAME      => State\Entity::APPROVED,
             ];
 
