@@ -3,9 +3,9 @@
 namespace RZP\Models\Workflow\Action\State;
 
 use RZP\Constants\Table;
-use RZP\Models\Base;
+use RZP\Models\Workflow\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     const ID             = 'id';
     const ADMIN_ID       = 'admin_id';
@@ -58,7 +58,7 @@ class Entity extends Base\PublicEntity
 
     public function setNameAttribute(string $state)
     {
-        $this->getValidator()->validateState($state);
+        $this->getValidator()->validateName(self::NAME, $state);
 
         $this->attributes[self::NAME] = $state;
     }

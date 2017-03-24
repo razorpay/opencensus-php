@@ -19,10 +19,10 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::ACTION_ID => 'required|string|max:14',
         Entity::ADMIN_ID  => 'sometimes|string|max:14',
-        Entity::NAME      => 'required|string|max:150',
+        Entity::NAME      => 'required|string|max:150|custom',
     ];
 
-    public function validateState(string $state)
+    public function validateName(string $attr, string $state)
     {
         if (in_array($state, self::VALID_ACTION_STATES, true) === false)
         {

@@ -6,6 +6,7 @@ use App;
 use Request;
 use ApiResponse;
 
+use RZP\Exception;
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\Differ;
@@ -42,6 +43,15 @@ class WorkflowController extends Controller
     public function postExecuteAction(string $id)
     {
         $input = Request::all();
+
+        // Do not execute the action if it is not approved by all checkers
+        $isActionApproved (new Action\Core)->checkAndMarkActionApproved($action);
+
+        if ($isActionApproved === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_NOT_APPROVED);
+        }
 
         $diff = (new Differ\Service)->fetchRequest($id);
 

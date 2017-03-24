@@ -3,11 +3,17 @@
 namespace RZP\Models\Workflow;
 
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Permission;
 
 class Service extends Base\Service
 {
     public function create(array $input)
     {
+        Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
+
+        Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
+
         $workflow = $this->core()->create($input);
 
         return ['success' => true];

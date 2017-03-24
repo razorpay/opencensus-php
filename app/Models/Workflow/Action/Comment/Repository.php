@@ -2,14 +2,13 @@
 
 namespace RZP\Models\Workflow\Action\Comment;
 
-use RZP\Exception;
-use RZP\Models\Base;
+use RZP\Models\Workflow\Base;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'action_comment';
 
-    protected $appFetchParamRules = [
+    protected $adminFetchParamRules = [
         Entity::ACTION_ID      => 'sometimes|string|size:20',
     ];
 

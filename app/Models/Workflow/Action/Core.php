@@ -141,4 +141,10 @@ class Core extends Base\Core
             $this->repo->saveOrFail($action);
         }
     }
+
+
+    public function get(string $id)
+    {
+        return $this->repo->workflow_action->findOrFailPublic($id);
+    }
 }

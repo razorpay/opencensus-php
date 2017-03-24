@@ -3,9 +3,9 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Constants\Table;
-use RZP\Models\Base;
+use RZP\Models\Workflow\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';

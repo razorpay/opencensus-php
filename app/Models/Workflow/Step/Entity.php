@@ -3,12 +3,13 @@
 namespace RZP\Models\Workflow\Step;
 
 use App;
-use Hash;
 use Carbon\Carbon;
-use RZP\Constants\Table;
-use RZP\Models\Base;
+use Hash;
 
-class Entity extends Base\PublicEntity
+use RZP\Constants\Table;
+use RZP\Models\Workflow\Base;
+
+class Entity extends Base\Entity
 {
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';

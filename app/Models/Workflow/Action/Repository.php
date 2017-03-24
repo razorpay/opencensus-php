@@ -2,16 +2,13 @@
 
 namespace RZP\Models\Workflow\Action;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-
-use RZP\Models\Workflow\Action;
+use RZP\Models\Workflow\Base;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'workflow_action';
 
-    protected $appFetchParamRules = [
+    protected $adminFetchParamRules = [
         Entity::ADMIN_ID    => 'sometimes|string|max:14',
         Entity::WORKFLOW_ID => 'sometimes|string|max:14',
         Entity::ORG_ID      => 'sometimes|string|max:14',

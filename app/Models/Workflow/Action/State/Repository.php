@@ -2,12 +2,7 @@
 
 namespace RZP\Models\Workflow\Action\State;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Models\Admin\Base;
-use RZP\Models\Admin\Group;
-use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Role;
+use RZP\Models\Workflow\Base;
 
 class Repository extends Base\Repository
 {
