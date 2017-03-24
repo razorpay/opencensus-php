@@ -39,6 +39,7 @@ class Orchestrator extends Base\Core
     const OLAMONEY        = 'Olamoney';
     const FREECHARGE      = 'Freecharge';
     const NETBANKING_AXIS = 'NetbankingAxis';
+    const NETBANKING_ICIC = 'NetbankingIcici';
     const JIOMONEY        = 'Jiomoney';
     const ADMIN           = 'admin';
 
@@ -57,6 +58,7 @@ class Orchestrator extends Base\Core
         self::OLAMONEY        => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE      => ['noreply@freechargemail.in'],
         self::NETBANKING_AXIS => ['it.rico@axisbank.com'],
+        self::NETBANKING_ICIC => ['ubpshelp@icicibank.com'],
         self::JIOMONEY        => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -72,6 +74,7 @@ class Orchestrator extends Base\Core
         self::OLAMONEY,
         self::FREECHARGE,
         self::NETBANKING_AXIS
+        // TODO: Add ICICI
     ];
 
     /**
