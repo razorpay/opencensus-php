@@ -133,6 +133,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/activation/save/file/{merchantId}', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
         Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all'); // ePOS
+        Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoice_create'); // ePOS
         Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
 
         Route::get('/{mode}/customers/autocomplete', 'MerchantController@getCustomersForAutocomplete')->name('customer_autocomplete');
