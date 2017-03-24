@@ -5,6 +5,7 @@ export default (props) => {
   let tableRowComponent
   let {
     isLoading,
+    emptyTableRow,
     emptyTableMsg,
     colSpan,
     rows,
@@ -15,7 +16,7 @@ export default (props) => {
   if (isLoading) {
     tableRowComponent = <TableLoader colSpan={colSpan} />
   } else if (!rows.length) {
-    tableRowComponent = <EmptyTableRow colSpan={colSpan} message={emptyTableMsg} />
+    tableRowComponent = emptyTableRow || <EmptyTableRow colSpan={colSpan} message={emptyTableMsg} />
   }
 
   return (

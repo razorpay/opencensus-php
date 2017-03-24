@@ -62,21 +62,6 @@ app.controller('GenericEntityListCtrl', [
       generateTable();
     };
 
-    $scope.showSettlementBreakup = function (settlement_id) {
-      $modal.open({
-        templateUrl: 'settlementBreakupModalContent.html',
-        controller: 'settlementBreakupModalCtrl',
-        resolve: {
-          settlement_id: function () {
-            return settlement_id;
-          },
-          mode: function () {
-            return $scope.mode;
-          }
-        }
-      });
-    };
-
     function clear(field) {
       if (field === 'id') {
         $scope.entity.id = '';
@@ -184,36 +169,3 @@ app.controller('GenericEntityListCtrl', [
     }
   }
 ])
-.controller('settlementBreakupModalCtrl', [
-  '$scope',
-  '$modalInstance',
-  '$http',
-  'settlement_id',
-  'mode',
-  function($scope, $modalInstance, $http, settlement_id, mode) {
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
-
-    $scope.settlement_id = settlement_id;
-
-    var params = {};
-    params.route_name = 'setl_get_details';
-    params.mode = mode;
-    params.url_params = {
-      '{id}': $scope.settlement_id
-    };
-
-    var request = $http.get('/user/generic', {
-      params: params
-    });
-
-    request.success(function (data) {
-      if (data.success) {
-        $scope.breakupDetails = data.data.items;
-      }
-    }).error(function () {
-      $scope.alerts.addAlert('danger', null, true);
-    });
-  }
-]);

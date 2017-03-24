@@ -23,8 +23,8 @@ export default class GenericEntity extends Entity {
     }
 
     data.route_name = this.listRouteName
-    return this.makeGenericAjaxCall(data).then((response) => {
-      response.data.items = response.data.items.map((item) => new Klass(item))
+    return this.makeGenericAjaxCall({ data }).then((response) => {
+      response.data.items = response.data.items.map((item) => new Klass().deserialize(item))
       return response
     })
   }
@@ -35,13 +35,55 @@ export default class GenericEntity extends Entity {
       '{id}': id
     })
     data.route_name = this.detailsRouteName
-    return this.makeGenericAjaxCall(data).then((response) => {
-      return new Klass(response.data)
+    return this.makeGenericAjaxCall({ data }).then((response) => {
+      return new Klass().deserialize(response.data)
     })
   }
 
-  makeGenericAjaxCall(data) {
-    return ajax(this.resourceUrl, {
+  save() {
+    const Klass = this.constructor
+    let params = this.serialize()
+    let url = this.resourceUrl
+    let method = this.getResourceMethod()
+    let {
+      id = this.id,
+      ...bodyParams
+    } = params
+    let data = {
+      body: bodyParams,
+      route_name: this.getRouteName()
+    }
+
+    if (id) {
+      data.url_params = JSON.stringify({
+        '{id}': id
+      })
+    }
+
+    return this.makeGenericAjaxCall({
+      method,
+      data,
+    }).then((response) => {
+      return new Klass().deserialize(response.data)
+    })
+  }
+
+  delete() {
+    return this.makeGenericAjaxCall({
+      method: 'delete',
+      data: {
+        route_name: this.deleteRouteName,
+        url_params: JSON.stringify({
+          '{id}': this.id,
+        })
+      }
+    })
+  }
+
+  makeGenericAjaxCall({ data, method='get' }) {
+    return ajax({
+      url: this.resourceUrl,
+      method,
       data,
       appendModeInQueryParam: true
     })
