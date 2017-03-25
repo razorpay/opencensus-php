@@ -154,19 +154,6 @@ body.ReactModal__Body--open {
     padding: 0;
     width: 100%;
   }
-  .DateInput__display-text {
-    color: #aaa;
-  }
-
-  .DateInput__display-text--focused {
-    background-color: #fff;
-    border-color: inherit;
-    color: inherit;
-  }
-
-  .DateInput__display-text--has-input {
-    color: #555;
-  }
 
   .DateInput--with-caret::before {
     top: 34px;
@@ -175,6 +162,20 @@ body.ReactModal__Body--open {
   .DateInput--with-caret::after {
     top: 35px;
   }
+}
+
+.DateInput__display-text {
+  color: #aaa;
+}
+
+.DateInput__display-text--focused {
+  background-color: #fff;
+  border-color: inherit;
+  color: inherit;
+}
+
+.DateInput__display-text--has-input {
+  color: #555;
 }
 
 .SingleDatePickerInput {
@@ -191,6 +192,16 @@ body.ReactModal__Body--open {
 
 .DateInput__input {
   cursor: pointer;
+}
+
+.CalendarDay--selected-span {
+  background: rgba(35, 183, 229, 0.8);
+  border-color: rgb(35, 183, 229);
+}
+
+.CalendarDay--selected-span.CalendarDay--hovered, .CalendarDay--selected-span:active,
+.CalendarDay--selected-start, .CalendarDay--selected-end, .CalendarDay--selected {
+  background: #23b7e5;
 }
 
 .DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-start,

@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
 import ajax from 'merchant/utils/ajax'
 import Header from 'rzp/ui/Header'
 import store from 'merchant/store'
 import moment from 'moment'
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField'
+import { createLineData, makeLineData, timeScale } from 'rzp/utils/chart'
+import { Line } from 'react-chartjs-2';
 
 const intervals = [
   {
@@ -96,8 +97,11 @@ export default class HomeContainer extends Component {
       recent_payments,
       recent_refunds,
       recent_settlements,
-      current_balance
+      current_balance,
+      graph_data
     } = this.state;
+
+    var currentMode = store.getState().session.mode;
     return (
       <div>
         <Header
@@ -162,9 +166,39 @@ export default class HomeContainer extends Component {
                   />
                 </div>
               </div>
+              <div className='col-md-12 col-lg-6'>
+                <div className='panel wrapper'>
+                  <h4 className='font-thin m-t-none m-b text-muted'>Successful Transactions</h4>
+                  <div style={{height: '244px'}}>
+                    <Line
+                      options={timeScale}
+                      data={createLineData(graph_data.data.filter((d)=> {
+                        if (currentMode === 'live') {
+                          return !d.mode;
+                        }
+                        return d.mode;
+                      }), 'count', 'Successful Transactions')}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <div className='panel hbox hbox-auto-xs no-border'>
-              <div className='col wrapper'></div>
+              <div className='col wrapper'>
+                <h4 className='font-thin m-t-none m-b text-muted'>Transaction Volume</h4>
+                <div style={{height: '300px'}}>
+                  <Line
+                    options={timeScale}
+                    data={createLineData(graph_data.data.filter((d)=> {
+                      if (currentMode === 'live') {
+                        return !d.mode;
+                      }
+                      d.amount = d.amount / 100;
+                      return d.mode;
+                    }), 'amount', 'Transaction Volume')}
+                  />
+                </div>
+              </div>
               <div className='col wrapper-lg w-lg bg-light dk r-r'>
                 <h4 className='font-thin m-t-none m-b'>Transaction Types</h4>
                 {this.methodBreakup().map((methodData, index)=> {
@@ -236,7 +270,7 @@ export default class HomeContainer extends Component {
       }),
       ajax('/analytics/transactions', {
         data: {
-          type: intervals[this.state.interval].key,
+          type: intervals[this.state.interval].value,
           from: this.state.from.unix(),
           to: this.state.to.unix()
         }
