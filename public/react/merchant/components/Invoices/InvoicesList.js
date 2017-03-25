@@ -38,7 +38,6 @@ const InvoiceListItem = (props) => {
           <div class='btn-group'>
             <button
               data-tip={!invoice.isEditable ? 'Paid invoice cannot be edited' : null}
-              data-place='left'
               class='btn btn-xs btn-default'
               disabled={!invoice.isEditable}
               onClick={props.onEditClick}
