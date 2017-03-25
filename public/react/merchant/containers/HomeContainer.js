@@ -6,6 +6,25 @@ import store from 'merchant/store'
 import moment from 'moment'
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField'
 
+const intervals = [
+  {
+    value: 'day',
+    label: 'Daily'
+  },
+  {
+    value: 'week',
+    label: 'Weekly'
+  },
+  {
+    value: 'month',
+    label: 'Monthly'
+  },
+  {
+    value: 'year',
+    label: 'Yearly'
+  }
+]
+
 const colors = [
   'primary',
   'success',
@@ -36,13 +55,16 @@ function formatFromNow(unixSeconds) {
 }
 
 export default class HomeContainer extends Component {
+  // currently focused daterange input field
+  focusedDate = null;
+
   state = {
     loading: true,
 
     /* date/intervel controls */
     from: moment().endOf('day').subtract(30, 'days'),
     to: moment().endOf('day'),
-    interval: 'day',
+    interval: 0,
 
     /* top information cards */
     entity_totals: null,
@@ -82,19 +104,24 @@ export default class HomeContainer extends Component {
           title='Dashboard'
           showMode={false}
         >
-          <DateRangePickerField
-            style={{float: 'right'}}
-            startDate={from}
-            endDate={to}
-            onDatesChange={({ startDate, endDate })=> {
-              this.setState({
-                from: startDate,
-                to: endDate
-              })
-            }}
-            isOutsideRange={day=> moment().isBefore(day)}
-            initialVisibleMonth={()=> {return this.state.from}}
-          />
+          <div style={{float: 'right'}}>
+            <DateRangePickerField
+              startDate={from}
+              endDate={to}
+              onDatesChange={({ startDate, endDate })=> {
+                this.setState({
+                  from: startDate,
+                  to: endDate
+                })
+                if (!this.focusedDate && startDate && endDate) {
+                  this.fetchAggregrations();
+                }
+              }}
+              onFocusChange={(focused)=> {this.focusedDate = focused}}
+              isOutsideRange={day=> moment().isBefore(day)}
+              initialVisibleMonth={()=> {return this.state.from}}
+            />
+          </div>
           <div>
             <small className='text-muted'>
               Welcome to Razorpay.
@@ -209,7 +236,7 @@ export default class HomeContainer extends Component {
       }),
       ajax('/analytics/transactions', {
         data: {
-          type: this.state.interval,
+          type: intervals[this.state.interval].key,
           from: this.state.from.unix(),
           to: this.state.to.unix()
         }
