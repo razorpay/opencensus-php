@@ -52,7 +52,7 @@ return array(
     |
     */
 
-    'cipher' => env('ENCRYPTION_CIPHER', MCRYPT_RIJNDAEL_256),
+    'cipher' => env('ENCRYPTION_CIPHER', 'AES-256-CBC'),
 
     'timezone' => 'UTC',
 

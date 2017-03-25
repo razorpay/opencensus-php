@@ -4,6 +4,7 @@ import ajax from 'merchant/utils/ajax'
 import Header from 'rzp/ui/Header'
 import store from 'merchant/store'
 import moment from 'moment'
+import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField'
 
 const colors = [
   'primary',
@@ -39,8 +40,8 @@ export default class HomeContainer extends Component {
     loading: true,
 
     /* date/intervel controls */
-    from: moment().endOf('day').subtract(30, 'days').unix(),
-    to: moment().endOf('day').unix(),
+    from: moment().endOf('day').subtract(30, 'days'),
+    to: moment().endOf('day'),
     interval: 'day',
 
     /* top information cards */
@@ -56,9 +57,8 @@ export default class HomeContainer extends Component {
     graph_data: null
   }
 
-  constructor() {
-    var a = moment;
-    super(...arguments)
+  constructor(props) {
+    super(props)
   }
 
   componentWillMount() {
@@ -66,13 +66,35 @@ export default class HomeContainer extends Component {
   }
 
   render() {
-    let state = this.state;
+    let {
+      from,
+      to,
+      loading,
+      entity_totals,
+      recent_payments,
+      recent_refunds,
+      recent_settlements,
+      current_balance
+    } = this.state;
     return (
       <div>
         <Header
           title='Dashboard'
           showMode={false}
         >
+          <DateRangePickerField
+            style={{float: 'right'}}
+            startDate={from}
+            endDate={to}
+            onDatesChange={({ startDate, endDate })=> {
+              this.setState({
+                from: startDate,
+                to: endDate
+              })
+            }}
+            isOutsideRange={day=> moment().isBefore(day)}
+            initialVisibleMonth={()=> {return this.state.from}}
+          />
           <div>
             <small className='text-muted'>
               Welcome to Razorpay.
@@ -80,35 +102,35 @@ export default class HomeContainer extends Component {
             <a className='start-tour-link'>Start Tour</a>
           </div>
         </Header>
-        {!this.state.loading &&
+        {!loading &&
           <div className='wrapper-md'>
             <div className='row'>
               <div className='col-md-12 col-lg-6'>
                 <div className='row row-sm text-center'>
                   <HomeInfoCard
-                    content={state.entity_totals.data.settlement.successful_txn_count}
+                    content={entity_totals.data.settlement.successful_txn_count}
                     title='Total Settlements'
                   />
                   <HomeInfoCard
-                    content={state.recent_payments.data.count ? formatFromNow(state.recent_payments.data.items[0].created_at) : 'Never'}
+                    content={recent_payments.data.count ? formatFromNow(recent_payments.data.items[0].created_at) : 'Never'}
                     title='Last Transaction'
                   />
                   <HomeInfoCard
                     bg='info'
-                    content={state.entity_totals.data.payment.successful_txn_count}
+                    content={entity_totals.data.payment.successful_txn_count}
                     title='Total Payments'
                   />
                   <HomeInfoCard
                     bg='primary'
-                    content={state.entity_totals.data.refund.successful_txn_count}
+                    content={entity_totals.data.refund.successful_txn_count}
                     title='Total Refunds'
                   />
                   <HomeInfoCard
-                    content={'₹' + state.entity_totals.data.payment.total_amount/100}
+                    content={'₹' + entity_totals.data.payment.total_amount/100}
                     title='Total Volume'
                   />
                   <HomeInfoCard
-                    content={'₹' + state.current_balance.data.balance/100}
+                    content={'₹' + current_balance.data.balance/100}
                     title='Current Balance'
                   />
                 </div>
@@ -118,7 +140,8 @@ export default class HomeContainer extends Component {
               <div className='col wrapper'></div>
               <div className='col wrapper-lg w-lg bg-light dk r-r'>
                 <h4 className='font-thin m-t-none m-b'>Transaction Types</h4>
-                {this.methodBreakup().map(methodData=> <div>
+                {this.methodBreakup().map((methodData, index)=> {
+                  return <div key={index}>
                   {methodData ?
                   <div>
                     <div className='text-center-folded'>
@@ -131,22 +154,22 @@ export default class HomeContainer extends Component {
                   </div>
                   : 'No Data'
                   }
-                </div>)}
+                </div>})}
               </div>
             </div>
             <div className='panel wrapper'>
               <div className='row'>
                 <RecentEntityTable
                   entity='payment'
-                  data={state.recent_payments.data}
+                  data={recent_payments.data}
                 />
                 <RecentEntityTable
                   entity='refund'
-                  data={state.recent_refunds.data}
+                  data={recent_refunds.data}
                 />
                 <RecentEntityTable
                   entity='settlement'
-                  data={state.recent_settlements.data}
+                  data={recent_settlements.data}
                 />
               </div>
             </div>
@@ -187,8 +210,8 @@ export default class HomeContainer extends Component {
       ajax('/analytics/transactions', {
         data: {
           type: this.state.interval,
-          from: this.state.from,
-          to: this.state.to
+          from: this.state.from.unix(),
+          to: this.state.to.unix()
         }
       })
     ]).then((values) => {
@@ -263,13 +286,14 @@ class RecentEntityTable extends Component {
     } = this.props;
 
     return <div className='col-md-4 b-r b-light no-border-xs'>
-      <a data-tooltip='See All Payments' className='text-muted pull-right text-lg' href='#/app/payments/list'><i className='icon-arrow-right'></i></a>
+      <a data-tip='See All Payments' className='text-muted pull-right text-lg' href='#/app/payments/list'><i className='icon-arrow-right'></i></a>
       <h4 className='font-thin m-t-none m-b-md text-muted'>Recent {capitalize(entity)}s</h4>
-        {data.count ? data.items.slice(0, 5).map(item=> <div className='m-b m-l row'>
+        {data.count ? data.items.slice(0, 5).map((item, index)=> {
+          return <div className='m-b m-l row' key={index}>
               <a href='#/app/payments/pay_7VBun74YJV4Sx8'>
                 <div
                   className={'col-xs-4 col-md-3 label text-base bg-' + (colorClass[item.status] || 'light')}
-                  data-tooltip={capitalize(item.status)} data-tooltip-placement='right'>
+                  data-tip={capitalize(item.status)} data-place='right'>
                   {formatAmount(item.amount)}
                 </div>
                 <div className='col-xs-8 col-md-9'>
@@ -277,7 +301,8 @@ class RecentEntityTable extends Component {
                   <span className='pull-right'>{formatFromNow(item.created_at)}</span>
                 </div>
               </a>
-            </div>)
+            </div>
+          })
           : <div className='m-b m-l row'>No Recent Payments</div>
         }
     </div>
