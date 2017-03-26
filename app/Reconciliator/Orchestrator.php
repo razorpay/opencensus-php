@@ -73,8 +73,8 @@ class Orchestrator extends Base\Core
         self::KOTAK,
         self::OLAMONEY,
         self::FREECHARGE,
-        self::NETBANKING_AXIS
-        // TODO: Add ICICI
+        self::NETBANKING_AXIS,
+        self::NETBANKING_ICIC
     ];
 
     /**

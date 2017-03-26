@@ -32,6 +32,7 @@ class Validator
         Orchestrator::NETBANKING_AXIS =>
             "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
             . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/",
+        Orchestrator::NETBANKING_ICIC => "",
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -39,11 +40,13 @@ class Validator
         Orchestrator::FREECHARGE      => "/Please view your (transaction|settlement) report/",
         Orchestrator::NETBANKING_AXIS =>
         "/Kindly find attached below the MIS for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
+        Orchestrator::NETBANKING_ICIC => "",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
         Orchestrator::OLAMONEY        => 1,
         Orchestrator::NETBANKING_AXIS => 1,
+        Orchestrator::NETBANKING_ICIC => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -116,6 +119,19 @@ class Validator
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
             Orchestrator::NETBANKING_AXIS);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateNetbankingIciciEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::NETBANKING_ICIC);
+
+        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::NETBANKING_ICIC);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::NETBANKING_ICIC);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
