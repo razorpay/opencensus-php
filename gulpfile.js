@@ -10,7 +10,6 @@ const dot = require('dot');
 
 const stylus = require('gulp-stylus');
 const autoprefixer = require('autoprefixer-stylus');
-const csso = require('csso-stylus');
 const bootstrap = require('bootstrap-styl');
 
 const concatMulti = require('gulp-concat-multi');
@@ -72,8 +71,7 @@ gulp.task('css:prod', ()=> {
       compress: true,
       use: [
         bootstrap(),
-        autoprefixer(),
-        csso()
+        autoprefixer()
       ]
     }))
     .pipe(rev())
