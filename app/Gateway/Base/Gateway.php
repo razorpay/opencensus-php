@@ -652,23 +652,16 @@ class Gateway
     {
         $url = $this->getUrlDomain();
 
-        $type = $this->getUrlType($type);
+        if ($type === null)
+        {
+            $type = $this->action;
+        }
 
         $type = strtoupper($type);
 
         $url .= $this->getRelativeUrl($type);
 
         return $url;
-    }
-
-    protected function getUrlType($type)
-    {
-        if ($type === null)
-        {
-            $type = $this->action;
-        }
-
-        return $type;
     }
 
     protected function loadGatewayConfig()
