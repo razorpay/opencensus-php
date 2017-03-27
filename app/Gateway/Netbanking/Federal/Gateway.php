@@ -86,8 +86,7 @@ class Gateway extends Base\Gateway
 
     /**
      * Verifying the payment after callback response is saved to
-     * prevent user tampering with the data while making a payment. We will be
-     * making a verify broken request as we have not saved callback response yet
+     * prevent user tampering with the data while making a payment.
      */
     protected function verifyCallback(array $input)
     {
