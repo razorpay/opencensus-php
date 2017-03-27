@@ -12,4 +12,10 @@ class Validator extends Base\Validator
         Entity\REVIEWER_COUNT => 'required|integer',
         Entity\WORKFLOW_ID    => 'required|string|max:14',
     ];
+
+    protected static $editRules = [
+        Entity\ROLE_ID        => 'required|string|max:14',
+        Entity\LEVEL          => 'required|integer',
+        Entity\REVIEWER_COUNT => 'required|integer',
+    ];
 }

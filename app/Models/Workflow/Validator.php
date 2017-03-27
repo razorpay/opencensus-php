@@ -12,4 +12,9 @@ class Validator extends Base\Validator
         'permissions'    => 'required|array',
         'steps'          => 'required|array',
     ];
+
+    protected static $editRules = [
+        Entity\Name      => 'required|string|max:150',
+        'permissions'    => 'required|array',
+    ];
 }

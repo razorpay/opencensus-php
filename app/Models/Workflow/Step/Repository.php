@@ -41,4 +41,13 @@ class Repository extends Base\Repository
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->sum(Entity::REVIEWER_COUNT);
     }
+
+    public function fetchByWorkflowIdAndStepId(string $wid, string $stepId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $stepId)
+                    ->where(Entity::WORKFLOW_ID, '=', $wid)
+                    ->with('workflow')
+                    ->get();
+    }
 }

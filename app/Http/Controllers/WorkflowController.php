@@ -124,11 +124,55 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    // TODO
+    public function updateWorkflow(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Service)->update($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    // TODO
+    public function deleteWorkflow(string $id)
+    {
+        $data = (new Workflow\Service)->delete($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function createWorkflowStep(string $id)
     {
         $input = Request::all();
 
         $data = (new Workflow\Step\Service)->create($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getWorkflowStep(string $wid, string $stepId)
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Step\Service)->get($wid, $stepId, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateWorkflowStep(string $wid, string $stepId)
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Step\Service)->update($wid, $stepId, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    // TODO
+    public function deleteWorkflowStep(string $wid, string $stepId)
+    {
+        $data = (new Workflow\Step\Service)->delete($wid, $stepId);
 
         return ApiResponse::json($data);
     }

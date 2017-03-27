@@ -32,4 +32,25 @@ class Core extends Base\Core
 
         return $workflow;
     }
+
+    public function update(Entity $workflow, array $input)
+    {
+        $workflow->edit($input);
+
+        $this->repo->transactionOnLiveAndTest(function() use($workflow)
+        {
+            $this->repo->saveOrFail($workflow);
+
+            $workflow->permissions()->sync($input['permissions']);
+        });
+
+        return $workflow;
+    }
+
+    public function delete(Entity $workflow)
+    {
+        ;
+    }
+
+
 }
