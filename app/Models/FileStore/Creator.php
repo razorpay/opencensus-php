@@ -333,7 +333,7 @@ class Creator extends Base\Core
     }
 
     /**
-     * Returns Signed Url of File Entity
+     * Returns url and id of File Entity
      *
      * @return array
      */
