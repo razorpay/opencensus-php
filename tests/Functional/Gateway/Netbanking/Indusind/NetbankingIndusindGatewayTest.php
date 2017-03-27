@@ -1,0 +1,299 @@
+<?php
+
+namespace RZP\Tests\Functional\Gateway\Netbanking\Indusind;
+
+use Mail;
+use Excel;
+use Mockery;
+use Carbon\Carbon;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Terminal\Options;
+
+class NetbankingIndusindGatewayTest extends TestCase
+{
+    use PaymentTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__.'/NetbankingIndusindGatewayTestData.php';
+
+        parent::setUp();
+
+        $this->gateway = 'netbanking_indusind';
+
+        $this->payment = $this->getDefaultNetbankingPaymentArray('INDUSIND');
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->create('terminal:shared_netbanking_indusind_terminal');
+    }
+
+    public function testPayment()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
+
+        // Asserts that bank payment id exists in response and is an int
+        $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+    }
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $content = $this->verifyPayment($payment['id']);
+
+        assert($content['payment']['verified'] === 1);
+    }
+
+    public function testRefund()
+    {
+        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['amount_refunded'], 50000);
+        $this->assertEquals($payment['amount'], $refund['amount']);
+    }
+
+    public function testPartialRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        // Refund the payment above partially
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['amount_refunded'], 10000);
+        $this->assertEquals($refund['amount'], 10000);
+    }
+
+    public function testFailedRefund()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                // Refund double the amount
+                $refund = $this->refundPayment($payment['id'], 100000);
+            });
+    }
+
+    public function testRefundExcelFile()
+    {
+        // Generate 2 payments
+        $this->createRefundsForExcel();
+
+        $this->alterRefundsDateToYesterday();
+
+        // Generating 3rd payment and leaving its created_at
+        // date to now unlike first 2 payments
+        $this->doAuthCaptureAndRefundPayment($this->payment);
+
+        $this->checkMailQueue();
+
+        // Hitting the refunds route on API - goes to RefundFile.php
+        $data = $this->generateRefundsExcelForNB('ICIC');
+
+        $this->checkRefundFileData($data);
+    }
+
+    public function testTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_icici_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $data = $this->testData[__FUNCTION__]['request']['content'];
+
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->startTest();
+        $order = $this->getLastEntity('order');
+
+        $this->payment['order_id'] = $order['id'];
+
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Asserting that TPV terminal of ICICI gets picked
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertNotNull($gatewayPayment['account_number']);
+        $this->assertEquals($gatewayPayment['account_number'], $data['account_number']);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testFailedAuthPayment()
+    {
+        $this->mockPaymentFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
+    }
+
+    public function testVerifyMismatch()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->mockVerifyFailure();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['razorpay_payment_id']);
+            });
+    }
+
+    public function testAuthResponseDecryptionFailure()
+    {
+        $this->mockAuthDecryptionFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
+    }
+
+    // Authorization fails, but verify shows success
+    // Results in a payment verification error
+    public function testAuthFailedVerifySuccess()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testFailedAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
+    protected function createRefundsForExcel()
+    {
+        // Refund the payment above in full
+        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
+
+        // Create a new payment #2
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        // Do a partial refund of 10000 of payment #2
+        $this->refundPayment($payment['id'], 10000);
+        // Refund the remaining amount of the 2nd payment
+        $this->refundPayment($payment['id']);
+    }
+
+    protected function alterRefundsDateToYesterday()
+    {
+        // Get all pending refunds
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+    }
+
+    protected function checkRefundFileData($data)
+    {
+        $filePath = $data['netbanking_icici']['file'];
+
+        // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
+        $this->assertEquals($data['netbanking_icici']['count'], 3);
+        $this->assertTrue(file_exists($filePath));
+
+        $sheet = Excel::load($filePath)->all()->toArray();
+
+        $this->assertEquals(count($sheet[0]), 10);
+
+        $this->assertEquals($sheet[0]['refund_amount'], 500);
+        $this->assertEquals($sheet[1]['refund_amount'], 100);
+        $this->assertEquals($sheet[2]['refund_amount'], 400);
+
+        unlink($filePath);
+    }
+
+    protected function checkMailQueue()
+    {
+         // Mail catch with amount and refund everywhere
+        Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $body = 'Please forward the ICICI Netbanking refunds file to UBPS operations team';
+
+                        $this->assertEquals($body, $data['body']);
+
+                        return true;
+                    }),
+                    Mockery::any()
+                );
+    }
+
+    protected function mockPaymentFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['PAID'] = 'N';
+        });
+    }
+
+    protected function mockVerifyFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['STATUS'] = 'FAILED';
+        });
+    }
+
+    protected function mockAuthDecryptionFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'hash')
+            {
+                $content['ES'] = 'This_is_a_random_string';
+            }
+        });
+    }
+}

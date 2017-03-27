@@ -96,6 +96,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="SBBJ">State Bank of Bikaner and Jaipur</option>
                 <option value="UBIN">United Bank</option>
                 <option value="BARB">Bank of Baroda</option>
+                <option value="INDB">Indusind Bank</option>
             </select>
         </td>
     </tr>
@@ -159,10 +160,6 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td colspan='40'>Email:</td>
         <td><input type="text" name="email" size="25" value="test@razorpay.com"></td>
         <td><input type="text" name="contact" size="25" value="9876543210"></td>
-    </tr>
-    <tr>
-        <td colspan='40'>Razorpay Order Id:</td>
-        <td><input type="text" name="order_id" size="25" value=""></td>
     </tr>
     <tr>
         <td colspan='40'>Order Id:</td>
