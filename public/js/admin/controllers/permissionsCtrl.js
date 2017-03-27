@@ -11,6 +11,19 @@ app.controller('PermissionsCtrl', [
     $scope.permissions = [];
     $scope.count = 0;
 
+    function findOrgIndexById (id) {
+      var index = null;
+
+      $scope.permissions.forEach(function (v, i) {
+        if (v.id === id) {
+          index = i;
+        }
+      });
+
+      // returned index can be 0 so don't just do a if (index)
+      return index;
+    }
+
     /**
      * Actions
      */
@@ -33,5 +46,31 @@ app.controller('PermissionsCtrl', [
     }
 
     $scope.fetchPermissions();
+
+    $scope.deletePermission = function (id) {
+      var data = {
+        route_name: 'permission_delete',
+        url_params: {
+          '{id}': id
+        }
+      };
+
+      var request = $http.delete('/admin/generic', {
+        params: data
+      });
+      request.success(function (data) {
+        if (data.success) {
+          var index = findOrgIndexById(id);
+
+          if (index !== null) {
+            $scope.permissions.splice(index, 1);
+          }
+
+          $scope.count = $scope.permissions.length;
+
+          $scope.alerts.addAlert('success', 'Permission deleted', true);
+        }
+      });
+    };
   }
 ]);

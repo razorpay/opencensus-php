@@ -1,0 +1,56 @@
+<div ng-controller="PermissionDetailCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Permissions
+      <spinner class="inline"></spinner>
+    </h1>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel-form-container">
+      <div class="text-center">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4>
+            {{ permission.id ? 'Edit ' + permission.id : 'Add a new Permission' }}
+          </h4>
+        </div>
+        <div class="panel-body">
+          <form class="form-horizontal form-validation">
+            <div class="form-group">
+             <label for="name" class="col-lg-3 control-label">Permission Name</label>
+              <div class="col-lg-8" >
+                <input class="form-control m-b" name="name"
+                  ng-model="permission.name" ng-required="true">
+              </div>
+            </div>
+            <div class="form-group">
+             <label for="category" class="col-lg-3 control-label">Category</label>
+              <div class="col-lg-8" >
+                <input class="form-control m-b" name="category"
+                  ng-model="permission.category" ng-required="true">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="description" class="col-lg-3 control-label">Description</label>
+              <div class="col-lg-8" >
+                <input class="form-control m-b" name="description"
+                  ng-model="permission.description">
+              </div>
+            </div>
+            <div class="panel-footer">
+              <div class="row">
+                <div class="col-lg-offset-3 col-lg-8 text-center">
+                  <button class="btn btn-primary panel-btn-action" async-btn-click="save(permission)">
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
