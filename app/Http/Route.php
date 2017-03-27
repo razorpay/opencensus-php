@@ -785,7 +785,7 @@ final class Route
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
         'schedule_fetch_multiple',
-        'schedule_migration'
+        'schedule_migration',
         'internal_dummy_account_test',
     );
 
