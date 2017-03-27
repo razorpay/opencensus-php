@@ -12,10 +12,10 @@ class Repository extends Base\Repository
         Entity::WORKFLOW_ID   => 'sometimes|string|max:14',
         Entity::ROLE_ID       => 'sometimes|string|max:14',
         Entity::PERMISSION_ID => 'sometimes|string|max:14',
-        Entity::LEVEL         => 'sometimes|string|max:14',
+        Entity::LEVEL         => 'sometimes|integer|max:14',
     ];
 
-    public function getNumCheckersForAction(string $workflowId)
+    public function getNumCheckers(string $workflowId)
     {
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
@@ -23,7 +23,7 @@ class Repository extends Base\Repository
     }
 
     public function findByLevelAndWorkflowId(
-        string $level,
+        integer $level,
         string $workflowId,
         $columns = array('*'))
     {
@@ -34,7 +34,7 @@ class Repository extends Base\Repository
 
     }
 
-    public function getNumCheckersByLevel(string $level, string $workflowId)
+    public function getNumCheckersByLevelAndWorkflowId(integer $level, string $workflowId)
     {
         return $this->newQuery()
                     ->where(Entity::LEVEL, '=', $level)

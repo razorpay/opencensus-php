@@ -2,16 +2,15 @@
 
 namespace RZP\Models\Workflow\Action\Differ;
 
-use Carbon\Carbon;
-
 use RZP\Error;
-use RZP\Error\ErrorCode;
-use RZP\Events\DifferEvent;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Base\EsDao;
-use RZP\Models\Workflow\Action;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\EsDao;
+use RZP\Events\DifferEvent;
+use RZP\Models\Workflow\Action;
 
 class Core extends Base\Core
 {
@@ -20,8 +19,6 @@ class Core extends Base\Core
     protected $baseIndex;
 
     protected $config;
-
-    protected $factory;
 
     const ES_TYPE = 'action';
 
@@ -41,8 +38,6 @@ class Core extends Base\Core
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
         $this->baseIndex = $this->config->get('database.es_workflow_action')[$mode];
-
-        $this->factory = $this->app->make('httplug.message_factory.default');
     }
 
     public function create(Action\Entity $action, array $input)

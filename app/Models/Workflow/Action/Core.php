@@ -52,15 +52,14 @@ class Core extends Base\Core
         // Number of checks done on the action
         // TODO fetch the checker count instead of all the checkers
         // save query time
-        $checkers = $this->repo->action_checker->fetchByActionId(
-            $action->getId());
+        $checkers = $this->repo->action_checker->fetchByActionId($action->getId());
 
         $workflowId = $action->getWorkflowId();
 
         // Number of checks required for the action
         $numCheckers = $this->repo
                             ->workflow_step
-                            ->getNumCheckersForWorkflow($workflowId);
+                            ->getNumCheckers($workflowId);
 
         // If all checks are not done, do not review the action
         if (count($checkers) !== $numCheckers)
@@ -126,11 +125,10 @@ class Core extends Base\Core
 
         $level = $action->getCurrentLevel();
 
-        $requiredCheckers = $this->repo->workflow_step->getNumCheckerByLevel(
+        $requiredCheckers = $this->repo->workflow_step->getNumCheckersByLevelAndWorkflowId(
             $level, $action->getWorkflowId());
 
-        $numCheckers = $this->repo->action_checker->fetchCountByActionId(
-            $action->getId());
+        $numCheckers = $this->repo->action_checker->fetchCountByActionId($action->getId());
 
         // If all the checkers in the same level have given their review,
         // increment the level

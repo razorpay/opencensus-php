@@ -44,6 +44,8 @@ class CreateWorkflowSteps extends Migration
             $table->integer(Step::CREATED_AT);
 
             $table->integer(Step::UPDATED_AT);
+
+            $table->index(Step::LEVEL);
         });
     }
 
