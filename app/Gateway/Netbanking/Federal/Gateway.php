@@ -296,10 +296,22 @@ class Gateway extends Base\Gateway
         //
         // Saving BID from Verify response only if BID from authorize hasn't been saved
         //
-        if ((isset($content[ResponseFields::BANK_PAYMENT_ID]) === true) and
-            (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true))
+        if (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true)
         {
-            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_PAYMENT_ID];
+                if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
+                {
+                    $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_PAYMENT_ID];
+                }
+                else if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === false) and
+                         ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !== $content[ResponseFields::BANK_PAYMENT_ID]))
+                {
+                    $this->trace->error(
+                        TraceCode::GATEWAY_MULTIPLE_BANK_PAYMENT_IDS,
+                        [
+                            'authorize_bid' => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
+                            'verify_bid'    => $content[ResponseFields::BANK_PAYMENT_ID]
+                        ]);
+                }
         }
 
         return $attributes;
