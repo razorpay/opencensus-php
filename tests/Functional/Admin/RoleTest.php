@@ -190,7 +190,6 @@ class RoleTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
-
     }
 
     public function testGetMultipleRoles()
