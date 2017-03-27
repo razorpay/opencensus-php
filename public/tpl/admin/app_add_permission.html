@@ -13,7 +13,7 @@
       <div class="panel panel-default">
         <div class="panel-heading">
           <h4>
-            Add a new Permission
+            {{ permission.id ? 'Edit ' + permission.id : 'Add a new Permission' }}
           </h4>
         </div>
         <div class="panel-body">
@@ -26,17 +26,17 @@
               </div>
             </div>
             <div class="form-group">
-             <label for="description" class="col-lg-3 control-label">Description</label>
-              <div class="col-lg-8" >
-                <input class="form-control m-b" name="description"
-                  ng-model="permission.description" ng-required="true">
-              </div>
-            </div>
-            <div class="form-group">
              <label for="category" class="col-lg-3 control-label">Category</label>
               <div class="col-lg-8" >
                 <input class="form-control m-b" name="category"
                   ng-model="permission.category" ng-required="true">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="description" class="col-lg-3 control-label">Description</label>
+              <div class="col-lg-8" >
+                <input class="form-control m-b" name="description"
+                  ng-model="permission.description" ng-required="true">
               </div>
             </div>
             <div class="panel-footer">

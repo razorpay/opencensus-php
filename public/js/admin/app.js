@@ -198,6 +198,9 @@ var app = angular.module('app', [
     }).state('app.permissions.new', {
       url: '/new',
       templateUrl: 'tpl/admin/app_add_permission.html'
+    }).state('app.permissions.edit', {
+      url: '/:id/edit',
+      templateUrl: 'tpl/admin/app_add_permission.html'
     }).state('app.invitations', {
       url: '/invitations',
       template: '<div ui-view class="fade-in-down smooth"></div>'
