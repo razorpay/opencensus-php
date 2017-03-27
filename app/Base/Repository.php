@@ -32,9 +32,9 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $manager;
 
-    protected $esRepo;
+    protected $esRepo = null;
 
-    protected $relations;
+    protected $relations = [];
 
     public function __construct()
     {
@@ -165,18 +165,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $entity->saveOrFail($options);
 
-        //
-        // The new flow to indexing models into es usage syncToEs method
-        // and plan is to deprecate the other method, but not just now.
-        //
-        if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
-        {
-            $this->saveInEs($entity, $dirty);
-        }
-        else
-        {
-            $this->syncToEs($entity, EsRepository::UPSERT, $dirty);
-        }
+        $this->syncToEs($entity, EsRepository::UPSERT, $dirty);
     }
 
     public function deleteOrFail($entity)
@@ -379,17 +368,18 @@ class Repository extends \Razorpay\Spine\Repository
         return $query->findOrFail($id);
     }
 
-    public function getEsRepoIfExistElseNull()
+    public function getEsRepo()
+    {
+        return $this->esRepo;
+    }
+
+    public function setEsRepoIfExist()
     {
         $esRepoClassPath = $this->getEsRepoClassPath();
 
         if (class_exists($esRepoClassPath) === true)
         {
-            return (new $esRepoClassPath);
-        }
-        else
-        {
-            return null;
+            $this->esRepo = (new $esRepoClassPath($this->entity));
         }
     }
 
@@ -410,16 +400,9 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @return null
      */
-    protected function saveInEs(Models\Base\PublicEntity $entity, array $dirty)
+    protected function syncToEsDeprecated(Models\Base\PublicEntity $entity, array $dirty)
     {
-        $esRepo = $this->getEsRepoIfExistElseNull();
-
-        if ($esRepo === null)
-        {
-            return;
-        }
-
-        $esFields = $esRepo->getFields();
+        $esFields = $this->esRepo->getFields();
 
         if (empty(array_intersect(array_keys($dirty), $esFields)) === true)
         {
@@ -466,14 +449,19 @@ class Repository extends \Razorpay\Spine\Repository
         string $action,
         array $dirty = [])
     {
-        $esRepo = $this->getEsRepoIfExistElseNull();
+        $this->setEsRepoIfExist();
 
-        if ($esRepo === null)
+        if ($this->esRepo === null)
         {
             return;
         }
 
-        $esFields = $esRepo->getFields();
+        if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
+        {
+            return $this->syncToEsDeprecated($entity, $dirty);
+        }
+
+        $esFields = $this->esRepo->getFields();
 
         if (count($esFields) === 0)
         {

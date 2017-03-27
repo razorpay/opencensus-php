@@ -53,8 +53,6 @@ class EsSync extends Job implements ShouldQueue
 
             $this->trace->debug(TraceCode::ES_SAVE_REQUEST, $tracePayload);
 
-            $this->esRepo->setIndexName($this->mode . '_' . $this->entity);
-
             $this->esRepo->createIndexIfNotExists();
 
             $this->sync();
@@ -100,7 +98,9 @@ class EsSync extends Job implements ShouldQueue
 
         $this->repo = $this->repoManager->{$this->entity};
 
-        $this->esRepo = $this->repo->getEsRepoIfExistElseNull();
+        $this->repo->setEsRepoIfExist();
+
+        $this->esRepo = $this->repo->getEsRepo();
 
         if ($this->esRepo === null)
         {

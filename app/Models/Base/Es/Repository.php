@@ -13,7 +13,6 @@ use RZP\Constants\Mode;
 class Repository extends \Razorpay\Spine\Repository
 {
     use Base\Traits\Es\Query;
-    use Base\Traits\Es\Hydrator;
 
     protected $esDao;
     protected $indexName;
@@ -47,21 +46,21 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $mode;
 
-    public function __construct()
+    public function __construct(string $indexName = null)
     {
         parent::__construct();
 
         $app = App::getFacadeRoot();
 
-        $this->mode = $app['rzp.mode'] ?? Mode::LIVE;
+        $this->mode = $app['rzp.mode'];
 
         $this->trace = $app['trace'];
 
-        $this->indexName = $app['config']->get('database.es_index');
+        $this->indexName = $this->mode . '_' . $indexName;
 
         $this->setFieldMappings();
 
-        $this->esDao = new Base\EsDao();
+        $this->esDao = (new Base\EsDao())->setIndexNameByValue($this->indexName);
     }
 
     /**
@@ -209,13 +208,6 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
-    public function setIndexName($indexName)
-    {
-        $this->indexName = $indexName;
-
-        $this->esDao->setIndexNameByValue($this->indexName);
-    }
-
     public function createIndexIfNotExists()
     {
         $settings = Mapping::$indexSettings;
@@ -241,8 +233,6 @@ class Repository extends \Razorpay\Spine\Repository
         string $merchantId = null,
         array $groups = [])
     {
-        $this->setIndexName($this->mode . '_' . $entity);
-
         $this->addMerchantIdInEsParamsIfSet($params, $merchantId);
 
         $this->buildQuery($this->indexName, $this->indexName, [], $params);
@@ -261,7 +251,7 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Actually does the search, once query is built.
      *
-     * @return PublicCollection
+     * @return array
      */
     public function search()
     {
@@ -281,23 +271,6 @@ class Repository extends \Razorpay\Spine\Repository
                         return $res['_source'] ?? ['id' => $res['_id']];
                     },
                     $response['hits']['hits']);
-
-        //
-        // Returns empty collection if no hits
-        //
-        if (count($hits) === 0)
-        {
-            return new Base\PublicCollection;
-        }
-
-        //
-        // If only es search hits expected then hydrates the array into
-        // PublicCollection and returns.
-        //
-        if ($this->searchHitsOnly === true)
-        {
-            return $this->hydrate($hits);
-        }
     }
 
     /**

@@ -71,6 +71,8 @@ class EsDao
     public function setIndexNameByValue($indexName)
     {
         $this->indexName = $indexName;
+
+        return $this;
     }
 
     public function bulkUpdate(array $params)

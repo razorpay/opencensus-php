@@ -23,6 +23,7 @@ class Index extends Command
     protected $mode;
     protected $entity;
     protected $trace;
+    protected $repo;
     protected $esRepo;
 
     public function fire()
@@ -31,33 +32,30 @@ class Index extends Command
 
         \Database\DefaultConnection::set($this->mode);
 
-        $app  = App::getFacadeRoot();
+        $app = App::getFacadeRoot();
+
+        $app['rzp.mode'] = $this->mode;
 
         $this->trace = $app['trace'];
 
-        $this->initRepo();
+        $repoManager = $app['repo'];
 
-        $this->doIndexing();
+        $this->repo = $repoManager->{$this->entity};
+
+        $this->repo->setEsRepoIfExist();
+
+        $this->esRepo = $this->repo->getEsRepo();
+
+        if ($this->esRepo === null)
+        {
+            throw new LogicException('EsSync: Es repo not found.');
+        }
     }
 
     protected function setOptions()
     {
         $this->mode   = $this->option('mode');
         $this->entity = $this->option('entity');
-    }
-
-    /**
-     * Sets es repo and index name for the entity.
-     *
-     */
-    protected function initRepo()
-    {
-        $esRepoPath = Entity::getEntityEsRepository($this->entity);
-        $this->esRepo = new $esRepoPath;
-
-        $indexName = $this->mode . '_' . $this->entity;
-
-        $this->esRepo->setIndexName($indexName);
     }
 
     /**

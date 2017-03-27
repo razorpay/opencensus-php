@@ -8,15 +8,13 @@ trait Query
 
     protected $type;
 
-    protected $source         = false;
+    protected $source = false;
 
-    protected $from           = 0;
+    protected $from   = 0;
 
-    protected $size           = 10;
+    protected $size   = 10;
 
-    protected $query          = [];
-
-    protected $searchHitsOnly = false;
+    protected $query  = [];
 
     /**
      * Builds query on given index and type with given incomplete query(optional)
@@ -76,18 +74,17 @@ trait Query
         array $query,
         array & $params)
     {
-        $this->from           = ($params['skip']) ?? 0;
-        $this->size           = ($params['count']) ?? 10;
-        $this->searchHitsOnly = boolval(($params['search_hits']) ?? false);
+        $this->index  = $index;
+        $this->type   = $type;
+        $this->query  = $query;
+
+        $this->from   = ($params['skip']) ?? 0;
+        $this->size   = ($params['count']) ?? 10;
+        $this->source = boolval(($params['search_hits']) ?? false);
 
         unset($params['skip']);
         unset($params['count']);
         unset($params['search_hits']);
-
-        $this->index  = $index;
-        $this->type   = $type;
-        $this->query  = $query;
-        $this->source = $this->searchHitsOnly;
     }
 
     /**
