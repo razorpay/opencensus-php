@@ -185,7 +185,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        // content will contain status as either Y or N or S
+        // content will contain status S or F
         if ($content[ResponseFields::STATUS] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
@@ -285,7 +285,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributesToSave(array $content, $gatewayPayment)
+    protected function getVerifyAttributesToSave(array $content, Base\Entity $gatewayPayment)
     {
         $attributes = [
             Base\Entity::RECEIVED => true,
