@@ -520,6 +520,23 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * Fetches all payments for on hold flag update with on_hold_until
+     * timestamp earlier than timestamp parameter.
+     *
+     * @param int $timestamp
+     * @return Base\PublicCollection
+     */
+    public function getPaymentsForOnHoldUpdateBeforeTimestamp(int $timestamp) : Base\PublicCollection
+    {
+        $data = $this->newQuery()
+                     ->where(Payment\Entity::ON_HOLD, 1)
+                     ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
+                     ->with('transfer')
+                     ->get();
+        return $data;
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)

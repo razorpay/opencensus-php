@@ -1048,6 +1048,47 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch and update on_hold flag for all payment
+     * and sorce transfer with on_hold_until less than today's
+     *
+     * @return array
+     */
+    public function updateOnHold()
+    {
+        $date = Carbon::today('Asia/Kolkata');
+
+        $timestamp = $date->timestamp;
+
+        $paymentsToUpdate = $this->repo->payment->getPaymentsForOnHoldUpdateBeforeTimestamp($timestamp);
+
+        foreach ($paymentsToUpdate as $payment)
+        {
+            $payment->setOnHold(false);
+
+            $this->repo->saveOrFail($payment);
+
+            //
+            // If the payment has a transfer, update the
+            // on_hold flag for the transfer as well
+            //
+            if ($payment->hasTransfer() === true)
+            {
+                $transfer = $payment->transfer;
+
+                $transfer->setOnHold(false);
+
+                $this->repo->saveOrFail($transfer);
+            }
+        }
+
+        return [
+            'success'   => true,
+            'count'     => $paymentsToUpdate->count(),
+            'ids'       => $paymentsToUpdate->getIds(),
+        ];
+    }
+
+    /**
      * Sends the authorized payments reminder email
      * @param  string   $merchantId
      * @param  array    $payments

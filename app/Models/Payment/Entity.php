@@ -858,6 +858,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::INVOICE_ID));
     }
 
+    public function hasTransfer()
+    {
+        return ($this->isAttributeNotNull(self::TRANSFER_ID));
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
