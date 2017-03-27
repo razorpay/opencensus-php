@@ -3,7 +3,8 @@ app.controller('PermissionDetailCtrl', [
   '$http',
   'alertsFactory',
   '$stateParams',
-  function ($scope, $http, alertsFactory, $stateParams) {
+  '$state',
+  function ($scope, $http, alertsFactory, $stateParams, $state) {
     $scope.fetchPermission = function (id) {
       var data = {
         route_name: 'permission_get',
@@ -35,9 +36,9 @@ app.controller('PermissionDetailCtrl', [
           route_name: 'permission_edit',
           url_params: {
             '{id}' : $scope.permission.id
-          },
-          body: permission
+          }
         };
+        data.body = jQuery.extend(true, {}, permission);
         delete data.body.id;
 
         var request = $http({
@@ -63,6 +64,7 @@ app.controller('PermissionDetailCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Permission saved successfully.', true);
+          $state.go('app.permissions.edit', {id: data.data.id});
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
