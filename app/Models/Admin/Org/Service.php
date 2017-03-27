@@ -49,7 +49,7 @@ class Service extends Base\Service
         $permissions = (new Permission\Core)->getMultiplePermissionIdsByNames($permissions);
 
         $input = [
-            'name' => 'superadmin',
+            'name' => config('heimdall.default_role_name'),
             'description' => 'This role has all permissions possible',
             'permissions' => $permissions,
         ];
