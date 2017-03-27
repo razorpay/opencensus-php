@@ -362,7 +362,7 @@ class TraceCode
     const SETTLEMENT_RECONCILED                     = 'SETTLEMENT_RECONCILED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
-    const SETTLEMENT_RETRY_FAILED                   = 'SETTLMENT_RETRY_FAILED';
+    const SETTLEMENT_RETRY_FAILED                   = 'SETTLEMENT_RETRY_FAILED';
     const SETTLEMENT_RECONCILIATION_FAILED          = 'SETTLEMENT_RECONCILIATION_FAILED';
     const SETTLEMENT_RETURN_FAILED                  = 'SETTLEMENT_RETURN_FAILED';
     const SETTLEMENT_SKIPPED                        = 'SETTLEMENT_SKIPPED';
@@ -672,6 +672,7 @@ class TraceCode
 
         self::BAD_REQUEST_INVALID_API_KEY               => 'The api key provided is invalid',
         self::BAD_REQUEST_INVALID_API_SECRET            => 'The api secret provided is invalid',
+        self::BAD_REQUEST_INVALID_ACCOUNT_HEADER        => 'The Account ID provided is invalid',
         self::BAD_REQUEST_API_SECRET_NOT_PROVIDED       => 'API secret is not provided',
 
         self::PAYMENT_VERIFY_ALREADY_AUTHORIZED         => 'Payment being authorized is actually already authorized by some other thread',

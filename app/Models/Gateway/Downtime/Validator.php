@@ -5,11 +5,12 @@ namespace RZP\Models\Gateway\Downtime;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Card;
-use RZP\Models\Card\Network;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {
@@ -256,7 +257,7 @@ class Validator extends Base\Validator
                 $issuer .' is not a supported Bank code for gateway ' . $gateway);
         }
 
-        if (IFSC::exists($issuer) === false)
+        if (Netbanking::isSupportedBank($issuer) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer. ' is not a valid Bank code');

@@ -117,9 +117,9 @@ class ReconciliationTest extends TestCase
 
         $this->fixtures->merchant->holdFunds();
 
-        $content = $this->retryIntiateSettlements([$settlement['id']], 'kotak');
+        $content = $this->retryIntiateSettlements([$settlement['id']]);
 
-        $this->assertEquals('No settlements found!', $content['message']);
+        $this->assertEquals('No settlements found!', $content['kotak']['message']);
 
         $this->fixtures->merchant->holdFunds(Account::TEST_ACCOUNT, false);
     }
@@ -128,16 +128,16 @@ class ReconciliationTest extends TestCase
     {
         $settlement = $this->testReconciliationFailure();
 
-        $content = $this->retryIntiateSettlements([$settlement['id']], 'kotak');
+        $content = $this->retryIntiateSettlements([$settlement['id']]);
 
         // Check settlement entities
         $setlAttempts = $this->getEntities('fund_transfer_attempt', [], true);
         $this->assertEquals(2, $setlAttempts['count']);
 
-        $this->assertNotNull($content['settlement_text_file']);
+        $this->assertNotNull($content['kotak']['settlement_text_file']);
 
         // Check reconciliation
-        $setlFile = $content['settlement_text_file'];
+        $setlFile = $content['kotak']['settlement_text_file'];
 
         $generateFailedReconciliations = true;
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
@@ -170,7 +170,7 @@ class ReconciliationTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $request = [
-            'url' => '/settlements/retry/kotak',
+            'url' => '/settlements/retry',
             'method' => 'POST',
             'content' => []
         ];
@@ -179,8 +179,6 @@ class ReconciliationTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($request)
         {
-
-
             $content = $this->makeRequestAndGetContent($request);
         });
     }

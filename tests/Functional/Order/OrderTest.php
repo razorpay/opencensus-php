@@ -149,8 +149,6 @@ class OrderTest extends TestCase
     public function testStatusAfterAutoCapturePaymentWoCallback()
     {
         $order = $this->testCreateAutoCaptureOrder();
-        $order = $this->getLastEntity('order');
-        $this->assertEquals($order['status'], 'created');
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order['id'];

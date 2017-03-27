@@ -215,7 +215,7 @@ class Authorization
     /**
      * Adds account auth to a request
      */
-    public function addAccountAuth($accountId = null, $user = null, $pwd = null)
+    public function addAccountAuth($accountId = null)
     {
         if ($accountId === null)
         {
@@ -223,8 +223,6 @@ class Authorization
         }
 
         $this->account = $accountId;
-
-        $this->privateAuth($user, $pwd);
     }
 
     /**
