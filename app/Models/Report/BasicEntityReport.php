@@ -95,9 +95,20 @@ class BasicEntityReport extends Base
 
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $fileName = $this->merchant->getId() . '_' . $this->entity . '_' . $now;
+        $merchantId = $this->merchant->getId();
+
+        $fileName = $merchantId . '_' . $this->entity . '_' . $now;
 
         $append = false;
+
+        // get or create report entity
+        $report = $this->getReportEntity($from, $to);
+
+        // set generatedAt value for report
+        // this is set as `now` because
+        // generated_at represents the time
+        // right before `getReportData` is envoked
+        $report->setGeneratedAt($now);
 
         while ($count === self::BATCH_LIMIT)
         {
@@ -110,7 +121,15 @@ class BasicEntityReport extends Base
             $append = true;
         }
 
-        $signedUrl = $this->createFileAndSave($fullpath, $fileName);
+        $fileData = $this->createFileAndSave($fullpath, $fileName);
+
+        $signedUrl = $fileData['url'];
+
+        // set fileId/UFH
+        $report->setFileId($fileData['id']);
+
+        // save changes to report
+        $this->repo->saveOrFail($report);
 
         if (file_exists($fullpath) === true)
         {
@@ -175,6 +194,14 @@ class BasicEntityReport extends Base
         return [$formattedData, $fetchCount];
     }
 
+    /**
+     * 1. Checks if entity is allowed for report
+     * 2. Increases system limits
+     * 3. Validates input
+     * 4. Sets timezone
+     *
+     * @param $input array
+     */
     protected function preReportProcessing(array $input)
     {
         $this->checkAllowedEntity();
@@ -186,6 +213,10 @@ class BasicEntityReport extends Base
         date_default_timezone_set('Asia/Kolkata');
     }
 
+    /**
+     * Checks if the entity is allowed
+     * to be made a report of
+     */
     protected function checkAllowedEntity()
     {
         if (in_array($this->entity, $this->allowed, true) === false)
@@ -246,13 +277,21 @@ class BasicEntityReport extends Base
         RuntimeManager::setTimeLimit(501);
     }
 
+    /**
+     * Creates uploded file &
+     * Uses UFH to save file to s3
+     *
+     * @param  $filePath string
+     * @param  $fileName string
+     * @return $s3File   array containing fileId and url
+     */
     protected function createFileAndSave($filePath, $fileName)
     {
         $file = new UploadedFile($filePath, $fileName);
 
         $creator = new FileStore\Creator;
 
-        $s3FileUrl = $creator->extension(FileStore\Format::ZIP)
+        $s3File = $creator->extension(FileStore\Format::ZIP)
                             ->localFile($file)
                             ->name($fileName)
                             ->store(FileStore\Store::S3)
@@ -260,6 +299,29 @@ class BasicEntityReport extends Base
                             ->save()
                             ->getSignedUrl();
 
-        return $s3FileUrl;
+        return $s3File;
+    }
+
+    /**
+     * Checks if a report entity exists for give parameters
+     */
+    protected function getReportEntity($from, $to)
+    {
+        $params = [
+            Entity::START_TIME  => $from,
+            Entity::END_TIME    => $to,
+            Entity::ENTITY      => $this->entity,
+        ];
+
+        $service = new Service;
+
+        $report = $service->fetchMerchantReport($params);
+
+        if (is_null($report) === true)
+        {
+            $report = $service->create($params);
+        }
+
+        return $report;
     }
 }

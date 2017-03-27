@@ -345,7 +345,10 @@ class Creator extends Base\Core
 
         $url = $this->storageHandler->getSignedUrl($bucketConfig, $this->file->getLocation());
 
-        return $url;
+        return [
+            'id'  => $this->file->getId(),
+            'url' => $url,
+        ];
     }
 
     /**
