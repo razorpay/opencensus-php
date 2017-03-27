@@ -16,6 +16,12 @@
           <input id="filter" type="text"
             class="form-control input-sm w-sm inline m-r">
         </div>
+        <div class="col-md-6" ng-show="admin.permissions && admin.permissions.indexOf('create_permission') !== -1">
+          <a class='btn btn-default pull-right'
+            ui-sref='app.permissions.new'>
+            Add New Permission
+          </a>
+        </div>
       </div>
       <div>
         <table ui-jq="footable" data-filter="#filter" data-page="false" class="table-responsive table table-striped b-t b-light">
@@ -24,12 +30,27 @@
               <th>Permission Name</th>
               <th>Category</th>
               <th>Description</th>
+              <th>Actions</th>
           </thead>
           <tbody>
             <tr ng-repeat="row in permissions">
               <td>{{row.name}}</td>
               <td>{{row.category}}</td>
               <td>{{row.description}}</td>
+              <td>
+                <div class="btn-group">
+                  <a class="btn btn-default btn-xs" ui-sref="app.permissions.edit({ id: row.id })"
+                    ng-show="admin.permissions && admin.permissions.indexOf('edit_permission') !== -1">
+                    <i class="fa fa-pencil-square"></i>
+                    edit
+                  </a>
+                  <button class="btn btn-default btn-xs" ng-confirm-click="Are you sure you want to delete this Permission?"
+                    ng-click="deletePermission(row.id)" ng-show="admin.permissions && admin.permissions.indexOf('delete_permission') !== -1">
+                    <i class="fa fa-trash text-danger"></i>
+                    delete
+                  </button>
+                </div>
+              </td>
             </tr>
             <tr ng-show="permissions.length == 0">
               <td colspan="6">No Permissions</td>
