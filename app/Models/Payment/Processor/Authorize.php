@@ -1850,7 +1850,7 @@ trait Authorize
                 $payment->setGatewayCaptured(true);
 
                 // Also sets the transaction association with the payment.
-                (new Transaction\Core)->createTransactionForAuthAndCapture($payment);
+                (new Transaction\Core)->createTransactionForNonAuthAndCapture($payment);
             }
 
             $this->repo->saveOrFail($payment);
