@@ -19,10 +19,9 @@ return [
 
     'testGetMultiple' => [
         'request' => [
-            'url' => '/permissions',
+            'url' => '/orgs/%s/permissions',
             'method' => 'get',
             'content' => [
-                'category' => 'test cat2',
             ]
         ],
         'response' => [

@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Permission;
 
 use RZP\Base;
 use RZP\Constants\Table;
+use RZP\Models\Admin\Permission;
 
 class Repository extends Base\Repository
 {
@@ -43,15 +44,18 @@ class Repository extends Base\Repository
                     ->get(['id']);
     }
 
-    public function fetchAll($orgId)
+    public function fetchAll(string $orgId)
     {
+        $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
+
+        $pmTable = Table::PERMISSION_MAP;
+
+        $permissionTable = $this->manager->permission->getTableName();
+
         return $this->newQuery()
-                    ->select('*')
-                    ->join(Table::PERMISSION_MAP, Table::PERMISSION.'.'.Entity::ID, '=', Table::PERMISSION_MAP.'.permission_id')
-                    ->where([
-                        [Table::PERMISSION_MAP.'.entity_id', '=', $orgId],
-                        [Table::PERMISSION_MAP.'.entity_type', '=', 'org']
-                    ])
+                    ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
+                    ->where($pmTable . '.entity_id', '=', $orgId)
+                    ->where($pmTable . '.entity_type', '=', 'org')
                     ->get();
     }
 }
