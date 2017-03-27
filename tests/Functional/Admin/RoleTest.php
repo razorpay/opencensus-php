@@ -131,7 +131,7 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(count($result['permissions']), 114);
+        $this->assertEquals(114, count($result['permissions']));
     }
 
     public function testDeleteRole()
@@ -162,8 +162,21 @@ class RoleTest extends TestCase
 
     public function testEditSuperAdminRole()
     {
-        $this->markTestSkipped('Skipping for hdfc demo');
+        $admin =  $this->ba->getAdmin();
 
+        $role = $admin->roles[0];
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditSuperAdminRoleByRazorpay()
+    {
         $role = $this->getEntityById('role', Org::ADMIN_ROLE, true);
 
         $orgId = 'org_' . Org::RZP_ORG;
@@ -177,6 +190,7 @@ class RoleTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+
     }
 
     public function testGetMultipleRoles()
