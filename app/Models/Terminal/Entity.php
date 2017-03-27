@@ -251,6 +251,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::EMI);
     }
 
+    public function isUpiEnabled()
+    {
+        return (bool) $this->getAttribute(self::UPI);
+    }
+
     public function isShared()
     {
         $merchantId = $this->getAttribute(self::MERCHANT_ID);

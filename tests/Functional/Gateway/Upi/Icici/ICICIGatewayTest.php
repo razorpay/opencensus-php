@@ -126,11 +126,11 @@ EOT;
         });
     }
 
-    public function testLongVPA()
+    public function testLongVpa()
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $payment['vpa'] = 'thisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpathisisaverylongvpa@icici';
+        $payment['vpa'] = str_repeat('thisisaverylongvpa', 6) . '@icici';
 
         $data = $this->testData['testLongVPA'];
 
@@ -140,7 +140,7 @@ EOT;
         });
     }
 
-    public function testUpiVPA()
+    public function testUpiVpa()
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
@@ -156,25 +156,34 @@ EOT;
         });
     }
 
-    public function testInvalidVPA()
-    {
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        // Emails are not VPAs
-        $payment['vpa'] = 'nemo@razorpay@com';
-
-        $data = $this->testData['testInvalidVPA'];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPaymentViaAjaxRoute($payment);
-        });
-    }
-
-    public function testInvalidVPAError()
+    public function testInvalidVpa()
     {
         $vpas = [
-            'user@invalidbank',
+            // Emails are not VPAs
+            'nemo@razorpay.com',
+            // See ProviderCode
+            'nemo@statebank',
+            'fake@invalidbank'
+        ];
+
+        foreach ($vpas as $vpa)
+        {
+            $payment = $this->getDefaultUpiPaymentArray();
+
+            $payment['vpa'] = $vpa;
+
+            $data = $this->testData['testInvalidVpa'];
+
+            $this->runRequestResponseFlow($data, function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+        }
+    }
+
+    public function testInvalidVpaError()
+    {
+        $vpas = [
             'invalidvpa@icici'
         ];
 
@@ -184,7 +193,7 @@ EOT;
 
             $payment['vpa'] = $vpa;
 
-            $data = $this->testData['testInvalidVPAError'];
+            $data = $this->testData['testInvalidVpaError'];
 
             $this->runRequestResponseFlow($data, function() use ($payment)
             {
@@ -194,7 +203,7 @@ EOT;
         }
     }
 
-    public function testSingleWordVPA()
+    public function testSingleWordVpa()
     {
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['vpa'] = 's@dcb';
