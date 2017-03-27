@@ -18,17 +18,17 @@ class Validator extends Base\Validator
         Entity::AMOUNT         => 'required|integer|min:100',
         Entity::CURRENCY       => 'required|size:3|in:INR',
         Entity::NOTES          => 'sometimes|notes',
-        Entity::ON_HOLD        => 'sometimes|boolean',
-        // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+        Entity::ON_HOLD        => 'required_with:on_hold_until|boolean',
+        Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
 
-    protected static $transferValidators = [
+    protected static $createValidators = [
         'hold_parameters'
     ];
 
     protected static $editRules = [
         Entity::ON_HOLD        => 'required|boolean',
-        // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+        Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
 
     protected static $editValidators = [

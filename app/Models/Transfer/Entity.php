@@ -55,7 +55,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::NOTES,
         self::ON_HOLD,
-        // self::ON_HOLD_UNTIL,
+        self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -71,7 +71,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::NOTES,
         self::ON_HOLD,
-        // self::ON_HOLD_UNTIL,
+        self::ON_HOLD_UNTIL,
         self::CREATED_AT,
     ];
 

@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         'fee'                     => 'sometimes|filled|integer|max:50000000',
         'service_tax'             => 'sometimes|filled|integer|max:50000000',
         'on_hold'                 => 'sometimes|boolean',
-        // 'on_hold_until'           => 'sometimes|integer',
+        'on_hold_until'           => 'sometimes|integer',
         'ip'                      => 'sometimes|ip',
         'referer'                 => 'sometimes|string|max:2083',
         'user_agent'              => 'sometimes|string',
@@ -73,7 +73,7 @@ class Validator extends Base\Validator
         'transfers.*.currency'       => 'required|string|size:3',
         'transfers.*.notes'          => 'sometimes|notes',
         'transfers.*.on_hold'        => 'sometimes|boolean',
-        // 'transfers.*.on_hold_until'  => 'sometimes|integer',
+        'transfers.*.on_hold_until'  => 'sometimes|integer',
     ];
 
     protected static $createValidators = [

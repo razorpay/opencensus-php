@@ -88,8 +88,6 @@ class TransferTest extends TestCase
 
     public function testTransferOnHoldUntilInvalid()
     {
-        $this->markTestSkipped('on_hold_until removed for now');
-
         $body = $this->getTransferRequestBody('account')['content'];
 
         unset($body['on_hold']);
@@ -102,8 +100,6 @@ class TransferTest extends TestCase
 
     public function testTransferOnHoldUntilOnHoldFalse()
     {
-        $this->markTestSkipped('on_hold_until removed for now');
-
         $body = $this->getTransferRequestBody('account')['content'];
 
         $body['on_hold'] = '0';
@@ -155,8 +151,6 @@ class TransferTest extends TestCase
 
     public function testPatchTransferOnHoldUntilOnHoldFalse()
     {
-        $this->markTestSkipped('on_hold_until removed for now');
-
         $transfer = $this->createTransfer('account');
 
         $body = $this->getTransferRequestBody('account', 'patch')['content'];
