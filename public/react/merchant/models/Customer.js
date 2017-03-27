@@ -1,9 +1,10 @@
-import Entity from './Entity'
+import GenericEntity from './GenericEntity'
 import ajax from 'merchant/utils/ajax'
 import { isBlank } from 'rzp/utils/rzp-utils'
 
-export default class Customer extends Entity {
-  resourceUrl = '/customers'
+export default class Customer extends GenericEntity {
+  listRouteName = 'customer_fetch_multiple'
+  deleteRouteName = 'customer_delete'
 
   resourceFields = [
     'id',
@@ -11,6 +12,10 @@ export default class Customer extends Entity {
     'email',
     'contact'
   ]
+
+  getRouteName() {
+    return this.isNew ? 'customer_create' : 'customer_update'
+  }
 
   getResourceMethod() {
     return this.isNew ? 'post' : 'put'

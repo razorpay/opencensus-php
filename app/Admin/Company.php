@@ -7,24 +7,16 @@ use Sunra\PhpSimple\HtmlDomParser;
 
 /**
  * Fetches company data from MCA website
- * Dataset inside the {cin/din}.txt files is generated using the script
- * at https://gist.github.com/captn3m0/28290674a042384d9c53ffb4d7b419a1
- *
- * The MCA website does have a captcha field, but works completely
- * fine if you do not send it
+ * Dataset is generated using the script at https://gist.github.com/captn3m0/28290674a042384d9c53ffb4d7b419a1
  */
 class Company
 {
     const PORTAL_BASE_URL = 'http://www.mca.gov.in';
     const INDEX_URL       = '/mcafoportal/viewCompanyMasterData.do';
     const INFO_URL        = '/mcafoportal/companyLLPMasterData.do';
-    const VERIFY_PAN_URL  = '/mcafoportal/verifyPAN.do';
-    const VERIFY_DIN_URL  = '/mcafoportal/verifyDIN.do';
 
-    // All checks are kept in lowercase
-    const NOT_FOUND_ERROR = 'entered cin/llpin/fllpin/fcrn is not found';
-    const DIN_MATCH_SUCCESS = 'din details are matching';
-    const DIN_MISMATCH_ERROR = 'does not match with the income tax pan';
+
+    const NOT_FOUND_ERROR = 'Entered CIN/LLPIN/FLLPIN/FCRN is not found';
 
     const HEADERS = [
         'Content-Type'  =>  'application/x-www-form-urlencoded',
@@ -48,7 +40,7 @@ class Company
 
     public function parseCompanyDetails($dom)
     {
-        $data = [];
+        $data  =[];
         $rows = $dom->find('div[id=companyMasterData] tr');
         foreach ($rows as $tr)
         {
@@ -57,29 +49,6 @@ class Company
         }
 
         $data['defaulter'] = $this->isCINDefaulter($this->cin);
-
-        return $data;
-    }
-
-    protected function parseDirectorDetails(string $body)
-    {
-        $data = [];
-        $dom = HtmlDomParser::str_get_html($body);
-
-        $inputs = $dom->find('form[id=verifyPAN] input');
-
-        $knownFields = ['directorFullName', 'fatherFullName', 'dateOfBirth'];
-
-        foreach($inputs as $input)
-        {
-            $key = $input->id;
-            $value = $input->value;
-
-            if (in_array($key, $knownFields, true))
-            {
-                $data[$key] = $value;
-            }
-        }
 
         return $data;
     }
@@ -164,7 +133,7 @@ class Company
         $newCin = $this->retry();
         $res = $this->fetchData();
 
-        if ($this->bodyContains($res, self::NOT_FOUND_ERROR))
+        if (strpos($res, self::NOT_FOUND_ERROR) !== false)
         {
             $newCin = $this->retry();
             if ($this->cin !== $newCin)
@@ -180,90 +149,5 @@ class Company
             'company'           =>  $this->parseCompanyDetails($dom),
             'signatories'       =>  $this->parseSignatories($dom)
         ];
-    }
-
-    protected function bodyContains($body, $substr)
-    {
-        $body = strtolower($body);
-
-        return (strpos($body, $substr) !== false);
-    }
-
-    /**
-     * Takes a PAN number as input
-     * and tries it against all the known signatories
-     * of a company
-     * @param  string $pan [description]
-     * @return [type]      [description]
-     */
-    public function verifyDirector(string $pan)
-    {
-        $data = $this->fetch();
-
-        $signatories = $data['signatories'];
-
-        foreach ($signatories as $signatory)
-        {
-
-            $din = $signatory['PAN_DIN'];
-            $ret = $this->verifyDirectorPAN($din, $pan);
-
-            if ($ret)
-            {
-                return array_merge([
-                    'match' =>  true,
-                    'din'   =>  $din,
-                    'pan'   =>  $pan
-                ], $this->fetchDINDetails($din));
-            }
-        }
-
-        return [
-            'match' => false
-        ];
-    }
-
-    /**
-     * Fetches the DIN Details
-     * @return array
-     */
-    protected function fetchDINDetails(string $din)
-    {
-        $data = [
-            'DIN'               => $din,
-            'displayCaptcha'    => false
-        ];
-
-        $body = $this->session->post(self::VERIFY_DIN_URL,
-            self::HEADERS,
-            $data,
-            self::OPTIONS
-        )->body;
-
-        return $this->parseDirectorDetails($body);
-    }
-
-    public function verifyDirectorPAN(string $din, string $pan)
-    {
-        $data = [
-            'DIN'   => $din,
-            'PAN'   => $pan
-        ];
-
-        $res = $this->session->post(self::VERIFY_PAN_URL,
-            self::HEADERS,
-            $data,
-            self::OPTIONS
-        )->body;
-
-        if ($this->bodyContains($res, self::DIN_MATCH_SUCCESS))
-        {
-            return true;
-        }
-
-        if ($this->bodyContains($res, self::DIN_MISMATCH_ERROR))
-        {
-            return false;
-        }
     }
 }

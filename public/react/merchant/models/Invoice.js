@@ -1,4 +1,4 @@
-import Entity from './Entity'
+import GenericEntity from './GenericEntity'
 import ajax from 'merchant/utils/ajax'
 import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils'
 
@@ -29,9 +29,15 @@ const editableFieldsInIssuedState = [
   'comment',
 ]
 
-export default class Invoice extends Entity {
-  resourceUrl = '/invoices'
+export default class Invoice extends GenericEntity {
+  listRouteName = 'invoice_fetch_multiple'
+  detailsRouteName = 'invoice_fetch'
+  deleteRouteName = 'invoice_delete'
   currency = 'INR'
+
+  getRouteName() {
+    return this.isNew ? 'invoice_create' : 'invoice_update'
+  }
 
   resourceFields() {
     return this.status === 'issued' ? editableFieldsInIssuedState : createFields
@@ -43,30 +49,34 @@ export default class Invoice extends Entity {
 
   notify(type) {
     return ajax({
-      url: `${this.getResourceUrl()}/notify/${type}`,
-      method: 'post'
-    })
-  }
-
-  download() {
-    return ajax({
-      url: `${this.getResourceUrl()}/pdf?download=1`
+      url: `/invoices/${this.id}/notify/${type}`,
+      method: 'post',
     })
   }
 
   markAsIssued() {
-    return ajax({
-      url: `${this.getResourceUrl()}/issue`,
-      method: 'post'
+    return this.makeGenericAjaxCall({
+      method: 'post',
+      data: {
+        route_name: 'invoice_issue',
+        url_params: JSON.stringify({
+          '{id}': this.id,
+        }),
+      }
     }).then((response) => {
       return new Invoice().deserialize(response.data)
     })
   }
 
   expire() {
-    return ajax({
-      url: `${this.getResourceUrl()}/expire`,
-      method: 'post'
+    return this.makeGenericAjaxCall({
+      method: 'post',
+      data: {
+        route_name: 'invoice_expire',
+        url_params: JSON.stringify({
+          '{id}': this.id,
+        }),
+      }
     }).then((response) => {
       return new Invoice().deserialize(response.data)
     })
