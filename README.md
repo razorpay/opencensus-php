@@ -8,6 +8,7 @@
 
 ## Set up instructions for development
 
+* Instructions for setup via docker are available at README-docker.md
 *  Copy over `dashboard.razorpay.dev.conf` to `/etc/apache2/sites-available/`.
 *  Edit the vhost to point to correct directory
 * `sudo a2ensite dashboard.razorpay.dev.conf`
