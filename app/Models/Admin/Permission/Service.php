@@ -45,9 +45,11 @@ class Service extends Base\Service
         return $permission->toArrayPublic();
     }
 
-    public function getMultiplePermissions(array $input)
+    public function getMultiplePermissions(string $orgId)
     {
-        $perms = $this->repo->permission->fetch($input);
+        $orgId = Org::verifyIdAndStripSign($orgId);
+
+        $perms = $this->repo->permission->fetchAll($orgId);
 
         return $perms->toArrayPublic();
     }
