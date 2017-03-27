@@ -627,6 +627,39 @@ class SettlementTest extends TestCase
         $this->assertFalse($txn['settled']);
     }
 
+    public function testSettlementAccountTransferOnHoldUntil()
+    {
+        $payment = $this->createPaymentEntities(1);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+
+        $transfer = $this->fixtures->create(
+            'transfer:to_account',
+            [
+                'source_id'     => $payment->getId(),
+                'source_type'   => 'payment',
+                'amount'        => 5000,
+                'currency'      => 'INR',
+                'on_hold'       => '0',
+                'on_hold_until' => Carbon::today('Asia/Kolkata')->timestamp - 600,
+                'created_at'    => $createdAt,
+                'updated_at'    => $createdAt + 10
+            ]);
+
+        // Generate settlements
+        $content = $this->initiateSettlements();
+
+        // 1 payment txn + 1 transfer txn
+        $this->assertEquals(3, $content['kotak']['transaction_count']);
+
+        // The txn for the transfer payment to the merchant should not settled
+        $trfPayment = $this->getEntities('payment', ['transfer_id' => $transfer->getId()], true)['items'][0];
+        $txn = $this->getEntityById('transaction', $trfPayment['transaction_id'], true);
+        $this->assertEquals('payment', $txn['type']);
+        $this->assertEquals($transfer->toArrayAdmin()['recipient'], 'acc_' . $txn['merchant_id']);
+        $this->assertTrue($txn['settled']);
+    }
+
     public function testSettletmentForTransferReversal()
     {
         $payment = $this->createPaymentEntities(1);
