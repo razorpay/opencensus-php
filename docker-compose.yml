@@ -16,7 +16,7 @@ services:
       - dashboard_cache
     environment:
      DB_MYSQL_HOST: dashboard_db
-     DB_MYSQL_PORT: 33306
+     DB_MYSQL_PORT: 3306
      DB_MYSQL_DATABASE: dashboard
      DB_MYSQL_USERNAME: dashboard_user
      DB_MYSQL_PASSWORD: 123
