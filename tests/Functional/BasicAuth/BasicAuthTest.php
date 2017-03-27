@@ -209,7 +209,34 @@ class BasicAuthTest extends TestCase
 
         $this->ba->noAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testAppAuthWithAccount()
+    {
+        $this->ba->appAuth();
+
+        $this->ba->addAccountAuth('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testAdminAuthWithAccount()
+    {
+        $this->ba->adminAuth();
+
+        $this->ba->addAccountAuth('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testAccountAuthInvalidId()
+    {
+        $this->ba->appAuth();
+
+        $this->ba->addAccountAuth('12345');
+
+        $this->startTest();
     }
 
     public function startTest($testDataToReplace = array())

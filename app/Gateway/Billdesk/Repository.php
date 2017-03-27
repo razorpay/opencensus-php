@@ -45,6 +45,7 @@ class Repository extends Base\Repository
     {
         $refundEntities =  $this->newQuery()
                                 ->where('refund_id', '=', $refundId)
+                                ->whereNull('ErrorCode')
                                 ->get();
 
         //

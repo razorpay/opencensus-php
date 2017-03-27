@@ -489,6 +489,43 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals('captured', $cybersource['status']);
     }
 
+    public function testStatusAfterFailedAutoCapturePayment()
+    {
+        $order = $this->fixtures->create('order:payment_capture_order');
+
+        $this->mockServerContentFunction(function($input, $action)
+        {
+            if ($action === 'validate_capture')
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid Capture');
+            }
+        });
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order['amount'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['captured_at']);
+        $this->assertNull($payment['transaction_id']);
+        $this->assertEquals(false, $payment['auto_captured']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertEquals('attempted', $order['status']);
+        $this->assertEquals(true, $order['authorized']);
+    }
+
     // @todo: refactor
     protected function transaction(callable $callable)
     {
