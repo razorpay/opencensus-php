@@ -12,6 +12,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_BANK_PAYMENT_ID = 'BID';
     const COLUMN_PAYMENT_DATE    = 'Date';
 
+    protected $netbankingRepo;
+
     public function __construct()
     {
         parent::__construct();
