@@ -31,9 +31,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $content = $this->getRequestData($input);
-
-        $content[RequestFields::RETURN_URL] = $input['callbackUrl'];
+        $content = $this->getAuthorizeRequestData($input);
 
         $entityAttributes = $this->getEntityAttributes($input);
 
@@ -206,7 +204,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getRequestData(array $input)
+    protected function getAuthorizeRequestData(array $input)
     {
         $data = [
             RequestFields::ACTION       => Status::YES,
@@ -222,6 +220,7 @@ class Gateway extends Base\Gateway
             RequestFields::USER_TYPE    => Constants::USER_TYPE,
             RequestFields::APP_TYPE     => Constants::APP_TYPE,
             RequestFields::CONFIRMATION => Status::YES,
+            RequestFields::RETURN_URL   => $input['callbackUrl']
         ];
 
         return $data;
