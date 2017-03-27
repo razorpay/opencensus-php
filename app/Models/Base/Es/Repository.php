@@ -68,29 +68,6 @@ class Repository extends \Razorpay\Spine\Repository
      */
     protected function setFieldMappings() {}
 
-    /**
-     * Updates the default query for fetch of models for indexing.
-     * Eg. In case of merchant, it needs join with merchant_detail, etc.
-     *
-     * @param object $query
-     *
-     * @return null
-     */
-    protected function updateQuery(& $query) {}
-
-    /**
-     * Serializes a given model for indexing
-     * Please override this per need to avoid unnecessary MySQL queries.
-     *
-     * @param Base\PublicEntity $entity
-     *
-     * @return array
-     */
-    protected function serialize(Base\PublicEntity $entity)
-    {
-        return $entity->setVisible($this->fields)->toArray();
-    }
-
     public function getFields()
     {
         return $this->fields;
@@ -309,32 +286,5 @@ class Repository extends \Razorpay\Spine\Repository
         ];
 
         $this->esDao->delete($params);
-    }
-
-    public function findForIndex(string $id)
-    {
-        $query = $this->newQuery();
-
-        $this->updateQuery($query);
-
-        $entity = $query->find($id);
-
-        return $this->serialize($entity);
-    }
-
-    public function fetchForIndex(int $skip = 0, int $take = 100)
-    {
-        $query = $this->newQuery();
-
-        $this->updateQuery($query);
-
-        $collection = $query->skip($skip)->take($take)->get();
-
-        return array_map(
-            function ($v)
-            {
-                return $this->serialize($v);
-            },
-            $collection->all());
     }
 }

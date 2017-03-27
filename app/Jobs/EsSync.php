@@ -114,7 +114,7 @@ class EsSync extends Job implements ShouldQueue
         {
             case Es\Repository::UPSERT:
 
-                $document = $this->esRepo->findForIndex($this->id);
+                $document = $this->repo->findForIndexing($this->id);
 
                 $this->esRepo->bulkUpdate([$document]);
 

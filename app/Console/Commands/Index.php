@@ -50,6 +50,8 @@ class Index extends Command
         {
             throw new LogicException('EsSync: Es repo not found.');
         }
+
+        $this->doIndexing();
     }
 
     protected function setOptions()
@@ -73,7 +75,7 @@ class Index extends Command
         {
             $this->info('Offset: ' . $skip);
 
-            $documents = $this->esRepo->fetchForIndex($skip, $take);
+            $documents = $this->repo->fetchForIndexing($skip, $take);
 
             if (count($documents) === 0)
             {

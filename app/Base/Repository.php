@@ -159,6 +159,56 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->findMany($ids);
     }
 
+    /**
+     * Updates the default query for fetch of models for indexing.
+     * Eg. In case of merchant, it needs join with merchant_detail, etc.
+     *
+     * @param object $query
+     *
+     * @return null
+     */
+    protected function modifyQueryForIndexing(& $query) {}
+
+    /**
+     * Serializes a given model for indexing
+     * Please override this per need to avoid unnecessary MySQL queries.
+     *
+     * @param Models\Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serialize(Models\Base\PublicEntity $entity)
+    {
+        return $entity->setVisible($this->getEsRepo()->getFields())->toArray();
+    }
+
+    public function findForIndexing(string $id)
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $entity = $query->find($id);
+
+        return $this->serialize($entity);
+    }
+
+    public function fetchForIndexing(int $skip = 0, int $take = 100)
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $collection = $query->skip($skip)->take($take)->get();
+
+        return array_map(
+            function ($v)
+            {
+                return $this->serialize($v);
+            },
+            $collection->all());
+    }
+
     public function saveOrFail($entity, array $options = array())
     {
         $dirty = $entity->getDirty();
