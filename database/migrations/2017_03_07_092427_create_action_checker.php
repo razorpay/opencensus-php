@@ -5,8 +5,8 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin\Entity as Admin;
-use RZP\Models\Workflow\Action\Entity as Action;
 use RZP\Models\Workflow\Step\Entity as Step;
+use RZP\Models\Workflow\Action\Entity as Action;
 use RZP\Models\Workflow\Action\Checker\Entity as Checker;
 
 class CreateActionChecker extends Migration
@@ -26,7 +26,9 @@ class CreateActionChecker extends Migration
                   ->primary();
 
             $table->char(Checker::ADMIN_ID, Checker::ID_LENGTH);
+
             $table->char(Checker::ACTION_ID, Checker::ID_LENGTH);
+
             $table->char(Checker::STEP_ID, Checker::ID_LENGTH);
 
             $table->tinyInteger(Checker::APPROVED)
@@ -48,6 +50,7 @@ class CreateActionChecker extends Migration
                   ->on_delete('restrict');
 
             $table->integer(Checker::CREATED_AT);
+
             $table->integer(Checker::UPDATED_AT);
         });
     }

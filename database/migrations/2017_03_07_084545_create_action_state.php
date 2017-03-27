@@ -42,6 +42,7 @@ class CreateActionState extends Migration
                   ->on_delete('restrict');
 
             $table->integer(State::CREATED_AT);
+
             $table->integer(State::UPDATED_AT);
         });
     }

@@ -21,7 +21,6 @@ class CreateWorkflowPermission extends Migration
     {
         Schema::create(Table::WORKFLOW_PERMISSION, function(Blueprint $table)
         {
-            //
             $table->engine = 'InnoDB';
 
             $table->char(self::WORKFLOW_ID, Workflow::ID_LENGTH);
@@ -29,14 +28,14 @@ class CreateWorkflowPermission extends Migration
             $table->char(self::PERMISSION_ID, Permission::ID_LENGTH);
 
             $table->foreign(self::WORKFLOW_ID)
-                    ->references(Workflow::ID)
-                    ->on(Table::WORKFLOW)
-                    ->onDelete('cascade');
+                  ->references(Workflow::ID)
+                  ->on(Table::WORKFLOW)
+                  ->onDelete('cascade');
 
             $table->foreign(self::PERMISSION_ID)
-                    ->references(Permission::ID)
-                    ->on(Table::PERMISSION)
-                    ->onDelete('cascade');
+                  ->references(Permission::ID)
+                  ->on(Table::PERMISSION)
+                  ->onDelete('cascade');
         });
     }
 
@@ -47,14 +46,11 @@ class CreateWorkflowPermission extends Migration
      */
     public function down()
     {
-        //
         Schema::table(Table::WORKFLOW_PERMISSION, function($table)
         {
-            $table->dropForeign(
-                Table::WORKFLOW_PERMISSION . '_' . self::WORKFLOW_ID . '_foreign');
+            $table->dropForeign(Table::WORKFLOW_PERMISSION . '_' . self::WORKFLOW_ID . '_foreign');
 
-            $table->dropForeign(
-                Table::WORKFLOW_PERMISSION . '_' . self::PERMISSION_ID . '_foreign');
+            $table->dropForeign(Table::WORKFLOW_PERMISSION . '_' . self::PERMISSION_ID . '_foreign');
         });
 
         Schema::drop(Table::WORKFLOW_PERMISSION);
