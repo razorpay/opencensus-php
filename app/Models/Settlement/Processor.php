@@ -246,6 +246,12 @@ class Processor extends Base\Core
     {
         $this->setlTime = Carbon::now('Asia/Kolkata')->timestamp;
 
+        if (($this->app['env'] === 'testing') and
+            (empty($input['testSettleTimeStamp']) === false))
+        {
+            $this->setlTime = $input['testSettleTimeStamp'];
+        }
+
         $this->input = $input;
     }
 
