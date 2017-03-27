@@ -52,7 +52,8 @@ trait Capture
      * Captures a payment and sets auto-capture flag true
      *
      * @param  Payment\Entity $payment The payment entity to capture
-     * @return boolean
+     *
+     * @throws Exception\BadRequestException
      */
     public function autoCapturePayment($payment)
     {
@@ -79,7 +80,7 @@ trait Capture
         {
             $payment = $this->capturePayment($payment, $amount, $currency);
         }
-        catch (Exception\RecoverableException $e)
+        catch (Exception\BaseException $e)
         {
             $this->trace->traceException(
                 $e,
@@ -100,10 +101,11 @@ trait Capture
                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                 $customProperties);
 
-            return false;
+            // We are not re-throwing $e because we don't want the
+            // customer to know that it was a capture error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
-
-        return true;
     }
 
     /**
