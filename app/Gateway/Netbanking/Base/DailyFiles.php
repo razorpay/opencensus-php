@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Base;
 use App;
 use Mail;
 use Carbon\Carbon;
+use RZP\Mail\BankRefund as BankRefundMail;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 
@@ -137,31 +138,11 @@ class DailyFiles
             'subject'     => $bankName . ' Netbanking claims and refund files for ' . $today,
             'amount'      => $amount,
             'claimsFile'  => $claimsFile,
-            'refundsFile' => $refundsFile
+            'refundsFile' => $refundsFile,
+            'bankName'    => $bankName,
         ];
 
-        $view = 'emails.admin.' . lcfirst($bankName) . '_refunds';
-
-        $this->mail->queue($view, $data, function($message) use ($data, $bankName)
-        {
-            $emails = ['settlements@razorpay.com'];
-
-            $message->from('settlement@razorpay.com', $bankName . ' Netbanking Refunds');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            if (empty($data['claimsFile']) === false)
-            {
-                $message->attach($data['claimsFile']);
-            }
-
-            if (empty($data['refundsFile']) === false)
-            {
-                $message->attach($data['refundsFile']);
-            }
-        });
+        $this->mail->send(new BankRefundMail($data));
     }
 
     protected function getBankName()

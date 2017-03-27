@@ -2,14 +2,13 @@
 
 namespace RZP\Mail\Payment;
 
-use App;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use RZP\Constants\MailTags;
 
-class Base extends Mailable
+class Base extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
