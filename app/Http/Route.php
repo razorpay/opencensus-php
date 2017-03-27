@@ -409,7 +409,10 @@ final class Route
         'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                            => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
         'workflow_step_create'                    => ['post',     'workflows/{id}/steps',                           'WorkflowController@createWorkflowStep'                             ],
+        'workflow_action_get_multiple'            => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
         'action_checker_create'                   => ['post',     'w-actions/{id}/checkers',                        'WorkflowController@postActionChecker'                              ],
+        'workflow_action_details'                 => ['get',      'w-actions/{id}/details',                         'WorkflowController@getActionDetails'                               ],
+        'workflow_action_states'                  => ['get',      'w-actions/{id}/states',                          'WorkflowController@getActionStates'                                ],
         'action_checker_multiple'                 => ['get',      'w-actions/{id}/checkers',                        'WorkflowController@getActionCheckerMultiple'                       ],
         'action_checker_get'                      => ['get',      'w-actions/{id}/checker/{checkerId}',             'WorkflowController@getActionChecker'                               ],
         'action_diff_create'                      => ['post',     'w-actions/{id}/diff',                            'WorkflowController@postActionDiff'                                 ],
@@ -902,6 +905,9 @@ final class Route
         'action_request_execute',
         'action_comment_create',
         'action_comment_fetch',
+        'workflow_action_states',
+        'workflow_action_details',
+        'workflow_action_get_multiple',
         'workflow_get_actions_for_checker',
         'workflow_get_actions_by_maker',
     ];
@@ -955,6 +961,9 @@ final class Route
         'action_comment_fetch'             => ['*'],
         'workflow_get_actions_for_checker' => ['*'],
         'workflow_get_actions_by_maker'    => ['*'],
+        'workflow_action_states'           => ['*'],
+        'workflow_action_details'          => ['*'],
+        'workflow_action_get_multiple'     => ['*'],
     ];
 
     public static $direct = array(

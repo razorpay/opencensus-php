@@ -34,7 +34,9 @@ class Repository extends Base\Repository
 
     }
 
-    public function getNumCheckersByLevelAndWorkflowId(integer $level, string $workflowId)
+    public function getNumCheckersByLevel(
+        integer $level,
+        string $workflowId)
     {
         return $this->newQuery()
                     ->where(Entity::LEVEL, '=', $level)

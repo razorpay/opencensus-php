@@ -40,6 +40,22 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getActionMultiple()
+    {
+        $input = Request::all();
+
+        $data = (new Action\Service)->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getActionDetails(string $id)
+    {
+        $data = (new Action\Service)->getActionDetails($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postExecuteAction(string $id)
     {
         $input = Request::all();
@@ -102,6 +118,13 @@ class WorkflowController extends Controller
     public function getActionChecker(string $id, string $checkerId)
     {
         $data = (new Checker\Service)->get($id, $checkerId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getActionStates(string $id)
+    {
+        $data = (new Action\Service)->getStatesOfAction($id);
 
         return ApiResponse::json($data);
     }
