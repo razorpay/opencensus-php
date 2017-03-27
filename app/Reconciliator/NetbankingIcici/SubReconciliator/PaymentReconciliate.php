@@ -45,6 +45,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
                                                                      Action::AUTHORIZE,
-                                                                     Icici\Confirmation::YES);
+                                                                     [Icici\Confirmation::YES]);
     }
 }
