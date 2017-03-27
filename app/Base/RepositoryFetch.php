@@ -9,9 +9,14 @@ use RZP\Models\Customer;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\Es\Repository as EsRepository;
+use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 
 trait RepositoryFetch
 {
+    use EsHydrator;
+
     protected $fetchParamRules = array(
         'from'          => 'integer',
         'to'            => 'integer',
@@ -147,7 +152,30 @@ trait RepositoryFetch
             return $esRepo->fetch($params, $merchantId);
         }
 
-        return $esRepo->buildQueryAndSearch($entity, $params, $merchantId);
+        $result = $esRepo->buildQueryAndSearch($entity, $params, $merchantId);
+
+        if (count($result) === 0)
+        {
+            return new PublicCollection;
+        }
+
+        $esHitsOnly = boolval(($params[EsRepository::SEARCH_HITS]) ?? false);
+
+        if ($esHitsOnly)
+        {
+            return $this->hydrate($result);
+        }
+
+        $ids = array_column($result, 'id');
+
+        $entities = $this->newQuery()->findMany($ids, ['*']);
+
+        if (count($ids) !== $entities->count())
+        {
+            $this->trace->error(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
+        }
+
+        return $entities;
     }
 
     protected function isEntityInOldEsFlow(string $entity)

@@ -254,7 +254,6 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::ENTITY,
         self::CUSTOMER_DETAILS,
-        self::LINE_ITEMS,
         self::PAYMENT_ID,
     ];
 
@@ -601,8 +600,7 @@ class Entity extends Base\PublicEntity
     // -------------------------------------- Accessors --------------------------------------
 
     /**
-     * DEPRECATED, WILL BE REMOVED.
-     * Replaced with setPublicCustomerAttribute method.
+     * @deprecated Replaced with setPublicCustomerAttribute method.
      *
      * @return array
      */
@@ -614,13 +612,6 @@ class Entity extends Base\PublicEntity
             self::CUSTOMER_CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
             self::CUSTOMER_ADDRESS         => null,
         ];
-    }
-
-    protected function getLineItemsAttribute()
-    {
-        $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
-
-        return $lineItems;
     }
 
     protected function getPaymentIdAttribute()

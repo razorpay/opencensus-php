@@ -32,7 +32,8 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->with([Entity::LINE_ITEMS])
+                                       ->findByPublicIdAndMerchantAndUserId(
                                             $id,
                                             $this->merchant,
                                             $this->userId);
@@ -46,6 +47,7 @@ class Service extends Base\Service
         $this->appendUserIdToInput($input);
 
         $invoices = $this->repo->invoice
+                               ->with([Entity::LINE_ITEMS])
                                ->fetch($input, $this->merchant->getId());
 
         return $invoices->toArrayPublic();

@@ -67,7 +67,7 @@ class Core extends Base\Core
             (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
         }
 
-        return $invoice;
+        return $this->invoiceWithLoadedRelations($invoice);
     }
 
     public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
@@ -113,7 +113,7 @@ class Core extends Base\Core
             $this->dispatchQueueJob($this->mode, InvoiceAction::UPDATED, $invoice->getId());
         }
 
-        return $invoice;
+        return $this->invoiceWithLoadedRelations($invoice);
     }
 
     public function issue(Entity $invoice, Merchant\Entity $merchant)
@@ -135,7 +135,7 @@ class Core extends Base\Core
 
         (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
 
-        return $invoice;
+        return $this->invoiceWithLoadedRelations($invoice);
     }
 
     public function delete(Entity $invoice)
@@ -176,7 +176,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        return $invoice;
+        return $this->invoiceWithLoadedRelations($invoice);
     }
 
     public function updateLineItem(
@@ -210,7 +210,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        return $invoice;
+        return $this->invoiceWithLoadedRelations($invoice);
     }
 
     public function removeLineItem(Entity $invoice, LineItem\Entity $lineItem)
@@ -235,7 +235,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        return $invoice;
+        return $this->invoiceWithLoadedRelations($invoice);
     }
 
     public function removeManyLineItems(Entity $invoice, Base\PublicCollection $lineItems)
@@ -259,7 +259,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        return $invoice;
+        return $this->invoiceWithLoadedRelations($invoice);
     }
 
     public function sendNotification(Entity $invoice, $medium)
@@ -314,7 +314,7 @@ class Core extends Base\Core
 
         (new InvoiceAction($this->mode, InvoiceAction::EXPIRED, $invoice->getId()))->handle();
 
-        return $invoice;
+        return $this->invoiceWithLoadedRelations($invoice);
     }
 
     /**
@@ -661,5 +661,10 @@ class Core extends Base\Core
 
             $this->generatePdfWithRetry($id, $attempt);
         }
+    }
+
+    protected function invoiceWithLoadedRelations(Entity $invoice)
+    {
+        return $invoice->load([Entity::LINE_ITEMS]);
     }
 }

@@ -69,7 +69,7 @@ class ViewDataSerializer extends Base\Core
 
     protected function getFormattedInvoiceDataForView()
     {
-        $invoiceData = $this->invoice->toArrayPublic();
+        $invoiceData = $this->invoice->load([Entity::LINE_ITEMS])->toArrayPublic();
 
         $invoiceData['is_paid'] = ($this->invoice->isPaid());
         $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);

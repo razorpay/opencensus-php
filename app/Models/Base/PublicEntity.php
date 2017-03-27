@@ -36,6 +36,18 @@ class PublicEntity extends UniqueIdEntity
 
     protected $amounts = array();
 
+    public function load($relations)
+    {
+        $relations = array_map(
+                        function ($v)
+                        {
+                            return camel_case($v);
+                        },
+                        $relations);
+
+        return parent::load($relations);
+    }
+
     public function toArrayPublic()
     {
         $attributes = $this->attributesToArray();

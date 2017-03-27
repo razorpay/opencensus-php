@@ -275,12 +275,12 @@ class Repository extends \Razorpay\Spine\Repository
         //
         // Plucks the source fields if set, else ids and forms an uniform array
         //
-        $hits = array_map(
-            function ($res)
-            {
-                return $res['_source'] ?? ['id' => $res['_id']];
-            },
-            $response['hits']['hits']);
+        return array_map(
+                    function ($res)
+                    {
+                        return $res['_source'] ?? ['id' => $res['_id']];
+                    },
+                    $response['hits']['hits']);
 
         //
         // Returns empty collection if no hits
@@ -298,23 +298,6 @@ class Repository extends \Razorpay\Spine\Repository
         {
             return $this->hydrate($hits);
         }
-
-        //
-        // Else, gets the ids and queries db and returns the PublicCollection
-        //
-        $ids = array_column($hits, 'id');
-
-        $entities = $this->newQuery()->findMany($ids, ['*']);
-
-        //
-        // Raises and alert if there are entities in ES which are not in MySQL
-        //
-        if (count($ids) !== $entities->count())
-        {
-            $this->trace->error(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
-        }
-
-        return $entities;
     }
 
     /**

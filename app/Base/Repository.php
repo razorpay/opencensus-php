@@ -34,6 +34,8 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $esRepo;
 
+    protected $relations;
+
     public function __construct()
     {
         parent::__construct();
@@ -75,6 +77,30 @@ class Repository extends \Razorpay\Spine\Repository
     public function findOrFailPublic($id, $columns = array('*'))
     {
         return $this->newQuery()->findOrFailPublic($id, $columns);
+    }
+
+    public function with(array $relations)
+    {
+        $this->relations = array_map(
+                                function ($v)
+                                {
+                                    return camel_case($v);
+                                },
+                                $relations);
+
+        return $this;
+    }
+
+    public function newQuery()
+    {
+        $query = parent::newQuery();
+
+        if (empty($this->relations) === false)
+        {
+            $query->with($this->relations);
+        }
+
+        return $query;
     }
 
     public function findOrFailPublicWithRelations(
