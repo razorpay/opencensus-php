@@ -325,6 +325,17 @@ class Entity extends Base\PublicEntity
 
     protected function modifyContact(& $input)
     {
+        // We need to remove this once they fix it on their end.
+        $app = \App::getFacadeRoot();
+        // We are currently doing this for GoIbibo and beta test merchant
+        $excludedMerchants = ['6ZLE5BE57SExGF', '7FloNFaK7P4MMo'];
+
+        if ((in_array($app['basicauth']->getMerchantId(), $excludedMerchants, true) === true) and
+            (empty($input['contact']) === true))
+        {
+            $input['contact'] = '+919999999999';
+        }
+
         if (isset($input['contact']) === false)
         {
             return;
