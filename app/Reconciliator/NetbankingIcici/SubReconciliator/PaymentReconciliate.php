@@ -41,10 +41,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        $statuses = [Icici\Confirmation::YES, Icici\Status::SUCCESS];
-
         return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
                                                                      Action::AUTHORIZE,
-                                                                     $statuses);
+                                                                     Icici\Confirmation::YES);
     }
 }
