@@ -13,13 +13,13 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME            => 'required|string|max:255',
         Entity::DESCRIPTION     => 'sometimes|string|max:255',
-        Entity::PERMISSIONS     => 'sometimes',
+        Entity::PERMISSIONS     => 'sometimes|array|custom',
     ];
 
     protected static $editRules = [
-        Entity::NAME            => 'required|string|max:255',
+        Entity::NAME            => 'sometimes|string|max:255',
         Entity::DESCRIPTION     => 'sometimes|string|max:255',
-        Entity::PERMISSIONS     => 'sometimes',
+        Entity::PERMISSIONS     => 'sometimes|array|custom',
     ];
 
     public function validateRoleIsNotSuperAdmin($admin = null)
@@ -38,6 +38,31 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE);
+        }
+    }
+
+    public function validatePermissions(string $attr, array $permissions)
+    {
+        $role = $this->entity;
+
+        $org = $role->org;
+
+        $orgPermissions = $org->permissions()->get(['id']);
+
+        $orgPermissionIds = [];
+
+        foreach ($orgPermissions as $permission)
+        {
+            $orgPermissionIds[] = $permission['id'];
+        }
+
+        $diffPerms = array_diff($permissions, $orgPermissionIds);
+
+        if (empty($diffPerms) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Few permissions are not allowed for the organization',
+                $diffPerms);
         }
     }
 }
