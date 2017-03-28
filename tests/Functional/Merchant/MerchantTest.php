@@ -1036,25 +1036,19 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantScheduleMigration()
+    public function testScheduleTaskMigration()
     {
-        $this->ba->adminAuth();
-
-        $schedule = $this->createSchedule();
-
         $this->ba->appAuth();
 
         $merchant = $this->createMerchant();
 
-        $this->fixtures->on('live')->create('schedule', $schedule);
-
-        $this->fixtures->merchant->edit($merchant['id'], ['settlement_schedule_id' => $schedule['id']]);
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
 
         $this->startTest();
 
-        $merchantSchedule = $this->getLastEntity('merchant_schedule', true);
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
 
-        $this->assertEquals($schedule['id'], $merchantSchedule['schedule_id']);
-        $this->assertEquals(NULL , $merchantSchedule['method']);
+        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
+        $this->assertEquals(NULL , $scheduleTask['method']);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\Schedule;
+namespace RZP\Models\Schedule\Task;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
@@ -16,7 +16,7 @@ class Entity extends Base\PublicEntity
     const SCHEDULE_ID       = 'schedule_id';
     const NEXT_RUN_AT       = 'next_run_at';
 
-    protected $entity = 'merchant_schedule';
+    protected $entity = 'schedule_task';
 
     public $incrementing = true;
 

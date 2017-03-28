@@ -118,13 +118,11 @@ class MerchantCreateTest extends TestCase
     {
         $this->ba->appAuthTest();
 
-        $this->assertEquals(null, $merchant['settlement_schedule_id']);
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
 
-        $merchantSchedule = $this->getLastEntity('merchant_schedule', true);
-        $this->assertEquals($merchant['id'], $merchantSchedule['merchant_id']);
-
-        $schedule = $this->getEntityById('schedule', $merchantSchedule['schedule_id'], true);
-
+        $this->assertEquals($merchant['id'], $scheduleTask['merchant_id']);
+        $this->assertEquals($schedule['id'], $merchant['settlement_schedule_id']);
         $this->assertEquals($schedule['type'], 'settlement');
         $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
         $this->assertEquals($schedule['period'], 'daily');

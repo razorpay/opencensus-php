@@ -7,6 +7,8 @@ use RZP\Models\Merchant\Account as Merchant;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryUpdateTestAndLive;
+
     protected $entity = 'schedule';
 
     const WITH_TRASHED = 'deleted';

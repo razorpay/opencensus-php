@@ -55,11 +55,11 @@ class Entity
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
+    const SCHEDULE_TASK         = 'schedule_task';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
-    const MERCHANT_SCHEDULE     = 'merchant_schedule';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
@@ -124,18 +124,19 @@ class Entity
         self::PRICING               => \RZP\Models\Pricing::class,
         self::FEATURE               => \RZP\Models\Feature::class,
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
-        self::MERCHANT              => \RZP\Models\Merchant::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
+        self::MERCHANT              => \RZP\Models\Merchant::class,
+        self::SCHEDULE              => \RZP\Models\Schedule::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
+        self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
-        self::MERCHANT_SCHEDULE     => \RZP\Models\Merchant\Schedule::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
@@ -215,6 +216,8 @@ class Entity
         self::PRICING,
         self::EMI_PLAN,
         self::MERCHANT,
+        self::SCHEDULE,
+        self::SCHEDULE_TASK,
     ];
 
     public static function getEntityNamespace(string $entity)

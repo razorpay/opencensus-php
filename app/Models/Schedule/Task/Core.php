@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Models\Merchant\Schedule;
+namespace RZP\Models\Schedule\Task;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
-use RZP\Models\Merchant\Schedule as MerchantSchedule;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Core extends Base\Core
 {
@@ -16,19 +16,19 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($merchant, $entity, $input)
         {
-            $merchantSchedule = $this->create($merchant, $entity, $input);
+            $scheduleTask = $this->create($merchant, $entity, $input);
 
-            $currentSchedule = $this->repo->merchant_schedule
-                                    ->fetchDuplicate($merchantSchedule);
+            $currentSchedule = $this->repo->schedule_task
+                                    ->fetchDuplicate($scheduleTask);
 
             if ($currentSchedule !== null)
             {
                 $this->repo->deleteOrFail($currentSchedule);
             }
 
-            $this->repo->saveOrFail($merchantSchedule);
+            $this->repo->saveOrFail($scheduleTask);
 
-            return $merchantSchedule;
+            return $scheduleTask;
         });
     }
 
@@ -37,21 +37,21 @@ class Core extends Base\Core
      */
     public function create(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
-        $merchantSchedule = (new MerchantSchedule\Entity)->build($input);
+        $scheduleTask = (new ScheduleTask\Entity)->build($input);
 
-        $merchantSchedule->merchant()->associate($merchant);
+        $scheduleTask->merchant()->associate($merchant);
 
-        $merchantSchedule->entity()->associate($entity);
+        $scheduleTask->entity()->associate($entity);
 
-        $scheduleId = $input[MerchantSchedule\Entity::SCHEDULE_ID];
+        $scheduleId = $input[ScheduleTask\Entity::SCHEDULE_ID];
 
         $merchantId = Merchant\Account::SHARED_ACCOUNT;
 
         $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
 
-        $merchantSchedule->schedule()->associate($schedule);
+        $scheduleTask->schedule()->associate($schedule);
 
-        return $merchantSchedule;
+        return $scheduleTask;
     }
 
     /**
@@ -59,13 +59,13 @@ class Core extends Base\Core
      */
     public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
     {
-        $merchantSchedules = $this->repo->merchant_schedule
+        $scheduleTasks = $this->repo->schedule_task
                                   ->fetchByMerchant($merchant, Type::SETTLEMENT);
 
-        if ($merchantSchedules->count() > 0)
+        if ($scheduleTasks->count() > 0)
         {
             $schedule = $this->filterAndGetScheduleByMethodOrDefault(
-                                    $merchantSchedules, $method);
+                                    $scheduleTasks, $method);
         }
         else
         {
@@ -79,24 +79,24 @@ class Core extends Base\Core
      * Filter a schedule by method or default
      */
     protected function filterAndGetScheduleByMethodOrDefault(
-        $merchantSchedules,
+        $scheduleTasks,
         $method)
     {
         $schedule = null;
 
-        foreach ($merchantSchedules as $merchantSchedule)
+        foreach ($scheduleTasks as $scheduleTask)
         {
-            $scheduleMethod = $merchantSchedule->getMethod();
+            $scheduleMethod = $scheduleTask->getMethod();
 
             if ($scheduleMethod === $method)
             {
-                $schedule = $merchantSchedule->schedule;
+                $schedule = $scheduleTask->schedule;
 
                 break;
             }
             else if ($scheduleMethod === null)
             {
-                $schedule = $merchantSchedule->schedule;
+                $schedule = $scheduleTask->schedule;
             }
         }
 

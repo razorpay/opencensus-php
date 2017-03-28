@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Models\Merchant\Schedule;
+namespace RZP\Models\Schedule\Task;
 
 use RZP\Base;
-use RZP\Models\Merchant\Schedule\Entity as MerchantSchedule;
+use RZP\Models\Schedule\Task\Entity as ScheduleTask;
 use RZP\Models\Payment\Method;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -11,10 +11,10 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        MerchantSchedule::TYPE              => 'required|string|max:20',
-        MerchantSchedule::METHOD            => 'sometimes|string|max:20|custom',
-        MerchantSchedule::SCHEDULE_ID       => 'required|alpha_dash|max:20',
-        MerchantSchedule::NEXT_RUN_AT       => 'sometimes|integer'
+        ScheduleTask::TYPE              => 'required|string|max:20',
+        ScheduleTask::METHOD            => 'sometimes|string|max:20|custom',
+        ScheduleTask::SCHEDULE_ID       => 'required|alpha_dash|max:20',
+        ScheduleTask::NEXT_RUN_AT       => 'sometimes|integer'
     ];
 
     protected function validateMethod($attribute, $method)

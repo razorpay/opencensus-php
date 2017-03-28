@@ -1,14 +1,14 @@
 <?php
 
-namespace RZP\Models\Merchant\Schedule;
+namespace RZP\Models\Schedule\Task;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Schedule as MerchantSchedule;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'merchant_schedule';
+    protected $entity = 'schedule_task';
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID             => 'sometimes|alpha_dash|max:20',
@@ -20,21 +20,21 @@ class Repository extends Base\Repository
      * Returns merchant schedule if it matches the one passed in the argument.
      * Method and merchant_id has to be same for it to be duplicate
      */
-    public function fetchDuplicate(MerchantSchedule\Entity $merchantSchedule)
+    public function fetchDuplicate(ScheduleTask\Entity $scheduleTask)
     {
         $query = $this->newQuery()
-                      ->merchantId($merchantSchedule->getMerchantId())
-                      ->where(MerchantSchedule\Entity::TYPE, '=', $merchantSchedule->getType());
+                      ->merchantId($scheduleTask->getMerchantId())
+                      ->where(ScheduleTask\Entity::TYPE, '=', $scheduleTask->getType());
 
-        $method = $merchantSchedule->getMethod();
+        $method = $scheduleTask->getMethod();
 
         if ($method === null)
         {
-            $query->whereNull(MerchantSchedule\Entity::METHOD);
+            $query->whereNull(ScheduleTask\Entity::METHOD);
         }
         else
         {
-            $query->where(MerchantSchedule\Entity::METHOD, $method);
+            $query->where(ScheduleTask\Entity::METHOD, $method);
         }
 
         return $query->first();
@@ -47,11 +47,11 @@ class Repository extends Base\Repository
 
         if ($method === null)
         {
-            $query->whereNull(MerchantSchedule\Entity::METHOD);
+            $query->whereNull(ScheduleTask\Entity::METHOD);
         }
         else
         {
-            $query->where(MerchantSchedule\Entity::METHOD, $method);
+            $query->where(ScheduleTask\Entity::METHOD, $method);
         }
 
         return $query->with('schedule')
@@ -62,7 +62,7 @@ class Repository extends Base\Repository
     {
         return $query = $this->newQuery()
                              ->merchantId($merchant->getId())
-                             ->where(MerchantSchedule\Entity::TYPE, '=', $type)
+                             ->where(ScheduleTask\Entity::TYPE, '=', $type)
                              ->with('schedule')
                              ->get();
     }
@@ -70,7 +70,7 @@ class Repository extends Base\Repository
     public function fetchScheduleCountById(string $scheduleId)
     {
         return $this->newQuery()
-                    ->where(MerchantSchedule\Entity::SCHEDULE_ID, $scheduleId)
+                    ->where(ScheduleTask\Entity::SCHEDULE_ID, $scheduleId)
                     ->count();
     }
 }

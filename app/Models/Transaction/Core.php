@@ -18,7 +18,8 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
-use RZP\Models\Schedule\Library as Schedule;
+use RZP\Models\Schedule\Library as ScheduleLibrary;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transfer;
@@ -905,11 +906,11 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        $schedule = (new Merchant\Schedule\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
+        $schedule = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
 
         if ($schedule !== null)
         {
-            $returnTime = Schedule::getNextApplicableTime($capturedAt, $schedule);
+            $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule);
         }
         else
         {

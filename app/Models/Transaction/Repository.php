@@ -9,7 +9,7 @@ use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Schedule as MerchantSchedule;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Settlement;
 use RZP\Models\Schedule;
 use RZP\Models\Transaction;
@@ -96,20 +96,20 @@ class Repository extends Base\Repository
         $scheduleId = $this->manager->schedule->getAttributeWithTableName(Schedule\Entity::ID);
 
         $merScheduleMerchantId = $this->manager
-                                      ->merchant_schedule
-                                      ->getAttributeWithTableName(MerchantSchedule\Entity::MERCHANT_ID);
+                                      ->schedule_task
+                                      ->getAttributeWithTableName(ScheduleTask\Entity::MERCHANT_ID);
 
         $merScheduleScheduleId = $this->manager
-                                      ->merchant_schedule
-                                      ->getAttributeWithTableName(MerchantSchedule\Entity::SCHEDULE_ID);
+                                      ->schedule_task
+                                      ->getAttributeWithTableName(ScheduleTask\Entity::SCHEDULE_ID);
 
         $merScheduleType = $this->manager
-                                ->merchant_schedule
-                                ->getAttributeWithTableName(MerchantSchedule\Entity::TYPE);
+                                ->schedule_task
+                                ->getAttributeWithTableName(ScheduleTask\Entity::TYPE);
 
         $merScheduleNextRunAt = $this->manager
-                                     ->merchant_schedule
-                                     ->getAttributeWithTableName(MerchantSchedule\Entity::NEXT_RUN_AT);
+                                     ->schedule_task
+                                     ->getAttributeWithTableName(ScheduleTask\Entity::NEXT_RUN_AT);
 
         $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
         $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
@@ -119,7 +119,7 @@ class Repository extends Base\Repository
         $txns = $this->newQuery()
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->join(Table::MERCHANT_SCHEDULE, $merchantId, '=', $merScheduleMerchantId)
+                    ->join(Table::SCHEDULE_TASK, $merchantId, '=', $merScheduleMerchantId)
                     ->join(Table::SCHEDULE, $scheduleId, '=', $merScheduleScheduleId)
                     ->where(Entity::ON_HOLD, 0)
                     ->where(Entity::SETTLED_AT, '<', $timestamp)
@@ -127,7 +127,7 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->where($transactionType, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->where($merScheduleType, '=', MerchantSchedule\Type::SETTLEMENT)
+                    ->where($merScheduleType, '=', ScheduleTask\Type::SETTLEMENT)
                     ->where($merScheduleNextRunAt, '<', $timestamp)
                     ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)

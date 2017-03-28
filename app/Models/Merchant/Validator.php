@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant;
 use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Schedule\Entity as MerchantSchedule;
+use RZP\Models\Schedule\Task\Entity as ScheduleTask;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Exception;

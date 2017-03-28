@@ -15,7 +15,7 @@ use RZP\Models\Base;
 use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Schedule as MerchantSchedule;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
@@ -107,13 +107,15 @@ class Service extends Base\Service
 
         $schedule = $this->getOrCreateDailySettlementSchedule($defaultDelay);
 
+        $merchant->schedule()->associate($schedule);
+
         $input = [
-            MerchantSchedule\Entity::METHOD      => null,
-            MerchantSchedule\Entity::TYPE        => MerchantSchedule\Type::SETTLEMENT,
-            MerchantSchedule\Entity::SCHEDULE_ID => $schedule->getId()
+            ScheduleTask\Entity::METHOD      => null,
+            ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
+            ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
         ];
 
-        (new MerchantSchedule\Core)->createOrUpdate($merchant, $merchant, $input);
+        (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
     }
 
     protected function attachAdmin($merchantId, $adminId)
@@ -362,11 +364,11 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchantSchedule = (new MerchantSchedule\Core)->createOrUpdate($merchant, $merchant, $input);
+        $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
-        $this->traceAndNotifyScheduleAssignment($merchantSchedule);
+        $this->traceAndNotifyScheduleAssignment($scheduleTask);
 
-        return $merchantSchedule->toArrayPublic();
+        return $scheduleTask->toArrayPublic();
     }
 
     protected function setSettlementScheduleIfNeeded($merchant, $schedule)
@@ -392,18 +394,18 @@ class Service extends Base\Service
         }
     }
 
-    protected function traceAndNotifyScheduleAssignment($merchantSchedule)
+    protected function traceAndNotifyScheduleAssignment($scheduleTask)
     {
-        $data = $merchantSchedule->toArrayPublic();
+        $data = $scheduleTask->toArrayPublic();
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
 
-        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+        // $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 
-        $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
+        // $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
 
         $this->slack->queue(
-                "Schedule assigned to Merchant by $user",
+                "Schedule assigned to Merchant",
                 $data,
                 [
                     'channel'  => Config::get('slack.channels.operations_log'),
@@ -423,7 +425,7 @@ class Service extends Base\Service
         }
         else
         {
-            $merchants = $this->repo->merchant->getFewMerchantsWithNoCorrespondingMerchantSchedules();
+            $merchants = $this->repo->merchant->getFewMerchantsWithNoCorrespondingScheduleTasks();
         }
 
         $migrationSummary = [
@@ -438,12 +440,12 @@ class Service extends Base\Service
                 $schedule = $merchant->schedule;
 
                 $input = [
-                    MerchantSchedule\Entity::METHOD      => null,
-                    MerchantSchedule\Entity::TYPE        => MerchantSchedule\Type::SETTLEMENT,
-                    MerchantSchedule\Entity::SCHEDULE_ID => $schedule->getId()
+                    ScheduleTask\Entity::METHOD      => null,
+                    ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
+                    ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
                 ];
 
-                (new MerchantSchedule\Core)->createOrUpdate($merchant, $merchant, $input);
+                (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
                 $migrationSummary['migrated_ids_count'] += 1;
             }

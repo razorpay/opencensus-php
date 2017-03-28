@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\Schedule;
+namespace RZP\Models\Schedule\Task;
 
 class Type
 {

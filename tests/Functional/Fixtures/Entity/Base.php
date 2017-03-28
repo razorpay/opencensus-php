@@ -54,7 +54,7 @@ class Base
         'transaction'       => \RZP\Models\Transaction\Entity::class,
         'bank_account'      => \RZP\Models\BankAccount\Entity::class,
         'fee_breakup'       => \RZP\Models\Transaction\FeeBreakup\Entity::class,
-        'merchant_schedule' => \RZP\Models\Merchant\Schedule\Entity::class,
+        'schedule_task'     => \RZP\Models\Schedule\Task\Entity::class,
 
         'atom'              => \RZP\Gateway\Atom\Entity::class,
         'hdfc'              => \RZP\Gateway\Hdfc\Entity::class,

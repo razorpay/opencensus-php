@@ -99,14 +99,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getFewMerchantsWithNoCorrespondingMerchantSchedules()
+    public function getFewMerchantsWithNoCorrespondingScheduleTasks()
     {
         $mercIds = $this->db->select(
             'SELECT DISTINCT id
              FROM merchants
                 WHERE merchants.id NOT IN
                     (SELECT DISTINCT merchant_id
-                     FROM merchant_schedules)
+                     FROM schedule_tasks)
                 LIMIT 1000');
 
         $mercIds2 = array_column($mercIds, 'id');

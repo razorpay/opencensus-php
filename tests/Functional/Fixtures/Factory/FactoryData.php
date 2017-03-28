@@ -589,7 +589,7 @@ final class FactoryData
             'next_run'          => 1451586600,
         ]);
 
-        $factory(\RZP\Models\Merchant\Schedule\Entity::class, [
+        $factory(\RZP\Models\Schedule\Task\Entity::class, [
             'id'                => $faker->randomNumber(6),
             'merchant_id'       => '10000000000000',
             'entity_id'         => '10000000000000',

@@ -1429,7 +1429,7 @@ return [
         ],
     ],
 
-    'testMerchantScheduleMigration' => [
+    'testScheduleTaskMigration' => [
         'request' => [
             'url' => '/merchants/schedules/migrate',
             'method' => 'POST',
