@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Org;
 
 use RZP\Models\Admin\Action;
 use RZP\Models\Base;
+use RZP\Models\Admin\Permission;
 
 class Core extends Base\Core
 {
@@ -16,6 +17,8 @@ class Core extends Base\Core
         $org->build($input);
 
         $this->repo->saveOrFail($org);
+
+        $this->syncPermissions($org, $input);
 
         return $org;
     }
@@ -34,6 +37,8 @@ class Core extends Base\Core
         $org = $this->repo->org->findOrFailPublic($orgId);
 
         $org->setAuditAction(Action::EDIT_ORG);
+
+        $this->syncPermissions($org, $input);
 
         $org->edit($input);
 
@@ -55,5 +60,20 @@ class Core extends Base\Core
         $this->repo->org->deleteOrFail($org);
 
         return $org->toArrayDeleted();
+    }
+
+    protected function syncPermissions($org, array $input)
+    {
+        if (isset($input['permissions']) === true)
+        {
+            if (($input['permissions'] instanceof Base\PublicCollection) === false)
+            {
+                Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
+            }
+
+            $this->repo->sync($org, 'permissions', $input['permissions']);
+        }
+
+        return $org;
     }
 }

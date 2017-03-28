@@ -27,7 +27,7 @@ class Service extends Base\Service
             }
 
             // create default role
-            $role = $this->createDefaultRole($org);
+            $role = $this->createDefaultRole($org, $input);
 
             // create admin
             $input['admin']['roles'] = (array) $role->getPublicId();
@@ -42,23 +42,42 @@ class Service extends Base\Service
         return $org->toArrayPublic();
     }
 
-    protected function createDefaultRole(Entity $org)
+    /*
+        Create SuperAdmin default role for this org
+    */
+    protected function createDefaultRole(Entity $org, array $input)
     {
-        // TODO: Fetch from $input and not config
-
-        $permissions = Config::get('heimdall.permissions') ?: [];
-
-        $permissions = (new Permission\Core)->getMultiplePermissionIdsByNames($permissions);
-
-        // Create SuperAdmin role for this new Organization
+        if (empty($input['permissions']))
+        {
+            return;
+        }
 
         $input = [
             'name' => config('heimdall.default_role_name'),
             'description' => 'This role has all permissions possible',
-            'permissions' => $permissions,
+            'permissions' => $input['permissions'],
         ];
 
         return (new Role\Core)->create($org, $input);
+    }
+
+    protected function editDefaultRole(Entity $org, array $input)
+    {
+        if (empty($input['permissions']))
+        {
+            return;
+        }
+
+        // Find default role
+        $roleName = config('heimdall.default_role_name');
+
+        $role = (new Role\Core)->findRoleByOrgAndName($org, $roleName);
+
+        $input = [
+            'permissions' => $input['permissions'],
+        ];
+
+        return (new Role\Core)->edit($role, $input);
     }
 
     public function fetch(string $id)
@@ -118,6 +137,9 @@ class Service extends Base\Service
                     (new Hostname\Core)->create($org, $hostname);
                 }
             }
+
+            // create default role
+            $role = $this->editDefaultRole($org, $input);
 
             return $org;
         });

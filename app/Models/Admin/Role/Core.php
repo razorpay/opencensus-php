@@ -77,4 +77,9 @@ class Core extends Base\Core
                 'The role with the name already exists');
         }
     }
+
+    public function findRoleByOrgAndName(Org\Entity $org, string $name)
+    {
+        return $this->repo->role->findByOrgAndName($org, $name);
+    }
 }

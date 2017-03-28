@@ -37,13 +37,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function retrieveIdsByNames(array $permNames)
-    {
-        return $this->newQuery()
-                    ->whereIn(Entity::NAME, $permNames)
-                    ->get(['id']);
-    }
-
     public function fetchAll(string $orgId)
     {
         $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
