@@ -31,11 +31,19 @@ class Recurring
         self::RECURRING_NON_3DS => 3,
     ];
 
+    /**
+     * Checks if a particular type of recurring is applicable,
+     * by seeing if the corresponding bit position is set.
+     * Shift right 'pos' times and check LSB
+     * @param  string  $hexType Hex value of the bit-wise field
+     * @param  string  $type    Name of the recurring type to be checked
+     * @return boolean          Whether type is applicable
+     */
     public static function isTypeApplicable($hexType, $type)
     {
         $pos = self::$bitPosition[$type];
 
-        return ($hexType >> ($pos - 1)) & 1;
+        return ((($hexType >> ($pos - 1)) & 1) === 1);
     }
 }
 

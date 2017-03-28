@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         ConnectRequestFields::TIME_ZONE                 => 'required|string',
         ConnectRequestFields::TXN_DATE_TIME             => 'required|string',
         ConnectRequestFields::TXN_TYPE                  => 'required|in:preauth,sale',
-        ConnectRequestFields::TOKEN                     => 'sometimes|',
+        ConnectRequestFields::TOKEN                     => 'sometimes|string',
     ];
 
     protected static $authValidators = [

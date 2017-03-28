@@ -515,11 +515,11 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    public function isRecurringTypeApplicable($type)
+    protected function isRecurringTypeApplicable($type)
     {
         $hex = $this->getRecurring();
 
-        return Recurring::isTypeApplicable($hex, $type) === 1;
+        return Recurring::isTypeApplicable($hex, $type);
     }
 
     public function isNonRecurring()
