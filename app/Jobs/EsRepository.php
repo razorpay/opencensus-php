@@ -27,9 +27,9 @@ class EsRepository extends Job implements ShouldQueue
      * @return void
      */
     public function handle()
-    {	
+    {
         $className  = $this->data['es_repo_path'];
-	
+
         $entity = new $className();
 
         $entity->fireStoreEntity($this, $this->data);

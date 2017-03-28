@@ -27,9 +27,9 @@ class Dashboard extends Job implements ShouldQueue
      * @return void
      */
     public function handle()
-    {	
+    {
         $className  = '\RZP\Dashboard\\' . ucfirst($this->data['type']);
-	   
+
         //will be payment or refund
         $entity = new $className();
 
