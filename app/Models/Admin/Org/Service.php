@@ -36,7 +36,7 @@ class Service extends Base\Service
             $role = $this->createDefaultRole($org, $input);
 
             // create admin
-            $input['admin']['roles'] = (array) $role->getPublicId();
+            $input['admin']['roles'] = (array) $role->getId();
 
             $input['admin']['email'] = $input['email'];
 

@@ -39,7 +39,7 @@ class Core extends Base\Core
 
         $org->setAuditAction(Action::EDIT_ORG);
 
-        $this->addOrgRelationEntities($org, $input);
+        $this->addOrgRelatedEntities($org, $input);
 
         $org->edit($input);
 
