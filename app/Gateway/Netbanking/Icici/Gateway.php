@@ -27,6 +27,11 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT  => 'amount'
     ];
 
+    const VERIFY_STATUS_TO_CALLBACK = [
+        Status::SUCCESS => Confirmation::YES,
+        Status::FAILURE => Confirmation::NO
+    ];
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -112,6 +117,8 @@ class Gateway extends Base\Gateway
             $content);
 
         $this->setVerifyStatus($verify);
+
+        $this->saveVerifyContentIfNeeded($verify);
     }
 
     protected function setVerifyStatus(Verify $verify)
@@ -307,6 +314,26 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
+    }
+
+    protected function saveVerifyContentIfNeeded(Verify $verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $gatewayPayment = $verify->payment;
+
+        $status = self::VERIFY_STATUS_TO_CALLBACK[$content[ResponseFields::STATUS]];
+
+        $attributes = [Base\Entity::STATUS => $status];
+
+        if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
+        {
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_PAYMENT_ID];
+        }
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
     }
 
     protected function getResponseArray($content)

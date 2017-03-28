@@ -265,7 +265,7 @@ class StatusCakeProcessor implements ProcessorInterface
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_STATUS,
-                ['input' => $input]);
+                ['status' => $status]);
 
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid StatusCake status provided: ' . $status);
