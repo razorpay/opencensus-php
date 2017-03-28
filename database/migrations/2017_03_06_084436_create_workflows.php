@@ -4,8 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Workflow\Entity as Workflow;
 use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Workflow\Entity as Workflow;
+
 
 class CreateWorkflows extends Migration
 {
@@ -33,6 +34,7 @@ class CreateWorkflows extends Migration
             $table->char(Workflow::NAME, 255);
 
             $table->integer(Workflow::CREATED_AT);
+
             $table->integer(Workflow::UPDATED_AT);
         });
     }
@@ -49,7 +51,6 @@ class CreateWorkflows extends Migration
             $table->dropForeign(Table::WORKFLOW . '_' . Workflow::ORG_ID . '_foreign');
         });
 
-        //
-        Schema::drop(Table::GROUP);
+        Schema::drop(Table::WORKFLOW);
     }
 }

@@ -34,7 +34,7 @@ class Channel
 
     public static function getChannels()
     {
-        return [self::KOTAK, self::ATOM];
+        return [self::KOTAK];
     }
 
     public static function getGateways($channel)

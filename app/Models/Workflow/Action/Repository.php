@@ -26,6 +26,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ADMIN_ID, '=', $adminId)
                     ->where(Entity::ORG_ID, '=', $orgId)
-                    ->get();
+                    ->firstOrFailPublic();
     }
 }

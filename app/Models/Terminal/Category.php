@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal;
 
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -26,6 +27,7 @@ class Category
     const TRAVEL_AGENCY   = 'travel_agency';
     const RETAIL_SERVICES = 'retail_services';
     const PHARMA          = 'pharma';
+    const LENDING         = 'lending';
 
 
     /**
@@ -54,6 +56,7 @@ class Category
         self::MUTUAL_FUNDS,
         self::TRAVEL_AGENCY,
         self::PHARMA,
+        self::LENDING,
     ];
 
 
@@ -73,10 +76,19 @@ class Category
      * By default Check for the name that is mentioned as is.
      * If it is renamed, then the new name that is mentioned will be
      * used to check for a network category
+     *
+     * Keys are Merchant categories, values are Network categories
      */
     const CATEGORIES = [
         Method::NETBANKING => [
             self::DEFAULT => self::ECOMMERCE,
+            IFSC::KKBK => [
+                // In Kotak, a utilities terminal needs to be added
+                // which will be used to accept lending as well.
+                self::DEFAULT   => self::ECOMMERCE,
+                self::UTILITIES => self::UTILITIES,
+                self::LENDING   => self::UTILITIES,
+            ]
         ],
         Method::CARD => [
             self::DEFAULT => self::ECOMMERCE,

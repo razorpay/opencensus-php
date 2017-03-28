@@ -199,6 +199,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_PAN_URL,
         self::ADDRESS_PROOF_URL,
         self::PROMOTER_ADDRESS_URL,
+        self::PROMOTER_PAN_URL,
         self::ROLE,
         self::DEPARTMENT,
         self::CREATED_AT,

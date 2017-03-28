@@ -4,10 +4,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Workflow\Entity as Workflow;
 use RZP\Models\Admin\Admin\Entity as Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
-use RZP\Models\Workflow\Entity as Workflow;
-use RZP\Models\Admin\Org\Entity as Org;
+
 
 class CreateWorkflowAction extends Migration
 {
@@ -26,7 +27,9 @@ class CreateWorkflowAction extends Migration
                   ->primary();
 
             $table->char(Action::WORKFLOW_ID, Action::ID_LENGTH);
+
             $table->char(Action::ADMIN_ID, Action::ID_LENGTH);
+
             $table->char(Action::ORG_ID, Action::ID_LENGTH);
 
             $table->boolean(Action::APPROVED)
@@ -51,6 +54,7 @@ class CreateWorkflowAction extends Migration
                   ->on_delete('restrict');
 
             $table->integer(Action::CREATED_AT);
+
             $table->integer(Action::UPDATED_AT);
         });
     }

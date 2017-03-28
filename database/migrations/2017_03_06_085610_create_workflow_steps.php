@@ -4,7 +4,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Admin\Permission\Entity as Permission;
 use RZP\Models\Admin\Role\Entity as Role;
 use RZP\Models\Workflow\Entity as Workflow;
 use RZP\Models\Workflow\Step\Entity as Step;
@@ -26,6 +25,7 @@ class CreateWorkflowSteps extends Migration
                   ->primary();
 
             $table->char(Step::ROLE_ID, Step::ID_LENGTH);
+
             $table->char(Step::WORKFLOW_ID, Step::ID_LENGTH);
 
             $table->tinyInteger(Step::LEVEL)
@@ -42,7 +42,10 @@ class CreateWorkflowSteps extends Migration
                   ->on_delete('restrict');
 
             $table->integer(Step::CREATED_AT);
+
             $table->integer(Step::UPDATED_AT);
+
+            $table->index(Step::LEVEL);
         });
     }
 
@@ -53,7 +56,6 @@ class CreateWorkflowSteps extends Migration
      */
     public function down()
     {
-        //
         Schema::table(Table::WORKFLOW_STEP, function($table)
         {
             $table->dropForeign(Table::WORKFLOW_STEP . '_' . Step::ROLE_ID . '_foreign');

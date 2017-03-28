@@ -91,3 +91,41 @@ UPDATE transactions SET reconciled_at = 1467719197, gateway_fee = 10320, gateway
 UPDATE payments SET transaction_id = '59TRu4jEt06jxw' WHERE id = '59TOmc805gVS7i'
 DELETE FROM fees_breakup WHERE id in ('6eiYxS2iRdjiiX', '6eiYxSHKXXuhSw', '6eiYxSVOCEEbXF') AND transaction_id = '59TRvHDeSgNyiX';
 DELETE FROM transactions WHERE id = '59TRvHDeSgNyiX';
+
+UPDATE billdesk SET RefundId = 'IICI51854029631' WHERE id = 1075644;
+UPDATE billdesk SET RefundId = 'IYBK51905388691' WHERE id = 1087859;
+UPDATE billdesk SET RefundId = 'IICI51813818221' WHERE id = 1083918;
+UPDATE billdesk SET RefundId = 'ISBI51846870321' WHERE id = 1083917;
+UPDATE billdesk SET RefundId = 'HICI50897787121' WHERE id = 1034628;
+UPDATE billdesk SET RefundId = 'HSBI51724591941' WHERE id = 1034627;
+UPDATE billdesk SET RefundId = 'HSBJ51362574311' WHERE id = 1034626;
+
+# Queries to fix invoices data: Initially few invoices were created with type=null,
+# it is being updated to 'link' as in v1 all invoices were supposed to be link.
+UPDATE invoices SET type = 'link' WHERE type IS NULL;
+
+# Fix an error on billdesk's side for refund of pay_7VEH9tDunmiTpL
+INSERT INTO billdesk
+    (payment_id, action, received, MerchantID, CustomerID, TxnAmount, BankID,
+ 	 CurrencyType, TxnDate, TxnReferenceNo, RequestType, ProcessStatus,
+ 	 RefAmount, RefDateTime, RefundId, refund_id, RefStatus,
+ 	 created_at, updated_at)
+    VALUES
+ 	('7OyMLXhVq1Pm4L', 'refund', 0, 'R5RPSPL', '7OyMLXhVq1Pm4L', '500.00', 'IDS',
+ 	 'INR', '20170306', 'HIDS5165513683', '0410', 'Y',
+ 	 '500.00', '20170320120000', 'HIDS51655136831', '7UfoSn81tmUYLM', '0799',
+ 	 UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+
+# udpate fund transfer attempt
+update fund_transfer_attempts set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7Uai0p2hBhun9B";
+update fund_transfer_attempts set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP7DHa8miFSto";
+update fund_transfer_attempts set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP6qJyLDUGYVv";
+
+#update settlements
+update settlements set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP6qJpA0aWXoC";
+update settlements set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP7DHLhqqZJcp";
+update settlements set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7Uai0ojQJmim96";
+
+#update failed settlements
+update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7HX5An3eDrXUaz";
+update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7KhM07UJp7rsiZ";

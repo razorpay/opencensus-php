@@ -5,8 +5,8 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin\Entity as Admin;
-use RZP\Models\Workflow\Action\Comment\Entity as Comment;
 use RZP\Models\Workflow\Action\Entity as Action;
+use RZP\Models\Workflow\Action\Comment\Entity as Comment;
 
 class CreateWorkflowActionComment extends Migration
 {
@@ -25,6 +25,7 @@ class CreateWorkflowActionComment extends Migration
                   ->primary();
 
             $table->char(Comment::ACTION_ID, Comment::ID_LENGTH);
+
             $table->char(Comment::ADMIN_ID, Comment::ID_LENGTH);
 
             $table->text(Comment::COMMENT);
@@ -40,6 +41,7 @@ class CreateWorkflowActionComment extends Migration
                   ->on_delete('restrict');
 
             $table->integer(Comment::CREATED_AT);
+
             $table->integer(Comment::UPDATED_AT);
         });
     }

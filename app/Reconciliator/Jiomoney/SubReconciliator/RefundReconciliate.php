@@ -49,12 +49,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         $refundAmount = intval(number_format($refundAmount, 2, '.', ''));
 
-        if ($refundAmount > 0)
-        {
-            throw new ReconciliationException("Positive amount given in Jiomoney refund", $row);
-        }
-
-        // Jiomoney gives negative value for refund amount so we take the absolute value here
+        // Jiomoney sometimes gives negative value for refund amount so we take the absolute value here
         $refundAmount = abs($refundAmount);
 
         return $refundAmount;

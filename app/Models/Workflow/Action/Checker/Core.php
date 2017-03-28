@@ -40,7 +40,6 @@ class Core extends Base\Core
         // TODO can do it async using laravel events
         (new Action\Core)->checkAndMarkActionApproved();
 
-
         return $checker;
     }
 

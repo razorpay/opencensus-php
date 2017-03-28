@@ -127,10 +127,6 @@ class Entity extends Base\Entity
 
     public function incrementCurrentLevel()
     {
-        $level = $this->getAttribute(self::CURRENT_LEVEL);
-
-        $level += 1;
-
-        $this->setCurrentLevel($level);
+        $this->increment(self::CURRENT_LEVEL);
     }
 }

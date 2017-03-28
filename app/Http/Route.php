@@ -168,6 +168,7 @@ final class Route
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
         'merchant_activation_files'               => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
+        'merchant_activation_upload_file_admin'   => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
@@ -199,8 +200,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
-        'setl_initiate_schedule'                  => ['post',     'settlements/initiate2/{channel?}',               'SettlementController@postSettlementInitiateV2'                     ],
-        'setl_retry'                              => ['post',     'settlements/retry/{channel?}',                   'SettlementController@postSettlementRetry'                          ],
+        'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
@@ -412,7 +412,10 @@ final class Route
         'workflow_delete'                         => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_step_create'                    => ['post',     'workflows/{id}/steps',                           'WorkflowController@createWorkflowStep'                             ],
         'workflow_step_read'                      => ['get',      'workflows/{id}/steps/{stepId}',                  'WorkflowController@getWorkflowStep'                                ],
+        'workflow_action_get_multiple'            => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
         'action_checker_create'                   => ['post',     'w-actions/{id}/checkers',                        'WorkflowController@postActionChecker'                              ],
+        'workflow_action_details'                 => ['get',      'w-actions/{id}/details',                         'WorkflowController@getActionDetails'                               ],
+        'workflow_action_states'                  => ['get',      'w-actions/{id}/states',                          'WorkflowController@getActionStates'                                ],
         'action_checker_multiple'                 => ['get',      'w-actions/{id}/checkers',                        'WorkflowController@getActionCheckerMultiple'                       ],
         'action_checker_get'                      => ['get',      'w-actions/{id}/checker/{checkerId}',             'WorkflowController@getActionChecker'                               ],
         'action_diff_create'                      => ['post',     'w-actions/{id}/diff',                            'WorkflowController@postActionDiff'                                 ],
@@ -468,6 +471,10 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+
+        // Dummy routes to test Account Auth
+        'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
+        'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
     );
 
     public static $public = array(
@@ -618,6 +625,7 @@ final class Route
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
+        'merchant_activation_upload_file_admin',
         'merchant_secret',
         'merchant_create',
         'merchant_edit',
@@ -672,7 +680,6 @@ final class Route
         'pricing_delete_plan_rule_force',
         'setl_initiate',
         'payout_initiate',
-        'setl_initiate_schedule',
         'setl_retry',
         'setl_file_generate',
         'setl_reconcile',
@@ -783,7 +790,8 @@ final class Route
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
         'schedule_fetch_multiple',
-        'schedule_migration'
+        'schedule_migration',
+        'internal_dummy_account_test',
     );
 
     public static $proxy = array(
@@ -886,7 +894,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
-
+        'admin_dummy_account_test',
         // workflows
         'workflow_create',
         'workflow_get',
@@ -899,6 +907,9 @@ final class Route
         'action_request_execute',
         'action_comment_create',
         'action_comment_fetch',
+        'workflow_action_states',
+        'workflow_action_details',
+        'workflow_action_get_multiple',
         'workflow_get_actions_for_checker',
         'workflow_get_actions_by_maker',
     ];
@@ -938,6 +949,7 @@ final class Route
         'permission_delete'                => [Permission::DELETE_PERMISSION],
         'auditlog_search'                  => [Permission::VIEW_AUDITLOG],
         'admin_logout'                     => ['*'],
+        'admin_dummy_account_test'         => [Permission::VIEW_MERCHANT],
         'workflow_create'                  => ['*'], // Fix permissions
         'workflow_get'                     => ['*'],
         'workflow_step_create'             => ['*'],
@@ -951,6 +963,9 @@ final class Route
         'action_comment_fetch'             => ['*'],
         'workflow_get_actions_for_checker' => ['*'],
         'workflow_get_actions_by_maker'    => ['*'],
+        'workflow_action_states'           => ['*'],
+        'workflow_action_details'          => ['*'],
+        'workflow_action_get_multiple'     => ['*'],
     ];
 
     public static $direct = array(
@@ -994,7 +1009,6 @@ final class Route
         'cron' => array(
             'setl_initiate',
             'payout_initiate',
-            'setl_initiate_schedule',
             'setl_reconcile_generate',
             'setl_return_generate',
             'payment_auth_notify',
@@ -1104,6 +1118,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'admin_dummy_account_test',
     ];
 
     /**
