@@ -162,6 +162,21 @@ class RoleTest extends TestCase
 
     public function testEditSuperAdminRole()
     {
+        $admin =  $this->ba->getAdmin();
+
+        $role = $admin->roles[0];
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditSuperAdminRoleByRazorpay()
+    {
         $role = $this->getEntityById('role', Org::ADMIN_ROLE, true);
 
         $orgId = 'org_' . Org::RZP_ORG;

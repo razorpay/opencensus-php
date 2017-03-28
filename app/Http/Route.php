@@ -1060,6 +1060,7 @@ final class Route
     public static $crossOrgRoutes = [
         'org_edit',
         'org_get',
+        'role_edit',
         'schedule_create',
         'schedule_delete',
         'schedule_update',
