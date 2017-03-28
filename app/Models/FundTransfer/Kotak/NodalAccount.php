@@ -123,7 +123,7 @@ class NodalAccount
 
         $txt = $this->generateText($textData);
 
-        list($excelFileEntity, $textFileEntity) = $this->createSettlementFiles($excelData, $txt);
+        list($excelFileEntity, $textFileEntity) = $this->createSettlementFiles($excelData, $txt, $h2h);
 
         $this->sendSettlementMail($excelFileEntity, $textFileEntity);
 
@@ -274,7 +274,7 @@ class NodalAccount
         return $dict;
     }
 
-    protected function createSettlementFiles($excelData, $textData): array
+    protected function createSettlementFiles($excelData, $textData, bool $h2h): array
     {
         // Create excel file
         $excelFile = $this->writeFileOnS3(
@@ -283,8 +283,6 @@ class NodalAccount
             FileStore\Format::XLSX,
             FileStore\Type::KOTAK_SETTLEMENT_EXCEL
         );
-
-        $excelS3Url = $excelFile->getSignedUrl();
 
         // Create txt file
         if ($h2h === true)
@@ -297,7 +295,7 @@ class NodalAccount
             ];
 
             $textFile = $this->writeFileOnS3(
-                'kotak/outgoing/' . $this->getH2HFileName(),
+                'kotak/outgoing/' . $this->getH2HFileNameWithoutExt(),
                 $textData,
                 FileStore\Format::TXT,
                 FileStore\Type::KOTAK_SETTLEMENT_TXT,
@@ -305,12 +303,10 @@ class NodalAccount
         }
 
         $textFile = $this->writeFileOnS3(
-            $this->getFileToWriteName('.txt'),
+            $this->getFileToWriteNameWithoutExt(),
             $textData,
             FileStore\Format::TXT,
             FileStore\Type::KOTAK_SETTLEMENT_TXT);
-
-        $textS3Url = $textFile->getSignedUrl();
 
         return [$excelFile, $textFile];
     }
@@ -335,7 +331,7 @@ class NodalAccount
     {
         $fileCreator = new FileStore\Creator;
 
-        return $fileCreator->extension(FileStore\Format::CSV)
+        return $fileCreator->extension($extension)
                            ->name($key)
                            ->content($content)
                            ->metadata($metadata)
@@ -355,11 +351,8 @@ class NodalAccount
 
         $data = compact('summary', 'subject');
 
-        // $fileName = $this->getFileToWriteNameWithoutExt();
-        // $path = $this->getStorageDir();
-        // $fullpath = $path . '/'. $fileName;
-
-        // $data['file'] = $fullpath;
+        $data['excelFile'] = $excelFileEntity->get()['local_file_path'];
+        $data['textFile'] = $textFileEntity->get()['local_file_path'];
 
         Mail::send('emails.admin.settlement', $data, function($message) use ($data)
         {
@@ -371,10 +364,8 @@ class NodalAccount
 
             $message->to($emails);
 
-            // $file = $data['file'];
-
-            $message->attach($excelFileEntity->get()['local_file_path']);
-            $message->attach($textFileEntity->get()['local_file_path']);
+            $message->attach($data['excelFile']);
+            $message->attach($data['textFile']);
 
             $headers = $message->getHeaders();
 
@@ -415,7 +406,14 @@ class NodalAccount
     // @codingStandardsIgnoreStart
     protected function getH2HFileName()
     {
-        $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
+        $name = $this->getFileToWriteName() . '.txt';
+
+        return $name;
+    }
+
+    protected function getH2HFileNameWithoutExt()
+    {
+        $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis');
 
         return $name;
     }

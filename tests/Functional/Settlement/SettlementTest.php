@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
+use Mail;
+use Mockery;
 
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
@@ -379,6 +381,23 @@ class SettlementTest extends TestCase
         $input = ['count' => 10];
         $txns = $this->getEntities('transaction', $input, true);
 
+        // Setup to validate email send
+        Mail::shouldReceive('send')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $this->assertArrayHasKey('subject', $data);
+                        $this->assertArrayHasKey('summary', $data);
+                        $this->assertArrayHasKey('excelFile', $data);
+                        $this->assertArrayHasKey('textFile', $data);
+
+                        return true;
+                    }),
+                    Mockery::any()
+                );
+
         $request = [
             'url' => '/settlements/initiate/kotak',
             'method' => 'POST'
@@ -479,18 +498,57 @@ class SettlementTest extends TestCase
         }
     }
 
-    public function testSettlementFileGeneration()
+    public function testSettlementFileGenerationV2()
     {
-        $this->testMerchantSettlementV2();
+        $this->ba->adminAuth();
 
-        $setl = $this->getLastEntity('settlement', true);
-        $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $schedule = $this->createAndAssignSchedule();
 
+        $this->ba->appAuth();
+
+        $payments = $this->createPaymentEntities();
+
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payments[0],
+                      'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        // Generate settlements for above transactions
+        $request = array(
+            'url' => '/settlements/initiate/kotak',
+            'method' => 'POST'
+        );
+
+        $this->makeRequestAndGetContent($request);
+
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+
+        // Setup to validate email send on file generation below
+        Mail::shouldReceive('send')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $this->assertArrayHasKey('subject', $data);
+                        $this->assertArrayHasKey('summary', $data);
+                        $this->assertArrayHasKey('excelFile', $data);
+                        $this->assertArrayHasKey('textFile', $data);
+
+                        return true;
+                    }),
+                    Mockery::any()
+                );
+
+        // Generate settlement-file generation
         $request = array(
             'url' => '/settlements/file/generate',
             'method' => 'POST',
             'content' => [
-                'batch_fund_transfer_id' => $setlAttempt['batch_fund_transfer_id']
+                'batch_fund_transfer_id' => $batch['id']
             ]
         );
 
@@ -534,6 +592,23 @@ class SettlementTest extends TestCase
 
         $this->fixtures->edit('batch_fund_transfer', $batch['id'], ['created_at' => $capturedAt + 50]);
 
+        // Setup to validate email send on file generation below
+        Mail::shouldReceive('send')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $this->assertArrayHasKey('subject', $data);
+                        $this->assertArrayHasKey('summary', $data);
+                        $this->assertArrayHasKey('excelFile', $data);
+                        $this->assertArrayHasKey('textFile', $data);
+
+                        return true;
+                    }),
+                    Mockery::any()
+                );
+
         // Generate settlement-file generation
         $request = array(
             'url' => '/settlements/file/generate',
@@ -541,6 +616,7 @@ class SettlementTest extends TestCase
             'content' => [
                 'batch_fund_transfer_id' => $batch['id']
             ]
+
         );
 
         $content = $this->makeRequestAndGetContent($request);
