@@ -34,12 +34,7 @@ class Handler extends BaseHandler
     {
         $awsConfig = Config::get('aws');
 
-        if ($region === null)
-        {
-            $region = $awsConfig['bucket_region'];
-        }
-
-        $awsConfig['region'] = $region;
+        $awsConfig['region'] = $region ?: $awsConfig['bucket_region'];
 
         $client = new Aws\Sdk($awsConfig);
 

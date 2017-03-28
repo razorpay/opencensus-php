@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\FileStore;
 use RZP\Models\FundTransfer;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
@@ -62,7 +63,7 @@ class NodalAccount
         return Headings::getRequestFileHeadings();
     }
 
-    public function generateSettlementFile($entities, $h2h = true)
+    public function generateSettlementFile($entities, $h2h = true): array
     {
         $textData = $excelData = [];
 
@@ -120,22 +121,13 @@ class NodalAccount
             array_push($excelData, $array);
         }
 
-        $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
-
         $txt = $this->generateText($textData);
 
-        if ($h2h === true)
-        {
-            $name = $this->getH2HFileName();
+        list($excelFileEntity, $textFileEntity) = $this->createSettlementFiles($excelData, $txt);
 
-            $urlText = $this->writeToTextFileH2H($name, $txt);
-        }
+        $this->sendSettlementMail($excelFileEntity, $textFileEntity);
 
-        $urlText = $this->writeToTextFile($txt);
-
-        $this->sendKotakSettlementMail();
-
-        return [$urlText, $urlExcel];
+        return [$textFileEntity->getSignedUrl(), $excelFileEntity->getSignedUrl()];
     }
 
     public function getPayoutsFile(Base\PublicCollection $payouts)
@@ -282,7 +274,79 @@ class NodalAccount
         return $dict;
     }
 
-    protected function sendKotakSettlementMail()
+    protected function createSettlementFiles($excelData, $textData): array
+    {
+        // Create excel file
+        $excelFile = $this->writeFileOnS3(
+            $this->getFileToWriteNameWithoutExt(),
+            $excelData,
+            FileStore\Format::XLSX,
+            FileStore\Type::KOTAK_SETTLEMENT_EXCEL
+        );
+
+        $excelS3Url = $excelFile->getSignedUrl();
+
+        // Create txt file
+        if ($h2h === true)
+        {
+            $metadata = [
+                'gid'   => '10000',
+                'uid'   => '10001',
+                'mtime' => Carbon::now()->timestamp,
+                'mode'  => '33188',
+            ];
+
+            $textFile = $this->writeFileOnS3(
+                'kotak/outgoing/' . $this->getH2HFileName(),
+                $textData,
+                FileStore\Format::TXT,
+                FileStore\Type::KOTAK_SETTLEMENT_TXT,
+                $metadata);
+        }
+
+        $textFile = $this->writeFileOnS3(
+            $this->getFileToWriteName('.txt'),
+            $textData,
+            FileStore\Format::TXT,
+            FileStore\Type::KOTAK_SETTLEMENT_TXT);
+
+        $textS3Url = $textFile->getSignedUrl();
+
+        return [$excelFile, $textFile];
+    }
+
+    /**
+     * Creates file on s3
+     * Saves file details in files table
+     * @param $key File path inside the bucket on s3
+     * @param $content Content of the file
+     * @param $extension Extension of the file
+     * @param $type FileStore/Type of the file
+     * @param $metadata Metadata of the file
+     *
+     * @return FileStore/Creator instance
+     */
+    protected function writeFileOnS3(
+        string $key,
+        $content,
+        string $extension,
+        string $type,
+        array $metadata = []): FileStore\Creator
+    {
+        $fileCreator = new FileStore\Creator;
+
+        return $fileCreator->extension(FileStore\Format::CSV)
+                           ->name($key)
+                           ->content($content)
+                           ->metadata($metadata)
+                           ->store(FileStore\Store::S3)
+                           ->type($type)
+                           ->save();
+    }
+
+    protected function sendSettlementMail(
+        FileStore\Creator $excelFileEntity,
+        FileStore\Creator $textFileEntity)
     {
         $summary = $this->summary;
 
@@ -291,11 +355,11 @@ class NodalAccount
 
         $data = compact('summary', 'subject');
 
-        $fileName = $this->getFileToWriteNameWithoutExt();
-        $path = $this->getStorageDir();
-        $fullpath = $path . '/'. $fileName;
+        // $fileName = $this->getFileToWriteNameWithoutExt();
+        // $path = $this->getStorageDir();
+        // $fullpath = $path . '/'. $fileName;
 
-        $data['file'] = $fullpath;
+        // $data['file'] = $fullpath;
 
         Mail::send('emails.admin.settlement', $data, function($message) use ($data)
         {
@@ -307,10 +371,10 @@ class NodalAccount
 
             $message->to($emails);
 
-            $file = $data['file'];
+            // $file = $data['file'];
 
-            $message->attach($file . '.xlsx');
-            $message->attach($file . '.txt');
+            $message->attach($excelFileEntity->get()['local_file_path']);
+            $message->attach($textFileEntity->get()['local_file_path']);
 
             $headers = $message->getHeaders();
 
