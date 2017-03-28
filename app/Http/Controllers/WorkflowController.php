@@ -124,7 +124,6 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
-    // TODO
     public function updateWorkflow(string $id)
     {
         $input = Request::all();
@@ -134,7 +133,6 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
-    // TODO
     public function deleteWorkflow(string $id)
     {
         $data = (new Workflow\Service)->delete($id);
@@ -151,28 +149,11 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getWorkflowStep(string $wid, string $stepId)
+    public function getWorkflowStep(string $id, string $stepId)
     {
         $input = Request::all();
 
-        $data = (new Workflow\Step\Service)->get($wid, $stepId, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function updateWorkflowStep(string $wid, string $stepId)
-    {
-        $input = Request::all();
-
-        $data = (new Workflow\Step\Service)->update($wid, $stepId, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    // TODO
-    public function deleteWorkflowStep(string $wid, string $stepId)
-    {
-        $data = (new Workflow\Step\Service)->delete($wid, $stepId);
+        $data = (new Workflow\Step\Service)->get($id, $stepId, $input);
 
         return ApiResponse::json($data);
     }

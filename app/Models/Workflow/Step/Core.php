@@ -20,17 +20,4 @@ class Core extends Base\Core
         return $step;
     }
 
-    public function update(Entity $step, array $input)
-    {
-        $step->edit($input);
-
-        $this->repo->saveOrFail($step);
-
-        return $step;
-    }
-
-    public function delete(string $wid, string $stepId)
-    {
-
-    }
 }
