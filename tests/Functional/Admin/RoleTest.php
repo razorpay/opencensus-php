@@ -11,6 +11,8 @@ class RoleTest extends TestCase
 {
     use HeimdallTrait;
 
+    const TOTAL_PERMISSIONS = 120;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/RoleData.php';
@@ -132,7 +134,7 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(count($result['permissions']), 120);
+        $this->assertEquals(self::TOTAL_PERMISSIONS, count($result['permissions']));
     }
 
     public function testDeleteRole()
@@ -162,6 +164,21 @@ class RoleTest extends TestCase
     }
 
     public function testEditSuperAdminRole()
+    {
+        $admin =  $this->ba->getAdmin();
+
+        $role = $admin->roles[0];
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditSuperAdminRoleByRazorpay()
     {
         $role = $this->getEntityById('role', Org::ADMIN_ROLE, true);
 

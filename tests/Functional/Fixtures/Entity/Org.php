@@ -3,6 +3,9 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
+use DB;
+
+use RZP\Constants\Table;
 
 class Org extends Base
 {
@@ -30,7 +33,7 @@ class Org extends Base
         ]);
 
         $orgHost = $this->fixtures->create('org_hostname', [
-            'org_id'    => self::RZP_ORG,
+            'org_id'    => self::HDFC_ORG,
             'hostname'  => 'hdfcbank.com',
         ]);
     }
@@ -76,6 +79,17 @@ class Org extends Base
         ]);
 
         $permissions = $this->fixtures->create('permission:default_permissions');
+
+        foreach ($permissions as $permission)
+        {
+            DB::table(Table::PERMISSION_MAP)->insert([
+                [
+                    'permission_id' => $permission->getId(),
+                    'entity_id'     => self::RZP_ORG,
+                    'entity_type'   => 'org',
+                ]
+            ]);
+        }
 
         $liveAdminRole = clone $adminRole;
         $testAdminRole = clone $adminRole;
