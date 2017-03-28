@@ -32,6 +32,8 @@ class DailyReportTest extends TestCase
 
         $content = $this->initiateSettlements('kotak', $this->settleAtTimestamp);
 
+        $this->assertNotEquals($content['kotak']['count'], 0);
+
         $setl = $this->getLastEntity('settlement', true);
 
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;

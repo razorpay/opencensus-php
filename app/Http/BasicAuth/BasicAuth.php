@@ -45,8 +45,9 @@ class BasicAuth
      * To support Account Auth: Allows API requests to be served under the
      * scope of a merchant ID that is sent as the value to this header
      *
-     * With admin auth and privilege auth   - set scope to any merchant under the current org
-     * For private auth (marketplace)       - set scope to any linked account
+     * On Privilege auth                - set to any merchant ID
+     * On admin auth                    - set to any merchant under the current org
+     * For private auth (marketplace)   - set to any linked account under the merchant
      */
     const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
 
@@ -663,7 +664,7 @@ class BasicAuth
 
         if ($keyId === '')
         {
-            return;
+            return false;
         }
 
         //
@@ -679,9 +680,7 @@ class BasicAuth
      * These requests are expected to originate
      * from merchant's server
      *
-     * @param  string   $keyId
-     * @param  string   $keySecret
-     * @return boolean/Response
+     * @return bool|Response
      */
     protected function verifySecret()
     {

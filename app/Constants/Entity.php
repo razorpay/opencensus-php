@@ -90,6 +90,7 @@ class Entity
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const NETBANKING_ICICI      = 'netbanking_icici';
     const NETBANKING_AXIS       = 'netbanking_axis';
+    const NETBANKING_FEDERAL    = 'netbanking_federal';
     const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
@@ -166,6 +167,7 @@ class Entity
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
+        self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
         self::WALLET                => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
@@ -186,14 +188,15 @@ class Entity
     ];
 
     protected static $repository = [
-        self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_ICICI   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
-        self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
+        self::NETBANKING_FEDERAL => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
+        self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
+        self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
@@ -216,8 +219,7 @@ class Entity
         self::PRICING,
         self::EMI_PLAN,
         self::MERCHANT,
-        self::SCHEDULE,
-        self::SCHEDULE_TASK,
+        self::SCHEDULE
     ];
 
     public static function getEntityNamespace(string $entity)

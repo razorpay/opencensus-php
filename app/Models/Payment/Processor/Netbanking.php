@@ -33,7 +33,8 @@ class Netbanking
         IFSC::HDFC,
         IFSC::UTIB,
         IFSC::KKBK,
-        IFSC::AIRP
+        IFSC::AIRP,
+        IFSC::FDRL
     ];
 
     protected static $selfTPV = [
