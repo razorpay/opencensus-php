@@ -50,4 +50,11 @@ class Repository extends Base\Repository
                     ->where($pmTable . '.entity_type', '=', 'org')
                     ->get();
     }
+
+    public function retrieveIdsByNames(array $permissionNames)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::NAME, $permissionNames)
+                    ->get(['id']);
+    }
 }

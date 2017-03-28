@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::INVOICE_LOGO_URL    => 'sometimes|url',
         Entity::ADMIN               => 'required|array',
         Entity::CUSTOM_CODE         => 'required',
-        Entity::PERMISSIONS         => 'sometimes|array',
+        Entity::PERMISSIONS         => 'required|array',
     ];
 
     protected static $editRules = [

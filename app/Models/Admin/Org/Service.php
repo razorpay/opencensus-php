@@ -53,15 +53,10 @@ class Service extends Base\Service
     */
     protected function createDefaultRole(Entity $org, array $input)
     {
-        if (empty($input['permissions']))
-        {
-            return;
-        }
-
         $input = [
             'name' => config('heimdall.default_role_name'),
             'description' => 'This role has all permissions possible',
-            'permissions' => $input['permissions'],
+            'permissions' => $input[Entity::PERMISSIONS],
         ];
 
         return (new Role\Core)->create($org, $input);
@@ -70,7 +65,7 @@ class Service extends Base\Service
     protected function editDefaultRole(Entity $org, array $input)
     {
         // EDIT of default role is only allowed on permissions
-        if (empty($input['permissions']))
+        if (empty($input[Entity::PERMISSIONS]))
         {
             return;
         }
@@ -81,7 +76,7 @@ class Service extends Base\Service
         $role = (new Role\Core)->findRoleByOrgAndName($org, $roleName);
 
         $input = [
-            'permissions' => $input['permissions'],
+            'permissions' => $input[Entity::PERMISSIONS],
         ];
 
         return (new Role\Core)->edit($role, $input);
