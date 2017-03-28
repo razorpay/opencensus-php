@@ -1843,3 +1843,6 @@ UPDATE terminals
     SET recurring = 3 WHERE recurring = 0 AND gateway = 'cybersource';
 UPDATE terminals
     SET recurring = 4 WHERE recurring = 2 AND gateway = 'cybersource';
+
+UPDATE tokens
+    SET terminal_id = '5yKTyCuDne8eiz' WHERE recurring = 1;
