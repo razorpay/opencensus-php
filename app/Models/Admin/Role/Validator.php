@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Admin\Role;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -20,9 +22,17 @@ class Validator extends Base\Validator
         Entity::PERMISSIONS     => 'sometimes',
     ];
 
-    public function validateRoleIsNotSuperAdmin()
+    public function validateRoleIsNotSuperAdmin($admin = null)
     {
         $role = $this->entity;
+
+        if ((isset($admin) === true) and
+            ($admin->org->isCrossOrgAccessEnabled() === true) and
+            ($admin->isSuperAdmin() === true))
+        {
+            return;
+        }
+
 
         if ($role->isSuperAdminRole() === true)
         {
