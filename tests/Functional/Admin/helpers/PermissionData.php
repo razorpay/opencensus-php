@@ -17,7 +17,7 @@ return [
         ],
     ],
 
-    'testGetMultiple' => [
+    'testGetMultipleForRazorpayOrg' => [
         'request' => [
             'url' => '/orgs/%s/permissions',
             'method' => 'get',
@@ -26,7 +26,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 2,
             ],
             'status_code' => 200,
         ],

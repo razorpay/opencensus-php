@@ -10,6 +10,8 @@ class RoleTest extends TestCase
 {
     use HeimdallTrait;
 
+    const TOTAL_PERMISSIONS = 114;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/RoleData.php';
@@ -131,7 +133,7 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(114, count($result['permissions']));
+        $this->assertEquals(self::TOTAL_PERMISSIONS, count($result['permissions']));
     }
 
     public function testDeleteRole()

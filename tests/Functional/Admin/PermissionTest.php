@@ -10,6 +10,8 @@ class PermissionTest extends TestCase
 {
     use HeimdallTrait;
 
+    const TOTAL_PERMISSIONS = 114;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/PermissionData.php';
@@ -59,10 +61,8 @@ class PermissionTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetMultiple()
+    public function testGetMultipleForRazorpayOrg()
     {
-        $this->markTestSkipped('query not working well');
-
         $this->ba->adminAuth();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -73,7 +73,9 @@ class PermissionTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->startTest();
+        $result = $this->startTest();
+
+        $this->assertEquals(self::TOTAL_PERMISSIONS, $result['count']);
     }
 
     public function testEditPermission()

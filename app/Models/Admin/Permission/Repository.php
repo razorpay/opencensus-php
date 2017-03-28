@@ -50,9 +50,8 @@ class Repository extends Base\Repository
 
         $pmTable = Table::PERMISSION_MAP;
 
-        $permissionTable = $this->manager->permission->getTableName();
-
         return $this->newQuery()
+                    ->select(Table::PERMISSION . '.*')
                     ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
                     ->where($pmTable . '.entity_id', '=', $orgId)
                     ->where($pmTable . '.entity_type', '=', 'org')
