@@ -323,7 +323,7 @@ class Creator extends Base\Core
      *
      * @return array
      */
-    public function get()
+    public function get(): array
     {
         $data = $this->file->toArrayPublic();
 
