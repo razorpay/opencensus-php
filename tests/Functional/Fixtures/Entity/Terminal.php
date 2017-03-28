@@ -21,6 +21,7 @@ class Terminal extends Base
         $this->createSharedNetbankingIciciTerminal();
         $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
+        $this->createSharedNetbankingFederalTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -773,6 +774,24 @@ class Terminal extends Base
         ];
 
         $this->createSharedNetbankingAxisTerminal($attributes);
+    }
+
+    public function createSharedNetbankingFederalTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_FEDERAL_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_federal',
+            'gateway_merchant_id'       => 'netbanking_federal_merchant_id',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])
