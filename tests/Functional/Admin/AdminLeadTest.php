@@ -54,4 +54,27 @@ class AdminLeadTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testSelfInviteProhibited()
+    {
+        $fields = $this->getDefaultFields();
+
+        $role = $this->ba->getAdmin()->roles()->get()[0];
+
+        $adminEmail = $this->ba->getAdmin()->getEmail();
+
+        $this->storeFieldsForEntity(
+            $this->org->getPublicId(), 'admin_lead',
+            $fields, $this->authToken);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_email'] = $adminEmail;
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }

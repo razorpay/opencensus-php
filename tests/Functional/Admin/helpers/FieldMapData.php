@@ -32,6 +32,62 @@ return [
         ],
     ],
 
+    'testInvalidFieldMap' => [
+        'request' => [
+            'url' => '/orgs/%s/field-map',
+            'method' => 'post',
+            'content' => [
+                'entity_name' => 'org',
+                'fields' => [
+                    'business_name',
+                    'display_name',
+                    'invalid_field',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'error_description' => 'Few fields are invalid for the given entity',
+        ],
+    ],
+
+    'testInvalidEntityForFieldMap' => [
+        'request' => [
+            'url' => '/orgs/%s/field-map',
+            'method' => 'post',
+            'content' => [
+                'entity_name' => 'invalid_entity',
+                'fields' => [
+                    'business_name',
+                    'display_name',
+                    'invalid_field',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'error_description' => 'The entity name is not registered in the api',
+        ],
+    ],
+
     'testGetFieldMap' => [
         'request' => [
             'url' => '/orgs/%s/field-map/%s',

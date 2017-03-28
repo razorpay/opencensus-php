@@ -39,6 +39,29 @@ class FieldMapTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidFieldMap()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testInvalidEntityForFieldMap()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+
     protected function createDefaultFieldMap()
     {
         return $this->fixtures->create(

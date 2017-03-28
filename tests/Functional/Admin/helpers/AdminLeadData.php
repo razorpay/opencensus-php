@@ -27,4 +27,28 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testSelfInviteProhibited' => [
+        'request' => [
+            'url' => '/orgs/%s/admin-lead',
+            'method' => 'post',
+            'content' => [
+                'channel_code'  => 'RZP001',
+                'contact_name'  => 'test user',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED,
+            'error_description' => PublicErrorDescription::BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED,
+        ],
+    ],
 ];
