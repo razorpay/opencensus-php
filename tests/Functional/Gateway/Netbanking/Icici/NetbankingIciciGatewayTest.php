@@ -282,7 +282,7 @@ class NetbankingIciciGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content['STATUS'] = 'FAILED';
+            $content['STATUS'] = 'FAILURE';
         });
     }
 

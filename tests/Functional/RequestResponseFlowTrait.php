@@ -12,7 +12,7 @@ trait RequestResponseFlowTrait
     use EntityFetchTrait;
 
     /**
-     * Auths a payment & tests it is corrrectly done
+     * Auths a payment & tests it is correctly done
      */
     public function runRequestResponseFlow($data, Closure $closure = null)
     {
@@ -278,8 +278,7 @@ trait RequestResponseFlowTrait
             return $closure();
         }
         catch (\Exception $e)
-        {
-            ;
+        {;
             // throw $e;
         }
     }

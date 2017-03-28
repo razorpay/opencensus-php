@@ -115,3 +115,17 @@ INSERT INTO billdesk
  	 'INR', '20170306', 'HIDS5165513683', '0410', 'Y',
  	 '500.00', '20170320120000', 'HIDS51655136831', '7UfoSn81tmUYLM', '0799',
  	 UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+
+# udpate fund transfer attempt
+update fund_transfer_attempts set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7Uai0p2hBhun9B";
+update fund_transfer_attempts set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP7DHa8miFSto";
+update fund_transfer_attempts set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP6qJyLDUGYVv";
+
+#update settlements
+update settlements set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP6qJpA0aWXoC";
+update settlements set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP7DHLhqqZJcp";
+update settlements set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7Uai0ojQJmim96";
+
+#update failed settlements
+update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7HX5An3eDrXUaz";
+update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7KhM07UJp7rsiZ";

@@ -54,7 +54,9 @@ class Service extends Base\Service
     {
         $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
-        $role->getValidator()->validateRoleIsNotSuperAdmin();
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $role->getValidator()->validateRoleIsNotSuperAdmin($admin);
 
         $role = $this->repo->transactionOnLiveAndTest(function() use ($role, $input)
         {

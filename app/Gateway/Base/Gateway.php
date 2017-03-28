@@ -489,7 +489,7 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
-    public function preProcessS2SResponse($input)
+    public function preProcessS2sResponse($input)
     {
         return $input;
     }
