@@ -231,7 +231,7 @@ trait Authorize
         // Except in the cases of recurring, because, here we know that
         // we have manually skipped/by-passed the 2FA.
 
-        if ($payment->terminal->getRecurring() === Terminal\Recurring::RECURRING_N3DS)
+        if ($payment->terminal->isNon3DSRecurring() === true)
         {
             $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
         }

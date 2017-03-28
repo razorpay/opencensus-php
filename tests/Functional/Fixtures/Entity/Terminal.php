@@ -339,6 +339,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
+            'recurring'                 => 3,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
@@ -391,13 +392,13 @@ class Terminal extends Base
 
         // Add recurring 3ds terminal;
         $attributes['id'] = '1RecurringTerm';
-        $attributes['recurring'] = 1;
+        $attributes['recurring'] = 3;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         // Add recurring 3ds
         $attributes['id'] = '2RecurringTerm';
-        $attributes['recurring'] = 2;
+        $attributes['recurring'] = 4;
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -405,22 +406,14 @@ class Terminal extends Base
     public function createSharedFirstDataRecurringTerminals()
     {
         $attributes = [
+            'id'                        => 'FrstDtRcrgTrml',
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'first_data',
             'card'                      => 1,
             'shared'                    => 1,
+            'recurring'                 => 6,
             'gateway_merchant_id'       => 'random',
         ];
-
-        // Add recurring 3ds terminal;
-        $attributes['id'] = '1FrstDtRcrTrml';
-        $attributes['recurring'] = 1;
-
-        $this->createEntityInTestAndLive('terminal', $attributes);
-
-        // Add recurring n3ds
-        $attributes['id'] = '2FrstDtRcrTrml';
-        $attributes['recurring'] = 2;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
     }

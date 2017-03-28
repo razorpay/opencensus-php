@@ -203,8 +203,6 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $input['payment'];
 
-        $value = Terminal\Recurring::NON_RECURRING;
-
         // for cybersource, check get the terminal based on recurring type
         if ($payment->isRecurring() === true)
         {
@@ -221,28 +219,25 @@ class TransactionFilter extends Terminal\Filter
                     return false;
                 }
             }
-            else
-            {
-                // for cybersource, first recurring payment can be sent
-                // through non-recurring terminal
-                // for others, select terminal that has recurring enabled
-                $value = Terminal\Recurring::RECURRING_3DS;
-            }
-
-            $ba = app('basicauth');
 
             // Check if this is the second recurring payment
             if (($payment->getTokenId() !== null) and
                 ($payment->localToken->isRecurring() === true) and
-                ($ba->isPrivateAuth() === true))
+                (app('basicauth')->isPrivateAuth() === true))
             {
-                $value = Terminal\Recurring::RECURRING_N3DS;
+                return ($terminal->isNon3DSRecurring() === true);
+            }
+            else
+            {
+                return ($terminal->is3DSRecurring() === true);
             }
         }
+        else
+        {
+            return ($terminal->isNonRecurring() === true);
+        }
 
-        $isValidTerminal = ($terminal->getRecurring() === $value);
-
-        return $isValidTerminal;
+        return true;
     }
 
     protected function isValidEmiTerminal($terminal, $input)

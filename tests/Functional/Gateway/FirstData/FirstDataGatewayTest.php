@@ -45,7 +45,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals(true, $paymentEntity['recurring']);
-        $this->assertEquals('1FrstDtRcrTrml', $paymentEntity['terminal_id']);
+        $this->assertEquals('FrstDtRcrgTrml', $paymentEntity['terminal_id']);
 
         // Set payment for second recurring payment
         unset($payment['card']);
@@ -62,7 +62,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals(true, $paymentEntity['recurring']);
-        $this->assertEquals('2FrstDtRcrTrml', $paymentEntity['terminal_id']);
+        $this->assertEquals('FrstDtRcrgTrml', $paymentEntity['terminal_id']);
 
         $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
 

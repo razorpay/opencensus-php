@@ -112,17 +112,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findNon3dsTerminalByGatewayandMerchantId($gateway, $mid)
-    {
-        $query = $this->newQuery()
-                      ->where(Terminal\Entity::GATEWAY, '=', $gateway)
-                      ->where(Terminal\Entity::RECURRING, '=', Recurring::RECURRING_N3DS);
-
-        $this->addMerchantWhereCondition($query, [$mid]);
-
-        return $query->first();
-    }
-
     public function getByIdAndMerchantId($mid, $tid)
     {
         $query = $this->newQuery()
