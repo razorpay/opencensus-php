@@ -3,7 +3,7 @@
 namespace RZP\Models\BankAccount;
 
 use RZP\Exception;
-use RZP\Constants\MailTags;
+use RZP\Mail;
 use RZP\Models\BankAccount;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
@@ -105,31 +105,8 @@ class BeneficiaryFile
 
     protected function sendKotakBeneficiaryFileMail($fullpath, $merchantsCount)
     {
-        $data['body'] = 'Please find attached updated beneficiary file for ' .
-                        'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $merchantsCount .'.';
+        $beneficiaryFileMail = new Mail\BeneficiaryFile($fullpath, $merchantsCount);
 
-        $data['file'] = $fullpath;
-
-        $this->mail->queue('emails.message', $data, function($message) use ($data)
-        {
-            $emails = ['aanchal.wadhwani@kotak.com', 'settlements@razorpay.com'];
-
-            $cc = ['uphendra.bn@kotak.com', 'Abhijit.B.Joshi@kotak.com', 'anupam.namdeo@kotak.com'];
-
-            $message->from('kotak_beneficiary_file@razorpay.com', 'Razorpay Kotak Beneficiary File');
-
-            $message->subject('Razorpay updated beneficiary file for Kotak');
-
-            $message->to($emails);
-
-            $message->cc($cc);
-
-            $message->attach($data['file']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
-        });
+        $this->mail->send($beneficiaryFileMail);
     }
 }

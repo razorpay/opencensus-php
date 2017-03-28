@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Mail\Admin;
+namespace RZP\Mail\Admin\Account;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

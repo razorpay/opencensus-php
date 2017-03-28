@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Mail\Admin;
+namespace RZP\Mail\Admin\Account;
 
 use RZP\Constants\MailTags;
 

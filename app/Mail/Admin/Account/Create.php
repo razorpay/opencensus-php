@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Mail\Admin;
+namespace RZP\Mail\Admin\Account;
 
 use RZP\Constants\MailTags;
 
-class CreateAccount extends Base
+class Create extends Base
 {
     protected $url;
 

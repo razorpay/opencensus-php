@@ -15,7 +15,7 @@ use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Events\AuditLogEntry;
 use RZP\Exception;
-use RZP\Mail\Admin as AdminMail;
+use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org;
@@ -273,7 +273,7 @@ class Service extends Base\Service
     {
         $url = $this->app['config']->get('applications.dashboard.url');
 
-        $createAdminMail = new AdminMail\CreateAccount($admin, $input, $url);
+        $createAdminMail = new AdminMail\Create($admin, $input, $url);
 
         Mail::send($createAdminMail);
     }
