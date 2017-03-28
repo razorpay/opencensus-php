@@ -58,7 +58,9 @@ return [
         'request' => [
             'url' => '/orgs/%s/roles/%s',
             'method' => 'put',
-            'content' => [],
+            'content' => [
+                'permissions' => [],
+            ],
         ],
         'response' => [
             'content' => [],

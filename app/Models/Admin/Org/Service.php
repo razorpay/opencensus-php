@@ -12,6 +12,12 @@ class Service extends Base\Service
 {
     public function create(array $input)
     {
+        if (empty($input[Entity::PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::PERMISSIONS]);
+        }
+
         $org = $this->repo->transactionOnLiveAndTest(function() use ($input)
         {
             $org = $this->core()->create($input);
@@ -63,6 +69,7 @@ class Service extends Base\Service
 
     protected function editDefaultRole(Entity $org, array $input)
     {
+        // EDIT of default role is only allowed on permissions
         if (empty($input['permissions']))
         {
             return;

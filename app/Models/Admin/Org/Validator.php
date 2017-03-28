@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::INVOICE_LOGO_URL    => 'sometimes|url',
         Entity::ADMIN               => 'required|array',
         Entity::CUSTOM_CODE         => 'required',
-        Entity::PERMISSIONS         => 'sometimes',
+        Entity::PERMISSIONS         => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -36,7 +36,7 @@ class Validator extends Base\Validator
         Entity::MAIN_LOGO_URL       => 'sometimes|url',
         Entity::INVOICE_LOGO_URL    => 'sometimes|url',
         Entity::CUSTOM_CODE         => 'sometimes',
-        Entity::PERMISSIONS         => 'sometimes',
+        Entity::PERMISSIONS         => 'sometimes|array',
     ];
 
     protected function validateEmailDomains($attribute, $domains)

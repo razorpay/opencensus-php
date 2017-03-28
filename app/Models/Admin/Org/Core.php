@@ -18,16 +18,17 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($org);
 
-        $this->syncPermissions($org, $input);
+        $this->addOrgRelatedEntities($org, $input);
 
         return $org;
     }
 
     public function fetch(string $orgId)
     {
-        $orgId = Entity::verifyIdAndStripSign($orgId);
+        Entity::verifyIdAndStripSign($orgId);
 
-        return $this->repo->org->findOrFailWithHostname($orgId);
+        return $this->repo->org->findOrFailPublicWithRelations(
+            $orgId, ['hostnames', 'permissions']);
     }
 
     public function edit(string $orgId, array $input)
@@ -38,11 +39,13 @@ class Core extends Base\Core
 
         $org->setAuditAction(Action::EDIT_ORG);
 
-        $this->syncPermissions($org, $input);
+        $this->addOrgRelationEntities($org, $input);
 
         $org->edit($input);
 
         $this->repo->saveOrFail($org);
+
+        $org = $this->fetch($org->getPublicId());
 
         return $org;
     }
@@ -62,18 +65,12 @@ class Core extends Base\Core
         return $org->toArrayDeleted();
     }
 
-    protected function syncPermissions($org, array $input)
+    protected function addOrgRelatedEntities(Entity $org, array $input)
     {
-        if (isset($input['permissions']) === true)
+        if (isset($input[Entity::PERMISSIONS]) === true)
         {
-            if (($input['permissions'] instanceof Base\PublicCollection) === false)
-            {
-                Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
-            }
-
-            $this->repo->sync($org, 'permissions', $input['permissions']);
+            $this->repo->sync(
+                $org, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
         }
-
-        return $org;
     }
 }
