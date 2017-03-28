@@ -470,9 +470,8 @@ trait Refund
                 return;
             }
 
-            // AirtelMoney refunds which failed because they upgraded their
-            // wallet. We have to create gateway refund records later.
-            if (($paymentId === '6wbhijioS7aZRF') and ($refAmount === 19724))
+            // HDFC refund which got timed out on HDFC end, but was successful.
+            if (($paymentId === '7V6tmkxLdC4xyd') and ($refAmount === 18500))
             {
                 return;
             }
