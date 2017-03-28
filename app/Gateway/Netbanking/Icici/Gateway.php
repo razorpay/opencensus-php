@@ -326,7 +326,8 @@ class Gateway extends Base\Gateway
 
         $attributes = [Base\Entity::STATUS => $status];
 
-        if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
+        if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true) and
+            (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true))
         {
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_PAYMENT_ID];
         }
