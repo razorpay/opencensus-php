@@ -37,7 +37,7 @@ return [
         'auditlog_search'                    => 'orgs/{id}/auditlog/search',
 
         // Permissions
-        'permission_get_multiple'           => 'permissions',
+        'permission_get_multiple'           => 'orgs/{id}/permissions',
         'permission_create'                 => 'permissions',
 
         'merchant_attach_admin'             => 'merchants/{id}/admins',
