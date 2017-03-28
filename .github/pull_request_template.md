@@ -36,7 +36,7 @@ __Testing Notes__
 
 __Deploy Notes__
 
-- Are there any irrecoverable changes this proposes? e.g.(database alterations) ? If so, please describe so? (Yes/No)
+- Are there any irrecoverable changes this proposes? e.g.(database alterations) ? If so, what are these? (Yes/No)
 
 ---
 
@@ -52,5 +52,5 @@ __After Deployment Steps__
 
 __Checklist__
 * [ ] Has this PR been labelled ?
-* [ ] Have you tagged the corresponding as [POC](https://docs.google.com/spreadsheets/d/1uwf55l4tcdw4E6nlvOcl1TY3Rnwy1hPx4lMyfz6kYFA/edit#gid=0)?
+* [ ] Have you marked the corresponding as [POC](https://docs.google.com/spreadsheets/d/1uwf55l4tcdw4E6nlvOcl1TY3Rnwy1hPx4lMyfz6kYFA/edit#gid=0) as reviewer?
 
