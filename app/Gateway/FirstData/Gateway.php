@@ -35,11 +35,23 @@ class Gateway extends Base\Gateway
 
     protected $gateway = Constants\Entity::FIRST_DATA;
 
+    const TRACE_CODE_MAPPING = [
+        Base\Action::CAPTURE   => TraceCode::GATEWAY_CAPTURE_RESPONSE,
+        Base\Action::AUTHORIZE => TraceCode::GATEWAY_SALE_RESPONSE,
+        Base\Action::REFUND    => TraceCode::GATEWAY_REFUND_RESPONSE,
+        Base\Action::REVERSE   => TraceCode::GATEWAY_REFUND_RESPONSE,
+    ];
+
     public function authorize(array $input)
     {
         parent::authorize($input);
 
         $requestContent = $this->getPreAuthRequestContentArray($input);
+
+        if ($this->isSecondRecurringPayment($input) === true)
+        {
+            return $this->secondRecurring($input);
+        }
 
         $authorizeFields = $this->getAuthorizeFields($requestContent);
 
@@ -87,6 +99,29 @@ class Gateway extends Base\Gateway
         }
 
         return $request;
+    }
+
+    protected function secondRecurring($input)
+    {
+        $requestContent = $this->getSaleRequestArray($input);
+
+        $this->trace->info(TraceCode::GATEWAY_SALE_REQUEST, $requestContent);
+
+        $response = $this->getSoapResponse($requestContent);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_SALE_RESPONSE,
+            [
+                'payment_id' => $input['payment']['id'],
+                'response'   => $response
+            ]
+        );
+
+        $saleFields = $this->getSaleFields($response, $input['payment']);
+
+        $saleEntity = $this->createGatewayPaymentEntity($saleFields, $input);
+
+        $this->checkApprovalCode($captureEntity);
     }
 
     protected function makeRequestAndGetFormData($request)
@@ -206,7 +241,7 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $requestContent = $this->getCaptureRequestArray($input, TxnType::CAPTURE);
+        $requestContent = $this->getCaptureRequestArray($input);
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
 
@@ -428,6 +463,13 @@ class Gateway extends Base\Gateway
         }
 
         $this->setErrorMessageIfNeeded($attributes);
+
+        return $attributes;
+    }
+
+    protected function getSaleFields($response, $input)
+    {
+        $attributes = $this->getCommonResponseFields($response, $input);
 
         return $attributes;
     }
@@ -815,14 +857,7 @@ class Gateway extends Base\Gateway
 
     protected function getTraceCode()
     {
-        if ($this->action === Base\Action::CAPTURE)
-        {
-            return TraceCode::GATEWAY_CAPTURE_RESPONSE;
-        }
-        else
-        {
-            return TraceCode::GATEWAY_REFUND_RESPONSE;
-        }
+        return self::TRACE_CODE_MAPPING[$this->action];
     }
 
     protected function getRelativeUrl($component)
@@ -963,7 +998,36 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$method],
         ];
 
+        if ($this->isFirstRecurringPayment($input) === true)
+        {
+            $content[ConnectRequestFields::TOKEN] = $input['token']->getId();
+        }
+
         return $content;
+    }
+
+    protected function isFirstRecurringPayment($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['terminal']->is3DSRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isSecondRecurringPayment($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['token'] !== null) and
+            ($input['token']->isRecurring() === true) and
+            ($input['terminal']->isNon3DSRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getRequestOptions()
@@ -999,6 +1063,23 @@ class Gateway extends Base\Gateway
             ApiRequestFields::A1_ORDER_ID => $input['payment']['id'],
             ApiRequestFields::A1_STORE_ID => $this->getStoreId(),
         ];
+
+        return $request;
+    }
+
+    protected function getSaleRequestArray($input)
+    {
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::SALE;
+
+        $this->setPaymentRequestArray($body, $input, TxnType::SALE);
+
+        $body[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
+
+        $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
+
+        $request[ApiRequestFields::V1_TRANSACTION] = $body;
 
         return $request;
     }
@@ -1064,6 +1145,12 @@ class Gateway extends Base\Gateway
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
 
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+
+        if (($this->isSecondRecurringPayment($input) === true) and
+            ($txnType === TxnType::SALE))
+        {
+            $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_HOSTED_DATA_ID] = $input['token']->getId();
+        }
     }
 
     protected function arrayToXml($array, $wrap = null)

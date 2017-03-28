@@ -540,6 +540,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
     }
 
+    public function is3DSRecurring()
+    {
+        return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_3DS);
+    }
+
     public function toArrayPublic($subMerchantFlag = false)
     {
         $terminalData = parent::toArrayPublic();
