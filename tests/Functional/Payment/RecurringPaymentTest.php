@@ -27,6 +27,8 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->mockTokenex();

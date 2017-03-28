@@ -208,15 +208,30 @@ class TransactionFilter extends Terminal\Filter
         // for cybersource, check get the terminal based on recurring type
         if ($payment->isRecurring() === true)
         {
-            // for recurring payment, terminal must be cybersource
-            if (($terminal->getGateway() !== Gateway::CYBERSOURCE) or
-                ($terminal->getGatewayAcquirer() !== 'hdfc'))
+            if (Gateway::isRecurringGateway($terminal->getGateway()) === false)
             {
                 return false;
             }
 
+            if ($terminal->getGateway() == Gateway::CYBERSOURCE)
+            {
+                // for cybersource recurring payment, terminal must be hdfc acquired
+                if ($terminal->getGatewayAcquirer() !== 'hdfc')
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                // for cybersource, first recurring payment can be sent
+                // through non-recurring terminal
+                // for others, select terminal that has recurring enabled
+                $value = Terminal\Recurring::RECURRING_3DS;
+            }
+
             $ba = app('basicauth');
 
+            // Check if this is the second recurring payment
             if (($payment->getTokenId() !== null) and
                 ($payment->localToken->isRecurring() === true) and
                 ($ba->isPrivateAuth() === true))

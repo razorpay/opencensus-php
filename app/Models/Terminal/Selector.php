@@ -200,7 +200,7 @@ class Selector
             $options->setFailedTerminals([]);
         }
 
-        $terminalsSelected = $this->select($options);
+        $terminalsSelected = $this->select($options, true);
 
         if ($options->getMultiple() === false)
         {

@@ -402,6 +402,29 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedFirstDataRecurringTerminals()
+    {
+        $attributes = [
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'first_data',
+            'card'                      => 1,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        // Add recurring 3ds terminal;
+        $attributes['id'] = '1FrstDtRcrTrml';
+        $attributes['recurring'] = 1;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        // Add recurring n3ds
+        $attributes['id'] = '2FrstDtRcrTrml';
+        $attributes['recurring'] = 2;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedCybersourceAxisTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
