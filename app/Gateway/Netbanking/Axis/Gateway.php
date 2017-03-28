@@ -121,7 +121,7 @@ class Gateway extends Base\Gateway
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
-            $status = $this->returnVerifyStatusOrThrowException($verify);
+            $status = VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->status = $status;
@@ -153,22 +153,6 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = true;
         }
-    }
-
-    protected function returnVerifyStatusOrThrowException(Verify $verify)
-    {
-        //
-        // In this case, there's a bug in the code
-        // The payment was incorrectly marked as authorized.
-        //
-        if (($verify->apiSuccess === true) and
-            ($verify->gatewaySuccess === false))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FALSE_AUTHORIZE);
-        }
-
-        return VerifyResult::STATUS_MISMATCH;
     }
 
     protected function getPaymentVerifyData(Verify $verify)
