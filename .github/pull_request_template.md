@@ -4,22 +4,22 @@ __Description__
 - Are there any other external dependencies on this issue/feature? Third party packages? Internal Packages etc? If so, briefly describe these below (Yes/No)
 
 - What class of components or features are affected by this pull request?
-* [ ] Core Payments
-* [ ] Consumer Facing
-* [ ] New Feature
-* [ ] New Payment Instrument Integration
+    - [ ] Core Payments
+    - [ ] Consumer Facing
+    - [ ] New Feature
+    - [ ] New Payment Instrument Integration
 
 ---
 
 __Dependencies__
 
 - Does this have depdencies on any other projects or other pull requests? (Yes/No)
-- Does this involve other teams? 
-* [ ] Dashboard
-* [ ] Checkout
-* [ ] Mobile
-* [ ] Devops
-* [ ] None
+- Does this involve other teams?
+    - [ ] Dashboard
+    - [ ] Checkout
+    - [ ] Mobile
+    - [ ] Devops
+    - [ ] None
 
 ---
 
@@ -27,10 +27,10 @@ __Testing Notes__
 
 - In case this fixes a bug, please describe the steps to reproduce the bug and also the testing notes for the same
 - In case it affects the core payment flows, has this been tested on the following?
-* [ ] Checkout
-* [ ] Android
-* [ ] IOS
-* [ ] Dashboard
+    - [ ] Checkout
+    - [ ] Android
+    - [ ] IOS
+    - [ ] Dashboard
 
 ---
 
