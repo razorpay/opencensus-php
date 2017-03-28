@@ -14,15 +14,20 @@
             Actions List
           </div>
           <div class="wrapper clearfix">
-            <div class="select2-box">
-              <select class="select2 workflow-select2" multiple="multiple" style="width: 100%" ng-model="new_checker">
+            <div class="workflow-select2-container">
+              <select class="select2 workflow-select2" multiple="multiple" style="width: 100%" ng-model="workflowSelect">
                 <option></option>
-                <option ng-repeat="(key, row) in workflows" value="{{key}}">{{row.name}}</option>
+                <option ng-repeat="(key, id) in workflows" value="{{key}}">{{id}}</option>
               </select>
             </div>
             <div class="list-group">
-
-              <div class="list-group-item table-striped table" ng-repeat="(key, row) in selectedWorkflows track by key">{{row}}</div>
+              <div 
+                class="list-group-item table-striped table" 
+                ng-repeat="(key, id) in selectedWorkflows track by key"
+              >
+                {{workflows[id].name}}
+                <button class="btn btn-default pull-right" ng-click="deselectWorkflow(row.id)"><i class="fa fa-trash-o"></i></button>
+              </div>
             </div>
           </div>
         </div>
