@@ -206,12 +206,6 @@ class TransactionFilter extends Terminal\Filter
         // for cybersource, check get the terminal based on recurring type
         if ($payment->isRecurring() === true)
         {
-            // Temporary measure, till we migrate terminal to new recurring notation
-            if ($input['mode'] === Mode::LIVE)
-            {
-                return false;
-            }
-
             if (Gateway::isRecurringGateway($terminal->getGateway()) === false)
             {
                 return false;
@@ -237,12 +231,6 @@ class TransactionFilter extends Terminal\Filter
             {
                 return ($terminal->is3DSRecurring() === true);
             }
-        }
-
-        // Temporary measure, till we migrate terminal to new recurring notation
-        if ($input['mode'] === Mode::LIVE)
-        {
-            return true;
         }
 
         return ($terminal->isNonRecurring() === true);
