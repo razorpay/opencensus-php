@@ -4,7 +4,8 @@ app.controller('AddOrgCtrl', [
   'alertsFactory',
   '$stateParams',
   '$upload',
-  function ($scope, $http, alertsFactory, $stateParams, $upload) {
+  '$state',
+  function ($scope, $http, alertsFactory, $stateParams, $upload, $state) {
     $scope.fetchOrg = function(id) {
       var request = $http({
         url: '/admin/generic',
@@ -104,6 +105,7 @@ app.controller('AddOrgCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Organization saved successfully.', true);
+          $state.go('app.orgs.edit', {id: data.data.id});
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {

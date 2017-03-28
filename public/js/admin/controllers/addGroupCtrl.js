@@ -176,15 +176,18 @@ app.controller('AddGroupCtrl', [
             placeholder: 'Select a Parent Group', allowClear: true
           });
 
-          // 2. Update Parent Group list
-          if ($scope.getGroupDetails) {
-            $scope.getGroupDetails();
-          }
+          if ($scope.group_id) {
+            // 2. Update Parent Group list
+            if ($scope.getGroupDetails) {
+              $scope.getGroupDetails();
+            }
 
-          // 3. Update allowed/eligible parent list
-          if ($scope.fillParentList()) {
-            $scope.fillParentList();
+            // 3. Update allowed/eligible parent list
+            if ($scope.fillParentList()) {
+              $scope.fillParentList();
+            }
           }
+          $state.go('app.groups.edit', {id: data.data.id});
         } else {
           $scope.alerts.resetAlerts();
 
