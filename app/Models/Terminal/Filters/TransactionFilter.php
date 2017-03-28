@@ -238,18 +238,14 @@ class TransactionFilter extends Terminal\Filter
                 return ($terminal->is3DSRecurring() === true);
             }
         }
-        else
-        {
-            // Temporary measure, till we migrate terminal to new recurring notation
-            if ($input['mode'] === Mode::LIVE)
-            {
-                return true;
-            }
 
-            return ($terminal->isNonRecurring() === true);
+        // Temporary measure, till we migrate terminal to new recurring notation
+        if ($input['mode'] === Mode::LIVE)
+        {
+            return true;
         }
 
-        return true;
+        return ($terminal->isNonRecurring() === true);
     }
 
     protected function isValidEmiTerminal($terminal, $input)
