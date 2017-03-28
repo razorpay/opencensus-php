@@ -125,9 +125,12 @@ class NodalAccount
 
         list($excelFileEntity, $textFileEntity) = $this->createSettlementFiles($excelData, $txt, $h2h);
 
+        $excelFileEntity = $excelFileEntity->get();
+        $textFileEntity = $textFileEntity->get();
+
         $this->sendSettlementMail($excelFileEntity, $textFileEntity);
 
-        return [$textFileEntity->getSignedUrl(), $excelFileEntity->getSignedUrl()];
+        return [$textFileEntity['local_file_path'], $excelFileEntity['local_file_path']];
     }
 
     public function getPayoutsFile(Base\PublicCollection $payouts)
@@ -341,8 +344,8 @@ class NodalAccount
     }
 
     protected function sendSettlementMail(
-        FileStore\Creator $excelFileEntity,
-        FileStore\Creator $textFileEntity)
+        array $excelFileEntity,
+        array $textFileEntity)
     {
         $summary = $this->summary;
 
@@ -351,8 +354,8 @@ class NodalAccount
 
         $data = compact('summary', 'subject');
 
-        $data['excelFile'] = $excelFileEntity->get()['local_file_path'];
-        $data['textFile'] = $textFileEntity->get()['local_file_path'];
+        $data['excelFile'] = $excelFileEntity['local_file_path'];
+        $data['textFile'] = $textFileEntity['local_file_path'];
 
         Mail::send('emails.admin.settlement', $data, function($message) use ($data)
         {
