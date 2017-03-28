@@ -38,6 +38,9 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
+    const KOTAK_SETTLEMENT_EXCEL            = 'kotak_settlement_excel';
+    const KOTAK_SETTLEMENT_TXT              = 'kotak_settlement_txt';
+
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
     const MERCHANT_BUSINESS_PAN_URL             = 'business_pan_url';
@@ -51,6 +54,7 @@ class Type
     const BATCH_BUCKET_CONFIG                   = 'batch_bucket_config';
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
+    const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
 
     /**
      * Map of types allowed for each entity.
@@ -69,6 +73,8 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::ICICI_NODAL_TRANSFER,
+            self::KOTAK_SETTLEMENT_EXCEL,
+            self::KOTAK_SETTLEMENT_TXT,
         ],
 
         Constants\Entity::BATCH => [
@@ -106,6 +112,8 @@ class Type
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
         self::ICICI_NODAL_TRANSFER,
+        self::KOTAK_SETTLEMENT_EXCEL,
+        self::KOTAK_SETTLEMENT_TXT,
     ];
 
     /**
@@ -120,11 +128,16 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
+            self::KOTAK_SETTLEMENT_EXCEL,
         ],
 
         self::BATCH_BUCKET_CONFIG => [
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+        ],
+
+        self::H2H_BUCKET_CONFIG => [
+            self::KOTAK_SETTLEMENT_TXT,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
