@@ -39,15 +39,38 @@ class Core extends Base\Core
 
         $org->setAuditAction(Action::EDIT_ORG);
 
-        $this->addOrgRelatedEntities($org, $input);
-
         $org->edit($input);
 
-        $this->repo->saveOrFail($org);
+        $this->repo->transactionOnLiveAndTest(function() use($org, $input){
+
+            $this->repo->saveOrFail($org);
+
+            if (isset($input[Entity::PERMISSIONS]) === true)
+            {
+                $oldPerms = $org->permissions()->getRelatedIds()->toArray();
+
+                // These perms are deleted from the organization
+                $diffPerms = array_diff($oldPerms, $input[Entity::PERMISSIONS]);
+
+                $this->deleteUnassignedPermissionsFromRoles($org, $diffPerms);
+
+                $this->addOrgRelatedEntities($org, $input);
+            }
+        });
 
         $org = $this->fetch($org->getPublicId());
 
         return $org;
+    }
+
+    protected function deleteUnassignedPermissionsFromRoles(Entity $org, array $diffPerms)
+    {
+        $roles = $this->repo->role->fetchByOrgId($org->getId());
+
+        foreach ($roles as $role)
+        {
+            $role->permissions()->detach($diffPerms);
+        }
     }
 
     public function delete($id)
