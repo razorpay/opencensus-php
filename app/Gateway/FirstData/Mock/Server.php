@@ -19,7 +19,7 @@ class Server extends Base\Mock\Server
         $this->repo = new FirstData\Repository;
     }
 
-    public function sale($input)
+    public function purchase($input)
     {
         return $this->capture($input);
     }

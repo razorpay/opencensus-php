@@ -36,7 +36,7 @@ class Gateway extends Base\Gateway
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     const TRACE_CODE_MAPPING = [
-        Base\Action::SALE      => TraceCode::GATEWAY_SALE_RESPONSE,
+        Base\Action::PURCHASE  => TraceCode::GATEWAY_PURCHASE_RESPONSE,
         Base\Action::CAPTURE   => TraceCode::GATEWAY_CAPTURE_RESPONSE,
         Base\Action::REFUND    => TraceCode::GATEWAY_REFUND_RESPONSE,
         Base\Action::REVERSE   => TraceCode::GATEWAY_REFUND_RESPONSE,
@@ -103,27 +103,27 @@ class Gateway extends Base\Gateway
 
     protected function secondRecurring($input)
     {
-        parent::action($input, Base\Action::SALE);
+        parent::action($input, Base\Action::PURCHASE);
 
-        $requestContent = $this->getSaleRequestArray($input);
+        $requestContent = $this->getPurchaseRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_SALE_REQUEST, $requestContent);
+        $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $requestContent);
 
         $response = $this->getSoapResponse($requestContent);
 
         $this->trace->info(
-            TraceCode::GATEWAY_SALE_RESPONSE,
+            TraceCode::GATEWAY_PURCHASE_RESPONSE,
             [
                 'payment_id' => $input['payment']['id'],
                 'response'   => $response
             ]
         );
 
-        $saleFields = $this->getSaleFields($response, $input['payment']);
+        $purchaseFields = $this->getPurchaseFields($response, $input['payment']);
 
-        $saleEntity = $this->createGatewayPaymentEntity($saleFields, $input);
+        $purchaseEntity = $this->createGatewayPaymentEntity($purchaseFields, $input);
 
-        $this->checkApprovalCode($saleEntity);
+        $this->checkApprovalCode($purchaseEntity);
     }
 
     protected function makeRequestAndGetFormData($request)
@@ -461,7 +461,7 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function getSaleFields($response, $input)
+    protected function getPurchaseFields($response, $input)
     {
         $attributes = $this->getCommonResponseFields($response, $input);
 
@@ -1040,13 +1040,13 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-        $saleEntity = $this->repo->findByPaymentIdAndAction(
+        $purchaseEntity = $this->repo->findByPaymentIdAndAction(
                                             $input['payment'][Payment\Entity::ID],
-                                            Base\Action::SALE);
+                                            Base\Action::PURCHASE);
 
-        if ($saleEntity !== null)
+        if ($purchaseEntity !== null)
         {
-            // First gatewayPayment entity was a sale transaction,
+            // First gatewayPayment entity was a purchase transaction,
             // so capture is not needed.
             // This happens in case of second recurring payment requests.
             return false;
@@ -1090,7 +1090,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getSaleRequestArray($input)
+    protected function getPurchaseRequestArray($input)
     {
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
 
