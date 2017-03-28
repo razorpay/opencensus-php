@@ -181,9 +181,9 @@ return [
             'url'       => 'invoices/{id}/issue',
             'routeName' => 'invoice_issue'
         ],
-        'invoice_expire'                    => [
-            'url'       => 'invoices/{id}/expire',
-            'routeName' => 'invoice_expire'
+        'invoice_cancel'                    => [
+            'url'       => 'invoices/{id}/cancel',
+            'routeName' => 'invoice_cancel'
         ],
 
         // Customers
