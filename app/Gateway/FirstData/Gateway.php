@@ -230,16 +230,8 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-                                                $input['payment'][Payment\Entity::ID],
-                                                Base\Action::CAPTURE);
-
-        if ($gatewayPayment !== null)
+        if ($this->isCaptureNecessary($input) === false)
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_ALREADY_CAPTURED,
-                $input['payment']);
-
             return;
         }
 
@@ -1022,6 +1014,7 @@ class Gateway extends Base\Gateway
     protected function isSecondRecurringPayment($input)
     {
         if (($input['payment']['recurring'] === true) and
+            (isset($input['token']) === true) and
             ($input['token'] !== null) and
             ($input['token']->isRecurring() === true) and
             ($input['terminal']->isNon3DSRecurring() === true))
@@ -1030,6 +1023,34 @@ class Gateway extends Base\Gateway
         }
 
         return false;
+    }
+
+    protected function isCaptureNecessary($input)
+    {
+        $captureEntity = $this->repo->findByPaymentIdAndAction(
+                                            $input['payment'][Payment\Entity::ID],
+                                            Base\Action::CAPTURE);
+
+        if ($captureEntity !== null)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_ALREADY_CAPTURED,
+                $input['payment']);
+
+            return false;
+        }
+
+        $saleEntity = $this->repo->findByPaymentIdAndAction(
+                                            $input['payment'][Payment\Entity::ID],
+                                            Base\Action::SALE);
+
+        if ($saleEntity !== null)
+        {
+            // First gatewayPayment entity was a sale transaction,
+            // so capture is not needed.
+            // This happens in case of second recurring payment requests.
+            return false;
+        }
     }
 
     protected function getRequestOptions()

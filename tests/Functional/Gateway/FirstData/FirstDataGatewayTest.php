@@ -39,6 +39,7 @@ class FirstDataGatewayTest extends TestCase
 
         $response = $this->doAuthPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
+        $this->capturePayment($paymentId, $payment['amount']);
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
@@ -55,6 +56,7 @@ class FirstDataGatewayTest extends TestCase
 
         $response = $this->doS2SRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
+        $this->capturePayment($paymentId, $payment['amount']);
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
