@@ -10,7 +10,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Mail\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\BankAccount;
 use RZP\Models\Base;
 use RZP\Models\Emi;
