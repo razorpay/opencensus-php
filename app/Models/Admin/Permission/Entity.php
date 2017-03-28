@@ -48,6 +48,10 @@ class Entity extends Base\Entity
         self::ASSIGNABLE,
     ];
 
+    protected $casts = [
+        self::ASSIGNABLE => 'bool',
+    ];
+
     /**
      * Returns all roles with permission in organisation
      *
