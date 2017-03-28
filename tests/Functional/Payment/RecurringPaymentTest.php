@@ -13,8 +13,6 @@ class RecurringPaymentTest extends TestCase
 {
     use PaymentTrait;
 
-    protected $recurringPlan;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/RecurringPaymentTestData.php';

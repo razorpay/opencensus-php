@@ -21,6 +21,7 @@ class TxnType
     // If a refund request, use the refund entity, otherwise use payment
     public static $amountEntity = [
         self::CAPTURE => 'payment',
+        self::SALE    => 'payment',
         self::REFUND  => 'refund',
     ];
 }
