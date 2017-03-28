@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Mail;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Key;
@@ -79,47 +80,19 @@ class Activate extends Base\Core
      */
     protected function sendActivationEmail($merchant, $plan)
     {
-        $subjectName = $merchant->getBillingLabelElseName();
-
-        $subject = "Razorpay | Account activated for $subjectName";
-
         $plan = $plan->toArrayPublic();
 
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
         $data = [
-            'merchant' => $merchant->toArray(),
             'plan'     => $plan,
+            'name'     => $subjectName,
             'rules'    => $this->formatPricingRules($rules),
-            'subject'  => $subject,
         ];
 
-        $config = $this->app->config->get('applications.mailgun');
+        $activationMail = new ActivationMail($merchant, $data);
 
-        // For marketplace accounts, send this email to the parent merchant
-        if ($merchant->isLinkedAccount() === true)
-        {
-            $data['merchant']['email'] = $merchant->parent->getEmail();
-        }
-
-        // Send the activation email
-        $this->app['mailer']->queue(
-            [
-                'html' => 'emails.merchant.activation',
-                'text' => 'emails.merchant.activation_text'
-            ],
-            $data,
-            function ($message) use ($data, $config)
-            {
-                $message->to($data['merchant']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->cc('notifications@razorpay.com');
-                $message->subject($data['subject']);
-
-                $headers = $message->getHeaders();
-                $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_ACTIVATED);
-            }
-        );
+        Mail::send($activationMail);
     }
 
     /**
