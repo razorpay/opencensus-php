@@ -164,7 +164,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->checkMailQueue();
 
-        $data = $this->generateRefundsExcelForNB('UTIB');
+        $data = $this->generateRefundsExcelForNb('UTIB');
 
         $this->checkRefundTextData($data);
     }
@@ -175,7 +175,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->checkEmptyRefundsMailQueue();
 
-        $data = $this->generateRefundsExcelForNB('UTIB');
+        $data = $this->generateRefundsExcelForNb('UTIB');
 
         $this->checkEmptyRefundTextData($data);
     }

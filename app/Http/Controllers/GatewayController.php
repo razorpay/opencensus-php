@@ -28,6 +28,7 @@ class GatewayController extends Controller
         // to be able to call the next few methods.
         //
         // Eg: gateway request needs to be decrypted
+
         $input = $gateway->preProcessServerCallback($input);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);

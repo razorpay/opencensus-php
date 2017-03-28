@@ -291,6 +291,7 @@ class Gateway extends Base\Gateway
         return $rsa->decrypt($data);
     }
 
+
     protected function getCipherInstance(): RSA
     {
         /**
