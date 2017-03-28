@@ -25,6 +25,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
         Orchestrator::KOTAK,
         Orchestrator::NETBANKING_AXIS,
+        Orchestrator::NETBANKING_ICICI,
         Orchestrator::JIOMONEY
     ];
 
