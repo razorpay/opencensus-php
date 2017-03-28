@@ -4,7 +4,8 @@ app.controller('PermissionDetailCtrl', [
   'alertsFactory',
   '$stateParams',
   '$state',
-  function ($scope, $http, alertsFactory, $stateParams, $state) {
+  'transformRequestAsFormPost',
+  function ($scope, $http, alertsFactory, $stateParams, $state, transformRequestAsFormPost) {
     $scope.fetchPermission = function (id) {
       var data = {
         route_name: 'permission_get',
@@ -44,7 +45,8 @@ app.controller('PermissionDetailCtrl', [
         var request = $http({
           method: 'put',
           url: '/admin/generic',
-          data: data
+          data: data,
+          transformRequest: transformRequestAsFormPost,
         });
       }
       // add
@@ -57,7 +59,8 @@ app.controller('PermissionDetailCtrl', [
         var request = $http({
           method: 'post',
           url: '/admin/generic',
-          data: data
+          data: data,
+          transformRequest: transformRequestAsFormPost,
         });
       }
 
