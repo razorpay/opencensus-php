@@ -41,7 +41,8 @@ class Core extends Base\Core
 
         $org->edit($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use($org, $input){
+        $this->repo->transactionOnLiveAndTest(function() use($org, $input)
+        {
 
             $this->repo->saveOrFail($org);
 
@@ -65,7 +66,9 @@ class Core extends Base\Core
 
     protected function deleteUnassignedPermissionsFromRoles(Entity $org, array $diffPerms)
     {
-        $roles = $this->repo->role->fetchByOrgId($org->getId());
+        $orgId = $org->getPublicId();
+
+        $roles = $this->repo->role->fetchByOrgId($orgId);
 
         foreach ($roles as $role)
         {
