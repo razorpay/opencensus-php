@@ -1067,6 +1067,12 @@ class Service extends Base\Service
 
             $this->repo->saveOrFail($payment);
 
+            $txn = $payment->transaction;
+
+            $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+
+            $this->repo->saveOrFail($txn);
+
             //
             // If the payment has a transfer, update the
             // on_hold flag for the transfer as well

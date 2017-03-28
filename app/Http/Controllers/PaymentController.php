@@ -327,9 +327,9 @@ class PaymentController extends Controller
     }
 
     /**
-     * CRON route: Fetches all payments with on_hold_until elapsed at before
-     * 12am today and update the on_hold flag to false to allow settlements
-     * for the payment.
+     * CRON route: Fetches all payments with on_hold_until timestamps elapsed
+     * and updates the on_hold flag to false to allow settlements
+     * for the payment txn.
      *
      * If payment has a linked transfer, updates it's on_hold value too.
      */
