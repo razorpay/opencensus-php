@@ -44,9 +44,13 @@ class Service extends Base\Service
 
     protected function createDefaultRole(Entity $org)
     {
+        // TODO: Fetch from $input and not config
+
         $permissions = Config::get('heimdall.permissions') ?: [];
 
         $permissions = (new Permission\Core)->getMultiplePermissionIdsByNames($permissions);
+
+        // Create SuperAdmin role for this new Organization
 
         $input = [
             'name' => config('heimdall.default_role_name'),
