@@ -1853,3 +1853,6 @@ UPDATE tokens
 # Prod test
 UPDATE tokens
     SET terminal_id = '1000SharpTrmnl' WHERE recurring = 1;
+
+# Adds cancelled_at column to invoices table
+ALTER TABLE invoices ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER paid_at;

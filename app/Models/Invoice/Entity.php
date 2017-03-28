@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const SCHEDULED_AT             = 'scheduled_at';
     const ISSUED_AT                = 'issued_at';
     const PAID_AT                  = 'paid_at';
+    const CANCELLED_AT             = 'cancelled_at';
     const EXPIRED_AT               = 'expired_at';
     const EXPIRE_BY                = 'expire_by';
     const EMAIL_STATUS             = 'email_status';
@@ -96,7 +97,7 @@ class Entity extends Base\PublicEntity
         'create',
         'update',
         'delete',
-        'expireInvoice',
+        'cancelInvoice',
         'sendNotification',
         'addLineItems',
         'addManyLineItems',
@@ -117,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::DATE                     => null,
         self::ISSUED_AT                => null,
         self::PAID_AT                  => null,
+        self::CANCELLED_AT             => null,
         self::EXPIRED_AT               => null,
         self::RECEIPT                  => null,
         self::DESCRIPTION              => null,
@@ -144,7 +146,6 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::STATUS,
-        self::EXPIRE_BY,
     ];
 
     // Fields that can be inserted by ->fill() directly
@@ -189,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::ISSUED_AT,
         self::PAID_AT,
+        self::CANCELLED_AT,
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
         self::SMS_STATUS,
@@ -228,6 +230,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRE_BY,
         self::ISSUED_AT,
         self::PAID_AT,
+        self::CANCELLED_AT,
         self::EXPIRED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
@@ -432,6 +435,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::PAID);
     }
 
+    public function isCancelled()
+    {
+        return ($this->getStatus() === Status::CANCELLED);
+    }
+
     public function isExpired()
     {
         return ($this->getStatus() === Status::EXPIRED);
@@ -588,6 +596,27 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    /**
+     * @deprecated
+     *
+     * Sets expire_by's default value at the time of issue of invoices.
+     * Gets called from Generator->issueInvoice() method.
+     *
+     */
+    public function setDefaultExpireByIfNotAlreadySet()
+    {
+        if ($this->getExpireBy() !== null)
+        {
+            return;
+        }
+
+        $expireBy = Carbon::now('Asia/Kolkata')
+                          ->addDays(self::DEFAULT_EXPIRY_DAYS)
+                          ->timestamp;
+
+        $this->setAttribute(self::EXPIRE_BY, $expireBy);
+    }
+
     // -------------------------------------- End Setters --------------------------------------
 
     // -------------------------------------- Accessors --------------------------------------
@@ -740,22 +769,6 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::DUE_BY, $dueBy);
-    }
-
-    public function generateExpireBy($input)
-    {
-        if (isset($input[self::EXPIRE_BY]))
-        {
-            $expireBy = $input[self::EXPIRE_BY];
-        }
-        else
-        {
-            $expireBy = Carbon::now('Asia/Kolkata')
-                              ->addDays(self::DEFAULT_EXPIRY_DAYS)
-                              ->timestamp;
-        }
-
-        $this->setAttribute(self::EXPIRE_BY, $expireBy);
     }
 
     public function generateScheduledAt($input)

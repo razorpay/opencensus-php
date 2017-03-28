@@ -386,6 +386,7 @@ class Validator extends Base\Validator
         switch ($operation)
         {
             case 'update':
+            case 'cancelInvoice':
                 $allowedStatuses = [
                     Status::DRAFT,
                     Status::ISSUED,
@@ -394,7 +395,6 @@ class Validator extends Base\Validator
                 break;
 
             case 'sendNotification':
-            case 'expireInvoice':
                 $allowedStatuses = [
                     Status::ISSUED,
                 ];
@@ -449,6 +449,12 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
+        // If expired_by is not set at all, nothing to validate.
+        if ($invoice->getExpireBy() === null)
+        {
+            return;
+        }
+
         $now = Carbon::now('Asia/Kolkata');
         $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
 
@@ -461,6 +467,12 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Invoice is only payable if it's not deleted and is in ISSUED state.
+     *
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
     public function validateInvoicePayable()
     {
         $invoice = $this->entity;
