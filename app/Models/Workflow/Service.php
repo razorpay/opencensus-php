@@ -28,21 +28,19 @@ class Service extends Base\Service
         return $workflow->toArrayPublic();
     }
 
-    // TODO - workflow updates only allowed for name and permissions.
-    // If a new permission is added, we will have trigger new and perhaps
-    // older actions to follow the workflow is available.
     public function update(string $id)
     {
         Entity::verifyIdAndStripSign($id);
 
         $workflow = $this->repo->workflow->findOrFailPublic($id);
 
+        (new Validator)->validatePermissions($workflow, $input);
+
         $workflow = $this->core()->update($workflow, $input);
 
         return $workflow->toArrayPublic();
     }
 
-    // TODO - Cascade and delete everything ?
     public function delete(string $id)
     {
         Entity::verifyIdAndStripSign($id);
