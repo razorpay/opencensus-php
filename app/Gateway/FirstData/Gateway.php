@@ -36,8 +36,8 @@ class Gateway extends Base\Gateway
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     const TRACE_CODE_MAPPING = [
+        Base\Action::SALE      => TraceCode::GATEWAY_SALE_RESPONSE,
         Base\Action::CAPTURE   => TraceCode::GATEWAY_CAPTURE_RESPONSE,
-        Base\Action::AUTHORIZE => TraceCode::GATEWAY_SALE_RESPONSE,
         Base\Action::REFUND    => TraceCode::GATEWAY_REFUND_RESPONSE,
         Base\Action::REVERSE   => TraceCode::GATEWAY_REFUND_RESPONSE,
     ];
@@ -103,6 +103,8 @@ class Gateway extends Base\Gateway
 
     protected function secondRecurring($input)
     {
+        parent::action($input, Base\Action::SALE);
+
         $requestContent = $this->getSaleRequestArray($input);
 
         $this->trace->info(TraceCode::GATEWAY_SALE_REQUEST, $requestContent);
@@ -121,7 +123,7 @@ class Gateway extends Base\Gateway
 
         $saleEntity = $this->createGatewayPaymentEntity($saleFields, $input);
 
-        $this->checkApprovalCode($captureEntity);
+        $this->checkApprovalCode($saleEntity);
     }
 
     protected function makeRequestAndGetFormData($request)

@@ -1226,22 +1226,11 @@ trait Authorize
             {
                 $token->setRecurring(true);
 
-                $this->setRecurringTerminal($token);
+                $token->terminal()->associate($payment->terminal);
             }
 
             $this->repo->saveOrFail($token);
         }
-    }
-
-    protected function setRecurringTerminal(Token\Entity $token)
-    {
-        $gateway = $this->payment->getGateway();
-
-        $merchantId = $this->payment->getMerchantId();
-
-        $non3dsTerminal = $this->repo->terminal->findNon3dsTerminalByGatewayandMerchantId($gateway, $merchantId);
-
-        $token->terminal()->associate($non3dsTerminal);
     }
 
     protected function updateAndNotifyPaymentAuthorized(bool $wasFailed = false)

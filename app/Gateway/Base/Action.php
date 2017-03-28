@@ -12,4 +12,5 @@ class Action
     const VERIFY    = 'verify';
     const CALLBACK  = 'callback';
     const REVERSE   = 'reverse';
+    const SALE      = 'sale';
 }

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\FirstData;
 
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\FirstData\Gateway;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -26,6 +27,46 @@ class FirstDataGatewayTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
 
         Gateway::setTestChance(4);
+    }
+
+    public function testRecurringPayment()
+    {
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->merchant->addFeatures('recurring');
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+        $this->assertEquals('1FrstDtRcrTrml', $paymentEntity['terminal_id']);
+
+        // Set payment for second recurring payment
+        unset($payment['card']);
+        $payment['token'] = $paymentEntity['token_id'];
+
+        // Switch to private auth for second recurring payment
+        $this->ba->privateAuth();
+
+        $response = $this->doS2SRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+        $this->assertEquals('2FrstDtRcrTrml', $paymentEntity['terminal_id']);
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $firstDataEntity = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($paymentId, $firstDataEntity['payment_id']);
     }
 
     public function testPaymentAuthAndCapture()

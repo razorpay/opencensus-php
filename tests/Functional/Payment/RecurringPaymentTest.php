@@ -13,8 +13,6 @@ class RecurringPaymentTest extends TestCase
 {
     use PaymentTrait;
 
-    protected $recurringPlan;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/RecurringPaymentTestData.php';
@@ -26,8 +24,6 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
 
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
-
-        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 

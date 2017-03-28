@@ -213,7 +213,7 @@ class TransactionFilter extends Terminal\Filter
                 return false;
             }
 
-            if ($terminal->getGateway() == Gateway::CYBERSOURCE)
+            if ($terminal->getGateway() === Gateway::CYBERSOURCE)
             {
                 // for cybersource recurring payment, terminal must be hdfc acquired
                 if ($terminal->getGatewayAcquirer() !== 'hdfc')
@@ -234,10 +234,9 @@ class TransactionFilter extends Terminal\Filter
             // Check if this is the second recurring payment
             if (($payment->getTokenId() !== null) and
                 ($payment->localToken->isRecurring() === true) and
-                ($ba->isPrivateAuth() === true) and
-                ($payment->localToken->terminal !== null))
+                ($ba->isPrivateAuth() === true))
             {
-                return ($terminal->getId() === $payment->localToken->terminal->getId());
+                $value = Terminal\Recurring::RECURRING_N3DS;
             }
         }
 
