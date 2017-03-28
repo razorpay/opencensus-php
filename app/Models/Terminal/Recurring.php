@@ -19,12 +19,6 @@ class Recurring
         self::RECURRING_NON_3DS,
     ];
 
-    protected static $bitMap = [
-        self::NON_RECURRING     => 0x1,
-        self::RECURRING_3DS     => 0x2,
-        self::RECURRING_NON_3DS => 0x3,
-    ];
-
     protected static $bitPosition = [
         self::NON_RECURRING     => 1,
         self::RECURRING_3DS     => 2,
