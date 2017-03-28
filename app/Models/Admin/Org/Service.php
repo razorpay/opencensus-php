@@ -114,6 +114,12 @@ class Service extends Base\Service
 
     public function edit(string $id, array $input)
     {
+        if (empty($input[Entity::PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::PERMISSIONS]);
+        }
+
         $org = $this->repo->transactionOnLiveAndTest(function() use ($id, $input)
         {
             $org = $this->core()->edit($id, $input);
