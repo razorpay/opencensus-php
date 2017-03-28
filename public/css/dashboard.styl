@@ -1,3 +1,5 @@
+$supportkit-text = ' You can also reach us at 1800 123 1272'
+
 ::-webkit-scrollbar-track
 {
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.2);
@@ -33,11 +35,13 @@
   &:invalid {
     border-color: #e74c3c;
   }
-
-  &::after {
-    content: ' You can also reach us at 1800 123 1272';
-  }
 }
+
+// tourbus container is available after login. we only show it to logged in users
+.tourbus-container ~ #sk-holder .sk-intro-section .intro-text:after {
+  content: $supportkit-text;
+}
+
 .list-group-item pre {
 	font-family: Menlo, Monaco, "Ubuntu Mono", Consolas, "Courier New", monospace;
 	letter-spacing: 0.0625em;
