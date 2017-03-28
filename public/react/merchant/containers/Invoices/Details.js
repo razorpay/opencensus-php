@@ -83,7 +83,7 @@ export default class InvoiceDetailContainer extends Component {
   cancelInvoice() {
     let invoice = this.props.invoice
     this.context.confirm({
-      header: 'Cancel Invoice?',
+      header: 'Cancel Link?',
       message: () => (
         <div class='text-semi-muted'>
           <p>The Link will be cancelled and the customer will not be able to pay for it.</p>
