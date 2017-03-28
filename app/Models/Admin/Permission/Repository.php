@@ -57,4 +57,11 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::NAME, $permissionNames)
                     ->get(['id']);
     }
+
+    public function fetchAllAssignable()
+    {
+        return $this->newQuery()
+                    ->where(Entity::ASSIGNABLE, 1)
+                    ->get();
+    }
 }
