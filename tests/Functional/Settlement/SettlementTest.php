@@ -498,7 +498,7 @@ class SettlementTest extends TestCase
         }
     }
 
-    public function testSettlementFileGenerationV2()
+    public function testSettlementFileGeneration()
     {
         $this->ba->adminAuth();
 
@@ -550,73 +550,6 @@ class SettlementTest extends TestCase
             'content' => [
                 'batch_fund_transfer_id' => $batch['id']
             ]
-        );
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertNotEquals($content, null);
-    }
-
-    public function testSettlementFileGenerationV1()
-    {
-        $this->ba->adminAuth();
-
-        $schedule = $this->createAndAssignSchedule();
-
-        $this->ba->appAuth();
-
-        // Create payments for old date
-        $createdAt = 1481500800; // 12th Dec 2016
-        $capturedAt = $createdAt + 10;
-
-        $this->fixtures->times(2)->create(
-            'payment:captured',
-            [
-                'captured_at' => $capturedAt,
-                'method'      => 'card',
-                'created_at'  => $createdAt,
-                'updated_at'  => $createdAt + 10
-            ]
-        );
-
-        // Generate settlements for above transactions
-        $request = array(
-            'url' => '/settlements/initiate/kotak',
-            'method' => 'POST'
-        );
-
-        $this->makeRequestAndGetContent($request);
-
-        // Modify created_at of batch so that the old settlement file generation can kick in
-        $batch = $this->getLastEntity('batch_fund_transfer', true);
-
-        $this->fixtures->edit('batch_fund_transfer', $batch['id'], ['created_at' => $capturedAt + 50]);
-
-        // Setup to validate email send on file generation below
-        Mail::shouldReceive('send')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $this->assertArrayHasKey('subject', $data);
-                        $this->assertArrayHasKey('summary', $data);
-                        $this->assertArrayHasKey('excelFile', $data);
-                        $this->assertArrayHasKey('textFile', $data);
-
-                        return true;
-                    }),
-                    Mockery::any()
-                );
-
-        // Generate settlement-file generation
-        $request = array(
-            'url' => '/settlements/file/generate',
-            'method' => 'POST',
-            'content' => [
-                'batch_fund_transfer_id' => $batch['id']
-            ]
-
         );
 
         $content = $this->makeRequestAndGetContent($request);
