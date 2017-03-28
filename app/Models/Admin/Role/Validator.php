@@ -58,7 +58,7 @@ class Validator extends Base\Validator
 
         $diffPerms = array_diff($permissions, $orgPermissionIds);
 
-        if (empty($diffPerms) === true)
+        if (empty($diffPerms) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Few permissions are not allowed for the organization',
