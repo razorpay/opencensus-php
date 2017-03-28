@@ -7,6 +7,7 @@ use Mail;
 use phpseclib\Crypt;
 
 use RZP\Exception;
+use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\MailTags;
@@ -137,23 +138,8 @@ class NodalAccount extends Base\Core
         $data['file'] = $fullPath;
         $data['body'] = json_encode($this->data, JSON_PRETTY_PRINT);
 
-        $this->mail->queue('emails.message', $data, function ($message) use ($fullPath)
-        {
-            $emails = ['settlements@razorpay.com'];
+        $iciciSettlementMail = new SettlementMail\IciciSettlement($data);
 
-            $message->from('settlements@razorpay.com', 'ICICI Transfer File');
-
-            $today = Carbon::today('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject("Icici Transfer files for $today");
-
-            $message->to($emails);
-
-            $message->attach($fullPath);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::ICICI_SETTLEMENT_FILES);
-        });
+        $this->mail->queue($iciciSettlementMail);
     }
 }

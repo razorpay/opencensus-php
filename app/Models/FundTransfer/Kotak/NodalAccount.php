@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Excel;
 use Mail;
 use RZP\Exception;
+use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
@@ -36,8 +37,6 @@ class NodalAccount
         $this->hour = Carbon::now('Asia/Kolkata')->hour;
 
         $this->queue = \Queue::getFacadeRoot();
-
-        $this->mail = \Mail::getFacadeRoot();
 
         $this->initSummary();
     }
@@ -284,12 +283,9 @@ class NodalAccount
 
     protected function sendKotakSettlementMail()
     {
-        $summary = $this->summary;
-
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-        $subject = "Kotak Settlement files for $today";
-
-        $data = compact('summary', 'subject');
+        $data = [
+            'summary' => $this->summary,
+        ];
 
         $fileName = $this->getFileToWriteNameWithoutExt();
         $path = $this->getStorageDir();
@@ -297,55 +293,22 @@ class NodalAccount
 
         $data['file'] = $fullpath;
 
-        Mail::send('emails.admin.settlement', $data, function($message) use ($data)
-        {
-            $emails = ['settlements@razorpay.com'];
+        $kotakSettlementMail = new SettlementMail\KotakSettlement($data);
 
-            $message->from('settlement@razorpay.com', 'Kotak Settlement');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            $file = $data['file'];
-
-            $message->attach($file . '.xlsx');
-            $message->attach($file . '.txt');
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_SETTLEMENT_FILES);
-        });
+        Mail::send($kotakSettlementMail);
     }
 
     protected function sendKotakPayoutsMail($fileName, $count, $amounts)
     {
         $amounts['total'] = sprintf('%.2f', $amounts['total']);
 
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $subject = "Kotak IMPS payouts files for $today";
-
-        $data = compact('amounts', 'count', 'subject');
+        $data = compact('amounts', 'count');
 
         $data['file'] = $this->getFullFilePath($fileName);
 
-        Mail::send('emails.admin.payout', $data, function($message) use ($data)
-        {
-            $emails = ['settlements@razorpay.com'];
+        $kotakPayoutMail = new SettlementMail\KotakPayout($data);
 
-            $message->from('settlement@razorpay.com', 'Kotak Payouts');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            $message->attach($data['file']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_PAYOUT_SUMMARY);
-        });
+        Mail::send($kotakPayoutMail);
     }
 
     // @codingStandardsIgnoreStart

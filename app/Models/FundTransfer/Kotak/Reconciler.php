@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Excel;
 use Mail;
+use RZP\Mail\Settlement as SettlementMail;
 use RZP\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
@@ -434,20 +435,9 @@ class Reconciler
         $data['date'] = $date;
         $data['body'] = $msg;
 
-        Mail::queue('emails.message', $data, function($message) use ($data)
-        {
-            $emails = ['settlements@razorpay.com'];
+        $kotakReconciliationMail = new SettlementMail\KotakReconciliationMail($data);
 
-            $message->from('settlement@razorpay.com', 'Kotak Settlement');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
-        });
+        Mail::queue($kotakReconciliationMail);
     }
 
     public static function getHeadings()
