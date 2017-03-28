@@ -3,6 +3,7 @@
 namespace RZP\Models\BankAccount;
 
 use RZP\Constants\Mode;
+use RZP\Mail\BankAccountChange as BankAccountChangeMail;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Constants\MailTags;
@@ -168,28 +169,16 @@ class Core extends Base\Core
             return;
         }
 
+        $data = array_merge($merchant->toArray(), $newBankAccount->toArray());
+
         $label = $merchant->getBillingLabelElseName();
 
-        $subject = 'Razorpay | Bank account change successful for ' . $label;
-
-        $data = array_merge($merchant->toArray(), $newBankAccount->toArray());
+        $data['label'] = $label;
 
         $emailView = 'emails.merchant.bankaccount_change';
 
-        $this->sendEmail($emailView, $subject, $data);
-    }
+        $bankAccountChangeMail = new BankAccountChangeMail($emailView, $data);
 
-    protected function sendEmail($template, $subject, $data)
-    {
-        Mail::queue($template, $data, function($message) use ($data, $subject)
-        {
-            $message->to($data['email'], $data['name']);
-
-            $message->subject($subject);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_CHANGED);
-        });
+        Mail::send($bankAccountChangeMail);
     }
 }
