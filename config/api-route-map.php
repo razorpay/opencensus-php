@@ -39,6 +39,9 @@ return [
         // Permissions
         'permission_get_multiple'           => 'orgs/{id}/permissions',
         'permission_create'                 => 'permissions',
+        'permission_get'                    => 'permissions/{id}',
+        'permission_edit'                   => 'permissions/{id}',
+        'permission_delete'                 => 'permissions/{id}',
 
         'merchant_attach_admin'             => 'merchants/{id}/admins',
     ],

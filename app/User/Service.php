@@ -422,13 +422,13 @@ class Service extends Base\Service
 
         $phoneNumber = $input['contact_mobile'] ?? '';
 
-        $businessType = MerchantDetails\BusinessType::getType($input['business_type']) ?? '';
+        $businessType = isset($input['business_type']) ? MerchantDetails\BusinessType::getType($input['business_type']) : '';
 
-        $transactionVolume = MerchantDetails\TransactionVolume::getVolume($input['transaction_volume']) ?? '';
+        $transactionVolume = isset($input['transaction_volume']) ? MerchantDetails\TransactionVolume::getVolume($input['transaction_volume']) : '';
 
-        $role = MerchantDetails\Role::getType($input['role']) ?? '';
+        $role = isset($input['role']) ? MerchantDetails\Role::getType($input['role']) : '';
 
-        $department = MerchantDetails\Department::getType($input['department']) ?? '';
+        $department = isset($input['department']) ? MerchantDetails\Department::getType($input['department']) : '';
 
         $referrer = $merchant->referrer ?? '';
 
