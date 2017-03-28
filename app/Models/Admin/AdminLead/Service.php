@@ -36,7 +36,7 @@ class Service extends Base\Service
                 $data);
         }
 
-        $invitation = $this->core()->saveLead($admin, $input);
+        $invitation = $this->core()->create($admin, $input);
 
         $this->core()->sendInvitationEmail($admin, $invitation);
 

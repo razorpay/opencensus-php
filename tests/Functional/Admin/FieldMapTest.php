@@ -11,7 +11,7 @@ class FieldMapTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/FieldMapData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/FieldMapTestData.php';
 
         parent::setUp();
 

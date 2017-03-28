@@ -29,7 +29,8 @@ class Validator extends Base\Validator
             $this->throwExtraFieldsException($invalidKeys);
         }
 
-        $this->validateInputValuesForOrg($operation, $input, $orgId, $entity);
+        $this->validateInputValuesForOrg(
+            $operation, $input, $orgId, $rules, $entity);
 
         $this->runValidators($operation, $input);
     }
@@ -55,18 +56,18 @@ class Validator extends Base\Validator
 
         $rulesVar = $this->getRulesVariableName($operation);
 
-        $obj = (new FieldMap\Repository)
-                    ->findByOrgIdAndEntity($orgId, $entity);
+        $fieldMap = (new FieldMap\Repository)->findByOrgIdAndEntity(
+            $orgId, $entity);
 
         // If the org-specific rules for a org are not defined,
         // return all the rules and let it consider all the entries
         // in the rules as applicable which is basically default validator
-        if ($obj === null)
+        if ($fieldMap === null)
         {
             return static::$$rulesVar;
         }
 
-        $fields = $obj->getFields();
+        $fields = $fieldMap->getFields();
 
         return array_intersect_key(static::$$rulesVar, array_flip($fields));
     }
@@ -75,10 +76,9 @@ class Validator extends Base\Validator
         string $operation,
         array $input,
         string $orgCode,
+        array $rules,
         string $entity = null)
     {
-        $rules = $this->getRulesForOrg($operation, $orgCode, $entity);
-
         $customAttributes = $this->getCustomAttributes($operation);
 
         $validator = LaravelValidator::make(

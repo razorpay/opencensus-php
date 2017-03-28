@@ -14,7 +14,7 @@ class AdminLeadTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/AdminLeadData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/AdminLeadTestData.php';
 
         parent::setUp();
 
@@ -41,7 +41,8 @@ class AdminLeadTest extends TestCase
         $role = $this->ba->getAdmin()->roles()->get()[0];
 
         $this->storeFieldsForEntity(
-            $this->org->getPublicId(), 'admin_lead',
+            $this->org->getPublicId(),
+            'admin_lead',
             $fields, $this->authToken);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];

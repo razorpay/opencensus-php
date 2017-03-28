@@ -28,10 +28,10 @@ class CreateAdminLeadsTable extends Migration
 
             $table->char(AdminLead::ORG_ID, Org::ID_LENGTH);
 
-            $table->string(AdminLead::TOKEN, 250)
+            $table->char(AdminLead::TOKEN, 40)
                   ->unique();
 
-            $table->string(AdminLead::EMAIL, 255);
+            $table->string(AdminLead::EMAIL);
 
             $table->text(AdminLead::FORM_DATA);
 
@@ -57,7 +57,6 @@ class CreateAdminLeadsTable extends Migration
      */
     public function down()
     {
-
         Schema::table(Table::ADMIN_LEAD, function($table)
         {
             $table->dropForeign(

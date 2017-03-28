@@ -20,7 +20,7 @@ class Entity extends Base\Entity
 
     protected $entity = 'admin_lead';
 
-    protected static $sign = 'admin_lead';
+    protected static $sign = 'adl';
 
     protected $generateIdOnCreate = false;
 
