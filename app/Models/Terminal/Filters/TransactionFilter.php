@@ -234,9 +234,10 @@ class TransactionFilter extends Terminal\Filter
             // Check if this is the second recurring payment
             if (($payment->getTokenId() !== null) and
                 ($payment->localToken->isRecurring() === true) and
-                ($ba->isPrivateAuth() === true))
+                ($ba->isPrivateAuth() === true) and
+                ($payment->localToken->terminal !== null))
             {
-                $value = Terminal\Recurring::RECURRING_N3DS;
+                return ($terminal->getId() === $payment->localToken->terminal->getId());
             }
         }
 
