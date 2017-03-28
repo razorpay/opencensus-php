@@ -124,4 +124,13 @@ trait HeimdallTrait
 
         return $permissionIds;
     }
+
+    public function addAssignablePermissionsToOrg($org)
+    {
+        $perms = $this->getAssignablePermissionsByIds();
+
+        Permission\Entity::verifyIdAndStripSignMultiple($perms);
+
+        $org->permissions()->sync($perms);
+    }
 }
