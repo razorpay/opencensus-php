@@ -846,6 +846,7 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'nodal account upi icici',
             'gateway_merchant_id2'      => 'razorpay@eazypay',
             'gateway_terminal_password' => 'razorpay_password',
+            'upi'                       => true,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
