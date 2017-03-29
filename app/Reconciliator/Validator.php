@@ -40,8 +40,7 @@ class Validator
         Orchestrator::FREECHARGE       => "/Please view your (transaction|settlement) report/",
         Orchestrator::NETBANKING_AXIS  =>
         "/Kindly find attached below the MIS for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
-        Orchestrator::NETBANKING_ICICI => "/Please find below the payment report for the day. Do revert back to us "
-                                          . "incase of any discrepancy or assistance required./",
+        Orchestrator::NETBANKING_ICICI => "/Please find below the payment report for the day./",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
