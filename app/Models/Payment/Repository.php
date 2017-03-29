@@ -527,7 +527,7 @@ class Repository extends Base\Repository
      * @param int $timestamp
      * @return Base\PublicCollection
      */
-    public function getPaymentsForOnHoldUpdateBeforeTimestamp(int $timestamp) : Base\PublicCollection
+    public function getPaymentsWithOnHoldTrueBeforeTimestamp(int $timestamp) : Base\PublicCollection
     {
         $data = $this->newQuery()
                      ->where(Payment\Entity::ON_HOLD, 1)

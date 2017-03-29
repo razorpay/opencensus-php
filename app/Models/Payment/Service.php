@@ -31,6 +31,8 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Payment\Core;
+
+        $this->slack = $this->app['slack'];
     }
 
     /**
@@ -1051,6 +1053,7 @@ class Service extends Base\Service
      * Fetch and update on_hold flag for all payment
      * and sorce transfer with on_hold_until less than today's
      *
+     * @param array $input
      * @return array
      */
     public function updateOnHold(array $input)
@@ -1065,39 +1068,82 @@ class Service extends Base\Service
             $timestamp = $input['testSettleTimeStamp'];
         }
 
-        $paymentsToUpdate = $this->repo->payment->getPaymentsForOnHoldUpdateBeforeTimestamp($timestamp);
+        $paymentsToUpdate = $this->repo->payment->getPaymentsWithOnHoldTrueBeforeTimestamp($timestamp);
+
+        $this->trace->debug(
+            TraceCode::PAYMENT_UPDATE_HOLD_CRON,
+            [
+                'step'          => 'fetch_payments',
+                'ids_fetched'   => $paymentsToUpdate->getIds(),
+                'timestamp'     => $timestamp
+            ]
+        );
+
+        $cronSummary = [
+            'total_count' => $paymentsToUpdate->count(),
+            'failed_ids'  => []
+        ];
 
         foreach ($paymentsToUpdate as $payment)
         {
-            $payment->setOnHold(false);
-
-            $this->repo->saveOrFail($payment);
-
-            $txn = $payment->transaction;
-
-            $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
-
-            $this->repo->saveOrFail($txn);
-
-            //
-            // If the payment has a transfer, update the
-            // on_hold flag for the transfer as well
-            //
-            if ($payment->hasTransfer() === true)
+            try
             {
-                $transfer = $payment->transfer;
+                $this->setHoldFalse($payment);
+            }
+            catch (\Exception $e)
+            {
+                $cronSummary['failed_ids'][] = $payment->getId();
 
-                $transfer->setOnHold(false);
-
-                $this->repo->saveOrFail($transfer);
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYMENT_UPDATE_HOLD_CRON,
+                    [
+                        'step'  => 'update_failed',
+                        'id'    => $payment->getId()
+                    ]
+                );
             }
         }
 
+        $this->trace->debug(TraceCode::PAYMENT_UPDATE_HOLD_CRON, ['step' => 'summary', 'summary' => $cronSummary]);
+
+        $slackMessage = 'CRON: Payment on_hold false for elapsed on_hold_until';
+
+        $slackChannel = Config::get('slack.channels.tech_logs');
+
+        $this->slack->queue($slackMessage, $cronSummary, ['channel' => $slackChannel]);
+
         return [
             'success'   => true,
-            'count'     => $paymentsToUpdate->count(),
-            'ids'       => $paymentsToUpdate->getIds(),
+            'summary'   => $cronSummary
         ];
+    }
+
+    protected function setHoldFalse(Payment\Entity $payment)
+    {
+        $payment->setOnHold(false);
+
+        $this->repo->saveOrFail($payment);
+
+        $txn = $payment->transaction;
+
+        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+
+        $this->repo->saveOrFail($txn);
+
+        //
+        // If the payment has a transfer, update the
+        // on_hold flag for the transfer as well
+        //
+        if ($payment->hasTransfer() === true)
+        {
+            $transfer = $payment->transfer;
+
+            $transfer->setOnHold(false);
+
+            $this->repo->saveOrFail($transfer);
+        }
     }
 
     /**

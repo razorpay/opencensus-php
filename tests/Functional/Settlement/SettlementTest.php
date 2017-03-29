@@ -653,7 +653,7 @@ class SettlementTest extends TestCase
         $this->assertEquals(2, $content['kotak']['transaction_count']);
 
         return;
-        
+
         // Generate settlements
         $content = $this->initiateSettlements();
 
