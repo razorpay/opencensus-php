@@ -129,11 +129,7 @@ class Validator
 
         $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::NETBANKING_ICICI);
 
-        $validAttachmentCount = $this->validateAttachmentCount(
-            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-            Orchestrator::NETBANKING_ICICI);
-
-        return ($validSubject and $validAttachmentCount and $validBody);
+        return ($validSubject and $validBody);
     }
 
     /**
