@@ -2783,6 +2783,11 @@ return [
         'index' => 'test_invoice',
         'body' => [
             'settings' => [
+                'index.mapping.total_fields.limit'  => 10000000,
+                'index.mapping.depth.limit'         => 50,
+                'index.mapping.nested_fields.limit' => 20,
+                'number_of_shards'                  => 5,
+                'number_of_replicas'                => 1,
                 'analysis' => [
                     'analyzer' => [
                         'edge_ngram_analyzer' => [
@@ -2807,6 +2812,9 @@ return [
             ],
             'mappings' => [
                 '_default_' => [
+                    '_all' => [
+                        'enabled' => false,
+                    ],
                     'properties' => [
                         'customer_name' => [
                             'type'            => 'text',
@@ -2853,11 +2861,15 @@ return [
                             'search_analyzer' => 'standard',
                             'index_options'   => 'offsets',
                         ],
+                        'created_at' => [
+                            'type'   => 'date',
+                            'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                        ],
                     ],
                     'dynamic_templates' => [
                         [
-                            'default' => [
-                                'match_mapping_type' => 'string',
+                            'notes' => [
+                                'path_match' => 'notes.*',
                                 'mapping' => [
                                     'type'            => 'text',
                                     'analyzer'        => 'edge_ngram_analyzer',
