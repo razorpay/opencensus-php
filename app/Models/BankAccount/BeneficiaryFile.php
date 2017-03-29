@@ -3,7 +3,7 @@
 namespace RZP\Models\BankAccount;
 
 use RZP\Exception;
-use RZP\Mail;
+use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Models\BankAccount;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
@@ -105,7 +105,7 @@ class BeneficiaryFile
 
     protected function sendKotakBeneficiaryFileMail($fullpath, $merchantsCount)
     {
-        $beneficiaryFileMail = new Mail\BeneficiaryFile($fullpath, $merchantsCount);
+        $beneficiaryFileMail = new BeneficiaryFileMail($fullpath, $merchantsCount);
 
         $this->mail->send($beneficiaryFileMail);
     }

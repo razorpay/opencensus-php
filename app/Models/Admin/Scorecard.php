@@ -5,6 +5,7 @@ namespace RZP\Models\Admin;
 use Carbon\Carbon;
 use Mail;
 use RZP\Exception;
+use RZP\Mail\Admin\Scorecard as ScorecardMail;
 use RZP\Models;
 use RZP\Models\Base;
 use RZP\Constants\MailTags;
@@ -38,24 +39,9 @@ class Scorecard extends Base\Core
 
         $data['body'] = $message;
 
-        Mail::send('emails.message', $data, function($message)
-        {
-            $emails = ['scorecard@razorpay.com'];
+        $scoreCardMail = new ScorecardMail($data);
 
-            $message->from('scorecard@razorpay.com', 'Razorpay Scorecard');
-
-            $dt = Carbon::yesterday('Asia/Kolkata')->format('d-m-y');
-
-            $subject = 'Razorpay | Scorecard for ' . $dt;
-
-            $message->subject($subject);
-
-            $message->to($emails);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::SCORECARD);
-        });
+        Mail::send($scoreCardMail);
 
         return ['success' => true];
     }

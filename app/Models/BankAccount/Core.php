@@ -169,15 +169,7 @@ class Core extends Base\Core
             return;
         }
 
-        $data = array_merge($merchant->toArray(), $newBankAccount->toArray());
-
-        $label = $merchant->getBillingLabelElseName();
-
-        $data['label'] = $label;
-
-        $emailView = 'emails.merchant.bankaccount_change';
-
-        $bankAccountChangeMail = new BankAccountChangeMail($emailView, $data);
+        $bankAccountChangeMail = new BankAccountChangeMail($newBankAccount, $merchant);
 
         Mail::send($bankAccountChangeMail);
     }

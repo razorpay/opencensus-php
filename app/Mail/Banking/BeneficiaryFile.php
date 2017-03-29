@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Mail;
+namespace RZP\Mail\Banking;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
