@@ -353,12 +353,12 @@ trait Refund
      */
     protected function getPaymentRefundType(array $input)
     {
-        $type = Payment\Refund\Status::PARTIAL;
+        $type = Payment\RefundStatus::PARTIAL;
 
         if ((isset($input['amount']) === false) or
             ((int) $input['amount'] === $this->payment->getAmountUnrefunded()))
         {
-            $type = Payment\Refund\Status::FULL;
+            $type = Payment\RefundStatus::FULL;
         }
 
         return $type;
@@ -456,8 +456,6 @@ trait Refund
 
     protected function refundOnGateway($data)
     {
-        $gateway = $data['payment']['gateway'];
-
         $refunded = false;
 
         try
@@ -594,7 +592,7 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            return $this->repo->transaction(function() use ($data, $payment)
+            $this->repo->transaction(function() use ($data, $payment)
             {
                 $this->recordTransactionForRefund();
 

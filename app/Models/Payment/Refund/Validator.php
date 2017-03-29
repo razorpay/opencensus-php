@@ -173,7 +173,7 @@ class Validator extends Base\Validator
         $transferCount = $transfers->count();
 
         if (($transferCount > 1) and
-            ($refundType === Payment\Refund\Status::PARTIAL))
+            ($refundType === Payment\RefundStatus::PARTIAL))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The reverse_all parameter is not supported for this refund',

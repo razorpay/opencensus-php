@@ -44,7 +44,7 @@ class Repository extends Base\Repository
 
     public function addQueryParamDeleted($query, $params)
     {
-        if ($params['deleted'] === '1')
+        if ($params[Entity::DELETED] === '1')
         {
             $query->withTrashed();
         }
@@ -52,11 +52,11 @@ class Repository extends Base\Repository
 
     protected function addQueryParamShared($query, $params)
     {
-        if ($params['shared'] === '1')
+        if ($params[Entity::SHARED] === '1')
         {
             $query->where(Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT);
         }
-        else if ($params['shared'] === '0')
+        else if ($params[Entity::SHARED] === '0')
         {
             $query->where(Entity::MERCHANT_ID, '!=', Merchant\Account::SHARED_ACCOUNT);
         }

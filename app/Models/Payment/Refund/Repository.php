@@ -24,11 +24,11 @@ class Repository extends Base\Repository
     ];
 
     protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
-        Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14',
+        Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
         Entity::NOTES           => 'sometimes|string|max:500',
-        Entity::STATUS          => 'sometimes|string',
+        Entity::STATUS          => 'sometimes|string|max:30',
     );
 
     protected $esWhitelistedParams = [
@@ -36,7 +36,9 @@ class Repository extends Base\Repository
     ];
 
     protected $signedIds = [
-        Entity::PAYMENT_ID
+        Entity::BATCH_ID,
+        Entity::PAYMENT_ID,
+        Entity::TRANSACTION_ID,
     ];
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
