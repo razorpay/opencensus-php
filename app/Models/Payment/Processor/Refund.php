@@ -458,6 +458,8 @@ trait Refund
     {
         $gateway = $data['payment']['gateway'];
 
+        $refunded = false;
+
         try
         {
             // This has already been refunded on Billdesk.
@@ -479,6 +481,8 @@ trait Refund
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
 
             $this->refund->setStatus(Payment\Refund\Status::SUCCESS);
+
+            $refunded = true;
         }
         catch (Exception\BaseException $e)
         {
@@ -491,15 +495,21 @@ trait Refund
 
             $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
+
+        return $refunded;
     }
 
     protected function reverseOnGateway($data)
     {
+        $reversed = false;
+
         try
         {
             $this->callGatewayFunction(Payment\Action::REVERSE, $data);
 
             $this->refund->setStatus(Payment\Refund\Status::SUCCESS);
+
+            $reversed = true;
         }
         catch (Exception\BaseException $e)
         {
@@ -512,6 +522,8 @@ trait Refund
 
             $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
+
+        return $reversed;
     }
 
     protected function recordTransactionForRefund()
@@ -586,26 +598,29 @@ trait Refund
             {
                 $this->recordTransactionForRefund();
 
-                // Record refund since it's refunded on gateway
+                // update the payment entity for refund
                 $this->updatePaymentRefunded();
 
+                // refund/reverse on gateway
                 if ($payment->getTransactionId() !== null)
                 {
-                    $this->refundOnGateway($data);
+                    $refunded = $this->refundOnGateway($data);
 
-                    $this->refund->setGatewayRefunded(true);
+                    $this->refund->setGatewayRefunded($refunded);
                 }
                 else if ($this->gatewaySupportsReversal($payment) === true)
                 {
-                    $this->reverseOnGateway($data);
+                    $reversed = $this->reverseOnGateway($data);
 
-                    // TODO: Record this too.
+                    $this->refund->setGatewayRefunded($reversed);
                 }
 
                 $this->repo->saveOrFail($this->refund);
-
-                $this->sendRefundNotification($payment);
             });
+
+            // send notification to merchant/customer, this is outside transaction
+            // as we dont want to to reverse the actions if mail sending fails
+            $this->sendRefundNotification($payment);
         });
 
         return $this->refund;
