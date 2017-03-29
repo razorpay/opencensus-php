@@ -335,7 +335,9 @@ class PaymentController extends Controller
      */
     public function updateOnHold()
     {
-        $data = $this->payment->updateOnHold();
+        $input = Request::all();
+
+        $data = $this->payment->updateOnHold($input);
 
         return ApiResponse::json($data);
 

@@ -1053,11 +1053,17 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function updateOnHold()
+    public function updateOnHold(array $input)
     {
         $date = Carbon::today('Asia/Kolkata');
 
         $timestamp = $date->timestamp;
+
+        if (($this->app['env'] === 'testing') and
+            (empty($input['testSettleTimeStamp']) === false))
+        {
+            $timestamp = $input['testSettleTimeStamp'];
+        }
 
         $paymentsToUpdate = $this->repo->payment->getPaymentsForOnHoldUpdateBeforeTimestamp($timestamp);
 
