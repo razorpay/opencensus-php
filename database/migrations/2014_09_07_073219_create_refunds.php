@@ -37,6 +37,8 @@ class CreateRefunds extends Migration
             $table->integer(Refund::BASE_AMOUNT)
                   ->unsigned();
 
+            $table->string(Refund::STATUS);
+
             $table->tinyInteger(Refund::GATEWAY_REFUNDED)
                   ->nullable();
 
@@ -45,8 +47,6 @@ class CreateRefunds extends Migration
             $table->char(Refund::TRANSACTION_ID, Refund::ID_LENGTH)
                   ->unique()
                   ->nullable();
-
-            $table->string(Refund::STATUS);
 
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);

@@ -18,11 +18,11 @@ class Entity extends Base\PublicEntity
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
     const BASE_AMOUNT       = 'base_amount';
-    const TRANSACTION_ID    = 'transaction_id';
     const STATUS            = 'status';
-    const NOTES             = 'notes';
-    const BATCH_ID          = 'batch_id';
     const GATEWAY_REFUNDED  = 'gateway_refunded';
+    const NOTES             = 'notes';
+    const TRANSACTION_ID    = 'transaction_id';
+    const BATCH_ID          = 'batch_id';
 
     protected static $sign = 'rfnd';
 
@@ -51,11 +51,11 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::BASE_AMOUNT,
-        self::TRANSACTION_ID,
         self::STATUS,
-        self::NOTES,
-        self::BATCH_ID,
         self::GATEWAY_REFUNDED,
+        self::NOTES,
+        self::TRANSACTION_ID,
+        self::BATCH_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
