@@ -26,7 +26,10 @@ trait RepositoryFetch
     protected $originalFetchParamRules;
 
     //
-    // TODO: Temporary: Will be removed once notes index is migrated to new flow.
+    // TODO:
+    // This is temporary.
+    // Will be removed once old notes index is migrated to new flow.
+    // Many more cleanup will happen once we do above.
     //
     protected $entitiesInOldFlow = [
         Constants\Entity::ORDER,
@@ -53,7 +56,11 @@ trait RepositoryFetch
       // Default params
 //    protected $defaultFetchParams = array();
 
+    // Params for repository fetch
     protected $params      = [];
+
+    // The params var gets split in mysqlParams and esParams which holds
+    // params to be queried from MySQL and ES respectively.
     protected $mysqlParams = [];
     protected $esParams    = [];
 
@@ -67,12 +74,13 @@ trait RepositoryFetch
     /**
      * Retrieves the entities according to given fetch params
      *
-     * @param array $params
-     * @param $merchantId
-     * @return Collection A collection of entities
+     * @param array       $params
+     * @param string|null $merchantId
+     *
+     * @return PublicCollection
      * @throws Exception\InvalidArgumentException
      */
-    public function fetch(array $params, $merchantId = null)
+    public function fetch(array $params, string $merchantId = null): PublicCollection
     {
         $params = $this->unsetEmptyParams($params);
 
@@ -90,22 +98,36 @@ trait RepositoryFetch
 
         $this->modifyFetchParams($params);
 
+        // Splits the params into mysqlParams and esParams. Check methods doc on
+        // how that happens.
         list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
 
+        // If we find that there are es params then we do es search.
+        // Currently (as commented in getMysqlAndEsParams method) we raise bad
+        // request error if we get mix of MySQL and es params. Later we might support
+        // such thing.
         if (count($esParams) > 0)
         {
             return $this->runEsFetch($esParams, $merchantId);
         }
 
-        /*
-         * Create the query.
-         */
-        $query = $this->buildFetchQuery($query, $params);
+        // If above doesn't happen we build query for mysql fetch and return the
+        // result.
+        $query = $this->buildFetchQuery($query, $mysqlParams);
 
         return $query->get();
     }
 
-    protected function getMysqlAndEsParams(array $params)
+    /**
+     * Splits params into two sets - esParams, mysqlParams. Corresponding EsRepo
+     * has list of fields indexed, we use that to form esParams. Rest prams goes
+     * to mysqlParams.
+     *
+     * @param array $params
+     *
+     * @return array
+     */
+    protected function getMysqlAndEsParams(array $params): array
     {
         $this->setEsRepoIfExist();
 
@@ -114,6 +136,8 @@ trait RepositoryFetch
             return [$params, []];
         }
 
+        // Gets the params which are to be searched from ES.
+        // Note: This doesn't include the commons(which has count, skip etc).
         $esParams = array_intersect_key($params, array_flip($this->esRepo->getPossibleFieldsInParam()));
 
         if (count($esParams) === 0)
@@ -121,8 +145,11 @@ trait RepositoryFetch
             return [$params, []];
         }
 
+        // Gets the rest params and assign it to mysqlParams. This will obviously include commons.
         $mysqlParams = array_diff_key($params, $esParams);
 
+        // Currently, we don't handle/support mysql + es params fetch. Here getting
+        // the mysql params(excluding the commons) and if there are any we throw bad request error.
         $mysqlParamsWithoutDefaults = array_diff_key($mysqlParams, $this->originalFetchParamRules);
 
         if (count($mysqlParamsWithoutDefaults) > 0)
@@ -131,27 +158,41 @@ trait RepositoryFetch
                 implode(', ', array_keys($mysqlParamsWithoutDefaults)) . ' not expected with other params sent');
         }
 
+        // Adding the common params (eg. skip, count etc) to esParam too.
         $esParams += array_intersect_key($params, $this->originalFetchParamRules);
 
         return [$mysqlParams, $esParams];
     }
 
-    protected function runEsFetch($params, $merchantId)
+    /**
+     * Runs ES fetch
+     *
+     * @param array       $params
+     * @param string|null $merchantId
+     *
+     * @return PublicCollection
+     */
+    protected function runEsFetch(array $params, string $merchantId = null): PublicCollection
     {
         $entity = $this->entity;
 
+        // If entity in old flow, forward to the old method
         if ($this->isEntityInOldEsFlow($entity) === true)
         {
             return $this->esRepo->fetch($params, $merchantId);
         }
 
-        $result = $this->esRepo->buildQueryAndSearch($entity, $params, $merchantId);
+        // Build query and get es response
+        $result = $this->esRepo->buildQueryAndSearch($params, $merchantId);
 
+        // If no results from es, return empty collection
         if (count($result) === 0)
         {
             return new PublicCollection;
         }
 
+        // If callee expects only es data (no mysql queries) then hydrate
+        // the es array result into model and return the collection.
         $esHitsOnly = boolval(($params[EsRepository::SEARCH_HITS]) ?? false);
 
         if ($esHitsOnly)
@@ -159,10 +200,13 @@ trait RepositoryFetch
             return $this->hydrate($result);
         }
 
+        // Else extract the matched ids and return collection by making a mysql
+        // query on found ids.
         $ids = array_column($result, 'id');
 
         $entities = $this->newQuery()->findMany($ids, ['*']);
 
+        // If the not all the ids from es are found in mysql, just raise an error.
         if (count($ids) !== $entities->count())
         {
             $this->trace->error(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
@@ -171,7 +215,7 @@ trait RepositoryFetch
         return $entities;
     }
 
-    protected function isEntityInOldEsFlow(string $entity)
+    protected function isEntityInOldEsFlow(string $entity): bool
     {
         return in_array($entity, $this->entitiesInOldFlow, true);
     }

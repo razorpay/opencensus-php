@@ -12,40 +12,38 @@ use RZP\Constants\Mode;
 
 class Repository extends \Razorpay\Spine\Repository
 {
-    use Base\Traits\Es\Query;
-
-    protected $esDao;
-    protected $indexName;
-    protected $trace;
-
-    protected static $table;
+    use Base\Traits\Es\QueryBuilder;
 
     const MAX_JOB_ATTEMPTS = 10;
     const JOB_RELEASE_WAIT = 120;
-
-    //
     // Different actions on es document
-    //
     const UPSERT           = 'upsert';
     const DELETE           = 'delete';
-
-    //
     // Some common query params which searching for es
-    //
     const QUERY            = 'q';
     const SEARCH_HITS      = 'search_hits';
 
-    //
+    // @deprecated - Will not be required later and will be removed.
+    protected static $table;
+
+    protected $esDao;
+    protected $trace;
+    // Name of the index to which this repo might correspond to.
+    protected $indexName = null;
     // Fields indexed in es and their mappings.
-    // These fields will be queried to db and will be indexed.
-    //
     protected $fields         = [];
     protected $fieldMappings  = [];
-
     protected $queryFields    = [];
-
+    // Mode of the application
     protected $mode;
 
+    /**
+     * Constructor
+     *
+     * @param string|null $indexName
+     *
+     * @return
+     */
     public function __construct(string $indexName = null)
     {
         parent::__construct();
@@ -56,19 +54,29 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->trace = $app['trace'];
 
-        $this->indexName = $this->mode . '_' . $indexName;
-
         $this->setFieldMappings();
 
-        $this->esDao = (new Base\EsDao())->setIndexNameByValue($this->indexName);
+        $this->esDao = new Base\EsDao;
+
+        // If index name is set as part of constructor arg, assign it to class
+        // member and also set the same for es dao object.
+        if ($indexName !== null)
+        {
+            $this->indexName = $this->mode . '_' . $indexName;
+
+            $this->esDao->setIndexNameByValue($this->indexName);
+        }
     }
 
     /**
-     * Sets field mappings for es index
+     * Sets field mappings for the es type.
+     *
+     * This method to be overridden in the entity's EsRepository which should
+     * set $fieldMappings var.
      */
     protected function setFieldMappings() {}
 
-    public function getFields()
+    public function getFields(): array
     {
         return $this->fields;
     }
@@ -76,15 +84,17 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Returns list of fields (possible) that can appear in fetch query params.
      *
-     * This is generally controlled in fetch rules vars in Repo class of entity,
-     * but this is here to be consumed in RepositoryFetch->isEsFetch method.
+     * Used in RepositoryFetch->getMysqlAndEsParams, please refer.
      *
      * @return array
      */
-    public function getPossibleFieldsInParam()
+    public function getPossibleFieldsInParam(): array
     {
         return array_merge($this->fields, [self::QUERY, self::SEARCH_HITS]);
     }
+
+    // DEPRECATED METHODS STARTS ----------------------------------------------
+    // TODO: Needs to be cleaned once old entities are migrated to new generic flow.
 
     public function fetch($params, $merchantId)
     {
@@ -185,6 +195,13 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
+    // DEPRECATED METHODS ENDS ------------------------------------------------
+
+    /**
+     * Creates index corresponding to this repo if it not exists already.
+     *
+     * @return
+     */
     public function createIndexIfNotExists()
     {
         $settings = Mapping::$indexSettings;
@@ -197,51 +214,25 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Makes search in ES on this model with given params.
      *
-     * @param string      $entity
      * @param array       $params
      * @param string|null $merchantId
      * @param array       $groups
      *
-     * @return PublicCollection
+     * @return array
      */
     public function buildQueryAndSearch(
-        string $entity,
         array $params,
         string $merchantId = null,
-        array $groups = [])
+        array $groups = []): array
     {
         $this->addMerchantIdInEsParamsIfSet($params, $merchantId);
 
-        $this->buildQuery($this->indexName, $this->indexName, [], $params);
+        $esRequestParams = $this->buildQueryAndGetEsRequestParams($params);
 
-        return $this->search();
-    }
+        $response = $this->esDao->search($esRequestParams);
 
-    public function addMerchantIdInEsParamsIfSet(array & $params, string $merchantId = null)
-    {
-        if ($merchantId !== null)
-        {
-            $params['merchant_id'] = $merchantId;
-        }
-    }
-
-    /**
-     * Actually does the search, once query is built.
-     *
-     * @return array
-     */
-    public function search()
-    {
-        //
-        // Gets request params and calls search method of EsDao's class
-        //
-        $requestParams = $this->getEsRequestParams();
-
-        $response = $this->esDao->search($requestParams);
-
-        //
         // Plucks the source fields if set, else ids and forms an uniform array
-        //
+        // to be returned to callee.
         return array_map(
                     function ($res)
                     {
@@ -251,13 +242,77 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
+     * Adds merchant_id in params for es to consider the same while forming query.
+     *
+     * @param array       $params
+     * @param string|null $merchantId
+     *
+     * @return
+     */
+    public function addMerchantIdInEsParamsIfSet(array & $params, string $merchantId = null)
+    {
+        if ($merchantId !== null)
+        {
+            $params['merchant_id'] = $merchantId;
+        }
+    }
+
+    /**
+     * Builds es query using the params and methods defined in QueryBuilder
+     *
+     * @param array $params
+     *
+     * @return array
+     */
+    public function buildQueryAndGetEsRequestParams(array $params): array
+    {
+        // Extracts from, size and source value from params and unset them.
+        $from   = ($params['skip']) ?? 0;
+        $size   = ($params['count']) ?? 10;
+        $source = boolval(($params['search_hits']) ?? false);
+
+        unset($params['skip']);
+        unset($params['count']);
+        unset($params['search_hits']);
+
+        // Initializes query to empty array, which follows formation of the same
+        // using methods defined in QueryBuilder.
+        $query = [];
+
+        foreach ($params as $field => $value)
+        {
+            $f = 'buildQueryFor' . studly_case($field);
+
+            if (method_exists($this, $f))
+            {
+                $this->$f($query, $value);
+            }
+            else
+            {
+                $this->buildQueryForFieldDefaultImpl($query, $field, $value);
+            }
+        }
+
+        return [
+            'index' => $this->indexName,
+            'type'  => $this->indexName,
+            'body'  => [
+                '_source' => $source,
+                'from'    => $from,
+                'size'    => $size,
+                'query'   => $query,
+            ],
+        ];
+    }
+
+    /**
      * Builds es payload and makes bulk upsert request to es.
      *
      * @param array $documents
      *
-     * @return null
+     * @return array
      */
-    public function bulkUpdate(array $documents)
+    public function bulkUpdate(array $documents): array
     {
         $params = [];
 
@@ -277,6 +332,13 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->esDao->bulkUpdate($params);
     }
 
+    /**
+     * Deletes document with given id from index.
+     *
+     * @param  string $id
+     *
+     * @return
+     */
     public function deleteDocument(string $id)
     {
         $params = [

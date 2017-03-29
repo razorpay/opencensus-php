@@ -3,13 +3,9 @@
 namespace RZP\Models\Invoice;
 
 use RZP\Models\Base\Es;
-use RZP\Constants\Table;
-use RZP\Constants\Entity as E;
 
 class EsRepository extends Es\Repository
 {
-    protected static $table = Table::INVOICE;
-
     protected $fields = [
         Entity::ID,
         Entity::MERCHANT_ID,
@@ -20,6 +16,7 @@ class EsRepository extends Es\Repository
         Entity::DESCRIPTION,
         Entity::TERMS,
         Entity::NOTES,
+        Entity::CREATED_AT,
     ];
 
     protected $queryFields = [
@@ -42,6 +39,7 @@ class EsRepository extends Es\Repository
             Entity::DESCRIPTION      => Es\Mapping::$textFieldMapping,
             Entity::TERMS            => Es\Mapping::$textFieldMapping,
             Entity::NOTES            => Es\Mapping::$objectFieldMapping,
+            Entity::CREATED_AT       => Es\Mapping::$epochFieldMapping,
         ];
     }
 }

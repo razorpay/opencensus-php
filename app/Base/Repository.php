@@ -32,8 +32,13 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $manager;
 
+    // Corresponding esRepo instance of entity.
+    // When intending to use please set it first by calling setEsRepoIfExist().
     protected $esRepo = null;
 
+    // Holds list of relations to be loaded with newQuery() (find/fetch).
+    // Use like - repo->with([Entity::LINE_ITEMS])->fetch().
+    // Optimizes query in general by doing mysql IN() query.
     protected $relations = [];
 
     public function __construct()
@@ -79,7 +84,15 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()->findOrFailPublic($id, $columns);
     }
 
-    public function with(array $relations)
+    /**
+     * Sets relations property which gets used in newQuery to load relations
+     * optimally.
+     *
+     * @param array $relations
+     *
+     * @return self
+     */
+    public function with(array $relations): self
     {
         $this->relations = array_map(
                                 function ($v)
@@ -91,7 +104,12 @@ class Repository extends \Razorpay\Spine\Repository
         return $this;
     }
 
-    public function newQuery()
+    /**
+     * Overrides parent's method to use $relations attribute.
+     *
+     * @return BuilderEx
+     */
+    public function newQuery(): BuilderEx
     {
         $query = parent::newQuery();
 
@@ -157,56 +175,6 @@ class Repository extends \Razorpay\Spine\Repository
         $entity::verifyIdAndStripSignMultiple($ids);
 
         return $this->findMany($ids);
-    }
-
-    /**
-     * Updates the default query for fetch of models for indexing.
-     * Eg. In case of merchant, it needs join with merchant_detail, etc.
-     *
-     * @param object $query
-     *
-     * @return null
-     */
-    protected function modifyQueryForIndexing(& $query) {}
-
-    /**
-     * Serializes a given model for indexing
-     * Please override this per need to avoid unnecessary MySQL queries.
-     *
-     * @param Models\Base\PublicEntity $entity
-     *
-     * @return array
-     */
-    protected function serialize(Models\Base\PublicEntity $entity)
-    {
-        return $entity->setVisible($this->getEsRepo()->getFields())->toArray();
-    }
-
-    public function findForIndexing(string $id)
-    {
-        $query = $this->newQuery();
-
-        $this->modifyQueryForIndexing($query);
-
-        $entity = $query->find($id);
-
-        return $this->serialize($entity);
-    }
-
-    public function fetchForIndexing(int $skip = 0, int $take = 100)
-    {
-        $query = $this->newQuery();
-
-        $this->modifyQueryForIndexing($query);
-
-        $collection = $query->skip($skip)->take($take)->get();
-
-        return array_map(
-            function ($v)
-            {
-                return $this->serialize($v);
-            },
-            $collection->all());
     }
 
     public function saveOrFail($entity, array $options = array())
@@ -379,7 +347,7 @@ class Repository extends \Razorpay\Spine\Repository
      * @param Models\Base\PublicEntity $entity
      * @param bool|boolean             $withTrashed
      *
-     * @return null
+     * @return
      *
      * @throws Exception\LogicException
      */
@@ -418,11 +386,22 @@ class Repository extends \Razorpay\Spine\Repository
         return $query->findOrFail($id);
     }
 
-    public function getEsRepo()
+    protected function getFetchBetweenTimestampQuery($merchantId, $from, $to)
     {
-        return $this->esRepo;
+        return $this->newQuery()
+                    ->betweenTime($from, $to)
+                    ->merchantId($merchantId);
     }
 
+    /**
+     * Sets $esRepo
+     *
+     * Needs to be called explicitly one time when intending to use. This cannot
+     * be put in _constuct of this class as it needs rzp.mode and that is not
+     * set in few flows - tests etc.
+     *
+     * @return
+     */
     public function setEsRepoIfExist()
     {
         $esRepoClassPath = $this->getEsRepoClassPath();
@@ -433,11 +412,79 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
-    protected function getFetchBetweenTimestampQuery($merchantId, $from, $to)
+    /**
+     * Gets $esRepo
+     *
+     * @return EsRepository|null
+     */
+    public function getEsRepo()
     {
-        return $this->newQuery()
-                    ->betweenTime($from, $to)
-                    ->merchantId($merchantId);
+        return $this->esRepo;
+    }
+
+    /**
+     * Updates the default query for getting models for indexing.
+     * E.g. In case of merchant, it needs join with merchant_detail, etc.
+     *
+     * @param BuilderEx $query
+     *
+     * @return
+     */
+    protected function modifyQueryForIndexing(BuilderEx & $query) {}
+
+    /**
+     * Serializes a given model for indexing.
+     * Please override this per need to avoid unnecessary MySQL queries.
+     *
+     * @param Models\Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serialize(Models\Base\PublicEntity $entity): array
+    {
+        return $entity->setVisible($this->getEsRepo()->getFields())->toArray();
+    }
+
+    /**
+     * Find entity with given id for indexing.
+     *
+     * @param string $id
+     *
+     * @return array
+     */
+    public function findForIndexing(string $id): array
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $entity = $query->find($id);
+
+        return $this->serialize($entity);
+    }
+
+    /**
+     * Finds many entities for indexing.
+     *
+     * @param int|integer $skip
+     * @param int|integer $take
+     *
+     * @return array
+     */
+    public function fetchForIndexing(int $skip = 0, int $take = 100): array
+    {
+        $query = $this->newQuery();
+
+        $this->modifyQueryForIndexing($query);
+
+        $collection = $query->skip($skip)->take($take)->get();
+
+        return array_map(
+            function ($v)
+            {
+                return $this->serialize($v);
+            },
+            $collection->all());
     }
 
     /**
@@ -448,7 +495,7 @@ class Repository extends \Razorpay\Spine\Repository
      * @param Models\Base\PublicEntity $entity
      * @param array                    $dirty
      *
-     * @return null
+     * @return
      */
     protected function syncToEsDeprecated(Models\Base\PublicEntity $entity, array $dirty)
     {
@@ -492,7 +539,7 @@ class Repository extends \Razorpay\Spine\Repository
      * @param string                   $action
      * @param array                    $dirty
      *
-     * @return null
+     * @return
      */
     protected function syncToEs(
         Models\Base\PublicEntity $entity,
@@ -506,6 +553,7 @@ class Repository extends \Razorpay\Spine\Repository
             return;
         }
 
+        // If entity is in old flow use the old method. To be removed later.
         if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
         {
             return $this->syncToEsDeprecated($entity, $dirty);
@@ -513,11 +561,14 @@ class Repository extends \Razorpay\Spine\Repository
 
         $esFields = $this->esRepo->getFields();
 
+        // If no es fields set, just return.
         if (count($esFields) === 0)
         {
             return;
         }
 
+        // If dirtied fields in case of update doesn't include any of the indexed
+        // field lists, return.
         if (($action === EsRepository::UPSERT) and
             (empty(array_intersect(array_keys($dirty), $esFields)) === true))
         {
@@ -560,7 +611,12 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
-    protected function getEsRepoClassPath()
+    /**
+     * @deprecated
+     *
+     * @return string
+     */
+    protected function getEsRepoClassPath(): string
     {
         $parentNamespace = $this->getParentNamespace();
 
@@ -577,12 +633,14 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
+     * @deprecated
+     *
      * Override this method in entity/repository in case the type name is
      * different for that entity.
      *
      * @return string
      */
-    protected function getEsType()
+    protected function getEsType(): string
     {
         $parentNamespace = $this->getParentNamespace();
 

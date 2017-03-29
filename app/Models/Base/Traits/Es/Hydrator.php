@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Base\Traits\Es;
 
+use RZP\Models\Base\PublicCollection;
+
 /**
  * Converts es results (array) back to model collections.
  *
@@ -10,9 +12,11 @@ namespace RZP\Models\Base\Traits\Es;
  */
 trait Hydrator
 {
-    protected function hydrate(array $items)
+    protected function hydrate(array $items): PublicCollection
     {
-        $instance = $this->getModel()->newInstance();
+        $class = $this->getEntityClass();
+
+        $instance = (new $class)->newInstance();
 
         $hydrator = function (array $item) use ($instance)
                     {
@@ -28,10 +32,9 @@ trait Hydrator
         return $instance->newCollection(array_map($hydrator, $items));
     }
 
-    //
-    // Following two methods can be overridden if required. But it is not
-    // recommended to be in that place at first.
-    //
+    // ----------------------------------------------------------------------
+    // Following two methods can be overridden(and written in corresponding
+    // Repository class) if required.
 
     protected function preProcessForHydration(array & $item)
     {
@@ -42,14 +45,7 @@ trait Hydrator
     {
     }
 
-    // -----------------------------------------------------------------------
-
-    protected function getModel()
-    {
-        $class = $this->getEntityClass();
-
-        return new $class;
-    }
+    // ---------------------------------------------------------------------
 
     /**
      * Common to most of the models and so kept here.

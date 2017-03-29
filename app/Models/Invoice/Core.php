@@ -663,7 +663,15 @@ class Core extends Base\Core
         }
     }
 
-    protected function invoiceWithLoadedRelations(Entity $invoice)
+    /**
+     * Returns invoice object loaded with it's relations which then gets
+     * serialized and returned as response.
+     *
+     * @param Entity $invoice
+     *
+     * @return Entity
+     */
+    protected function invoiceWithLoadedRelations(Entity $invoice): Entity
     {
         return $invoice->load([Entity::LINE_ITEMS]);
     }

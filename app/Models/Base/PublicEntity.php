@@ -36,8 +36,17 @@ class PublicEntity extends UniqueIdEntity
 
     protected $amounts = array();
 
-    public function load($relations)
+    /**
+     * Loads given relations of an entity.
+     *
+     * @param array $relations
+     *
+     * @return self
+     */
+    public function load($relations): self
     {
+        // Allows use to use entity keys constant. We array_map that to camel case
+        // values so parent's load works as usual.
         $relations = array_map(
                         function ($v)
                         {

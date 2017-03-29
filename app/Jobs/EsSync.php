@@ -11,6 +11,10 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Es;
 
+/**
+ * Es sync job class.
+ * Receives insert/update/delete events of models and syncs the same change to ES.
+ */
 class EsSync extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
@@ -53,6 +57,7 @@ class EsSync extends Job implements ShouldQueue
 
             $this->trace->debug(TraceCode::ES_SAVE_REQUEST, $tracePayload);
 
+            // We do this to ensure index with proper settings is created already.
             $this->esRepo->createIndexIfNotExists();
 
             $this->sync();
@@ -64,6 +69,8 @@ class EsSync extends Job implements ShouldQueue
             $this->trace->traceException(
                 $e, Trace::ERROR, TraceCode::ES_SAVE_FAILED, $tracePayload);
 
+            // If it's logical error or maximum number of retries has happened
+            // just delete the job, else retry the job after a wait.
             if (($e instanceof LogicException) or
                 ($this->attempts() > Es\Repository::MAX_JOB_ATTEMPTS))
             {
@@ -86,6 +93,12 @@ class EsSync extends Job implements ShouldQueue
      */
     private function init()
     {
+        // - Gets App facade
+        // - Sets App's mode
+        // - Sets database's mode
+        // - Initializes other needed services
+        // - Sets repo and es repo for the entity
+
         $app = App::getFacadeRoot();
 
         $app['rzp.mode'] = $this->mode;
@@ -108,7 +121,7 @@ class EsSync extends Job implements ShouldQueue
         }
     }
 
-    protected function sync()
+    private function sync()
     {
         switch ($this->action)
         {
