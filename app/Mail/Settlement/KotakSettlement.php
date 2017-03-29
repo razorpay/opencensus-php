@@ -7,29 +7,37 @@ use RZP\Constants\MailTags;
 
 class KotakSettlement extends Base
 {
-    public function __construct(array $data)
+    protected function getFromHeader()
     {
-        parent::__construct($data);
-
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $this->subject = "Kotak Settlement files for $today";
-
-        $this->fromHeader = 'Kotak Settlement';
+        return 'Kotak Settlement';
     }
 
-    public function build()
+    protected function getSubject()
     {
-        parent::build();
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        return $this->view('emails.admin.settlement')
-                    ->attach($file . '.xlsx')
-                    ->attach($file . '.txt')
-                    ->withSwiftMessage(function ($message)
-                    {
-                        $headers = $message->getHeaders();
+        $subject = "Kotak Settlement files for $today";
 
-                        $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_SETTLEMENT_FILES);
-                    });
+        return $subject;
+    }
+
+    protected function getView()
+    {
+        return 'emails.admin.settlement';
+    }
+
+    protected function getMailTag()
+    {
+        return MailTags::KOTAK_SETTLEMENT_FILES;
+    }
+
+    protected function attachFile()
+    {
+        $file = $this->data['file'];
+
+        $this->attach($file . '.xlsx')
+                ->attach($file . '.txt');
+
+        return $this;
     }
 }

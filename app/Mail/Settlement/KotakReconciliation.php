@@ -6,25 +6,18 @@ use RZP\Constants\MailTags;
 
 class KotakReconciliation extends Base
 {
-    public function __construct(array $data)
+    protected function getFromHeader()
     {
-        parent::__construct($data);
-
-        $this->subject = "Re: Kotak Settlement files for $this->data['date']";
-
-        $this->fromHeader = 'Kotak Settlement';
+        return 'Kotak Settlement';
     }
 
-    public function build()
+    protected function getSubject()
     {
-        parent::build();
+        return "Re: Kotak Settlement files for $this->data['date']";
+    }
 
-        return $this->view('emails.message')
-                    ->withSwiftMessage(function ($message)
-                    {
-                        $headers = $message->getHeaders();
-
-                        $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
-                    });
+    protected function getMailTag()
+    {
+        return MailTags::KOTAK_SETTLEMENT_FILES;
     }
 }

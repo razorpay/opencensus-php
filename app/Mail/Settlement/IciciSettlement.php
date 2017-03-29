@@ -6,28 +6,22 @@ use RZP\Constants\MailTags;
 
 class IciciSettlement extends Base
 {
-    public function __construct(array $data)
+    protected function getFromHeader()
     {
-        parent::__construct($data);
-
-        $this->fromHeader = 'ICICI Transfer File';
-
-        $today = Carbon::today('Asia/Kolkata')->format('d-m-Y');
-
-        $this->subject = "Icici Transfer files for $today";
+        return 'ICICI Transfer File';
     }
 
-    public function build()
+    protected function getSubject()
     {
-         parent::build();
+        $today = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-         return $this->view('emails.message')
-                        ->attach($this->data['file'])
-                        ->withSwiftMessage(function ($message)
-                        {
-                            $headers = $message->getHeaders();
+        $subject = "Icici Transfer files for $today";
 
-                            $headers->addTextHeader(MailTags::HEADER, MailTags::ICICI_SETTLEMENT_FILES);
-                        });
+        return $subject;
+    }
+
+    protected function getMailTag()
+    {
+        return MailTags::ICICI_SETTLEMENT_FILES;
     }
 }

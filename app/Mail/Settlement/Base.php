@@ -27,10 +27,58 @@ class Base extends Mailable
     {
         $emails = ['settlements@razorpay.com'];
 
-        $this->from('settlements@razorpay.com', $this->fromHeader)
+        $fromHeader = $this->getFromHeader();
+
+        $subject = $this->getSubject();
+
+        $view = $this->getView();
+
+        $this->view($view)
+                ->from('settlements@razorpay.com', $fromHeader)
                 ->to($emails)
-                ->subject($this->subject)
-                ->with($this->data);
+                ->subject($subject)
+                ->with($this->data)
+                ->attachFile()
+                ->setHeaders();
+
+        return $this;
+    }
+
+    protected function getFromHeader()
+    {
+        ;
+    }
+
+    protected function getSubject()
+    {
+        ;
+    }
+
+    protected function getView()
+    {
+        return 'emails.message';
+    }
+
+    protected function getMailTag()
+    {
+        ;
+    }
+
+    protected function attachFile()
+    {
+        $this->attach($this->data['file']);
+
+        return $this;
+    }
+
+    protected function setHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $this->getMailTag());
+        });
 
         return $this;
     }

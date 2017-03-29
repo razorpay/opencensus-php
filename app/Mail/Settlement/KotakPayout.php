@@ -6,28 +6,27 @@ use Carbon\Carbon;
 
 class KotakPayout extends Base
 {
-    public function __construct(array $data)
+    protected function getFromHeader()
     {
-        parent::__construct($data);
-
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $this->subject = "Kotak IMPS payouts files for $today";
-
-        $this->fromHeader = 'Kotak Payouts';
+        return 'Kotak Payouts';
     }
 
-    public function build()
+    protected function getSubject()
     {
-        parent::build();
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        return $this->view('emails.admin.payout')
-                    ->attach($this->data['file'])
-                    ->withSwiftMessage(function ($message)
-                    {
-                        $headers = $message->getHeaders();
+        $subject = "Kotak IMPS payouts files for $today";
 
-                        $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_PAYOUT_SUMMARY);
-                    });
+        return $subject;
+    }
+
+    protected function getMailTag()
+    {
+        return MailTags::KOTAK_PAYOUT_SUMMARY;
+    }
+
+    protected function getView()
+    {
+        return 'emails.admin.payout';
     }
 }
