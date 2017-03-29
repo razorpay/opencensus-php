@@ -24,6 +24,7 @@ use Session;
 use Crypt;
 use Cache;
 use Uuid;
+use Trace;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -538,15 +539,18 @@ class Service extends Base\Service
         {
             $details = $this->fetchMerchantDetails($id);
         }
-
         $terminal = $this->fetchMerchantTerminal($id);
 
         $pricingPlan = $this->fetchMerchantPricing($id);
 
+        $schedule = !empty($details['settlement_schedule_id']) ?
+                    $this->fetchMerchantScheduleById($details['settlement_schedule_id']) : null;
+
         $data = array(
                     'details' => $details,
                     'terminals' => $terminal,
-                    'pricing_plan' => $pricingPlan);
+                    'pricing_plan' => $pricingPlan,
+                    'schedule' => $schedule);
 
         return [$error, $data];
     }
@@ -568,13 +572,24 @@ class Service extends Base\Service
             return $merchant;
         }
 
-        try
-        {
-            $data['confirmed'] = ($merchant->primaryOwner()->getConfirmToken() === null);
-        }
-        catch (\Exception $e)
+        $parentId = $data['parent_id'] ?? null;
+
+        // If parent_id is set, the merchant is a linked account under Marketplace
+        // and are marked confirmed, without email confirmation
+        if ($parentId !== null)
         {
             $data['confirmed'] = true;
+        }
+        else
+        {
+            try
+            {
+                $data['confirmed'] = ($merchant->primaryOwner()->getConfirmToken() === null);
+            }
+            catch (\Exception $e)
+            {
+                $data['confirmed'] = true;
+            }
         }
 
         $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
@@ -587,7 +602,7 @@ class Service extends Base\Service
         // $merchant = Merchant\Entity::findorfail($id);
         // Merchant\Validator::checkAPIMatch($merchant, $response);
 
-        $response = array(
+        $response = [
             'archived_at'         => $merchant['archived_at'],
             'suspended_at'        => $merchant['suspended_at'],
             'steps_finished'      => $merchantDetail['steps_finished'],
@@ -597,7 +612,7 @@ class Service extends Base\Service
             'submitted_at'        => $merchantDetail['submitted_at'],
             'activated_dashboard' => $merchant['activated'],
             'referrer'            => $merchant['referrer'],
-        ) + $data;
+        ] + $data;
 
         return $response;
     }
@@ -1199,6 +1214,15 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchMerchantScheduleById($id)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->schedule->fetch($id)->toArray();
+
+        return $response;
+    }
+
     public function postMerchantPricing($id, $input)
     {
         $error = array();
@@ -1254,12 +1278,14 @@ class Service extends Base\Service
      * Incoming data is what is stored in the merchant details table
      * outgoing is what we store in the bank account itself
      * on the API
-     * @param  array $details
+     *
+     * @param  array    $details
+     * @param  bool     $linkedAccount
      * @return array
      */
-    protected function bankAccountMap($details)
+    protected function getBankAccountMap($details, $linkedAccount = false)
     {
-        return [
+        $data = [
             'ifsc_code'             => $details['bank_branch_ifsc'],
             'beneficiary_name'      => $details['bank_account_name'],
             'account_number'        => $details['bank_account_number'],
@@ -1274,15 +1300,32 @@ class Service extends Base\Service
             'beneficiary_email'     => $details['contact_email'],
             'beneficiary_mobile'    => $details['contact_mobile']
         ];
+
+        //
+        // For Marketplace linked accounts, the bank fields set below are not
+        // required in the activation form but needed for API validation
+        // Setting default values here to overcome this
+        //
+        if ($linkedAccount === true)
+        {
+            $data['beneficiary_address1']   = 'NA';
+            $data['beneficiary_city']       = 'NA';
+            $data['beneficiary_state']      = 'NA';
+            $data['beneficiary_pin']        = 560001;
+            $data['beneficiary_mobile']     = 9999999999;
+        }
+
+        return $data;
     }
 
     /**
      * Activates a merchant account
+     *
      * @param  string  $id            Merchant Id
      * @param  boolean $dashboardOnly Only perform the activation on dashboard, not on API
      *                                Useful in certain contexts, when merchant is already activated
      *                                in the API, but now causing issue elsewhere
-     * @return Array Empty array in case of success
+     * @return array   Empty array in case of success
      */
     public function activateMerchant($id, $dashboardOnly = false)
     {
@@ -1292,16 +1335,20 @@ class Service extends Base\Service
 
         $details = $this->fetchMerchantDetails($id);
 
-        if ((int)$details['submitted'] === 0)
+        if ((int) $details['submitted'] === 0)
         {
-            return array('Activation form has not been submitted by merchant yet.');
+            return ['Activation form has not been submitted by merchant yet.'];
         }
-
-        $bankAccount = $this->bankAccountMap($details['merchant_details']);
 
         $this->setApiCredentials();
 
+        // If parent_id is set here, the merchant is a marketplace linked account
+        $isLinkedAccount = (empty($details['parent_id']) === false);
+
+        $bankAccount = $this->getBankAccountMap($details['merchant_details'], $isLinkedAccount);
+
         $bankAccountApi = false;
+
         // Check if the merchant has a bank account
         try
         {
@@ -1332,7 +1379,7 @@ class Service extends Base\Service
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getMessage());
+            return [$e->getMessage()];
         }
 
         try
@@ -1443,14 +1490,15 @@ class Service extends Base\Service
      * Conditions: merchant_details->submitted != null
      *             and merchant_details->locked = true
      *             and merchant->activated = false
-     * @param  [type] $id [description]
-     * @return [type]     [description]
+     *
+     * @param  string $id
+     * @return array
      */
     public function archiveMerchant($id)
     {
         $error = $this->actions($id, 'archive');
 
-        if (empty($error))
+        if (empty($error) === true)
         {
             // For backward compatibility
             $merchant = Merchant\Entity::findOrSoftFail($id);
@@ -1557,28 +1605,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function fetchPricingPlans()
-    {
-        $errors = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->merchants()->toArray();
-
-            $response = $response['items'];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return array($errors, $response);
-    }
-
     public function fetchPricingPlan($id)
     {
         $errors = array();
@@ -1597,68 +1623,6 @@ class Service extends Base\Service
         }
 
         return array($errors, $response);
-    }
-
-    public function addPricingPlanRule($id, $input)
-    {
-        $error = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->fetch($id)->createRule($input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $response);
-    }
-
-    public function deletePricingPlanRule($planId, $ruleId)
-    {
-        $error = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing
-                ->deleteRule($planId, $ruleId)
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $response);
-    }
-
-    public function createPricingPlan($input)
-    {
-        $error = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->create($input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $response);
     }
 
     public function fetchMultipleEntities($mode, $entity, $input)
@@ -1726,6 +1690,33 @@ class Service extends Base\Service
         return [$error, null];
     }
 
+    public function getUploadedFile($id)
+    {
+        $error = null;
+        $url = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $file = $this->api
+                         ->admin
+                         ->getFileByAdmin($id);
+            $url = $file->headers->offsetGet('location');
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [ $e->getMessage() ];
+
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured while getting requested file from API",
+                    'exception' => $error,
+            ]);
+        }
+
+        return array($error, $url);
+    }
+
     /**
      * Returns a pre-authed S3 URL to download beneficiary file
      * @param  Date $date date in Y-m-d format (with leading zeroes)
@@ -1789,8 +1780,10 @@ class Service extends Base\Service
      */
     public function saveScreenshot($id, $input)
     {
-        $keys = MerchantDetails\Entity::getUrlKeys();
+        $keys = (new MerchantDetails\Service)->getUrlKeys();
+
         $found = false;
+
         $creevey = new Creevey($id);
 
         foreach ($keys as $key)
@@ -1798,12 +1791,12 @@ class Service extends Base\Service
             if (\Input::hasFile($key) and $input[$key]->isValid())
             {
                 $found = true;
+
                 $localFilePath = $input[$key]->getRealPath();
 
                 try
                 {
-                    $creevey->compressAndSave($key, $localFilePath,
-                        $input[$key]->getClientOriginalName());
+                    $creevey->compressAndSave($key, $localFilePath, $input[$key]->getClientOriginalName());
                 }
                 catch (\Exception $e)
                 {
@@ -1849,7 +1842,8 @@ class Service extends Base\Service
         $s3 = $this->getS3Client();
 
         $bucket = env('AWS_ACTIVATION_BUCKET');
-        $keys = MerchantDetails\Entity::getUrlKeys();
+
+        $keys = (new MerchantDetails\Service)->getUrlKeys();
 
         $links = [];
 
@@ -2144,9 +2138,11 @@ class Service extends Base\Service
 
         try
         {
-            $params = array('names'             => explode(",", $input['features']),
-                            'entity_type'       => $entityType,
-                            'entity_id'         => $entityId);
+            $params = [
+                        'names'       => $input['features'],
+                        'entity_type' => $entityType,
+                        'entity_id'   => $entityId
+                    ];
 
             $response = $this->api->feature->setFeatures($params);
 
@@ -2340,15 +2336,6 @@ class Service extends Base\Service
         }
 
        return [$error, $data];
-    }
-
-    public function fetchPaymentNetworks()
-    {
-        $this->setApiCredentials(null, 'live');
-
-        $data = $this->api->pricing->fetchPaymentNetworks();
-
-        return $data;
     }
 
     public function updateMerchantDayAggregations($mode, $input)

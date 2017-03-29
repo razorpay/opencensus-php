@@ -5,6 +5,7 @@ namespace App\Merchant;
 use Auth;
 use Hash;
 use Requests;
+use Queue;
 
 use App\Base;
 use App\Merchant;
@@ -13,25 +14,23 @@ use App\Invitation;
 use App\MerchantDetails;
 use App\Admin;
 use App\Exceptions\EntityNotFoundException;
-
-use Queue;
-
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 
 class Service extends Base\Service
 {
-    const INVALID_EMAIL_OR_PASSWORD     = 'Email or password is invalid.';
-    const EMAIL_CHANGE_FORBIDDEN        = "Email change forbidden on this account";
-    const NAME_CHANGE_FORBIDDEN         = "Name change forbidden on this account";
-    const ROLL_KEY_FORBIDDEN            = "Roll key forbidden on this account";
-    const SELF_REMOVE_FORBIDDEN         = "You cannot remove yourself.";
-    const NO_OWNED_MERCHANT             = "We couldn't find the merchant that you own.";
-    const SUBMERCHANT_NOT_ALLOWED       = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
-    const SUBMERCHANT_EMAIL_NOT_UNIQUE  = "Unique email is required to create a new user";
-    const NOT_AUTHORIZED_TO_ACCESS_MERCHANT = "Cannot access merchant";
-    const BANK_ACCOUNT_NOT_FOUND        = "Could not find a Bank Account";
+    const INVALID_EMAIL_OR_PASSWORD             = 'Email or password is invalid.';
+    const EMAIL_CHANGE_FORBIDDEN                = "Email change forbidden on this account";
+    const NAME_CHANGE_FORBIDDEN                 = "Name change forbidden on this account";
+    const ROLL_KEY_FORBIDDEN                    = "Roll key forbidden on this account";
+    const SELF_REMOVE_FORBIDDEN                 = "You cannot remove yourself.";
+    const NO_OWNED_MERCHANT                     = "We couldn't find the merchant that you own.";
+    const SUBMERCHANT_NOT_ALLOWED               = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
+    const ACCOUNT_CREATION_NOT_ALLOWED          = "You do not have account creation privileges. Please contact support@razorpay.com";
+    const SUBMERCHANT_EMAIL_NOT_UNIQUE          = "Unique email is required to create a new user";
+    const NOT_AUTHORIZED_TO_ACCESS_MERCHANT     = "Cannot access merchant";
+    const BANK_ACCOUNT_NOT_FOUND                = "Could not find a Bank Account";
 
     public function __construct()
     {
@@ -81,21 +80,33 @@ class Service extends Base\Service
      * 2. Adds the original user to the new merchant's team
      *
      * This is one scenario where we don't use currentMerchant
-     * @param  string $merchantId Merchant Id
-     * @param  array  $input      [description]
-     * @return [type]             [description]
+     *
+     * @param  array  $input
+     * @return array
      */
     public function registerSubMerchant(array $input)
     {
         $currentMerchant = $this->currentMerchant;
 
-        if(! $currentMerchant->isAggregator())
+        $isLinkedAccount = \Input::get('account') ?? false;
+
+        if ($isLinkedAccount === true)
         {
-            return [[self::SUBMERCHANT_NOT_ALLOWED], null];
+            if ($currentMerchant->isMarketplace() === false)
+            {
+                return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
+            }
+        }
+        else
+        {
+            if ($currentMerchant->isAggregator() === false)
+            {
+                return [[self::SUBMERCHANT_NOT_ALLOWED], null];
+            }
         }
 
         $error = (new Merchant\Validator)
-            ->validateInput('create_submerchant', $input)->messages();
+                    ->validateInput('create_submerchant', $input)->messages();
 
         if (empty($error))
         {
@@ -108,7 +119,7 @@ class Service extends Base\Service
                 $email = $currentMerchant->email;
             }
 
-            $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email);
+            $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email, $isLinkedAccount);
 
             try
             {
@@ -121,8 +132,11 @@ class Service extends Base\Service
 
             $merchant->save();
 
-            // Finally attach the current user to the new user's team
-            $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+            if ($isLinkedAccount === false)
+            {
+                // Finally attach the current user to the new user's team
+                $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+            }
 
             return [null, $merchant->toArray()];
         }
@@ -461,10 +475,10 @@ class Service extends Base\Service
         try
         {
             $data = $this->api->merchant
-                                ->fetch($merchant_id)
-                                ->keys()
-                                ->create()
-                                ->toArray();
+                            ->fetch($merchant_id)
+                            ->keys()
+                            ->create()
+                            ->toArray();
         }
         catch(BadRequestError $e)
         {
@@ -472,46 +486,6 @@ class Service extends Base\Service
         }
 
         return array($errors, $data);
-    }
-
-    public function rollKeys(array $input, $mode)
-    {
-        if ($this->currentMerchant->isTestAccount()) {
-            return [[static::ROLL_KEY_FORBIDDEN], null];
-        }
-
-        $error = (new Merchant\Validator)->validateInput('key', $input)->messages();
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
-        $this->setApiCredentials(null, $mode);
-
-        $key_data = array();
-
-        try
-        {
-            $response = $this->api->merchant
-                                ->fetch($input['merchant_id'])
-                                ->keys()
-                                ->fetch($input['id'])
-                                ->roll($input['delay_roll'])
-                                ->toArray();
-
-            $key_data = array(
-                'old_id'        => $input['id'],
-                'merchant_id'   => $input['merchant_id'],
-                'new'           => $response['new']
-            );
-        }
-        catch(BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $key_data);
     }
 
     public function getUsersListWithInvites()
@@ -550,76 +524,6 @@ class Service extends Base\Service
         }
 
         return $merchant;
-    }
-
-    /**
-     * Returns all the webhooks
-     * @param  string $mode live|test
-     */
-    public function getWebhooks($mode)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = null;
-
-        try
-        {
-            $data = $this->api->webhook->all()->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function editWebhook($mode, $webhookId, $input)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = null;
-
-        try
-        {
-            $data = $this->api->webhook
-                ->fetch($webhookId)
-                ->edit($input)
-                ->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function createWebhook($mode, $input)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = [];
-        $data = null;
-
-        try
-        {
-            // This is just semantics
-            // completely equivalent to all() for now
-            $data = $this->api->webhook->create($input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
     }
 
     public function getInvoices($mode)
@@ -665,45 +569,6 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
-    public function editInvoice($mode, $id, $input)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->invoice->edit($id, $input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function deleteInvoice($mode, $id)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->invoice->delete($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
     public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
         $errors = $data = [];
@@ -735,46 +600,6 @@ class Service extends Base\Service
             $data = $this->api->invoice->sendNotification($invoiceId, $medium)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function markInvoiceAsIssued($mode, $id)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->invoice->markAsIssued($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function markInvoiceAsExpired($mode, $id)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->invoice->markAsExpired($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
@@ -890,23 +715,6 @@ class Service extends Base\Service
                               ->get();
     }
 
-    public function fetchMerchantConfig($merchantId)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->fetchConfig()->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
     /**
      * Makes sure that the hex color is in proper
      * format for the API. Just drops the first
@@ -936,55 +744,9 @@ class Service extends Base\Service
         return $input;
     }
 
-    public function updateMerchantConfig($merchantId, $input)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        $input = $this->fixHexColor($input);
-
-        try
-        {
-            $data = $this->api->merchant->updateConfig($input)->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function updateMerchantLogoConfig($merchantId, $input)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        if (isset($input['logo']) === false)
-        {
-            $error = ['Internal Server Error. Contact support for help.'];
-            return [$error, $data];
-        }
-
-        try
-        {
-            $data = $this->api->merchant->updateLogoConfig($input)->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-        catch(\Exception $e)
-        {
-            $error = ['Internal Server Error. Contact support for help.'];
-        }
-
-        return [$error, $data];
-    }
-
     /**
      * This one uses Proxy Auth
-     * @return [type] [description]
+     * @return [type]
      */
     public function fetchBankAccount()
     {
@@ -995,7 +757,7 @@ class Service extends Base\Service
         {
             $data = $this->api->merchant->fetchProxyBankAccount()->toArray();
         }
-        catch(BadRequestError $e)
+        catch (BadRequestError $e)
         {
             $error = [self::BANK_ACCOUNT_NOT_FOUND];
         }
@@ -1015,66 +777,6 @@ class Service extends Base\Service
         }
 
         return [$error, $lead];
-    }
-
-    /**
-     * Fetches merchant credits
-     * Uses Proxy Auth on the API
-     *
-     * @param  string $mode live|test
-     * @return array contains all credits of merchant
-     */
-    public function getCreditsLog($mode)
-    {
-        $this->setApiCredentials($this->currentMerchant->id, $mode);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->getMerchantCreditLogs();
-        }
-
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function fetchMerchantFeatures($merchantId)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->fetchFeatures($merchantId);
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function updateMerchantFeatures($merchantId, $input)
-    {
-        $this->setApiCredentials($merchantId);
-
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->updateFeatures($merchantId, $input);
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
     }
 
     public function savePreSignupDetails($merchantId, $input)
@@ -1108,7 +810,7 @@ class Service extends Base\Service
 
                 $zapierData = (new User\Service)->getZapierData($merchant, $input);
 
-                if (config('slack.enable'))
+                if (!config('razorpay.zapier.mock'))
                 {
                     Queue::push('App\User\Service@postToZapier', $zapierData);
                 }
@@ -1122,121 +824,18 @@ class Service extends Base\Service
 
     public function getPreSignupDetails($merchantId)
     {
-        return (new MerchantDetails\Service)->getPresignupDetails($merchantId);
-    }
+        $data = [];
 
-    public function createCustomer($mode, $params)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
+        $merchant = Merchant\Entity::findorfail($merchantId);
 
-        $errors = $data = [];
+        $referrer = $merchant->getReferrerAttribute();
 
-        try
+        if (($referrer === null) or
+            (Merchant\Entity::verifyUniqueId($referrer) === 0))
         {
-            $data = $this->api->customer->create($params)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
+            $data = (new MerchantDetails\Service)->getPresignupDetails($merchantId);
         }
 
-        return [$errors, $data];
-    }
-
-    public function editCustomer($mode, $id, $params)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->customer->fetch($id)->edit($params)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function deleteCustomer($mode, $id)
-    {
-        $merchantId = $this->currentMerchant->id;
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->customer->delete($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function createItem($mode, $input)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->item->create($input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function editItem($mode, $id, $input)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->item->edit($id, $input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function deleteItem($mode, $id)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->item->delete($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
+        return $data;
     }
 }

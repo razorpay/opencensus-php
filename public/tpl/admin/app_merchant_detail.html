@@ -193,6 +193,16 @@
           <span class="pull-right">{{referer}}</span>
           Referer
         </div>
+        <div class="list-group-item" ng-show="marketplace">
+          <span class="pull-right">
+            <i class="fa fa-check text-success"></i>
+          </span>
+          Is Marketplace Account?
+        </div>
+        <div class="list-group-item bg-success text-white" ng-show="marketplace">
+          <span class="pull-right" ui-sref="app.merchants.detail({id:marketplace})">{{marketplace}}</span>
+          Marketplace Merchant
+        </div>
         <div class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)
@@ -354,9 +364,20 @@
           </span>
           Fee Model
         </div>
-        <div class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.settlement_schedule}} Days">{{merchant.details.settlement_schedule}} Days</span>
-          Settlement Schedule <i class="fa fa-clock-o"></i>
+        <div class="list-group-item" ng-init="isScheduleCollapsed = false">
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isScheduleCollapsed = !isScheduleCollapsed" ng-hide="scheduleKeys.length == 0" >Show/Hide</button>
+            <span ng-show="scheduleKeys.length == 0">
+                No Schedule Assigned
+            </span>
+          </span>
+          Settlement Schedule
+        </div>
+        <div ng-init="isScheduleCollapsed = true" collapse="isScheduleCollapsed" class="panel-body">
+          <div class="list-group-item" ng-repeat="key in scheduleKeys">
+            <span class="pull-right">{{displayValue(key, merchant.schedule[key])}}</span>
+            {{key|titlecase}}
+          </div>
         </div>
         <div class="list-group-item" ng-init="isMethodsCollapsed = false">
           <span class="pull-right">
@@ -508,6 +529,7 @@
                     <th>Mode</th>
                     <th>Gateway</th>
                     <th>Deleted</th>
+                    <th>Enabled</th>
                     <th>Category</th>
                     <th>Network Category</th>
                     <th>Merchant Id</th>
@@ -521,8 +543,8 @@
                     <th>Tpv</th>
                     <th>Created At</th>
                   </thead>
-                  <tbody>
-                  <tr ng-repeat="terminal in merchant.terminals.items">
+                  <tbody ng-repeat="filteredKey in ['undeleted_enabled', 'undeleted_disabled', 'deleted']">
+                  <tr ng-repeat="terminal in terminals[filteredKey]">
                     <td>
                       <a target="_blank" ui-sref="app.entitiesdetail({type:'terminal', id: terminal.id, mode: terminal.mode})">
                         <code>{{terminal.id}}</code>
@@ -531,6 +553,7 @@
                     <td>{{terminal.mode}}</td>
                     <td>{{terminal.gateway}}</td>
                     <td>{{!!terminal.deleted_at}}</td>
+                    <td>{{terminal.enabled}}</td>
                     <td>{{terminal.category}}</td>
                     <td>{{terminal.network_category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
@@ -539,10 +562,14 @@
                     <td>{{terminal.card}}</td>
                     <td>{{terminal.netbanking}}</td>
                     <td>{{terminal.emi}}</td>
-                    <th>{{terminal.emi_duration}}</th>
-                    <th>{{terminal.shared}}</th>
-                    <th>{{terminal.tpv}}</th>
+                    <td>{{terminal.emi_duration}}</td>
+                    <td>{{terminal.shared}}</td>
+                    <td>{{terminal.tpv}}</td>
                     <td>{{terminal.created_at*1000 | date:'short'}}</td>
+                  </tr>
+                  <tr>
+                    <!-- Showing a break between non-deleted and deleted terminals -->
+                    <td colspan="17"></td>
                   </tr>
                 </tbody>
                 </table>
@@ -729,6 +756,7 @@
              <option value="netbanking_axis">Netbanking AXIS</option>
              <option value="netbanking_airtel">Netbanking AIRTEL</option>
              <option value="netbanking_icici">Netbanking ICICI</option>
+             <option value="netbanking_federal">Netbanking Federal</option>
              <option value="cybersource">Cybersource</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>
@@ -989,6 +1017,8 @@
         <label for="category2" class="col-lg-2 control-label">Category 2:</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="category2" ng-model="merchant.category2">
+          <option value="">Select one of the below options</option>
+          <option value="lending">Lending</option>
           <option value="securities">Securities</option>
           <option value="commodities">Commodities</option>
           <option value="grocery">Grocery</option>
@@ -1002,6 +1032,7 @@
           <option value="mutual_funds">Mutual funds</option>
           <option value="travel_agency">Travel Agency</option>
           <option value="pharma">Pharma</option>
+          <option value="cryptocurrency">Cryptocurrency</option>
           </select>
         </div>
       </div>
@@ -1049,12 +1080,6 @@
             <option value="prepaid">Prepaid</option>
             <option value="postpaid">Postpaid</option>
           </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="settlement_schedule" class="col-lg-2 control-label">Settlement Schedule</label>
-        <div class="col-lg-10">
-          <input class="form-control m-b" name="settlement_schedule" ng-model="merchant.settlement_schedule" maxlength="3"/>
         </div>
       </div>
       <div class="form-group">

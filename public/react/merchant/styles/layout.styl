@@ -82,16 +82,62 @@ body.ReactModal__Body--open {
 
 // React Tooltip
 
-.__react_component_tooltip.__react_component_tooltip {
-  padding: 4px 12px;
-}
-
-.__react_component_tooltip.__react_component_tooltip.place-top:before,
-.__react_component_tooltip.__react_component_tooltip.place-top:after {
-  $caretWidth = 6px;
-  border-width: $caretWidth;
-  bottom: -($caretWidth);
-  margin-left: -($caretWidth);
+[data-tip] {
+  position: relative;
+  &[data-place=bottom] {
+    &:before, &:after {
+      bottom: auto;
+      top: 100%;
+      transform: translateX(-50%) translateY(-6px) scale(.92);
+      border-bottom-color: #222;
+      border-top-color: transparent;
+    }
+  }
+  &:before, &:after {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px) scale(.92);
+    left: 50%;
+    bottom: 100%;
+    position: absolute;
+    pointer-events: none;
+    z-index: 1000;
+    transition: .17s, .3s transform;
+  }
+  &:before {
+    content: '';
+    border: 7px solid transparent;
+    border-top-color: #222;
+    margin: -7px 0 -7px;
+  }
+  &:after {
+    margin: 6px 0 6px;
+    content: attr(data-tip);
+    padding: 4px 12px;
+    background: #222;
+    border-radius: 3px;
+    color: #fff;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  &:not([data-event]):hover,
+  &[data-event=active]:active
+  {
+    &:before, &:after {
+      opacity: 1;
+      transform: translateX(-50%);
+    }
+  }
+  &[data-event=active] {
+    &:active {
+      &:after, &:before {
+        transition: 0s;
+      }
+    }
+    &:after, &:before {
+      transition-delay: 2s;
+    }
+  }
 }
 
 // react-dates style overrides
@@ -199,6 +245,18 @@ tr:hover .row-action > .btn-group {
 
   .text-warning {
     color: #d8b617;
+  }
+
+  .list-group-item {
+    .table > tbody > tr > td.empty-table {
+      padding: 20px;
+      border-top: 0;
+    }
+
+    &:not(.no-flex) {
+      display: flex;
+      justify-content: space-between;
+    }
   }
 }
 

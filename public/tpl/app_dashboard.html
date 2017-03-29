@@ -158,7 +158,7 @@
       <!-- tasks -->
       <div class="panel wrapper">
         <div class="row">
-          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="EntityListCtrl" ng-init="generate('payment')">
+          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="GenericEntityListCtrl" ng-init="generate('payment')">
             <a ui-sref="app.payments.list" tooltip="See All Payments" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Payments</h4>
               <div class="m-b m-l row" ng-repeat="row in entity.items | limitTo: 5" ng-controller="PaymentListCtrl">
@@ -177,7 +177,7 @@
                 No Recent Payments
               </div>
           </div>
-          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="EntityListCtrl" ng-init="generate('refund')">
+          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="GenericEntityListCtrl" ng-init="generate('refund')">
             <a ui-sref="app.refunds.list" tooltip="See All Refunds" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Refunds</h4>
               <div class="m-b m-l row" ng-repeat="row in entity.items | limitTo: 5">
@@ -196,7 +196,7 @@
                 No Recent Refunds
               </div>
           </div>
-          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="EntityListCtrl" ng-init="generate('settlement')">
+          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="GenericEntityListCtrl" ng-init="generate('settlement')">
             <a ui-sref="app.settlements.list" tooltip="See All Settlements" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Settlements</h4>
             <div class="m-b m-b m-l row" style="text-overflow: hidden" ng-repeat="row in entity.items | limitTo: 5">

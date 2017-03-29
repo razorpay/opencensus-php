@@ -101,20 +101,33 @@ app.controller('AddfundsCtrl', [
       });
     }
     function fetchKey() {
-      var request = $http.get('/' + $scope.mode + '/keys');
-      request.success(function (data) {
-        if (data.success) {
-          if (data.data.count > 0) {
-            $scope.options.key = data.data.items[0].id;
+      var params = {
+        route_name: 'merchant_fetch_keys',
+        mode: $scope.mode
+      };
+      user.identity().then(function (data) {
+        params.url_params = {
+          '{id}': data.current
+        };
+
+        var request = $http.get('/user/generic', {
+          params: params
+        });
+
+        request.success(function (data) {
+          if (data.success) {
+            if (data.data.count > 0) {
+              $scope.options.key = data.data.items[0].id;
+            } else {
+              $scope.alerts.addAlert('danger', 'No valid api keys found, check Api Keys page.', true);
+              $scope.disableAddFunds = true;
+            }
           } else {
-            $scope.alerts.addAlert('danger', 'No valid api keys found, check Api Keys page.', true);
-            $scope.disableAddFunds = true;
+            $scope.alerts.addAlert('danger', null, true);
           }
-        } else {
+        }).error(function () {
           $scope.alerts.addAlert('danger', null, true);
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+        });
       });
     }
   }

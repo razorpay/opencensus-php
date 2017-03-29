@@ -23,6 +23,7 @@
 * Install Yarn if it's not pre-installed (https://yarnpkg.com/en/docs/install)
 * `yarn install`
 * `yarn global add gulp`
+* `gulp`
 * `gulp watch`
 
 - Open <http://dashboard.razorpay.dev> and login as `test@razorpay.com/123456`.

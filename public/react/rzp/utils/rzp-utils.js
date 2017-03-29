@@ -1,7 +1,7 @@
 import moment from 'moment'
 
 export function titleCase(sentence = '') {
-  return sentence.split(' ').map((word) => word.charAt(0).toUpperCase() + word.substr(1)).join(' ')
+  return sentence.split(/\s+|_/).map((word) => word.charAt(0).toUpperCase() + word.substr(1)).join(' ')
 }
 
 export function makeArray(obj) {
@@ -54,6 +54,14 @@ export const pipe = (...funcs) => {
 }
 
 export const normalizeDate = date => (moment(date).format('D/M/Y'))
+
+export const normalizeBoolean = (bool) => {
+  if (bool === undefined) {
+    return bool
+  }
+
+  return bool ? 1 : 0
+}
 
 export const getFixedINRAmount = (amount) => (Number(amount)/100).toFixed(2)
 

@@ -43,7 +43,12 @@ app.controller('ActivationCtrl', [
       promoter_address_proof: alertsFactory.getHandler()
     };
     $scope.submit = function (step) {
-      if (step !== 6) {
+      var finalStep = 6;
+      if ($scope.accountDetails) {
+        finalStep = 4;
+      }
+
+      if (step !== finalStep) {
         saveStep(step);
       } else {
         submitForm(step);
@@ -67,7 +72,13 @@ app.controller('ActivationCtrl', [
     };
     getData();
     function getData() {
-      var request = $http.get('/activation/details');
+      var url = '/activation/details';
+      if ($scope.accountDetails) {
+        url += '/' + $scope.account;
+      }
+
+      var request = $http.get(url);
+
       request.success(function (data) {
         var steps_finished = data.data.steps_finished;
         angular.forEach(steps_finished, function (value) {
@@ -82,13 +93,12 @@ app.controller('ActivationCtrl', [
           $scope.fileAlerts[key].addAlert('success', 'File already uploaded');
         });
         if (data.data.submitted === 1) {
-          user.identity().then(function (data) {
-            $scope.data.activated = data.activated;
-            if (data.activated == 1) {
-              $scope.formAlerts.addAlert('info', 'Your account is already activated');
-            } else
-              $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');
-          });
+          $scope.data.activated = data.data.activated;
+          if (data.data.activated === 1) {
+            $scope.formAlerts.addAlert('info', 'Your account is already activated');
+          } else {
+            $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');
+          }
         }
         if (data.data.locked === 1) {
           $scope.locked = true;
@@ -111,7 +121,13 @@ app.controller('ActivationCtrl', [
     }
     function saveStep(step) {
       var data = $scope.data;
-      if (step === 4) {
+
+      var bankStep = 4;
+      if ($scope.accountDetails) {
+        bankStep = 2;
+      }
+
+      if (step === bankStep) {
         if (data.bank_account_number !== data.bank_account_number_confirmation) {
           $scope.alerts[step].addAlert('danger', 'Bank Account Number doesn\'t match');
           return;
@@ -120,9 +136,14 @@ app.controller('ActivationCtrl', [
         delete data.bank_account_number_confirmation;
       }
 
+      var url = '/activation/save/step/' + step;
+      if ($scope.accountDetails) {
+        url += '/' + $scope.account;
+      }
+
       var request = $http({
         method: 'post',
-        url: '/activation/save/step/' + step,
+        url: url,
         transformRequest: transformRequestAsFormPost,
         data: data
       });
@@ -161,8 +182,14 @@ app.controller('ActivationCtrl', [
       }
       $scope.locked = true;
       $scope.fileAlerts[fieldname].addAlert('info', 'Uploading...', true);
+
+      var url = '/activation/save/file' ;
+      if ($scope.accountDetails) {
+        url += '/' + $scope.account;
+      }
+
       var request = $upload.upload({
-        url: '/activation/save/file',
+        url: url,
         method: 'POST',
         file: file,
         fileFormDataName: fieldname,
@@ -203,9 +230,15 @@ app.controller('ActivationCtrl', [
         $scope.alerts[step].addAlert('danger', 'You must agree to the terms & conditions to use Razorpay services', true);
         return;
       }
+
+      var url = '/activation' ;
+      if ($scope.accountDetails) {
+        url += '/' + $scope.account;
+      }
+
       var request = $http({
         method: 'post',
-        url: '/activation',
+        url: url,
         transformRequest: transformRequestAsFormPost
       });
       request.success(function (data) {
@@ -234,5 +267,12 @@ app.controller('ActivationCtrl', [
     organization.fetchCurrentOrg().then(function (data) {
       $scope.org = data.custom_code;
     });
+  }
+])
+
+.controller('AccountActivationCtrl', [
+  '$scope',
+  function ($scope) {
+    $scope.accountDetails = true;
   }
 ]);

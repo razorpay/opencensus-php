@@ -89,7 +89,26 @@ class Validator extends Base\Validator
         'bank_beneficiary_pin'      => 'required|integer|digits:6'
     );
 
-    protected static $preSignupRules = array(
+    // Rules for vendor account validation
+    protected static $step1AccountRules = [
+        'business_type'                 => 'required|numeric|digits_between:1,10',
+        'business_name'                 => 'required|max:255',
+        'company_pan'                   => 'sometimes|alpha_num|max:15',
+        'promoter_pan'                  => 'required|alpha_num|max:15',
+    ];
+
+    protected static $step2AccountRules = [
+        'bank_account_number'   => 'required|alpha_num|between:5,20',
+        'bank_account_name'     => 'required|alpha_space_num|max:40',
+        'bank_account_type'     => 'required|alpha_space|max:20',
+        'bank_branch_ifsc'      => 'required|alpha_num|max:11',
+    ];
+
+    protected static $step2_accountValidators = [
+        'ifsc_code'
+    ];
+
+    protected static $preSignupRules = [
         'business_type'                 => 'sometimes|numeric|digits_between:1,10',
         'transaction_volume'            => 'sometimes|numeric|digits_between:1,4',
         'role'                          => 'sometimes|numeric|digits_between:1,6',
@@ -97,7 +116,7 @@ class Validator extends Base\Validator
         'business_name'                 => 'sometimes|max:255',
         'contact_name'                  => 'sometimes|alpha_space|max:255',
         'contact_mobile'                => 'sometimes|numeric|digits_between:8,11',
-    );
+    ];
 
     const UPLOAD_KEYS = array(
         'business_proof',
@@ -109,7 +128,7 @@ class Validator extends Base\Validator
         'promoter_address_proof',
     );
 
-    protected  $customAttributes = array(
+    protected $customAttributes = array(
         'contact_name'                  => 'Contact Name',
         'contact_email'                 => 'Email',
         'transaction_report_email'      => 'Transaction Report Email',

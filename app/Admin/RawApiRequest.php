@@ -78,7 +78,14 @@ class RawApiRequest
         switch ($input['auth'])
         {
             case 'proxy':
-                $this->setApiCredentials($input['mode'], $input['merchant_id']);
+                $merchantId = $input['merchant_id'] ?? null;
+
+                if (empty($merchantId))
+                {
+                    $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
+                }
+
+                $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
             case 'admin':
@@ -97,7 +104,7 @@ class RawApiRequest
         $this->params['auth'] = ["rzp_{$mode}_admin", $token];
     }
 
-    protected function setApiCredentials($mode, $merchantId='')
+    protected function setApiCredentials($mode, $merchantId = '')
     {
         $id = 'rzp_'.$mode;
 

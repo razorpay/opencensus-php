@@ -38,10 +38,13 @@ app.controller('ConfigCtrl', [
     };
 
     $scope.fetchConfig = function() {
+      var params = {
+        route_name: 'merchant_fetch_config',
+        mode: $scope.mode
+      };
 
-      var request = $http({
-        method: 'get',
-        url: '/config'
+      var request = $http.get('/user/generic', {
+        params: params
       });
 
       request.success(function (data) {
@@ -71,10 +74,16 @@ app.controller('ConfigCtrl', [
         transaction_report_email: config.transaction_report_email ? config.transaction_report_email.split(',') : null
       };
 
+      var params = {
+        route_name: 'merchant_edit_config',
+        mode: $scope.mode,
+        body: data
+      };
+
       var request = $http({
-        "method": 'PUT',
-        "url": '/config',
-        "data": data,
+        url: '/user/generic',
+        method: 'PUT',
+        data: params
       });
 
       request.success(function (data) {
@@ -108,11 +117,18 @@ app.controller('ConfigCtrl', [
         return;
       }
       $scope.alerts.addAlert('info', 'Uploading...', true);
+
+      var params = {
+        route_name: 'merchant_edit_config_logo',
+        mode: $scope.mode,
+        file_name: fieldname
+      };
+
       var request = $upload.upload({
-        url: '/config/logo',
+        url: '/user/generic',
         method: 'POST',
+        data: params,
         file: file,
-        fileFormDataName: fieldname,
         formDataAppender: function (fd, key, val) {
           if (angular.isArray(val)) {
             angular.forEach(val, function (v) {

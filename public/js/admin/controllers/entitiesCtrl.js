@@ -66,11 +66,13 @@ app.controller('EntitiesCtrl', [
       'hdfc',
       'kotak',
       'mobikwik',
+      'marketplace',
       'netbanking_hdfc',
       'netbanking_kotak',
       'netbanking_axis',
       'netbanking_icici',
       'netbanking_airtel',
+      'netbanking_federal',
       'paytm',
       'sharp',
       'upi_icici',
@@ -91,6 +93,7 @@ app.controller('EntitiesCtrl', [
       'olamoney',
       'airtelmoney',
       'freecharge',
+      'jiomoney',
       'ezeclick',
       'openwallet'
     ];
@@ -123,6 +126,7 @@ app.controller('EntitiesCtrl', [
       'netbanking',
       'wallet',
       'upi',
+      'transfer',
     ];
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
@@ -263,7 +267,14 @@ app.controller('EntitiesCtrl', [
         gateway_payment_id: ['Gateway Payment ID'],
         tdate: ['Tdate'],
       },
-      batch_settlement: {},
+      batch_fund_transfer: {
+        type: [
+          'all',
+          'settlement',
+          'payout'
+        ],
+        date: ['Date'],
+      },
       emi_plan: {
         bank: ['Bank'],
         network: ['Network']
@@ -276,6 +287,22 @@ app.controller('EntitiesCtrl', [
       file_store: {
         entity_id: ['Entity Id'],
         type: ['Type']
+      },
+      fund_transfer_attempt: {
+        batch_fund_transfer_id: ['Batch Fund Transfer Id'],
+        source_type: [
+          'all',
+          'settlement',
+          'payout'
+        ],
+        source_id: ['Source Id'],
+        status: ['all', 'created', 'failed', 'processed'],
+        utr: ['UTR']
+      },
+      gateway_downtime: {
+        method: methodList,
+        gateway: gatewayList,
+        bank: ['Bank']
       },
       hdfc: {
         auth: ['Auth Code'],
@@ -343,7 +370,9 @@ app.controller('EntitiesCtrl', [
         upi: booleanList2,
         airtelmoney: booleanList2,
         freecharge: booleanList2,
+        jiomoney: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
+        parent_id: ['Marketplace Parent Id'],
         receipt_email_enabled: booleanList,
         fee_bearer: [
             'all',
@@ -375,6 +404,7 @@ app.controller('EntitiesCtrl', [
         upi: booleanList,
         airtelmoney: booleanList,
         freecharge: booleanList,
+        jiomoney: booleanList,
         merchant_id: ['Merchant Id']
       },
       netbanking: {
@@ -429,6 +459,7 @@ app.controller('EntitiesCtrl', [
         status: statusList,
         terminal_id: ['Terminal ID'],
         token_id: ['Token Id'],
+        transfer_id: ['Transfer Id'],
         verified: [
           'all',
           'null',
@@ -462,7 +493,12 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         payment_id: ['Payment Id']
       },
+      reversal: {
+        merchant_id: ['Merchant Id'],
+        transfer_id: ['Transfer Id']
+      },
       settlement: {
+        batch_fund_transfer_id: ['Batch Fund Transfer Id'],
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
@@ -476,13 +512,16 @@ app.controller('EntitiesCtrl', [
         enabled: booleanList,
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
-        shared: booleanList
+        shared: booleanList,
+        gateway_merchant_id: ['Gateway Merchant Id'],
+        network_category: ['Network Category']
       },
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
         merchant_id: ['Merchant Id'],
         reconciled: booleanList,
         settled: booleanList,
+        on_hold: booleanList,
         settlement_id: ['Settlement Id'],
         type: [
           'all',
@@ -490,14 +529,15 @@ app.controller('EntitiesCtrl', [
           'refund',
           'settlement',
           'adjustment',
+          'transfer',
+          'reversal',
           'payout'
         ]
       },
       transfer: {
-        source_id: ['Payment/Merchant Id'],
-        to_id: ['Merchant/Customer Id'],
-        merchant_id: ['Merchant Id'],
-        transaction_id: ['Transaction Id'],
+        source: ['Source Payment/Merchant Id'],
+        recipient: ['Recipient Merchant/Customer Id'],
+        merchant_id: ['Merchant Id']
       },
       token: {
         bank: ['Bank Code'],
@@ -623,8 +663,8 @@ app.controller('EntitiesCtrl', [
             $scope.alerts.addAlert('danger', value);
           });
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+      }).error(function (res) {
+        $scope.alerts.addAlert('danger', res ? res : null, true);
       });
     };
     if ($stateParams.type && $stateParams.id) {
@@ -719,8 +759,8 @@ app.controller('EntitiesCtrl', [
             $scope.alerts.addAlert('danger', null, true);
           }
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+      }).error(function (res) {
+        $scope.alerts.addAlert('danger', res ? res : null, true);
       });
     };
   }
