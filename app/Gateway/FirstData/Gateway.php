@@ -1135,15 +1135,18 @@ class Gateway extends Base\Gateway
 
         $amountEntity = TxnType::$amountEntity[$txnType];
 
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
-
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
-
         if (($this->isSecondRecurringPayment($input) === true) and
             ($txnType === TxnType::SALE))
         {
-            $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_HOSTED_DATA_ID] = $input['token']->getId();
+            $body[ApiRequestFields::V1_PAYMENT] = [
+                ApiRequestFields::V1_HOSTED_DATA_ID  => $input['token']->getId(),
+                ApiRequestFields::V1_HOSTED_STORE_ID => $input['token']->terminal->getGatewayMerchantId(),
+            ];
         }
+
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+
+        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
     }
 
     protected function arrayToXml(array $array, string $wrap = null)
