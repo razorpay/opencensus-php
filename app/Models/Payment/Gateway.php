@@ -344,7 +344,6 @@ class Gateway
         // Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
