@@ -1329,7 +1329,7 @@ trait Authorize
     }
 
     /**
-     * @param boolean $wasFailed If a payment is being converted from authorized to failed.
+     * @param boolean $wasFailed If a payment is being converted from failed to authorized.
      */
     protected function notifyAuthorized(bool $wasFailed)
     {
