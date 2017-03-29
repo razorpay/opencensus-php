@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
     const SHARED                        = 'shared';
     const ENABLED                       = 'enabled';
     const NETWORK_CATEGORY              = 'network_category';
+    cosnt DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
