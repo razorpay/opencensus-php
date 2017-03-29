@@ -17,6 +17,7 @@ use RZP\Events\AuditLogEntry;
 use RZP\Exception;
 use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Base;
@@ -288,6 +289,17 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findByPublicId($orgId);
 
+        if (empty($input[Entity::ROLES]) === false)
+        {
+            Role\Entity::verifyIdAndStripSignMultiple($input[Entity::ROLES]);
+        }
+
+        if (empty($input[Entity::GROUPS]) === false)
+        {
+            Group\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::GROUPS]);
+        }
+
         $admin = $this->core()->create($org, $input);
 
         $this->sendAdminCreateEmail($admin, $input);
@@ -448,6 +460,17 @@ class Service extends Base\Service
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
+        if (empty($input[Entity::ROLES]) === false)
+        {
+            Role\Entity::verifyIdAndStripSignMultiple($input[Entity::ROLES]);
+        }
+
+        if (empty($input[Entity::GROUPS]) === false)
+        {
+            Group\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::GROUPS]);
+        }
+
         // making impromptu changes to make editAdmin work on appAuth
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
@@ -469,7 +492,8 @@ class Service extends Base\Service
         // of his org
         if ($admin->canSeeAllMerchants())
         {
-            $merchants = $this->repo->merchant->fetchMerchantsByOrgId($admin->org->id)->toArray();
+            $merchants = $this->repo->merchant->fetchMerchantsByOrgId(
+                $admin->org->id)->toArray();
 
             $merchantIds = array_column($merchants, 'id');
         }

@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Role;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Action;
+use RZP\Models\Admin\Permission;
 
 class Service extends Base\Service
 {
@@ -12,10 +13,13 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findByPublicId($orgId);
 
-        $role = $this->repo->transactionOnLiveAndTest(function() use ($org, $input)
+        if (empty($input[Entity::PERMISSIONS]) === false)
         {
-            return $this->core()->create($org, $input);
-        });
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::PERMISSIONS]);
+        }
+
+        $role = $this->core()->create($org, $input);
 
         return $role->toArrayPublic();
     }
@@ -52,16 +56,19 @@ class Service extends Base\Service
 
     public function putRole(string $orgId, string $roleId, array $input)
     {
+        if (empty($input[Entity::PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::PERMISSIONS]);
+        }
+
         $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
         $admin = $this->app['basicauth']->getAdmin();
 
         $role->getValidator()->validateRoleIsNotSuperAdmin($admin);
 
-        $role = $this->repo->transactionOnLiveAndTest(function() use ($role, $input)
-        {
-            return $this->core()->edit($role, $input);
-        });
+        $role = $this->core()->edit($role, $input);
 
         return $role->toArrayPublic();
     }

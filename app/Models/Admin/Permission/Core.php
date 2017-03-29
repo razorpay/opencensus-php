@@ -18,13 +18,6 @@ class Core extends Base\Core
         return $permission;
     }
 
-    public function getMultiplePermissionIdsByNames(array $names)
-    {
-        $permissions = $this->repo->permission->retrieveIdsByNames($names);
-
-        return $permissions;
-    }
-
     public function edit(Entity $permission, array $input)
     {
         $permission->edit($input);

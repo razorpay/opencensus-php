@@ -53,4 +53,11 @@ class Service extends Base\Service
 
         return $perms->toArrayPublic();
     }
+
+    public function getAssignablePermissions()
+    {
+        $perms = $this->repo->permission->fetchAllAssignable();
+
+        return $perms->toArrayPublic();
+    }
 }

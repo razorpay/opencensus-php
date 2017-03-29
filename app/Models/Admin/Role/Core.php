@@ -26,6 +26,9 @@ class Core extends Base\Core
 
         $this->syncPermissions($role, $input);
 
+        $role = $this->repo->role->findOrFailPublicWithRelations(
+            $role->getId(), [Entity::PERMISSIONS]);
+
         return $role;
     }
 
@@ -35,31 +38,23 @@ class Core extends Base\Core
 
         $role->setAuditAction(Action::EDIT_ROLE);
 
+        $this->repo->saveOrFail($role);
+
         $this->syncPermissions($role, $input);
 
-        $this->repo->saveOrFail($role);
+        $role = $this->repo->role->findOrFailPublicWithRelations(
+            $role->getId(), [Entity::PERMISSIONS]);
 
         return $role;
     }
 
     protected function syncPermissions($role, array $input)
     {
-        if (isset($input['permissions']) === true)
+        if (isset($input[Entity::PERMISSIONS]) === true)
         {
-            if (($input['permissions'] instanceof Base\PublicCollection) === false)
-            {
-                Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
-            }
-
-            $this->repo->sync($role, 'permissions', $input['permissions']);
+            $this->repo->sync(
+                $role, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
         }
-        else
-        {
-            // Deletion of all
-            $this->repo->sync($role, 'permissions', []);
-        }
-
-        return $role;
     }
 
     protected function validateExistingRole(Entity $role)
@@ -76,5 +71,10 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException(
                 'The role with the name already exists');
         }
+    }
+
+    public function findRoleByOrgAndName(Org\Entity $org, string $name)
+    {
+        return $this->repo->role->findByOrgAndName($org, $name);
     }
 }
