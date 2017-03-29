@@ -8,7 +8,7 @@ class Status
     const FULL      = 'full';
     const PARTIAL   = 'partial';
 
-    const CREATED = 'created';
-    const SUCCESS = 'success';
-    const FAILED  = 'failed';
+    const CREATED   = 'created';
+    const PROCESSED = 'processed';
+    const FAILED    = 'failed';
 }

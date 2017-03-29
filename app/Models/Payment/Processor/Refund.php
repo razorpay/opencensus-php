@@ -480,7 +480,7 @@ trait Refund
 
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
 
-            $this->refund->setStatus(Payment\Refund\Status::SUCCESS);
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
 
             $refunded = true;
         }
@@ -507,7 +507,7 @@ trait Refund
         {
             $this->callGatewayFunction(Payment\Action::REVERSE, $data);
 
-            $this->refund->setStatus(Payment\Refund\Status::SUCCESS);
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
 
             $reversed = true;
         }
