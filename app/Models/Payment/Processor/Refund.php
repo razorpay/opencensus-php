@@ -516,40 +516,17 @@ trait Refund
 
     protected function recordTransactionForRefund()
     {
-        try
-        {
-            return $this->repo->transaction(
-                function()
-                {
-                    $payment = $this->payment;
+        $payment = $this->payment;
 
-                    $this->paymentRepo->lockForUpdate($payment->getKey());
+        $this->repo->payment->lockForUpdate($payment->getKey());
 
-                    $this->createTransactionForRefund($this->refund, $payment);
+        $this->createTransactionForRefund($this->refund, $payment);
 
-                    //
-                    // This needs to be saved here because of the association with
-                    // transaction which is set in the createTransactionForRefund function.
-                    //
-                    $this->repo->saveOrFail($this->refund);
-
-                    return true;
-                });
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::REFUND_TRANSACTION_FAILED,
-                [
-                    'payment_id'    => $this->payment->getId(),
-                    'refund_id'     => $this->refund->getId(),
-                    'error_message' => $ex->getMessage(),
-                ]);
-
-            return false;
-        }
+        //
+        // This needs to be saved here because of the association with
+        // transaction which is set in the createTransactionForRefund function.
+        //
+        $this->repo->saveOrFail($this->refund);
     }
 
     protected function recordTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
@@ -558,7 +535,7 @@ trait Refund
         {
             $payment = $this->payment;
 
-            $this->paymentRepo->lockForUpdate($payment->getKey());
+            $this->repo->payment->lockForUpdate($payment->getKey());
 
             $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
 
@@ -581,9 +558,11 @@ trait Refund
             $this->validateMerchantBalance($refund);
         }
 
-        $this->refund = $refund;
+        $refund->setStatus(Payment\Refund\Status::CREATED);
 
         $refund->batch()->associate($batch);
+
+        $this->refund = $refund;
 
         return $refund;
     }
@@ -596,50 +575,37 @@ trait Refund
 
         if ($payment->isMethodCardOrEmi() === true)
         {
-            $card = $this->repo->card->fetchForPayment($this->refund->payment);
+            $card = $this->repo->card->fetchForPayment($payment);
 
             $data['card'] = $card->toArray();
         }
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            $refundCopy = clone $this->refund;
-
-            //
-            // NOTE: We should create the transaction before we update
-            // the payment as refunded since there is different logic
-            // for creating a refund transaction based on the payment status.
-            //
-            $success = $this->recordTransactionForRefund();
-
-            //
-            // `recordTransactionForRefund()` may have made modifications to the refund
-            // entity which we don't want to update, since recording transaction failed.
-            //
-            if ($success === false)
+            return $this->repo->transaction(function() use ($data, $payment)
             {
-                $this->refund = $refundCopy;
-            }
+                $this->recordTransactionForRefund();
 
-            // Record refund since it's refunded on gateway
-            $this->updatePaymentRefunded();
+                // Record refund since it's refunded on gateway
+                $this->updatePaymentRefunded();
 
-            $this->sendRefundNotification($payment);
+                if ($payment->getTransactionId() !== null)
+                {
+                    $this->refundOnGateway($data);
 
-            if ($payment->getTransactionId() !== null)
-            {
-                $this->refundOnGateway($data);
+                    $this->refund->setGatewayRefunded(true);
+                }
+                else if ($this->gatewaySupportsReversal($payment) === true)
+                {
+                    $this->reverseOnGateway($data);
 
-                $this->refund->setGatewayRefunded(true);
-            }
-            else if ($this->gatewaySupportsReversal($payment) === true)
-            {
-                $this->reverseOnGateway($data);
+                    // TODO: Record this too.
+                }
 
-                // TODO: Record this too.
-            }
+                $this->repo->saveOrFail($this->refund);
 
-            $this->repo->saveOrFail($this->refund);
+                $this->sendRefundNotification($payment);
+            });
         });
 
         return $this->refund;
@@ -663,8 +629,6 @@ trait Refund
             $baseAmount = $this->refund->getBaseAmount();
 
             $this->payment->refundAmount($amount, $baseAmount);
-
-            $this->refund->setStatus(Payment\Refund\Status::CREATED);
         }
 
         $this->repo->transaction(function()
