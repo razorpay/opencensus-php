@@ -48,6 +48,48 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithUserIdAndDiffRoleHeader' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'newrandomrole',
+            ],
+            'content' => [
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ]
+                ],
+                'user_id'       => '10000000UserId',
+            ],
+        ],
+    ],
+
     'testGetInvoiceWithUserIdHeaderSuccess' => [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice',

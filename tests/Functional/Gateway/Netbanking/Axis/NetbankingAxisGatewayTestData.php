@@ -125,15 +125,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR_FALSE_AUTHORIZE,
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_FALSE_AUTHORIZE,
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
 

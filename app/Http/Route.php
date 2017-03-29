@@ -398,8 +398,9 @@ final class Route
 
         // Permission can only be created by certain organisations.
         'permission_create'                       => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
+        'permission_get_assignable'               => ['get',      'permissions/assignable',                         'OrganizationController@getAssignablePermissions'                   ],
         'permission_get'                          => ['get',      'permissions/{id}',                               'OrganizationController@getPermission'                              ],
-        'permission_get_multiple'                 => ['get',      'permissions',                                    'OrganizationController@getMultiplePermissions'                     ],
+        'permission_get_multiple'                 => ['get',      'orgs/{orgId}/permissions',                       'OrganizationController@getMultiplePermissions'                     ],
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
         'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
@@ -863,6 +864,7 @@ final class Route
         'group_edit',
         'group_delete',
         'permission_get_multiple',
+        'permission_get_assignable',
         'permission_get',
         'permission_create',
         'permission_edit',
@@ -898,6 +900,7 @@ final class Route
         'group_edit'                     => [Permission::EDIT_GROUP],
         'group_delete'                   => [Permission::DELETE_GROUP],
         'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
+        'permission_get_assignable'      => [Permission::VIEW_ALL_PERMISSION],
         'group_get_allowed_groups'       => [Permission::GROUP_GET_ALLOWED_GROUPS],
         'schedule_create'                => [Permission::SCHEDULE_CREATE],
         'schedule_delete'                => [Permission::SCHEDULE_DELETE],
@@ -1060,6 +1063,7 @@ final class Route
     public static $crossOrgRoutes = [
         'org_edit',
         'org_get',
+        'role_edit',
         'schedule_create',
         'schedule_delete',
         'schedule_update',

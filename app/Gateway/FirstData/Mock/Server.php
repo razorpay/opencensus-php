@@ -19,6 +19,11 @@ class Server extends Base\Mock\Server
         $this->repo = new FirstData\Repository;
     }
 
+    public function purchase($input)
+    {
+        return $this->capture($input);
+    }
+
     public function authorize($input)
     {
         parent::authorize($input);

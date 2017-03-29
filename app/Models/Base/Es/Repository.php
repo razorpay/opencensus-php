@@ -34,8 +34,6 @@ class Repository extends \Razorpay\Spine\Repository
     protected $fields         = [];
     protected $fieldMappings  = [];
     protected $queryFields    = [];
-    // Mode of the application
-    protected $mode;
 
     /**
      * Constructor
@@ -50,8 +48,6 @@ class Repository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
-        $this->mode = $app['rzp.mode'];
-
         $this->trace = $app['trace'];
 
         $this->setFieldMappings();
@@ -62,7 +58,7 @@ class Repository extends \Razorpay\Spine\Repository
         // member and also set the same for es dao object.
         if ($indexName !== null)
         {
-            $this->indexName = $this->mode . '_' . $indexName;
+            $this->indexName = $app['rzp.mode'] . '_' . $indexName;
 
             $this->esDao->setIndexNameByValue($this->indexName);
         }
