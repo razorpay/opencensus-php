@@ -21,6 +21,7 @@ class Validator
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
+        'rpt'   => ['text/plain'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
@@ -46,7 +47,6 @@ class Validator
     const GATEWAY_ATTACHMENT_COUNT = [
         Orchestrator::OLAMONEY         => 1,
         Orchestrator::NETBANKING_AXIS  => 1,
-        Orchestrator::NETBANKING_ICICI => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
