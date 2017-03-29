@@ -1,13 +1,13 @@
 <?php
 
-namespace RZP\Mail;
+namespace RZP\Mail\Gateway;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class BankRefund extends Mailable implements ShouldQueue
+class DailyFile extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 

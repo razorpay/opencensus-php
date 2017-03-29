@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Base;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -12,6 +13,8 @@ class RefundFile extends Base\Core
     public function __construct()
     {
         parent::__construct();
+
+        $this->mail = Mail::getFacadeRoot();
     }
 
     public function generate($input)

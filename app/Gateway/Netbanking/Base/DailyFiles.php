@@ -5,7 +5,7 @@ namespace RZP\Gateway\Netbanking\Base;
 use App;
 use Mail;
 use Carbon\Carbon;
-use RZP\Mail\BankRefund as BankRefundMail;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 
@@ -24,8 +24,6 @@ class DailyFiles
 
     public function __construct($bankCode)
     {
-        $this->mail = Mail::getFacadeRoot();
-
         $this->app = App::getFacadeRoot();
 
         $this->repo = $this->app['repo'];
@@ -142,7 +140,9 @@ class DailyFiles
             'bankName'    => $bankName,
         ];
 
-        $this->mail->send(new BankRefundMail($data));
+        $dailyFileMail = new DailyFileMail($data);
+
+        Mail::send($dailyFileMail);
     }
 
     protected function getBankName()

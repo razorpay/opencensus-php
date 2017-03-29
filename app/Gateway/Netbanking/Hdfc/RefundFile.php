@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\RefundFile\Metadata;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\MailTags;
@@ -49,26 +51,9 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $fullpath = $fileData['file_path'];
+        $refundFileMail = new RefundFileMail($fileData, Metadata::NETBANKING_HDFC);
 
-        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
-        {
-            $emails = ['Directpay.Refunds@hdfcbank.com','settlements@razorpay.com'];
-
-            $message->from('refunds@razorpay.com', 'Hdfc Netbanking refunds');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('HDFC Netbanking refunds file for ' . $today);
-
-            $message->to($emails);
-
-            $message->attach($fileData['file_path']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::HDFC_NETBANKING_REFUNDS_MAIL);
-        });
+        $this->mail->send($refundFileMail);
     }
 
     protected function getRefundData($input)
