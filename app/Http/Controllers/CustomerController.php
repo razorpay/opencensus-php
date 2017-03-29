@@ -235,6 +235,20 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Used by the Open Wallet demo app
+     *
+     * @return mixed
+     */
+    public function verifyOtpApp()
+    {
+        $input = Request::all();
+
+        $data = $this->customer->verifyOtpApp($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function validateDeviceToken($deviceToken)
     {
         $input = Request::all();
@@ -283,5 +297,21 @@ class CustomerController extends Controller
         $data = $this->customer->deleteAddress($customerId, $addressId);
 
         return ApiResponse::json($data);
+    }
+
+    public function getCustomerWalletBalance(string $customerId)
+    {
+        $customerBalance = $this->customer->getCustomerBalance($customerId);
+
+        return ApiResponse::json($customerBalance);
+    }
+
+    public function getCustomerWalletStatement(string $customerId)
+    {
+        $input = Request::all();
+
+        $statement = $this->customer->getCustomerBalanceStatement($customerId, $input);
+
+        return ApiResponse::json($statement);
     }
 }

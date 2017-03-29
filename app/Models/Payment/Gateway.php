@@ -10,6 +10,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Settlement;
+use RZP\Models\Payment;
 
 class Gateway
 {
@@ -25,8 +26,10 @@ class Gateway
     const MOBIKWIK           = 'mobikwik';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const NETBANKING_ICICI   = 'netbanking_icici';
     const NETBANKING_AIRTEL  = 'netbanking_airtel';
     const NETBANKING_AXIS    = 'netbanking_axis';
+    const NETBANKING_FEDERAL = 'netbanking_federal';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
     const UPI_ICICI          = 'upi_icici';
@@ -34,6 +37,7 @@ class Gateway
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
+    const WALLET_OPENWALLET  = 'wallet_openwallet';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
@@ -65,15 +69,24 @@ class Gateway
         self::BILLDESK,
     ];
 
-    //
-    // Gateways for which we can validate the refunds
-    // if they are successful after they are 'initiated'
-    //
+    /**
+    * Gateways for which we can validate the refunds
+    * if they are successful after they are 'initiated'
+    */
     const UNKNOWN_REFUNDS_VALIDATION_GATEWAYS = [
         self::WALLET_FREECHARGE
     ];
 
-    public static $channels = array(
+    /**
+    * Gateways for which we may need to force authorize payments
+    * since their verify API's stop working after a certain time
+    */
+    const FORCE_AUTHORIZE_GATEWAYS = [
+        self::AXIS_MIGS,
+        self::WALLET_JIOMONEY
+    ];
+
+    public static $channels = [
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
         self::AXIS_GENIUS        => Settlement\Channel::KOTAK,
@@ -86,18 +99,21 @@ class Gateway
         self::SHARP              => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
+        self::NETBANKING_ICICI   => Settlement\Channel::KOTAK,
         self::NETBANKING_AIRTEL  => Settlement\Channel::KOTAK,
         self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
+        self::NETBANKING_FEDERAL => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_FREECHARGE  => Settlement\Channel::KOTAK,
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
         self::WALLET_JIOMONEY    => Settlement\Channel::KOTAK,
+        self::WALLET_OPENWALLET  => Settlement\Channel::KOTAK,
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
-        self::CYBERSOURCE        => Settlement\Channel::KOTAK
-    );
+        self::CYBERSOURCE        => Settlement\Channel::KOTAK,
+    ];
 
     /**
      * Mapping of method to gateways supporting that method
@@ -105,8 +121,8 @@ class Gateway
      *
      * @var array
      */
-    public static $methodMap = array(
-        Method::CARD => array(
+    public static $methodMap = [
+        Method::CARD => [
             self::HDFC,
             self::ATOM,
             self::AXIS_MIGS,
@@ -115,19 +131,21 @@ class Gateway
             self::AMEX,
             self::CYBERSOURCE,
             self::FIRST_DATA,
-        ),
+        ],
 
-        Method::NETBANKING => array(
+        Method::NETBANKING => [
             self::PAYTM,
             self::BILLDESK,
             self::EBS,
+            self::NETBANKING_ICICI,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
-        ),
+            self::NETBANKING_FEDERAL,
+        ],
 
-        Method::WALLET => array(
+        Method::WALLET => [
             self::MOBIKWIK,
             self::PAYTM,
             self::WALLET_OLAMONEY,
@@ -135,19 +153,21 @@ class Gateway
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
-        ),
+            self::WALLET_JIOMONEY,
+            self::WALLET_OPENWALLET,
+        ],
 
-        Method::EMI => array(
+        Method::EMI => [
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,
-        ),
+        ],
 
-        Method::UPI => array(
+        Method::UPI => [
             self::UPI_ICICI,
             self::UPI_IDFC,
-        ),
-    );
+        ],
+    ];
 
     /**
      * Card gateways which support auth and capture mechanism for at
@@ -156,15 +176,16 @@ class Gateway
      * @var array
      */
     public static $authAndCapture = [
-        self::HDFC => [
+        self::HDFC                  => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
-        self::AXIS_MIGS => [],
-        self::AMEX => [],
-        self::CYBERSOURCE => [],
-        self::FIRST_DATA => [
+        self::AXIS_MIGS             => [],
+        self::AMEX                  => [],
+        self::CYBERSOURCE           => [],
+        self::FIRST_DATA            => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
+        self::WALLET_OPENWALLET     => [],
     ];
 
     /**
@@ -176,6 +197,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::AXIS_MIGS,
+        self::WALLET_OPENWALLET,
     ];
 
 
@@ -189,6 +211,7 @@ class Gateway
     public static $asynchronous = array(
         self::UPI_ICICI,
         self::UPI_IDFC,
+        self::SHARP,
     );
 
     /**
@@ -248,6 +271,7 @@ class Gateway
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
+        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET
     );
 
     public static $upiToGatewayMap = array(
@@ -271,8 +295,10 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
+        self::NETBANKING_ICICI,
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
+        self::NETBANKING_FEDERAL,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -280,9 +306,20 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
+        self::WALLET_JIOMONEY,
         self::UPI_ICICI,
         self::UPI_IDFC,
     );
+
+    /**
+     * List of gateways that support recurring payments
+     *
+     * @var array
+     */
+    public static $recurringGateways = [
+        Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
+    ];
 
     /**
      * List of gateways which give s2s callback where we do not validate
@@ -293,7 +330,8 @@ class Gateway
     public static $s2sCallbackGateways = array(
         Gateway::BILLDESK,
         Gateway::UPI_ICICI,
-        Gateway::WALLET_OLAMONEY
+        Gateway::WALLET_OLAMONEY,
+        Gateway::SHARP
     );
 
     /**
@@ -363,9 +401,11 @@ class Gateway
      * @var array
      */
     public static $netbankingToGatewayMap = array(
+        IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS);
 
     /**
@@ -375,9 +415,11 @@ class Gateway
      * @var array
      */
     public static $refundFileNetbankingGateways = array(
+        IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
@@ -420,6 +462,11 @@ class Gateway
         return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
+    public static function isRecurringGateway($gateway)
+    {
+        return in_array($gateway, self::$recurringGateways, true);
+    }
+
     public static function getChannel($gateway)
     {
         return self::$channels[$gateway];
@@ -433,6 +480,17 @@ class Gateway
     public static function getGatewayForWallet($wallet)
     {
         return self::$walletToGatewayMap[$wallet];
+    }
+
+    public static function getWalletForGateway($gateway)
+    {
+        if (in_array($gateway, self::$methodMap[Method::WALLET]) === false)
+        {
+            throw new Exception\LogicException(
+                'Unknown wallet gateway. Gateway: ' . $gateway);
+        }
+
+        return array_flip(self::$walletToGatewayMap)[$gateway];
     }
 
     public static function validateGateway($gateway)

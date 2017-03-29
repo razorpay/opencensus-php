@@ -64,6 +64,8 @@ class Activate extends Base\Core
             TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
             ['merchant_id' => $merchant->getId()]);
 
+        $this->app['drip']->sendDripMerchantInfo(Merchant\Action::ACTIVATED, $merchant);
+
         $this->sendActivationEmail($merchant, $plan);
 
         return $merchant->toArrayPublic();
@@ -86,13 +88,19 @@ class Activate extends Base\Core
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
         $data = [
-            'merchant'  =>  $merchant->toArray(),
-            'plan'      =>  $plan,
-            'rules'     =>  $this->formatPricingRules($rules),
-            'subject'   =>  $subject,
+            'merchant' => $merchant->toArray(),
+            'plan'     => $plan,
+            'rules'    => $this->formatPricingRules($rules),
+            'subject'  => $subject,
         ];
 
         $config = $this->app->config->get('applications.mailgun');
+
+        // For marketplace accounts, send this email to the parent merchant
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $data['merchant']['email'] = $merchant->parent->getEmail();
+        }
 
         // Send the activation email
         $this->app['mailer']->queue(
@@ -174,8 +182,8 @@ class Activate extends Base\Core
             // Support currently for only one set of amountRangeRules
             if ($rule[Pricing\Entity::AMOUNT_RANGE_ACTIVE] === true)
             {
-                $amountRangeMin = $rule[Pricing\Entity::AMOUNT_RANGE_MIN]/100;
-                $amountRangeMax = $rule[Pricing\Entity::AMOUNT_RANGE_MAX]/100;
+                $amountRangeMin = $rule[Pricing\Entity::AMOUNT_RANGE_MIN] / 100;
+                $amountRangeMax = $rule[Pricing\Entity::AMOUNT_RANGE_MAX] / 100;
 
                 if ($amountRangeMin === 0)
                 {
@@ -282,6 +290,11 @@ class Activate extends Base\Core
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
         foreach ($rules as $rule) {
+            // Don't add rules other than payment
+            if ($rule[Pricing\Entity::FEATURE] !== Pricing\Feature::PAYMENT)
+            {
+                continue;
+            }
 
             // Don't add international rule if merchant international not active
             if (($merchant->isInternational() === false) and

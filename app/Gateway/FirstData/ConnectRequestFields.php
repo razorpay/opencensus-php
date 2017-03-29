@@ -28,4 +28,7 @@ class ConnectRequestFields
     const TXN_DATE_TIME          = 'txndatetime';
     const TXN_TYPE               = 'txntype';
     const TIME_ZONE              = 'timezone';
+
+    // For recurring payments
+    const TOKEN                  = 'hosteddataid';
 }

@@ -3,11 +3,14 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
+use DB;
+
+use RZP\Constants\Table;
 
 class Org extends Base
 {
     const HDFC_ORG     = 'HDFCbankOrgnId';
-    const RZP_ORG      = 'RazorpayOrgnId';
+    const RZP_ORG      = '100000razorpay';
     const DEFAULT_GRP  = '1RazorpayGrpId';
     const ADMIN_ROLE   = 'RzpAdminRoleId';
     const MANAGER_ROLE = 'RzpMngerRoleId';
@@ -30,7 +33,7 @@ class Org extends Base
         ]);
 
         $orgHost = $this->fixtures->create('org_hostname', [
-            'org_id'    => self::RZP_ORG,
+            'org_id'    => self::HDFC_ORG,
             'hostname'  => 'hdfcbank.com',
         ]);
     }
@@ -76,6 +79,17 @@ class Org extends Base
         ]);
 
         $permissions = $this->fixtures->create('permission:default_permissions');
+
+        foreach ($permissions as $permission)
+        {
+            DB::table(Table::PERMISSION_MAP)->insert([
+                [
+                    'permission_id' => $permission->getId(),
+                    'entity_id'     => self::RZP_ORG,
+                    'entity_type'   => 'org',
+                ]
+            ]);
+        }
 
         $liveAdminRole = clone $adminRole;
         $testAdminRole = clone $adminRole;

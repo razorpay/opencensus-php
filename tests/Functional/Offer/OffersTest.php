@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Offer;
 
 use Carbon\Carbon;
-
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -17,10 +16,15 @@ class OffersTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
     }
 
     public function testCreateCardOffer()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateCardOfferWithIin()
     {
         $this->startTest();
     }
@@ -42,12 +46,12 @@ class OffersTest extends TestCase
 
     public function testCreateIdenticalOffers()
     {
-        $this->fixtures->offer->createCardOffer();
+        $offer = $this->fixtures->create('offer:card');
 
         $this->startTest();
     }
 
-    public function testCreateOfferWithoutCashbackDefinitionParams()
+    public function testCreateOfferWithoutCashbackCriteria()
     {
         $this->startTest();
     }
@@ -77,6 +81,11 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOfferWithInvalidIssuer()
+    {
+        $this->startTest();
+    }
+
     public function testCreateOfferWithPercentRateAndFlatCashback()
     {
         $this->startTest();
@@ -87,128 +96,83 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddIinsToCardOffer()
+    {
+        $offer = $this->fixtures->create('offer:card');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testAddIinsInvalidFormat()
+    {
+        $offer = $this->fixtures->create('offer:card');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testAddIinsToNonCardOffer()
+    {
+        $offer = $this->fixtures->create('offer:wallet');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testUpdateExistingOffer()
     {
-        $offer = $this->fixtures->offer->createCardOffer();
+        $offer = $this->fixtures->create('offer:card');
 
-        $request = [
-            'content' => [
-                'name' => 'Updated name'
-            ],
-            'url' => '/offers/' . $offer->getId(),
-            'method' => 'PUT'
-        ];
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
-        $expectedResponse = [
-            'id'                  => $offer->getId(),
-            'name'                => "Updated name",
-            "payment_method"      => "card",
-            "payment_method_type" => "credit",
-            "payment_network"     => "VISA",
-            "issuer"              => "HDFC",
-            "active"              => TRUE,
-            "percent_rate"        => 10,
-            "payment_count"       => 2,
-            "processing_time"     => 86400,
-            "starts_at"           => Carbon::today('Asia/Kolkata')->timestamp,
-            "ends_at"             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
-        ];
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
 
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArraySelectiveEquals($expectedResponse, $content);
+        $this->startTest();
     }
 
-    public function testDeleteOffer()
+    public function testGetMultipleOffers()
     {
-        $offer = $this->fixtures->offer->createCardOffer();
+        $offer = $this->fixtures->create('offer:card');
 
-        $request = [
-            'content' => [
-            ],
-            'url' => '/offers/' . $offer->getId(),
-            'method' => 'DELETE'
-        ];
-
-        $expectedResponse = [
-            'id'                  => $offer->getId()
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArraySelectiveEquals($expectedResponse, $content);
-
-        $offer = $this->getLastEntity('offer', true);
-
-        $this->assertNull($offer);
+        $this->startTest();
     }
 
-    public function testGetMerchantOffers()
+    public function testFetchOfferById()
     {
-        $offer = $this->fixtures->offer->createCardOffer();
+        $offer = $this->fixtures->create('offer:card');
 
-        $request = [
-            'url' => '/merchants/' . '10000000000000' . '/offers',
-            'method' => 'GET'
-        ];
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
-        $data = [
-            'entity' => 'collection',
-            'count'  => 1,
-            'admin'  => true,
-            'items'  => [
-                [
-                    'id'                  => $offer->getId(),
-                    'name'                => 'Test Offer',
-                    'payment_method'      => 'card',
-                    'payment_method_type' => 'credit',
-                    'payment_network'     => 'VISA',
-                    'issuer'              => 'HDFC',
-                    'active'              => TRUE,
-                    'percent_rate'        => 10,
-                    'payment_count'       => 2,
-                    'processing_time'     => 86400,
-                    "starts_at"           => Carbon::today('Asia/Kolkata')->timestamp,
-                    "ends_at"             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
-                ]
-            ]
-        ];
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
 
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArraySelectiveEquals($data, $content);
+        $this->startTest();
     }
 
-    public function testMerchantOfferAssignment()
+    public function testDeactivateOffer()
     {
-       $offer = $this->fixtures->offer->createCardOffer();
+        $offer = $this->fixtures->create('offer:card');
 
-       $request = [
-            'content' => [
-                'merchant_ids' => ['10000000000000'],
-                'action'       => 'add'
-            ],
-            'url' => '/offers/' . $offer->getId() . '/merchants',
-            'method' => 'PUT'
-       ];
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
-       $data = [
-            'id'                  => $offer->getId(),
-            'name'                => "Test Offer",
-            "payment_method"      => "card",
-            "payment_method_type" => "credit",
-            "payment_network"     => "VISA",
-            "issuer"              => "HDFC",
-            "active"              => TRUE,
-            "percent_rate"        => 10,
-            "payment_count"       => 2,
-            "processing_time"     => 86400,
-            "starts_at"           => Carbon::today('Asia/Kolkata')->timestamp,
-            "ends_at"             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
-        ];
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
 
-        $content = $this->makeRequestAndGetContent($request);
+        $this->startTest();
+    }
 
-        $this->assertArraySelectiveEquals($data, $content);
+    public function testDeactivateAllOffer()
+    {
+        $offer = $this->fixtures->create('offer:expired');
+
+        $this->ba->appAuth();
+
+        $this->testData[__FUNCTION__]['response']['content'] = [$offer->getPublicId()];
+
+        $this->startTest();
     }
 }

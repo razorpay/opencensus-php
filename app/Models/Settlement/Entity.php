@@ -9,20 +9,20 @@ use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                    = 'id';
-    const MERCHANT_ID           = 'merchant_id';
-    const BANK_ACCOUNT_ID       = 'bank_account_id';
-    const BATCH_SETTLEMENT_ID   = 'batch_settlement_id';
-    const AMOUNT                = 'amount';
-    const FEES                  = 'fees';
-    const SERVICE_TAX           = 'service_tax';
-    const STATUS                = 'status';
-    const TRANSACTION_ID        = 'transaction_id';
-    const CHANNEL               = 'channel';
-    const UTR                   = 'utr';
-    const FAILURE_REASON        = 'failure_reason';
-    const REMARKS               = 'remarks';
-    const RETURN_UTR            = 'return_utr';
+    const ID                     = 'id';
+    const MERCHANT_ID            = 'merchant_id';
+    const BANK_ACCOUNT_ID        = 'bank_account_id';
+    const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
+    const AMOUNT                 = 'amount';
+    const FEES                   = 'fees';
+    const SERVICE_TAX            = 'service_tax';
+    const STATUS                 = 'status';
+    const TRANSACTION_ID         = 'transaction_id';
+    const CHANNEL                = 'channel';
+    const UTR                    = 'utr';
+    const FAILURE_REASON         = 'failure_reason';
+    const REMARKS                = 'remarks';
+    const RETURN_UTR             = 'return_utr';
 
     protected static $sign = 'setl';
 
@@ -40,7 +40,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
-        self::BATCH_SETTLEMENT_ID,
+        self::BATCH_FUND_TRANSFER_ID,
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
@@ -69,6 +69,13 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
     );
 
+    // --------------------------------- relations -------------------------------
+
+    public function fundTransferAttempts()
+    {
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity');
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -76,35 +83,36 @@ class Entity extends Base\PublicEntity
 
     public function bankAccount()
     {
-        return $this->belongsTo(
-                                'RZP\Models\BankAccount\Entity',
-                                self::BANK_ACCOUNT_ID,
-                                BankAccount\Entity::ID);
+        return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
+    // Fetches the transaction of type Settlement
     public function transaction()
     {
         return $this->belongsTo('RZP\Models\Transaction\Entity');
     }
 
-    public function batchSettlement()
+    public function batchFundTransfer()
     {
-        return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
+        return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
     }
 
-    public function isStatusCreated()
-    {
-        return ($this->getStatus() === Status::CREATED);
-    }
-
-    public function isStatusFailed()
-    {
-        return ($this->getStatus() === Status::FAILED);
-    }
-
+    // Fetches all types of transactions for the given settlement
     public function setlTransactions()
     {
         return $this->hasMany('RZP\Models\Transaction\Entity');
+    }
+
+    public function adjustment()
+    {
+        return $this->hasOne('RZP\Models\Adjustment\Entity');
+    }
+
+    // --------------------------------- getters -------------------------------
+
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
     }
 
     public function getAmount()
@@ -115,11 +123,6 @@ class Entity extends Base\PublicEntity
     public function getChannel()
     {
         return $this->getAttribute(self::CHANNEL);
-    }
-
-    public function getUtr()
-    {
-        return $this->getAttribute(self::UTR);
     }
 
     public function getFees()
@@ -146,6 +149,18 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::REMARKS);
     }
+
+    public function getVersion()
+    {
+        return $this->getAttribute(self::VERSION);
+    }
+
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    // --------------------------------- setters -------------------------------
 
     public function setAmount($amount)
     {
@@ -202,15 +217,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REMARKS, $remarks);
     }
 
-    public function getTransactionId()
+    public function setVersion($version)
     {
-        return $this->getAttribute(self::TRANSACTION_ID);
+        $this->setAttribute(self::VERSION, $version);
     }
 
-    public function adjustment()
-    {
-        return $this->hasOne('RZP\Models\Adjustment\Entity');
-    }
+    // --------------------------------- modifiers -------------------------------
 
     protected function getServiceTaxAttribute()
     {
@@ -232,6 +244,28 @@ class Entity extends Base\PublicEntity
         }
 
         return $fee;
+    }
+
+    // --------------------------------- entity methods -------------------------------
+
+    public function isStatusCreated()
+    {
+        return ($this->getStatus() === Status::CREATED);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
+    }
+
+    public function isStatusProcessed()
+    {
+        return $this->getStatus() === Status::PROCESSED;
+    }
+
+    public function isPendingReconciliation()
+    {
+        return $this->isStatusCreated();
     }
 
     public function save(array $options = array())

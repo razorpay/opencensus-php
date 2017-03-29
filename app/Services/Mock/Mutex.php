@@ -16,14 +16,22 @@ class Mutex extends BaseLock
     }
 
     /**
-     * Set the lock for the resource provided
+     * Acquires lock on a resource
      *
-     * @param string $resource Name of the resource
-     * @param int    $ttl      Expiry time of lock in seconds
+     * @param string $resource      Key on which to acquire lock
+     * @param int    $ttl           Expiry time of lock in seconds
+     * @param int    $retryCount    Number of times to retry for acquiring lock
+     * @param int    $minRetryDelay Minimum time to wait before retry in millisec
+     * @param int    $maxRetryDelay Maximum time to wait before retry in millisec
      *
-     * @return boolean
+     * @return bool Whether finally lock was acquired or not
      */
-    public function acquire($resource, $ttl = 60)
+    public function acquire(
+        $resource,
+        $ttl = 60,
+        $retryCount = 0,
+        $minRetryDelay = 100,
+        $maxRetryDelay = 200) : bool
     {
         if ($this->cache->store('file')->get($resource))
         {
@@ -44,9 +52,9 @@ class Mutex extends BaseLock
      */
     public function release($resource)
     {
-        if ($this->cache->get($resource) === $this->requestId)
+        if ($this->cache->store('file')->get($resource) === $this->requestId)
         {
-            return $this->cache->forget($resource);
+            return $this->cache->store('file')->forget($resource);
         }
 
         return false;

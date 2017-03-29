@@ -179,33 +179,30 @@ return [
     ],
 
     'testWebhookEventData' => [
-        'event' => [
-            'event' => 'payment.authorized',
-            'contains' => ['payment'],
-            'payload' => [
-                'payment' => [
-                    'entity' => [
-                        // 'id' => 'pay_4WVwsa1ZAIsNZ5',
-                        'entity' => 'payment',
-                        'amount' => 50000,
-                        'currency' => 'INR',
-                        'status' => 'authorized',
-                        'amount_refunded' => 0,
-                        'refund_status' => null,
-                        'captured' => false,
-                        'description' => 'random description',
-                        'email' => 'a@b.com',
-                        'contact' => '+919918899029',
-                        'notes' => ['merchant_order_id' => 'random order id'],
-                        'error_code' => null,
-                        'error_description' => null,
-                        // 'created_at' => 1449782144,
-                    ],
+        'entity' => 'event',
+        'event' => 'payment.authorized',
+        'contains' => ['payment'],
+        'payload' => [
+            'payment' => [
+                'entity' => [
+                    // 'id' => 'pay_4WVwsa1ZAIsNZ5',
+                    'entity' => 'payment',
+                    'amount' => 50000,
+                    'currency' => 'INR',
+                    'status' => 'authorized',
+                    'amount_refunded' => 0,
+                    'refund_status' => null,
+                    'captured' => false,
+                    'description' => 'random description',
+                    'email' => 'a@b.com',
+                    'contact' => '+919918899029',
+                    'notes' => ['merchant_order_id' => 'random order id'],
+                    'error_code' => null,
+                    'error_description' => null,
+                    // 'created_at' => 1449782144,
                 ],
             ],
-            // 'created_at' => 1449782144,
         ],
-        // 'webhook_id' => '4WVwsVEmeO3wwp',
     ],
 
     'testOrderPaidWebhookEventData' => [

@@ -64,7 +64,9 @@
     <!-- Naming conventions
     Camel caps, and the first letter is capitalised -->
     <rule ref="Squiz.Classes.ValidClassName"/>
-    <rule ref="Squiz.Classes.ClassFileName"/>
+    <rule ref="Squiz.Classes.ClassFileName">
+        <exclude-pattern>database/migrations/*</exclude-pattern>
+    </rule>
     <rule ref="Squiz.Classes.ClassDeclaration"/>
     <rule ref="Squiz.Classes.LowercaseClassKeywords"/>
     <rule ref="Generic.NamingConventions.CamelCapsFunctionName"/>

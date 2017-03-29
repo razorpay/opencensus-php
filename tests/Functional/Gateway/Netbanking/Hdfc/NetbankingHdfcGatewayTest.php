@@ -35,24 +35,24 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('netbanking', true);
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertEquals(
-            strtoupper($payment['payment_id']), $payment['caps_payment_id']);
+            strtoupper($gatewayPayment['payment_id']), $gatewayPayment['caps_payment_id']);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $payment);
+            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
 
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+        $this->assertArrayHasKey('bank_payment_id', $gatewayPayment);
+        $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testPaymentOnDirectHdfcTerminal()
     {
         $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal');
 
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment['bank'] = 'HDFC';
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
         $payment = $this->doAuthPayment($payment);
 
         $payment = $this->getLastPayment(true);
@@ -68,13 +68,13 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('netbanking', true);
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $payment);
+            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
 
-        $this->assertArrayHasKey('bank_payment_id', $payment);
-        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+        $this->assertArrayHasKey('bank_payment_id', $gatewayPayment);
+        $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testPaymentVerify()
@@ -107,7 +107,7 @@ class NetbankingHdfcGatewayTest extends TestCase
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
         $this->refundPayment($payment['id']);
 
-        $data = $this->generateRefundsExcelForNB('HDFC');
+        $data = $this->generateRefundsExcelForNb('HDFC');
 
         $this->assertEquals($data['netbanking_hdfc']['count'], 3);
         $this->assertTrue(file_exists($data['netbanking_hdfc']['file']));

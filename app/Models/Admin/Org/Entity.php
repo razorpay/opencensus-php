@@ -29,6 +29,13 @@ class Entity extends Base\Entity
     const ADMIN            = 'admin';
     const CROSS_ORG_ACCESS = 'cross_org_access';
 
+    /**
+     * Holds all the permissions as relation key.
+     */
+    const PERMISSIONS       = 'permissions';
+
+    const RAZORPAY_ORG_ID = '100000razorpay';
+
     protected static $sign = 'org';
 
     protected $entity = 'org';
@@ -68,6 +75,7 @@ class Entity extends Base\Entity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::CUSTOM_CODE,
+        self::PERMISSIONS,
     ];
 
     protected $public = [
@@ -84,6 +92,7 @@ class Entity extends Base\Entity
         self::AUTH_TYPE,
         self::CREATED_AT,
         self::CUSTOM_CODE,
+        self::PERMISSIONS,
     ];
 
     protected $guarded = [

@@ -122,10 +122,6 @@ class AnalyticsTest extends TestCase
 
         $payment['_']['library_version'] = '3846fgjb';
 
-        $payment['_']['platform'] = 'browser';
-
-        $payment['_']['platform_version'] = '52.0.2743.116';
-
         $payment['_']['integration'] = 'woo_commerce';
 
         $payment['_']['integration_version'] = '0.1.2';
@@ -134,25 +130,49 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForNonOtpBasedPayment');
+        $this->assertTestResponse($paymentAnalytic);
     }
 
     public function testHttpRequestDataForS2sPayments()
     {
         $payment = $this->getDefaultPaymentArray();
 
-        $requestServer = ['HTTP_USER_AGENT' => null];
+        $requestServer = [
+            'HTTP_USER_AGENT' => 'Razorpay UA',
+            'HTTP_REFERER'    => 'https://pay.com/demo'
+        ];
 
         $payment['_']['library'] = 'direct';
 
         $payment['_']['device'] = 'desktop';
 
-        $payment = $this->doAuthPayment($payment, $requestServer);
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $payment = $this->doS2SPrivateAuthPayment($payment, $requestServer);
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic,
-            'testHttpRequestDataForS2sPayments');
+        $this->assertTestResponse($paymentAnalytic);
+    }
+
+    public function testAnalyticsForS2sPayments()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['ip']         = '52.34.123.23';
+        $payment['referer']    = 'https://pay.com/demo';
+        $payment['user_agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36';
+
+        $payment['_'] = [
+            'library'    => 'direct',
+            'device'     => 'desktop',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+        $payment = $this->doS2SPrivateAuthPayment($payment);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertTestResponse($paymentAnalytic);
     }
 
     public function testHttpRequestDataForOtpBasedPayment()
@@ -297,7 +317,7 @@ class AnalyticsTest extends TestCase
 
         $this->assertEquals(Metadata::FIREFOX, $paymentAnalytic[AnalyticsEntity::BROWSER]);
 
-        $this->assertEquals('46.0', $paymentAnalytic[AnalyticsEntity::PLATFORM_VERSION]);
+        $this->assertEquals('46.0', $paymentAnalytic[AnalyticsEntity::BROWSER_VERSION]);
     }
 
     public function testHttpRefer1()

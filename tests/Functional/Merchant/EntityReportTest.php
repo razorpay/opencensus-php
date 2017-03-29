@@ -3,12 +3,22 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class EntityReportTest extends TestCase
 {
     use PaymentTrait;
+
+    public function __construct()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/EntityReportTestData.php';
+
+        parent::__construct();
+    }
 
     public function testEntityReports()
     {
@@ -70,6 +80,39 @@ class EntityReportTest extends TestCase
 
         assert(count($orderReport) === 1);
     }
+
+    public function testLinkedAccountExportReport()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->create('merchant:marketplace_account');
+
+        $params = [
+            'year'  => '2017',
+            'month' => '1',
+        ];
+
+        $response = $this->fetchReportAsFile('account', $params);
+
+        $this->assertNotNull($response['url']);
+    }
+
+    public function testLinkedAccountExportNonMarketplace()
+    {
+        $params = [
+            'year'  => '2017',
+            'month' => '1',
+        ];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = $params;
+
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
 
     /**
      * Data for this test case needs to imported separately
@@ -162,7 +205,7 @@ class EntityReportTest extends TestCase
             'Merchant Txn Id' => null,
             'Product' => 'NSE',
             'Discriminator' => 'NB',
-            'Bank Name' => 'ICICI Bank Ltd',
+            'Bank Name' => 'Indian Bank',
             'Card Type' => null,
             'Card No' => null,
             'Card Issuing Bank' => null,

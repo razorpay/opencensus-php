@@ -14,6 +14,7 @@ class Table
     const BATCH                 = 'batches';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
@@ -30,6 +31,8 @@ class Table
     const MERCHANT              = 'merchants';
     const CUSTOMER              = 'customers';
     const EMI_PLAN              = 'emi_plans';
+    const TRANSFER              = 'transfers';
+    const REVERSAL              = 'reversals';
     const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';
     const FILE_STORE            = 'files';
@@ -38,13 +41,16 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
-    const BATCH_SETTLEMENT      = 'daily_settlements';
+    const CUSTOMER_BALANCE      = 'customer_balance';
+    const CUSTOMER_TRANSACTION  = 'customer_transactions';
+    const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
     const OFFER                 = 'offers';
     const COUPON                = 'coupons';
     const MERCHANT_OFFER        = 'merchant_offer';
+    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
     // organization roles permissions
     const ORG                   = 'orgs';
@@ -83,7 +89,7 @@ class Table
     // Terminal Performance
 
     const TERMINAL_ACTION       = 'terminal_action_logs';
-    const GATEWAY_ABSENCE       = 'gateway_status_absence';
+    const GATEWAY_DOWNTIME      = 'gateway_downtimes';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

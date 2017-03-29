@@ -22,13 +22,24 @@ return [
         ],
         'schedule' => [
             'name'        => 'Basic T3',
-            'merchant_id' => '100000Razorpay',
             'type'        => 'settlement',
             'period'      => 'daily',
             'interval'    => 1,
             'anchor'      => null,
             'delay'       => 3,
             'next_run'    => 1451586600,
+        ],
+    ],
+
+    'testTimedSchedule' => [
+        'schedule' => [
+            'name'        => 'Basic T3 with time set',
+            'type'        => 'settlement',
+            'period'      => 'daily',
+            'interval'    => 1,
+            'anchor'      => null,
+            'hour'        => 12,
+            'delay'       => 3,
         ],
     ],
 
@@ -55,7 +66,6 @@ return [
         ],
         'schedule' => [
             'name'        => 'Every 2 hours',
-            'merchant_id' => '100000Razorpay',
             'type'        => 'settlement',
             'period'      => 'hourly',
             'interval'    => 2,
@@ -90,7 +100,6 @@ return [
         ],
         'schedule' => [
             'name'        => 'Every Tuesday',
-            'merchant_id' => '100000Razorpay',
             'type'        => 'settlement',
             'period'      => 'weekly',
             'interval'    => 1,
@@ -118,13 +127,12 @@ return [
         ],
         'schedule' => [
             'name'        => 'End of Month',
-            'merchant_id' => '100000Razorpay',
             'type'        => 'settlement',
             'period'      => 'monthly-date',
             'interval'    => null,
             'anchor'      => -1,
             'delay'       => 2,
-            'next_run'    => null,
+            'next_run'    => 1454178600,
         ],
     ],
 
@@ -139,13 +147,12 @@ return [
         ],
         'schedule' => [
             'name'        => '10th of Month',
-            'merchant_id' => '100000Razorpay',
             'type'        => 'settlement',
             'period'      => 'monthly-date',
             'interval'    => null,
             'anchor'      => 10,
             'delay'       => 2,
-            'next_run'    => null,
+            'next_run'    => 1452364200,
         ],
     ],
 
@@ -160,13 +167,12 @@ return [
         ],
         'schedule' => [
             'name'        => 'Second week of Month',
-            'merchant_id' => '100000Razorpay',
             'type'        => 'settlement',
             'period'      => 'monthly-week',
             'interval'    => null,
             'anchor'      => 2,
             'delay'       => 2,
-            'next_run'    => null,
+            'next_run'    => 1452364200,
         ],
     ],
 
@@ -182,13 +188,12 @@ return [
         ],
         'schedule' => [
             'name'        => 'Last week of Month',
-            'merchant_id' => '100000Razorpay',
             'type'        => 'settlement',
             'period'      => 'monthly-week',
             'interval'    => null,
             'anchor'      => -1,
             'delay'       => 2,
-            'next_run'    => null,
+            'next_run'    => 1454170000,
         ],
     ],
 ];

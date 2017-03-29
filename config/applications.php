@@ -58,8 +58,9 @@ return array(
 
     'maxmind' => array(
         'mock'      => env('MAXMIND_MOCK', false),
-        'id'        => env('MAXMIND_ID', 113707),
-        'secret'    => env('MAXMIND_SECRET')
+        'id'        => '115820',
+        'secret'    => env('MAXMIND_SECRET'),
+        'secretv2'  => env('MAXMIND_V2_SECRET')
     ),
 
     'kotak' => array(
@@ -92,4 +93,18 @@ return array(
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
     ],
+
+    'drip' => [
+        'mock'      => env('DRIP_MOCK', false),
+        'url'       => env('DRIP_URL'),
+        'accountId' => env('DRIP_ACCOUNT_ID'),
+        'token'     => env('DRIP_TOKEN')
+    ],
+
+    'gateway_downtime' => [
+        'statuscake' => [
+            'username' => env('STATUSCAKE_USERNAME'),
+            'api_key'  => env('STATUSCAKE_API_KEY')
+        ]
+    ]
 );

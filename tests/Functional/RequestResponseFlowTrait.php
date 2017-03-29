@@ -12,7 +12,7 @@ trait RequestResponseFlowTrait
     use EntityFetchTrait;
 
     /**
-     * Auths a payment & tests it is corrrectly done
+     * Auths a payment & tests it is correctly done
      */
     public function runRequestResponseFlow($data, Closure $closure = null)
     {
@@ -28,7 +28,6 @@ trait RequestResponseFlowTrait
             {
                 $response = $this->sendRequest($data['request']);
             }
-
         }
         catch (Exception\BaseException $e)
         {
@@ -230,6 +229,13 @@ trait RequestResponseFlowTrait
             $request['content']['key_id'] = $this->ba->getKey();
         }
 
+        if ($this->ba->isAccountAuth() === true)
+        {
+            $accountHeader = $this->ba->getAccountHeader();
+
+            $request['server'] += $this->transformHeadersToServerVars($accountHeader);
+        }
+
         /**
          * This is the function signature
          *
@@ -272,8 +278,7 @@ trait RequestResponseFlowTrait
             return $closure();
         }
         catch (\Exception $e)
-        {
-            ;
+        {;
             // throw $e;
         }
     }

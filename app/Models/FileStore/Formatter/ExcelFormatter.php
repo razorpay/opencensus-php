@@ -6,6 +6,16 @@ use Excel;
 
 class ExcelFormatter
 {
+    /**
+     * Creates Excel Object
+     *
+     * @param array  $data         Contents of Excel File
+     * @param string $name         Name of Excel File
+     * @param array  $columnFormat Column Format
+     * @param string $sheetName    Sheet Name
+     *
+     * @return Excel excel object
+     */
     public static function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
     {
         $excel = Excel::create(
@@ -34,11 +44,22 @@ class ExcelFormatter
         return $excel;
     }
 
+    /**
+     * Write the content to excel file
+     *
+     * @param array  $content      Content of file
+     * @param string $name         Name of file
+     * @param array  $columnFormat Column format of file
+     * @param string $extension    Extension of file to be saved as
+     * @param string $path         Path of file to be stored as
+     *
+     * @return array containg full file path of excel file stored
+     */
     public static function writeToExcelFile($content, $name, $columnFormat, $extension, $path)
     {
         $excel = self::createExcelObject($content, $name, $columnFormat);
 
-        $fileMetadata = $excel->store($extension, storage_path($path), true);
+        $fileMetadata = $excel->store($extension, $path, true);
 
         return $fileMetadata;
     }

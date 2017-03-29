@@ -121,7 +121,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => 'There is a problem with the gateway causing the payment to fail',
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
             'status_code' => 502,
@@ -260,7 +260,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'description' => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
             'status_code' => 500,
@@ -276,7 +276,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'description' => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
             'status_code' => 500,
@@ -308,7 +308,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'description' => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
             'status_code' => 500,
@@ -317,6 +317,22 @@ return [
             'class' => RZP\Exception\RuntimeException::class,
             'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
+    ],
+
+    'testStatusAfterFailedAutoCapturePayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        ]
     ],
 
     'cybersourceRecurringEntity' => [

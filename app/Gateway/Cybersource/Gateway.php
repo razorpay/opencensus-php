@@ -214,7 +214,7 @@ class Gateway extends Base\Gateway
 
             $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
 
-            $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+            $this->createGatewayRefundEntity($gatewayAttributes, $input);
         }
         catch (SoapFault $exception)
         {
@@ -755,7 +755,7 @@ class Gateway extends Base\Gateway
     {
         $key = $this->getCacheKey($input['payment']['id']);
 
-        return Cache::store($this->secureCacheDriver)->get($key);
+        return Cache::store($this->secureCacheDriver)->get($key) ?: [];
     }
 
     protected function getAttributeFromAuthEnrollResponse(array $input, array $response)
@@ -1048,7 +1048,7 @@ class Gateway extends Base\Gateway
         $content = [];
 
         $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
-        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['refund']['id'];
 
         $content[F::CC_CREDIT_SERVICE] = [
             F::RUN                => 'true',
@@ -1064,6 +1064,19 @@ class Gateway extends Base\Gateway
             F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
         ];
 
+        $content[F::MERCHANT_DEFINED_DATA] = [
+            F::MDD_FIELD => [
+                [
+                    'id' => '1',
+                    '_'  => UserDefinedField::CURRENT_VERSION
+                ],
+                [
+                    'id' => '2',
+                    '_'  => $input['payment']['id']
+                ]
+            ]
+        ];
+
         $request = $this->getStandardSoapRequest($content);
 
         return $request;
@@ -1074,7 +1087,7 @@ class Gateway extends Base\Gateway
         $content = [];
 
         $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
-        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['refund']['id'];
 
         $content[F::CC_AUTH_REVERSAL_SERVICE] = [
             F::RUN              => 'true',
@@ -1083,7 +1096,20 @@ class Gateway extends Base\Gateway
 
         $content[F::PURCHASE_TOTALS] = [
             F::CURRENCY           => $input['payment']['currency'],
-            F::GRAND_TOTAL_AMOUNT => ($input['payment']['amount'] / 100)
+            F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
+        ];
+
+        $content[F::MERCHANT_DEFINED_DATA] = [
+            F::MDD_FIELD => [
+                [
+                    'id' => '1',
+                    '_'  => UserDefinedField::CURRENT_VERSION
+                ],
+                [
+                    'id' => '2',
+                    '_'  => $input['payment']['id']
+                ]
+            ]
         ];
 
         $request = $this->getStandardSoapRequest($content);

@@ -74,7 +74,7 @@ class Server extends Base\Mock\Server
         $response =  [
             ResponseFields::STATUS             => Constants::YES,
             ResponseFields::MERCHANT_REFERENCE => $data[RequestFields::MERCHANT_REFERENCE],
-            ResponseFields::BANK_REFERENCE_ID  => mt_rand(1000000000, 9999999999),
+            ResponseFields::BANK_REFERENCE_ID  => 9999999999,
             ResponseFields::ITEM_CODE          => $data[RequestFields::ITEM_CODE],
             ResponseFields::AMOUNT             => $data[RequestFields::AMOUNT],
             ResponseFields::CURRENCY_CODE      => Currency::INR,
@@ -104,14 +104,21 @@ class Server extends Base\Mock\Server
             ResponseFields::PAYEE_ID            => $input[RequestFields::VERIFY_PAYEE_ID],
             ResponseFields::ITEM_CODE           => $input[RequestFields::VERIFY_ITC],
             ResponseFields::MERCHANT_REFERENCE  => $input[RequestFields::VERIFY_PRN],
-            ResponseFields::DATE                => $input[RequestFields::VERIFY_AMT],
-            ResponseFields::VERIFY_RESPONSE_AMT => $input[RequestFields::VERIFY_DATE],
+            // Converting response amount to string as array_flip needs string
+            ResponseFields::VERIFY_RESPONSE_AMT => (string) $input[RequestFields::VERIFY_AMT],
+            ResponseFields::DATE                => $input[RequestFields::VERIFY_DATE],
             ResponseFields::BANK_REFERENCE_ID   => '',
             ResponseFields::PAYMENT_STATUS      => Constants::SUCCESS,
         ];
 
         // for test cases
         $this->content($response);
+
+        // For null verify response
+        if ($response === "")
+        {
+            return $response;
+        }
 
         $response = array_flip($response);
 

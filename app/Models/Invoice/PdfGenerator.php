@@ -51,19 +51,6 @@ class PdfGenerator extends Base\Core
 
     public function generate()
     {
-        //
-        // Temporary:
-        // - There are issues with pdf file - layout, fonts.
-        // - Dependencies to go life as part of infra code in a day or two.
-        //
-        // Once above issues are resolved, following line will be removed.
-        //
-        // Returning null means, pdf won't be generated and mails will be sent
-        // without pdf.
-        //
-
-        return null;
-
         $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
         $timeStarted = microtime(true);
@@ -88,6 +75,7 @@ class PdfGenerator extends Base\Core
                     ->mime('application/pdf')
                     ->store(FileStore\Store::S3)
                     ->entity($this->invoice)
+                    ->merchant($this->invoice->merchant)
                     ->type(FileStore\Type::INVOICE_PDF)
                     ->save()
                     ->getFullFilePath();
@@ -96,7 +84,13 @@ class PdfGenerator extends Base\Core
     protected function getPdfContent(string $html)
     {
         $options = [
-            'ignoreWarnings' => false,
+            'print-media-type',
+            'footer-font-size'  => '9',
+            'footer-center'     => 'Page [page] of [topage]',
+            'dpi'               => 290,
+            'zoom'              => 1.28,
+            'ignoreWarnings'    => false,
+            'encoding'          => 'UTF-8',
         ];
 
         $pdf = (new Pdf($options))->addPage($html);
@@ -105,7 +99,7 @@ class PdfGenerator extends Base\Core
 
         if ($pdfContent === false)
         {
-            throw new Exception\LogicException('Pdf generation failed: Content is empty.');
+            throw new Exception\LogicException('Pdf generation failed: ' . $pdf->getError());
         }
 
         return $pdfContent;
@@ -124,8 +118,6 @@ class PdfGenerator extends Base\Core
             <!DOCTYPE html>
             <html>
             <head>
-                <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
-                </link>
                 <style>
                     $css
                 </style>

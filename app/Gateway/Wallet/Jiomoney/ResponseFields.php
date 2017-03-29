@@ -24,6 +24,7 @@ class ResponseFields
     const STATUS               = 'STATUS';
     const TXN_STATUS           = 'TXN_STATUS';
     const JM_TRAN_REF_NO       = 'JM_TRAN_REF_NO';
+    const TXN_TIME_STAMP       = 'TXN_TIME_STAMP';
 
     /**
      * This provides the list of fields returned for callback and

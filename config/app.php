@@ -93,7 +93,7 @@ return array(
 
     'key' => env('ENCRYPTION_KEY'),
 
-    'cipher' => MCRYPT_RIJNDAEL_128,
+    'cipher' => env('ENCRYPTION_CIPHER', 'AES-256-CBC'),
 
     /*
     |--------------------------------------------------------------------------
@@ -174,9 +174,10 @@ return array(
          */
         Aws\Laravel\AwsServiceProvider::class,
         Jenssegers\Agent\AgentServiceProvider::class,
-        Maknz\Slack\SlackServiceProvider::class,
+        Razorpay\Slack\Laravel\ServiceProvider::class,
         Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
+        Http\Httplug\HttplugServiceProvider::class,
 
     ),
 
@@ -220,6 +221,7 @@ return array(
         'File'          => Illuminate\Support\Facades\File::class,
         'Gate'          => Illuminate\Support\Facades\Gate::class,
         'Hash'          => Illuminate\Support\Facades\Hash::class,
+        'Httplug'       => Http\Httplug\Facade\Httplug::class,
         'Lang'          => Illuminate\Support\Facades\Lang::class,
         'Log'           => Illuminate\Support\Facades\Log::class,
         'Mail'          => Illuminate\Support\Facades\Mail::class,
@@ -246,7 +248,7 @@ return array(
         // Custom Facade
         'Excel'         => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'           => Aws\Laravel\AwsFacade::class,
-        'Slack'         => Maknz\Slack\Facades\Slack::class
+        'Slack'         => Razorpay\Slack\Laravel\Facade::class,
     ),
 
     'context' => env('CONTEXT'),

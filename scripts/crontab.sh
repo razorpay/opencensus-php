@@ -61,8 +61,7 @@ add_cron "0 6 * * *"       "scorecard_prod"            POST "$BASE_URL/scorecard
 add_cron "0 * * * *"       "prod_international_curren" POST "$BASE_URL/international/USD/rates"          ""                              $LIVE_AUTH
 
 # Settlement
-add_cron "30 3 * * 1-6"    "settlement_prod_live"      POST "$BASE_URL/settlements/initiate/kotak"       ""                              $LIVE_AUTH
-add_cron "1 5-18 * * 1-6"  "settlement_schedule_prod"  POST "$BASE_URL/settlements/initiate2/kotak"      ""                              $LIVE_AUTH
+add_cron "1 5-18 * * 1-6"  "settlement_prod_live"      POST "$BASE_URL/settlements/initiate/kotak"       ""                              $LIVE_AUTH
 
 # Verify
 add_cron "* * * * *"       "payment_verify_prod_live"  POST "$BASE_URL/payments/verify/payments_failed"  ""                              $LIVE_AUTH
@@ -82,6 +81,7 @@ add_cron "0 19 * * *"      "merch_holiday_notify_hol"  POST "$BASE_URL/merchants
 
 # Migration
 add_cron "*/10 * * * *"    "prod_merchant_details_mig" POST "$BASE_URL/merchant/activation/migrate"      "count=400"                     $LIVE_AUTH
+add_cron "0 2 * * *"       "prod_merchant_schdule_mig" POST "$BASE_URL/merchants/schedules/migrate"                                      $LIVE_AUTH
 
 # Refund
 add_cron "0 3 * * *"        "refund_excel_generate"          POST "$BASE_URL/refunds/netbanking/excel"                   ""                              $LIVE_AUTH

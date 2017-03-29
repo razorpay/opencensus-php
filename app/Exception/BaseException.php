@@ -4,6 +4,7 @@ namespace RZP\Exception;
 
 use Exception;
 use ApiResponse;
+use RZP\Error\Error;
 
 class BaseException extends Exception
 {
@@ -27,6 +28,15 @@ class BaseException extends Exception
         parent::__construct($message, 0, $previous);
 
         $this->code = $code;
+    }
+
+    protected function initError($code)
+    {
+        Error::checkErrorCode($code);
+
+        $error = new Error($code);
+
+        $this->setError($error);
     }
 
     protected function setError($error)

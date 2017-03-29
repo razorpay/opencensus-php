@@ -80,7 +80,7 @@ class CreateTerminals extends Migration
 
             $table->tinyInteger(Terminal::RECURRING)
                   ->unsigned()
-                  ->default(Recurring::NON_RECURRING);
+                  ->default(1);
 
             $table->tinyInteger(Terminal::SHARED)
                    ->default(0);
@@ -118,6 +118,8 @@ class CreateTerminals extends Migration
             $table->index(Terminal::GATEWAY);
             $table->index(Terminal::DELETED_AT);
             $table->index(Terminal::ENABLED);
+            $table->index(Terminal::NETWORK_CATEGORY);
+            $table->index(Terminal::GATEWAY_MERCHANT_ID);
         });
     }
 

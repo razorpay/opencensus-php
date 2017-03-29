@@ -78,11 +78,35 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function uploadActivationFile(array $input)
-    {
-        $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
 
-        $merchantDetails->getValidator()->validateIsNotLocked();
+    public function uploadActivationFileAdmin(string $merchantId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        // Do not check if the activation form is locked
+        return $this->uploadActivationFile($merchant, $input, false);
+    }
+
+    public function uploadActivationFileMerchant(array $input)
+    {
+        return $this->uploadActivationFile($this->merchant, $input);
+    }
+
+    /**
+     * Upload the file passed in $input for $merchant
+     * @param  Merchant\Entity      $merchant     Merchant Entity
+     * @param  array   $input       Input with the file
+     * @param  boolean $validateLock If true, blocks edits if the form is locked. Can be set to false
+     *                               to bypass locked forms
+     */
+    public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
+    {
+        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+
+        if ($validateLock === true)
+        {
+            $merchantDetails->getValidator()->validateIsNotLocked();
+        }
 
         $merchantDetails->edit($input);
 
@@ -90,14 +114,15 @@ class Service extends Base\Service
 
         foreach ($input as $key => $value)
         {
-            $fileName = 'api/' .$this->merchant->getId() .'/' .$key;
+            $fileName = 'api/' . $merchant->getId() .'/' .$key;
 
             $file = $this->createFile(
                 $merchantDetails,
                 $value->extension(),
                 $value,
                 $fileName,
-                $key);
+                $key,
+                $merchant);
 
             $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
@@ -119,7 +144,7 @@ class Service extends Base\Service
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        $merchantDetails->edit($input, 'editAfterLock');
+        $merchantDetails->edit($input);
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -172,7 +197,7 @@ class Service extends Base\Service
     {
         return (($response['can_submit'] === true) and
                 (isset($input[Detail\Entity::SUBMIT]) === true) and
-                    ($input[Detail\Entity::SUBMIT] === '1'));
+                ($input[Detail\Entity::SUBMIT] === '1'));
     }
 
     protected function markSubmitted($merchantDetails)
@@ -194,6 +219,7 @@ class Service extends Base\Service
                                     $file,
                                     string $fileName,
                                     string $type,
+                                    Merchant\Entity $merchant,
                                     string $store = FileStore\Store::S3)
     {
         $creator = new FileStore\Creator;
@@ -204,6 +230,7 @@ class Service extends Base\Service
                         ->store($store)
                         ->type($type)
                         ->entity($merchantDetail)
+                        ->merchant($merchant)
                         ->save()
                         ->get();
 
@@ -221,9 +248,16 @@ class Service extends Base\Service
 
         $requiredFields = [];
 
-        $totalFields = count(ValidationFields::DASHBOARD_FIELDS);
+        $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
-        foreach (ValidationFields::DASHBOARD_FIELDS as $key)
+        if ($merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+        }
+
+        $totalFields = count($validationFields);
+
+        foreach ($validationFields as $key)
         {
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
                (is_null($merchantDetailsArr[$key]) === true) or
@@ -256,6 +290,8 @@ class Service extends Base\Service
 
             $response['can_submit'] = true;
         }
+
+        $response['activated'] = (int) $merchantDetails->merchant->isActivated();
 
         return $response;
     }

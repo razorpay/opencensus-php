@@ -79,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::RECURRING,
         self::USED_AT,
+        self::CREATED_AT
     );
 
     protected $defaults = array(

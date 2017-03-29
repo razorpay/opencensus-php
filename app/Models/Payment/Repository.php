@@ -48,6 +48,7 @@ class Repository extends Base\Repository
         Entity::GATEWAY            => 'sometimes',
         Entity::EMAIL              => 'sometimes|email',
         Entity::MERCHANT_ID        => 'sometimes|alpha_num',
+        Entity::TRANSFER_ID        => 'sometimes|alpha_num|size:14',
         Entity::CARD_ID            => 'sometimes|alpha_num|size:14',
         Entity::CAPTURED           => 'sometimes|in:0,1',
         Entity::WALLET             => 'sometimes|custom',
@@ -66,6 +67,11 @@ class Repository extends Base\Repository
 
     protected $esWhitelistedParams = [
         Entity::NOTES
+    ];
+
+    protected $signedIds = [
+        Entity::ORDER_ID,
+        Entity::INVOICE_ID,
     ];
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
@@ -597,20 +603,6 @@ class Repository extends Base\Repository
         return parent::addQueryParamEmail($query, $params);
     }
 
-    protected function addQueryParamOrderId($query, $params)
-    {
-        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
-
-        $query->where(Entity::ORDER_ID, '=', $orderId);
-    }
-
-    protected function addQueryParamInvoiceId($query, $params)
-    {
-        $invoiceId = (new Invoice\Entity)->verifyIdAndSilentlyStripSign($params[Entity::INVOICE_ID]);
-
-        $query->where(Entity::INVOICE_ID, '=', $invoiceId);
-    }
-
     protected function joinQueryCard($query)
     {
         $joins = $query->getQuery()->joins;
@@ -689,7 +681,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(60)
+                    ->limit(75)
                     ->get();
     }
 
@@ -716,7 +708,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(60)
+                    ->limit(75)
                     ->get();
     }
 
@@ -729,6 +721,14 @@ class Repository extends Base\Repository
                        'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
+    }
+
+    public function findByTransferIdAndMerchant(string $transferId, string $accountId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TRANSFER_ID, $transferId)
+                    ->merchantId($accountId)
+                    ->firstOrFailPublic();
     }
 
     public function fetchCapturedSummaryBetweenTimestamp($from, $to)

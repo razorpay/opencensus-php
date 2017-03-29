@@ -351,7 +351,7 @@ class Verify extends Base\Core
      * @param array $result             Raw result array
      * @param array $times              Array containing time metrics
      * @param string $filter            Filter used to fetch payments
-     * @param arary  $bucketFilter      Bucket filter used to fetch payments
+     * @param array  $bucketFilter      Bucket filter used to fetch payments
      * @param integer $verifiableCount  Max payments waiting to be verified
      * @return array with processed result
      */
@@ -604,7 +604,7 @@ class Verify extends Base\Core
 
     /**
      * @param string $filter filter for which boundary has to be returned
-     * @return array  Arary containg boundary with expiry time
+     * @return array  Array containg boundary with expiry time
      * @throws Exception\LogicException
      */
     public function getBoundaryInSeconds(string $filter)

@@ -16,6 +16,7 @@ use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants;
 use RZP\Constants\MailTags;
 use RZP\Models\Payment\Verify\Verify;
 
@@ -123,10 +124,17 @@ class Service extends Base\Service
      * @param  string $id
      * @param  array  $input
      *
-     * @return Payment\Entity
+     * @return array
      */
     public function refund($id, array $input)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_REQUEST,
+            [
+                'payment_id' => $id,
+                'input'      => $input
+            ]);
+
         $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 
         return $refund->toArrayPublic();
@@ -369,7 +377,7 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+        $transaction = $this->repo->transaction->findByEntityId($payment->getId(), $this->merchant, true);
 
         return $transaction->toArrayPublic();
     }
@@ -389,6 +397,53 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    /**
+     * Transfers a payment
+     * /payment/:id/transfer
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function transfer(string $id, array $input) : array
+    {
+        $transfers = $this->getNewProcessor()->transfer($id, $input);
+
+        return $transfers->toArrayPublic();
+    }
+
+    /**
+     * Get Transfers for a payment_id
+     *
+     * @param  string $id   Payment ID
+     * @return array
+     */
+    public function getTransfers(string $id) : array
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $id, $this->merchant);
+
+        return $transfers->toArrayPublic();
+    }
+
+    /**
+     * Create a payout from a payment
+     *
+     * @param string    $id
+     * @param array     $input
+     *
+     * @return array
+     */
+    public function payout(string $id, array $input) : array
+    {
+        $payout = $this->getNewProcessor()->payout($id, $input);
+
+        return $payout->toArrayPublic();
+    }
 
     /**
      * If a payment has been captured on gateway but not on the api side,
@@ -857,12 +912,16 @@ class Service extends Base\Service
         {
             $this->merchant = $payment->merchant;
 
-            $res = $this->getNewProcessor()->autoCapturePayment($payment);
-
-            if ($res)
+            try
             {
-                $count++;
+                $this->getNewProcessor()->autoCapturePayment($payment);
             }
+            catch (Exception\RecoverableException $e)
+            {
+                continue;
+            }
+
+            $count++;
         }
 
         return ['count' => $count];

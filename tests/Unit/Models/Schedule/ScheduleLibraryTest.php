@@ -19,7 +19,7 @@ class ScheduleLibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $basicT3Schedule = new Schedule\Entity($data['schedule']);
+        $basicT3Schedule = (new Schedule\Entity)->build($data['schedule']);
 
         $this->runCaseWiseScheduleTest($basicT3Schedule, $data['cases']);
     }
@@ -28,7 +28,7 @@ class ScheduleLibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $twoHourSchedule = new Schedule\Entity($data['schedule']);
+        $twoHourSchedule = (new Schedule\Entity)->build($data['schedule']);
 
         $this->runCaseWiseScheduleTest($twoHourSchedule, $data['cases']);
     }
@@ -37,7 +37,7 @@ class ScheduleLibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $tuesdaySchedule = new Schedule\Entity($data['schedule']);
+        $tuesdaySchedule = (new Schedule\Entity)->build($data['schedule']);
 
         $this->runCaseWiseScheduleTest($tuesdaySchedule, $data['cases']);
     }
@@ -46,7 +46,7 @@ class ScheduleLibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $endMonthSchedule = new Schedule\Entity($data['schedule']);
+        $endMonthSchedule = (new Schedule\Entity)->build($data['schedule']);
 
         $this->runCaseWiseScheduleTest($endMonthSchedule, $data['cases']);
     }
@@ -55,7 +55,7 @@ class ScheduleLibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $tenthOfMonthSchedule = new Schedule\Entity($data['schedule']);
+        $tenthOfMonthSchedule = (new Schedule\Entity)->build($data['schedule']);
 
         $this->runCaseWiseScheduleTest($tenthOfMonthSchedule, $data['cases']);
     }
@@ -64,7 +64,7 @@ class ScheduleLibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $secondWeekSchedule = new Schedule\Entity($data['schedule']);
+        $secondWeekSchedule = (new Schedule\Entity)->build($data['schedule']);
 
         $this->runCaseWiseScheduleTest($secondWeekSchedule, $data['cases']);
     }
@@ -73,9 +73,22 @@ class ScheduleLibraryTest extends TestCase
     {
         $data = $this->testData[__FUNCTION__];
 
-        $lastWeekSchedule = new Schedule\Entity($data['schedule']);
+        $lastWeekSchedule = (new Schedule\Entity)->build($data['schedule']);
 
         $this->runCaseWiseScheduleTest($lastWeekSchedule, $data['cases']);
+    }
+
+    public function testTimedSchedule()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $timedSchedule = (new Schedule\Entity)->build($data['schedule']);
+
+        $timedSchedule->updateNextRun();
+
+        $calculatedNextRun = $this->getTimeObject($timedSchedule->getNextRun());
+
+        $this->assertEquals($data['schedule']['hour'], $calculatedNextRun->hour);
     }
 
     private function runCaseWiseScheduleTest($schedule, $cases)
@@ -101,7 +114,11 @@ class ScheduleLibraryTest extends TestCase
 
     private function getFormattedTime($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')
-                                            ->format('Y-m-d H:i:s');
+        return $this->getTimeObject($timestamp)->format('Y-m-d H:i:s');
+    }
+
+    private function getTimeObject($timestamp)
+    {
+        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
     }
 }

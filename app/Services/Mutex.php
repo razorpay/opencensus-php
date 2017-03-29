@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use Redis;
+use Illuminate\Support\Facades\Redis;
 use Predis\PredisException;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -100,7 +100,7 @@ class Mutex
      *
      * @return boolean
      */
-    public function acquire($resource, $ttl = 60)
+    protected function acquireNoWait($resource, $ttl = 60) : bool
     {
         $redis = Redis::getFacadeRoot();
 
@@ -127,6 +127,61 @@ class Mutex
         }
 
         return false;
+    }
+
+    /**
+     * Acquires lock on a resource
+     * Delays between retry is at least 100 milliseconds since anything below
+     * that can attributed to i/o and other random delays.
+     *
+     * @param string $resource      Key on which to acquire lock
+     * @param int    $ttl           Time delay before lock is automatically released
+     * @param int    $retryCount    Number of times to retry for acquiring lock
+     * @param int    $minRetryDelay Minimum time to wait before retry in millisec
+     * @param int    $maxRetryDelay Maximum time to wait before retry in millisec
+     *
+     * @return bool Whether finally lock was acquired or not
+     */
+    public function acquire(
+        $resource,
+        $ttl = 60,
+        $retryCount = 0,
+        $minRetryDelay = 100,
+        $maxRetryDelay = 200) : bool
+    {
+        // max and min retry delay is in millisec
+        if (($retryCount > 0) and
+            ($maxRetryDelay - $minRetryDelay < 100))
+        {
+            throw new Exception\InvalidArgumentException(
+                'Retry delay difference between min and max not enough.');
+        }
+
+        $acquired = false;
+
+        do
+        {
+            // Try to acquire lock
+            $acquired = $this->acquireNoWait($resource, $ttl);
+
+            // If acquired then get out of loop
+            if ($acquired === true)
+            {
+                break;
+            }
+
+            // Insert a random delay
+            $delay = mt_rand($minRetryDelay, $maxRetryDelay);
+
+            // usleep works on microsec. delay is in millisec so multiply by 1000
+            usleep($delay * 1000);
+
+            // Reduce retry count
+            $retryCount--;
+        }
+        while ($retryCount >= 0);
+
+        return $acquired;
     }
 
     /**
@@ -163,13 +218,17 @@ class Mutex
         $resource,
         callable $callback,
         $ttl = 60,
-        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS)
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+        $retryCount = 0,
+        $minRetryDelay = 100,
+        $maxRetryDelay = 200)
     {
         $ret = null;
 
         try
         {
-            $acquired = $this->acquire($resource, $ttl);
+            $acquired = $this->acquire(
+                $resource, $ttl, $retryCount, $minRetryDelay, $maxRetryDelay);
 
             if ($acquired === false)
             {

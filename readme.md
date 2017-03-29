@@ -8,6 +8,12 @@
 
 * Install [composer](https://getcomposer.org/download/) PHP package manager
 
+
+### (Docker)
+
+* [Refer Docker](readme-docker.md)
+
+
 ### ( Vagrant / Homestead )
 
 * Install Virtualbox & Vagrant
@@ -17,6 +23,7 @@
 * Map api.razorpay.dev to /path/to/api/public in sites [ ~/.homestead/Homestead.yaml ]
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
+
 
 ### ( Ubuntu )
 
@@ -35,8 +42,16 @@
 
 ### Common Instruction
 
+*PHP*: Please make sure you have the `gmp`, `bcmath` extensions installed. Mcrypt may be required if you are working on certain features and PHP <=7.0. This is on top of what [laravel requires](https://laravel.com/docs/5.2/installation#server-requirements):
+
+- PHP >= 5.5.9
+- OpenSSL PHP Extension
+- PDO PHP Extension
+- Mbstring PHP Extension
+- Tokenizer PHP Extension
+
 * `chmod -R o+wx storage/`
-* `php composer.phar install` to install project dependencies
+* `composer install` to install project dependencies # Google online on how to install composer globally.
 * Create 2 databases (one is for live and another for test accounts). (`api_live`, `api_test` are sample names)
 * Copy over `environment/.env.sample` to `environment/.env.dev` and provide both database usernames and password
 * Copy over `environment/env.sample.php` to `environment/env.php`. This specifies the `dev` environment for local development.

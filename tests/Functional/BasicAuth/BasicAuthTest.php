@@ -133,6 +133,26 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testPrivateAuthKeyNotExpired()
+    {
+        $this->ba->privateAuth();
+
+        // Key expires 2 minutes from now
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 120]);
+
+        $this->startTest();
+    }
+
+    public function testPrivateAuthKeyExpired()
+    {
+        $this->ba->privateAuth();
+
+        // Key expired 20 seconds ago
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() - 20]);
+
+        $this->startTest();
+    }
+
     public function testBasicAuthRealm()
     {
         ;
@@ -189,12 +209,40 @@ class BasicAuthTest extends TestCase
 
         $this->ba->noAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testAppAuthWithAccount()
+    {
+        $this->ba->appAuth();
+
+        $this->ba->addAccountAuth('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testAdminAuthWithAccount()
+    {
+        $this->ba->adminAuth();
+
+        $this->ba->addAccountAuth('10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testAccountAuthInvalidId()
+    {
+        $this->ba->appAuth();
+
+        $this->ba->addAccountAuth('12345');
+
+        $this->startTest();
     }
 
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
         $name = $trace[1]['function'];
 
         $testData = $this->testData[$name];

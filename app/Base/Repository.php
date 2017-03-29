@@ -9,6 +9,7 @@ use RZP\Models;
 use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Trace;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -40,7 +41,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         //
         // Currently, using $this->manager because
-        // we have $this->repo being used for creting queries.
+        // we have $this->repo being used for creating queries.
         // Once we shift to the new way of querying via newQuery()
         // then we can change this back to $this->repo. Till then,
         // we will need to keep use of $this->manager to minimum.
@@ -67,6 +68,36 @@ class Repository extends \Razorpay\Spine\Repository
     public function findOrFailPublic($id, $columns = array('*'))
     {
         return $this->newQuery()->findOrFailPublic($id, $columns);
+    }
+
+    public function findOrFailPublicWithRelations(
+        string $id,
+        array $relations = [],
+        array $columns = array('*'))
+    {
+        $query = $this->newQuery();
+
+        if (empty($relations) === false)
+        {
+            $query->with($relations);
+        }
+
+        return $query->findOrFailPublic($id, $columns);
+    }
+
+    public function findWithRelations(
+        string $id,
+        array $relations = [],
+        array $columns = array('*'))
+    {
+        $query = $this->newQuery();
+
+        if (empty($relations) === false)
+        {
+            $query->with($relations);
+        }
+
+        return $query->find($id, $columns);
     }
 
     public function findMany($ids, $columns = array('*'))
@@ -129,6 +160,20 @@ class Repository extends \Razorpay\Spine\Repository
     public function getTableName()
     {
         return E::getTableNameForEntity($this->entity);
+    }
+
+    /**
+     * Instantiates a query with an entity having timestamps set to false.
+     * This is to avoid setting the updated_at field.
+     * @return Query\Builder queryBuilder object
+     */
+    public function newQueryWithoutTimestamps()
+    {
+        $entity = $this->getEntityObject();
+
+        $entity->timestamps = false;
+
+        return $entity->setConnection($this->connection)->newQuery();
     }
 
     protected function processDbQueryFailure($operation, $attributes = null)
@@ -261,16 +306,20 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
-     * Fetches entity with given id with a mysql lock for update
+     * Fetches entity with given id with a MySQL lock for update
      *
-     * @param string       $id
-     * @param bool|boolean $withTrashed - Whether to include soft deleted results?
+     * @param string $id
+     * @param bool   $withTrashed - Whether to include soft deleted results?
      *
      * @return Models\Base\PublicEntity
+     * @throws Exception\LogicException
      */
     public function lockForUpdate(string $id, bool $withTrashed = false)
     {
-        assert($this->isTransactionActive());
+        if ($this->isTransactionActive() === false)
+        {
+            throw new Exception\LogicException('Attempted lock-for-update outside a DB transaction');
+        }
 
         $query = $this->newQuery()->lockForUpdate();
 
@@ -315,12 +364,12 @@ class Repository extends \Razorpay\Spine\Repository
         }
         catch (\Exception $ex)
         {
-            // Shouldn't fail for any reason
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::ES_SAVE_FAILED,
-                $entity->toArray());
-
-            $this->trace->traceException($ex);
+                $entity->toArray()
+            );
         }
     }
 

@@ -22,6 +22,7 @@ use RZP\Models\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Action;
@@ -56,6 +57,8 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->runPaymentInputValidations($payment, $input);
+
+        $this->validateOfferIfApplicable($payment);
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -228,7 +231,7 @@ trait Authorize
         // Except in the cases of recurring, because, here we know that
         // we have manually skipped/by-passed the 2FA.
 
-        if ($payment->terminal->getRecurring() === Terminal\Recurring::RECURRING_N3DS)
+        if ($payment->terminal->isNon3DSRecurring() === true)
         {
             $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
         }
@@ -311,10 +314,10 @@ trait Authorize
     }
 
     /**
-     * This is a hack authorize function specially for authorizing
-     * migs pg payments. The limit there is that, migs provides
-     * reconciliation only for three days. If we miss any failed payment
-     * reconciliation there then we need to do it manually later.
+     * This is a hack authorize function specially for authorizing payments
+     * from gateways who provide payment information through their verify api's
+     * for a limited time frame (e.g axis_migs, jiomoney). If we miss any failed
+     * payment reconciliation there then we need to do it manually later.
      *
      * @param Payment\Entity $payment
      * @param array $input
@@ -331,10 +334,12 @@ trait Authorize
                 'Non failed payment given for authorization');
         }
 
-        if ($payment->getGateway() !== Payment\Gateway::AXIS_MIGS)
+        if (in_array($payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Can force authorize only on axis migs gateway');
+                                        'Cannot force authorize on this gateway',
+                                        'gateway',
+                                        $payment->getGateway());
         }
 
         if ($payment->hasCard())
@@ -385,7 +390,26 @@ trait Authorize
 
         $this->verifyPaymentMethodEnabled($payment);
 
+        $this->validatePaymentNetworkSupported($payment);
+
         $this->runInternationalChecks($payment);
+    }
+
+    protected function validatePaymentNetworkSupported(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($merchant->getCategory2() === Terminal\Category::PHARMA))
+        {
+            $card = $payment->card;
+
+            if ($card->getNetworkCode() === Card\Network::DICL)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            }
+        }
     }
 
     // @codingStandardsIgnoreStart
@@ -470,6 +494,11 @@ trait Authorize
         }
     }
 
+    protected function validateOfferIfApplicable(Payment\Entity $payment)
+    {
+        (new Offer\Core)->validateOfferApplicableOnPayment($payment);
+    }
+
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
         // Fees validation can only happen after international validation has gone through
@@ -528,7 +557,7 @@ trait Authorize
         return $phoneBook;
     }
 
-    protected function runInternationalChecks(Payment\Entity$payment)
+    protected function runInternationalChecks(Payment\Entity $payment)
     {
         // return if method is not card or card is not international
         if (($payment->getMethod() !== Method::CARD) or
@@ -1100,7 +1129,8 @@ trait Authorize
 
     protected function getPaymentGatewayRequestData($request, Payment\Entity $payment): array
     {
-        if (Payment\Gateway::supportsAsync($payment->getGateway()))
+        if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
+            (Payment\Gateway::supportsAsync($payment->getGateway()) === true))
         {
             return $this->getAsyncPaymentCreatedResponse($request, $payment);
         }
@@ -1195,6 +1225,8 @@ trait Authorize
                 ($token->isRecurring() === false))
             {
                 $token->setRecurring(true);
+
+                $token->terminal()->associate($payment->terminal);
             }
 
             $this->repo->saveOrFail($token);
@@ -1827,6 +1859,7 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
+
             $this->repo->saveOrFail($payment->terminal);
 
             $this->updateTokenOnAuthorized();

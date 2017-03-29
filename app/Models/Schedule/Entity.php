@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const PERIOD      = 'period';
     const INTERVAL    = 'interval';
     const ANCHOR      = 'anchor';
+    const HOUR        = 'hour';
     const DELAY       = 'delay';
     const NEXT_RUN    = 'next_run';
 
@@ -29,6 +30,7 @@ class Entity extends Base\PublicEntity
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
+        self::HOUR,
         self::DELAY,
         self::NEXT_RUN,
     );
@@ -41,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
+        self::HOUR,
         self::DELAY,
         self::NEXT_RUN,
     );
@@ -53,6 +56,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::INTERVAL => 'int',
         self::ANCHOR   => 'int',
+        self::HOUR     => 'int',
         self::DELAY    => 'int',
         self::NEXT_RUN => 'int',
     ];
@@ -61,20 +65,11 @@ class Entity extends Base\PublicEntity
 
     public function updateNextRun()
     {
-        $lastRun = Carbon::now('Asia/Kolkata');
+        $lastRun = Carbon::createFromTimestamp($this->getNextRun(), 'Asia/Kolkata');
 
-        $stepType = Steps::STEP_LIST[$this->getPeriod()];
+        $currentTime = Carbon::now('Asia/Kolkata');
 
-        $step = 'add' . $stepType;
-
-        $nextRun = $lastRun->$step();
-
-        if($this->getPeriod() !== Period::HOURLY)
-        {
-            $nextRun->hour(0);
-        }
-
-        $nextRun->minute(0)->second(0);
+        $nextRun = Library::computeFutureRun($this, $currentTime);
 
         $this->setNextRun($nextRun->timestamp);
     }
@@ -90,8 +85,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo(
-            'RZP\Models\Merchant\Entity', self::MERCHANT_ID);
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     // ----------------------- Modifiers -------------------------------------------
@@ -116,11 +110,9 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NEXT_RUN]) === false)
         {
-            $format = 'Y-m-d H:i:s';
+            $nextRun = Carbon::today('Asia/Kolkata')->timestamp;
 
-            $istStart = '2000-01-01 00:00:00';
-
-            $input[self::NEXT_RUN] = Carbon::createFromFormat($format, $istStart, 'Asia/Kolkata')->timestamp;
+            $input[self::NEXT_RUN] = $nextRun;
         }
     }
 
@@ -154,6 +146,11 @@ class Entity extends Base\PublicEntity
     public function getAnchor()
     {
         return $this->getAttribute(self::ANCHOR);
+    }
+
+    public function getHour()
+    {
+        return $this->getAttribute(self::HOUR);
     }
 
     public function getDelay()

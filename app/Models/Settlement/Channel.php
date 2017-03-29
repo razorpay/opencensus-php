@@ -6,11 +6,11 @@ use RZP\Models\Payment;
 
 class Channel
 {
-    const KOTAK = 'kotak';
-    const ATOM = 'atom';
+    const KOTAK     = 'kotak';
+    const ATOM      = 'atom';
 
-    public static $gateways = array(
-        self::KOTAK => array(
+    public static $gateways = [
+        self::KOTAK => [
             Payment\Gateway::AMEX,
             Payment\Gateway::AXIS_GENIUS,
             Payment\Gateway::AXIS_MIGS,
@@ -23,17 +23,18 @@ class Channel
             Payment\Gateway::WALLET_PAYUMONEY,
             Payment\Gateway::WALLET_OLAMONEY,
             Payment\Gateway::WALLET_FREECHARGE,
-            Payment\Gateway::WALLET_JIOMONEY
-        ),
-
-        self::ATOM => array(
+            Payment\Gateway::WALLET_JIOMONEY,
+            Payment\Gateway::WALLET_OPENWALLET,
+            Payment\Gateway::MARKETPLACE,
+        ],
+        self::ATOM => [
             Payment\Gateway::ATOM
-        ),
-    );
+        ],
+    ];
 
     public static function getChannels()
     {
-        return [self::KOTAK, self::ATOM];
+        return [self::KOTAK];
     }
 
     public static function getGateways($channel)

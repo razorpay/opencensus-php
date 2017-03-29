@@ -1,4 +1,4 @@
-# Please add all entity update related queries here.
+# Please add all entity UPDATE related queries here.
 # Fixes freecharge payment auth overwritten due to timeout
 
 UPDATE payments
@@ -37,7 +37,7 @@ UPDATE transactions SET entity_id = '771SQRXMmIFk6z' WHERE id = '7BiS2ydjjEvYjX'
 UPDATE refunds SET id = '771SQape9i3V33' WHERE id = '7BiSeqyyAEJhG5';
 UPDATE transactions SET entity_id = '771SQape9i3V33' WHERE id = '7BiSes2dpFKCNT';
 
-# Update Terminals set gateway_acquirer
+# UPDATE Terminals set gateway_acquirer
 UPDATE terminals
     SET gateway_acquirer='hdfc'
     WHERE gateway='hdfc';
@@ -51,3 +51,81 @@ UPDATE terminals
     SET gateway_acquirer='hdfc'
     WHERE gateway='cybersource'
         AND gateway_acquirer is null;
+
+# Delete duplicate Billdesk txns
+delete from transactions where id in ('53RrhAM3nM6rUl', '53wE4kQZKrJ0HM', '57VxC2mxdshLTe', '5BBItEdZ1PnPqY',
+'5BPVrFedAc6scN', '5BwmvfKSBkJjxg', '5CHRFrVEKa7tKp', '5EKoSPRa3SDByh', '5FNMoQ0VSduHs7', '5Fndf4enJJ3mUR',
+'5GJ7n1lbBlkfPg', '5HQQucXhBtJRTh', '5HSmgYxnlKra6Z', '5IDOpgagGylzz1', '5IVhKjLddcLQld', '5L7mF51bI9OjzY',
+'5RFUoxT5cGbh3T', '5GJ7k9qmEwPLDH');
+# Corresponding fees_breakup ids for the above txns
+delete from fees_breakup where id in ('6ehOVBvjfuslSF','6ehOVCBNcL46LZ','6ehOVCQel0hGQg','6ehUdc4DJpYbex',
+'6ehUdcTbHxfzXP','6ehUdcny05ZPUg','6eiCqW7f1pjZ0E','6eiCqWMm30QbQ1','6eiCqWbWqfJCI2','6eis0KenGEWcKV','6eis0KtzHmO7DS',
+'6eis0L8NkoxzaP','6eisFc30qPgDWF','6eisFcljXYikyw','6eisFdIsgwz25S','6eiyOgNReBjEIT','6eiyOgc4AQhqjp','6eiyOgqYkaglHh',
+'6ej1ZX8uFp598z','6ej1ZXNJ1Z9Swa','6ej1ZXb3g7jjJr','6ejNraj8GgD3FE','6ejNrazi2EPhAJ','6ejNrbF2Vb0Pir','6ejdSakRuLGKza',
+'6ejdSazPEGxp8v','6ejdSbESijFOvM','6ejk5YukZ4MIFd','6ejk5ZQA9zCToq','6ejk5ZojLpXC4N','6ejtdSG50MOVBF','6ejtdSlZUD2wDF',
+'6ejtdTJg8uJ7N8','6ejtdcHpUFLBIv','6ejtdco4lq0UDu','6ejtddJj5A4t1C','6ekCLx1TPGZbRa','6ekCLxJ7pqbAU5','6ekCLxYNfo2xQa',
+'6ekCVspDwOVSbM','6ekCVt4KwKPp9x','6ekCVtfEZiT05O','6ekP1npfyKXOwi','6ekP1oUdxa69q8','6ekP1p2I339i42','6ekSEICfLGowZR',
+'6ekSEIRqN28DEG','6ekSEIh2H3MsdS','6emnvYn7VY9t8t','6emnvZ32uGgYAc','6emnvZa5saFu6V','6esQVfmFCrRvyG','6esQVg0jdQnxkY',
+'6esQVgI6SQzYif')
+
+# UPDATE billdesk refund entity with gateway's txn id
+UPDATE billdesk SET RefundId = 'HICI5095780548' WHERE id = 967024
+
+# capture had timed out. it was actually successful
+UPDATE payments SET gateway_captured = 1 WHERE id = '7MkcS3XRIUhb5y'
+
+# UPDATE billdesk refund entity with gateway's txn id
+UPDATE billdesk SET RefundId = 'HSBI51463839221' WHERE id = 980657;
+
+# delete duplicate txn and corresponding fees_breakup. These are fee breakup row ids
+DELETE FROM fees_breakup WHERE id in ('6eiJcKmIrQG524', '6eiJcLJwPXF9rZ', '6eiJcLrOXY7X0P') AND transaction_id = '58JNk9BtEJpaMh';
+DELETE FROM transactions WHERE id = '58JNk9BtEJpaMh';
+
+# two txns - copy reconciled data to settled txn
+UPDATE transactions SET reconciled_at = 1467718868, gateway_fee = 802, gateway_service_tax = 102 WHERE id = '55YfAhjCSJqV7m';
+UPDATE payments SET transaction_id = '55YfAhjCSJqV7m' WHERE id = '55YYZJBAaA3CIR'
+DELETE FROM fees_breakup WHERE id in ('6ehqW7TPPf6fhd', '6ehqW7iodAcZ1Y', '6ehqW7xZx9YHBV') AND transaction_id = '55YfEvFAPrmf72';
+DELETE FROM transactions WHERE id = '55YfEvFAPrmf72';
+
+UPDATE transactions SET reconciled_at = 1467719197, gateway_fee = 10320, gateway_service_tax = 1307 WHERE id = '59TRu4jEt06jxw';
+UPDATE payments SET transaction_id = '59TRu4jEt06jxw' WHERE id = '59TOmc805gVS7i'
+DELETE FROM fees_breakup WHERE id in ('6eiYxS2iRdjiiX', '6eiYxSHKXXuhSw', '6eiYxSVOCEEbXF') AND transaction_id = '59TRvHDeSgNyiX';
+DELETE FROM transactions WHERE id = '59TRvHDeSgNyiX';
+
+UPDATE billdesk SET RefundId = 'IICI51854029631' WHERE id = 1075644;
+UPDATE billdesk SET RefundId = 'IYBK51905388691' WHERE id = 1087859;
+UPDATE billdesk SET RefundId = 'IICI51813818221' WHERE id = 1083918;
+UPDATE billdesk SET RefundId = 'ISBI51846870321' WHERE id = 1083917;
+UPDATE billdesk SET RefundId = 'HICI50897787121' WHERE id = 1034628;
+UPDATE billdesk SET RefundId = 'HSBI51724591941' WHERE id = 1034627;
+UPDATE billdesk SET RefundId = 'HSBJ51362574311' WHERE id = 1034626;
+
+# Queries to fix invoices data: Initially few invoices were created with type=null,
+# it is being updated to 'link' as in v1 all invoices were supposed to be link.
+UPDATE invoices SET type = 'link' WHERE type IS NULL;
+
+# Fix an error on billdesk's side for refund of pay_7VEH9tDunmiTpL
+INSERT INTO billdesk
+    (payment_id, action, received, MerchantID, CustomerID, TxnAmount, BankID,
+ 	 CurrencyType, TxnDate, TxnReferenceNo, RequestType, ProcessStatus,
+ 	 RefAmount, RefDateTime, RefundId, refund_id, RefStatus,
+ 	 created_at, updated_at)
+    VALUES
+ 	('7OyMLXhVq1Pm4L', 'refund', 0, 'R5RPSPL', '7OyMLXhVq1Pm4L', '500.00', 'IDS',
+ 	 'INR', '20170306', 'HIDS5165513683', '0410', 'Y',
+ 	 '500.00', '20170320120000', 'HIDS51655136831', '7UfoSn81tmUYLM', '0799',
+ 	 UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+
+# udpate fund transfer attempt
+update fund_transfer_attempts set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7Uai0p2hBhun9B";
+update fund_transfer_attempts set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP7DHa8miFSto";
+update fund_transfer_attempts set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP6qJyLDUGYVv";
+
+#update settlements
+update settlements set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP6qJpA0aWXoC";
+update settlements set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7TP7DHLhqqZJcp";
+update settlements set status="failed", failure_reason="Reconciliation", remarks="Invalid IFSC Code" where id="7Uai0ojQJmim96";
+
+#update failed settlements
+update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7HX5An3eDrXUaz";
+update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7KhM07UJp7rsiZ";
