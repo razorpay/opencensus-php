@@ -27,6 +27,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
         Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::STATUS          => 'sometimes|string',
     );
 
     protected $esWhitelistedParams = [
