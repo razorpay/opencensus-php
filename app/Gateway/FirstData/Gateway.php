@@ -840,21 +840,7 @@ class Gateway extends Base\Gateway
 
     protected function getRelativeUrl($component)
     {
-        $servicesApiActionList = [
-            Action::CAPTURE,
-            Action::REFUND,
-            Action::VERIFY,
-            Action::REVERSE,
-        ];
-
-        if (in_array($this->action, $servicesApiActionList))
-        {
-            $component = Component::API;
-        }
-        else
-        {
-            $component = Component::CONNECT;
-        }
+        $component = Component::ACTION_MAPPING[$this->action];
 
         $ns = $this->getGatewayNamespace();
 
