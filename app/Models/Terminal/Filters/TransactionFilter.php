@@ -225,7 +225,14 @@ class TransactionFilter extends Terminal\Filter
                 ($payment->localToken->isRecurring() === true) and
                 (app('basicauth')->isPrivateAuth() === true))
             {
-                return ($terminal->isNon3DSRecurring() === true);
+                // For second recurring payment, ensure that we select a terminal
+                // of the same gateway as for the first recurring payment.
+                $previousGateway = $payment->localToken->terminal->getGateway();
+
+                $currentGateway = $terminal->getGateway();
+
+                return (($terminal->isNon3DSRecurring() === true) and
+                        ($previousGateway === $currentGateway));
             }
             else
             {
