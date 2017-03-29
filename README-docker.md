@@ -59,6 +59,7 @@ $ make test
 If you want to pass in specific params(e.g. -filter PaymentTest or --stop-on-failure etc), do the following:
 ```
 $ make test AT="--filter <mytestname> --stop-on-failure"
+```
 
 #### Connecting to mysql:
 
