@@ -409,7 +409,7 @@ class NodalAccount
     // @codingStandardsIgnoreStart
     protected function getH2HFileName()
     {
-        $name = $this->getFileToWriteName() . '.txt';
+        $name = $this->getH2HFileNameWithoutExt() . '.txt';
 
         return $name;
     }
