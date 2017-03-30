@@ -155,15 +155,12 @@ class TerminalLoadSorter extends Terminal\Sorter
 
     protected function validateAttributes($attributes, $terminal)
     {
-        foreach ($attributes as $key => $value)
-        {
-            if ($terminal->getAttribute($key) !== $value)
-            {
-                return false;
-            }
-        }
+        // Get all terminal attributes
+        $termAttributes = $terminal->getAttributes();
 
-        return true;
+        // Gets diff of the two. If there is any diff,
+        // then attributes are not perfectly matching.
+        return count(array_diff_assoc($attributes, $termAttributes) === 0);
     }
 
     protected function validateRules($cumulativeProbability, $applicableRules)
