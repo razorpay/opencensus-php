@@ -295,13 +295,21 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $chances = [
-            // Chance from 56 to 100 should give AxisMigs
-            [ 'chanceValue' => 92, 'expected_terminal_id' => '1000AxisMigsTl' ],
-            // Chance from 46 to 55 should give Cybersource
-            [ 'chanceValue' => 49, 'expected_terminal_id' => '1000CybAxTrmnl' ],
-            // Chance from 40 to 45 should give First Data
-            [ 'chanceValue' => 42,  'expected_terminal_id' => '1000HdfcShared' ],
-            // Chance 80 or below should give HDFC
+            // Chance from 96 to 100 should give First Data
+            //[ 'chanceValue' => 100,  'expected_terminal_id' => '1000FrstDataTl' ],
+            //[ 'chanceValue' => 98,  'expected_terminal_id' => '1000FrstDataTl' ],
+            //[ 'chanceValue' => 96,  'expected_terminal_id' => '1000FrstDataTl' ],
+            // Chance from 51 to 95 should give AxisMigs
+            [ 'chanceValue' => 95, 'expected_terminal_id' => '1000AxisMigsTl' ],
+            [ 'chanceValue' => 70, 'expected_terminal_id' => '1000AxisMigsTl' ],
+            [ 'chanceValue' => 51, 'expected_terminal_id' => '1000AxisMigsTl' ],
+            // Chance from 46 to 50 should give Cybersource axis
+            [ 'chanceValue' => 50, 'expected_terminal_id' => '1000CybAxTrmnl' ],
+            [ 'chanceValue' => 47, 'expected_terminal_id' => '1000CybAxTrmnl' ],
+            [ 'chanceValue' => 46, 'expected_terminal_id' => '1000CybAxTrmnl' ],
+            // Chance 45 or below should give HDFC
+            [ 'chanceValue' => 45,   'expected_terminal_id' => '1000HdfcShared' ],
+            [ 'chanceValue' => 20,   'expected_terminal_id' => '1000HdfcShared' ],
             [ 'chanceValue' => 0,   'expected_terminal_id' => '1000HdfcShared' ],
         ];
 
