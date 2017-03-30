@@ -1853,3 +1853,13 @@ UPDATE tokens
 # Prod test
 UPDATE tokens
     SET terminal_id = '1000SharpTrmnl' WHERE recurring = 1;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN txt_file_id CHAR(14) AFTER batch_fund_transfer_id,
+    ADD CONSTRAINT fund_transfer_attempts_txt_file_id_foreign FOREIGN KEY(txt_file_id)
+    REFERENCES files(id) ON DELETE RESTRICT;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN excel_file_id CHAR(14) AFTER batch_fund_transfer_id,
+    ADD CONSTRAINT fund_transfer_attempts_excel_file_id_foreign FOREIGN KEY(excel_file_id)
+    REFERENCES files(id) ON DELETE RESTRICT;

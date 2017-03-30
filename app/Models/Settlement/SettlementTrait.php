@@ -9,6 +9,8 @@ use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Attempt\Entity as Attempt;
+use RZP\Models\FileStore\Entity as FileStore;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
@@ -176,6 +178,16 @@ trait SettlementTrait
         $this->repo->saveOrFail($bankTransferAtpt);
 
         return [$setl, $bankTransferAtpt];
+    }
+
+    protected function updateValuesForAttempts($setlAttempts, $textFileEntity, $excelFileEntity)
+    {
+        return $this->repo->fund_transfer_attempt->updateFileIds(
+            $setlAttempts,
+            [
+                Attempt::TXT_FILE_ID    => FileStore::verifyIdAndSilentlyStripSign($textFileEntity['id']),
+                Attempt::EXCEL_FILE_ID  => FileStore::verifyIdAndSilentlyStripSign($excelFileEntity['id']),
+            ]);
     }
 
     /**

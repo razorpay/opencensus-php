@@ -36,4 +36,33 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    /**
+     * @param $attempts - Array of fund_transfer_attempt entities to be updated
+     * @param $values - Array. Key - Column name, Value - Column value
+     */
+    public function updateFileIds($attempts, array $values)
+    {
+        if ($attempts->count() === 0)
+        {
+            return;
+        }
+
+        $ids = $attempts->getIds();
+
+        $count = $this->newQuery()
+                      ->whereIn(Entity::ID, $ids)
+                      ->update($values);
+
+        $expected = count($ids);
+
+        if ($count !== $expected)
+        {
+            throw new Exception\LogicException(
+                'Failed to update expected number of rows. \n' .
+                'Expected: ' . $expected . ' Updated: ' . $count);
+        }
+
+        return $count;
+    }
 }

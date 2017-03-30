@@ -100,6 +100,10 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconFailure');
         $this->assertNotNull($settlementAttempt['utr']);
 
+        // Validate 2 files were created
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 2);
+
         // Validate settlement-transaction entity
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals('settlement', $txn['type']);
@@ -121,6 +125,10 @@ class ReconciliationTest extends TestCase
 
         $this->assertEquals('No settlements found!', $content['kotak']['message']);
 
+        // Validate no files were created
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 2);
+
         $this->fixtures->merchant->holdFunds(Account::TEST_ACCOUNT, false);
     }
 
@@ -139,7 +147,10 @@ class ReconciliationTest extends TestCase
         // Check reconciliation
         $setlFile = $content['kotak']['settlement_text_file'];
 
-        $generateFailedReconciliations = true;
+        // Validate 4 files we created in all
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 4);
+
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
 
         // Reconcile settlements

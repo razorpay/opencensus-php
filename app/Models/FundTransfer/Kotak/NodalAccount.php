@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Kotak;
 use Carbon\Carbon;
 use Excel;
 use Mail;
+
 use RZP\Exception;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
@@ -130,7 +131,7 @@ class NodalAccount
 
         $this->sendSettlementMail($excelFileEntity, $textFileEntity);
 
-        return [$textFileEntity['local_file_path'], $excelFileEntity['local_file_path']];
+        return [$textFileEntity, $excelFileEntity];
     }
 
     public function getPayoutsFile(Base\PublicCollection $payouts)
@@ -280,12 +281,11 @@ class NodalAccount
     protected function createSettlementFiles($excelData, $textData, bool $h2h): array
     {
         // Create excel file
-        $excelFile = $this->writeFileOnS3(
-            $this->getFileToWriteNameWithoutExt(),
-            $excelData,
-            FileStore\Format::XLSX,
-            FileStore\Type::KOTAK_SETTLEMENT_EXCEL
-        );
+        $excelFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+                                              ->content($excelData)
+                                              ->extension(FileStore\Format::XLSX)
+                                              ->type(FileStore\Type::FUND_TRANSFER_EXCEL)
+                                              ->save();
 
         // Create txt file
         if ($h2h === true)
@@ -297,50 +297,24 @@ class NodalAccount
                 'mode'  => '33188',
             ];
 
-            $textFile = $this->writeFileOnS3(
-                'kotak/outgoing/' . $this->getH2HFileNameWithoutExt(),
-                $textData,
-                FileStore\Format::TXT,
-                FileStore\Type::KOTAK_SETTLEMENT_TXT,
-                $metadata);
+            $textFile = (new FileStore\Creator())->name('kotak/outgoing/' . $this->getH2HFileNameWithoutExt())
+                                                 ->content($textData)
+                                                 ->extension(FileStore\Format::TXT)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_TXT)
+                                                 ->metadata($metadata)
+                                                 ->save();
+        }
+        else
+        {
+            $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+                                                 ->content($textData)
+                                                 ->extension(FileStore\Format::TXT)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_TXT)
+                                                 ->store(FileStore\Store::LOCAL)
+                                                 ->save();
         }
 
-        $textFile = $this->writeFileOnS3(
-            $this->getFileToWriteNameWithoutExt(),
-            $textData,
-            FileStore\Format::TXT,
-            FileStore\Type::KOTAK_SETTLEMENT_TXT);
-
         return [$excelFile, $textFile];
-    }
-
-    /**
-     * Creates file on s3
-     * Saves file details in files table
-     * @param $key File path inside the bucket on s3
-     * @param $content Content of the file
-     * @param $extension Extension of the file
-     * @param $type FileStore/Type of the file
-     * @param $metadata Metadata of the file
-     *
-     * @return FileStore/Creator instance
-     */
-    protected function writeFileOnS3(
-        string $key,
-        $content,
-        string $extension,
-        string $type,
-        array $metadata = []): FileStore\Creator
-    {
-        $fileCreator = new FileStore\Creator;
-
-        return $fileCreator->extension($extension)
-                           ->name($key)
-                           ->content($content)
-                           ->metadata($metadata)
-                           ->store(FileStore\Store::S3)
-                           ->type($type)
-                           ->save();
     }
 
     protected function sendSettlementMail(

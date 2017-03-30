@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\FundTransfer\Attempt\Entity as FundTransferAttempt;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
+use RZP\Models\FileStore\Entity as FileStore;
 
 class CreateFundTransferAttemptsTable extends Migration
 {
@@ -59,6 +60,12 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->string(FundTransferAttempt::BATCH_FUND_TRANSFER_ID, BatchFundTransfer::ID_LENGTH)
                   ->nullable();
 
+            $table->char(FundTransferAttempt::TXT_FILE_ID, FileStore::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(FundTransferAttempt::EXCEL_FILE_ID, FileStore::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(FundTransferAttempt::CREATED_AT);
 
             $table->integer(FundTransferAttempt::UPDATED_AT);
@@ -75,6 +82,16 @@ class CreateFundTransferAttemptsTable extends Migration
                   ->references(BatchFundTransfer::ID)
                   ->on(Table::BATCH_FUND_TRANSFER)
                   ->on_delete('restrict');
+
+            $table->foreign(FundTransferAttempt::TXT_FILE_ID)
+                  ->references(FileStore::ID)
+                  ->on(Table::FILE_STORE)
+                  ->on_delete('restrict');
+
+            $table->foreign(FundTransferAttempt::EXCEL_FILE_ID)
+                  ->references(FileStore::ID)
+                  ->on(Table::FILE_STORE)
+                  ->on_delete('restrict');
         });
     }
 
@@ -87,6 +104,12 @@ class CreateFundTransferAttemptsTable extends Migration
     {
         Schema::table(Table::FUND_TRANSFER_ATTEMPT, function($table)
         {
+            $table->dropForeign(
+                Table::FUND_TRANSFER_ATTEMPT.'_'.FundTransferAttempt::EXCEL_FILE_ID.'_foreign');
+
+            $table->dropForeign(
+                Table::FUND_TRANSFER_ATTEMPT.'_'.FundTransferAttempt::TXT_FILE_ID.'_foreign');
+
             $table->dropForeign(
                 Table::FUND_TRANSFER_ATTEMPT.'_'.FundTransferAttempt::BATCH_FUND_TRANSFER_ID.'_foreign');
         });

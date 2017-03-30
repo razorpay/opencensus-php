@@ -19,7 +19,7 @@ class Type
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
-  
+
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
@@ -38,8 +38,8 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
-    const KOTAK_SETTLEMENT_EXCEL            = 'kotak_settlement_excel';
-    const KOTAK_SETTLEMENT_TXT              = 'kotak_settlement_txt';
+    const FUND_TRANSFER_EXCEL               = 'fund_transfer_excel';
+    const FUND_TRANSFER_TXT                 = 'fund_transfer_txt';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -73,8 +73,8 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::ICICI_NODAL_TRANSFER,
-            self::KOTAK_SETTLEMENT_EXCEL,
-            self::KOTAK_SETTLEMENT_TXT,
+            self::FUND_TRANSFER_EXCEL,
+            self::FUND_TRANSFER_TXT,
         ],
 
         Constants\Entity::BATCH => [
@@ -112,8 +112,8 @@ class Type
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
         self::ICICI_NODAL_TRANSFER,
-        self::KOTAK_SETTLEMENT_EXCEL,
-        self::KOTAK_SETTLEMENT_TXT,
+        self::FUND_TRANSFER_EXCEL,
+        self::FUND_TRANSFER_TXT,
     ];
 
     /**
@@ -128,7 +128,7 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
-            self::KOTAK_SETTLEMENT_EXCEL,
+            self::FUND_TRANSFER_EXCEL,
         ],
 
         self::BATCH_BUCKET_CONFIG => [
@@ -137,7 +137,7 @@ class Type
         ],
 
         self::H2H_BUCKET_CONFIG => [
-            self::KOTAK_SETTLEMENT_TXT,
+            self::FUND_TRANSFER_TXT,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

@@ -181,17 +181,21 @@ class Processor extends Base\Core
 
         if ($setlAttempts->count() > 0)
         {
-            list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts, $channel, $h2h);
+            list($textFileEntity, $excelFileEntity) =
+                $this->generateSettlementFile($setlAttempts, $channel, $h2h);
 
             $urls = [
-                'kotak_settlement_txt'   => $urlText,
-                'kotak_settlement_excel' => $urlExcel
+                'kotak_settlement_txt'   => $textFileEntity['local_file_path'],
+                'kotak_settlement_excel' => $excelFileEntity['local_file_path']
             ];
 
             $this->updateBatchFundTransferEntityUrls($urls);
 
-            $data['settlement_text_file']  = $urlText;
-            $data['settlement_excel_file'] = $urlExcel;
+            $this->updateValuesForAttempts(
+                $setlAttempts, $textFileEntity, $excelFileEntity);
+
+            $data['settlement_text_file']  = $textFileEntity['local_file_path'];
+            $data['settlement_excel_file'] = $excelFileEntity['local_file_path'];
 
             $this->successNotification($data, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
