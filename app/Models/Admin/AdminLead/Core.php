@@ -52,7 +52,7 @@ class Core extends Base\Core
 
         Mail::queue(
             'emails.admin.invite_merchant',
-            ['data' => $data],
+            $data,
             function ($message) use ($subject, $email, $contactName)
             {
                 $message->to($email, $contactName);
