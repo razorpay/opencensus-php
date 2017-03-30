@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\Action\State;
 
 class Repository extends Base\Repository
 {
@@ -27,5 +28,13 @@ class Repository extends Base\Repository
                     ->where(Entity::ADMIN_ID, '=', $adminId)
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->firstOrFailPublic();
+    }
+
+    public function findOpenWorkflows(string $workflowId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                    ->whereIn(Entity::STATE, [State\Entity::APPROVED, State\Entity::EXECUTED, State\Entity::OPEN])
+                    ->get();
     }
 }

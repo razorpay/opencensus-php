@@ -387,5 +387,6 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                  = 'The checker review is invalid for this action';
     const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                 = 'The requested action is not found';
     const BAD_REQUEST_ACTION_NOT_APPROVED                                       = 'The requested action is not in approved state';
+    const BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED                               = 'Deleting a workflow is not possible if an action is in still in progress';
     const BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED                    = 'Permissions associated with a workflow cannot be removed';
 }

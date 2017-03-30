@@ -140,6 +140,10 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchOpenWorkflows(string $workflowId)
+    {
+        return $this->repo->workflow_action->findOpenWorkflows($workflowId);
+    }
 
     public function get(string $id)
     {

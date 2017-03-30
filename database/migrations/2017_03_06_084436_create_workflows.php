@@ -33,6 +33,9 @@ class CreateWorkflows extends Migration
 
             $table->char(Workflow::NAME, 255);
 
+            $table->integer(Workflow::DELETED_AT)
+                  ->nullable();
+
             $table->integer(Workflow::CREATED_AT);
 
             $table->integer(Workflow::UPDATED_AT);

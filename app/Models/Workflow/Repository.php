@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Workflow;
 
-use RZP\Models\Workflow\Base;
+use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {

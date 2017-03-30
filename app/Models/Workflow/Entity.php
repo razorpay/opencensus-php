@@ -2,17 +2,18 @@
 
 namespace RZP\Models\Workflow;
 
-use App;
-use Hash;
-use Carbon\Carbon;
 use RZP\Constants\Table;
-use RZP\Models\Workflow\Base;
+use RZP\Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Entity extends Base\Entity
+class Entity extends Base\PublicEntity
 {
-    const ID            = 'id';
-    const NAME          = 'name';
-    const ORG_ID        = 'org_id';
+    use SoftDeletes;
+
+    const ID         = 'id';
+    const NAME       = 'name';
+    const ORG_ID     = 'org_id';
+    const DELETED_AT = 'deleted_at';
 
     protected static $sign = 'workflow';
 

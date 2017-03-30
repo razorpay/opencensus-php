@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Workflow\Step;
 
-use RZP\Constants\Table;
-use RZP\Models\Workflow\Base;
+use RZP\Models\Base;
 
-class Entity extends Base\Entity
+class Entity extends Base\PublicEntity
 {
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';
@@ -58,10 +57,10 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Role\Entity');
     }
 
-    public function permission()
-    {
-        return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
-    }
+    // public function permission()
+    // {
+    //     return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
+    // }
 
     public function getLevel() : integer
     {

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Workflow\Step;
 
-use RZP\Models\Workflow\Base;
+use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
@@ -11,7 +11,7 @@ class Repository extends Base\Repository
     protected $adminFetchParamRules = [
         Entity::WORKFLOW_ID   => 'sometimes|string|max:14',
         Entity::ROLE_ID       => 'sometimes|string|max:14',
-        Entity::PERMISSION_ID => 'sometimes|string|max:14',
+        // Entity::PERMISSION_ID => 'sometimes|string|max:14',
         Entity::LEVEL         => 'sometimes|integer|max:14',
     ];
 

@@ -38,6 +38,8 @@ class CreateWorkflowAction extends Migration
             $table->tinyInteger(Action::CURRENT_LEVEL)
                   ->nullable();
 
+            $table->char(Action::STATE, 25);
+
             $table->foreign(Action::WORKFLOW_ID)
                   ->references(Workflow::ID)
                   ->on(Table::WORKFLOW)
