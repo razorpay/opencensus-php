@@ -56,7 +56,7 @@ class Validator extends Base\Validator
 
         $rulesVar = $this->getRulesVariableName($operation);
 
-        $fieldMap = (new FieldMap\Repository)->findByOrgIdAndEntityIfExists(
+        $fieldMap = (new FieldMap\Repository)->findByOrgIdAndEntity(
             $orgId, $entity);
 
         // If the org-specific rules for a org are not defined,

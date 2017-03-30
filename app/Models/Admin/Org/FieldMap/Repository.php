@@ -28,7 +28,9 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function findByOrgIdAndEntityIfExists($orgId, $entity)
+    public function findByOrgIdAndEntity(
+        string $orgId,
+        string $entity)
     {
         $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
