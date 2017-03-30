@@ -73,22 +73,14 @@ class Core extends Base\Core
 
     public function associateRelevantEntitiesToAdmin(Entity $admin, array $input)
     {
-        if (isset($input['roles']) === true)
+        if (isset($input[Entity::ROLES]) === true)
         {
-            $roles = [];
-
-            $roles = Role\Entity::verifyIdAndStripSignMultiple($input['roles']);
-
-            $this->repo->sync($admin, 'roles',  $roles);
+            $this->repo->sync($admin, Entity::ROLES,  $input[Entity::ROLES]);
         }
 
-        if (isset($input['groups']) === true)
+        if (isset($input[Entity::GROUPS]) === true)
         {
-            $groups = [];
-
-            $groups = Group\Entity::verifyIdAndStripSignMultiple($input['groups']);
-
-            $this->repo->sync($admin, 'groups', $groups);
+            $this->repo->sync($admin, Entity::GROUPS, $input[Entity::GROUPS]);
         }
     }
 

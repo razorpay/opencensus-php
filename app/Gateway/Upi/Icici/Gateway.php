@@ -260,7 +260,7 @@ class Gateway extends Base\Gateway
      */
     protected function encrypt($data)
     {
-        $rsa = $this->getRSAInstance();
+        $rsa = $this->getRsaInstance();
 
         $rsa->loadKey($this->getPublicKey());
 
@@ -274,7 +274,7 @@ class Gateway extends Base\Gateway
      */
     protected function decrypt($data)
     {
-        $rsa = $this->getRSAInstance();
+        $rsa = $this->getRsaInstance();
 
         $key = $this->getPrivateKey();
 
@@ -283,7 +283,7 @@ class Gateway extends Base\Gateway
         return $rsa->decrypt($data);
     }
 
-    protected function getRSAInstance()
+    protected function getRsaInstance()
     {
         /**
          * We need to do this to use PCCS 1.5 instead of 1.7
@@ -526,7 +526,7 @@ class Gateway extends Base\Gateway
      * @param  String $body Request body
      * @return array
      */
-    public function preProcessS2SResponse($body)
+    public function preProcessS2sResponse($body)
     {
         $response = $this->parseGatewayResponse($body, true);
 

@@ -12,4 +12,6 @@ class Codes
     const DATE_TIME_FORMAT = 'Y:m:d-H:i:s';
 
     const MOCK_FAIL_APPROVAL_CODE = "mocked failure approval code";
+
+    const STANDING_INSTRUCTION = 'STANDIN';
 }

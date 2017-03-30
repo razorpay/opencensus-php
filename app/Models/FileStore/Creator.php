@@ -333,6 +333,25 @@ class Creator extends Base\Core
     }
 
     /**
+     * Returns url and id of File Entity
+     *
+     * @return array
+     */
+    public function getSignedUrl()
+    {
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(),
+            $this->env);
+
+        $url = $this->storageHandler->getSignedUrl($bucketConfig, $this->file->getLocation());
+
+        return [
+            'id'  => $this->file->getId(),
+            'url' => $url,
+        ];
+    }
+
+    /**
      * Validates the Content before saving
      *
      * @throws Exception\LogicException
@@ -469,7 +488,7 @@ class Creator extends Base\Core
             $fileNameWithoutExt,
             $this->columnFormat,
             $this->file->getExtension(),
-            self::DEFAULT_STORE);
+            $this->getStorageDir());
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
     }

@@ -36,8 +36,6 @@ class PaymentMarketplaceRefundTest extends TestCase
      */
     public function testRefundTransferPayment()
     {
-        $this->markTestSkipped('Account auth disabled temporarily');
-
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 1000,
@@ -51,6 +49,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->transferPayment($this->payment['id'], $transfers);
 
+        // Fetch last payment entity (transfer payment to merchant - 10000000000002)
         $transferPayment = $this->getLastEntity('payment', true);
 
         $this->ba->addAccountAuth('acc_10000000000002');

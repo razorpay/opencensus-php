@@ -33,8 +33,6 @@ class RefundFile extends Base\RefundFile
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $urlExcel = $this->writeToExcelFile($data, $fileName);
-
         // Creating a file with excel format
         $creator = $this->createFile(
             FileStore\Format::XLSX,
@@ -42,14 +40,16 @@ class RefundFile extends Base\RefundFile
             $fileName,
             FileStore\Type::ICICI_NETBANKING_REFUND);
 
+        $file = $creator->get();
+
         $fileData = [
-            'file_path' => $this->getExcelFullFilePath(),
-            'body' => self::EMAIL_BODY,
+            'file_path' => $file['local_file_path'],
+            'body'      => self::EMAIL_BODY,
         ];
 
         $this->sendRefundEmail($fileData);
 
-        return $urlExcel;
+        return $file['local_file_path'];
     }
 
     protected function getRefundData($input)
@@ -78,11 +78,9 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $fullpath = $this->getExcelFullFilePath();
-
         $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['icici.netbanking.refunds@razorpay.com'];
 
             $message->from('refunds@razorpay.com', 'Icici Netbanking refunds');
 

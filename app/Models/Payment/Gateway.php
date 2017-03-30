@@ -29,6 +29,7 @@ class Gateway
     const NETBANKING_ICICI    = 'netbanking_icici';
     const NETBANKING_AIRTEL   = 'netbanking_airtel';
     const NETBANKING_AXIS     = 'netbanking_axis';
+    const NETBANKING_FEDERAL  = 'netbanking_federal';
     const NETBANKING_INDUSIND = 'netbanking_indusind';
     const PAYTM               = 'paytm';
     const SHARP               = 'sharp';
@@ -69,12 +70,21 @@ class Gateway
         self::BILLDESK,
     ];
 
-    //
-    // Gateways for which we can validate the refunds
-    // if they are successful after they are 'initiated'
-    //
+    /**
+    * Gateways for which we can validate the refunds
+    * if they are successful after they are 'initiated'
+    */
     const UNKNOWN_REFUNDS_VALIDATION_GATEWAYS = [
         self::WALLET_FREECHARGE
+    ];
+
+    /**
+    * Gateways for which we may need to force authorize payments
+    * since their verify API's stop working after a certain time
+    */
+    const FORCE_AUTHORIZE_GATEWAYS = [
+        self::AXIS_MIGS,
+        self::WALLET_JIOMONEY
     ];
 
     public static $channels = [
@@ -93,6 +103,7 @@ class Gateway
         self::NETBANKING_ICICI    => Settlement\Channel::KOTAK,
         self::NETBANKING_AIRTEL   => Settlement\Channel::KOTAK,
         self::NETBANKING_AXIS     => Settlement\Channel::KOTAK,
+        self::NETBANKING_FEDERAL  => Settlement\Channel::KOTAK,
         self::NETBANKING_INDUSIND => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP      => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY    => Settlement\Channel::KOTAK,
@@ -133,6 +144,7 @@ class Gateway
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
+            self::NETBANKING_FEDERAL,
             self::NETBANKING_INDUSIND,
         ],
 
@@ -144,6 +156,7 @@ class Gateway
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
+            self::WALLET_JIOMONEY,
             self::WALLET_OPENWALLET,
         ],
 
@@ -288,6 +301,7 @@ class Gateway
         self::NETBANKING_ICICI,
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
+        self::NETBANKING_FEDERAL,
         self::NETBANKING_INDUSIND,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
@@ -300,6 +314,16 @@ class Gateway
         self::UPI_ICICI,
         self::UPI_IDFC,
     );
+
+    /**
+     * List of gateways that support recurring payments
+     *
+     * @var array
+     */
+    public static $recurringGateways = [
+        Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
+    ];
 
     /**
      * List of gateways which give s2s callback where we do not validate
@@ -324,7 +348,6 @@ class Gateway
         // Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
@@ -383,10 +406,11 @@ class Gateway
     public static $netbankingToGatewayMap = array(
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND);
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
+        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB => Gateway::NETBANKING_AXIS);
 
     /**
      * For the banks that require a refundfile generated everyday,
@@ -399,6 +423,7 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND);
 
     /**
@@ -442,6 +467,11 @@ class Gateway
         return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
+    public static function isRecurringGateway($gateway)
+    {
+        return in_array($gateway, self::$recurringGateways, true);
+    }
+
     public static function getChannel($gateway)
     {
         return self::$channels[$gateway];
@@ -455,6 +485,17 @@ class Gateway
     public static function getGatewayForWallet($wallet)
     {
         return self::$walletToGatewayMap[$wallet];
+    }
+
+    public static function getWalletForGateway($gateway)
+    {
+        if (in_array($gateway, self::$methodMap[Method::WALLET]) === false)
+        {
+            throw new Exception\LogicException(
+                'Unknown wallet gateway. Gateway: ' . $gateway);
+        }
+
+        return array_flip(self::$walletToGatewayMap)[$gateway];
     }
 
     public static function validateGateway($gateway)

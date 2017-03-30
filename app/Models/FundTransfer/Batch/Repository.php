@@ -10,8 +10,14 @@ class Repository extends Base\Repository
 {
     protected $entity = 'batch_fund_transfer';
 
-    protected static $fetchExtraParamRules = array(
-        'date' => 'integer|digits:8');
+    protected static $appFetchParamRules = [
+        'date' => 'integer|digits:8',
+        'type' => 'string|max:10',
+    ];
+
+    protected static $fetchExtraParamRules = [
+        'date' => 'integer|digits:8'
+    ];
 
     public function getSettlementForToday($channel = 'kotak')
     {

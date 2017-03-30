@@ -260,11 +260,16 @@ class OrganizationController extends Controller
          return ApiResponse::json($data);
      }
 
-     public function getMultiplePermissions()
+     public function getMultiplePermissions(string $orgId)
      {
-         $input = Request::all();
+         $data = (new Admin\Permission\Service)->getMultiplePermissions($orgId);
 
-         $data = (new Admin\Permission\Service)->getMultiplePermissions($input);
+         return ApiResponse::json($data);
+     }
+
+     public function getAssignablePermissions()
+     {
+         $data = (new Admin\Permission\Service)->getAssignablePermissions();
 
          return ApiResponse::json($data);
      }

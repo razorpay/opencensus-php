@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Bank\Name;
-use RZP\Constants\Mode;
+use RZP\Models\Payment\Method;
+use RZP\Models\Terminal\Category;
 
 class Netbanking
 {
@@ -34,6 +36,7 @@ class Netbanking
         IFSC::UTIB,
         IFSC::KKBK,
         IFSC::AIRP,
+        IFSC::FDRL,
         IFSC::INDB,
     ];
 
@@ -255,6 +258,11 @@ class Netbanking
         return array_diff(self::getAllBanks(), $banks);
     }
 
+    public static function getDisabledBanksForCategory(string $category2)
+    {
+        return isset(Category::DISABLED[Method::NETBANKING][$category2]) ?  Category::DISABLED[Method::NETBANKING][$category2] : [];
+    }
+
     public static function getEnabledBanks()
     {
         return self::getAllBanks();
@@ -305,13 +313,26 @@ class Netbanking
         return self::$self;
     }
 
-    public static function getSupportedBanks($isTPVRequired = false)
+    /**
+     * Gets supported banks for a merchant.
+     * Checks for TPV merchants and any bank disabled by category
+     * */
+    public static function getSupportedBanks($merchant = null)
     {
         $banks = self::getSupportedBanksInLiveMode();
 
-        if ($isTPVRequired)
+        if ((isset($merchant) === true) and
+            ($merchant->isTPVRequired() === true))
         {
             $banks = self::getSupportedBanksForTPV();
+        }
+
+        if ((isset($merchant) === true) and
+            (empty($merchant->getCategory2()) === false))
+        {
+            $disabledBanks = self::getDisabledBanksForCategory($merchant->getCategory2());
+
+            $banks = array_diff($banks, $disabledBanks);
         }
 
         return array_unique($banks);

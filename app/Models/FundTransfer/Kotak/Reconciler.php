@@ -128,11 +128,22 @@ class Reconciler
 
         $this->repo->beginTransaction();
 
+        $unprocessedFailedIds = [];
+
         try
         {
             foreach ($data as $row)
             {
-                $entity = $this->reconcileEntity($row);
+                $data = $this->reconcileEntity($row);
+
+                $entity = $data['entity'];
+
+                if ($data['entity'] === null)
+                {
+                    $unprocessedFailedIds[] = $data['entity_id'] ?? 'null';
+
+                    continue;
+                }
 
                 $collection->push($entity);
 
@@ -155,10 +166,13 @@ class Reconciler
 
         $failureIds = implode(',', $failures->getPublicIds());
 
+        $processingFailedIds = implode(',', $unprocessedFailedIds);
+
         $response = [
-            'total_count'    => $collection->count(),
-            'failures_count' => $failures->count(),
-            'failure ids'    => $failureIds
+            'total_count'               => $collection->count(),
+            'failures_count'            => $failures->count(),
+            'failure ids'               => $failureIds,
+            'processing failed ids'     => $processingFailedIds,
         ];
 
         (new SlackNotification)->success('setl_reconciliation', $response);
@@ -174,12 +188,21 @@ class Reconciler
         FundTransferAttempt\Version::validateVersion($version);
 
         $loadEntityAndRelationsMethod = 'loadEntityAndRelations' . $version;
-        $entity = $this->$loadEntityAndRelationsMethod($row);
+        $data = $this->$loadEntityAndRelationsMethod($row);
 
-        $processEntityStatusMethod = 'processEntityStatus' . $version;
-        $entity = $this->$processEntityStatusMethod($entity, $row);
+        $entity = $data['entity'];
+        $entityId = $data['entity_id'];
 
-        return $entity;
+        if ($entity !== null)
+        {
+            $processEntityStatusMethod = 'processEntityStatus' . $version;
+            $entity = $this->$processEntityStatusMethod($entity, $row);
+        }
+
+        return [
+            'entity_id' => $entityId,
+            'entity'    => $entity
+        ];
     }
 
     protected function processEntityStatusV1($entity, $row)
@@ -350,7 +373,7 @@ class Reconciler
 
             $entity = $this->repo
                            ->settlement
-                           ->findOrFailPublicWithRelations($entityId, ['merchant', 'transaction']);
+                           ->findWithRelations($entityId, ['merchant', 'transaction']);
         }
         else if(strpos($entityId, Payout\Entity::getSign(), 0) === 0)
         {
@@ -358,15 +381,13 @@ class Reconciler
 
             $entity = $this->repo
                            ->payout
-                           ->findOrFailPublicWithRelations($entityId, ['merchant', 'transaction']);
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Invalid payment_ref_no for settlement-version V1: ' . $entityId);
+                           ->findWithRelations($entityId, ['merchant', 'transaction']);
         }
 
-        return $entity;
+        return [
+            'entity_id' => $entityId,
+            'entity'    => $entity
+        ];
     }
 
     protected function loadEntityAndRelationsV2($row)
@@ -384,21 +405,16 @@ class Reconciler
             }
         }
 
-        FundTransferAttempt\Entity::verifyIdAndStripSign($entityId);
-
         $entity = null;
 
         $entity = $this->repo
                        ->fund_transfer_attempt
-                       ->findOrFailPublicWithRelations($entityId, ['source', 'source.transaction', 'source.merchant']);
+                       ->findWithRelations($entityId, ['source', 'source.transaction', 'source.merchant']);
 
-        if ($entity === null)
-        {
-            throw new Exception\LogicException(
-                'Invalid payment_ref_no for settlement-version V2: ' . $entityId);
-        }
-
-        return $entity;
+        return [
+            'entity_id' => $entityId,
+            'entity'    => $entity
+        ];
     }
 
     protected function sendReconciliationMail($date, $response)

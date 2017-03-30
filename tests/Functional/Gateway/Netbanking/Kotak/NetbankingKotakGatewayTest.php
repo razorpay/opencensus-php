@@ -150,7 +150,7 @@ class NetbankingKotakGatewayTest extends TestCase
 
         $this->setUpMailMock();
 
-        $content = $this->generateRefundsExcelForNB('KKBK');
+        $content = $this->generateRefundsExcelForNb('KKBK');
 
         foreach (['tpv', 'nonTpv'] as $fileType)
         {
@@ -167,21 +167,21 @@ class NetbankingKotakGatewayTest extends TestCase
               ->with(
                     Mockery::any(),
                     Mockery::on(function ($data)
-                        {
-                            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+                    {
+                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                            $testData = array(
-                                'subject' => 'Kotak Netbanking claims and refund files for '.$date,
-                                'amount' => [
-                                    'claims' => 1500,
-                                    'refunds' => 500,
-                                    'total' => 1000,
-                                ]);
+                        $testData = array(
+                            'subject' => 'Kotak Netbanking claims and refund files for '.$date,
+                            'amount' => [
+                                'claims' => 1500,
+                                'refunds' => 500,
+                                'total' => 1000,
+                            ]);
 
-                            $this->assertArraySelectiveEquals($testData, $data);
+                        $this->assertArraySelectiveEquals($testData, $data);
 
-                            return true;
-                        }),
+                        return true;
+                    }),
                     Mockery::any()
                 );
     }
@@ -265,10 +265,14 @@ class NetbankingKotakGatewayTest extends TestCase
     protected function getTpvAndNonTpvPayments($payments)
     {
         $tpvPayments = array_filter($payments['items'], function($payment)
-                        { return $payment['terminal_id'] === 'TpvNbKotakTmnl'; });
+        {
+                return $payment['terminal_id'] === 'TpvNbKotakTmnl';
+        });
 
         $nonTpvPayments = array_filter($payments['items'], function($payment)
-                        { return $payment['terminal_id'] === 'DrctNbKtkTrmnl'; });
+        {
+                return $payment['terminal_id'] === 'DrctNbKtkTrmnl';
+        });
 
         $tpvPayments = array_values($tpvPayments);
 

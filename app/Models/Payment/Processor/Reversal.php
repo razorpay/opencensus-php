@@ -18,27 +18,34 @@ trait Reversal
      * Fetches and refunds the transfer payment and
      * create a reversal for the transfer
      *
-     * @param  Transfer\Entity  $transfer
-     * @param  int              $amount
+     * @param  Transfer\Entity $transfer
+     * @param array            $input
+     *
      * @return ReversalEntity
      */
-    public function refundPaymentAndReverseTransfer(Transfer\Entity $transfer, int $amount)
+    public function refundPaymentAndReverseTransfer(Transfer\Entity $transfer, array $input)
     {
         $transferPayment = $this->repo
                                 ->payment
                                 ->findByTransferIdAndMerchant(
                                     $transfer->getId(), $transfer->getToId());
 
+        //
+        // If amount is not sent in input,
+        // reverse the entire transfer amount pending
+        //
+        $input['amount'] = $input['amount'] ?? $transfer->getAmountUnreversed();
+
         // Refund the transfer payment - this debits the account balance
-        $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($amount, $transferPayment)
+        $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
         {
             (new Processor($transferPayment->merchant))
-                ->refundTransferPayment($transferPayment, $amount);
+                ->refundTransferPayment($transferPayment, $input[ReversalEntity::AMOUNT]);
         });
 
         // Reverse the associated transfer - this credits the marketplace balance
         return (new ReversalCore)
-                    ->createForMarketplaceRefund($transfer, $this->merchant, $amount);
+                    ->createForMarketplaceRefund($transfer, $this->merchant, $input);
     }
 
     /**
@@ -123,7 +130,7 @@ trait Reversal
                         );
                     }
 
-                    $this->refundPaymentAndReverseTransfer($transfer, $reversal['amount']);
+                    $this->refundPaymentAndReverseTransfer($transfer, $reversal);
                 });
         }
     }

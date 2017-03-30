@@ -122,7 +122,7 @@ class AdminAccess
             // Permission API are not exposed and org agnostic
             'permission_get',
             'permission_create',
-            'permission_get_multiple',
+            'permission_get_assignable',
             'permission_delete',
             'permission_edit',
         ];

@@ -134,7 +134,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
-        self::RECURRING                 => Recurring::NON_RECURRING,
+        self::RECURRING                 => 1,
         self::ENABLED                   => true,
     ];
 
@@ -503,26 +503,6 @@ class Entity extends Base\PublicEntity
         return ($this->isTpv() === false);
     }
 
-    public function isRecurringAuthTerminal()
-    {
-        if ($this->getRecurring() === Recurring::NON_RECURRING)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function isRecurringDirectTerminal()
-    {
-        if ($this->getRecurring() === Recurring::RECURRING_N3DS)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     public function isValidEmiTerminal($gateway, $emiDuration)
     {
         if (($this->isEmiEnabled()) and
@@ -535,9 +515,26 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    protected function isRecurringTypeApplicable($type)
+    {
+        $hex = $this->getRecurring();
+
+        return Recurring::isTypeApplicable($hex, $type);
+    }
+
+    public function isNonRecurring()
+    {
+        return ($this->isRecurringTypeApplicable(Recurring::NON_RECURRING) === true);
+    }
+
+    public function is3DSRecurring()
+    {
+        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_3DS) === true);
+    }
+
     public function isNon3DSRecurring()
     {
-        return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
+        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_NON_3DS) === true);
     }
 
     public function toArrayPublic($subMerchantFlag = false)
