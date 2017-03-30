@@ -10,7 +10,7 @@ class PermissionTest extends TestCase
 {
     use HeimdallTrait;
 
-    const TOTAL_PERMISSIONS = 114;
+    const TOTAL_PERMISSIONS = 117;
 
     public function setUp()
     {
