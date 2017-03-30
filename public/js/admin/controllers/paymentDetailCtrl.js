@@ -320,7 +320,8 @@ app.controller('PaymentDetailCtrl', [
     $scope.currency = currency;
 
     $scope.valid = function(amount, comment) {
-      return amount > 0 && comment.length > 5;
+      amount = amount.replace(/[^0-9\.]+/g, '');
+      return amount > 0 && (typeof comment !== 'undefined' ? comment.length > 5 : false);
     };
 
     $scope.setAmount = function(isPartial) {
@@ -333,6 +334,8 @@ app.controller('PaymentDetailCtrl', [
 
     $scope.ok = function (amount, comment) {
       // We get amount in INR
+      amount = parseFloat(amount.replace(/[, ]/, ''));
+
       var data = {
         amount: amount*100
       };
