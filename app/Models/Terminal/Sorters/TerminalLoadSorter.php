@@ -117,12 +117,12 @@ class TerminalLoadSorter extends Terminal\Sorter
                 return null;
             }
 
-            // Checking >100-p, rather than simply <p
+            // Checking > 100-p, rather than simply <p
             // because in test cases we're always setting
             // p to zero, to avoid unexpected behaviour.
             if ($chancePercent > (100 - $cumulativeProbabity))
             {
-                return $rule['attributes']['ids'];
+                return $rule['ids'];
             }
         }
 
@@ -137,16 +137,24 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         foreach ($allRules as $rule)
         {
+            // If the rule has any matching terminal then only merge
+            // it to the applicableRules array
+            $merge = false;
+
             // Rules only apply to terminals that have made it
             // this far in the selection process
             foreach ($terminals as $terminal)
             {
                 if ($this->validateAttributes($rule['attributes'], $terminal))
                 {
-                    $rule['attributes']['ids'][] = $terminal->getId();
-
-                    $applicableRules[] = $rule;
+                    $rule['ids'][] = $terminal->getId();
+                    $merge = true;
                 }
+            }
+
+            if ($merge === true)
+            {
+                $applicableRules[] = $rule;
             }
         }
 
@@ -160,7 +168,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         // Gets diff of the two. If there is any diff,
         // then attributes are not perfectly matching.
-        return count(array_diff_assoc($attributes, $termAttributes) === 0);
+        return (count(array_diff_assoc($attributes, $termAttributes)) === 0);
     }
 
     protected function validateRules($cumulativeProbability, $applicableRules)
