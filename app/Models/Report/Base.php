@@ -30,10 +30,7 @@ class Base extends Core
             $day = (int) $input['day'];
             $month = (int) $input['month'];
 
-            $date = Carbon::today('Asia/Kolkata')
-                          ->month($month)
-                          ->day($day)
-                          ->year($year)
+            $date = Carbon::createFromDate($year, $month, $day, 'Asia/Kolkata')
                           ->startOfDay();
 
             $from = $date->timestamp;
@@ -46,19 +43,13 @@ class Base extends Core
             assertTrue($month > 0);
             assertTrue($month <= 12);
 
-            $from = Carbon::today('Asia/Kolkata')
-                                  ->day(1)
-                                  ->month($month)
-                                  ->year($year)
-                                  ->startOfMonth()
-                                  ->timestamp;
+            $from = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+                          ->startOfDay()
+                          ->timestamp;
 
-            $to   = Carbon::today('Asia/Kolkata')
-                                  ->day(1)
-                                  ->month($month)
-                                  ->year($year)
-                                  ->endOfMonth()
-                                  ->timestamp;
+            $to = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+                        ->endOfMonth()
+                        ->timestamp;
         }
 
         return [$from, $to];
