@@ -12,41 +12,37 @@ class TerminalLoadSorter extends Terminal\Sorter
         'gateway',
     ];
 
+    /**
+     * Rules for selecting a terminal with some probability
+     * Attributes must be one of the terminal entity attribute which is matched
+     * with terminal property
+     */
     protected static $rules = [
-        '6UF3c6ZxiamtJA' => [
-            'gateway'    => Gateway::FIRST_DATA,
-            'load'       => 5,
+        [
+            'load'          => 5,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY           => Gateway::FIRST_DATA
+            ]
         ],
-
-        '1000AxisMigsTl' => [
-            'gateway'    => Gateway::AXIS_MIGS,
-            'load'       => 45,
+        [
+            'load'          => 45,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY            => Gateway::AXIS_MIGS
+            ]
         ],
-
-        '5yKTyCuDne8eiz' => [
-            'gateway'    => Gateway::CYBERSOURCE,
-            'load'       => 0,
+        [
+            'load'      => 0,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY            => Gateway::CYBERSOURCE,
+                Terminal\Entity::GATEWAY_ACQUIRER   => Gateway::ACQUIRER_HDFC,
+            ]
         ],
-
-        '6qJd4PFKxZwFbL' => [
-            'gateway'    => Gateway::CYBERSOURCE,
-            'load'       => 1,
-        ],
-
-        // Test terminals, won't be used on prod.
-        //
-        // Because of the way applicableRules are computed, the terminals
-        // in this list are assigned chance ranges in ascending order,
-        // i.e. here 1000FrstDataTl will be selected for chance = 86->90,
-        // while 1000CybrsTrmnl will be selected for chance = 91->100.
-
-        '1000FrstDataTl' => [
-            'gateway'    => Gateway::FIRST_DATA,
-            'load'       => 5,
-        ],
-        '1000CybrsTrmnl' => [
-            'gateway'    => Gateway::CYBERSOURCE,
-            'load'       => 10,
+        [
+            'load'      => 5,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY            => Gateway::CYBERSOURCE,
+                Terminal\Entity::GATEWAY_ACQUIRER   => Gateway::ACQUIRER_AXIS,
+            ]
         ],
     ];
 
@@ -72,28 +68,36 @@ class TerminalLoadSorter extends Terminal\Sorter
         {
             $chancePercent = $options->getChance();
 
-            $boostedTerminalId = $this->getBoostedTerminalId($terminals, $chancePercent);
+            $boostedTerminalIds = $this->getBoostedTerminalIds($terminals, $chancePercent);
 
-            if (is_null($boostedTerminalId) === false)
+            if (is_null($boostedTerminalIds) === false)
             {
-                foreach ($sortedTerminals as $key => $terminal)
+                $boostedTerminals = [];
+
+                $nonBoostedTerminals = [];
+
+                // As the terminals are from the priority list
+                // append to the terminal
+                foreach ($terminals as $terminal)
                 {
-                    if ($terminal->getId() === $boostedTerminalId)
+                    if (in_array($terminal->getId(), $boostedTerminalIds, true))
                     {
-                        unset($sortedTerminals[$key]);
-
-                        array_unshift($sortedTerminals, $terminal);
-
-                        break;
+                        $boostedTerminals[] = $terminal;
+                    }
+                    else
+                    {
+                        $nonBoostedTerminals[] = $terminal;
                     }
                 }
+
+                $sortedTerminals = array_merge($boostedTerminals, $nonBoostedTerminals);
             }
         }
 
         return $sortedTerminals;
     }
 
-    protected function getBoostedTerminalId($terminals, $chancePercent)
+    protected function getBoostedTerminalIds(array $terminals, $chancePercent)
     {
         // Not all rules will apply, a terminal may already have
         // been rejected in the previous sorting/filtering steps.
@@ -101,7 +105,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         $cumulativeProbabity = 0;
 
-        foreach ($applicableRules as $terminalId => $rule)
+        foreach ($applicableRules as $rule)
         {
             $cumulativeProbabity += $rule['load'];
 
@@ -118,32 +122,48 @@ class TerminalLoadSorter extends Terminal\Sorter
             // p to zero, to avoid unexpected behaviour.
             if ($chancePercent > (100 - $cumulativeProbabity))
             {
-                return $terminalId;
+                return $rule['attributes']['ids'];
             }
         }
+
+        return null;
     }
 
     protected function getApplicableRules($terminals)
     {
         $allRules = $this->getRules();
 
-        $ruledTerminals = array_keys($allRules);
-
         $applicableRules = [];
 
-        // Rules only apply to terminals that have made it
-        // this far in the selection process
-        foreach ($terminals as $terminal)
+        foreach ($allRules as $rule)
         {
-            $terminalId = $terminal->getId();
-
-            if (in_array($terminalId, $ruledTerminals, true) === true)
+            // Rules only apply to terminals that have made it
+            // this far in the selection process
+            foreach ($terminals as $terminal)
             {
-                $applicableRules[$terminalId] = $allRules[$terminalId];
+                if ($this->validateAttributes($rule['attributes'], $terminal))
+                {
+                    $rule['attributes']['ids'][] = $terminal->getId();
+
+                    $applicableRules[] = $rule;
+                }
             }
         }
 
         return $applicableRules;
+    }
+
+    protected function validateAttributes($attributes, $terminal)
+    {
+        foreach ($attributes as $key => $value)
+        {
+            if ($terminal->getAttribute($key) !== $value)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     protected function validateRules($cumulativeProbability, $applicableRules)
