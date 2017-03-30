@@ -46,6 +46,9 @@ angular.module('app.services', [])
           return deferred.promise;
         }
         $http.get('/user', { ignoreErrors: true }).success(function (data) {
+          try {
+            dataLayer.push({'merchant_id': data.data.merchants[0].pivot.merchant_id });
+          } catch (e) {}
           _identity = data.data;
           if (data.data.steps_finished) {
             _identity.activation_progress = data.data.activation_progress;
