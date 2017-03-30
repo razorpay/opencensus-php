@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Workflow\Base;
 
-use RZP\Base\Repository as BaseRepository;
-use RZP\Models\Base\RepositoryUpdateTestAndLive;
-
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Action;
+use RZP\Base\Repository as BaseRepository;
+use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends BaseRepository
 {
@@ -14,15 +13,6 @@ class Repository extends BaseRepository
 
     const ORG_ID = 'org_id';
     const ACTION_ID = 'action_id';
-
-    public function findOrFailPublicWithRelations(
-        string $id,
-        array $relations = [])
-    {
-        return $this->newQuery()
-                    ->with($relations)
-                    ->findOrFailPublic($id);
-    }
 
     public function findByIdAndOrgId(string $id, string $orgId)
     {

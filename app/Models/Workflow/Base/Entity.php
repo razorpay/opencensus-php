@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Workflow\Base;
 
+use RZP\Models\Admin\Org;
 use RZP\Models\Base as BaseModel;
-use RZP\Models\Admin\Org\Entity as Org;
 
 class Entity extends BaseModel\PublicEntity
 {
@@ -13,7 +13,7 @@ class Entity extends BaseModel\PublicEntity
 
         if ($orgId !== null)
         {
-            $attributes[static::ORG_ID] = Org::getSignedId($orgId);
+            $attributes[static::ORG_ID] = Org\Entity::getSignedId($orgId);
         }
     }
 }

@@ -16,7 +16,7 @@ class Service extends Base\Service
 
         $workflow = $this->core()->create($input);
 
-        return ['success' => true];
+        return $workflow->toArrayPublic();
     }
 
     public function fetch(string $id)
