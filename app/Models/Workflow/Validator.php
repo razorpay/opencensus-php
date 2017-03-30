@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow;
 use RZP\Base;
 use RZP\Error;
 use RZP\Exception;
+use RZP\Models\Workflow\Step;
 
 class Validator extends Base\Validator
 {
@@ -12,7 +13,7 @@ class Validator extends Base\Validator
         Entity::NAME        => 'required|string|max:150',
         Entity::ORG_ID      => 'required|string|max:14',
         Entity::PERMISSIONS => 'required|array',
-        Entity::STEPS       => 'required|array',
+        Entity::STEPS       => 'required|array|custom',
     ];
 
     protected static $editRules = [
@@ -32,6 +33,46 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 Error\ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED);
+        }
+    }
+
+    public function validateSteps($attribute, $value)
+    {
+        $this->validateStepLevel($value);
+
+        $this->validateStepUniqueness($value);
+    }
+
+    // Validate all the levels passed in steps array should be incremental value by 1
+    protected function validateStepLevel($steps)
+    {
+        $levels = array_column($steps, Step\Entity::LEVEL);
+
+        $levels = array_unique($levels);
+
+        if (((max($levels) - min($levels)) === (count($levels) - 1)) === false)
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE);
+        }
+    }
+
+    // Validate combination of role and level should be unique in the step array
+    protected function validateStepUniqueness($steps)
+    {
+        $levelRole = [];
+
+        foreach ($steps as $step)
+        {
+            $levelRole[] = $step[Step\Entity::LEVEL] . '_' . $step[Step\Entity::ROLE_ID];
+        }
+
+        $uniqueLevelRole = array_unique($levelRole);
+
+        if (count($uniqueLevelRole) !== count($levelRole))
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE);
         }
     }
 }

@@ -5,8 +5,8 @@ namespace RZP\Models\Workflow;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Workflow\Step;
 use RZP\Models\Admin\Role;
+use RZP\Models\Workflow\Step;
 
 class Core extends Base\Core
 {
@@ -14,28 +14,23 @@ class Core extends Base\Core
     {
         $workflow = (new Entity)->generateId();
 
-        // $workflow->generateId();
-
         $workflow->build($input);
-
-
 
         // Create the steps and workflow in a single transaction
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
 
-            foreach ($input['steps'] as $step)
+            foreach ($input[Entity::STEPS] as $step)
             {
                 $step[Step\Entity::WORKFLOW_ID] = $workflow->getId();
 
-                Role\Entity::verifyIdAndStripSign($step['role_id']);
+                Role\Entity::verifyIdAndStripSign($step[Step\Entity::ROLE_ID]);
 
                 (new Step\Core)->create($step);
             }
 
-
-            $workflow->permissions()->sync($input['permissions']);
+            $workflow->permissions()->sync($input[Entity::PERMISSIONS]);
         });
 
         return $workflow;
@@ -49,7 +44,7 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($workflow);
 
-            $workflow->permissions()->sync($input['permissions']);
+            $workflow->permissions()->sync($input[Entity::PERMISSIONS]);
         });
 
         return $workflow;
