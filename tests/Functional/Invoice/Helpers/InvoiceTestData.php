@@ -2322,6 +2322,7 @@ return [
             'method'  => 'get',
             'content' => [
                 'customer_name' => 'tes',
+                'notes'         => 'info',
             ],
         ],
         'response' => [
@@ -2355,6 +2356,76 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByQ' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'q'     => 'sampl',
+                'skip'  => 10,
+                'count' => 5,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id'       => 'inv_1000000invoice',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesOnlyMysqlFields' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'type'    => 'link',
+                'user_id' => '1000000000user',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id'      => 'inv_1000000invoice',
+                        'type'    => 'link',
+                        'user_id' => '1000000000user',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesMixedFields' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'type'    => 'link',
+                'user_id' => '1000000000user',
+                'receipt' => 'xyz',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'type, user_id not expected with other params sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -2621,8 +2692,8 @@ return [
     // Expectations for ES
 
     'testGetInvoiceByReceiptExpectedSearchParams' => [
-        'index' => 'test_invoice',
-        'type'  => 'test_invoice',
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -2668,8 +2739,8 @@ return [
     ],
 
     'testGetMultipleInvoicesOnlyEsFieldsExpectedSearchParams' => [
-        'index' => 'test_invoice',
-        'type'  => 'test_invoice',
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -2685,6 +2756,14 @@ return [
                                 ],
                             ],
                         ],
+                        [
+                            'multi_match' => [
+                                'query'  => 'info',
+                                'type'   => 'best_fields',
+                                'fields' => 'notes.*',
+                                'boost'  => 2,
+                            ],
+                        ]
                     ],
                     'filter' => [
                         'bool' => [
@@ -2717,9 +2796,64 @@ return [
         ],
     ],
 
+    'testGetMultipleInvoicesByQExpectedSearchParams' => [
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 10,
+            'size'    => 5,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'multi_match' => [
+                                'query'  => 'sampl',
+                                'type'   => 'best_fields',
+                                'fields' => [
+                                    'receipt',
+                                    'customer_name',
+                                    'customer_contact',
+                                    'customer_email',
+                                    'description',
+                                    'terms',
+                                    'notes.*',
+                                ],
+                                'boost'  => 1,
+                            ],
+                        ]
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByQExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000000invoice',
+                ],
+            ],
+        ],
+    ],
+
     'testGetMultipleInvoicesSearchHitsOnlyExpectedSearchParams' => [
-        'index' => 'test_invoice',
-        'type'  => 'test_invoice',
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
         'body'  => [
             '_source' => true,
             'from'    => 0,
@@ -2780,7 +2914,7 @@ return [
     ],
 
     'expectedCreateIndexParams' => [
-        'index' => 'test_invoice',
+        'index' => 'invoice_test',
         'body' => [
             'settings' => [
                 'index.mapping.total_fields.limit'  => 10000000,
@@ -2811,7 +2945,7 @@ return [
                 ],
             ],
             'mappings' => [
-                '_default_' => [
+                'invoice_test' => [
                     '_all' => [
                         'enabled' => false,
                     ],
@@ -2892,8 +3026,8 @@ return [
         'body' => [
             [
                 'index' => [
-                    '_index' => 'test_invoice',
-                    '_type'  => 'test_invoice',
+                    '_index' => 'invoice_test',
+                    '_type'  => 'invoice_test',
                     // '_id'    => '7KoRT3qkc1KGFb',
                 ],
             ],

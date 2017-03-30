@@ -389,13 +389,6 @@ class PaymentRetrieveTest extends TestCase
 
     public function testSearchEsEntityNotPresentInMySql()
     {
-        //
-        // TODO:
-        // - Discuss this. Not throwing error in such cases and just raising error
-        // alert and returning whatever is in MySQL for the functionality to work.
-        //
-        $this->markTestSkipped();
-
         $this->ba->proxyAuth();
 
         $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);

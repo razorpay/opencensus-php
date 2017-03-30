@@ -367,7 +367,7 @@ class InvoiceTest extends TestCase
 
         $esMock->expects($this->once())
                ->method('indexExists')
-               ->with(['index' => 'test_invoice'])
+               ->with(['index' => 'invoice_test'])
                ->willReturn(false);
 
         $expected = $this->testData['expectedCreateIndexParams'];
@@ -689,8 +689,8 @@ class InvoiceTest extends TestCase
                ->method('delete')
                ->with(
                     [
-                        'index' => 'test_invoice',
-                        'type'  => 'test_invoice',
+                        'index' => 'invoice_test',
+                        'type'  => 'invoice_test',
                         'id'    => '1000000invoice',
                     ]);
 
@@ -1137,20 +1137,48 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMultipleInvoicesByQ()
+    {
+        $this->createManyInvoicesForFetchTests();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
     public function testGetMultipleInvoicesOnlyMysqlFields()
     {
-        //
-        // Cant test this scenario just now. As every param in fetch rules
-        // for invoice entity is put in ES.
-        //
+        $this->createDraftInvoice([
+                'id'      => '1000000invoice',
+                'user_id' => '1000000000user',
+                'type'    => 'link',
+            ]);
+
+        $this->createDraftInvoice([
+                'id'   => '1000001invoice',
+                'type' => 'link',
+            ]);
+
+        $this->createDraftInvoice([
+                'id'      => '1000002invoice',
+                'user_id' => '1000000000user',
+                'type'    => 'invoice',
+            ]);
+
+
+        $esMock = $this->createEsMock(['search']);
+
+        $esMock->expects($this->never())
+               ->method('search');
+
+        $this->startTest();
     }
 
     public function testGetMultipleInvoicesMixedFields()
     {
-        //
-        // Cant test this scenario just now. As every param in fetch rules
-        // for invoice entity is put in ES.
-        //
+        $this->startTest();
     }
 
     public function testGetMultipleInvoicesSearchHitsOnly()
@@ -1160,13 +1188,6 @@ class InvoiceTest extends TestCase
         $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
 
         $this->startTest();
-    }
-
-    public function testGetMultipleInvoicesWhenEsFails()
-    {
-        //
-        // If ES fails should fall back to MySQL
-        //
     }
 
     // -------------------------------------------------------------------------
@@ -1534,12 +1555,17 @@ class InvoiceTest extends TestCase
     {
         $this->createDraftInvoice(
             [
-                'id' => '1000000invoice',
+                'id'    => '1000000invoice',
+                'notes' => [
+                    'extra' => 'Extra Information in notes key!!',
+                    'ref'   => 'Sample Reference Number',
+                ]
             ]);
 
         $this->createDraftInvoice(
             [
-                'id' => '1000001invoice',
+                'id'    => '1000001invoice',
+                'terms' => 'Random terms and conditions',
             ]);
 
         // $this->createDraftInvoice(

@@ -26,6 +26,7 @@ class Repository extends Base\Repository
         Entity::CUSTOMER_NAME     => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
         Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
         Entity::CUSTOMER_EMAIL    => 'sometimes|email',
+        Entity::NOTES             => 'sometimes|string|min:1|max:40',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
     ];

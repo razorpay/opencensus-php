@@ -38,11 +38,11 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Constructor
      *
-     * @param string|null $indexName
+     * @param string|null $entity
      *
      * @return
      */
-    public function __construct(string $indexName = null)
+    public function __construct(string $entity = null)
     {
         parent::__construct();
 
@@ -54,13 +54,19 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->esDao = new Base\EsDao;
 
-        // If index name is set as part of constructor arg, assign it to class
-        // member and also set the same for es dao object.
-        if ($indexName !== null)
+        // If entity name is set as part of constructor arg, get corresponding
+        // index name from config and assign it to instance var and also set the
+        // same for es dao object.
+        if ($entity !== null)
         {
-            $this->indexName = $app['rzp.mode'] . '_' . $indexName;
+            $this->indexName = $app['config']->get(
+                sprintf('database.es_%s.%s', $entity, $app['rzp.mode']));
 
-            $this->esDao->setIndexNameByValue($this->indexName);
+            // TODO: Condition can be remove later, handles old flow.
+            if ($this->indexName !== null)
+            {
+                $this->esDao->setIndexNameByValue($this->indexName);
+            }
         }
     }
 
@@ -138,11 +144,6 @@ class Repository extends \Razorpay\Spine\Repository
         $params['merchant_id'] = $entityArray['merchant_id'];
         $params['entity_id'] = $entityArray['id'];
 
-        if ($esDao === null)
-        {
-            $esDao = $this->esDao;
-        }
-
         $esDao->storeNotes($typeName, $params);
     }
 
@@ -202,7 +203,7 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $settings = Mapping::$indexSettings;
 
-        $mappings = Mapping::mappings($this->fields, $this->fieldMappings);
+        $mappings = Mapping::mappings($this->indexName, $this->fields, $this->fieldMappings);
 
         $this->esDao->createIndexIfNotExistsInDefaultHost($this->indexName, $settings, $mappings);
     }

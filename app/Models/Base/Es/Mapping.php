@@ -80,24 +80,22 @@ class Mapping
     ];
 
     public static $typeMappings = [
-        '_default_' => [
-            // We won't be using _all field
-            '_all' => [
-                'enabled' => false,
-            ],
-            'properties' => [],
-            'dynamic_templates' => [
-                [
-                    // All fields of notes object will have following type and
-                    // analysis.
-                    'notes' => [
-                        'path_match' => 'notes.*',
-                        'mapping'    => [
-                            'type'            => 'text',
-                            'analyzer'        => 'edge_ngram_analyzer',
-                            'search_analyzer' => 'standard',
-                            'index_options'   => 'offsets',
-                        ],
+        // We won't be using _all field
+        '_all' => [
+            'enabled' => false,
+        ],
+        'properties' => [],
+        'dynamic_templates' => [
+            [
+                // All fields of notes object will have following type and
+                // analysis.
+                'notes' => [
+                    'path_match' => 'notes.*',
+                    'mapping'    => [
+                        'type'            => 'text',
+                        'analyzer'        => 'edge_ngram_analyzer',
+                        'search_analyzer' => 'standard',
+                        'index_options'   => 'offsets',
                     ],
                 ],
             ],
@@ -108,12 +106,13 @@ class Mapping
      * Utility: Returns mapping put with default values in case it doesn't exists
      * for a given field.
      *
-     * @param array $fields
-     * @param array $fieldMappings
+     * @param string $typeName
+     * @param array  $fields
+     * @param array  $fieldMappings
      *
      * @return array
      */
-    public static function mappings(array $fields, array $fieldMappings): array
+    public static function mappings(string $typeName, array $fields, array $fieldMappings): array
     {
         foreach ($fields as $field)
         {
@@ -123,9 +122,9 @@ class Mapping
             }
         }
 
-        $mappings = self::$typeMappings;
+        $mappings[$typeName] = self::$typeMappings;
 
-        $mappings['_default_']['properties'] = $fieldMappings;
+        $mappings[$typeName]['properties'] = $fieldMappings;
 
         return $mappings;
     }

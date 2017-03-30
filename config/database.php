@@ -160,6 +160,11 @@ return array(
         'test' => env('ES_AUDIT_TEST_INDEX')
     ],
 
+    'es_invoice' => [
+        'live' => env('ES_INVOICE_LIVE_INDEX'),
+        'test' => env('ES_INVOICE_TEST_INDEX'),
+    ],
+
     'es_host'  => env('ES_HOST'),
 
     'es_audit_host' => env('ES_AUDIT_HOST'),
