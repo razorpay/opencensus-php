@@ -166,14 +166,6 @@ return [
             Permission::DELETE_ADMIN      => 'Delete admin',
         ],
 
-        // ORG FieldMap
-        PermissionCategory::ORG_FIELDMAP => [
-            Permission::CREATE_ORG_FIELDMAP => 'create org field map',
-            Permission::GET_ORG_FIELDMAP    => 'get org field map',
-            Permission::EDIT_ORG_FIELDMAP   => 'edit org field map',
-            Permission::DELETE_ORG_FIELDMAP => 'delete org field map',
-        ],
-
         // Permissions
         PermissionCategory::PERMISSION => [
             Permission::VIEW_ALL_PERMISSION => 'View all permissions',

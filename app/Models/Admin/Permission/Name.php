@@ -123,10 +123,6 @@ class Name
     const DELETE_PERMISSION               = 'delete_permission';
     const CREATE_PERMISSION               = 'create_permission';
     const EDIT_PERMISSION                 = 'edit_permission';
-    const CREATE_ORG_FIELDMAP             = 'create_org_fieldmap';
-    const GET_ORG_FIELDMAP                = 'get_org_fieldmap';
-    const EDIT_ORG_FIELDMAP               = 'edit_org_fieldmap';
-    const DELETE_ORG_FIELDMAP             = 'delete_org_fieldmap';
     const CREATE_MERCHANT_INVITE          = 'create_merchant_invite';
     const VIEW_MERCHANT_INVITE            = 'view_merchant_invite';
 }

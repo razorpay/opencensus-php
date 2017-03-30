@@ -36,7 +36,6 @@ class Entity extends Base\Entity
         self::ID,
         self::ADMIN_ID,
         self::ORG_ID,
-        self::TOKEN,
         self::EMAIL,
         self::FORM_DATA,
         self::CREATED_AT,
@@ -103,6 +102,11 @@ class Entity extends Base\Entity
     public function getOrgId() : string
     {
         return $this->getAttribute(self::ORG_ID);
+    }
+
+    public function getToken() : string
+    {
+        return $this->getAttribute(self::TOKEN);
     }
 
     public function getAdminId() : string
