@@ -1,7 +1,7 @@
 #!/bin/bash
 url='http://localhost:'
 port=`docker ps|grep "razorpay:dashboard"|awk -F" {2,}" '{print $6}'|cut -d ':' -f2|awk -F '->' '{print $1}'`
-if [ -z "$port" ] 
+if [ -z "$port" ]
 then
 	echo "API Port Unavailable. No output from docker. Setting port to default value of 38080"
 	port=38080
@@ -17,7 +17,7 @@ do
 		echo "Dashboard setup ongoing. Waiting for server to startup and connect..."
 		sleep 30
 	else
-		echo "API Server is operationally up at:" $url
+		echo "Dashboard Server is operationally up at:" $url
 		break
 	fi
 done
