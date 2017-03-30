@@ -988,7 +988,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($txn);
 
         $this->trace->info(
-            TraceCode::TRANSACTION_CREATED_FOR_AUTH_CAPTURE,
+            TraceCode::TRANSACTION_CREATED_FOR_NON_AUTH_CAPTURE,
             [
                 'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId(),
