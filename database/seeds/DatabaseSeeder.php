@@ -451,7 +451,7 @@ class DatabaseSeeder extends Seeder
                     'id'          => '7NamQFIGFyyNdc',
                     'org_id'      => '100000razorpay',
                     'entity_name' => 'admin',
-                    'fields'      => "name,email,allow_all_merchants,disabled,roles,groups",
+                    'fields'      => "name,email,allow_all_merchants,disabled,oauth_access_token,oauth_provider_id,roles,groups",
                     'created_at'  => time(),
                     'updated_at'  => time(),
                 ],

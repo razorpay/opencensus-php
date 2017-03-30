@@ -36,6 +36,7 @@ class Entity extends Base\Entity
         self::ID,
         self::ADMIN_ID,
         self::ORG_ID,
+        self::TOKEN,
         self::EMAIL,
         self::FORM_DATA,
         self::CREATED_AT,

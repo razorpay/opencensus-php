@@ -119,6 +119,8 @@ return [
             Permission::SCHEDULE_MIGRATION => '',
             Permission::VIEW_ACTIONS => '',
             Permission::VIEW_MERCHANT_STATS => '',
+            Permission::CREATE_MERCHANT_INVITE => '',
+            Permission::VIEW_MERCHANT_INVITE => '',
         ],
 
         PermissionCategory::ENTITY => [
@@ -162,6 +164,14 @@ return [
             Permission::CREATE_ADMIN      => 'Create admin',
             Permission::EDIT_ADMIN        => 'Edit admin',
             Permission::DELETE_ADMIN      => 'Delete admin',
+        ],
+
+        // ORG FieldMap
+        PermissionCategory::ORG_FIELDMAP => [
+            Permission::CREATE_ORG_FIELDMAP => 'create org field map',
+            Permission::GET_ORG_FIELDMAP    => 'get org field map',
+            Permission::EDIT_ORG_FIELDMAP   => 'edit org field map',
+            Permission::DELETE_ORG_FIELDMAP => 'delete org field map',
         ],
 
         // Permissions
@@ -217,6 +227,9 @@ return [
             Permission::VIEW_MERCHANT_BALANCE_LIVE        => '',
 
             Permission::EDIT_MERCHANT_EMAIL => '',
+
+            Permission::CREATE_MERCHANT_INVITE => '',
+            Permission::VIEW_MERCHANT_INVITE => '',
         ],
 
         // UAM
