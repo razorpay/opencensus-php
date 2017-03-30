@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\AES;
+use RZP\Models\Payment;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
@@ -32,7 +33,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $content = $this->getPaymentRequestData($input);
+        $content = $this->getPaymentRequestData($input, Constants::PAY);
 
         $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
 
@@ -167,7 +168,7 @@ class Gateway extends Base\Gateway
     {
         $data = $this->createDefaultRequestData($input, $mode);
 
-        $data[RequestFields::ENCRYPTED_STRING] = $this->getEncryptedString($input);
+        $data[RequestFields::ENCRYPTED_STRING] = $this->getEncryptedString($input, $mode);
 
         return $data;
     }
@@ -187,7 +188,7 @@ class Gateway extends Base\Gateway
 
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(Constants::MODE_ECB, $masterKey);
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
         return base64_encode($aes->encryptString($queryString));
     }
@@ -245,9 +246,11 @@ class Gateway extends Base\Gateway
 
         $masterKey = $this->getSecret();
 
-        $crypto = new AESCrypto(Constants::MODE_ECB, $masterKey);
+        $crypto = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
-        $decryptedString = $crypto->decryptString($encryptedString);
+        $encryptedString = str_replace(' ', '+', $encryptedString);
+
+        $decryptedString = $crypto->decryptString(base64_decode($encryptedString));
 
         parse_str($decryptedString, $response);
 
@@ -286,11 +289,21 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function getPid()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestMerchantId();
+        }
+
+        return $this->getLiveMerchantId();
+    }
+
     protected function getCallbackAttributes(array $content)
     {
         return [
             Base\Entity::RECEIVED        => true,
-            Base\Entity::STATUS          => $content[ResponseFields::STATUS],
+            Base\Entity::STATUS          => $content[ResponseFields::PAID],
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID]
         ];
     }
@@ -329,16 +342,6 @@ class Gateway extends Base\Gateway
         // Lets assume we verify only one payment at a time
         // So the response will contain just 1 table at a time
         return (array) $responseArray['Table1'];
-    }
-
-    /*
-     *  Overriding parent class's method
-     */
-    protected function getUrlDomain()
-    {
-        $this->domainType = $this->action;
-
-        return parent::getUrlDomain();
     }
 
     public function getMerchantId()

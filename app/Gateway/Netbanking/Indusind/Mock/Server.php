@@ -22,7 +22,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($decryptedData, 'auth_decrypted');
 
-        $postData = $this->createPostData($decryptedData);
+        $postData = $this->createPostData(array_merge($input,$decryptedData));
 
         $this->content($postData);
 
@@ -56,10 +56,7 @@ class Server extends Base\Mock\Server
             ResponseFields::PAID               => Constants::YES,
         ];
 
-        if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
-        {
-            $response[ResponseFields::BANK_REFERENCE_ID] = 9999999999;
-        }
+        $response[ResponseFields::BANK_REFERENCE_ID] = 9999999999;
 
         return $response;
     }

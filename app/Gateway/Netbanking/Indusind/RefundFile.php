@@ -1,0 +1,96 @@
+<?php
+
+namespace RZP\Gateway\Netbanking\Indusind;
+
+use Carbon\Carbon;
+use RZP\Gateway\Base;
+use RZP\Models\FileStore;
+use RZP\Constants\MailTags;
+
+class RefundFile extends Base\RefundFile
+{
+    protected static $fileToWriteName = 'Indusind_Netbanking_Refunds';
+
+    const EMAIL_BODY = 'Please forward the Indusind Netbanking refunds file to UBPS operations team';
+
+    // The columns of the file
+    protected static $headers = [
+        RefundFileFields::SERIAL_NO,
+        RefundFileFields::PAYEE_ID,
+        RefundFileFields::SPID,
+        RefundFileFields::BANK_REFERENCE_ID,
+        RefundFileFields::TRANSACTION_DATE,
+        RefundFileFields::TRANSACTION_AMOUNT,
+        RefundFileFields::REFUND_AMOUNT,
+        RefundFileFields::TRANSACTION_ID,
+        RefundFileFields::REFUND_MODE,
+        RefundFileFields::REMARKS,
+    ];
+
+    public function generate($input)
+    {
+        $data = $this->getRefundData($input);
+
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $urlExcel = $this->writeToExcelFile($data, $fileName);
+
+        // Creating a file with excel format
+        $creator = $this->createFile(
+            FileStore\Format::XLSX,
+            $data,
+            $fileName,
+            FileStore\Type::INDUSIND_NETBANKING_REFUND);
+
+        $fileData = [
+            'file_path' => $this->getExcelFullFilePath(),
+            'body' => self::EMAIL_BODY,
+        ];
+
+        $this->sendRefundEmail($fileData);
+
+        return $urlExcel;
+    }
+
+    protected function getRefundData($input)
+    {
+        foreach ($input['data'] as $index => $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['payment']['created_at'], 'Asia/Kolkata')->format('jS F Y');
+
+            $data[] = [
+                RefundFileFields::SERIAL_NO          => $index + 1,
+                RefundFileFields::BANK_REFERENCE_ID  => $row['gateway']['bank_payment_id'],
+                RefundFileFields::REFUND_AMOUNT      => $row['refund']['amount'] / 100,
+                RefundFileFields::TRANSACTION_ID     => $row['payment']['id'],
+            ];
+        }
+
+        return $data;
+    }
+
+    protected function sendRefundEmail($fileData = [])
+    {
+        $fullpath = $this->getExcelFullFilePath();
+
+        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
+        {
+            $emails = ['settlements@razorpay.com'];
+
+            $message->from('refunds@razorpay.com', 'Indusind Netbanking refunds');
+
+            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+            $message->subject('Indusind Netbanking refunds file for ' . $today);
+
+            $message->to($emails);
+
+            $message->attach($fileData['file_path']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', MailTags::INDUSIND_NETBANKING_REFUNDS_MAIL);
+        });
+    }
+}
