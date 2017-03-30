@@ -16,6 +16,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'org_field_map';
 
+    protected static $sign = 'ofm';
+
     protected $fillable = [
         self::ORG_ID,
         self::ENTITY_NAME,
