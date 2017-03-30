@@ -47,12 +47,14 @@ class Base extends Core
             assertTrue($month <= 12);
 
             $from = Carbon::today('Asia/Kolkata')
+                                  ->day(1)
                                   ->month($month)
                                   ->year($year)
                                   ->startOfMonth()
                                   ->timestamp;
 
             $to   = Carbon::today('Asia/Kolkata')
+                                  ->day(1)
                                   ->month($month)
                                   ->year($year)
                                   ->endOfMonth()
