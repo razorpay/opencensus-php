@@ -423,29 +423,6 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
-     * Updates the default query for getting models for indexing.
-     * E.g. In case of merchant, it needs join with merchant_detail, etc.
-     *
-     * @param BuilderEx $query
-     *
-     * @return
-     */
-    protected function modifyQueryForIndexing(BuilderEx & $query) {}
-
-    /**
-     * Serializes a given model for indexing.
-     * Please override this per need to avoid unnecessary MySQL queries.
-     *
-     * @param Models\Base\PublicEntity $entity
-     *
-     * @return array
-     */
-    protected function serialize(Models\Base\PublicEntity $entity): array
-    {
-        return $entity->setVisible($this->getEsRepo()->getFields())->toArray();
-    }
-
-    /**
      * Find entity with given id for indexing.
      *
      * @param string $id
@@ -460,7 +437,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $entity = $query->find($id);
 
-        return $this->serialize($entity);
+        return $this->serializeForIndexing($entity);
     }
 
     /**
@@ -482,9 +459,36 @@ class Repository extends \Razorpay\Spine\Repository
         return array_map(
             function ($v)
             {
-                return $this->serialize($v);
+                return $this->serializeForIndexing($v);
             },
             $collection->all());
+    }
+
+    /**
+     * Updates the default query for getting models for indexing.
+     * E.g. In case of merchant, it needs join with merchant_detail, etc.
+     *
+     * @param BuilderEx $query
+     *
+     * @return
+     */
+    protected function modifyQueryForIndexing(BuilderEx & $query) {}
+
+    /**
+     * Serializes a given model for indexing.
+     * Please override this per need to avoid unnecessary MySQL queries.
+     *
+     * @param Models\Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serializeForIndexing(Models\Base\PublicEntity $entity): array
+    {
+        // We use setVisible to make only select attributes available after
+        // toArray. The result from toArray is directly passed to es client for
+        // indexing.
+
+        return $entity->setVisible($this->getEsRepo()->getFields())->toArray();
     }
 
     /**
