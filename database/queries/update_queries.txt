@@ -136,3 +136,22 @@ UPDATE axis SET vpc_Message = "Approved", vpc_TxnResponseCode = "0" WHERE id = 1
 
 UPDATE billdesk SET RefundId = 'ISBI52218128951' WHERE id = 1135026;
 UPDATE billdesk SET RefundId = 'ISBI52122271361' WHERE id = 1112770;
+
+## Data fix for NonAuthCapture Transactions (PR:2660)
+UPDATE transactions
+    JOIN payments
+    ON transactions.entity_id = payments.id
+    SET transactions.fee = 0,
+        transactions.service_tax = 0
+    WHERE payments.status = 'authorized' AND
+          transactions.fee > 0
+
+DELETE FROM fees_breakup
+    WHERE transaction_id IN (
+        SELECT transactions.id
+            FROM transactions
+            JOIN payments
+            ON transactions.entity_id = payments.id
+            WHERE payments.status = 'authorized' AND
+                  transactions.fee > 0
+        )
