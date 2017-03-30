@@ -36,6 +36,17 @@ return [
         'fees'              => 115000,
         'service_tax'       => 15000,
         'failure_reason'    => null,
+        'attempt_count'     => 1,
+    ],
+
+    'fetchAndMatchSettlementsForRetryReconSuccess' => [
+        'channel'           => "kotak",
+        'merchant_id'       => '10000000000000',
+        'amount'            => 4385000,
+        'fees'              => 115000,
+        'service_tax'       => 15000,
+        'failure_reason'    => null,
+        'attempt_count'     => 2,
     ],
 
     'fetchAndMatchSettlementsForReconFailure' => [
@@ -46,6 +57,7 @@ return [
         'service_tax'       => 15000,
         'failure_reason'    => 'Reconciliation',
         'status'            => 'failed',
+        'attempt_count'     => 1,
     ],
 
     // status is not matched as we keep it created till 10pm

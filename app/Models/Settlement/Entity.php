@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX            = 'service_tax';
     const STATUS                 = 'status';
     const TRANSACTION_ID         = 'transaction_id';
+    const ATTEMPT_COUNT          = 'attempt_count';
     const CHANNEL                = 'channel';
     const UTR                    = 'utr';
     const FAILURE_REASON         = 'failure_reason';
@@ -28,15 +29,19 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'settlement';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::FEES,
         self::SERVICE_TAX,
         self::STATUS,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
-        self::TRANSACTION_ID);
+        self::TRANSACTION_ID,
+        self::ATTEMPT_COUNT,
+        self::CHANNEL,
+        self::AMOUNT,
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
@@ -46,14 +51,16 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::STATUS,
         self::TRANSACTION_ID,
+        self::ATTEMPT_COUNT,
         self::FAILURE_REASON,
         self::REMARKS,
         self::CHANNEL,
         self::UTR,
         self::CREATED_AT,
-        self::UPDATED_AT);
+        self::UPDATED_AT
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::AMOUNT,
@@ -61,13 +68,18 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::SERVICE_TAX,
         self::UTR,
-        self::CREATED_AT);
+        self::CREATED_AT
+    ];
 
-    protected $amounts = array(
+    protected $defaults = [
+        self::ATTEMPT_COUNT => 1,
+    ];
+
+    protected $amounts = [
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
-    );
+    ];
 
     // --------------------------------- relations -------------------------------
 
@@ -160,6 +172,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getAttemptCount()
+    {
+        return $this->getAttribute(self::ATTEMPT_COUNT);
+    }
+
     // --------------------------------- setters -------------------------------
 
     public function setAmount($amount)
@@ -222,6 +239,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERSION, $version);
     }
 
+    public function setAttemptCount($count)
+    {
+        $this->setAttribute(self::ATTEMPT_COUNT, $count);
+    }
+
     // --------------------------------- modifiers -------------------------------
 
     protected function getServiceTaxAttribute()
@@ -270,19 +292,13 @@ class Entity extends Base\PublicEntity
 
     public function save(array $options = array())
     {
-        $this->validateAmount();
-
         return parent::save($options);
     }
 
-    protected function validateAmount()
+    public function incrementAttemptCount()
     {
-        // if ($this->getAmount() <= 0)
-        // {
-        //     throw new Exception\LogicException(
-        //         'Something very wrong is happening! ' .
-        //         'Settlement amount should not be 0 or -ve',
-        //         $this->toArray());
-        // }
+        $count = $this->getAttemptCount() + 1;
+
+        $this->setAttemptCount($count);
     }
 }

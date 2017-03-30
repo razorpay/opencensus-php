@@ -1863,3 +1863,6 @@ ALTER TABLE fund_transfer_attempts
     ADD COLUMN excel_file_id CHAR(14) AFTER batch_fund_transfer_id,
     ADD CONSTRAINT fund_transfer_attempts_excel_file_id_foreign FOREIGN KEY(excel_file_id)
     REFERENCES files(id) ON DELETE RESTRICT;
+
+ALTER TABLE settlements
+    ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 1 AFTER channel;
