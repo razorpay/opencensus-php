@@ -40,8 +40,8 @@ class Create extends Base
         return [
             'user' => $this->admin->getEmail(),
             // todo: Hack for now. Remove it
-            'password' => $input['password'],
-            'org' => $org->getDisplayName(),
+            'password' => $this->input['password'],
+            'org' => $this->org->getDisplayName(),
             'url' => $this->url,
         ];
     }
