@@ -497,10 +497,8 @@ class ErrorCode
     const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
     const BAD_REQUEST_ACTION_NOT_APPROVED                                           = 'BAD_REQUEST_ACTION_NOT_APPROVED';
     const BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED                                   = 'BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED';
-    const BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED                        = 'BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED';
     const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                                  = 'BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE';
     const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                               = 'BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE';
-
 
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';

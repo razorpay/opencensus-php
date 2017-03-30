@@ -17,26 +17,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::NAME        => 'required|string|max:150',
-        Entity::PERMISSIONS => 'required|array',
+        Entity::NAME        => 'sometimes|string|max:150',
+        Entity::PERMISSIONS => 'sometimes|array',
     ];
 
-    public function validatePermissions($workflow, $input)
-    {
-        $permissionIds = $workflow->permissions
-                                  ->each(function($permission, $key) {
-                                        return $permission->getId();
-                                    })
-                                  ->toArray();
-
-        if (empty(array_diff($permissionIds, $input[Entity::PERMISSIONS])) === false)
-        {
-            throw new Exception\BadRequestException(
-                Error\ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED);
-        }
-    }
-
-    public function validateSteps($attribute, $value)
+    public function validateSteps(string $attribute, array $value)
     {
         $this->validateStepLevel($value);
 
@@ -44,7 +29,7 @@ class Validator extends Base\Validator
     }
 
     // Validate all the levels passed in steps array should be incremental value by 1
-    protected function validateStepLevel($steps)
+    protected function validateStepLevel(array $steps)
     {
         $levels = array_column($steps, Step\Entity::LEVEL);
 
@@ -58,7 +43,7 @@ class Validator extends Base\Validator
     }
 
     // Validate combination of role and level should be unique in the step array
-    protected function validateStepUniqueness($steps)
+    protected function validateStepUniqueness(array $steps)
     {
         $levelRole = [];
 

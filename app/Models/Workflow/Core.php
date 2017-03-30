@@ -40,11 +40,13 @@ class Core extends Base\Core
     {
         $workflow->edit($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use($workflow)
+        $permissionIds = $this->getPermissionIds($workflow, $input[Entity::PERMISSIONS]);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($workflow, $permissionIds)
         {
             $this->repo->saveOrFail($workflow);
 
-            $workflow->permissions()->sync($input[Entity::PERMISSIONS]);
+            $workflow->permissions()->sync($permissionIds);
         });
 
         return $workflow;
@@ -63,5 +65,14 @@ class Core extends Base\Core
         return $this->repo->workflow->deleteOrFail($workflow);
     }
 
+    protected function getPermissionIds(Entity $workflow, array $permissions = [])
+    {
+        $permissionIds = $workflow->permissions
+                                  ->map(function($permission) {
+                                        return $permission->getId();
+                                    })
+                                  ->toArray();
 
+        return array_unique(array_merge($permissionIds, $permissions));
+    }
 }

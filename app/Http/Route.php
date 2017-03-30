@@ -898,6 +898,7 @@ final class Route
         // workflows
         'workflow_create',
         'workflow_get',
+        'workflow_update',
         'workflow_step_create',
         'action_checker_create',
         'action_checker_multiple',

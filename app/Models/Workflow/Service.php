@@ -12,7 +12,7 @@ class Service extends Base\Service
     {
         Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
 
-        Permission\Entity::verifyIdAndStripSignMultiple($input['permissions']);
+        Permission\Entity::verifyIdAndStripSignMultiple($input[Entity::PERMISSIONS]);
 
         $workflow = $this->core()->create($input);
 
@@ -28,13 +28,13 @@ class Service extends Base\Service
         return $workflow->toArrayPublic();
     }
 
-    public function update(string $id)
+    public function update(string $id, array $input)
     {
         Entity::verifyIdAndStripSign($id);
 
-        $workflow = $this->repo->workflow->findOrFailPublic($id);
+        Permission\Entity::verifyIdAndStripSignMultiple($input[Entity::PERMISSIONS]);
 
-        (new Validator)->validatePermissions($workflow, $input);
+        $workflow = $this->repo->workflow->findOrFailPublic($id);
 
         $workflow = $this->core()->update($workflow, $input);
 
