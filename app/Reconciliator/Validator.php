@@ -129,6 +129,11 @@ class Validator
 
         $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::NETBANKING_ICICI);
 
+        //
+        // There isn't a need to validate the attachment count because
+        // validateAttachments already validates a non zero value.
+        // In this case, the number is attachments is variable.
+        //
         return ($validSubject and $validBody);
     }
 

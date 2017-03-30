@@ -63,11 +63,11 @@ class Reconciliate extends Base\Reconciliate
 
     public function inExcludeList(array $fileDetails)
     {
-        if (strpos($fileDetails['file_name'], self::EXCLUDE_FILE_STRING) === false)
+        if (strpos($fileDetails['file_name'], self::EXCLUDE_FILE_STRING) !== false)
         {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 }
