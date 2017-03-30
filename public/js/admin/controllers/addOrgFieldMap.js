@@ -43,6 +43,10 @@ app.controller('AddOrgFieldMap', [
           fieldMap.fields = fields.split(",");
         }
 
+        for (var field in fieldMap.fields) {
+          fieldMap.fields[field] = fieldMap.fields[field].trim();
+        }
+
         var data = {
           route_name: 'org_fieldmap_edit',
           url_params: {
@@ -64,6 +68,10 @@ app.controller('AddOrgFieldMap', [
         var fields = fieldMap.fields;
         if (!Array.isArray(fields)) {
           fieldMap.fields = fields.split(",");
+        }
+
+        for (var field in fieldMap.fields) {
+          fieldMap.fields[field] = fieldMap.fields[field].trim();
         }
 
         var data = {
