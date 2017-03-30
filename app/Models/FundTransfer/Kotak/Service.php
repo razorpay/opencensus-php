@@ -45,6 +45,8 @@ class Service extends Base\Service
     {
         $urls = (new NodalAccount)->generateSettlementFile($setlAttempts, false);
 
+        $urls = array_column($urls, 'local_file_path');
+
         return $urls;
     }
 

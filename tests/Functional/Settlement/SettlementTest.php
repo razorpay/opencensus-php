@@ -491,7 +491,6 @@ class SettlementTest extends TestCase
 
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 4);
-        s($content);
     }
 
     public function testIciciNodalTransfer()
