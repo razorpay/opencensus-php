@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Workflow;
 
-use Constants\Table;
+use RZP\Constants\Table;
 use RZP\Models\Workflow\Step;
 
 class Repository extends Base\Repository
@@ -17,18 +17,10 @@ class Repository extends Base\Repository
     {
         $allWorkflowColumns = $this->getAttributeWithTableName("*");
 
-        $permissionWorkflowId = $this->manager
-                                     ->workflow_permissions
-                                     ->getAttributeWithTableName(Step\Entity::WORKFLOW_ID);
-
-        $permissionId = $this->manager
-                             ->workflow_permissions
-                             ->getAttributeWithTableName(Entity::PERMISSION_ID);
-
         return $this->newQuery()
-                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, "=", $permissionWorkflowId)
-                    ->with('steps', 'permissions')
-                    ->whereIn($permissionId, $permissionIds)
+                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, "=", "workflow_permissions.workflow_id")
+                    ->with(['steps', 'permissions'])
+                    ->whereIn("workflow_permissions.permission_id", $permissionIds)
                     ->get();
     }
 }

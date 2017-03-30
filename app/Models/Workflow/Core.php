@@ -18,7 +18,7 @@ class Core extends Base\Core
 
         $workflow->build($input);
 
-        $this->validateExistingWorkflows($workflow, $input);
+        $this->validateExistingWorkflows($input);
 
         // Create the steps and workflow in a single transaction
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
@@ -44,10 +44,8 @@ class Core extends Base\Core
     {
         $permissions = $input['permissions'];
 
-        Permission\Entity::verifyIdAndStripSignMultiple($permissions);
-
         $workflows = $this->repo
-                          ->workflows
+                          ->workflow
                           ->fetchWorkflowsWithStepsByPermissions($permissions);
 
         $minLevelFromInput = $this->getMinLevelFromInput($input);
@@ -56,7 +54,7 @@ class Core extends Base\Core
 
         foreach ($workflows as $workflow)
         {
-            $minLevelFromSteps = $this->getMinLevelFromSteps($workflow->steps());
+            $minLevelFromSteps = $this->getMinLevelFromSteps($workflow->steps);
 
             if ($minLevelFromSteps === $minLevelFromInput)
             {

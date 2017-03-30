@@ -62,7 +62,7 @@ class Entity extends Base\Entity
     //     return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
     // }
 
-    public function getLevel() : integer
+    public function getLevel()
     {
         return $this->getAttribute(self::LEVEL);
     }

@@ -55,6 +55,11 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
 
+    public function steps()
+    {
+        return $this->hasMany('RZP\Models\Workflow\Step\Entity');
+    }
+
     public function permissions()
     {
         return $this->belongsToMany(
