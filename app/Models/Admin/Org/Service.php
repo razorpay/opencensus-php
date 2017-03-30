@@ -12,6 +12,12 @@ class Service extends Base\Service
 {
     public function create(array $input)
     {
+        if (empty($input[Entity::PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::PERMISSIONS]);
+        }
+
         $org = $this->repo->transactionOnLiveAndTest(function() use ($input)
         {
             $org = $this->core()->create($input);
@@ -27,10 +33,10 @@ class Service extends Base\Service
             }
 
             // create default role
-            $role = $this->createDefaultRole($org);
+            $role = $this->createDefaultRole($org, $input);
 
             // create admin
-            $input['admin']['roles'] = (array) $role->getPublicId();
+            $input['admin']['roles'] = (array) $role->getId();
 
             $input['admin']['email'] = $input['email'];
 
@@ -42,19 +48,38 @@ class Service extends Base\Service
         return $org->toArrayPublic();
     }
 
-    protected function createDefaultRole(Entity $org)
+    /*
+        Create SuperAdmin default role for this org
+    */
+    protected function createDefaultRole(Entity $org, array $input)
     {
-        $permissions = Config::get('heimdall.permissions') ?: [];
-
-        $permissions = (new Permission\Core)->getMultiplePermissionIdsByNames($permissions);
-
         $input = [
             'name' => config('heimdall.default_role_name'),
             'description' => 'This role has all permissions possible',
-            'permissions' => $permissions,
+            'permissions' => $input[Entity::PERMISSIONS],
         ];
 
         return (new Role\Core)->create($org, $input);
+    }
+
+    protected function editDefaultRole(Entity $org, array $input)
+    {
+        // EDIT of default role is only allowed on permissions
+        if (empty($input[Entity::PERMISSIONS]))
+        {
+            return;
+        }
+
+        // Find default role
+        $roleName = config('heimdall.default_role_name');
+
+        $role = (new Role\Core)->findRoleByOrgAndName($org, $roleName);
+
+        $input = [
+            'permissions' => $input[Entity::PERMISSIONS],
+        ];
+
+        return (new Role\Core)->edit($role, $input);
     }
 
     public function fetch(string $id)
@@ -89,6 +114,12 @@ class Service extends Base\Service
 
     public function edit(string $id, array $input)
     {
+        if (empty($input[Entity::PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::PERMISSIONS]);
+        }
+
         $org = $this->repo->transactionOnLiveAndTest(function() use ($id, $input)
         {
             $org = $this->core()->edit($id, $input);
@@ -114,6 +145,9 @@ class Service extends Base\Service
                     (new Hostname\Core)->create($org, $hostname);
                 }
             }
+
+            // create default role
+            $role = $this->editDefaultRole($org, $input);
 
             return $org;
         });

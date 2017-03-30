@@ -4278,17 +4278,31 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "0.2.9",
+            "version": "0.2.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "c53369233ae794724acf0a20582da34b05138d5d"
+                "reference": "dcd12ff8552b2655d2852e57c5983fecad09cdd1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/c53369233ae794724acf0a20582da34b05138d5d",
-                "reference": "c53369233ae794724acf0a20582da34b05138d5d",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/dcd12ff8552b2655d2852e57c5983fecad09cdd1",
+                "reference": "dcd12ff8552b2655d2852e57c5983fecad09cdd1",
                 "shasum": ""
+            },
+            "require": {
+                "php": "^7.0",
+                "php-http/client-implementation": "^1.0",
+                "php-http/discovery": "^1.0",
+                "php-http/httplug": "^1.0",
+                "php-http/message-factory": "^1.0",
+                "psr/http-message": "^1.0"
+            },
+            "require-dev": {
+                "guzzlehttp/psr7": "^1.3",
+                "php-http/message": "^1.0",
+                "php-http/mock-client": "^0.3",
+                "phpunit/phpunit": "^6.0"
             },
             "type": "library",
             "autoload": {
@@ -4307,7 +4321,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2017-02-27T06:31:48+00:00"
+            "time": "2017-03-27T10:04:48+00:00"
         },
         {
             "name": "razorpay/razorpay",
