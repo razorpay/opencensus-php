@@ -28,13 +28,13 @@ class Repository extends Base\Repository
         return false;
     }
 
-    public function findByOrgIdAndEntity($orgId, $entity)
+    public function findByOrgIdAndEntityIfExists($orgId, $entity)
     {
         $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::ENTITY_NAME, '=', $entity)
-                    ->firstOrFailPublic();
+                    ->first();
     }
 }

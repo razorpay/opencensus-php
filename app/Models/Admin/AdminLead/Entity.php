@@ -89,9 +89,14 @@ class Entity extends Base\Entity
         return json_decode($formData, true);
     }
 
-    public function setFormData()
+    public function setFormData(array $formData)
     {
-        return $this->setAttribute(self::FORM_DATA);
+        return $this->setAttribute(self::FORM_DATA, $formData);
+    }
+
+    public function getFormData() : array
+    {
+        return $this->getAttribute(self::FORM_DATA);
     }
 
     public function getOrgId() : string
@@ -117,10 +122,5 @@ class Entity extends Base\Entity
         $rulesVar = $validator->getRulesForOperation('send_invitation');
 
         return array_keys($rulesVar);
-    }
-
-    public function getFormData()
-    {
-        return $this->getAttribute(self::FORM_DATA);
     }
 }

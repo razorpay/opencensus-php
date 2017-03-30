@@ -23,7 +23,7 @@ class Service extends Base\Service
             'sendInvitation', $input, $orgId, $entity);
 
         if ((empty($input['contact_email']) === false) and
-            ($admin->email === $input['contact_email']))
+            ($admin->getEmail() === $input['contact_email']))
         {
             $data = [
                 'email'       => $input['contact_email'],

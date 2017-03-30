@@ -392,7 +392,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::PASSWORD);
     }
 
-    public function getEmail()
+    public function getEmail() : string
     {
         return $this->getAttribute(self::EMAIL);
     }
