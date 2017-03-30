@@ -390,7 +390,7 @@ class NodalAccount
 
     protected function getH2HFileNameWithoutExt()
     {
-        $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis');
+        $name = 'RAZORNODAL'. Carbon::now('Asia/Kolkata')->format('dmYHis');
 
         return $name;
     }
