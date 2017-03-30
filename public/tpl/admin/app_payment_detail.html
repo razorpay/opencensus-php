@@ -186,8 +186,20 @@
           <div class="list-group-item" ng-repeat="key in keysNotShown()"
             ng-init="value = entity[key]"
           >
-            <span class="pull-right" ng-class="displayClass(key, value)">
-              {{displayValue(key, value)}}
+            <span class="pull-right" ng-class="displayClass(key, value)" ng-switch on="key">
+              <span ng-switch-when="invoice_id">
+                <span ng-if="value !== null">
+                  <a ui-sref="app.entitiesdetail({id:value, mode:mode, type: 'invoice'})">
+                    {{displayValue(key, value)}}
+                  </a>
+                </span>
+                <span ng-if="value === null">
+                  {{displayValue(key, value)}}
+                </span>
+              </span>
+              <span ng-switch-default>
+                {{displayValue(key, value)}}
+              </span>
             </span>
             {{key|titlecase}}
           </div>

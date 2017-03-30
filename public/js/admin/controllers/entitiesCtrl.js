@@ -491,7 +491,15 @@ app.controller('EntitiesCtrl', [
       },
       refund: {
         merchant_id: ['Merchant Id'],
-        payment_id: ['Payment Id']
+        payment_id: ['Payment Id'],
+        status: [
+            'all',
+            'created',
+            'failed',
+            'processed'
+        ],
+        transaction_id: ['Transaction Id'],
+        batch_id: ['Batch Id']
       },
       reversal: {
         merchant_id: ['Merchant Id'],
@@ -511,10 +519,18 @@ app.controller('EntitiesCtrl', [
       terminal: {
         enabled: booleanList,
         gateway: gatewayList,
+        category: ['Category'],
         merchant_id: ['Merchant Id'],
         shared: booleanList,
         gateway_merchant_id: ['Gateway Merchant Id'],
-        network_category: ['Network Category']
+        gateway_terminal_id: ['Gateway Terminal Id'],
+        network_category: ['Network Category'],
+        gateway_acquirer: [
+            'all',
+            'axis',
+            'hdfc'
+        ],
+        emi: booleanList
       },
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
