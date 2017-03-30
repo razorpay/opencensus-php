@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import AsyncButton from 'react-async-button'
 
 export default class ListGroupToggler extends Component {
   constructor() {
@@ -13,13 +14,22 @@ export default class ListGroupToggler extends Component {
     this.setState({
       show: !this.state.show
     })
+
+    if (!this.state.show && this.props.onToggleClick) {
+      return this.props.onToggleClick()
+    }
   }
 
   render() {
     return (
-      <div class='list-group-item'>
-        <button class='btn btn-xs btn-default pull-right' onClick={this.toggle}>Show/Hide</button>
-        {this.props.label}
+      <div class='list-group-item no-flex'>
+        <span>{this.props.label}</span>
+        <AsyncButton
+          class='btn btn-xs btn-default pull-right'
+          text='Show/Hide'
+          pendingText='Fetching...'
+          onClick={this.toggle}
+        />
         {
           this.state.show ?
           <div class='panel-body'>

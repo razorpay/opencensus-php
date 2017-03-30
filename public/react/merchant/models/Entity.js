@@ -14,12 +14,12 @@ export default class Entity extends Base {
   /*
     `fetchAll` returns a collection of the instances of the resource. This is a static method & should be invoked as [Class].fetchAll(params).
   */
-  static fetchAll(params = {}) {
-    const Klass = this
+  fetchAll(params = {}) {
+    const Klass = this.constructor
     let { id, ...data } = params
 
     if (id) {
-      return Klass.fetch(id, data).then((response) => {
+      return this.fetch(id, data).then((response) => {
         return {
           data: {
             items: [response]
@@ -28,15 +28,15 @@ export default class Entity extends Base {
       })
     }
 
-    return ajax(Klass.resourceUrl, { data }).then((response) => {
+    return ajax(this.resourceUrl, { data }).then((response) => {
       response.data.items = response.data.items.map((item) => new Klass().deserialize(item))
       return response
     })
   }
 
-  static fetch(id, data = {}) {
-    const Klass = this
-    return ajax(`${Klass.resourceUrl}/${id}`, { data }).then((response) => {
+  fetch(id, data = {}) {
+    const Klass = this.constructor
+    return ajax(`${this.resourceUrl}/${id}`, { data }).then((response) => {
       return new Klass().deserialize(response.data.items[0])
     })
   }

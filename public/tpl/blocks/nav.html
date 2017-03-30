@@ -15,8 +15,16 @@
         <span>Payments</span>
       </a>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp" ui-sref="app.orders.list" ui-sref-active="active">
-      <a id="ordersNav" ui-sref="app.orders.list" ui-sref-active="active">
+    <li
+      ng-show="merchant"
+      not-my-role="sellerapp"
+      ui-sref="app.orders.list"
+      ng-class="{active: ('app.orders.list' | includedByState) || ('app.orders.detail' | includedByState)}"
+    >
+      <a id="ordersNav"
+        ui-sref="app.orders.list"
+        ng-class="{active: ('app.orders.list' | includedByState) || ('app.orders.detail' | includedByState)}"
+      >
         <i class="fa fa-archive text-success-lter"></i>
         <span>Orders</span>
       </a>
@@ -41,12 +49,21 @@
         <b class="badge bg-success dk pull-right ng-binding">new</b>
       </a>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp support" ui-sref="app.settlements.list" ui-sref-active="active">
-      <a id="settlementsNav" ui-sref="app.settlements.list" ui-sref-active="active">
+
+    <li ng-show="merchant"
+      not-my-role="sellerapp support"
+      ui-sref="app.settlements.list"
+      ng-class="{active: ('app.settlements.list' | includedByState) || ('app.settlements.detail' | includedByState)}"
+    >
+      <a id="settlementsNav"
+        ui-sref="app.settlements.list"
+        ng-class="{active: ('app.settlements.list' | includedByState) || ('app.settlements.detail' | includedByState)}"
+      >
         <i class="fa  fa-check-square-o icon text-success"></i>
         <span>Settlements</span>
       </a>
     </li>
+
     <!--
     <li>
       <a id="transactionsNav" ui-sref="app.transactions.list">
@@ -90,7 +107,13 @@
       </a>
     </li>
 
-
+    <li ng-show="merchant && user.tags && user.tags.indexOf('Marketplace') != -1">
+      <a id="accountsNav" ui-sref="app.accounts">
+        <i class="fa fa-shopping-cart icon text-info-lter"></i>
+        <b class="badge bg-success dk pull-right ng-binding">beta</b>
+        <span>Accounts</span>
+      </a>
+    </li>
 <!--
     <li ng-show="merchant">
       <a id="plansNav" ui-sref="app.plans">

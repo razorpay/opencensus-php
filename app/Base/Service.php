@@ -109,4 +109,13 @@ class Service
 
         return $client->createClient('S3');
     }
+
+    protected function stripSign(string & $entityId)
+    {
+        $matches = null;
+
+        preg_match('/([a-zA-Z0-9]{14})/', $entityId, $matches);
+
+        $entityId = $matches[1];
+    }
 }

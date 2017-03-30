@@ -91,6 +91,17 @@
         </button> -->
       </div>
     </div>
+    <div class="panel-footer row" ng-show="entity.entity == 'file_store'">
+      <div class="btn-group text-left m-b" role="group"
+        aria-label="File Actions"
+      >
+        <button class="btn btn-info">
+        <a href="admin/file/{{entity.id}}" target="_blank">
+          Download File
+        </a>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 <script type="text/ng-template" id="editTerminal.html">
@@ -122,6 +133,7 @@
              <option value="netbanking_axis">Netbanking AXIS</option>
              <option value="netbanking_airtel">Netbanking AIRTEL</option>
              <option value="netbanking_icici">Netbanking ICICI</option>
+             <option value="netbanking_federal">Netbanking Federal</option>
              <option value="cybersource">Cybersource</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>

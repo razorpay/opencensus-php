@@ -78,14 +78,22 @@
         <div class="form-group" ng-if="fields.indexOf('allow_all_merchants') !== -1">
           <label class="col-lg-2 control-label">Allow all Merchants</label>
           <div class="col-lg-10">
-            <input type="checkbox" name="allow_all_merchants" class="form-control m-b" ng-model="user.allow_all_merchants" />
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="allow_all_merchants" ng-model="user.allow_all_merchants" />
+              </label>
+            </div>
           </div>
         </div>
 
-        <div class="form-group" ng-if="fields.indexOf('disabled') !== -1">
+        <div class="form-group" ng-if="fields.indexOf('disabled') !== -1" ng-show="user.id">
           <label class="col-lg-2 control-label">Disabled</label>
           <div class="col-lg-10">
-            <input type="checkbox" name="disabled" class="form-control m-b" ng-model="user.disabled" />
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="disabled" ng-model="user.disabled" />
+              </label>
+            </div>
           </div>
         </div>
 

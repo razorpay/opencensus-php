@@ -48,8 +48,6 @@ var app = angular.module('app', [
       $state.go('500');
     });
 
-        
-
     $rootScope.tour = jqTourbusService;
   }
 ]).config([
@@ -99,15 +97,9 @@ var app = angular.module('app', [
     }).state('app.payments', {
       url: '/payments',
       template: '<div ui-view class="fade-in-down"></div>'
-    }).state('app.orders', {
-      url: '/orders',
-      template: '<div ui-view class="fade-in-down"></div>'
     }).state('app.payments.list', {
       url: '/list',
       templateUrl: 'tpl/app_payments.html'
-    }).state('app.orders.list', {
-      url: '/list',
-      templateUrl: 'tpl/app_orders.html'
     }).state('app.payments.detail', {
       url: '/:id',
       templateUrl: 'tpl/app_payment_detail.html'
@@ -132,18 +124,6 @@ var app = angular.module('app', [
     }).state('app.batch.list', {
       url: '/list',
       templateUrl: 'tpl/app_batch_list.html'
-    }).state('app.orders.detail', {
-      url: '/:id',
-      templateUrl: 'tpl/app_order_detail.html'
-    }).state('app.settlements', {
-      url: '/settlements',
-      template: '<div ui-view class="fade-in-down"></div>'
-    }).state('app.settlements.list', {
-      url: '/list',
-      templateUrl: 'tpl/app_settlements.html'
-    }).state('app.settlements.detail', {
-      url: '/:id',
-      templateUrl: 'tpl/app_settlement_detail.html'
     }).state('app.transactions', {
       url: '/transactions',
       template: '<div ui-view class="fade-in-down"></div>'
@@ -171,15 +151,15 @@ var app = angular.module('app', [
     }).state('app.activation', {
       url: '/activation',
       templateUrl: 'tpl/app_activation.html'
-    }).state('app.webhooks', {
-      url: '/webhooks',
-      templateUrl: 'tpl/app_webhooks.html'
     }).state('app.referrals', {
       url: '/referral',
       templateUrl: 'tpl/app_referrals.html'
     }).state('app.profile', {
       url: '/profile',
       templateUrl: 'tpl/app_profile.html'
+    }).state('app.accounts', {
+      url: '/accounts',
+      templateUrl: 'tpl/app_accounts.html'
     })
 
     // React
@@ -220,8 +200,34 @@ var app = angular.module('app', [
     }).state('app.plans', {
       url: '/plans',
       templateProvider: reactTemplateProvider('<plans-list />')
+    }).state('app.orders', {
+      url: '/orders',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.orders.list', {
+      url: '/list',
+      templateProvider: reactTemplateProvider('<orders-list />')
+    }).state('app.orders.detail', {
+      url: '/:id/details',
+      controller: ['$scope', '$stateParams', function($scope, $stateParams) {
+        $scope.id = $stateParams.id;
+      }],
+      templateProvider: reactTemplateProvider('<order-details id="id" />')
+    }).state('app.settlements', {
+      url: '/settlements',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.settlements.list', {
+      url: '/list',
+      templateProvider: reactTemplateProvider('<settlements-list />')
+    }).state('app.settlements.detail', {
+      url: '/:id',
+      controller: ['$scope', '$stateParams', function($scope, $stateParams) {
+        $scope.id = $stateParams.id;
+      }],
+      templateProvider: reactTemplateProvider('<settlement-details id="id" />')
+    }).state('app.webhooks', {
+      url: '/webhooks',
+      templateProvider: reactTemplateProvider('<webhooks-list />')
     })
-
 
       //Guest Routes
     .state('access', {

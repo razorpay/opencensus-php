@@ -31,7 +31,14 @@ class PasswordController extends Controller
             ]);
         });
 
-        $response = Password::sendResetLink(Input::only('email'), function($message){
+        $credentials = Input::only('email');
+        // Lowercasing emails for consistency
+        if (isset($credentials['email']))
+        {
+            $credentials['email'] = mb_strtolower($credentials['email']);
+        }
+
+        $response = Password::sendResetLink($credentials, function($message){
             $message->subject('Razorpay - Password Reset Request');
         });
 
@@ -55,6 +62,11 @@ class PasswordController extends Controller
         $credentials = Input::only(
             'email', 'password', 'password_confirmation', 'token'
         );
+        // Lowercasing emails for consistency
+        if (isset($credentials['email']))
+        {
+            $credentials['email'] = mb_strtolower($credentials['email']);
+        }
 
         $response = Password::reset($credentials, function($user, $password)
         {
@@ -62,16 +74,6 @@ class PasswordController extends Controller
             {
                 $user->password = Hash::make($password);
                 $user->save();
-
-                if($user->hasMerchants())
-                {
-                    $merchant = $user->merchants()->where('email', $user->email)->first();
-                    if ($merchant)
-                    {
-                        $merchant->password = $user->password;
-                        $merchant->save();
-                    }
-                }
             });
         });
 

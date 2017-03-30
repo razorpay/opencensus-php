@@ -139,25 +139,25 @@
         <div class="form-group">
         <label for="business_registered_address" class="col-sm-3 control-label">Registered Address</label>
           <div class="col-sm-8">
-            <textarea ng-readonly="locked" class="form-control" name="business_registered_address" ng-model="data.business_registered_address" placeholder="Registered Address" required></textarea>
+            <textarea ng-readonly="locked" class="form-control" name="business_registered_address" ng-model="data.business_registered_address" ng-blur="changeOperationalAddress('business_registered_address')" placeholder="Registered Address" required></textarea>
           </div>
         </div>
         <div class="form-group">
         <label for="business_registered_state" class="col-sm-3 control-label">Registration Address State</label>
           <div class="col-sm-8">
-            <input ng-readonly="locked" type="text" class="form-control" name="business_registered_state" ng-model="data.business_registered_state" placeholder="Registered Address State" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_registered_state" ng-model="data.business_registered_state" ng-blur="changeOperationalAddress('business_registered_state')" placeholder="Registered Address State" required>
           </div>
         </div>
         <div class="form-group">
         <label for="business_registered_city" class="col-sm-3 control-label">Registered Address City</label>
           <div class="col-sm-8">
-            <input ng-readonly="locked" type="text" class="form-control" name="business_registered_city" ng-model="data.business_registered_city" placeholder="Registered Address City" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_registered_city" ng-model="data.business_registered_city" ng-blur="changeOperationalAddress('business_registered_city')" placeholder="Registered Address City" required>
           </div>
         </div>
         <div class="form-group">
         <label for="business_registered_pin" class="col-sm-3 control-label">Registered Address Pincode</label>
           <div class="col-sm-8">
-            <input ng-readonly="locked" type="text" class="form-control" name="business_registered_pin" ng-model="data.business_registered_pin" placeholder="Registered Address Pincode" required>
+            <input ng-readonly="locked" type="text" class="form-control" name="business_registered_pin" ng-model="data.business_registered_pin" ng-blur="changeOperationalAddress('business_registered_pin')" placeholder="Registered Address Pincode" required>
           </div>
         </div>
 

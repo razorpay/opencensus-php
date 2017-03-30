@@ -138,8 +138,10 @@
               <label class="col-sm-3 control-label">Login Logo</label>
               <div class="col-sm-8">
                 <img src="{{organization.login_logo_url}}" alt="" class="center block" width="200">
-                <input ui-jq="filestyle" type="file" name="login_logo" ng-file-select="onLoginLogoSelect($files, 'login_logo')">
+                <input ui-jq="filestyle" type="file" name="login_logo" ng-file-select="onLoginLogoSelect($files, 'login_logo')" accept="image/jpeg,image/jpg,image/png">
+
               </div>
+              <label class="col-sm-3 control-label">* Allowed file types are JPEG, JPG, PNG</label>
             </div>
 
             <div class="form-group" ng-show="organization.id">
@@ -148,6 +150,7 @@
                 <img src="{{organization.main_logo_url}}" alt="" class="center block" width="200">
                 <input ui-jq="filestyle" type="file" name="main_logo" ng-file-select="onMainLogoSelect($files, 'main_logo')">
               </div>
+              <label class="col-sm-3 control-label">* Allowed file types are JPEG, JPG, PNG</label>
             </div>
 
             <div class="form-group" ng-show="organization.id">
@@ -155,6 +158,34 @@
               <div class="col-sm-8">
                 <img src="{{organization.invoice_logo_url}}" alt="" class="center block" width="200">
                 <input ui-jq="filestyle" type="file" name="invoice_logo" ng-file-select="onInvoiceLogoSelect($files, 'invoice_logo')" accept="image/jpeg,image/jpg,image/png">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="col-lg-2 control-label">Permissions</div>
+              <div class="col-lg-10 scrollable-table">
+                <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
+                  <thead>
+                    <tr>
+                      <th data-sort-ignore="true">
+                        <input type="checkbox" id="select_all" ng-model='select_all' ng-change='selectAll()'>
+                      </th>
+                      <th>Permission</th>
+                      <th>Category</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="(key, row) in permissions">
+                      <td>
+                        <input type="checkbox" name='permissions[]' ng-model="selected_permissions[row.id]" ng-checked="selected_permissions[row.id]">
+                      </td>
+                      <td>{{row.name}}</td>
+                      <td>{{row.category}}</td>
+                      <td>{{row.description}}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
 

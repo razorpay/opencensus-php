@@ -11,18 +11,20 @@ const REMOVE_HIGHLIGHT = 'REMOVE_HIGHLIGHT'
 
 export const fetchCustomers = (params) => {
   return (dispatch) => {
+    let customer = new Customer()
     return dispatch({
       type: CUSTOMERS_FETCH,
-      payload: Customer.fetchAll(params)
+      payload: customer.fetchAll(params)
     })
   }
 }
 
 export const fetchCustomersForAutocomplete = () => {
   return (dispatch) => {
+    let customer = new Customer()
     return dispatch({
       type: CUSTOMERS_AUTOCOMPLETE_FETCH,
-      payload: Customer.fetchForAutocomplete()
+      payload: customer.fetchForAutocomplete()
     })
   }
 }

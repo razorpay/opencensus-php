@@ -20,6 +20,7 @@ app.controller('PaymentDetailCtrl', [
 
     // Keys currently added the to good-looking view
     var shownByDefault = [
+      'analytics',
       'amount',
       'amount_authorized',
       'amount_refunded',
@@ -49,6 +50,7 @@ app.controller('PaymentDetailCtrl', [
       'signed',
       'status',
       'terminal_id',
+      'transfer_id',
       'transaction_id',
       'updated_at',
       'verified',
@@ -263,6 +265,27 @@ app.controller('PaymentDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    $scope.showAnalytics = function () {
+      if ($scope.isAnalyticsCollapsed === false) {
+        $scope.isAnalyticsCollapsed = true;
+        return;
+      }
+      var request = $http.get('/admin/' + $scope.mode + '/payments/' + $scope.entity.id + '/analytics');
+      request.success(function (data) {
+        $scope.alerts.resetAlerts();
+        if (data.success) {
+          $scope.entity.analytics = data.data;
+          $scope.isAnalyticsCollapsed = false;
+        } else {
+          angular.forEach(data.errors, function (error) {
+            $scope.alerts.addAlert('danger', error);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
   }
 ])  //Capture Modal Box Controller
 .controller('CaptureModalCtrl', [
@@ -297,7 +320,8 @@ app.controller('PaymentDetailCtrl', [
     $scope.currency = currency;
 
     $scope.valid = function(amount, comment) {
-      return amount > 0 && comment.length > 5;
+      amount = amount.replace(/[^0-9\.]+/g, '');
+      return amount > 0 && (typeof comment !== 'undefined' ? comment.length > 5 : false);
     };
 
     $scope.setAmount = function(isPartial) {
@@ -310,6 +334,8 @@ app.controller('PaymentDetailCtrl', [
 
     $scope.ok = function (amount, comment) {
       // We get amount in INR
+      amount = parseFloat(amount.replace(/[, ]/, ''));
+
       var data = {
         amount: amount*100
       };

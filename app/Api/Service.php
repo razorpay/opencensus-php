@@ -64,22 +64,6 @@ class Service extends Base\Service
         return array($error, $collection);
     }
 
-    public function fetchCardDetails($paymentId, $mode)
-    {
-        $data = $error = [];
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api->payment->fetch($paymentId)->card()->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
     public function fetchCollection(array $input, $mode, $entity)
     {
         $method = 'fetchCollection' . $entity;
@@ -170,53 +154,48 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchPaymentRefunds($id, $mode)
+    /**
+     * Sensitive function:
+     * Uses admin auth on merchant dashboard
+     *
+     * Used to retrieve data for the Markerplace accounts list page
+     * with API route - GET /merchants; filtered on field: parent_id
+     * This is temp, until we roll out account APIs.
+     * @todo Move to /account fetch, under private auth
+     */
+    public function fetchCollectionForMarketplaceAccounts($input)
     {
-        $data = array();
-
-        $error = (new Validator)->validateInput('fetch', array('id' => $id), '')->messages();
-
-        if (empty($error))
+        if (isset($this->merchantId) === false)
         {
-            try
-            {
-                $this->setApiCredentials($this->merchantId, $mode);
-                $collection = $this->api->payment
-                                        ->fetch($id)
-                                        ->refunds()
-                                        ->all()
-                                        ->toArray();
-
-                $data = $collection['items'];
-            }
-            catch(\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error[] = $e->getMessage();
-            }
+            return [['Internal error occurred'], null];
         }
 
-        return array($error, $data);
-    }
+        $error = (new Validator)->validateInput('fetch', $input)->messages();
 
-    public function fetchOrderPayments($id, $mode)
-    {
-        $data = $error = [];
-        $this->setApiCredentials($this->merchantId, $mode);
+        if (empty($error) === false)
+        {
+            return [$error, null];
+        }
+
+        $collection = [];
+
+        // Fetch merchants filtered by parent_id field
+        $input['parent_id'] = $this->merchantId;
+
         try
         {
-            $collection = $this->api->order
-                ->setId($id)
-                ->payments()
-                ->toArray();
+            $this->setApiCredentials();
 
-            $data = $collection['items'];
+            $collection = $this->api->merchant->all($input)->toArray();
+
+            $this->mapKeys($collection);
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = $e->getMessage();
         }
 
-        return array($error, $data);
+        return [$error, $collection];
     }
 
     public function capturePayment(string $id, string $mode, array $input)
@@ -283,32 +262,6 @@ class Service extends Base\Service
         });
 
         return $file;
-    }
-
-    public function refundPayment($id, $input, $mode)
-    {
-        $error = array();
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api->payment
-                              ->fetch($id)
-                              ->refund($input)
-                              ->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-            return $error;
-        }
-
-        if ($data['entity'] !== "refund" or $data['amount'] !== (int) $input['amount'])
-        {
-            $error[] = "Refund Failed";
-        }
-
-        return $error;
     }
 
     /**

@@ -76,9 +76,12 @@ app.controller('PricingsCtrl', [
     };
 
     $scope.getNetworks = function () {
-      var request = $http({
-        url: '/admin/networks' ,
-        method: 'GET'
+      var params = {
+        route_name: 'pricing_supported_networks',
+      };
+
+      var request = $http.get('/admin/generic', {
+        params: params
       });
 
       request.success(function (data) {
@@ -94,17 +97,21 @@ app.controller('PricingsCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-     };
+    };
 
     $scope.savePlan = function () {
 
       var data = getPayload($scope.new_plan);
 
+      var params = {
+        route_name: 'pricing_create_plan',
+        body: data
+      };
+
       var request = $http({
-        method: 'post',
-        url: '/admin/pricing/new',
-        transformRequest: transformRequestAsFormPost,
-        data: data
+        url: '/admin/generic',
+        method: 'POST',
+        data: params
       });
 
       request.success(function (data) {
@@ -128,9 +135,18 @@ app.controller('PricingsCtrl', [
     {
       var planId = $scope.show_plan.id;
 
+      var params = {
+        route_name: 'pricing_delete_plan_rule',
+        url_params: {
+          '{planId}': planId,
+          '{ruleId}': ruleId
+        }
+      };
+
       var request = $http({
-        method: 'delete',
-        url: '/admin/pricing/'+planId+'/rules/' + ruleId
+        url: '/admin/generic',
+        method: 'DELETE',
+        params: params
       });
 
       request.success(function (data) {
@@ -185,11 +201,18 @@ app.controller('PricingsCtrl', [
       var data = getPayload($scope.new_rule);
       var plan_id = $scope.show_plan.id;
 
+      var params = {
+        route_name: 'pricing_add_plan_rule',
+        url_params: {
+          '{id}': plan_id
+        },
+        body: data
+      };
+
       var request = $http({
-        method: 'post',
-        url: '/admin/pricing/' + plan_id,
-        transformRequest: transformRequestAsFormPost,
-        data: data
+        url: '/admin/generic',
+        method: 'POST',
+        data: params
       });
 
       request.success(function (data) {
@@ -212,7 +235,18 @@ app.controller('PricingsCtrl', [
         $scope.show_plan = {};
         return;
       }
-      var request = $http.get('/admin/pricing/' + id);
+
+      var params = {
+        route_name: 'pricing_get_plan',
+        url_params: {
+          '{id}': id
+        }
+      };
+
+      var request = $http.get('/admin/generic', {
+        params: params
+      });
+
       request.success(function (data) {
         if (data.success) {
           $scope.create_plan = false;
@@ -222,10 +256,17 @@ app.controller('PricingsCtrl', [
     };
 
     function generateTable() {
-      var request = $http.get('/admin/pricing/list');
+      var params = {
+        route_name: 'pricing_get_merchant_plans'
+      };
+
+      var request = $http.get('/admin/generic', {
+        params: params
+      });
+
       request.success(function (data) {
         if (data.success) {
-          $scope.pricing_plans = data.data;
+          $scope.pricing_plans = data.data.items;
         }
       });
     }

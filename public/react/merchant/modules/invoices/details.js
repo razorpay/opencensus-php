@@ -6,15 +6,15 @@ const INVOICE_FETCH = 'INVOICE_FETCH'
 const SMS_SEND = 'SMS_SEND'
 const EMAIL_SEND = 'EMAIL_SEND'
 const INVOICE_ISSUE = 'INVOICE_ISSUE'
-const INVOICE_DOWNLOAD = 'INVOICE_DOWNLOAD'
 const INVOICE_INIT = 'INVOICE_INIT'
 const INVOICE_EXPIRE = 'INVOICE_EXPIRE'
 
 export const fetchInvoice = (id) => {
   return (dispatch) => {
+    let invoice = new Invoice()
     return dispatch({
       type: INVOICE_FETCH,
-      payload: Invoice.fetch(id)
+      payload: invoice.fetch(id)
     })
   }
 }
@@ -35,16 +35,6 @@ export const issueInvoice = (params) => {
     return dispatch({
       type: INVOICE_ISSUE,
       payload: invoice.markAsIssued()
-    })
-  }
-}
-
-export const downloadInvoice = (params) => {
-  return (dispatch) => {
-    let invoice = new Invoice(params)
-    return dispatch({
-      type: INVOICE_DOWNLOAD,
-      payload: invoice.download()
     })
   }
 }

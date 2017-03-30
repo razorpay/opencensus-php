@@ -17,13 +17,12 @@ class Entity extends Base\Entity
 
     protected $table = 'merchants';
 
-    protected $hidden = ['password', 'remember_token', 'confirm_token'];
+    protected $hidden = ['remember_token'];
 
     protected $fillable = array(
         'id',
         'name',
         'email',
-        'password',
         'activated',
         'archived_at',
         'suspended_at'
@@ -57,7 +56,8 @@ class Entity extends Base\Entity
     const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
 
-    const AGGREGATOR = 'Aggregator';
+    const AGGREGATOR    = 'Aggregator';
+    const MARKETPLACE   = 'Marketplace';
 
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
@@ -92,8 +92,6 @@ class Entity extends Base\Entity
         $merchant->name = $data['business_name'];
         $merchant->email = $user->email;
 
-        $merchant->password = $user->password;
-
         return $merchant;
     }
 
@@ -103,7 +101,7 @@ class Entity extends Base\Entity
      * @param  string          $businessName   Merchant Business Name
      * @return App\Merchant\Entity Sub Merchant Entity
      */
-    public static function createFromMerchant(Entity $aggregator, $businessName, $email)
+    public static function createFromMerchant(Entity $aggregator, $businessName, $email, $isLinkedAccount = false)
     {
         $merchant = new static();
 
@@ -111,14 +109,11 @@ class Entity extends Base\Entity
         $merchant->name     = $businessName;
         $merchant->email    = $email;
 
-        // This password is never really used anywhere
-        // We just have it for legacy reasons till we drop
-        // the field entirely from our database
-        // Logins run on top of User\password.
-        $merchant->password = "invalid_password";
-
-        // We tag the merchant as referred from the original merchant as well
-        $merchant->tag("ref-{$aggregator->id}");
+        if ($isLinkedAccount === false)
+        {
+            // We tag the merchant as referred from the original merchant as well
+            $merchant->tag("ref-{$aggregator->id}");
+        }
 
         return $merchant;
     }
@@ -133,6 +128,11 @@ class Entity extends Base\Entity
     public function isAggregator()
     {
         return in_array(self::AGGREGATOR, $this->tagNames());
+    }
+
+    public function isMarketplace()
+    {
+        return in_array(self::MARKETPLACE, $this->tagNames());
     }
 
     /**
@@ -250,6 +250,7 @@ class Entity extends Base\Entity
     public static function attachUserToMerchantByInvitation(Invitation\Entity $invitation, User\Entity $user)
     {
         $user->joinMerchantByIdWithRole($invitation->merchant->id, $invitation->role);
+
         $user->switchToMerchant($invitation->merchant);
 
         $invitation->delete();
@@ -414,11 +415,6 @@ class Entity extends Base\Entity
             ->update($obj);
     }
 
-    public static function getMerchantForConfirmation($token)
-    {
-        return static::where('confirm_token', '=', $token)->first();
-    }
-
     /**
      * Generates data required for merchant registration with the API
      */
@@ -439,16 +435,6 @@ class Entity extends Base\Entity
     public function getAuthIdentifier()
     {
         return $this->getKey();
-    }
-
-    /**
-     * Get the password for the user.
-     *
-     * @return string
-     */
-    public function getAuthPassword()
-    {
-        return $this->password;
     }
 
     /**
@@ -500,24 +486,6 @@ class Entity extends Base\Entity
     public function isActive()
     {
         return ((int)$this->activated === 1);
-    }
-
-    public function confirm()
-    {
-        $email = $this->email;
-
-        // This is only to make sure that the user and merchants are in sync
-        // for now. We will drop the method from Merchant\Entity and shift it
-        // to User\Entity going ahead.
-        if ($this->hasUsers())
-        {
-            $user = $this->users()->where('email', $email)->first();
-            if($user)
-            {
-                $user->confirm();
-                (new User\Service)->subscribeToMailingList($user);
-            }
-        }
     }
 
     protected function getTagsAttribute()

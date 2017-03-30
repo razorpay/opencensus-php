@@ -33,4 +33,20 @@ class Request extends BaseRequest
 
         return json_decode($response->body, true);
     }
+
+    public function rawRequest($method, $url, $data = null)
+    {
+        $url = Api::$baseUrl . $url;
+
+        if ($data === null)
+            $data = array();
+
+        $this->setOption('auth', [Api::$key, Api::$secret]);
+
+        $this->setOption('follow_redirects', false);
+
+        $response = \Requests::request($url, self::$headers, $data, $method, $this->options);
+
+        return $response;
+    }
 }

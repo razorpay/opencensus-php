@@ -7,7 +7,8 @@ app.controller('OrgsAddUsersCtrl', [
   '$modal',
   'organization',
   '$stateParams',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams) {
+  '$state',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams, $state) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.obBug = {};
 
@@ -48,7 +49,7 @@ app.controller('OrgsAddUsersCtrl', [
         if (data.success) {
           var user = data.data;
           var userGroups = user.groups || [];
-          var userRole = user.roles.length && user.roles[0].id;
+          var userRole = user.roles && user.roles[0] && user.roles[0].id;
 
           userGroups.map(function(group){
             $scope.selected_groups[group.id] = true;
@@ -177,6 +178,7 @@ app.controller('OrgsAddUsersCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Admin created successfully.', true);
+          $state.go('app.users.edit', {id: data.data.id});
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {

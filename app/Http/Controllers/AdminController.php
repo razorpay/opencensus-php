@@ -358,7 +358,9 @@ class AdminController extends Controller
     public function saveMerchantScreenshot($id)
     {
         $input = \Input::all();
+
         $error = (new Admin\Service)->saveScreenshot($id, $input);
+
         return AppResponse::jsonResponse($error);
     }
 
@@ -425,13 +427,6 @@ class AdminController extends Controller
         $data = (new Admin\Service)->fetchMerchantBanks($id);
 
         return AppResponse::jsonResponse([], $data);
-    }
-
-    public function getSupportedNetworks()
-    {
-        $data = (new Admin\Service)->fetchPaymentNetworks();
-
-        return AppResponse::jsonResponse([], $data->toArray());
     }
 
     public function postEditMerchant($id)
@@ -520,6 +515,15 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getPaymentAnalytics($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Admin\Service)->getPaymentAnalytics($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postAuthorizeFailedPayment($mode, $id)
     {
         list($error, $data) = (new Admin\Service)->authorizeFailedPayment($mode, $id);
@@ -548,46 +552,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->capturePayment($mode, $merchantId, $id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getPricingList()
-    {
-        list($error, $data) = (new Admin\Service)->fetchPricingPlans();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getPricingRules($id)
-    {
-        list($error, $data) = (new Admin\Service)->fetchPricingPlan($id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postPricingRules($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->addPricingPlanRule($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function deletePricingPlanRule($planId, $ruleId)
-    {
-        list($error, $data) = (new Admin\Service)
-            ->deletePricingPlanRule($planId, $ruleId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postNewPricingPlan()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->createPricingPlan($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -670,6 +634,13 @@ class AdminController extends Controller
         {
             return AppResponse::jsonResponse($error);
         }
+
+        return Redirect::to($url);
+    }
+
+    public function getUploadedFile($id)
+    {
+        list($error, $url) = (new Admin\Service)->getUploadedFile($id);
 
         return Redirect::to($url);
     }
@@ -819,16 +790,14 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        list($error, $response) = (new Admin\Service)
-            ->addEntityFeatures($entityType, $entityId, $input);
+        list($error, $response) = (new Admin\Service)->addEntityFeatures($entityType, $entityId, $input);
 
         return AppResponse::jsonResponse($error, $response);
     }
 
     public function deleteEntityFeature($entityId, $featureName)
     {
-        list($error, $response) = (new Admin\Service)
-            ->deleteEntityFeature($entityId, $featureName);
+        list($error, $response) = (new Admin\Service)->deleteEntityFeature($entityId, $featureName);
 
         return AppResponse::jsonResponse($error, $response);
     }
@@ -852,11 +821,13 @@ class AdminController extends Controller
     }
 
     /**
-     * Confirm a merchant account manually
+     * Confirm a user account manually
      */
-    public function postConfirmMerchant($merchantId)
+    public function postConfirmUser()
     {
-        list($error, $data) = $response = (new Admin\Service)->confirmMerchant($merchantId);
+        $input = Input::all();
+
+        list($error, $data) = $response = (new Admin\Service)->confirmUser($input['email']);
 
         return AppResponse::jsonResponse($error, $response);
     }

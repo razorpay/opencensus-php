@@ -186,8 +186,20 @@
           <div class="list-group-item" ng-repeat="key in keysNotShown()"
             ng-init="value = entity[key]"
           >
-            <span class="pull-right" ng-class="displayClass(key, value)">
-              {{displayValue(key, value)}}
+            <span class="pull-right" ng-class="displayClass(key, value)" ng-switch on="key">
+              <span ng-switch-when="invoice_id">
+                <span ng-if="value !== null">
+                  <a ui-sref="app.entitiesdetail({id:value, mode:mode, type: 'invoice'})">
+                    {{displayValue(key, value)}}
+                  </a>
+                </span>
+                <span ng-if="value === null">
+                  {{displayValue(key, value)}}
+                </span>
+              </span>
+              <span ng-switch-default>
+                {{displayValue(key, value)}}
+              </span>
             </span>
             {{key|titlecase}}
           </div>
@@ -205,6 +217,20 @@
               <code>{{refund.id}}</code>
             </a>
           </div>
+          <div class="list-group-item"  ng-init="isAnalyticsCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="showAnalytics()">Show/Hide</button>
+            </span>
+            Payment Analytics
+          </div>
+          <div collapse="isAnalyticsCollapsed" class="panel-body">
+            <div class="list-group-item" ng-repeat="(key,value) in entity.analytics">
+              <span class="pull-right" ng-class="displayClass(key, value)">
+                {{displayValue(key, value)}}
+              </span>
+              {{key|titlecase}}
+            </div>
+          </div>
         </div>
         <div class="text-center">
           <span ng-show="entity.status==='authorized'">
@@ -221,7 +247,7 @@
                 <button class="btn btn-primary" ng-click="ok(amount)">OK</button>
               </div>
             </script>
-            <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openCaptureModal()">Capture Payment</button>
+            <button  class="btn btn-primary btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="openCaptureModal()" ng-show="admin.permissions && admin.permissions.indexOf('edit_payment_capture') !== -1">Capture Payment</button>
             <button  class="btn btn-warning btn-rounded" busy="Please Wait..." busy-disabled="false" ng-click="refundAuthorized()" ng-confirm-click="This will refund an authorized payment. Are you sure?">Refund Payment</button>
           </span>
           <span>
