@@ -37,7 +37,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAll(string $orgId)
+    public function fetchAll()
+    {
+        return $this->newQuery()
+                    ->get();
+    }
+
+    public function fetchAllByOrg(string $orgId)
     {
         $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
 
