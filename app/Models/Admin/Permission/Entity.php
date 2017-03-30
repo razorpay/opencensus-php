@@ -12,6 +12,7 @@ class Entity extends Base\Entity
     const NAME              = 'name';
     const DESCRIPTION       = 'description';
     const CATEGORY          = 'category';
+    const ASSIGNABLE        = 'assignable';
 
     protected $entity = 'permission';
 
@@ -28,6 +29,7 @@ class Entity extends Base\Entity
         self::NAME,
         self::DESCRIPTION,
         self::CATEGORY,
+        self::ASSIGNABLE,
     ];
 
     protected $public = [
@@ -35,6 +37,7 @@ class Entity extends Base\Entity
         self::NAME,
         self::DESCRIPTION,
         self::CATEGORY,
+        self::ASSIGNABLE,
     ];
 
     protected $visible = [
@@ -42,6 +45,11 @@ class Entity extends Base\Entity
         self::NAME,
         self::DESCRIPTION,
         self::CATEGORY,
+        self::ASSIGNABLE,
+    ];
+
+    protected $casts = [
+        self::ASSIGNABLE => 'bool',
     ];
 
     /**

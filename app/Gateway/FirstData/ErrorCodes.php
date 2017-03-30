@@ -235,7 +235,7 @@ class ErrorCodes
             return self::$reasonCodes[$code];
         }
 
-        return null;
+        return 'General Error';
     }
 
     public static function isSpecialCase($code)

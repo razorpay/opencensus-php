@@ -320,6 +320,13 @@ class OrganizationController extends Controller
          return ApiResponse::json($data);
      }
 
+     public function getAssignablePermissions()
+     {
+         $data = (new Admin\Permission\Service)->getAssignablePermissions();
+
+         return ApiResponse::json($data);
+     }
+
 // --------------------- END CRUD for Permissions ----------------------------------------
 
     /**

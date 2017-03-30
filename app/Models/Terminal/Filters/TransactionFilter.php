@@ -106,31 +106,31 @@ class TransactionFilter extends Terminal\Filter
 
         $isPaymentInternational = $input['payment']->isInternational();
 
-        if (($input['mode'] === Mode::TEST) and ($isPaymentInternational))
+        if (($input['mode'] === Mode::TEST))
         {
             // Allow support for cards on atom for international test
-            $testTerminals = array_merge(
-                                [Gateway::ATOM, Gateway::AXIS_GENIUS, Gateway::PAYTM],
-                                Gateway::$internationalCardGateways);
+            if ($isPaymentInternational === true)
+            {
+                $testTerminals = array_merge(
+                                    [Gateway::ATOM, Gateway::AXIS_GENIUS, Gateway::PAYTM],
+                                    Gateway::$internationalCardGateways);
 
-            return in_array($terminal->getGateway(), $testTerminals);
-        }
-        else if ($isPaymentInternational)
-        {
-            return in_array($terminal->getGateway(), Gateway::$internationalCardGateways);
-        }
-        else if ($input['mode'] === Mode::TEST)
-        {
+                return in_array($terminal->getGateway(), $testTerminals, true);
+            }
+
             $testTerminals = array_merge(
                                 Gateway::$domesticCardGateways,
                                 Gateway::$domesticCardGatewaysInTest);
 
-            return in_array($terminal->getGateway(), $testTerminals);
+            return in_array($terminal->getGateway(), $testTerminals, true);
         }
-        else
+
+        if ($isPaymentInternational === true)
         {
-            return in_array($terminal->getGateway(), Gateway::$domesticCardGateways);
+            return in_array($terminal->getGateway(), Gateway::$internationalCardGateways, true);
         }
+
+        return in_array($terminal->getGateway(), Gateway::$domesticCardGateways, true);
     }
 
     public function bankFilter($terminal, $input)
@@ -203,31 +203,44 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $input['payment'];
 
-        $value = Terminal\Recurring::NON_RECURRING;
-
         // for cybersource, check get the terminal based on recurring type
         if ($payment->isRecurring() === true)
         {
-            // for recurring payment, terminal must be cybersource
-            if (($terminal->getGateway() !== Gateway::CYBERSOURCE) or
-                ($terminal->getGatewayAcquirer() !== 'hdfc'))
+            if (Gateway::isRecurringGateway($terminal->getGateway()) === false)
             {
                 return false;
             }
 
-            $ba = app('basicauth');
+            if ($terminal->getGateway() === Gateway::CYBERSOURCE)
+            {
+                // for cybersource recurring payment, terminal must be hdfc acquired
+                if ($terminal->getGatewayAcquirer() !== 'hdfc')
+                {
+                    return false;
+                }
+            }
 
+            // Check if this is the second recurring payment
             if (($payment->getTokenId() !== null) and
                 ($payment->localToken->isRecurring() === true) and
-                ($ba->isPrivateAuth() === true))
+                (app('basicauth')->isPrivateAuth() === true))
             {
-                $value = Terminal\Recurring::RECURRING_N3DS;
+                // For second recurring payment, ensure that we select a terminal
+                // of the same gateway as for the first recurring payment.
+                $previousGateway = $payment->localToken->terminal->getGateway();
+
+                $currentGateway = $terminal->getGateway();
+
+                return (($terminal->isNon3DSRecurring() === true) and
+                        ($previousGateway === $currentGateway));
+            }
+            else
+            {
+                return ($terminal->is3DSRecurring() === true);
             }
         }
 
-        $isValidTerminal = ($terminal->getRecurring() === $value);
-
-        return $isValidTerminal;
+        return ($terminal->isNonRecurring() === true);
     }
 
     protected function isValidEmiTerminal($terminal, $input)
