@@ -23,7 +23,7 @@
           Email Id
         </a>
         <a href class="list-group-item">
-          <span class="pull-right">{{admin.superadmin == 1 ? "Super Admin" : "Standard Admin"}}</span>
+          <span class="pull-right">{{ admin.roles.join(', ') }}</span>
           Role
         </a>
         <a href class="list-group-item">
