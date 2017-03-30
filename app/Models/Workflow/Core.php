@@ -40,54 +40,6 @@ class Core extends Base\Core
         return $workflow;
     }
 
-    protected function validateExistingWorkflows(array $input)
-    {
-        $permissions = $input['permissions'];
-
-        $workflows = $this->repo
-                          ->workflow
-                          ->fetchWorkflowsWithStepsByPermissions($permissions);
-
-        $minLevelFromInput = $this->getMinLevelFromInput($input);
-
-        $permissionWorkflowMap = [];
-
-        foreach ($workflows as $workflow)
-        {
-            $minLevelFromSteps = $this->getMinLevelFromSteps($workflow->steps);
-
-            if ($minLevelFromSteps === $minLevelFromInput)
-            {
-                throw new Exception\BadRequestException(
-                    Error\ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS);
-            }
-        }
-    }
-
-    protected function getMinLevelFromInput(array $input)
-    {
-        $minLevel = 0;
-
-        foreach ($input['steps'] as $step)
-        {
-            $minLevel = $minLevel > $step['level'] ? $step['level'] : $minLevel;
-        }
-
-        return $minLevel;
-    }
-
-    protected function getMinLevelFromSteps($steps)
-    {
-        $minLevel = 0;
-
-        foreach ($steps as $step)
-        {
-            $minLevel = $minLevel > $step->getLevel() ? $step->getLevel() : $minLevel;
-        }
-
-        return $minLevel;
-    }
-
     public function update(Entity $workflow, array $input)
     {
         $workflow->edit($input);
@@ -128,5 +80,51 @@ class Core extends Base\Core
                                   ->toArray();
 
         return array_unique(array_merge($permissionIds, $permissions));
+    }
+
+    protected function validateExistingWorkflows(array $input)
+    {
+        $permissions = $input[Entity::PERMISSIONS];
+
+        $workflows = $this->repo
+                          ->workflow
+                          ->fetchWorkflowsWithStepsByPermissions($permissions);
+
+        $minLevelFromInput = $this->getMinLevelFromInput($input);
+
+        foreach ($workflows as $workflow)
+        {
+            $minLevelFromSteps = $this->getMinLevelFromSteps($workflow->steps);
+
+            if ($minLevelFromSteps === $minLevelFromInput)
+            {
+                throw new Exception\BadRequestException(
+                    Error\ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS);
+            }
+        }
+    }
+
+    protected function getMinLevelFromInput(array $input)
+    {
+        $minLevel = 0;
+
+        foreach ($input[Entity::STEPS] as $step)
+        {
+            $minLevel = ($minLevel > $step[Step\Entity::LEVEL]) ? $step[Step\Entity::LEVEL] : $minLevel;
+        }
+
+        return $minLevel;
+    }
+
+    protected function getMinLevelFromSteps($steps)
+    {
+        $minLevel = 0;
+
+        foreach ($steps as $step)
+        {
+            $minLevel = $minLevel > $step->getLevel() ? $step->getLevel() : $minLevel;
+        }
+
+        return $minLevel;
     }
 }

@@ -15,12 +15,10 @@ class Repository extends Base\Repository
 
     public function fetchWorkflowsWithStepsByPermissions(array $permissionIds)
     {
-        $allWorkflowColumns = $this->getAttributeWithTableName("*");
-
         return $this->newQuery()
-                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, "=", "workflow_permissions.workflow_id")
-                    ->with(['steps', 'permissions'])
-                    ->whereIn("workflow_permissions.permission_id", $permissionIds)
+                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
+                    ->with([Entity::STEPS, Entity::PERMISSIONS])
+                    ->whereIn('workflow_permissions.permission_id', $permissionIds)
                     ->get();
     }
 }
