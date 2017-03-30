@@ -41,7 +41,7 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createFromPaymentAuthorized(Payment\Entity $payment)
+    public function createFromPaymentAuthorized(Payment\Entity $payment, $updateFees = true)
     {
         $this->trace->info(
             TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
@@ -49,7 +49,7 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, $updateFees);
 
         // $this->updateNodalBalance($txn);
 
@@ -191,7 +191,7 @@ class Core extends Base\Core
         return true;
     }
 
-    protected function txnCreationFromPaymentOperation(Payment\Entity $payment)
+    protected function txnCreationFromPaymentOperation(Payment\Entity $payment, bool $updateFees = true)
     {
         $txn = new Transaction\Entity;
 
@@ -208,6 +208,13 @@ class Core extends Base\Core
             $txn->sourceAssociate($payment);
 
             $txn->merchant()->associate($payment->merchant);
+        }
+
+        if ($updateFees === false)
+        {
+            list($txn, $feesSplit) = $this->fillEmptyTxnFeesAndAmount($txn, $payment);
+
+            return [$txn, null];
         }
 
         list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
@@ -233,6 +240,26 @@ class Core extends Base\Core
             ]);
 
         return [$txn, $feesSplit];
+    }
+
+    protected function fillEmptyTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
+    {
+        $amount = $payment->getBaseAmount();;
+
+        $values = [
+            Transaction\Entity::DEBIT               => 0,
+            Transaction\Entity::CREDIT              => 0,
+            Transaction\Entity::FEE                 => 0,
+            Transaction\Entity::SERVICE_TAX         => 0,
+            Transaction\Entity::AMOUNT              => $amount,
+            Transaction\Entity::CURRENCY            => Currency\Currency::INR,
+            Transaction\Entity::TYPE                => Transaction\Type::PAYMENT,
+            Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
+        ];
+
+        $txn->fill($values);
+
+        return [$txn, null];
     }
 
     protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
