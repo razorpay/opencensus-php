@@ -43,9 +43,12 @@ class RawApiRequest
             'base_url' => Config::get('api.url'),
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
-            'headers'   =>  ApiRequest::getHeaders() + [
-                'X-Dashboard'   => 'true',
-                'User-Agent'    => 'Razorpay-PHP/guzzle6'
+            'defaults' => [
+                'headers'   =>  ApiRequest::getHeaders() + [
+                    'X-Dashboard'   => 'true',
+                    'X-User-Agent'  => \Request::header('User-Agent'),
+                    'X-IP-Address'  => \Request::ip(),
+                ]
             ]
         ];
 

@@ -49,16 +49,18 @@ class Authenticate {
 		else
 		{
 			$user = Auth::guard('user')->user();
-			ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
-			ApiRequest::addHeader('X-Dashboard-User-Id', $user->getAuthIdentifier());
-
-			if ($user->currentMerchant)
-			{
-				ApiRequest::addHeader('X-Dashboard-User-Role', $user->getUserRoleWithCurrentMerchant());
-			}
 
 			if ($user)
 			{
+				// Note: User email is being set as merchant
+				ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
+				ApiRequest::addHeader('X-Dashboard-User-Id', $user->getAuthIdentifier());
+
+				if ($user->currentMerchant)
+				{
+					ApiRequest::addHeader('X-Dashboard-User-Role', $user->getUserRoleWithCurrentMerchant());
+				}
+
 				$routeName = $request->route()->getName();
 
 				if (!Gate::has($routeName))
