@@ -4,6 +4,6 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 class Status
 {
-    const SUCCESS   = 'SUCCESS';
-    const FAILURE   = 'FAILURE';
+    const SUCCESS = 'SUCCESS';
+    const FAILED  = 'FAILED';
 }

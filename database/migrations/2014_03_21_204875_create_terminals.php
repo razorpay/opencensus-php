@@ -80,7 +80,7 @@ class CreateTerminals extends Migration
 
             $table->tinyInteger(Terminal::RECURRING)
                   ->unsigned()
-                  ->default(Recurring::NON_RECURRING);
+                  ->default(1);
 
             $table->tinyInteger(Terminal::SHARED)
                    ->default(0);

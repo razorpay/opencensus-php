@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Org;
 
 use RZP\Models\Admin\Action;
 use RZP\Models\Base;
+use RZP\Models\Admin\Permission;
 
 class Core extends Base\Core
 {
@@ -17,14 +18,17 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($org);
 
+        $this->addOrgRelatedEntities($org, $input);
+
         return $org;
     }
 
     public function fetch(string $orgId)
     {
-        $orgId = Entity::verifyIdAndStripSign($orgId);
+        Entity::verifyIdAndStripSign($orgId);
 
-        return $this->repo->org->findOrFailWithHostname($orgId);
+        return $this->repo->org->findOrFailPublicWithRelations(
+            $orgId, ['hostnames', 'permissions']);
     }
 
     public function edit(string $orgId, array $input)
@@ -37,9 +41,39 @@ class Core extends Base\Core
 
         $org->edit($input);
 
-        $this->repo->saveOrFail($org);
+        $this->repo->transactionOnLiveAndTest(function() use($org, $input)
+        {
+
+            $this->repo->saveOrFail($org);
+
+            if (isset($input[Entity::PERMISSIONS]) === true)
+            {
+                $oldPerms = $org->permissions()->getRelatedIds()->toArray();
+
+                // These perms are deleted from the organization
+                $diffPerms = array_diff($oldPerms, $input[Entity::PERMISSIONS]);
+
+                $this->deleteUnassignedPermissionsFromRoles($org, $diffPerms);
+
+                $this->addOrgRelatedEntities($org, $input);
+            }
+        });
+
+        $org = $this->fetch($org->getPublicId());
 
         return $org;
+    }
+
+    protected function deleteUnassignedPermissionsFromRoles(Entity $org, array $diffPerms)
+    {
+        $orgId = $org->getPublicId();
+
+        $roles = $this->repo->role->fetchByOrgId($orgId);
+
+        foreach ($roles as $role)
+        {
+            $role->permissions()->detach($diffPerms);
+        }
     }
 
     public function delete($id)
@@ -55,5 +89,14 @@ class Core extends Base\Core
         $this->repo->org->deleteOrFail($org);
 
         return $org->toArrayDeleted();
+    }
+
+    protected function addOrgRelatedEntities(Entity $org, array $input)
+    {
+        if (isset($input[Entity::PERMISSIONS]) === true)
+        {
+            $this->repo->sync(
+                $org, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
+        }
     }
 }

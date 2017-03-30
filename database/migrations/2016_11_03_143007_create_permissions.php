@@ -29,6 +29,9 @@ class CreatePermissions extends Migration
             $table->string(Permission::DESCRIPTION, 250)
                   ->nullable();
 
+            $table->boolean(Permission::ASSIGNABLE)
+                  ->default(0);
+
             $table->integer(Permission::CREATED_AT);
             $table->integer(Permission::UPDATED_AT);
 

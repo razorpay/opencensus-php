@@ -29,6 +29,7 @@ class Gateway
     const NETBANKING_ICICI   = 'netbanking_icici';
     const NETBANKING_AIRTEL  = 'netbanking_airtel';
     const NETBANKING_AXIS    = 'netbanking_axis';
+    const NETBANKING_FEDERAL = 'netbanking_federal';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
     const UPI_ICICI          = 'upi_icici';
@@ -101,6 +102,7 @@ class Gateway
         self::NETBANKING_ICICI   => Settlement\Channel::KOTAK,
         self::NETBANKING_AIRTEL  => Settlement\Channel::KOTAK,
         self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
+        self::NETBANKING_FEDERAL => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
@@ -140,6 +142,7 @@ class Gateway
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
+            self::NETBANKING_FEDERAL,
         ],
 
         Method::WALLET => [
@@ -295,6 +298,7 @@ class Gateway
         self::NETBANKING_ICICI,
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
+        self::NETBANKING_FEDERAL,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -306,6 +310,16 @@ class Gateway
         self::UPI_ICICI,
         self::UPI_IDFC,
     );
+
+    /**
+     * List of gateways that support recurring payments
+     *
+     * @var array
+     */
+    public static $recurringGateways = [
+        Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
+    ];
 
     /**
      * List of gateways which give s2s callback where we do not validate
@@ -330,7 +344,6 @@ class Gateway
         // Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
@@ -389,8 +402,9 @@ class Gateway
     public static $netbankingToGatewayMap = array(
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS);
 
     /**
@@ -403,7 +417,8 @@ class Gateway
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
@@ -444,6 +459,11 @@ class Gateway
     public static function isNetbankingBankDirectlySupported($bank)
     {
         return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
+    }
+
+    public static function isRecurringGateway($gateway)
+    {
+        return in_array($gateway, self::$recurringGateways, true);
     }
 
     public static function getChannel($gateway)

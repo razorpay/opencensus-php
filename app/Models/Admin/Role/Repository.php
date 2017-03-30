@@ -47,4 +47,12 @@ class Repository extends Base\Repository
                 'The role with the name already exists');
         }
     }
+
+    public function findByOrgAndName(Org\Entity $org, string $name)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $org->getId())
+                    ->where(Entity::NAME, '=', $name)
+                    ->firstOrFailPublic();
+    }
 }

@@ -20,6 +20,10 @@ class OrgTest extends TestCase
 
     public function testCreateOrg()
     {
+        $permIds = $this->getAssignablePermissionsByIds();
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
+
         $this->startTest();
     }
 
@@ -89,11 +93,19 @@ class OrgTest extends TestCase
 
     public function testCreateOrgInvalidAuthType()
     {
+        $permIds = $this->getAssignablePermissionsByIds();
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
+
         $this->startTest();
     }
 
     public function testCreateOrgInvalidHostname()
     {
+        $permIds = $this->getAssignablePermissionsByIds();
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
+
         $this->startTest();
     }
 
@@ -103,6 +115,10 @@ class OrgTest extends TestCase
 
         $firstOrgHost = $this->fixtures->create('org_hostname',
             ['org_id' => $org->getId(), 'hostname' => 'test1.com']);
+
+        $permIds = $this->getAssignablePermissionsByIds();
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
         $res = $this->startTest();
     }

@@ -58,7 +58,9 @@ return [
         'request' => [
             'url' => '/orgs/%s/roles/%s',
             'method' => 'put',
-            'content' => [],
+            'content' => [
+                'permissions' => [],
+            ],
         ],
         'response' => [
             'content' => [],
@@ -165,5 +167,23 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE,
             'error_description' => 'SuperAdmin Role is not editable',
         ],
-    ]
+    ],
+
+    'testEditSuperAdminRoleByRazorpay' => [
+        'request' => [
+            'url' => '/orgs/%s/roles/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test edit super admin',
+                'description' => 'Super Admin Role edited',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    'name' => 'test edit super admin',
+                    'description' => 'Super Admin Role edited',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
