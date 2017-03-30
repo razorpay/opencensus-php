@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Workflow;
 
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Step;
+use RZP\Models\Admin\Permission;
 
 class Core extends Base\Core
 {
@@ -15,6 +17,8 @@ class Core extends Base\Core
         $workflow = (new Entity)->generateId();
 
         $workflow->build($input);
+
+        $this->validateExistingWorkflows($workflow, $input);
 
         // Create the steps and workflow in a single transaction
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
@@ -34,6 +38,56 @@ class Core extends Base\Core
         });
 
         return $workflow;
+    }
+
+    protected function validateExistingWorkflows(array $input)
+    {
+        $permissions = $input['permissions'];
+
+        Permission\Entity::verifyIdAndStripSignMultiple($permissions);
+
+        $workflows = $this->repo
+                          ->workflows
+                          ->fetchWorkflowsWithStepsByPermissions($permissions);
+
+        $minLevelFromInput = $this->getMinLevelFromInput($input);
+
+        $permissionWorkflowMap = [];
+
+        foreach ($workflows as $workflow)
+        {
+            $minLevelFromSteps = $this->getMinLevelFromSteps($workflow->steps());
+
+            if ($minLevelFromSteps === $minLevelFromInput)
+            {
+                throw new Exception\BadRequestException(
+                    Error\ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS);
+            }
+        }
+    }
+
+    protected function getMinLevelFromInput(array $input)
+    {
+        $minLevel = 0;
+
+        foreach ($input['steps'] as $step)
+        {
+            $minLevel = $minLevel > $step['level'] ? $step['level'] : $minLevel;
+        }
+
+        return $minLevel;
+    }
+
+    protected function getMinLevelFromSteps($steps)
+    {
+        $minLevel = 0;
+
+        foreach ($steps as $step)
+        {
+            $minLevel = $minLevel > $step->getLevel() ? $step->getLevel() : $minLevel;
+        }
+
+        return $minLevel;
     }
 
     public function update(Entity $workflow, array $input)
