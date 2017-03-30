@@ -347,6 +347,8 @@ class BasicAuth
 
         if ($adminToken->getAdminId() !== null)
         {
+            $this->setDashboardHeaders();
+
             $this->admin = $adminToken->admin;
 
             return $this->checkAndSetAccountScope();
@@ -858,10 +860,15 @@ class BasicAuth
         $headers = $this->request->headers;
 
         $this->dashboardHeaders = array(
+            // String 'true' or null
             'dashboard'     => $headers->get('X-Dashboard'),
+            // User Email is received (not the primary merchant email)
             'merchant'      => $headers->get('X-Dashboard-Merchant'),
+            //
             'admin_user'    => $headers->get('X-Dashboard-Username'),
+            // User ID of the logged in user
             'user_id'       => $headers->get('X-Dashboard-User-Id'),
+            // User's currentMerchant Role
             'user_role'     => $headers->get('X-Dashboard-User-Role'),
         );
     }
