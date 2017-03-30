@@ -446,6 +446,41 @@ class DatabaseSeeder extends Seeder
                 ],
             ]);
 
+            DB::table(Table::ORG_FIELD_MAP)->insert([
+                [
+                    'id'          => '7NamQFIGFyyNdc',
+                    'org_id'      => '100000razorpay',
+                    'entity_name' => 'admin',
+                    'fields'      => "name,email,allow_all_merchants,disabled,roles,groups",
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
+                ],
+                [
+                    'id'          => '7NawjzGBBIX6Ar',
+                    'org_id'      => '6dLbNSpv5XbCOG',
+                    'entity_name' => 'admin',
+                    'fields'      => 'name,username,email,password,password_confirmation,employee_code,department_code,branch_code,location_code,supervisor_code,allow_all_merchants,disabled,roles,groups',
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
+                ],
+                [
+                    'id'          => '7NayAS7Iz2aMyi',
+                    'org_id'      => '6dLbNSpv5XbCOG',
+                    'entity_name' => 'admin_lead',
+                    'fields'      => 'channel_code,crm_next_no,db_token_no,branch_lts_no,branch_code,source_code,promo_code,lg_code,lc_ro_code,mrm_code,merchant_type,mcc_category,mcc_code,merchant_name,contact_name,contact_email,dba_name',
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
+                ],
+                [
+                    'id'          => '7Nb15NvBMGKP2k',
+                    'org_id'      => '100000razorpay',
+                    'entity_name' => 'admin_lead',
+                    'fields'      => 'merchant_name,contact_name,contact_email,dba_name',
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
+                ],
+            ]);
+
             DB::table(Table::ADMIN)->insert([
                 [
                     'id'                  => '6dLbNSpv5Ycccc',
