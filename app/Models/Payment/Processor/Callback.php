@@ -59,14 +59,62 @@ trait Callback
         unset($gatewayInput['csrf']);
         $this->verifyHash($hash, $payment->getPublicId());
 
-        if ($payment->isCreated() === false)
+        $response = $this->acquireLockAndProcessCallback($payment, $gatewayInput);
+
+        // If response is not null then it's a response that needs to be sent back.
+        if ($response !== null)
         {
-            return $this->processPaymentCallbackSecondTime($payment);
+            return $response;
         }
 
-        $this->processPaymentCallback($payment, $gatewayInput);
-
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    public function s2sCallback($payment, array $gatewayInput)
+    {
+        // Return if payment is auto captured
+        if ($payment->getAutoCaptured())
+        {
+            return ['success' => false];
+        }
+
+        $this->setPayment($payment);
+
+        $gateway = $payment->getGateway();
+
+        if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways, true) === false)
+        {
+            throw new Exception\LogicException(
+                'Invalid gateway provided: ' . $gateway);
+        }
+
+        $this->mutex->acquireAndRelease(
+            $this->getCallbackMutexResource($payment),
+            function() use ($payment, $gatewayInput)
+            {
+                // Reload in case it's processed by another thread.
+                $this->repo->reload($payment);
+
+                if ($payment->isCreated() === false)
+                {
+                    $this->app['segment']->trackPayment(
+                        $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                }
+
+                $this->processPaymentCallback($payment, $gatewayInput);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        $this->autoCapturePaymentIfApplicable($payment);
+
+        return ['success' => true];
     }
 
     public function redirectCallback($id)
@@ -114,39 +162,6 @@ trait Callback
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
-    public function s2sCallback($payment, array $gatewayInput)
-    {
-        // Return if payment is auto captured
-        if ($payment->getAutoCaptured())
-        {
-            return ['success' => false];
-        }
-
-        $this->setPayment($payment);
-
-        $gateway = $payment->getGateway();
-
-        if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways, true) === false)
-        {
-            throw new Exception\LogicException(
-                'Invalid gateway provided: ' . $gateway);
-        }
-
-        if ($payment->isCreated() === false)
-        {
-            $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
-        }
-
-        $this->processPaymentCallback($payment, $gatewayInput);
-
-        $this->autoCapturePaymentIfApplicable($payment);
-
-        return ['success' => true];
-    }
-
     protected function processPaymentCallback($payment, $gatewayInput)
     {
         $input['payment'] = $payment->toArrayGateway();
@@ -188,6 +203,33 @@ trait Callback
         }
 
         $this->updateAndNotifyPaymentAuthorized();
+    }
+
+    protected function acquireLockAndProcessCallback($payment, $gatewayInput)
+    {
+        $resource = $this->getCallbackMutexResource($payment);
+
+        $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment, $gatewayInput)
+            {
+                // Reload in case it's processed by another thread.
+                $this->repo->reload($payment);
+
+                if ($payment->isCreated() === false)
+                {
+                    return $this->processPaymentCallbackSecondTime($payment);
+                }
+
+                $this->processPaymentCallback($payment, $gatewayInput);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return $response;
     }
 
     protected function callGatewayCallback($input)
@@ -357,5 +399,10 @@ trait Callback
         {
             $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
+    }
+
+    protected function getCallbackMutexResource(Payment\Entity $payment): string
+    {
+        return 'callback_' . $payment->getId();
     }
 }

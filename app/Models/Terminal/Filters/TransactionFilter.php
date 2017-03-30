@@ -106,31 +106,31 @@ class TransactionFilter extends Terminal\Filter
 
         $isPaymentInternational = $input['payment']->isInternational();
 
-        if (($input['mode'] === Mode::TEST) and ($isPaymentInternational))
+        if (($input['mode'] === Mode::TEST))
         {
             // Allow support for cards on atom for international test
-            $testTerminals = array_merge(
-                                [Gateway::ATOM, Gateway::AXIS_GENIUS, Gateway::PAYTM],
-                                Gateway::$internationalCardGateways);
+            if ($isPaymentInternational === true)
+            {
+                $testTerminals = array_merge(
+                                    [Gateway::ATOM, Gateway::AXIS_GENIUS, Gateway::PAYTM],
+                                    Gateway::$internationalCardGateways);
 
-            return in_array($terminal->getGateway(), $testTerminals);
-        }
-        else if ($isPaymentInternational)
-        {
-            return in_array($terminal->getGateway(), Gateway::$internationalCardGateways);
-        }
-        else if ($input['mode'] === Mode::TEST)
-        {
+                return in_array($terminal->getGateway(), $testTerminals, true);
+            }
+
             $testTerminals = array_merge(
                                 Gateway::$domesticCardGateways,
                                 Gateway::$domesticCardGatewaysInTest);
 
-            return in_array($terminal->getGateway(), $testTerminals);
+            return in_array($terminal->getGateway(), $testTerminals, true);
         }
-        else
+
+        if ($isPaymentInternational === true)
         {
-            return in_array($terminal->getGateway(), Gateway::$domesticCardGateways);
+            return in_array($terminal->getGateway(), Gateway::$internationalCardGateways, true);
         }
+
+        return in_array($terminal->getGateway(), Gateway::$domesticCardGateways, true);
     }
 
     public function bankFilter($terminal, $input)

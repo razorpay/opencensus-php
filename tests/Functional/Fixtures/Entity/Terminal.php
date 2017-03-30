@@ -723,8 +723,8 @@ class Terminal extends Base
             'id'                        => Shared::NETBANKING_ICICI_TERMINAL,
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_icici',
-            'gateway_merchant_id'       => 'razorpay_icici',
-            'gateway_merchant_id2'      => 'razorpay_submerchant',
+            'gateway_merchant_id'       => 'razorpay_submerchant',
+            'gateway_merchant_id2'      => 'razorpay_icici',
             'gateway_secure_secret'     => 'razorpay_password',
             'netbanking'                => 1,
             'shared'                    => 1
