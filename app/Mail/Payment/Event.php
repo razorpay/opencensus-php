@@ -20,7 +20,6 @@ class Event
         self::FAILED_TO_AUTHORIZED,
         self::CARD_SAVED,
         self::INVOICE_PAYMENT_AUTHORIZED,
-        self::INVOICE_PAYMENT_CAPTURED,
     ];
 
     const MERCHANT_EVENTS = [
@@ -78,7 +77,7 @@ class Event
         return $action;
     }
 
-    public static function getLabel(string $event)
+    public static function getMailTag(string $event)
     {
         return self::MAIL_TAG_MAP[$event] ?? MailTags::PAYMENT_SUCCESSFUL;
     }

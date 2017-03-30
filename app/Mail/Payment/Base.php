@@ -8,37 +8,34 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use RZP\Constants\MailTags;
 
-class Base extends Mailable implements ShouldQueue
+class Base extends Mailable
 {
     use Queueable, SerializesModels;
-
-    protected $event;
 
     protected $data;
 
     protected $domain;
 
-    protected $metadata;
+    protected $isMerchantEmail;
 
-    public function __construct(string $event, array $data)
+    public function __construct(array $data, string $domain, bool $isMerchantEmail = false)
     {
-        $this->event = $event;
-
         $this->data = $data;
 
-        $this->domain = 'razorpay.com';
+        $this->domain = $domain;
+
+        $this->isMerchantEmail = $isMerchantEmail;
     }
 
     public function build()
     {
-        $from = $this->metadata['from'] ?? 'reports';
-        $from = $this->getCompleteEmail($from);
+        $from = $this->getFrom();
 
         $fromName = 'Team Razorpay';
 
         $replyTo = $this->getCompleteEmail('support');
 
-        $label = Event::getLabel($this->event);
+        $mailTag = $this->getMailTag();
 
         $to = $this->getTo();
 
@@ -51,31 +48,33 @@ class Base extends Mailable implements ShouldQueue
                 ->subject($subject)
                 ->replyTo($replyTo)
                 ->with($this->data)
-                ->withSwiftMessage(function ($message) use ($paymentId, $label)
+                ->addHtmlView()
+                ->addTextView()
+                ->withSwiftMessage(function ($message) use ($paymentId, $mailTag)
                 {
                     $headers = $message->getHeaders();
 
                     $headers->addTextHeader(MailTags::HEADER, $paymentId);
 
-                    $headers->addTextHeader(MailTags::HEADER, $label);
+                    $headers->addTextHeader(MailTags::HEADER, $mailTag);
                 });
 
-        if (isset($this->metadata['view']['html']) === true)
-        {
-            $this->view($this->metadata['view']['html']);
-        }
+        return $this;
+    }
 
-        if (isset($this->metadata['view']['text']) === true)
-        {
-            $this->text($this->metadata['view']['text']);
-        }
+    protected function addHtmlView()
+    {
+        return $this;
+    }
 
+    protected function addTextView()
+    {
         return $this;
     }
 
     protected function getSubject()
     {
-        $action = Event::getAction($this->event, $this->data);
+        $action = $this->getAction();
 
         /**
          * The reason we have a fallback to the amount here is because
@@ -94,7 +93,42 @@ class Base extends Mailable implements ShouldQueue
             $subject = "$action successful for {$this->data['payment']['amount']}";
         }
 
+        if ($this->isMerchantEmail === true)
+        {
+            $subject = "Razorpay | $subject";
+        }
+
         return $subject;
+    }
+
+    protected function getAction()
+    {
+        return 'Payment';
+    }
+
+    protected function getTo()
+    {
+        if ($this->isMerchantEmail === true)
+        {
+            return $this->data['merchant']['email'];
+        }
+
+        return $this->data['customer']['email'];
+    }
+
+    protected function getMailTag()
+    {
+        return MailTags::PAYMENT_SUCCESSFUL;
+    }
+
+    protected function getFrom()
+    {
+        return $this->getCompleteEmail('reports');
+    }
+
+    public function isCustomerReceiptEmail()
+    {
+        return false;
     }
 
     /**

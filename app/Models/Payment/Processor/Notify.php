@@ -119,16 +119,18 @@ class Notify
     {
         $mailables = new Base\PublicCollection;
 
+        $mailableClass = $this->getMailableClass($event);
+
         if (PaymentMail\Event::isCustomerEvent($event) === true)
         {
-            $mailable = new PaymentMail\Customer($event, $this->template, $this->domain);
+            $mailable = new $mailableClass($this->template, $this->domain);
 
             $mailables->push($mailable);
         }
 
         if (PaymentMail\Event::isMerchantEvent($event) === true)
         {
-            $mailable = new PaymentMail\Merchant($event, $this->template, $this->domain);
+            $mailable = new $mailableClass($this->template, $this->domain, true);
 
             $mailables->push($mailable);
         }
@@ -592,5 +594,10 @@ class Notify
     protected function isSlackEnabled()
     {
         return ($this->isEnabled() and $this->slackEnabled);
+    }
+
+    protected function getMailableClass(string $event)
+    {
+        return 'RZP\\Mail\\Payment\\' . studly_case($event);
     }
 }

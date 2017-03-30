@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Mail;
+namespace RZP\Mail\Merchant;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
+use RZP\Constants\MailTags;
 use RZP\Models\Merchant;
 
 class DailyReport extends Mailable implements ShouldQueue
@@ -39,6 +39,7 @@ class DailyReport extends Mailable implements ShouldQueue
         $subject = 'Razorpay | Daily Transaction Report for ' . $data['date'];
 
         return $this->view('emails.merchant.daily_report')
+                    ->with($this->data)
                     ->to($this->data['email'])
                     ->from('reports@razorpay.com')
                     ->replyTo('support@razorpay.com', 'Razorpay Support')

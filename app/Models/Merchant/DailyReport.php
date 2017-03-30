@@ -8,7 +8,7 @@ use Mail;
 
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
-use RZP\Mail\DailyReport as DailyReportMail;
+use RZP\Mail\Merchant\DailyReport as DailyReportMail;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
