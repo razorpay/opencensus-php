@@ -54,15 +54,17 @@ class Core extends Base\Core
 
     public function delete(Entity $workflow)
     {
-        $openWorkflows = (new Workflow\Action)->fetchOpenWorkflows($workflow->getId());
+        $openWorkflows = (new Action\Core)->fetchOpenWorkflows($workflow->getId());
 
-        if (empty($openWorkflows) === false)
+        if (count($openWorkflows) > 0)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
         }
 
-        return $this->repo->workflow->deleteOrFail($workflow);
+        $this->repo->workflow->deleteOrFail($workflow);
+
+        return $workflow;
     }
 
     protected function getPermissionIds(Entity $workflow, array $permissions = [])
