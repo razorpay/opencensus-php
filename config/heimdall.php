@@ -167,6 +167,7 @@ return [
         // Permissions
         PermissionCategory::PERMISSION => [
             Permission::VIEW_ALL_PERMISSION => 'View all permissions',
+            Permission::GET_PERMISSION      => 'get_permission',
             Permission::DELETE_PERMISSION   => 'Delete permission',
             Permission::CREATE_PERMISSION   => 'Create permission',
             Permission::EDIT_PERMISSION     => 'Edit permission',
@@ -255,10 +256,7 @@ return [
         // Permissions
         PermissionCategory::PERMISSION => [
             Permission::VIEW_ALL_PERMISSION => 'View all permissions',
-            Permission::GET_PERMISSION      => 'get_permission',
-            Permission::DELETE_PERMISSION   => 'delete_permission',
-            Permission::CREATE_PERMISSION   => 'create_permission',
-            Permission::EDIT_PERMISSION     => 'edit_permission',
+            Permission::GET_PERMISSION      => 'Get Permission',
         ],
 
         PermissionCategory::AUDIT_LOG => [
