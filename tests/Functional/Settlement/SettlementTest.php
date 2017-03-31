@@ -326,7 +326,11 @@ class SettlementTest extends TestCase
             'method' => 'POST'
         ];
 
-        $content = $this->makeRequestAndGetContent($request);
+        $setlResponse = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($setlResponse['kotak']);
+        $this->assertNotNull($setlResponse['kotak']['settlement_text_file']);
+        $this->assertNotNull($setlResponse['kotak']['settlement_excel_file']);
 
         $setl = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementForV2');

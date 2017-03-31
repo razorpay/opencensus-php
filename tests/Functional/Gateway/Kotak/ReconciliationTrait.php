@@ -119,7 +119,7 @@ trait ReconciliationTrait
         $this->assertArrayHasKey('settlement_text_file', $content['kotak']);
         $this->assertArrayHasKey('settlement_excel_file', $content['kotak']);
 
-        return $content['kotak']['settlement_text_file'];
+        return $content['kotak']['settlement_text_file']['local_file_path'];
     }
 
     // Fetches and matches batch data for given entity

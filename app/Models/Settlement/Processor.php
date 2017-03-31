@@ -174,37 +174,45 @@ class Processor extends Base\Core
 
     protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel, $h2h=true)
     {
-        $data = [
+        $returnData = [
             'count'             => $settlements->count(),
             'transaction_count' => $txnCount,
         ];
 
         if ($setlAttempts->count() > 0)
         {
-            list($textFileEntity, $excelFileEntity) =
+            list($txtFileEntity, $excelFileEntity) =
                 $this->generateSettlementFile($setlAttempts, $channel, $h2h);
 
+            $this->updateValuesForAttempts(
+                $setlAttempts, $txtFileEntity, $excelFileEntity);
+
+            $excelFileEntity = $excelFileEntity->get();
+            $txtFileEntity = $txtFileEntity->get();
+
+            $returnData['settlement_text_file'] = $txtFileEntity;
+            $returnData['settlement_excel_file'] = $excelFileEntity;
+
             $urls = [
-                'kotak_settlement_txt'   => $textFileEntity['local_file_path'],
-                'kotak_settlement_excel' => $excelFileEntity['local_file_path']
+                'kotak_settlement_txt'   => $txtFileEntity['location'],
+                'kotak_settlement_excel' => $excelFileEntity['location'],
             ];
 
             $this->updateBatchFundTransferEntityUrls($urls);
 
-            $this->updateValuesForAttempts(
-                $setlAttempts, $textFileEntity, $excelFileEntity);
+            $slackData = $returnData;
 
-            $data['settlement_text_file']  = $textFileEntity['local_file_path'];
-            $data['settlement_excel_file'] = $excelFileEntity['local_file_path'];
+            $slackData['settlement_text_file'] = $txtFileEntity['location'];
+            $slackData['settlement_excel_file'] = $excelFileEntity['location'];
 
-            $this->successNotification($data, $settlements, TraceCode::SETTLEMENT_INITIATED);
+            $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
         else
         {
-            $data['message'] = 'No settlements found!';
+            $returnData['message'] = 'No settlements found!';
         }
 
-        return $data;
+        return $returnData;
     }
 
     protected function createSettlements($channel): array

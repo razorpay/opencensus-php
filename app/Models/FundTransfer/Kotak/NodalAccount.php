@@ -126,9 +126,6 @@ class NodalAccount
 
         list($excelFileEntity, $textFileEntity) = $this->createSettlementFiles($excelData, $txt, $h2h);
 
-        $excelFileEntity = $excelFileEntity->get();
-        $textFileEntity = $textFileEntity->get();
-
         $this->sendSettlementMail($excelFileEntity, $textFileEntity);
 
         return [$textFileEntity, $excelFileEntity];
@@ -318,8 +315,8 @@ class NodalAccount
     }
 
     protected function sendSettlementMail(
-        array $excelFileEntity,
-        array $textFileEntity)
+        FileStore\Creator $excelFileEntity,
+        FileStore\Creator $textFileEntity)
     {
         $summary = $this->summary;
 
@@ -327,6 +324,9 @@ class NodalAccount
         $subject = "Kotak Settlement files for $today";
 
         $data = compact('summary', 'subject');
+
+        $excelFileEntity = $excelFileEntity->get();
+        $textFileEntity = $textFileEntity->get();
 
         $data['excelFile'] = $excelFileEntity['local_file_path'];
         $data['textFile'] = $textFileEntity['local_file_path'];
