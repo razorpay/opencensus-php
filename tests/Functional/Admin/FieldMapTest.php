@@ -80,7 +80,7 @@ class FieldMapTest extends TestCase
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId(),
-                        $fieldMap->getNameOfEntity());
+                        $fieldMap->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
