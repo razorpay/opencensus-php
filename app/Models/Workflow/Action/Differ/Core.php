@@ -42,6 +42,11 @@ class Core extends Base\Core
 
     public function create(Action\Entity $action, array $input)
     {
+        if (isset($input[Entity::PAYLOAD]['org_id']) === true)
+        {
+            unset($input[Entity::PAYLOAD]['org_id']);
+        }
+
         $diff = (new Entity)->generateId();
 
         $input[Entity::ACTION_ID] = $action->getId();
@@ -54,13 +59,13 @@ class Core extends Base\Core
 
         $diff = $this->$function($diff);
 
-        return $action;
+        return $diff;
     }
 
-    public function get(Action\Entity $action)
+    public function get(string $actionId)
     {
         $esResponse = $this->esDao->search(
-            strtolower($this->baseIndex), self::ES_TYPE, $action->getId());
+            strtolower($this->baseIndex), self::ES_TYPE, $actionId);
 
         if ($esResponse === null)
         {

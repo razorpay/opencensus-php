@@ -5,13 +5,17 @@ namespace RZP\Http\Middleware;
 use App;
 use Request;
 use Closure;
+use RZP\Exception;
 use RZP\Http\Route;
+use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action\Differ;
 use Illuminate\Foundation\Application;
 
 class Workflow
 {
     const USER_HEADER = 'X-Dashboard-Username';
+
+    const WILDCARD_PERMISSION = '*';
 
     const WORKFLOW_CONTROLLER = 'RZP\Http\Controllers\WorkflowController';
 
@@ -62,6 +66,8 @@ class Workflow
 
         $routeParams = $this->router->current()->parameters();
 
+        $permissions = $this->getRoutePermissions($routeName);
+
         $differEntity = [
            Differ\Entity::ENTITY_NAME  => $entity,
            Differ\Entity::ENTITY_ID    => $entityId,
@@ -73,8 +79,24 @@ class Workflow
            Differ\Entity::PAYLOAD      => $input,
            Differ\Entity::CONTROLLER   => $controller,
            Differ\Entity::ROUTE        => $routeName,
+           Differ\Entity::PERMISSIONS  => $permissions,
         ];
 
         return $differEntity;
     }
+
+    private function getRoutePermissions($routeName)
+    {
+        $adminAuthRoutes = Route::$adminPermission;
+
+        if ((isset($adminAuthRoutes[$routeName]) === false) or
+            (in_array(self::WILDCARD_PERMISSION, $adminAuthRoutes[$routeName], true) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+        }
+
+        return $adminAuthRoutes[$routeName];
+    }
+
 }

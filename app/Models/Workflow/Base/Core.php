@@ -65,4 +65,33 @@ class Core extends Base\Core
 
         return $minLevel;
     }
+
+    protected function getMinLeveledWorkflow(array $permissions, $orgId)
+    {
+        $permissionIds = $this->repo
+                              ->permission
+                              ->retrieveIdsByNames($permissions, $orgId);
+
+        $workflows = $this->repo
+                          ->workflow
+                          ->fetchWorkflowsWithStepsByPermissions($permissionIds->toArray());
+
+        $minLevel = PHP_INT_MAX;
+
+        $minLevelWorkflow = null;
+
+        foreach ($workflows as $workflow)
+        {
+            $minLevelFromSteps = $this->getMinLevelForWorkflow($workflow);
+
+            if ($minLevelFromSteps < $minLevel)
+            {
+                $minLevel = $minLevelFromSteps;
+
+                $minLevelWorkflow = $workflow;
+            }
+        }
+
+        return $minLevelWorkflow;
+    }
 }

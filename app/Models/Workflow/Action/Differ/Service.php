@@ -23,8 +23,6 @@ class Service extends Base\Service
     {
         Action\Entity::verifyIdAndStripSign($actionId);
 
-        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
-
         $diff = $this->core()->get($actionId);
 
         return $diff;

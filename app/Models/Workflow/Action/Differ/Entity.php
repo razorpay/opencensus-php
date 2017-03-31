@@ -23,6 +23,7 @@ class Entity extends Base\Entity
     const CREATED_AT    = 'created_at';
 
     const FUNCTION_NAME = 'function_name';
+    const PERMISSIONS   = 'permissions';
 
     protected $entity   = 'action';
 
@@ -37,6 +38,7 @@ class Entity extends Base\Entity
         self::PAYLOAD,
         self::CONTROLLER,
         self::ROUTE,
+        self::ACTION_ID,
         self::CREATED_AT
     ];
 
@@ -53,6 +55,7 @@ class Entity extends Base\Entity
         self::CONTROLLER,
         self::ROUTE,
         self::DIFF,
+        self::ACTION_ID,
         self::CREATED_AT
     ];
 
@@ -69,6 +72,7 @@ class Entity extends Base\Entity
         self::CONTROLLER,
         self::ROUTE,
         self::DIFF,
+        self::ACTION_ID,
         self::CREATED_AT
     ];
 

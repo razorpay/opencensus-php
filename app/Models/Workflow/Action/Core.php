@@ -3,10 +3,10 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\Checker;
+use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Action\State;
+use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Workflow\Action\Checker;
 
 class Core extends Base\Core
 {
@@ -18,17 +18,39 @@ class Core extends Base\Core
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        $input[Entity::ORG_ID] = $admin->getOrgId();
+        $params = [];
 
-        $action->build($input);
+        $params[Entity::ORG_ID] = $admin->getOrgId();
 
-        $this->repo->transactionOnLiveAndTest(function() use($action) {
+        $params[Entity::ADMIN_ID] = $admin->getId();
+
+        $adminPersmissions = $admin->getPermissionsList();
+
+        $routePermissions = $input[Differ\Entity::PERMISSIONS];
+
+        $commonPermissions = array_intersect($routePermissions, $adminPersmissions);
+
+        $workflow = $this->getMinLeveledWorkflow($commonPermissions, $admin->getOrgId());
+
+        $params[Entity::WORKFLOW_ID] = $workflow->getId();
+
+        $params[Entity::DIFFER] = $input;
+
+        $action->build($params);
+
+        $this->repo->transactionOnLiveAndTest(function() use($action, $params) {
 
             $this->repo->saveOrFail($action);
 
             $this->createInitialStateForAction($action);
 
-            (new Differ\Core)->create($input['differ']);
+            $differ = $params[Entity::DIFFER];
+
+            unset($differ[Entity::ORG_ID]);
+
+            unset($differ[Differ\Entity::PERMISSIONS]);
+
+            (new Differ\Core)->create($action, $differ);
         });
 
         return $action;

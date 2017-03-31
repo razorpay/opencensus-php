@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Workflow\Action;
 
-use RZP\Constants\Table;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\Action\State;
 
 class Entity extends Base\Entity
 {
@@ -15,6 +15,8 @@ class Entity extends Base\Entity
     const STATE          = 'state';
     const CURRENT_LEVEL  = 'current_level';
 
+    const DIFFER         = 'differ';
+
     protected static $sign = 'w_action';
 
     protected $entity = 'workflow_action';
@@ -22,11 +24,13 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
-        self::WORKFLOW_ID,
+        self::ORG_ID,
         self::ADMIN_ID,
+        self::WORKFLOW_ID,
     ];
 
     protected $visible = [
+        self::ID,
         self::WORKFLOW_ID,
         self::ADMIN_ID,
         self::ORG_ID,
@@ -36,6 +40,7 @@ class Entity extends Base\Entity
     ];
 
     protected $public = [
+        self::ID,
         self::WORKFLOW_ID,
         self::ADMIN_ID,
         self::ORG_ID,
@@ -47,6 +52,7 @@ class Entity extends Base\Entity
     protected $defaults = [
         self::APPROVED      => false,
         self::CURRENT_LEVEL => 1,
+        self::STATE         => State\Entity::OPEN,
     ];
 
     protected $casts = [
@@ -129,5 +135,10 @@ class Entity extends Base\Entity
     public function incrementCurrentLevel()
     {
         $this->increment(self::CURRENT_LEVEL);
+    }
+
+    public function getAdminId()
+    {
+        return $this->getAttribute(self::ADMIN_ID);
     }
 }

@@ -11,17 +11,7 @@ class Service extends Base\Service
     {
         $action = $this->core()->create($input);
 
-        $diff = (new Differ\Core)->fetchRequest($action);
-
-        $diff = $diff[Differ\Entity::DIFF];
-
-        $response = [
-            'action'  => $action->toArrayPublic(),
-            'success' => true,
-            'diff'    => $diff,
-        ];
-
-        return $response;
+        return $action->toArrayPublic();
     }
 
     public function get(string $id)
