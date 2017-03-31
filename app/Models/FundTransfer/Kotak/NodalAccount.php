@@ -301,15 +301,12 @@ class NodalAccount
                                                  ->metadata($metadata)
                                                  ->save();
         }
-        else
-        {
-            $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
-                                                 ->content($textData)
-                                                 ->extension(FileStore\Format::TXT)
-                                                 ->type(FileStore\Type::FUND_TRANSFER_TXT)
-                                                 ->store(FileStore\Store::LOCAL)
-                                                 ->save();
-        }
+
+        $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+                                             ->content($textData)
+                                             ->extension(FileStore\Format::TXT)
+                                             ->type(FileStore\Type::FUND_TRANSFER_TXT)
+                                             ->save();
 
         return [$excelFile, $textFile];
     }
@@ -378,6 +375,15 @@ class NodalAccount
 
             $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_PAYOUT_SUMMARY);
         });
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $mode = $this->getMode();
+
+        return static::$fileToWriteName.'_'.$mode.'_'.$time;
     }
 
     // @codingStandardsIgnoreStart

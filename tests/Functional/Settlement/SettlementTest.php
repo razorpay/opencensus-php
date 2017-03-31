@@ -283,6 +283,103 @@ class SettlementTest extends TestCase
         $this->assertEquals(6, $content['kotak']['transaction_count']);
     }
 
+    public function testMerchantSettlement()
+    {
+        $this->ba->appAuth();
+
+        // $this->fixtures->merchant->createBankAccount();
+        $this->fixtures->merchant->editFeeCredits('50000', Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->editCreditsforNodalAccount('50000', 'fee');
+
+        $payments = $this->createPaymentEntities();
+
+        foreach ($payments as $payment)
+        {
+            $attrs = [
+                'payment' => $payments[0],
+                'amount'  => '100'
+            ];
+
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        $input = array('count' => 10);
+        $txns = $this->getEntities('transaction', $input, true);
+
+        $request = array(
+            'url' => '/settlements/initiate/kotak',
+            'method' => 'POST'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $batchFundTransfer = $this->getLastEntity('batch_fund_transfer', true);
+        $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($setlAttempt['batch_fund_transfer_id'], $batchFundTransfer['id']);
+        $this->assertEquals($setlAttempt['source'], $setl['id']);
+
+        $request = [
+            'url' => '/settlements/file/generate',
+            'method' => 'post',
+            'content' => ['batch_fund_transfer_id' => $batchFundTransfer['id']]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
+
+        $this->assertArrayHasKey('entity', $content);
+        $this->assertSame('collection', $content['entity']);
+        $this->assertSame($content['count'], 5);
+
+        $totalAmount = 0;
+        $totalFeeCredits = 0;
+
+        foreach ($content['items'] as $details)
+        {
+            if ($details['type'] == 'debit')
+            {
+                $totalAmount -= $details['amount'];
+            }
+            else
+            {
+                $totalAmount += $details['amount'];
+            }
+
+            if (($details['type'] === 'credit') and
+                ($details['component'] === 'fee_credits'))
+            {
+                $totalFeeCredits += $details['amount'];
+            }
+        }
+
+        $totalTxnFeeCredits = 0;
+
+        foreach ($txns['items'] as $txn)
+        {
+            $totalTxnFeeCredits += $txn['fee_credits'];
+        }
+
+        $this->assertEquals($totalTxnFeeCredits, $totalFeeCredits);
+
+        $this->assertSame($totalAmount, $setl['amount']);
+
+        // check settlement report
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = array(
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day);
+
+        $settlementReport = $this->fetchReport('settlement', $input);
+        assert(count($settlementReport) === 1);
+    }
+
     public function testMerchantSettlementV2()
     {
         $this->ba->adminAuth();
@@ -311,10 +408,11 @@ class SettlementTest extends TestCase
                     Mockery::any(),
                     Mockery::on(function ($data)
                     {
-                        $this->assertArrayHasKey('subject', $data);
-                        $this->assertArrayHasKey('summary', $data);
-                        $this->assertArrayHasKey('excelFile', $data);
-                        $this->assertArrayHasKey('textFile', $data);
+                        $expectedKeys = ['subject', 'summary', 'excelFile', 'textFile'];
+
+                        $arrayDiff = array_diff_key($expectedKeys, array_keys($data));
+
+                        $this->assertEmpty($arrayDiff);
 
                         return true;
                     }),
@@ -381,7 +479,7 @@ class SettlementTest extends TestCase
         $this->assertNotNull($bta['excel_file_id']);
 
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 2);
+        $this->assertSame($content['count'], 3);
     }
 
     public function testSettlementIgnoredTxns()

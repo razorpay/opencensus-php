@@ -158,6 +158,36 @@ class Handler extends BaseHandler
         return $preSignedUrl;
     }
 
+    /**
+     * Get Url for Given Key in a Bucket
+     *
+     * @param array  $bucketConfig bucket config
+     * @param string $key          File for which the signed url should be fetched
+     *
+     * @return string Url
+     * @throws \Exception
+     */
+    public function getUrl($bucketConfig, $key)
+    {
+        if ($this->config['mock'] === true)
+        {
+            return $key;
+        }
+
+        $s3 = self::getClient($bucketConfig['region']);
+
+        try
+        {
+            $s3->getObjectUrl($bucket, $key);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw $e;
+        }
+    }
+
     protected function getS3SaveObj($bucket, $fileDetails)
     {
         $s3Obj = $this->getS3FetchObj($bucket, $fileDetails['key']);

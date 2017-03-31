@@ -172,7 +172,12 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel, $h2h=true)
+    protected function generateAndSendSettlementFile(
+        $settlements,
+        $setlAttempts,
+        $txnCount,
+        $channel,
+        $h2h = true)
     {
         $returnData = [
             'count'             => $settlements->count(),
@@ -187,23 +192,23 @@ class Processor extends Base\Core
             $this->updateValuesForAttempts(
                 $setlAttempts, $txtFileEntity, $excelFileEntity);
 
-            $excelFileEntity = $excelFileEntity->get();
-            $txtFileEntity = $txtFileEntity->get();
+            $returnData['settlement_text_file'] = $txtFileEntity->get();
+            $returnData['settlement_excel_file'] = $excelFileEntity->get();
 
-            $returnData['settlement_text_file'] = $txtFileEntity;
-            $returnData['settlement_excel_file'] = $excelFileEntity;
+            $txtUrl = $txtFileEntity->getUrl();
+            $excelUrl = $excelFileEntity->getUrl();
 
             $urls = [
-                'kotak_settlement_txt'   => $txtFileEntity['location'],
-                'kotak_settlement_excel' => $excelFileEntity['location'],
+                'kotak_settlement_txt'   => $txtUrl,
+                'kotak_settlement_excel' => $excelUrl,
             ];
 
             $this->updateBatchFundTransferEntityUrls($urls);
 
             $slackData = $returnData;
 
-            $slackData['settlement_text_file'] = $txtFileEntity['location'];
-            $slackData['settlement_excel_file'] = $excelFileEntity['location'];
+            $slackData['settlement_text_file'] = $txtUrl;
+            $slackData['settlement_excel_file'] = $excelUrl;
 
             $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
