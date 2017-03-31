@@ -75,6 +75,10 @@ class Entity extends Base\PublicEntity
         self::ATTEMPT_COUNT => 1,
     ];
 
+    protected $casts = [
+        self::ATTEMPT_COUNT => 'int',
+    ];
+
     protected $amounts = [
         self::AMOUNT,
         self::FEES,
