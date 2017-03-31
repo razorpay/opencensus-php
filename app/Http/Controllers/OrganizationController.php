@@ -265,7 +265,7 @@ class OrganizationController extends Controller
 
     public function getOrgFieldMapMultiple(string $orgId)
     {
-        $data = (new FieldMap\Service)->getFields($orgId);
+        $data = (new FieldMap\Service)->fetchMultiple($orgId);
 
         return ApiResponse::json($data);
     }
