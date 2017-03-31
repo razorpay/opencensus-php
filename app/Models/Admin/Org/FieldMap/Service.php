@@ -35,10 +35,18 @@ class Service extends Base\Service
         return $entityMap->toArrayPublic();
     }
 
-    public function getFieldsForEntity(string $orgId, string $entity)
+    public function fetchMultiple(string $orgId)
+    {
+        $collection = $this->repo->org_field_map
+                                ->fetchByOrgId($orgId);
+
+        return $collection->toArrayPublic();
+    }
+
+    public function getFieldsForEntity(string $orgId, string $id)
     {
         $entityMap = $this->repo->org_field_map
-                                ->findByOrgIdAndEntity($orgId, $entity);
+                                ->findByPublicIdAndOrgId($id, $orgId);
 
         return $entityMap->toArrayPublic();
     }
