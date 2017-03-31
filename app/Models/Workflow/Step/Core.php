@@ -38,7 +38,7 @@ class Core extends Base\Core
 
         $minLevel = $this->getMinLevelFromSteps($allSteps);
 
-        $options = ['workflow_id' => [$step->workflow->getId()]];
+        $options = [Entity::WORKFLOW_ID => [$step->workflow->getId()]];
 
         $this->validateExistingWorkflows($allPermissions, $minLevel, $options);
 

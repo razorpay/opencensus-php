@@ -27,7 +27,7 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($workflow);
 
-            $workflow->permissions()->sync($input[Entity::PERMISSIONS]);
+            $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
             foreach ($input[Entity::STEPS] as $step)
             {

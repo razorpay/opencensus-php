@@ -15,9 +15,9 @@ class Repository extends Base\Repository
 
     public function fetchWorkflowsWithStepsByPermissions(array $permissionIds, array $options = [])
     {
-        if (isset($options['workflow_id']) === false)
+        if (isset($options[Step\Entity::WORKFLOW_ID]) === false)
         {
-            $options['workflow_id'] = [];
+            $options[Step\Entity::WORKFLOW_ID] = [];
         }
 
         return $this->newQuery()

@@ -389,7 +389,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ACTION_NOT_APPROVED                                       = 'The requested action is not in approved state';
     const BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED                               = 'Deleting a workflow is not possible if an action is in still in progress';
     const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                              = 'The levels in the steps should be increment of one';
-    const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                           = 'The role and level combination should be unqique';
+    const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                           = 'The role and level combination should be unique';
     const BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED                    = 'Permissions associated with a workflow cannot be removed';
     const BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS                                = 'This combination of workflow permission and level already exists.';
 }
