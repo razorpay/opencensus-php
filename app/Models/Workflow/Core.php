@@ -87,27 +87,4 @@ class Core extends Base\Core
 
         return array_unique(array_merge($permissionIds, $permissions));
     }
-
-    protected function validateExistingWorkflows(array $permissions, $minLevel)
-    {
-        $workflows = $this->repo
-                          ->workflow
-                          ->fetchWorkflowsWithStepsByPermissions($permissions);
-
-        $this->validateWorkflowsForLevel($workflows, $minLevel);
-    }
-
-    protected function validateWorkflowsForLevel($workflows, $minLevel)
-    {
-        foreach ($workflows as $workflow)
-        {
-            $minLevelFromSteps = $this->getMinLevelForWorkflow($workflow);
-
-            if ($minLevelFromSteps === $minLevel)
-            {
-                throw new Exception\BadRequestException(
-                    Error\ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS);
-            }
-        }
-    }
 }

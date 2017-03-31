@@ -38,36 +38,12 @@ class Core extends Base\Core
 
         $minLevel = $this->getMinLevelFromSteps($allSteps);
 
-        $this->validateExistingWorkflows($allPermissions, $minLevel, $step->workflow);
+        $options = ['workflow_id' => [$step->workflow->getId()]];
+
+        $this->validateExistingWorkflows($allPermissions, $minLevel, $options);
 
         $this->repo->saveOrFail($step);
 
         return $step;
     }
-
-    protected function validateExistingWorkflows($permissions, $minLevel, $thisWorkflow)
-    {
-        $options = ['workflow_id' => [$thisWorkflow->getId()]];
-
-        $workflows = $this->repo
-                          ->workflow
-                          ->fetchWorkflowsWithStepsByPermissions($permissions, $options);
-
-        $this->validateWorkflowsForLevel($workflows, $minLevel);
-    }
-
-    protected function validateWorkflowsForLevel($workflows, $minLevel)
-    {
-        foreach ($workflows as $workflow)
-        {
-            $minLevelFromSteps = $this->getMinLevelForWorkflow($workflow);
-
-            if ($minLevelFromSteps === $minLevel)
-            {
-                throw new Exception\BadRequestException(
-                    Error\ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS);
-            }
-        }
-    }
-
 }
