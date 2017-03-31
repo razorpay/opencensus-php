@@ -51,4 +51,21 @@ return [
             'error_description' => PublicErrorDescription::BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED,
         ],
     ],
+
+    'testVerifyAdminLead' => [
+        'request' => [
+            'url' => '/admin-lead/verify/%s',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@xyz.com',
+                'form_data' => [
+                    "channel_code"  => "RZP001",
+                    "contact_email" => "abc@xyz.com",
+                    "contact_name"  => "test user"
+                ],
+            ],
+        ],
+    ],
 ];

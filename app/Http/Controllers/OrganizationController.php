@@ -142,6 +142,13 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function verifyAdminLead(string $token)
+    {
+        $data = (new Admin\AdminLead\Service)->verify($token);
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for Admins   ---------------------------------------
 
 // --------------------- CRUD for roles  -----------------------------------------

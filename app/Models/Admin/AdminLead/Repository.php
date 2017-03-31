@@ -24,4 +24,11 @@ class Repository extends Base\Repository
         Entity::ADMIN_ID => 'sometimes|string|max:14',
         Entity::EMAIL    => 'sometimes|email',
     ];
+
+    public function findByTokenOrFail(string $token)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TOKEN, '=', $token)
+                    ->firstOrFailPublic();
+    }
 }

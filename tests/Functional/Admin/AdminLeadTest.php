@@ -68,6 +68,10 @@ class AdminLeadTest extends TestCase
                 );
 
         $this->startTest();
+
+        $adminLead = $this->getLastEntity('admin_lead', true);
+
+        return $adminLead;
     }
 
     public function testSelfInviteProhibited()
@@ -89,6 +93,21 @@ class AdminLeadTest extends TestCase
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testVerifyAdminLead()
+    {
+        $adminLead = $this->testCreateAdminLead();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $adminLead['token']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }
