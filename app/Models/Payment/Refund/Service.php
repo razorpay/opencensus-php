@@ -10,9 +10,9 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Constants;
 use RZP\Constants\Table;
+use RZP\Models\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
@@ -25,6 +25,15 @@ class Service extends Base\Service
      * We run the cron for this once a day.
      */
     const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
+
+    /**
+     * List of gateways that we wish to attempt this with.
+     * This should eventually cover all API based refund
+     * gateways.
+     * */
+    const RETRY_FAILED_REFUND_GATEWAYS = [
+        Payment\Gateway::BILLDESK,
+    ];
 
     public function create(array $input)
     {
@@ -633,5 +642,27 @@ class Service extends Base\Service
             ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $summary;
+    }
+
+    public function retryFailedRefunds(array $input = [])
+    {
+        $gateways = self::RETRY_FAILED_REFUND_GATEWAYS;
+
+        $status = [];
+
+        $action = 'refundRetry';
+
+        if ((isset($input['gateway']) === true) and
+            (in_array($input['gateway'], self::RETRY_FAILED_REFUND_GATEWAYS, true) === true))
+        {
+            $gateways = [$input['gateway']];
+        }
+
+        foreach ($gateways as $gateway)
+        {
+            $status[$gateway] = $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        }
+
+        return $status;
     }
 }

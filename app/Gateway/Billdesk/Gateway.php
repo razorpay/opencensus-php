@@ -1080,4 +1080,9 @@ class Gateway extends Base\Gateway
 
         return false;
     }
+
+    public function refundRetry(array $input)
+    {
+        ;
+    }
 }

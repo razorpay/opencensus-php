@@ -885,4 +885,9 @@ class Gateway
                     ['json' => $json]);
         }
     }
+
+    public function refundRetry(array $input)
+    {
+        ;
+    }
 }
