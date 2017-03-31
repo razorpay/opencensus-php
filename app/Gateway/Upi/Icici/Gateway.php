@@ -625,6 +625,11 @@ class Gateway extends Base\Gateway
                 $content);
         }
 
+        $response[Entity::PAYMENT_ID] = $input['payment']['id'];
+        $response[Entity::REFUND_ID] = $content['merchantTranId'];
+        $response[Entity::RECEIVED] = 1;
+
+        $this->createGatewayPaymentEntity($response);
     }
 
     protected function getRefundRequest(array $input)
