@@ -9,6 +9,8 @@ use Requests;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
+use RZP\Http\Response\Header;
+
 use Http\Discovery\HttpClientDiscovery;
 use Http\Client\Common\PluginClient;
 use Http\Client\Common\Plugin\ErrorPlugin;
@@ -49,7 +51,7 @@ class Inferno
 
     /**
      * We keep it internally as 20 seconds
-     * but publicly we only say it's 5 seconds.
+     * but publicly we say it's only 5 seconds.
      */
     const WEBHOOK_TIMEOUT = 20;
 
@@ -192,7 +194,7 @@ class Inferno
 
         if (empty($hmac) === false)
         {
-            $headers['X-Razorpay-Signature'] = $hmac;
+            $headers[Header::X_RAZORPAY_SIGNATURE] = $hmac;
         }
 
         return $headers;
@@ -269,42 +271,54 @@ class Inferno
         }
         catch (ClientErrorException $e)
         {
-            $this->errorMessage = 'Client error: '. $e->getResponse()->getReasonPhrase();
+            $response = $e->getResponse();
+
+            $this->errorMessage = 'Client error: '. $response->getReasonPhrase();
 
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
-                    'webhook_id'  => $webhook->getId(),
-                    'merchant_id' => $webhook->merchant->getId(),
-                    'exception'   => $this->errorMessage,
+                    'webhook_id'        => $webhook->getId(),
+                    'merchant_id'       => $webhook->merchant->getId(),
+                    'exception'         => $this->errorMessage,
+                    'response_code'     => $response->getStatusCode(),
+                    'response_headers'  => $response->getHeaders()
                 ]);
 
             return false;
         }
         catch (ServerErrorException $e)
         {
-            $this->errorMessage = 'Server error: '. $e->getResponse()->getReasonPhrase();
+            $response = $e->getResponse();
+
+            $this->errorMessage = 'Server error: '. $response->getReasonPhrase();
 
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
-                    'webhook_id'  => $webhook->getId(),
-                    'merchant_id' => $webhook->merchant->getId(),
-                    'exception'   => $this->errorMessage,
+                    'webhook_id'        => $webhook->getId(),
+                    'merchant_id'       => $webhook->merchant->getId(),
+                    'exception'         => $this->errorMessage,
+                    'response_code'     => $response->getStatusCode(),
+                    'response_headers'  => $response->getHeaders()
                 ]);
 
             return false;
         }
         catch (HttpException $e)
         {
-            $this->errorMessage = 'Some error occurred: '. $e->getResponse()->getReasonPhrase();
+            $response = $e->getResponse();
+
+            $this->errorMessage = 'Some error occurred: '. $response->getReasonPhrase();
 
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
-                    'webhook_id'  => $webhook->getId(),
-                    'merchant_id' => $webhook->merchant->getId(),
-                    'exception'   => $this->errorMessage,
+                    'webhook_id'        => $webhook->getId(),
+                    'merchant_id'       => $webhook->merchant->getId(),
+                    'exception'         => $this->errorMessage,
+                    'response_code'     => $response->getStatusCode(),
+                    'response_headers'  => $response->getHeaders()
                 ]);
 
             return false;
@@ -315,10 +329,11 @@ class Inferno
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
-                    'webhook_id'    => $webhook->getId(),
-                    'merchant_id'   => $webhook->merchant->getId(),
-                    'response_code' => $response->getStatusCode(),
-                    'response_body' => $response->getReasonPhrase(),
+                    'webhook_id'        => $webhook->getId(),
+                    'merchant_id'       => $webhook->merchant->getId(),
+                    'response_code'     => $response->getStatusCode(),
+                    'response_body'     => $response->getReasonPhrase(),
+                    'response_headers'  => $response->getHeaders()
                 ]
             );
 
@@ -331,9 +346,10 @@ class Inferno
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
                 [
-                    'webhook_id'    => $webhook->getId(),
-                    'merchant_id'   => $webhook->merchant->getId(),
-                    'response_code' => $response->getStatusCode(),
+                    'webhook_id'        => $webhook->getId(),
+                    'merchant_id'       => $webhook->merchant->getId(),
+                    'response_code'     => $response->getStatusCode(),
+                    'response_headers'  => $response->getHeaders()
                 ]);
         }
 

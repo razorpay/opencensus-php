@@ -358,7 +358,7 @@ trait Capture
 
         $this->mutex->acquireAndRelease(
             $this->payment->getId(),
-            function() use($data)
+            function() use ($data)
             {
                 $this->callAndHandleCaptureOnGateway($data);
 

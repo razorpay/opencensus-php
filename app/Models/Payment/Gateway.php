@@ -312,6 +312,16 @@ class Gateway
     );
 
     /**
+     * List of gateways that support recurring payments
+     *
+     * @var array
+     */
+    public static $recurringGateways = [
+        Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
+    ];
+
+    /**
      * List of gateways which give s2s callback where we do not validate
      * payment callback hash
      *
@@ -334,7 +344,6 @@ class Gateway
         // Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
@@ -450,6 +459,11 @@ class Gateway
     public static function isNetbankingBankDirectlySupported($bank)
     {
         return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
+    }
+
+    public static function isRecurringGateway($gateway)
+    {
+        return in_array($gateway, self::$recurringGateways, true);
     }
 
     public static function getChannel($gateway)

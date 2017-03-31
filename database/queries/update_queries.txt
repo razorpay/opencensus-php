@@ -129,3 +129,10 @@ update settlements set status="failed", failure_reason="Reconciliation", remarks
 #update failed settlements
 update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7HX5An3eDrXUaz";
 update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7KhM07UJp7rsiZ";
+
+# update axis refund gateway record because they sent a value `Pending` for refund, which we are not currently
+# handling. We got this in the MIS file, which means, it was actually successful. The vpc_TxnResponseCode was `P`.
+UPDATE axis SET vpc_Message = "Approved", vpc_TxnResponseCode = "0" WHERE id = 1172941;
+
+UPDATE billdesk SET RefundId = 'ISBI52218128951' WHERE id = 1135026;
+UPDATE billdesk SET RefundId = 'ISBI52122271361' WHERE id = 1112770;
