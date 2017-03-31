@@ -174,9 +174,14 @@ class WorkflowController extends Controller
 
     public function getWorkflowStep(string $id, string $stepId)
     {
-        $input = Request::all();
+        $data = (new Workflow\Step\Service)->fetch($id, $stepId);
 
-        $data = (new Workflow\Step\Service)->get($id, $stepId, $input);
+        return ApiResponse::json($data);
+    }
+
+    public function getWorkflowSteps(string $id)
+    {
+        $data = (new Workflow\Step\Service)->fetchMultiple($id);
 
         return ApiResponse::json($data);
     }

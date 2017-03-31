@@ -47,7 +47,9 @@ class Service extends Base\Service
 
         $workflow = $this->repo->workflow->findOrFailPublic($id);
 
-        return $this->core()->delete($workflow);
+        $workflow = $this->core()->delete($workflow);
+
+        return $workflow->toArrayPublic();
     }
 
     public function getActionsForChecker()

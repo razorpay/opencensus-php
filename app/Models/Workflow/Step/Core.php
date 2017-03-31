@@ -2,9 +2,6 @@
 
 namespace RZP\Models\Workflow\Step;
 
-use RZP\Error;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Base;
 
 class Core extends Base\Core
@@ -17,7 +14,9 @@ class Core extends Base\Core
 
         $step->build($input);
 
-        $allSteps = $step->workflow->steps;
+        $workflow = $this->repo->workflow->fetchWorkflow($step);
+
+        $allSteps = $workflow->steps;
 
         $allSteps = $allSteps->map(function ($step) {
                                 return $step->toArrayPublic();

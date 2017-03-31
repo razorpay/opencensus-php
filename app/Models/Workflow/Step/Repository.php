@@ -48,7 +48,15 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ID, '=', $stepId)
                     ->where(Entity::WORKFLOW_ID, '=', $wid)
-                    ->with('workflow')
+                    ->with(Entity::WORKFLOW)
+                    ->get();
+    }
+
+    public function fetchByWorkflowId(string $wid)
+    {
+        return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $wid)
+                    ->with(Entity::WORKFLOW)
                     ->get();
     }
 }

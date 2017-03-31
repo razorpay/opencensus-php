@@ -24,7 +24,23 @@ class Repository extends Base\Repository
                     ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
                     ->with([Entity::STEPS, Entity::PERMISSIONS])
                     ->whereIn('workflow_permissions.permission_id', $permissionIds)
-                    ->whereNotIn(Entity::ID, $options['workflow_id'])
+                    ->whereNotIn(Entity::ID, $options[Step\Entity::WORKFLOW_ID])
                     ->get();
+    }
+
+    public function fetchWorkflow(Step\Entity $step)
+    {
+        if ($step->hasRelation(Step\Entity::WORKFLOW))
+        {
+            return $step->workflow;
+        }
+
+        $workflowId = $step->getWorkflowId();
+
+        $workflow = $this->findOrFail($workflowId);
+
+        $step->workflow()->associate($workflow);
+
+        return $workflow;
     }
 }

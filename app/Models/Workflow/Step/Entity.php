@@ -12,6 +12,8 @@ class Entity extends Base\Entity
     const ROLE_ID        = 'role_id';
     const REVIEWER_COUNT = 'reviewer_count';
 
+    const WORKFLOW       = 'workflow';
+
     protected static $sign = 'w_step';
 
     protected $entity = 'workflow_step';
@@ -19,24 +21,32 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
-        self::LEVEL,
-        self::REVIEWER_COUNT,
-        self::ROLE_ID,
         self::WORKFLOW_ID,
+        self::LEVEL,
+        self::ROLE_ID,
+        self::REVIEWER_COUNT,
     ];
 
     protected $visible = [
-        self::LEVEL,
-        self::REVIEWER_COUNT,
-        self::ROLE_ID,
+        self::ID,
         self::WORKFLOW_ID,
+        self::LEVEL,
+        self::ROLE_ID,
+        self::REVIEWER_COUNT,
     ];
 
     protected $public = [
-        self::LEVEL,
-        self::REVIEWER_COUNT,
-        self::ROLE_ID,
+        self::ID,
         self::WORKFLOW_ID,
+        self::LEVEL,
+        self::ROLE_ID,
+        self::REVIEWER_COUNT,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::WORKFLOW_ID,
+        self::ROLE_ID,
     ];
 
     protected $casts = [
@@ -57,13 +67,13 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Role\Entity');
     }
 
-    // public function permission()
-    // {
-    //     return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
-    // }
-
     public function getLevel()
     {
         return $this->getAttribute(self::LEVEL);
+    }
+
+    public function getWorkflowId()
+    {
+        return $this->getAttribute(self::WORKFLOW_ID);
     }
 }

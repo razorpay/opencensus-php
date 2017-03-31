@@ -3,6 +3,8 @@
 namespace RZP\Models\Workflow\Base;
 
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Role;
+use RZP\Models\Workflow\Step;
 use RZP\Models\Base as BaseModel;
 
 class Entity extends BaseModel\PublicEntity
@@ -14,6 +16,26 @@ class Entity extends BaseModel\PublicEntity
         if ($orgId !== null)
         {
             $attributes[static::ORG_ID] = Org\Entity::getSignedId($orgId);
+        }
+    }
+
+    public function setPublicRoleIdAttribute(array &$attributes)
+    {
+        $roleId = $this->getAttribute(Step\Entity::ROLE_ID);
+
+        if ($roleId !== null)
+        {
+            $attributes[Step\Entity::ROLE_ID] = Role\Entity::getSignedId($roleId);
+        }
+    }
+
+    public function setPublicWorkflowIdAttribute(array &$attributes)
+    {
+        $workflowId = $this->getAttribute(Step\Entity::WORKFLOW_ID);
+
+        if ($workflowId !== null)
+        {
+            $attributes[Step\Entity::WORKFLOW_ID] = Role\Entity::getSignedId($workflowId);
         }
     }
 }
