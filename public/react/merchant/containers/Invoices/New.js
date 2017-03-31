@@ -664,6 +664,9 @@ export default class InvoicesNewContainer extends Component {
                               </button>
                           }
                           {
+                            /*
+                              TODO: Uncomment this post the API release.
+
                             isIssued &&
                               <button
                                 type='button'
@@ -674,6 +677,8 @@ export default class InvoicesNewContainer extends Component {
                                 <i class='fa fa-times'></i>
                                 <span>Cancel Invoice</span>
                               </button>
+
+                            */
                           }
                         </div>
                       </div>
