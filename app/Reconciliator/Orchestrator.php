@@ -58,7 +58,7 @@ class Orchestrator extends Base\Core
         self::OLAMONEY         => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE       => ['noreply@freechargemail.in'],
         self::NETBANKING_AXIS  => ['it.rico@axisbank.com'],
-        self::NETBANKING_ICICI => [],//['ubpshelp@icicibank.com'],
+        self::NETBANKING_ICICI => ['ubpshelp@icicibank.com'],
         self::JIOMONEY         => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.

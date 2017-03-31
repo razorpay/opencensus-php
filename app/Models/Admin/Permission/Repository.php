@@ -37,14 +37,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function retrieveIdsByNames(array $permNames)
+    public function fetchAll()
     {
         return $this->newQuery()
-                    ->whereIn(Entity::NAME, $permNames)
-                    ->get(['id']);
+                    ->get();
     }
 
-    public function fetchAll(string $orgId)
+    public function fetchAllByOrg(string $orgId)
     {
         $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
 
@@ -55,6 +54,20 @@ class Repository extends Base\Repository
                     ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
                     ->where($pmTable . '.entity_id', '=', $orgId)
                     ->where($pmTable . '.entity_type', '=', 'org')
+                    ->get();
+    }
+
+    public function retrieveIdsByNames(array $permissionNames)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::NAME, $permissionNames)
+                    ->get(['id']);
+    }
+
+    public function fetchAllAssignable()
+    {
+        return $this->newQuery()
+                    ->where(Entity::ASSIGNABLE, 1)
                     ->get();
     }
 }

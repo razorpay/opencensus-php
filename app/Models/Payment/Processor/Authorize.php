@@ -231,7 +231,7 @@ trait Authorize
         // Except in the cases of recurring, because, here we know that
         // we have manually skipped/by-passed the 2FA.
 
-        if ($payment->terminal->getRecurring() === Terminal\Recurring::RECURRING_N3DS)
+        if ($payment->terminal->isNon3DSRecurring() === true)
         {
             $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
         }
@@ -1225,6 +1225,8 @@ trait Authorize
                 ($token->isRecurring() === false))
             {
                 $token->setRecurring(true);
+
+                $token->terminal()->associate($payment->terminal);
             }
 
             $this->repo->saveOrFail($token);
@@ -1327,7 +1329,7 @@ trait Authorize
     }
 
     /**
-     * @param boolean $wasFailed If a payment is being converted from authorized to failed.
+     * @param boolean $wasFailed If a payment is being converted from failed to authorized.
      */
     protected function notifyAuthorized(bool $wasFailed)
     {

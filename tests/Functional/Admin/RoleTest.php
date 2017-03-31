@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\TestCase;
@@ -10,8 +11,6 @@ class RoleTest extends TestCase
 {
     use HeimdallTrait;
 
-    const TOTAL_PERMISSIONS = 114;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/RoleData.php';
@@ -19,6 +18,8 @@ class RoleTest extends TestCase
         parent::setUp();
 
         $this->org = $this->fixtures->create('org');
+
+        $this->addAssignablePermissionsToOrg($this->org);
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
@@ -38,12 +39,7 @@ class RoleTest extends TestCase
 
     public function testCreateRoleWithPermissions()
     {
-        $totalPermissions = 2;
-
-        $perms = $this->fixtures->times($totalPermissions)->create('permission');
-
-        $permIds = array_map(create_function('$p', 'return $p->getPublicId();'), $perms);
-        ;
+        $permIds = $this->getAssignablePermissionsByIds();
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
@@ -84,14 +80,15 @@ class RoleTest extends TestCase
     {
         $role = $this->fixtures->create('role', ['org_id' => $this->org->getId()]);
 
-        $oldPerms = $this->fixtures->times(2)->create('permission');
+        $oldPerms = array_slice($this->getAssignablePermissionsByIds(), 0, 3);
 
-        $oldPermIds = array_map(create_function('$p', 'return $p->getId();'), $oldPerms);
-        ;
+        $unsignedOldPerms = $oldPerms;
 
-        $role->permissions()->sync($oldPermIds);
+        $unsignedOldPerms = Permission\Entity::verifyIdAndStripSignMultiple($unsignedOldPerms);
 
-        $newPerm = $this->fixtures->create('permission');
+        $role->permissions()->sync($unsignedOldPerms);
+
+        $newPerm = $this->getAssignablePermissionsByIds()[5];
 
         $request = $this->testData[__FUNCTION__]['request'];
 
@@ -103,7 +100,7 @@ class RoleTest extends TestCase
 
         $request['content']['name'] = $role->getName();
 
-        $expectedPermissionIds = [$oldPerms[0]->getPublicId(), $newPerm->getPublicId()];
+        $expectedPermissionIds = [$oldPerms[0], $newPerm];
 
         $request['content']['permissions'] = $expectedPermissionIds;
 
@@ -133,7 +130,8 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(self::TOTAL_PERMISSIONS, count($result['permissions']));
+        $this->assertEquals(
+            $this->getTotalPermissionCount(), count($result['permissions']));
     }
 
     public function testDeleteRole()

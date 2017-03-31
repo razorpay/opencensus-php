@@ -398,6 +398,7 @@ final class Route
 
         // Permission can only be created by certain organisations.
         'permission_create'                       => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
+        'permission_get_by_type'                  => ['get',      'permissions/get/{type}',                         'OrganizationController@getPermissionsByType'                       ],
         'permission_get'                          => ['get',      'permissions/{id}',                               'OrganizationController@getPermission'                              ],
         'permission_get_multiple'                 => ['get',      'orgs/{orgId}/permissions',                       'OrganizationController@getMultiplePermissions'                     ],
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
@@ -863,6 +864,7 @@ final class Route
         'group_edit',
         'group_delete',
         'permission_get_multiple',
+        'permission_get_by_type',
         'permission_get',
         'permission_create',
         'permission_edit',
@@ -897,7 +899,6 @@ final class Route
         'admin_delete'                   => [Permission::DELETE_ADMIN],
         'group_edit'                     => [Permission::EDIT_GROUP],
         'group_delete'                   => [Permission::DELETE_GROUP],
-        'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
         'group_get_allowed_groups'       => [Permission::GROUP_GET_ALLOWED_GROUPS],
         'schedule_create'                => [Permission::SCHEDULE_CREATE],
         'schedule_delete'                => [Permission::SCHEDULE_DELETE],
@@ -908,6 +909,8 @@ final class Route
         'permission_create'              => [Permission::CREATE_PERMISSION],
         'permission_edit'                => [Permission::EDIT_PERMISSION],
         'permission_get'                 => [Permission::GET_PERMISSION],
+        'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
+        'permission_get_by_type'         => [Permission::EDIT_ORG],
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],

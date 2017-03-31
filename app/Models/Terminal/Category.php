@@ -28,6 +28,7 @@ class Category
     const RETAIL_SERVICES = 'retail_services';
     const PHARMA          = 'pharma';
     const LENDING         = 'lending';
+    const CRYPTOCURRENCY  = 'cryptocurrency';
 
 
     /**
@@ -57,6 +58,7 @@ class Category
         self::TRAVEL_AGENCY,
         self::PHARMA,
         self::LENDING,
+        self::CRYPTOCURRENCY,
     ];
 
 
@@ -70,6 +72,21 @@ class Category
     const TPV = [
         self::SECURITIES,
         self::COMMODITIES,
+    ];
+
+
+    /**
+     * IFSC of banks to be disabled for netbanking of a category
+     * This information can be moved to the categories if there
+     * are enough cases of this nature.
+     **/
+    const DISABLED = [
+        Method::NETBANKING => [
+            self::CRYPTOCURRENCY => [
+                IFSC::HDFC,
+                IFSC::ICIC,
+            ],
+        ],
     ];
 
     /**
@@ -91,8 +108,8 @@ class Category
             ]
         ],
         Method::CARD => [
-            self::DEFAULT => self::ECOMMERCE,
-            self::PHARMA  => self::ECOMMERCE,
+            self::DEFAULT        => self::ECOMMERCE,
+            self::PHARMA         => self::ECOMMERCE,
             Network::AMEX     => [
                 self::DEFAULT        => self::RETAIL_SERVICES,
                 self::GROCERY        => 'sup_hypermrkt_deptstore',

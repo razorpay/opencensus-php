@@ -49,7 +49,21 @@ class Service extends Base\Service
     {
         Org::verifyIdAndStripSign($orgId);
 
-        $perms = $this->repo->permission->fetchAll($orgId);
+        $perms = $this->repo->permission->fetchAllByOrg($orgId);
+
+        return $perms->toArrayPublic();
+    }
+
+    public function getAssignablePermissions()
+    {
+        $perms = $this->repo->permission->fetchAllAssignable();
+
+        return $perms->toArrayPublic();
+    }
+
+    public function getAllPermissions()
+    {
+        $perms = $this->repo->permission->fetchAll();
 
         return $perms->toArrayPublic();
     }

@@ -326,7 +326,8 @@ class Gateway extends Base\Gateway
 
         $attributes = [Base\Entity::STATUS => $status];
 
-        if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
+        if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true) and
+            (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true))
         {
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_PAYMENT_ID];
         }
@@ -343,7 +344,7 @@ class Gateway extends Base\Gateway
         return $xml['@attributes'];
     }
 
-    public function getPid()
+    public function getSpid()
     {
         if ($this->mode === Mode::TEST)
         {
@@ -353,7 +354,7 @@ class Gateway extends Base\Gateway
         return $this->getLiveMerchantId();
     }
 
-    public function getSpid()
+    public function getPid()
     {
         if ($this->mode === Mode::TEST)
         {
@@ -368,12 +369,12 @@ class Gateway extends Base\Gateway
      */
     protected function getLiveSecret()
     {
-        switch ($this->getLiveMerchantId())
+        switch ($this->getLiveMerchantId2())
         {
-            case $this->config['live_merchant_id']:
+            case $this->config['live_merchant_id2']:
                 return $this->config['live_hash_secret'];
 
-            case $this->config['live_merchant_id_tpv']:
+            case $this->config['live_merchant_id2_tpv']:
                 return $this->config['live_hash_secret_tpv'];
         }
     }
