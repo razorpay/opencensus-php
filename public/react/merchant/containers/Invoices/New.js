@@ -671,7 +671,7 @@ export default class InvoicesNewContainer extends Component {
                                 onClick={this.cancelInvoice}
                                 disabled={this.state.isSaving}
                               >
-                                <i class='fa fa-eye-slash'></i>
+                                <i class='fa fa-times'></i>
                                 <span>Cancel Invoice</span>
                               </button>
                           }
