@@ -47,11 +47,4 @@ class Payment extends \Razorpay\Api\Payment
     {
         $this->id = $id;
     }
-
-    public function card()
-    {
-        $relativeUrl = $this->getEntityUrl() . $this->id . '/card';
-
-        return $this->request('GET', $relativeUrl);
-    }
 }

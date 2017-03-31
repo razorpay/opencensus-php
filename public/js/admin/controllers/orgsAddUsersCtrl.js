@@ -7,7 +7,8 @@ app.controller('OrgsAddUsersCtrl', [
   '$modal',
   'organization',
   '$stateParams',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams) {
+  '$state',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams, $state) {
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.fetchUser = function(id) {
@@ -153,6 +154,7 @@ app.controller('OrgsAddUsersCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Admin created successfully.', true);
+          $state.go('app.users.edit', {id: data.data.id});
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {

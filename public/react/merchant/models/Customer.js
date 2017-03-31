@@ -1,10 +1,10 @@
-import Entity from './Entity'
+import GenericEntity from './GenericEntity'
 import ajax from 'merchant/utils/ajax'
 import { isBlank } from 'rzp/utils/rzp-utils'
 
-export default class Customer extends Entity {
-  static resourceIdField = 'id'
-  static resourceUrl = '/customers'
+export default class Customer extends GenericEntity {
+  listRouteName = 'customer_fetch_multiple'
+  deleteRouteName = 'customer_delete'
 
   resourceFields = [
     'id',
@@ -13,12 +13,16 @@ export default class Customer extends Entity {
     'contact'
   ]
 
+  getRouteName() {
+    return this.isNew ? 'customer_create' : 'customer_update'
+  }
+
   getResourceMethod() {
     return this.isNew ? 'post' : 'put'
   }
 
   // This will be replaced with the ES autocomplete api
-  static fetchForAutocomplete(data = {}) {
+  fetchForAutocomplete(data = {}) {
     return ajax('/customers/autocomplete', { data }).then((response) => {
       response.data.items = response.data.items.map((item) => new Customer().deserialize(item))
       return response

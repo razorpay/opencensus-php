@@ -6,7 +6,8 @@ app.controller('OrgsAddRolesCtrl', [
   '$modal',
   'organization',
   '$stateParams',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams) {
+  '$state',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams, $state) {
 
     $scope.alerts = alertsFactory.getHandler();
     $scope.permissions = organization.fetchPermissions();
@@ -85,6 +86,7 @@ app.controller('OrgsAddRolesCtrl', [
 
       return organization.addOrEditRole(body).then(function(data) {
         $scope.alerts.addAlert('success', 'Role saved', true);
+        $state.go('app.roles.edit', {id: data.id});
       }).catch(function(errors){
         $scope.alerts.resetAlerts();
 

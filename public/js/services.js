@@ -10,8 +10,8 @@ angular.module('app.services', [])
   '$timeout',
   '$idle',
   function ($q, $http, $timeout, $idle) {
-    var _identity, 
-        _isPreSignupDone = false, 
+    var _identity,
+        _isPreSignupDone = false,
         _isVerified = false,
         _authenticated = false;
 
@@ -46,18 +46,26 @@ angular.module('app.services', [])
           return deferred.promise;
         }
         $http.get('/user', { ignoreErrors: true }).success(function (data) {
+          try {
+            dataLayer.push({'merchant_id': data.data.merchants[0].pivot.merchant_id });
+          } catch (e) {}
           _identity = data.data;
           if (data.data.steps_finished) {
             _identity.activation_progress = data.data.activation_progress;
           }
-          // if any of the fields is missing, isPreSignupDone will be false
-          _isPreSignupDone = _identity.pre_signup
-            && ((_identity.created_at < 1488306600) // pre-signup is only for signup on/after 01 March 2017
-              || !!Object.keys(_identity.pre_signup)
+          if((!_identity.user.merchants.length) || (_identity.pre_signup.length === 0)){
+               _isPreSignupDone = true;
+          }
+          else{
+            // if any of the fields is missing, isPreSignupDone will be false
+            _isPreSignupDone = _identity.pre_signup
+              && ((_identity.created_at < 1488306600) // pre-signup is only for signup on/after 01 March 2017
+                || !!Object.keys(_identity.pre_signup)
                 // get all values
                 .map(function (key) {return _identity.pre_signup[key]})
                 // reduce all values using '&&'
                 .reduce(function (x, y){return x && y}));
+          }
 
           _isVerified = _identity.user.confirmed;
 
@@ -153,6 +161,7 @@ angular.module('app.services', [])
 .factory('transformRequestAsFormPost', function () {
   // I prepare the request data for the form post.
   function transformRequest(data, getHeaders) {
+
     var headers = getHeaders();
     headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
     return serializeData(data);
@@ -168,14 +177,47 @@ angular.module('app.services', [])
       return (data === null) ? '' : data.toString();
     }
     var buffer = [];
-    // Serialize each key in the object.
-    for (var name in data) {
-      if (!data.hasOwnProperty(name)) {
+
+    var formalizeData = function (formData, level) {
+      var flattened = {};
+      for (var key in formData) {
+        var val = formData[key];
+        var keyToSend = key;
+
+        if (level > 1) {
+          keyToSend = '[' + keyToSend + ']';
+        }
+
+        if (typeof formData[key] === 'object') {
+          var tmpFlattened = formalizeData(formData[key], level + 1);
+
+          for (var tmpKey in tmpFlattened) {
+            var tmpVal = tmpFlattened[tmpKey];
+
+            flattened[keyToSend + tmpKey] = tmpVal;
+          }
+        }
+        else {
+          flattened[keyToSend] = val;
+        }
+      }
+      return flattened;
+    };
+
+    var flattenedOb = formalizeData(data, 1);
+
+    for (var key in flattenedOb) {
+      if (typeof flattenedOb[key] === 'undefined') {
         continue;
       }
-      var value = data[name];
-      buffer.push(encodeURIComponent(name) + '=' + encodeURIComponent(value === null ? '' : value));
+
+      if (typeof flattenedOb[key] === 'boolean') {
+        flattenedOb[key] = flattenedOb[key] ? 1 : 0;
+      }
+
+      buffer.push(encodeURIComponent(key) + '=' + encodeURIComponent(flattenedOb[key]));
     }
+
     // Serialize the buffer and clean it up for transportation.
     var source = buffer.join('&').replace(/%20/g, '+');
     return source;
@@ -791,14 +833,15 @@ angular.module('app.services', [])
           'balance',
           'bank_account',
           'bank_account',
+          'batch_fund_transfer',
           'billdesk',
           'card',
           'credits',
           'customer',
-          'batch_settlement',
           'ebs',
           'file_store',
           'first_data',
+          'fund_transfer_attempt',
           'emi_plan',
           'hdfc',
           'iin',
@@ -896,5 +939,6 @@ angular.module('app.services', [])
 
       return frags.join(' ');
     }
+
   };
 });

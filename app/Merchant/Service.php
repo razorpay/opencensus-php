@@ -475,10 +475,10 @@ class Service extends Base\Service
         try
         {
             $data = $this->api->merchant
-                                ->fetch($merchant_id)
-                                ->keys()
-                                ->create()
-                                ->toArray();
+                            ->fetch($merchant_id)
+                            ->keys()
+                            ->create()
+                            ->toArray();
         }
         catch(BadRequestError $e)
         {
@@ -486,46 +486,6 @@ class Service extends Base\Service
         }
 
         return array($errors, $data);
-    }
-
-    public function rollKeys(array $input, $mode)
-    {
-        if ($this->currentMerchant->isTestAccount()) {
-            return [[static::ROLL_KEY_FORBIDDEN], null];
-        }
-
-        $error = (new Merchant\Validator)->validateInput('key', $input)->messages();
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
-        $this->setApiCredentials(null, $mode);
-
-        $key_data = array();
-
-        try
-        {
-            $response = $this->api->merchant
-                                ->fetch($input['merchant_id'])
-                                ->keys()
-                                ->fetch($input['id'])
-                                ->roll($input['delay_roll'])
-                                ->toArray();
-
-            $key_data = array(
-                'old_id'        => $input['id'],
-                'merchant_id'   => $input['merchant_id'],
-                'new'           => $response['new']
-            );
-        }
-        catch(BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $key_data);
     }
 
     public function getUsersListWithInvites()
@@ -564,76 +524,6 @@ class Service extends Base\Service
         }
 
         return $merchant;
-    }
-
-    /**
-     * Returns all the webhooks
-     * @param  string $mode live|test
-     */
-    public function getWebhooks($mode)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = null;
-
-        try
-        {
-            $data = $this->api->webhook->all()->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function editWebhook($mode, $webhookId, $input)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = null;
-
-        try
-        {
-            $data = $this->api->webhook
-                ->fetch($webhookId)
-                ->edit($input)
-                ->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function createWebhook($mode, $input)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = [];
-        $data = null;
-
-        try
-        {
-            // This is just semantics
-            // completely equivalent to all() for now
-            $data = $this->api->webhook->create($input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
     }
 
     public function getInvoices($mode)
@@ -679,45 +569,6 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
-    public function editInvoice($mode, $id, $input)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->invoice->edit($id, $input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function deleteInvoice($mode, $id)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->invoice->delete($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
     public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
         $errors = $data = [];
@@ -749,46 +600,6 @@ class Service extends Base\Service
             $data = $this->api->invoice->sendNotification($invoiceId, $medium)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function markInvoiceAsIssued($mode, $id)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->invoice->markAsIssued($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function markInvoiceAsExpired($mode, $id)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->invoice->markAsExpired($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
@@ -904,23 +715,6 @@ class Service extends Base\Service
                               ->get();
     }
 
-    public function fetchMerchantConfig($merchantId)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->fetchConfig()->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
     /**
      * Makes sure that the hex color is in proper
      * format for the API. Just drops the first
@@ -948,52 +742,6 @@ class Service extends Base\Service
         }
 
         return $input;
-    }
-
-    public function updateMerchantConfig($merchantId, $input)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        $input = $this->fixHexColor($input);
-
-        try
-        {
-            $data = $this->api->merchant->updateConfig($input)->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function updateMerchantLogoConfig($merchantId, $input)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        if (isset($input['logo']) === false)
-        {
-            $error = ['Internal Server Error. Contact support for help.'];
-            return [$error, $data];
-        }
-
-        try
-        {
-            $data = $this->api->merchant->updateLogoConfig($input)->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-        catch(\Exception $e)
-        {
-            $error = ['Internal Server Error. Contact support for help.'];
-        }
-
-        return [$error, $data];
     }
 
     /**
@@ -1031,66 +779,6 @@ class Service extends Base\Service
         return [$error, $lead];
     }
 
-    /**
-     * Fetches merchant credits
-     * Uses Proxy Auth on the API
-     *
-     * @param  string $mode live|test
-     * @return array contains all credits of merchant
-     */
-    public function getCreditsLog($mode)
-    {
-        $this->setApiCredentials($this->currentMerchant->id, $mode);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->getMerchantCreditLogs();
-        }
-
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function fetchMerchantFeatures($merchantId)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->fetchFeatures($merchantId);
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function updateMerchantFeatures($merchantId, $input)
-    {
-        $this->setApiCredentials($merchantId);
-
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->updateFeatures($merchantId, $input);
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
     public function savePreSignupDetails($merchantId, $input)
     {
         $error = (new MerchantDetails\Entity)->edit($input, 'preSignup');
@@ -1122,7 +810,7 @@ class Service extends Base\Service
 
                 $zapierData = (new User\Service)->getZapierData($merchant, $input);
 
-                if (config('slack.enable'))
+                if (!config('razorpay.zapier.mock'))
                 {
                     Queue::push('App\User\Service@postToZapier', $zapierData);
                 }
@@ -1136,121 +824,18 @@ class Service extends Base\Service
 
     public function getPreSignupDetails($merchantId)
     {
-        return (new MerchantDetails\Service)->getPresignupDetails($merchantId);
-    }
+        $data = [];
 
-    public function createCustomer($mode, $params)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
+        $merchant = Merchant\Entity::findorfail($merchantId);
 
-        $errors = $data = [];
+        $referrer = $merchant->getReferrerAttribute();
 
-        try
+        if (($referrer === null) or
+            (Merchant\Entity::verifyUniqueId($referrer) === 0))
         {
-            $data = $this->api->customer->create($params)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
+            $data = (new MerchantDetails\Service)->getPresignupDetails($merchantId);
         }
 
-        return [$errors, $data];
-    }
-
-    public function editCustomer($mode, $id, $params)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->customer->fetch($id)->edit($params)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function deleteCustomer($mode, $id)
-    {
-        $merchantId = $this->currentMerchant->id;
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->customer->delete($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function createItem($mode, $input)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->item->create($input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function editItem($mode, $id, $input)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->item->edit($id, $input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function deleteItem($mode, $id)
-    {
-        $merchantId = $this->currentMerchant->id;
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = [];
-
-        try
-        {
-            $data = $this->api->item->delete($id)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
+        return $data;
     }
 }

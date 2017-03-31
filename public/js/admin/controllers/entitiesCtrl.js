@@ -72,6 +72,7 @@ app.controller('EntitiesCtrl', [
       'netbanking_axis',
       'netbanking_icici',
       'netbanking_airtel',
+      'netbanking_federal',
       'paytm',
       'sharp',
       'upi_icici',
@@ -92,6 +93,7 @@ app.controller('EntitiesCtrl', [
       'olamoney',
       'airtelmoney',
       'freecharge',
+      'jiomoney',
       'ezeclick',
       'openwallet'
     ];
@@ -265,7 +267,14 @@ app.controller('EntitiesCtrl', [
         gateway_payment_id: ['Gateway Payment ID'],
         tdate: ['Tdate'],
       },
-      batch_settlement: {},
+      batch_fund_transfer: {
+        type: [
+          'all',
+          'settlement',
+          'payout'
+        ],
+        date: ['Date'],
+      },
       emi_plan: {
         bank: ['Bank'],
         network: ['Network']
@@ -278,6 +287,22 @@ app.controller('EntitiesCtrl', [
       file_store: {
         entity_id: ['Entity Id'],
         type: ['Type']
+      },
+      fund_transfer_attempt: {
+        batch_fund_transfer_id: ['Batch Fund Transfer Id'],
+        source_type: [
+          'all',
+          'settlement',
+          'payout'
+        ],
+        source_id: ['Source Id'],
+        status: ['all', 'created', 'failed', 'processed'],
+        utr: ['UTR']
+      },
+      gateway_downtime: {
+        method: methodList,
+        gateway: gatewayList,
+        bank: ['Bank']
       },
       hdfc: {
         auth: ['Auth Code'],
@@ -311,6 +336,7 @@ app.controller('EntitiesCtrl', [
           'draft',
           'issued',
           'paid',
+          'cancelled',
           'expired'
         ],
         type: [
@@ -345,6 +371,7 @@ app.controller('EntitiesCtrl', [
         upi: booleanList2,
         airtelmoney: booleanList2,
         freecharge: booleanList2,
+        jiomoney: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         parent_id: ['Marketplace Parent Id'],
         receipt_email_enabled: booleanList,
@@ -378,6 +405,7 @@ app.controller('EntitiesCtrl', [
         upi: booleanList,
         airtelmoney: booleanList,
         freecharge: booleanList,
+        jiomoney: booleanList,
         merchant_id: ['Merchant Id']
       },
       netbanking: {
@@ -464,13 +492,22 @@ app.controller('EntitiesCtrl', [
       },
       refund: {
         merchant_id: ['Merchant Id'],
-        payment_id: ['Payment Id']
+        payment_id: ['Payment Id'],
+        status: [
+            'all',
+            'created',
+            'failed',
+            'processed'
+        ],
+        transaction_id: ['Transaction Id'],
+        batch_id: ['Batch Id']
       },
       reversal: {
         merchant_id: ['Merchant Id'],
         transfer_id: ['Transfer Id']
       },
       settlement: {
+        batch_fund_transfer_id: ['Batch Fund Transfer Id'],
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
@@ -483,10 +520,18 @@ app.controller('EntitiesCtrl', [
       terminal: {
         enabled: booleanList,
         gateway: gatewayList,
+        category: ['Category'],
         merchant_id: ['Merchant Id'],
         shared: booleanList,
         gateway_merchant_id: ['Gateway Merchant Id'],
-        network_category: ['Network Category']
+        gateway_terminal_id: ['Gateway Terminal Id'],
+        network_category: ['Network Category'],
+        gateway_acquirer: [
+            'all',
+            'axis',
+            'hdfc'
+        ],
+        emi: booleanList
       },
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
@@ -635,8 +680,8 @@ app.controller('EntitiesCtrl', [
             $scope.alerts.addAlert('danger', value);
           });
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+      }).error(function (res) {
+        $scope.alerts.addAlert('danger', res ? res : null, true);
       });
     };
     if ($stateParams.type && $stateParams.id) {
@@ -731,8 +776,8 @@ app.controller('EntitiesCtrl', [
             $scope.alerts.addAlert('danger', null, true);
           }
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+      }).error(function (res) {
+        $scope.alerts.addAlert('danger', res ? res : null, true);
       });
     };
   }

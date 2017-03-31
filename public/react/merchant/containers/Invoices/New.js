@@ -109,8 +109,7 @@ export default class InvoicesNewContainer extends Component {
     this.quickCreateCustomer = ::this.quickCreateCustomer
     this.resendInvoice = ::this.resendInvoice
     this.deleteInvoice = ::this.deleteInvoice
-    this.downloadInvoicePDF = ::this.downloadInvoicePDF
-    this.expireInvoice = ::this.expireInvoice
+    this.cancelInvoice = ::this.cancelInvoice
     this.addInternalNote = ::this.addInternalNote
     this.handleBackNavClick = ::this.handleBackNavClick
   }
@@ -287,10 +286,6 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
-  downloadInvoicePDF(invoice) {
-    // TODO: handle download
-  }
-
   navigateToList() {
     return this.context.ngRouter.transitionTo('app.invoices.list')
   }
@@ -334,24 +329,24 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
-  expireInvoice() {
+  cancelInvoice() {
     let invoice = this.props.invoice
     this.context.confirm({
-      header: 'Expire Invoice?',
+      header: 'Cancel Invoice?',
       message: () => (
         <div class='text-semi-muted'>
-          <p>The Invoice will be expired and the customer will not be able to pay for it.</p>
+          <p>The Invoice will be cancelled and the customer will not be able to pay for it.</p>
         </div>
       ),
-      affirmativeLabel: 'Yes, Expire',
-      affirmativePendingLabel: 'Expiring...',
+      affirmativeLabel: 'Yes, Cancel',
+      affirmativePendingLabel: 'Cancelling...',
       abortLabel: 'No, don\'t!',
       action: () => {
-        return this.props.expireInvoice(invoice).then((invoice) => {
+        return this.props.cancelInvoice(invoice).then((invoice) => {
           this.props.initialize(invoice)
           this.props.showNotification({
             type: 'success',
-            message: 'Invoice expired!'
+            message: 'Invoice cancelled!'
           })
         }).catch(({ errors }) => {
           this.props.showNotification({
@@ -418,8 +413,9 @@ export default class InvoicesNewContainer extends Component {
     let isDraft = status === 'draft'
     let isIssued = status === 'issued'
     let isPaid = status === 'paid'
+    let isCancelled = status === 'cancelled'
     let isExpired = status === 'expired'
-    let locked = isPaid || isExpired
+    let locked = isPaid || isExpired || isCancelled
 
     let invoiceTotal = this.calculateInvoiceTotal()
 
@@ -655,19 +651,6 @@ export default class InvoicesNewContainer extends Component {
                                 <span>Save Invoice</span>
                               </AsyncButton>
                           }
-
-                          {/*
-                            !(isNew || isDraft) &&
-                              <button
-                                type='button'
-                                class='btn btn-default btn-block btn-lg'
-                                onClick={this.downloadInvoicePDF}
-                              >
-                                <i class='fa fa-download'></i>
-                                <span>Download PDF</span>
-                              </button>
-                          */}
-
                           {
                             (isNew || isDraft) &&
                               <button
@@ -681,16 +664,21 @@ export default class InvoicesNewContainer extends Component {
                               </button>
                           }
                           {
+                            /*
+                              TODO: Uncomment this post the API release.
+
                             isIssued &&
                               <button
                                 type='button'
                                 class='btn btn-default btn-block btn-lg'
-                                onClick={this.expireInvoice}
+                                onClick={this.cancelInvoice}
                                 disabled={this.state.isSaving}
                               >
-                                <i class='fa fa-eye-slash'></i>
-                                <span>Expire Invoice</span>
+                                <i class='fa fa-times'></i>
+                                <span>Cancel Invoice</span>
                               </button>
+
+                            */
                           }
                         </div>
                       </div>

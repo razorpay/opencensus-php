@@ -70,7 +70,10 @@ webpackConfig.module.loaders = [
 // Plugins
 // ------------------------------------
 webpackConfig.plugins = [
-  new CaseSensitivePathsPlugin()
+  new CaseSensitivePathsPlugin(),
+
+  /* https://github.com/webpack/webpack/issues/3128 */
+  new webpack.IgnorePlugin(/(locale)/, /node_modules.+(momentjs)/)
 ]
 
 module.exports = webpackConfig

@@ -4,7 +4,7 @@ import Time from 'rzp/ui/Time'
 import Spinner from 'rzp/ui/Spinner'
 import Alert from 'rzp/ui/Forms/Alert'
 import LineItemReadOnlyTable from './LineItemReadOnlyTable'
-import InvoiceStatus from './InvoiceStatus'
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel'
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -18,6 +18,7 @@ export default (props) => {
   let isDraft = status === 'draft'
   let isIssued = status === 'issued'
   let isPaid = status === 'paid'
+  let isCancelled = status === 'cancelled'
   let isExpired = status === 'expired'
 
   return (
@@ -43,13 +44,18 @@ export default (props) => {
               }
 
               {
+                /*
+                  TODO: Uncomment this post the API release.
+
                 isIssued &&
                   <button
                     class='btn btn-default btn-sm'
-                    onClick={props.onExpire}
+                    onClick={props.onCancel}
                   >
-                    Expire Link
+                    Cancel Link
                   </button>
+
+                */
               }
             </div>
 
@@ -85,7 +91,7 @@ export default (props) => {
 
                 <dt>Status:</dt>
                 <dd>
-                  <InvoiceStatus status={status} />
+                  <InvoiceStatusLabel status={invoice.status} />
                 </dd>
 
                 <dt>Payment Id:</dt>

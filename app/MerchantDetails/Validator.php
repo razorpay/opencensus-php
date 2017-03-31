@@ -93,7 +93,7 @@ class Validator extends Base\Validator
     protected static $step1AccountRules = [
         'business_type'                 => 'required|numeric|digits_between:1,10',
         'business_name'                 => 'required|max:255',
-        'company_pan'                   => 'alpha_num|max:15',
+        'company_pan'                   => 'sometimes|alpha_num|max:15',
         'promoter_pan'                  => 'required|alpha_num|max:15',
     ];
 

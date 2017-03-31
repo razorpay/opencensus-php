@@ -6,15 +6,15 @@ const INVOICE_FETCH = 'INVOICE_FETCH'
 const SMS_SEND = 'SMS_SEND'
 const EMAIL_SEND = 'EMAIL_SEND'
 const INVOICE_ISSUE = 'INVOICE_ISSUE'
-const INVOICE_DOWNLOAD = 'INVOICE_DOWNLOAD'
 const INVOICE_INIT = 'INVOICE_INIT'
-const INVOICE_EXPIRE = 'INVOICE_EXPIRE'
+const INVOICE_CANCEL = 'INVOICE_CANCEL'
 
 export const fetchInvoice = (id) => {
   return (dispatch) => {
+    let invoice = new Invoice()
     return dispatch({
       type: INVOICE_FETCH,
-      payload: Invoice.fetch(id)
+      payload: invoice.fetch(id)
     })
   }
 }
@@ -39,16 +39,6 @@ export const issueInvoice = (params) => {
   }
 }
 
-export const downloadInvoice = (params) => {
-  return (dispatch) => {
-    let invoice = new Invoice(params)
-    return dispatch({
-      type: INVOICE_DOWNLOAD,
-      payload: invoice.download()
-    })
-  }
-}
-
 export const initializeInvoice = () => {
   return (dispatch) => {
     return dispatch({
@@ -58,12 +48,12 @@ export const initializeInvoice = () => {
   }
 }
 
-export const expireInvoice = (params) => {
+export const cancelInvoice = (params) => {
   return (dispatch) => {
     let invoice = new Invoice(params)
     return dispatch({
-      type: INVOICE_EXPIRE,
-      payload: invoice.expire()
+      type: INVOICE_CANCEL,
+      payload: invoice.cancel()
     })
   }
 }
@@ -84,7 +74,7 @@ export default function (state = initialState, action) {
       return set(state, 'loading', true)
 
     case `${INVOICE_ISSUE}::SUCCESS`:
-    case `${INVOICE_EXPIRE}::SUCCESS`:
+    case `${INVOICE_CANCEL}::SUCCESS`:
     case `${INVOICE_FETCH}::SUCCESS`:
     case `${INVOICE_CREATE}::SUCCESS`:
     case `${INVOICE_EDIT}::SUCCESS`:

@@ -52,9 +52,9 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="promoter_pan" class="col-sm-3 control-label">Promoter/Director PAN</label>
+            <label for="promoter_pan" class="col-sm-3 control-label">Promoter/Individual PAN</label>
             <div class="col-sm-8">
-              <input ng-readonly="locked" type="text" class="form-control" name="promoter_pan" ng-model="data.promoter_pan" placeholder="PAN Number of Promoter" required>
+              <input ng-readonly="locked" type="text" class="form-control" name="promoter_pan" ng-model="data.promoter_pan" placeholder="PAN Number of Promoter/Individual" required>
             </div>
           </div>
           <div class="m-t m-b text-center prev-next">
@@ -121,22 +121,33 @@
           <i class="fa" ng-class="{'fa-check': check.3 === true, 'fa-times':check.3 === false}"></i>
           Documents Upload
         </tab-heading>
-        <h4>Documents Uploads</h4>
+        <h4>Documents Upload</h4>
         <form name="step5" class="form-validation form-horizontal" ng-submit="submit(3)" novalidate>
         <fieldset ng-disabled="locked">
           <div class="text-center m-t m-b alerts">
             <alert ng-repeat="alert in alerts[3].getAlerts()" type="{{alert.type}}" close="alerts[3].closeAlert($index)">{{alert.msg}}</alert>
           </div>
           <div class="form-group">
-            <label for="address_proof" class="col-sm-3 control-label">Company's Bank Account Statement with Address</label>
+            <label for="address_proof" class="col-sm-3 control-label">Bank Account Proof with Address</label>
             <div class="col-sm-8">
               <span class="help-block">
-              Upload following:
-              <li>Bank Account Statement (of last three months or since opening of account, whichever is earlier)</li>
+              Upload one of the following:
+                <li>Bank Account Statement (of last three months or since opening of account, whichever is earlier)</li>
+                <li>Cancelled Cheque with address and IFSC</li>
               </span>
               <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="address_proof" ng-file-select="onFileSelect($files, 'address_proof')">
               <div class="text-center m-t m-b alerts">
                 <alert ng-repeat="alert in fileAlerts.address_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.address_proof.closeAlert($index)">{{alert.msg}}</alert>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="promoter_pan_proof" class="col-sm-3 control-label">PAN Card</label>
+            <div class="col-sm-8">
+              <span class="help-block">Promoter/Individual PAN Card</span>
+              <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="promoter_pan_proof" ng-file-select="onFileSelect($files, 'promoter_pan_proof')">
+              <div class="text-center m-t m-b alerts">
+                <alert ng-repeat="alert in fileAlerts.promoter_pan_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.promoter_pan_proof.closeAlert($index)">{{alert.msg}}</alert>
               </div>
             </div>
           </div>

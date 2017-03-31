@@ -37,8 +37,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/user/confirm/{token}', 'UserController@getConfirm');
         Route::group([], function()
         {
-            Route::post('/user/signin', 'UserController@postSignin');
-            Route::post('/user/register', 'UserController@postRegister');
+            Route::post('/user/signin', 'UserController@postSignin'); // ePOS
+            Route::post('/user/register', 'UserController@postRegister'); // ePOS
             Route::post('/user/resend', 'MerchantController@postResendConfirmation');
             Route::post('/user/password/reset', 'PasswordController@postRemind');
             Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
@@ -50,6 +50,8 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  'auth:user'], function()
     {
+        Route::any('/user/generic', 'GenericController@handle');
+
         Route::get('/user/keepalive', 'UserController@getKeepAlive');
         Route::get('/user/logout', 'UserController@getLogout');
 
@@ -58,12 +60,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/user/details', 'UserController@getUserDetails');
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
         Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
-        Route::get('/{mode}/payments', 'TransactionController@getPayments')->name('get_payments');
-
-        // Order Routes
-        Route::get('/{mode}/orders', 'TransactionController@getOrders')->name('get_orders');
-        Route::get('/{mode}/orders/{id}', 'TransactionController@getOrder')->name('get_order');
-        Route::get('/{mode}/orders/{id}/payments', 'TransactionController@getOrderPayments')->name('get_order_payments');
 
         // Batch Refund Routes
         Route::group(['prefix' => '{mode}/batches'], function () {
@@ -78,17 +74,7 @@ Route::group(['middleware' => ['web']], function () {
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
-        Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment')->name('payment_get_single');
-        Route::get('/{mode}/payments/{id}/card', 'TransactionController@getPaymentCardData')->name('card_get_single');
-        Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getPaymentRefunds')->name('payment_get_refunds');
-
-        Route::get('/{mode}/refunds', 'TransactionController@getRefunds')->name('refunds_fetch_multiple');
-        Route::get('/{mode}/refunds/{id}', 'TransactionController@getRefund')->name('refunds_fetch_single');
-
         // Support role does not have access to this
-        Route::get('/{mode}/settlements', 'TransactionController@getSettlements')->name('settlements_fetch_all');
-        Route::get('/{mode}/settlements/{id}', 'TransactionController@getSettlement')->name('settlements_fetch_one');
-        Route::get('/{mode}/settlements/{id}/details', 'TransactionController@getSettlementDetails')->name('settlements_get_detail');
 
         Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
         Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
@@ -97,22 +83,18 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
         Route::get('/{mode}/analytics/payment/aggregations', 'TransactionController@getPaymentAggregations');
 
-        Route::get('/{mode}/keys', 'MerchantController@getKeys')->name('get_keys');
+        // adding keys as being used in android
+        // ePOS => the routes which are being used by android ePOS app
+        Route::get('/{mode}/keys', 'MerchantController@getKeys')->name('get_keys'); // ePOS
+        Route::post('/{mode}/key/new', 'MerchantController@postNewKey')->name('keys_setup'); // ePOS
+
         Route::get('/keys/csv', 'MerchantController@getCsv');
         Route::get('/apihost', 'MerchantController@getApihost');
 
-        Route::get('/config', 'MerchantController@getMerchantConfig')->name('get_config');
-        Route::put('/config', 'MerchantController@putMerchantConfig')->name('put_config');
-        Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo')->name('post_config_logo');
-
         Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
-        Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks')->name('get_webhooks');
 
         // This also returns credits
-        Route::get('/{mode}/balance', 'MerchantController@getBalance')->name('balance_get');
         Route::get('/bank_account', 'MerchantController@getBankAccount')->name('bank_account_fetch');
-
-        Route::get('/{mode}/credits', 'MerchantController@getCreditsLog');
 
         // Invitation and Team Support
         Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
@@ -143,41 +125,20 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
 
         Route::post('/password', 'UserController@postPassword');
-        Route::post('/activation', 'MerchantController@postActivation')->name('post_activation');
+        Route::post('/activation', 'MerchantController@postActivation')->name('post_activation'); // ePOS
         Route::post('/activation/{merchantId}', 'MerchantController@postActivation')->name('post_activation');
-        Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step');
+        Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step'); // ePOS
         Route::post('/activation/save/step/{id}/{merchantId}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step');
-        Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
+        Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file'); // ePOS
         Route::post('/activation/save/file/{merchantId}', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
-        Route::post('/{mode}/keys', 'MerchantController@postKeys')->name('post_keys');
-        Route::post('/{mode}/key/new', 'MerchantController@postNewKey')->name('keys_setup');
-        Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment')->name('post_capture');
-        Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment')->name('post_refund');
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
-        Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all');
-        Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoice_fetch_single');
-        Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoice_create');
-        Route::patch('/{mode}/invoices/{id}', 'MerchantController@patchInvoice')->name('invoice_edit');
-        Route::delete('/{mode}/invoices/{id}', 'MerchantController@deleteInvoice')->name('invoice_delete');
+        Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all'); // ePOS
+        Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoice_create'); // ePOS
         Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
-        Route::post('/{mode}/invoices/{invoiceId}/issue', 'MerchantController@markInvoiceAsIssued')->name('invoice_issue');
-        Route::post('/{mode}/invoices/{invoiceId}/expire', 'MerchantController@markInvoiceAsExpired')->name('invoice_expire');
 
-        Route::get('/{mode}/customers', 'MerchantController@getCustomers')->name('customer_fetch_all');
         Route::get('/{mode}/customers/autocomplete', 'MerchantController@getCustomersForAutocomplete')->name('customer_autocomplete');
-        Route::post('/{mode}/customers', 'MerchantController@postCustomer')->name('customer_create');
-        Route::put('/{mode}/customers/{id}', 'MerchantController@putCustomer')->name('customer_edit');
-        Route::delete('/{mode}/customers/{id}', 'MerchantController@deleteCustomer')->name('customer_delete');
 
-        Route::get('/{mode}/items', 'MerchantController@getItems')->name('item_fetch_all');
         Route::get('/{mode}/items/autocomplete', 'MerchantController@getItemsForAutocomplete')->name('item_autocomplete');
-        Route::post('/{mode}/items', 'MerchantController@postItem')->name('item_create');
-        Route::patch('/{mode}/items/{id}', 'MerchantController@patchItem')->name('item_edit');
-        Route::delete('/{mode}/items/{id}', 'MerchantController@deleteItem')->name('item_delete');
-
-
-        Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook')->name('post_webhooks');
-        Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook')->name('edit_webhooks');
 
         // Upgrades a standard invited user to a merchant
         Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
@@ -186,12 +147,12 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant')->name('submerchant_register');
         Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
 
-        Route::get('/features', 'MerchantController@getMerchantFeatures');
-        Route::post('/features', 'MerchantController@postUpdateMerchantFeatures');
     });
 
     Route::group(['middleware'  =>  'admin'], function()
     {
+        Route::any('/admin/generic', 'GenericController@handle');
+
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
@@ -201,7 +162,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
         // This is the list of banks in netbanking
         Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
-        Route::get('/admin/networks', 'AdminController@getSupportedNetworks');
 
         Route::get('/admin/features/{entityId}', 'AdminController@getEntityFeatures');
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
@@ -209,15 +169,16 @@ Route::group(['middleware' => ['web']], function () {
 
         // This is the merchant's bank account
         Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
-        Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin');
+        Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin')
+               ->name('admin_merchant_login')
+               ->middleware('admin_access');
         Route::get('/admin/activity', 'AdminController@getAdminActivity');
         Route::delete('/admin/activity', 'AdminController@deleteOtherAdminActivity');
         Route::delete('/admin/activity/{id}', 'AdminController@deleteAdminActivity');
 
-        Route::get('/admin/pricing/list', 'AdminController@getPricingList');
-        Route::get('/admin/pricing/{id}', 'AdminController@getPricingRules');
         Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
         Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
+        Route::get('/admin/file/{fileId}', 'AdminController@getUploadedFile');
         Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
         Route::get('admin/{mode}/merchants/aggregations/{resource}', 'AdminController@getMerchantAggregations');
@@ -230,11 +191,6 @@ Route::group(['middleware' => ['web']], function () {
         // Admin Meta Routes
         Route::post('/admin/password', 'AdminController@postPassword');
         Route::put('/admin/{id}/edit', 'AdminController@putEdit');
-
-        // Pricing Plan Routes
-        Route::post('/admin/pricing/new', 'AdminController@postNewPricingPlan');
-        Route::post('/admin/pricing/{id}', 'AdminController@postPricingRules');
-        Route::delete('/admin/pricing/{planId}/rules/{ruleId}', 'AdminController@deletePricingPlanRule');
 
         // EMI Routes
         Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
@@ -287,7 +243,9 @@ Route::group(['middleware' => ['web']], function () {
         // These use proxy auth so needs merchantId
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture');
+        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture')
+                ->name('admin_payment_capture')
+                ->middleware('admin_access');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Admin Main Actions, mostly initiated from the Actions screen
@@ -324,25 +282,28 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/admin/users', 'AdminController@postAddAdmin');
             Route::post('/admin/users/{id}/superadmin', 'AdminController@postPromoteAdmin');
             Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
-            Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-            Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
 
             Route::get('/admin/users', 'AdminController@getAdmins');
         });
 
-        Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities');
+        Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
+        Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
+
+        Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities')
+                ->name('admin_fetch_entity')
+                ->middleware('admin_access');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
-                ->where('format', 'csv');
+                ->where('format', 'csv')
+                ->name('admin_fetch_entity')
+                ->middleware('admin_access');
         // This is a very generic route and needs to be defined below
-        Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById');
+        Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById')
+                ->name('admin_fetch_entity')
+                ->middleware('admin_access');
 
         // Upload logos for orgs
         Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
 
-        Route::get('/admin/generic', 'GenericController@getGeneric');
-        Route::post('/admin/generic', 'GenericController@postGeneric');
-        Route::put('/admin/generic', 'GenericController@putGeneric');
-        Route::delete('/admin/generic', 'GenericController@deleteGeneric');
         Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
         Route::get('/admin/invitations', 'AdminController@getMerchantInvitations');
 

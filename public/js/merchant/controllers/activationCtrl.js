@@ -93,13 +93,12 @@ app.controller('ActivationCtrl', [
           $scope.fileAlerts[key].addAlert('success', 'File already uploaded');
         });
         if (data.data.submitted === 1) {
-          user.identity().then(function (data) {
-            $scope.data.activated = data.activated;
-            if (data.activated == 1) {
-              $scope.formAlerts.addAlert('info', 'Your account is already activated');
-            } else
-              $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');
-          });
+          $scope.data.activated = data.data.activated;
+          if (data.data.activated === 1) {
+            $scope.formAlerts.addAlert('info', 'Your account is already activated');
+          } else {
+            $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');
+          }
         }
         if (data.data.locked === 1) {
           $scope.locked = true;

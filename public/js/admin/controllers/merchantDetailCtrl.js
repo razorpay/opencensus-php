@@ -935,6 +935,18 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
+    function sortTerminals() {
+      // Doing this to avoid the whole exercise of custom sorting again. 'Two' is deleted. The other two are undeleted.
+      var terminals = {undeleted_enabled:[], undeleted_disabled:[], deleted:[]};
+
+      var undeleted = $scope.merchant.terminals.items.filter(function(x){return x.deleted_at==null});
+      terminals.undeleted_enabled = undeleted.filter(function(x){return x.enabled});
+      terminals.undeleted_disabled = undeleted.filter(function(x){return !x.enabled});
+      terminals.deleted = $scope.merchant.terminals.items.filter(function(x){return x.deleted_at!==null});
+
+      $scope.terminals = terminals;
+    }
+
     function generateMerchant() {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id);
       request.success(function (data) {
@@ -942,7 +954,8 @@ app.controller('MerchantDetailCtrl', [
 
         if (data.success) {
           $scope.merchant = data.data;
-          $scope.scheduleKeys = Object.keys($scope.merchant.schedule);
+          sortTerminals();
+          $scope.scheduleKeys = $scope.merchant.schedule ? Object.keys($scope.merchant.schedule) : [];
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = data.data.details.merchant_details.activation_progress;
           $scope.referer = getReferer($scope.merchant.details.tags);
@@ -1065,11 +1078,16 @@ app.controller('MerchantDetailCtrl', [
     $scope.loading = true;
     $scope.pricing_plans = {};
     $scope.pricing_plan_id = current;
-    var request = $http.get('/admin/pricing/list');
+    var params = {
+      route_name: 'pricing_get_merchant_plans'
+    };
+    var request = $http.get('/admin/generic', {
+      params: params
+    });
     request.success(function (data) {
       if (data.success) {
-        for (var key in data.data) {
-          var value  = data.data[key];
+        for (var key in data.data.items) {
+          var value  = data.data.items[key];
           $scope.pricing_plans[value.id] = value.name;
         }
         $scope.loading = false;

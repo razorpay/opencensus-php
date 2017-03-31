@@ -17,16 +17,4 @@ class Order extends Entity
         return parent::all($options);
     }
 
-    public function payments()
-    {
-        $url = $this->getEntityUrl() . $this->id . '/payments';
-        return $this->request('GET', $url);
-    }
-
-    public function setId($id)
-    {
-        $this->attributes['id'] = $id;
-        return $this;
-    }
-
 }

@@ -9,10 +9,10 @@ import { connect } from 'react-redux'
 )
 export default class Header extends Component {
   render() {
-    let { title, showMode, isLoading, children, ...attributes } = this.props
+    let { title, showMode, isLoading, children, className } = this.props
     return (
       <div class='header'>
-        <h1 {...attributes}>
+        <h1 class={className}>
           {title} {showMode && `(${titleCase(this.props.mode)} Mode)`}
         </h1>
         {children}

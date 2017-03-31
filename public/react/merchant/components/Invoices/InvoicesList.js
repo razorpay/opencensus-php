@@ -1,8 +1,7 @@
-import ReactTooltip from 'react-tooltip'
 import TableBody from '../TableBody'
 import Time from 'rzp/ui/Time'
 import Amount from 'rzp/ui/Amount'
-import InvoiceStatus from './InvoiceStatus'
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel'
 
 const InvoiceListItem = (props) => {
   let { invoice, canHighlight } = props
@@ -32,28 +31,22 @@ const InvoiceListItem = (props) => {
         <Amount value={invoice.amount} />
       </td>
       <td class='text-right'>
-        <InvoiceStatus status={invoice.status} />
+        <InvoiceStatusLabel status={invoice.status} />
       </td>
       <td>
         <div class='row-action'>
           <div class='btn-group'>
-            <div
-              class='tooltip-wrapper'
-              data-tip={!invoice.isEditable ? 'Paid invoice cannot be edited' : ''}
-              data-place='left'
+            <button
+              data-tip={!invoice.isEditable ? 'Paid invoice cannot be edited' : null}
+              class='btn btn-xs btn-default'
+              disabled={!invoice.isEditable}
+              onClick={props.onEditClick}
             >
-              <button
-                class='btn btn-xs btn-default'
-                disabled={!invoice.isEditable}
-                onClick={props.onEditClick}
-              >
-                <i class='fa fa-edit'></i>
-                <span>edit</span>
-              </button>
-            </div>
+              <i class='fa fa-edit'></i>
+              <span>edit</span>
+            </button>
           </div>
         </div>
-        <ReactTooltip effect='solid' />
       </td>
     </tr>
   )
@@ -64,7 +57,7 @@ export default (props) => {
 
   return (
     <div class='table-responsive'>
-      <table class='table table-hover'>
+      <table class='table table-hover table-striped'>
         <thead>
           <tr>
             <th>Invoice Id</th>

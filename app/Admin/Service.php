@@ -24,6 +24,7 @@ use Session;
 use Crypt;
 use Cache;
 use Uuid;
+use Trace;
 
 use Aws\Laravel\AwsFacade as AWS;
 use Carbon\Carbon;
@@ -542,7 +543,8 @@ class Service extends Base\Service
 
         $pricingPlan = $this->fetchMerchantPricing($id);
 
-        $schedule = $this->fetchMerchantScheduleById($details['settlement_schedule_id']);
+        $schedule = !empty($details['settlement_schedule_id']) ?
+                    $this->fetchMerchantScheduleById($details['settlement_schedule_id']) : null;
 
         $data = array(
                     'details' => $details,
@@ -1603,28 +1605,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function fetchPricingPlans()
-    {
-        $errors = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->merchants()->toArray();
-
-            $response = $response['items'];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return array($errors, $response);
-    }
-
     public function fetchPricingPlan($id)
     {
         $errors = array();
@@ -1643,68 +1623,6 @@ class Service extends Base\Service
         }
 
         return array($errors, $response);
-    }
-
-    public function addPricingPlanRule($id, $input)
-    {
-        $error = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->fetch($id)->createRule($input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $response);
-    }
-
-    public function deletePricingPlanRule($planId, $ruleId)
-    {
-        $error = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing
-                ->deleteRule($planId, $ruleId)
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $response);
-    }
-
-    public function createPricingPlan($input)
-    {
-        $error = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->create($input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $response);
     }
 
     public function fetchMultipleEntities($mode, $entity, $input)
@@ -1772,6 +1690,33 @@ class Service extends Base\Service
         return [$error, null];
     }
 
+    public function getUploadedFile($id)
+    {
+        $error = null;
+        $url = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $file = $this->api
+                         ->admin
+                         ->getFileByAdmin($id);
+            $url = $file->headers->offsetGet('location');
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [ $e->getMessage() ];
+
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured while getting requested file from API",
+                    'exception' => $error,
+            ]);
+        }
+
+        return array($error, $url);
+    }
+
     /**
      * Returns a pre-authed S3 URL to download beneficiary file
      * @param  Date $date date in Y-m-d format (with leading zeroes)
@@ -1835,8 +1780,10 @@ class Service extends Base\Service
      */
     public function saveScreenshot($id, $input)
     {
-        $keys = MerchantDetails\Entity::getUrlKeys();
+        $keys = (new MerchantDetails\Service)->getUrlKeys();
+
         $found = false;
+
         $creevey = new Creevey($id);
 
         foreach ($keys as $key)
@@ -1844,12 +1791,12 @@ class Service extends Base\Service
             if (\Input::hasFile($key) and $input[$key]->isValid())
             {
                 $found = true;
+
                 $localFilePath = $input[$key]->getRealPath();
 
                 try
                 {
-                    $creevey->compressAndSave($key, $localFilePath,
-                        $input[$key]->getClientOriginalName());
+                    $creevey->compressAndSave($key, $localFilePath, $input[$key]->getClientOriginalName());
                 }
                 catch (\Exception $e)
                 {
@@ -1895,7 +1842,8 @@ class Service extends Base\Service
         $s3 = $this->getS3Client();
 
         $bucket = env('AWS_ACTIVATION_BUCKET');
-        $keys = MerchantDetails\Entity::getUrlKeys();
+
+        $keys = (new MerchantDetails\Service)->getUrlKeys();
 
         $links = [];
 
@@ -2190,9 +2138,11 @@ class Service extends Base\Service
 
         try
         {
-            $params = array('names'             => explode(",", $input['features']),
-                            'entity_type'       => $entityType,
-                            'entity_id'         => $entityId);
+            $params = [
+                        'names'       => $input['features'],
+                        'entity_type' => $entityType,
+                        'entity_id'   => $entityId
+                    ];
 
             $response = $this->api->feature->setFeatures($params);
 
@@ -2386,15 +2336,6 @@ class Service extends Base\Service
         }
 
        return [$error, $data];
-    }
-
-    public function fetchPaymentNetworks()
-    {
-        $this->setApiCredentials(null, 'live');
-
-        $data = $this->api->pricing->fetchPaymentNetworks();
-
-        return $data;
     }
 
     public function updateMerchantDayAggregations($mode, $input)

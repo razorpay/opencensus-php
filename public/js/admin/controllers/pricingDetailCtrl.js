@@ -15,9 +15,15 @@ app.controller('PricingDetailCtrl', [
     $scope.details = {};
 
     $scope.fetchPlanDetails = function() {
-      var request = $http({
-        method: 'get',
-        url: '/admin/pricing/' + $scope.pricing_plan_id
+      var params = {
+        route_name: 'pricing_get_plan',
+        url_params: {
+          '{id}': $scope.pricing_plan_id
+        }
+      };
+
+      var request = $http.get('/admin/generic', {
+        params: params
       });
 
       request.success(function (data) {
