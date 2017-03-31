@@ -4,10 +4,10 @@ namespace RZP\Models\Workflow;
 
 use RZP\Error;
 use RZP\Exception;
-use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Step;
+use RZP\Models\Workflow\Base;
 use RZP\Models\Admin\Permission;
 
 class Core extends Base\Core
@@ -18,12 +18,16 @@ class Core extends Base\Core
 
         $workflow->build($input);
 
-        $this->validateExistingWorkflows($input);
+        $minLevel = $this->getMinLevelFromSteps($input[Entity::STEPS]);
+
+        $this->validateExistingWorkflows($input[Entity::PERMISSIONS], $minLevel);
 
         // Create the steps and workflow in a single transaction
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
+
+            $workflow->permissions()->sync($input[Entity::PERMISSIONS]);
 
             foreach ($input[Entity::STEPS] as $step)
             {
@@ -33,8 +37,6 @@ class Core extends Base\Core
 
                 (new Step\Core)->create($step);
             }
-
-            $workflow->permissions()->sync($input[Entity::PERMISSIONS]);
         });
 
         return $workflow;
@@ -45,6 +47,10 @@ class Core extends Base\Core
         $workflow->edit($input);
 
         $permissionIds = $this->getPermissionIds($workflow, $input[Entity::PERMISSIONS]);
+
+        $minLevel = $this->getMinLevelFromSteps($workflow->steps);
+
+        $this->validateExistingWorkflows($input[Entity::PERMISSIONS] ,$minLevel);
 
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $permissionIds)
         {
@@ -82,49 +88,26 @@ class Core extends Base\Core
         return array_unique(array_merge($permissionIds, $permissions));
     }
 
-    protected function validateExistingWorkflows(array $input)
+    protected function validateExistingWorkflows(array $permissions, $minLevel)
     {
-        $permissions = $input[Entity::PERMISSIONS];
-
         $workflows = $this->repo
                           ->workflow
                           ->fetchWorkflowsWithStepsByPermissions($permissions);
 
-        $minLevelFromInput = $this->getMinLevelFromInput($input);
+        $this->validateWorkflowsForLevel($workflows, $minLevel);
+    }
 
+    protected function validateWorkflowsForLevel($workflows, $minLevel)
+    {
         foreach ($workflows as $workflow)
         {
-            $minLevelFromSteps = $this->getMinLevelFromSteps($workflow->steps);
+            $minLevelFromSteps = $this->getMinLevelForWorkflow($workflow);
 
-            if ($minLevelFromSteps === $minLevelFromInput)
+            if ($minLevelFromSteps === $minLevel)
             {
                 throw new Exception\BadRequestException(
                     Error\ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS);
             }
         }
-    }
-
-    protected function getMinLevelFromInput(array $input)
-    {
-        $minLevel = 0;
-
-        foreach ($input[Entity::STEPS] as $step)
-        {
-            $minLevel = ($minLevel > $step[Step\Entity::LEVEL]) ? $step[Step\Entity::LEVEL] : $minLevel;
-        }
-
-        return $minLevel;
-    }
-
-    protected function getMinLevelFromSteps($steps)
-    {
-        $minLevel = 0;
-
-        foreach ($steps as $step)
-        {
-            $minLevel = $minLevel > $step->getLevel() ? $step->getLevel() : $minLevel;
-        }
-
-        return $minLevel;
     }
 }
