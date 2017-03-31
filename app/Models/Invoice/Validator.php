@@ -33,9 +33,9 @@ class Validator extends Base\Validator
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
     //
-    // A minimum of 1 days of gap must exist between invoice issue and expired by
+    // A minimum of 15 minutes of gap must exist between invoice issue and expired by
     //
-    const MIN_EXPIRY_SECS = 86400;
+    const MIN_EXPIRY_SECS = 900;
 
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
@@ -395,6 +395,7 @@ class Validator extends Base\Validator
                 break;
 
             case 'sendNotification':
+            case 'expireInvoice':
                 $allowedStatuses = [
                     Status::ISSUED,
                 ];

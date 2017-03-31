@@ -98,6 +98,7 @@ class Entity extends Base\PublicEntity
         'update',
         'delete',
         'cancelInvoice',
+        'expireInvoice',
         'sendNotification',
         'addLineItems',
         'addManyLineItems',

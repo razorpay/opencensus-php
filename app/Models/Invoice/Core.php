@@ -373,6 +373,8 @@ class Core extends Base\Core
      */
     protected function expireInvoice(Entity $invoice)
     {
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
         $this->repo->transaction(
             function () use ($invoice)
             {

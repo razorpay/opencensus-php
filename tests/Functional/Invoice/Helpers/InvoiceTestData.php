@@ -978,7 +978,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 1 day after the time of issue.',
+                    'description' => 'expire_by should be at least 15 minutes after the time of issue.',
                 ],
             ],
             'status_code' => 400,
