@@ -656,6 +656,10 @@ app.controller('EntitiesCtrl', [
       return uiEntities;
     };
     $scope.search = function () {
+      if (!$scope.entity.id) {
+        console.log('Error: No Entity Id Specified');
+        return;
+      }
       clear('skip');
       var request = $http.get('/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type + '/' + $scope.entity.id);
       request.success(function (data) {
