@@ -7,8 +7,38 @@ app.controller('AddOrgCtrl', [
   'organization',
   'transformRequestAsFormPost',
   function ($scope, $http, alertsFactory, $stateParams, $upload, organization, transformRequestAsFormPost) {
-    $scope.permissions = organization.fetchPermissions();
     $scope.selected_permissions = {};
+    $scope.select_all = false;
+
+    var getAllPermissions = function () {
+      var request = $http({
+        url: '/admin/generic',
+        params: {
+          route_name: 'permission_get_by_type',
+          url_params: {
+            '{type}': 'all'
+          }
+        }
+      });
+
+      request.success(function (data) {
+        $scope.permissions = data.data.items;
+      });
+    };
+
+    getAllPermissions();
+
+    $scope.selectAll = function() {
+      $scope.selected_permissions = {};
+
+      if (!$scope.select_all) {
+        return;
+      }
+
+      $scope.permissions.map(function(perm){
+        $scope.selected_permissions[perm.id] = true;
+      });
+    }
 
     $scope.fetchOrg = function(id) {
       var request = $http({
@@ -37,7 +67,10 @@ app.controller('AddOrgCtrl', [
       var request = $http({
         url: '/admin/generic',
         params: {
-          route_name: 'permission_get_assignable'
+          route_name: 'permission_get_by_type',
+          url_params: {
+            '{type}': 'assignable'
+          }
         }
       });
 
