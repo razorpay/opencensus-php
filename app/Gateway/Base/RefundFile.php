@@ -13,8 +13,6 @@ class RefundFile extends Base\Core
     public function __construct()
     {
         parent::__construct();
-
-        $this->mail = Mail::getFacadeRoot();
     }
 
     public function generate($input)

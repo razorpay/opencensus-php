@@ -47,8 +47,6 @@ class NodalAccount extends Base\Core
 
         $this->date = Carbon::today('Asia/Kolkata');
 
-        $this->mail = \Mail::getFacadeRoot();
-
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
 
@@ -140,6 +138,6 @@ class NodalAccount extends Base\Core
 
         $iciciSettlementMail = new SettlementMail\IciciSettlement($data);
 
-        $this->mail->queue($iciciSettlementMail);
+        Mail::queue($iciciSettlementMail);
     }
 }

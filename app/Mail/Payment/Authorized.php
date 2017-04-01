@@ -2,13 +2,17 @@
 
 namespace RZP\Mail\Payment;
 
+use RZP\Mail\Base\Common;
+
 class Authorized extends Base
 {
     protected function addSender()
     {
         $email = Common::MAIL_ADDRESSES[Common::CARE];
 
-        $this->from($email);
+        $header = Common::FROM_HEADER[Common::CARE];
+
+        $this->from($email, $header);
 
         return $this;
     }

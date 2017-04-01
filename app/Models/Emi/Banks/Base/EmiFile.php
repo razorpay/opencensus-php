@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi\Banks\Base;
 
 use Carbon\Carbon;
+use Mail;
 
 use RZP\Exception;
 use RZP\Mail\Emi as EmiMail;
@@ -21,13 +22,6 @@ class EmiFile extends Base\Core
     protected $emiFilePassword;
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->mail = \Mail::getFacadeRoot();
-    }
 
     public function generate($input)
     {
@@ -123,13 +117,13 @@ class EmiFile extends Base\Core
 
         $emiFileMail = new EmiMail\File($this->bankName, $zipFile);
 
-        $this->mail->send($emiFileMail);
+        Mail::send($emiFileMail);
     }
 
     protected function sendEmiPassword()
     {
         $emiPasswordMail = new EmiMail\Password($this->bankName, $this->emiFilePassword);
 
-        $this->mail->send($emiPasswordMail);
+        Mail::send($emiPasswordMail);
     }
 }

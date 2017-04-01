@@ -3,6 +3,7 @@
 namespace RZP\Mail\Payment;
 
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Common;
 
 class Refunded extends Base
 {
@@ -12,7 +13,9 @@ class Refunded extends Base
         {
             $email = Common::MAIL_ADDRESSES[Common::CARE];
 
-            $this->from($email);
+            $header = Common::FROM_HEADER[Common::CARE];
+
+            $this->from($email, $header);
 
             return $this;
         }
@@ -39,11 +42,11 @@ class Refunded extends Base
 
     public function isCustomerReceiptEmailRequired()
     {
-        if ($this->isMerchantEmail === false)
+        if ($this->isMerchantEmail === true)
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 }

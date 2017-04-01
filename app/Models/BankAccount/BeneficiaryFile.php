@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankAccount;
 
+use Mail;
+
 use RZP\Exception;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Models\BankAccount;
@@ -40,11 +42,6 @@ class BeneficiaryFile
     public static $format = array(
        'Bene_A/c No' => 'text',
     );
-
-    public function __construct()
-    {
-        $this->mail = \Mail::getFacadeRoot();
-    }
 
     public function generate()
     {
@@ -107,6 +104,6 @@ class BeneficiaryFile
     {
         $beneficiaryFileMail = new BeneficiaryFileMail($fullpath, $merchantsCount);
 
-        $this->mail->send($beneficiaryFileMail);
+        Mail::send($beneficiaryFileMail);
     }
 }
