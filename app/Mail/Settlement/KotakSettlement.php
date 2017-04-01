@@ -12,18 +12,22 @@ class KotakSettlement extends Base
         return 'Kotak Settlement';
     }
 
-    protected function getSubject()
+    protected function addSubject()
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
         $subject = "Kotak Settlement files for $today";
 
-        return $subject;
+        $this->subject($subject);
+
+        return $this;
     }
 
-    protected function getView()
+    protected function addHtmlView()
     {
-        return 'emails.admin.settlement';
+        $this->view('emails.admin.settlement');
+
+        return $this;
     }
 
     protected function getMailTag()
@@ -31,7 +35,7 @@ class KotakSettlement extends Base
         return MailTags::KOTAK_SETTLEMENT_FILES;
     }
 
-    protected function attachFile()
+    protected function addAttachments()
     {
         $file = $this->data['file'];
 

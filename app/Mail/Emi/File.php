@@ -6,36 +6,52 @@ use Carbon\Carbon;
 
 class File extends Base
 {
-    public function __construct(array $emailIdsToSendTo, string $bankName, string $filePath)
+    protected $filePath;
+
+    public function __construct(string $bankName, string $filePath)
     {
-        parent::__construct($emailIdsToSendTo, $bankName);
+        parent::__construct($bankName);
 
         $this->filePath = $filePath;
     }
 
-    protected function getFromHeader()
+    protected function addSender()
     {
+        $fromEmail = Common::MAIL_ADDRESSES[Common::EMI_FILE];
+
         $fromHeader = $this->bankName . ' Emi File';
 
-        return $fromHeader;
+        $this->send($fromEmail, $fromHeader);
+
+        return $this;
     }
 
-    protected function getToEmails()
+    protected function addMailData()
     {
-        return array_merge($this->emailIdsToSendTo, ['settlements@razorpay.com']);
+        $data = [
+            'body' => 'Please process the attached EMI file'
+        ];
+
+        $this->with($data);
+
+        return $this;
     }
 
-    protected function getData()
+    protected function addSubject()
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        $body = 'Please process the attached EMI file';
-
         $subject = $this->bankName . ' Emi File for ' . $today;
 
-        return [
-            'body' => $body,
-            'subject' => $subject
-        ];
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addAttachments()
+    {
+        $this->attach($this->filePath);
+
+        return $this;
     }
 }

@@ -2,77 +2,57 @@
 
 namespace RZP\Mail\Payment;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Common;
 
 class Base extends Mailable
 {
-    use Queueable, SerializesModels;
-
     protected $data;
-
-    protected $domain;
 
     protected $isMerchantEmail;
 
-    public function __construct(array $data, string $domain, bool $isMerchantEmail = false)
+    public function __construct(array $data, bool $isMerchantEmail = false)
     {
         $this->data = $data;
-
-        $this->domain = $domain;
 
         $this->isMerchantEmail = $isMerchantEmail;
     }
 
-    public function build()
+    protected function addSender()
     {
-        $from = $this->getFrom();
+        $email = Common::MAIL_ADDRESSES[Common::REPORTS];
+        $header = Common::FROM_HEADER[Common::REPORTS];
 
-        $fromName = 'Team Razorpay';
-
-        $replyTo = $this->getCompleteEmail('support');
-
-        $mailTag = $this->getMailTag();
-
-        $to = $this->getTo();
-
-        $subject = $this->getSubject();
-
-        $paymentId = $this->data['payment']['id'];
-
-        $this->from($from, $fromName)
-                ->to($to)
-                ->subject($subject)
-                ->replyTo($replyTo)
-                ->with($this->data)
-                ->addHtmlView()
-                ->addTextView()
-                ->withSwiftMessage(function ($message) use ($paymentId, $mailTag)
-                {
-                    $headers = $message->getHeaders();
-
-                    $headers->addTextHeader(MailTags::HEADER, $paymentId);
-
-                    $headers->addTextHeader(MailTags::HEADER, $mailTag);
-                });
+        $this->from($email, $header);
 
         return $this;
     }
 
-    protected function addHtmlView()
+    protected function addReplyTo()
     {
+        $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
+
+        $this->replyTo($email);
+
         return $this;
     }
 
-    protected function addTextView()
+    protected function addRecipients()
     {
+        $email = $this->data['customer']['email'];
+
+        if ($this->isMerchantEmail === true)
+        {
+            $email = $this->data['merchant']['email'];
+        }
+
+        $this->to($email);
+
         return $this;
     }
 
-    protected function getSubject()
+    protected function addSubject()
     {
         $action = $this->getAction();
 
@@ -84,7 +64,7 @@ class Base extends Mailable
          * can do a survey later and remove this check from here and other
          * places
          */
-        if (isset($this->data['merchant']['billing_label']))
+        if (isset($this->data['merchant']['billing_label']) === true)
         {
             $subject = "$action successful for {$this->data['merchant']['billing_label']}";
         }
@@ -98,7 +78,34 @@ class Base extends Mailable
             $subject = "Razorpay | $subject";
         }
 
-        return $subject;
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $this->with($this->data);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $paymentId = $this->data['payment']['id'];
+
+            $mailTag = $this->getMailTag();
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $paymentId);
+
+            $headers->addTextHeader(MailTags::HEADER, $mailTag);
+        });
+
+        return $this;
     }
 
     protected function getAction()
@@ -106,39 +113,13 @@ class Base extends Mailable
         return 'Payment';
     }
 
-    protected function getTo()
-    {
-        if ($this->isMerchantEmail === true)
-        {
-            return $this->data['merchant']['email'];
-        }
-
-        return $this->data['customer']['email'];
-    }
-
     protected function getMailTag()
     {
         return MailTags::PAYMENT_SUCCESSFUL;
     }
 
-    protected function getFrom()
-    {
-        return $this->getCompleteEmail('reports');
-    }
-
     public function isCustomerReceiptEmail()
     {
         return false;
-    }
-
-    /**
-     * Returns a complete email address
-     *
-     * @param  string $user (reports)
-     * @return string (reports@razorpay.com)
-     */
-    protected function getCompleteEmail(string $user)
-    {
-        return "$user@{$this->domain}";
     }
 }

@@ -2,50 +2,77 @@
 
 namespace RZP\Mail\Merchant;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Common;
 
-class CreateSubMerchant extends Mailable implements ShouldQueue
+class CreateSubMerchant extends Mailable
 {
-    use Queueable, SerializesModels;
+    protected $subMerchant;
 
-    protected $data;
+    protected $aggregator;
 
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
-    public function __construct(array $data)
+    public function __construct($subMerchant, $aggregator)
     {
-        $this->data = $data;
+        $this->subMerchant = $subMerchant;
+
+        $this->aggregator = $aggregator;
     }
 
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
-    public function build()
+    protected function addRecipients()
     {
-        $this->view('emails.merchant.welcome')
-                ->subject('Welcome to Razorpay')
-                ->with($this->data)
-                ->to($this->data['email'], $this->data['name'])
-                ->withSwiftMessage(function ($message)
-                {
-                    $headers = $message->getHeaders();
+        $email = $this->subMerchant->email;
+        $name = $this->subMerchant->name;
 
-                    $headers->addTextHeader(MailTags::HEADER, MailTags::WELCOME);
-                });
+        $this->to($email, $name);
 
-        if (isset($this->data['cc_email']) === true)
+        return $this;
+    }
+
+    protected function addCc()
+    {
+        if ($this->subMerchant->email !== $this->aggregator->email)
         {
-            $this->cc($this->data['cc_email']);
+            $this->cc($this->aggregator->email);
         }
+
+        return $this;
+    }
+
+    protected function addSubject()
+    {
+        $this->subject('Welcome to Razorpay');
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $data = [
+            'name'  => $this->subMerchant->name,
+            'email' => $this->subMerchant->email
+        ];
+
+        $this->with($data);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::WELCOME);
+        });
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.merchant.welcome');
 
         return $this;
     }

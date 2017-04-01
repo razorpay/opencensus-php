@@ -3,49 +3,81 @@
 namespace RZP\Mail\Batch;
 
 use Carbon\Carbon;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Mailable;
+use RZP\Models\Base;
 
 class RefundFile extends Mailable
 {
-    use Queueable, SerializesModels;
+    protected $batch;
 
-    protected $data;
+    protected $filePath;
 
-    public function __construct(array $data)
+    public function __construct(Batch\Entity $batch, string $filePath)
     {
-        $this->data = $data;
+        $this->batch = $batch;
+
+        $this->filePath = $filePath;
     }
 
-    public function build()
+    protected function addRecipients()
     {
-        $emails = $data['emails'];
+        $emails = $this->batch->merchant->getTransactionReportEmail();
 
-        $subject = $this->getSubject();
+        $this->to($emails);
 
-        return $this->view('emails.message')
-                    ->with($data)
-                    ->to($emails)
-                    ->from('refunds@razorpay.com', 'Refunds File')
-                    ->subject($subject)
-                    ->attach($this->data['refundFile'])
-                    ->withSwiftMessage(function ($message)
-                    {
-                        $headers = $message->getHeaders();
-
-                        $headers->addTextHeader(MailTags::HEADER, MailTags::BATCH_REFUNDS_FILE);
-                    });
+        return $this;
     }
 
-    protected function getSubject()
+    protected function addSender()
+    {
+        $fromEmail = Common::MAIL_ADDRESSES[Common::REFUNDS];
+        $fromHeader = Common::FROM_HEADER[Common::REFUNDS];
+
+        $this->from($fromEmail, $fromHeader);
+
+        return $this;
+    }
+
+    protected function addSubject()
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
         $subject = 'Razorpay | Processed Refunds file for  ' . $today;
 
-        return $subject;
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $data = [
+            'body' => 'Please find attached processed Refunds File',
+        ];
+
+        $this->with($data);
+
+        return $this;
+    }
+
+    protected function addAttachments()
+    {
+        $this->attach($this->filePath);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::BATCH_REFUNDS_FILE);
+        });
+
+        return $this;
     }
 }

@@ -83,8 +83,6 @@ class Notify
 
         $this->trace = $this->app['trace'];
 
-        $this->domain = $this->app['config']->get('applications.mailgun.url');
-
         $this->refreshTemplate();
     }
 
@@ -123,14 +121,14 @@ class Notify
 
         if (PaymentMail\Event::isCustomerEvent($event) === true)
         {
-            $mailable = new $mailableClass($this->template, $this->domain);
+            $mailable = new $mailableClass($this->template);
 
             $mailables->push($mailable);
         }
 
         if (PaymentMail\Event::isMerchantEvent($event) === true)
         {
-            $mailable = new $mailableClass($this->template, $this->domain, true);
+            $mailable = new $mailableClass($this->template, true);
 
             $mailables->push($mailable);
         }

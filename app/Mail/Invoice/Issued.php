@@ -17,12 +17,14 @@ class Issued extends Base
         $this->issuedPdfPath = $issuedPdfPath;
     }
 
-    protected function getView()
+    protected function addHtmlView()
     {
-        return 'emails.invoice.customer.notification';
+        $this->view('emails.invoice.customer.notification');
+
+        return $this;
     }
 
-    protected function attachFile()
+    protected function addAttachments()
     {
         if ($this->issuedPdfPath !== null)
         {
@@ -32,5 +34,7 @@ class Issued extends Base
                 $this->issuedPdfPath,
                 ['as' => $pdfDisplayName, 'mime' => 'application/pdf']);
         }
+
+        return $this;
     }
 }

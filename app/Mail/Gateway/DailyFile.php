@@ -2,15 +2,12 @@
 
 namespace RZP\Mail\Gateway;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use Carbon\Carbon;
+use RZP\Maiil\Base\Common;
+use RZP\Mail\Base\Mailable;
 
-class DailyFile extends Mailable implements ShouldQueue
+class DailyFile extends Mailable
 {
-    use Queueable, SerializesModels;
-
     protected $data;
 
     public function __construct(array $data)
@@ -18,16 +15,55 @@ class DailyFile extends Mailable implements ShouldQueue
         $this->data = $data;
     }
 
-    public function build()
+    protected function addSender()
+    {
+        $fromEmail = Common::MAIL_ADDRESSES[Common::SETTLEMENTS];
+
+        $fromHeader = $this->data['bankName'] . ' Netbanking Refunds';
+
+        $this->from($fromEmail, $fromHeader);
+
+        return $this;
+    }
+
+    protected function addRecipients()
+    {
+        $emails = [Common::MAIL_ADDRESSES[Common::SETTLEMENTS]];
+
+        $this->to($emails);
+
+        return $this;
+    }
+
+    protected function addSubject()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $subject = $this->data['bankName'] . ' Netbanking claims and refund files for ' . $today;
+
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $this->with($this->data);
+
+        return $this;
+    }
+
+    protected function addHtmlView()
     {
         $view = 'emails.admin.' . lcfirst($this->data['bankName']) . '_refunds';
 
-        $this->from('settlements@razorpay.com', $this->data['bankName'] . ' Netbanking Refunds')
-                ->subject($this->data['subject'])
-                ->to('settlements@razorpay.com')
-                ->with($this->data)
-                ->view($view);
+        $this->view($view);
 
+        return $view;
+    }
+
+    protected function addAttachments()
+    {
         if (empty($this->data['claimsFile']) === false)
         {
             $this->attach($this->data['claimsFile']);

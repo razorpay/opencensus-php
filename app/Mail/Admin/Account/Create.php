@@ -8,7 +8,7 @@ class Create extends Base
 {
     protected $url;
 
-    public function __construct($admin, $input, $url)
+    public function __construct($admin, array $input, string $url)
     {
         parent::__construct($admin, $input);
 
@@ -22,27 +22,52 @@ class Create extends Base
         return ($this->org->getAuthType() !== 'password');
     }
 
-    protected function getSubject()
+    protected function addSubject()
     {
         $subject = 'Your admin account details for ' . $this->org->getDisplayName() . ' dashboard';
+
+        $this->subject($subject);
+
+        return $this;
     }
 
-    public function getView()
+    protected function addHtmlView()
     {
-        return [
-            'html' => 'emails.admin.user',
-            'text' => 'emails.admin.user_text'
-        ];
+        $this->view('emails.admin.user');
+
+        return $this;
     }
 
-    public function getData()
+    protected function addTextView()
     {
-        return [
+        $this->text('emails.admin.user_text');
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+            $data = [
             'user' => $this->admin->getEmail(),
             // todo: Hack for now. Remove it
             'password' => $this->input['password'],
             'org' => $this->org->getDisplayName(),
             'url' => $this->url,
-        ];
+            ];
+
+        $this->with($data);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ADMIN_CREATE);
+        });
+
+        return $this;
     }
 }

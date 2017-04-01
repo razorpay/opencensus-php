@@ -2,16 +2,12 @@
 
 namespace RZP\Mail\Admin\Account;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Mailable;
 
-class Base extends Mailable implements ShouldQueue
+class Base extends Mailable
 {
-    use Queueable, SerializesModels;
-
     protected $admin;
 
     protected $org;
@@ -29,42 +25,30 @@ class Base extends Mailable implements ShouldQueue
         $this->input = $input;
     }
 
-    public function canSend()
+    protected function addSender()
     {
-        return true;
+        $from = Common::MAIL_ADDRESSES[Common::SUPPORT];
+        $fromHeader = Common::FROM_HEADER[Common::SUPPORT];
+
+        $this->from($from, $fromHeader);
+
+        return $this;
     }
 
-    public function build()
+    protected function addRecipients()
     {
-        $from       ='support@razorpay.com';
-        $replyTo    = 'support@razorpay.com';
-        $fromHeader = 'Team Razorpay';
-        $to         = $this->admin->getEmail();
-        $subject    = $this->getSubject();
-        $view       = $this->getView();
+        $to = $this->admin->getEmail();
 
-        $data = $this->getData();
+        $this->to($to);
 
-        $this->from($from, $fromHeader)
-                ->to($to)
-                ->replyTo($replyTo)
-                ->subject($subject)
-                ->with($data)
-                ->withSwiftMessage(function ($message)
-                {
-                    $headers = $message->getHeaders();
-                    $headers->addTextHeader(MailTags::HEADER, $this->header);
-                });
+        return $this;
+    }
 
-        if (is_array($view) === true)
-        {
-            $this->view($view[0]);
-            $this->text($view[1]);
-        }
-        else
-        {
-            $this->view($view);
-        }
+    protected function addReplyTo()
+    {
+        $replyTo = Common::MAIL_ADDRESSES[Common::SUPPORT];
+
+        $this->replyTo($replyTo);
 
         return $this;
     }

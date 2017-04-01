@@ -6,9 +6,13 @@ use RZP\Constants\MailTags;
 
 class CardSaved extends Base
 {
-    protected function getFrom()
+    protected function addSender()
     {
-        return $this->getCompleteEmail('care');
+        $email = Common::MAIL_ADDRESSES[Common::CARE];
+
+        $this->from($email);
+
+        return $this;
     }
 
     protected function addHtmlView()

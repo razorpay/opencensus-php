@@ -11,13 +11,15 @@ class KotakPayout extends Base
         return 'Kotak Payouts';
     }
 
-    protected function getSubject()
+    protected function addSubject()
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
         $subject = "Kotak IMPS payouts files for $today";
 
-        return $subject;
+        $this->subject($subject);
+
+        return $this;
     }
 
     protected function getMailTag()
@@ -25,8 +27,10 @@ class KotakPayout extends Base
         return MailTags::KOTAK_PAYOUT_SUMMARY;
     }
 
-    protected function getView()
+    protected function addHtmlView()
     {
-        return 'emails.admin.payout';
+        $this->view('emails.admin.payout');
+
+        return $this;
     }
 }

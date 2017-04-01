@@ -2,25 +2,25 @@
 
 namespace RZP\Mail\Invoice;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use Config;
+
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Common;
 use RZP\Exception;
 use RZP\Models\Invoice\Type;
 use RZP\Models\Invoice\ViewDataSerializer;
 
 class Base extends Mailable
 {
-    use Queueable, SerializesModels;
-
     const MAIL_TAG_MAP = [
         Type::ECOD    => MailTags::ECOD,
         Type::INVOICE => MailTags::INVOICE,
     ];
 
     protected $invoice;
+
+    protected $invoiceData;
 
     protected $mailSubjectTemplates;
 
@@ -30,81 +30,35 @@ class Base extends Mailable
     {
         $this->invoice = $invoice;
 
+        $this->invoiceData = (new ViewDataSerializer($this->invoice))->get();
+
         $this->setMailSubjectTemplates();
     }
 
-    public function build()
+    protected function addSender()
     {
-        $data = $this->getData();
+        $fromEmail = Common::MAIL_ADDRESSES[Common::INVOICES];
 
-        $view = $this->getView();
+        $fromHeader = $this->invoiceData['merchant']['name'];
 
-        return $this->view($view)
-                    ->with($data)
-                    ->from('invoices@razorpay.com', $data['merchant']['name'])
-                    ->replyTo('support@razorpay.com', 'Razorpay Support')
-                    ->subject($data['subject'])
-                    ->to($data['invoice']['customer']['email'])
-                    ->attachFile()
-                    ->withSwiftMessage(function ($message) use ($data)
-                    {
-                        $headers = $message->getHeaders();
+        $this->from($fromEmail, $fromHeader);
 
-                        $headers->addTextHeader(MailTags::HEADER, $data['invoice']['id']);
-
-                        $headers->addTextHeader(MailTags::HEADER, $data['label']);
-                    });
-    }
-
-    protected function attachFile()
-    {
         return $this;
     }
 
-    protected function getView()
+    protected function addRecipients()
     {
-        ;
+        $customerEmail = $this->data['invoice']['customer']['email'];
+
+        $this->to($customerEmail);
+
+        return $this;
     }
 
-    protected function getData()
+    protected function addSubject()
     {
-        $id = $this->invoice->getPublicId();
+        $merchantName = $this->invoiceData['merchant']['name'];
 
-        $data = (new ViewDataSerializer($this->invoice))->get();
-
-        $invoiceDashboardPath = $this->invoice->getDashboardPath();
-
-        $extraInvoicePayload = [
-            'type_label'    => ucwords($this->invoice->getTypeLabel()),
-            'pdf_url'       => url("v1/invoices/$id/pdf"),
-            'dashboard_url' => $this->dashboardUrl . $invoiceDashboardPath,
-        ];
-
-        $data['invoice'] += $extraInvoicePayload;
-
-        $label = $this->getLabel($this->invoice->getType());
-        $data['label'] = $label;
-
-        //
-        // In one of the case callee is null - getInvoicePaidMailPayload.
-        // That method is used from Notify.php's flow. And subject construction
-        // is done there in this particular flow. We might(later) consider
-        // moving invoice's payment notifications here too.
-        //
-        // if ($callee !== null)
-        // {
-        //     $subject = $this->getInvoiceMailSubject($callee, $data['merchant']['name']);
-
-        //     $data['subject'] = $subject;
-        // }
-
-        $subject = $this->getSubject($this->event, $data['merchant']['name']);
-
-        return $data;
-    }
-
-    protected function getSubject(string $event, string $merchantName)
-    {
         if (in_array($event, array_keys($this->mailSubjectTemplates), true) === false)
         {
             throw new Exception\LogicException("No templates found for event: $event");
@@ -112,12 +66,59 @@ class Base extends Mailable
 
         $type = $this->invoice->getType();
 
-        return sprintf($this->mailSubjectTemplates[$event][$type], $merchantName);
+        $subject = sprintf($this->mailSubjectTemplates[$event][$type], $merchantName);
+
+        $this->subject($subject);
+
+        return $this;
     }
 
-    protected function getLabel($type)
+    protected function addReplyTo()
     {
-        return self::MAIL_TAG_MAP[$type] ?? MailTags::INVOICE;
+        $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
+
+        $header = Common::FROM_HEADER[Common::SUPPORT];
+
+        $this->replyTo($email, $header);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $id = $this->invoice->getPublicId();
+
+        $invoiceDashboardPath = $this->invoice->getDashboardPath();
+
+        $dashboardUrl = Config::get('applications.dashboard.url');
+
+        $extraInvoicePayload = [
+            'type_label'    => ucwords($this->invoice->getTypeLabel()),
+            'pdf_url'       => url("v1/invoices/$id/pdf"),
+            'dashboard_url' => $dashboardUrl . $invoiceDashboardPath,
+        ];
+
+        $data['invoice'] += $extraInvoicePayload;
+
+        $this->with($data);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $label = self::MAIL_TAG_MAP[$this->invoice->getType()] ?? MailTags::INVOICE;
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $this->invoice->getPublicId());
+
+            $headers->addTextHeader(MailTags::HEADER, $label);
+        });
+
+        return $this;
     }
 
     protected function setMailSubjectTemplates()

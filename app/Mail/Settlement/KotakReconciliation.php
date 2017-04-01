@@ -11,9 +11,13 @@ class KotakReconciliation extends Base
         return 'Kotak Settlement';
     }
 
-    protected function getSubject()
+    protected function addSubject()
     {
-        return "Re: Kotak Settlement files for $this->data['date']";
+        $subject = "Re: Kotak Settlement files for $this->data['date']";
+
+        $this->subject($subject);
+
+        return $this;
     }
 
     protected function getMailTag()

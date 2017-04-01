@@ -128,12 +128,9 @@ class DailyFiles
 
     protected function sendMail($amount, $claimsFile, $refundsFile)
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
         $bankName = $this->getBankName();
 
         $data = [
-            'subject'     => $bankName . ' Netbanking claims and refund files for ' . $today,
             'amount'      => $amount,
             'claimsFile'  => $claimsFile,
             'refundsFile' => $refundsFile,

@@ -2,26 +2,17 @@
 
 namespace RZP\Mail\Merchant;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Common;
 use RZP\Models\Merchant;
 
-class DailyReport extends Mailable implements ShouldQueue
+class DailyReport extends Mailable
 {
-    use Queueable, SerializesModels;
-
     protected $data;
 
     protected $merchant;
 
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
     public function __construct(array $data, Merchant\Entity $merchant)
     {
         $this->data = $data;
@@ -29,29 +20,59 @@ class DailyReport extends Mailable implements ShouldQueue
         $this->merchant = $merchant;
     }
 
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
-    public function build()
+    protected function addSender()
     {
-        $subject = 'Razorpay | Daily Transaction Report for ' . $data['date'];
+        $email = Common::MAIL_ADDRESSES[Common::REPORTS];
 
-        return $this->view('emails.merchant.daily_report')
-                    ->with($this->data)
-                    ->to($this->data['email'])
-                    ->from('reports@razorpay.com')
-                    ->replyTo('support@razorpay.com', 'Razorpay Support')
-                    ->cc('notifications@razorpay.com')
-                    ->subject($subject)
-                    ->withSwiftMessage(function ($message)
-                    {
-                        $headers = $message->getHeaders();
+        $this->from($email);
+    }
 
-                        $headers->addTextHeader(MailTags::HEADER, $this->merchant->getPublicId());
+    protected function addReplyTo()
+    {
+        $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
+        $header =Common::FROM_HEADER[Common::SUPPORT];
 
-                        $headers->addTextHeader(MailTags::HEADER, MailTags::DAILY_REPORT);
-                    });
+        $this->replyTo($email, $header);
+
+        return $this;
+    }
+
+    protected function addCc()
+    {
+        $email = Common::MAIL_ADDRESSES[Common::NOTIFICATIONS];
+
+        $this->cc($email);
+
+        return $this;
+    }
+
+    protected function addSubject()
+    {
+        $subject = 'Razorpay | Daily Transaction Report for ' . $this->data['date'];
+
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $this->merchant->getPublicId());
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::DAILY_REPORT);
+        });
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.merchant.daily_report');
+
+        return $this;
     }
 }

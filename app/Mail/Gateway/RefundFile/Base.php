@@ -3,15 +3,11 @@
 namespace RZP\Mail\Gateway;
 
 use Carbon\Carbon;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
+use RZP\Mail\base \Mailable;
+use RZP\Mail\base \Common;
 
-class Base extends Mailable implements ShouldQueue
+class Base extends Mailable
 {
-    use Queueable, SerializesModels;
-
     protected $type;
 
     protected $data;
@@ -23,36 +19,62 @@ class Base extends Mailable implements ShouldQueue
         $this->type = $type;
     }
 
-    public function build()
+    protected function addSender()
     {
-        $to = Metadata::RECIPIENT_EMAILS_MAP[$this->type];
+        $fromEmail = Common::MAIL_ADDRESSES[Common::REFUNDS];
 
-        $subject = $this->getSubject();
+        $fromHeader = Metadata::FROM_HEADER_MAP[$this->type];
 
-        $fromHeader = Metadata::FROM_HEADER_MAP;
+        $this->from($fromEmail, $fromHeader);
 
-        $mailTagHeader = Metadata::MAILTAG_MAP[$this->type];
-
-        return $this->view('emails.message')
-                    ->from('refunds@razorpay.com', $fromHeader)
-                    ->to($to)
-                    ->subject($subject)
-                    ->with($this->data)
-                    ->attach($this->data['file_path'])
-                    ->withSwiftMessage(function ($message) use ($mailTagHeader)
-                    {
-                        $headers = $message->getHeaders();
-
-                        $headers->addTextHeader(MailTags::HEADER, $mailTagHeader);
-                    });
+        return $this;
     }
 
-    protected function getSubject()
+    protected function addRecipients()
+    {
+        $emails = Metadata::RECIPIENT_EMAILS_MAP[$this->type];
+
+        $this->to($emails);
+
+        return $this;
+    }
+
+    protected function addSubject()
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
         $subject = Metadata::SUBJECT_MAP[$this->type] . $today;
 
-        return $subject;
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.message');
+
+        return $this;
+    }
+
+    protected function addAttachments()
+    {
+        $this->attach($this->data['file_path']);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $header = Metadata::MAILTAG_MAP[$this->type];
+
+        $this->withSwiftMessage(function ($message) use ($header)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $header);
+        });
+
+        return $this;
     }
 }

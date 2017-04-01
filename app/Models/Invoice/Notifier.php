@@ -52,8 +52,6 @@ class Notifier extends Base\Core
         $this->slack = $this->app['slack'];
 
         $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
-
-        $this->dashboardUrl = Config::get('applications.dashboard.url');
     }
 
     public function setInvoice($invoice)

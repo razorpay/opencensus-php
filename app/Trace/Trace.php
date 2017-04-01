@@ -5,7 +5,7 @@ namespace RZP\Trace;
 use Mail;
 
 use RZP\Exception\CardNumberTraceException;
-use RZP\Mail\Trace as TraceMail;
+use RZP\Mail\System\Trace as TraceMail;
 use Monolog\Logger;
 use Monolog\Processor;
 use Monolog\Handler;

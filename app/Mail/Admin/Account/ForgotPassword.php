@@ -6,31 +6,39 @@ use RZP\Constants\MailTags;
 
 class ForgotPassword extends Base
 {
-    public function __construct($event, array $input)
+    public function __construct($admin, array $input)
     {
-        parent::__construct($event);
+        parent::__construct($admin, $input);
 
         $this->header = MailTags::FORGOT_PASSWORD;
     }
 
-    protected function getSubject()
+    protected function addSubject()
     {
         $subject = 'Reset your password for' . $this->org->getDisplayName() . ' dashboard';
 
-        return $subject;
+        $this->subject($subject);
+
+        return $this;
     }
 
-    protected function getView()
+    protected function addHtmlView()
     {
-        return 'emails.auth.admin_password_reset';
+        $this->html('emails.auth.admin_password_reset');
+
+        return $this;
     }
 
-    protected function getData()
+    protected function addMailData()
     {
-        return [
+        $data = [
             'firstName' => $this->admin->getFirstName(),
             'resetUrl'  => $this->input['reset_password_url'] . '/' . $this->input[self::TOKEN],
             'orgName'   => $this->org->getDisplayName(),
         ];
+
+        $this->with($data);
+
+        return $this;
     }
 }

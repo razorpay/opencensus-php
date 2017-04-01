@@ -13,8 +13,10 @@ class Expiring extends Base
         $this->event = Event::INVOICE_EXPIRING;
     }
 
-    protected function getView()
+    protected function addHtmlView()
     {
-        return 'emails.invoice.customer.expiring';
+        $this->view('emails.invoice.customer.expiring');
+
+        return $this;
     }
 }

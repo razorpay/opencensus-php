@@ -23,8 +23,6 @@ class RefundFile extends Base\RefundFile
         'Merchant Code',
     ];
 
-    const EMAIL_BODY = 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com';
-
     public function generate($input)
     {
         $data = $this->getRefundData($input);
@@ -41,7 +39,6 @@ class RefundFile extends Base\RefundFile
 
         $fileData = [
             'file_path' => $file['local_file_path'],
-            'body' => self::EMAIL_BODY,
         ];
 
         $this->sendRefundEmail($fileData);

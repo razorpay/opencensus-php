@@ -2,19 +2,14 @@
 
 namespace RZP\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
-
+use RZP\Constants\MailTags;
+use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Common;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
-use RZP\Constants\MailTags;
 
-class AccountChange extends Mailable implements ShouldQueue
+class AccountChange extends Mailable
 {
-    use Queueable, SerializesModels;
-
     protected $bankAccount;
 
     protected $merchant;
@@ -26,40 +21,54 @@ class AccountChange extends Mailable implements ShouldQueue
      */
     public function __construct(BankAccount\Entity $bankAccount, Merchant\Entity $merchant)
     {
+        parent::__construct();
+
         $this->bankAccount = $bankAccount;
 
         $this->merchant = $merchant;
     }
 
-    /**
-     * Build the message.
-     *
-     * @return $this
-     */
-    public function build()
+    protected function addRecipients()
     {
-        $subject = $this->getSubject();
-
-        $data = array_merge($this->merchant->toArray(), $this->newBankAccount->toArray());
-
-        return $this->to($this->merchant->getEmail(), $this->merchant->getName())
-                    ->subject($subject)
-                    ->view('emails.merchant.bankaccount_change')
-                    ->with($data)
-                    ->withSwiftMessage(function ($message)
-                    {
-                        $headers = $message->getHeaders();
-
-                        $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_CHANGED);
-                    });
+        $this->to($this->merchant->getEmail(), $this->merchant->getName());
     }
 
-    protected function getSubject()
+    protected function addSubject()
     {
         $label = $this->merchant->getBillingLabelElseName();
 
         $subject = 'Razorpay | Bank account change successful for ' . $label;
 
-        return $subject;
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $data = array_merge($this->merchant->toArray(), $this->newBankAccount->toArray());
+
+        $this->with($data);
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.merchant.bankaccount_change');
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_CHANGED);
+        });
+
+        return $this;
     }
 }

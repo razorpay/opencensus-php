@@ -11,13 +11,15 @@ class IciciSettlement extends Base
         return 'ICICI Transfer File';
     }
 
-    protected function getSubject()
+    protected function addSubject()
     {
         $today = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
         $subject = "Icici Transfer files for $today";
 
-        return $subject;
+        $this->subject($subject);
+
+        return $this;
     }
 
     protected function getMailTag()

@@ -6,14 +6,18 @@ use RZP\Constants\MailTags;
 
 class FailedToAuthorized extends Base
 {
-    protected function getFrom()
+    protected function addSender()
     {
         if ($this->isMerchantEmail === false)
         {
-            return $this->getCompleteEmail('care');
+            $email = Common::MAIL_ADDRESSES[Common::CARE];
+
+            $this->from($email);
+
+            return $this;
         }
 
-        return parent::getFrom();
+        return parent::addSender();
     }
 
     protected function addHtmlView()

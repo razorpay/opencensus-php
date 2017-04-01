@@ -3,16 +3,12 @@
 namespace RZP\Mail\Merchant;
 
 use Carbon\Carbon;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Mailable;
+use RZP\Mail\Base\Common;
 
 class AuthorizedPaymentsReminder extends Mailable
 {
-    use Queueable, SerializesModels;
-
     protected $data;
 
     public function __construct(array $data)
@@ -20,10 +16,8 @@ class AuthorizedPaymentsReminder extends Mailable
         $this->data = $data;
     }
 
-    public function build()
+    protected function addRecipients()
     {
-        $subject = $this->getSubject();
-
         $emails = $this->data['merchant'][Merchant\Entity::TRANSACTION_REPORT_EMAIL];
 
         $name = $this->data['merchant'][Merchant\Entity::NAME];
@@ -34,37 +28,78 @@ class AuthorizedPaymentsReminder extends Mailable
             $to[] = [$email. $name];
         }
 
-        return $this->view('emails.merchant.authorized_reminder')
-                    ->with($this->data)
-                    ->to($to)
-                    ->from('reports@razorpay.com')
-                    ->cc('notifications@razorpay.com')
-                    ->replyTo('support@razorpay.com', 'Razorpay Support')
-                    ->subject($subject)
-                    ->withSwiftMessage(function ($message)
-                    {
-                        $headers = $message->getHeaders();
+        $this->to($to);
 
-                        $headers->addTextHeader(MailTags::HEADER, MailTags::AUTH_REMINDER);
-
-                        foreach ($this->data['payments'] as $payment) {
-                            $headers->addTextHeader(MailTags::HEADER, $payment->getPublicId());
-                        }
-                    });
+        return $this;
     }
 
-    protected function getSubject()
+    protected function addSender()
+    {
+        $email = Common::MAIL_ADDRESSES[Common::REPORTS];
+
+        $this->from($email);
+
+        return $this;
+    }
+
+    protected function addCc()
+    {
+        $email = Common::MAIL_ADDRESSES[Common::NOTIFICATIONS];
+
+        $this->cc($email);
+
+        return $this;
+    }
+
+    protected function addReplyTo()
+    {
+        $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
+        $header = Common::FROM_HEADER[Common::SUPPORT];
+
+        $this->replyTo($email, $header);
+
+        return $this;
+    }
+
+    protected function addSubject()
     {
         // date format = 6th July 2015
         $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
 
         $final = $this->data['final'];
 
+        $subject = "Razorpay | Authorized Payments Reminder for $date";
+
         if ($final === true)
         {
-            return "Razorpay | Final Authorized Payments Reminder for $date";
+            $subject = "Razorpay | Final Authorized Payments Reminder for $date";
         }
 
-        return "Razorpay | Authorized Payments Reminder for $date";
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $this->with($this->data);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::AUTH_REMINDER);
+
+            foreach ($this->data['payments'] as $payment) {
+                $headers->addTextHeader(MailTags::HEADER, $payment->getPublicId());
+            }
+        });
+
+        return $this;
     }
 }

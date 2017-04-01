@@ -43,4 +43,8 @@ class Metadata
         self::WALLET_AIRTELMONEY => MailTags::AIRTEL_MONEY_REFUNDS_MAIL,
         self::WALLET_PAYUMONEY   => MailTags::PAYU_MONEY_REFUNDS_MAIL,
     ];
+
+    const BODY_MAP = [
+        self::NETBANKING_HDFC => 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',
+    ];
 }

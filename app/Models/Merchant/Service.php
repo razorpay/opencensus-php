@@ -168,17 +168,7 @@ class Service extends Base\Service
      */
     protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
     {
-        $data = [
-            'name'  => $subMerchant->name,
-            'email' => $subMerchant->email
-        ];
-
-        if ($subMerchant->email !== $aggregator->email)
-        {
-            $data['cc_email'] = $aggregator->email;
-        }
-
-        $createSubMerchantMail = new CreateSubMerchantMail($data);
+        $createSubMerchantMail = new CreateSubMerchantMail($subMerchant, $aggregator);
 
         Mail::send($createSubMerchantMail);
     }
