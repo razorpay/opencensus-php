@@ -20,6 +20,7 @@ class MiscMailer extends Mailer
 
         $this->email = $invitation->email;
         $this->subject = 'Invitation to join a team | Razorpay';
+        $this->mailTag = MailTags::MEMBER_INVITATION_MAIL;
 
         return $this;
     }
@@ -34,6 +35,7 @@ class MiscMailer extends Mailer
 
         $this->email = $invitation_array['email'];
         $this->subject = 'Invitation to signup - HDFC Merchant Services'; //TODO add org name and better the subject line
+        $this->mailTag = MailTags::MERCHANT_INVITATION_MAIL;
 
         return $this;
     }
