@@ -170,7 +170,7 @@ class Service extends Base\Service
     {
         $createSubMerchantMail = new CreateSubMerchantMail($subMerchant, $aggregator);
 
-        Mail::send($createSubMerchantMail);
+        Mail::queue($createSubMerchantMail);
     }
 
     public function editEmail($id, array $input)

@@ -117,13 +117,13 @@ class EmiFile extends Base\Core
 
         $emiFileMail = new EmiMail\File($this->bankName, $zipFile);
 
-        Mail::send($emiFileMail);
+        Mail::queue($emiFileMail);
     }
 
     protected function sendEmiPassword()
     {
         $emiPasswordMail = new EmiMail\Password($this->bankName, $this->emiFilePassword);
 
-        Mail::send($emiPasswordMail);
+        Mail::queue($emiPasswordMail);
     }
 }

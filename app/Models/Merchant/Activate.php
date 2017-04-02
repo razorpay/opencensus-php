@@ -82,6 +82,6 @@ class Activate extends Base\Core
     {
         $activationMail = new ActivationMail($merchant, $plan);
 
-        Mail::send($activationMail);
+        Mail::queue($activationMail);
     }
 }

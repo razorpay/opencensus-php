@@ -53,7 +53,7 @@ class RefundFile extends Base\RefundFile
     {
         $refundFileMail = new RefundFileMail($fileData, Metadata::WALLET_PAYUMONEY);
 
-        $this->mail->send($refundFileMail);
+        Mail::queue($refundFileMail);
     }
 
     protected function getRefundData($input)

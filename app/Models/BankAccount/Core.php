@@ -171,6 +171,6 @@ class Core extends Base\Core
 
         $bankAccountChangeMail = new BankAccountChangeMail($newBankAccount, $merchant);
 
-        Mail::send($bankAccountChangeMail);
+        Mail::queue($bankAccountChangeMail);
     }
 }

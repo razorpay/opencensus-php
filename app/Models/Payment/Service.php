@@ -1065,7 +1065,7 @@ class Service extends Base\Service
 
         $authorizedPaymentsReminderMail = new AuthorizedPaymentsReminderMail($data);
 
-        Mail::send($authorizedPaymentsReminderMail);
+        Mail::queue($authorizedPaymentsReminderMail);
     }
 
     protected function getNewProcessor(Merchant\Entity $merchant = null)

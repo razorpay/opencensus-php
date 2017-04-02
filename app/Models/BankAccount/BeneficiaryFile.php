@@ -104,6 +104,6 @@ class BeneficiaryFile
     {
         $beneficiaryFileMail = new BeneficiaryFileMail($fullpath, $merchantsCount);
 
-        Mail::send($beneficiaryFileMail);
+        Mail::queue($beneficiaryFileMail);
     }
 }

@@ -137,7 +137,7 @@ class Notify
         {
             if ($this->isMailEnabled($mailable) === true)
             {
-                Mail::send($mailable);
+                Mail::queue($mailable);
             }
         });
     }

@@ -3,6 +3,7 @@
 namespace RZP\Mail\Gateway;
 
 use Carbon\Carbon;
+use RZP\Constants\MailTags;
 use RZP\Maiil\Base\Common;
 use RZP\Mail\Base\Mailable;
 
@@ -72,6 +73,21 @@ class DailyFile extends Mailable
         if (empty($this->data['refundFile']) === false)
         {
             $this->attach($this->data['refundsFile']);
+        }
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        if ($this->data['bankName'] === 'Axis')
+        {
+            $this->withSwiftMessage(function ($message)
+            {
+                $headers = $message->getHeaders();
+
+                $headers->addTextHeader(MailTags::HEADER, MailTags::AXIS_NETBANKING_REFUNDS_MAIL);
+            });
         }
 
         return $this;

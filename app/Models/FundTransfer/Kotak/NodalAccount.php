@@ -295,7 +295,7 @@ class NodalAccount
 
         $kotakSettlementMail = new SettlementMail\KotakSettlement($data);
 
-        Mail::send($kotakSettlementMail);
+        Mail::queue($kotakSettlementMail);
     }
 
     protected function sendKotakPayoutsMail($fileName, $count, $amounts)
@@ -308,7 +308,7 @@ class NodalAccount
 
         $kotakPayoutMail = new SettlementMail\KotakPayout($data);
 
-        Mail::send($kotakPayoutMail);
+        Mail::queue($kotakPayoutMail);
     }
 
     // @codingStandardsIgnoreStart

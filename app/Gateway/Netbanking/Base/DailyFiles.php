@@ -139,7 +139,7 @@ class DailyFiles
 
         $dailyFileMail = new DailyFileMail($data);
 
-        Mail::send($dailyFileMail);
+        Mail::queue($dailyFileMail);
     }
 
     protected function getBankName()
