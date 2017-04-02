@@ -657,7 +657,6 @@ app.controller('EntitiesCtrl', [
     };
     $scope.search = function () {
       if (!$scope.entity.id) {
-        console.log('Error: No Entity Id Specified');
         return;
       }
       clear('skip');
