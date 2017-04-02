@@ -282,11 +282,12 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/admin/users', 'AdminController@postAddAdmin');
             Route::post('/admin/users/{id}/superadmin', 'AdminController@postPromoteAdmin');
             Route::delete('/admin/users/{id}', 'AdminController@getDeleteAdmin');
-            Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-            Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
 
             Route::get('/admin/users', 'AdminController@getAdmins');
         });
+
+        Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
+        Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
 
         Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities')
                 ->name('admin_fetch_entity')

@@ -18,6 +18,7 @@ export default (props) => {
   let isDraft = status === 'draft'
   let isIssued = status === 'issued'
   let isPaid = status === 'paid'
+  let isCancelled = status === 'cancelled'
   let isExpired = status === 'expired'
 
   return (
@@ -43,13 +44,18 @@ export default (props) => {
               }
 
               {
+                /*
+                  TODO: Uncomment this post the API release.
+
                 isIssued &&
                   <button
                     class='btn btn-default btn-sm'
-                    onClick={props.onExpire}
+                    onClick={props.onCancel}
                   >
-                    Expire Link
+                    Cancel Link
                   </button>
+
+                */
               }
             </div>
 

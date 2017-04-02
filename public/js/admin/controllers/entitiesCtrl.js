@@ -336,6 +336,7 @@ app.controller('EntitiesCtrl', [
           'draft',
           'issued',
           'paid',
+          'cancelled',
           'expired'
         ],
         type: [

@@ -8,6 +8,7 @@ export const invoiceStatusMap = {
   draft: 'label-muted',
   issued: 'label-info',
   paid: 'label-success',
+  cancelled: 'label-danger',
   expired: 'label-danger',
 }
 
