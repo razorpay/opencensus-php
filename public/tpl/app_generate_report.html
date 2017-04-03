@@ -17,6 +17,8 @@
             <option value="refund">Refund</option>
             <option value="order">Order</option>
             <option value="settlement">Settlement</option>
+            <option value="transfer" ng-show="user.tags.indexOf('Marketplace') != -1">Transfer</option>
+            <option value="reversal" ng-show="user.tags.indexOf('Marketplace') != -1">Reversal</option>
             <option value="transaction">Combined</option>
             <option value="broking" ng-show="user.tags.indexOf('Broking_Report') != -1">Broking Report</option>
             <option value="invoice">
