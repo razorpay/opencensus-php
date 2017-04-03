@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
+use RZP\Constants\MailTags;
 
 class DailyFiles
 {
@@ -161,6 +162,12 @@ class DailyFiles
             {
                 $message->attach($data['refundsFile']);
             }
+
+            $headers = $message->getHeaders();
+
+            $tag = strtolower($bankName) . '_' . MailTags::DAILY_FILE;
+
+            $headers->addTextHeader(MailTags::HEADER, $tag);
         });
     }
 

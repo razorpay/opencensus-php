@@ -80,7 +80,7 @@ class RefundFile extends Base\RefundFile
     {
         $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['icici.netbanking.refunds@razorpay.com'];
 
             $message->from('refunds@razorpay.com', 'Icici Netbanking refunds');
 

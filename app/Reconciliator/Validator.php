@@ -21,6 +21,7 @@ class Validator
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
+        'rpt'   => ['text/plain'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
@@ -32,7 +33,7 @@ class Validator
         Orchestrator::NETBANKING_AXIS  =>
             "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
             . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/",
-        Orchestrator::NETBANKING_ICICI => "",
+        Orchestrator::NETBANKING_ICICI => "/^Payment Through Internet Banking Center Razorpay/",
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -40,13 +41,12 @@ class Validator
         Orchestrator::FREECHARGE       => "/Please view your (transaction|settlement) report/",
         Orchestrator::NETBANKING_AXIS  =>
         "/Kindly find attached below the MIS for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
-        Orchestrator::NETBANKING_ICICI => "",
+        Orchestrator::NETBANKING_ICICI => "/Please find below the payment report for the day./",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
         Orchestrator::OLAMONEY         => 1,
         Orchestrator::NETBANKING_AXIS  => 1,
-        Orchestrator::NETBANKING_ICICI => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -129,11 +129,12 @@ class Validator
 
         $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::NETBANKING_ICICI);
 
-        $validAttachmentCount = $this->validateAttachmentCount(
-            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-            Orchestrator::NETBANKING_ICICI);
-
-        return ($validSubject and $validAttachmentCount and $validBody);
+        //
+        // There isn't a need to validate the attachment count because
+        // validateAttachments already validates a non zero value.
+        // In this case, the number is attachments is variable.
+        //
+        return ($validSubject and $validBody);
     }
 
     /**

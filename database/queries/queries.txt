@@ -1837,6 +1837,26 @@ ALTER TABLE reversals
 DELETE FROM migrations WHERE migration = '2016_08_05_131651_create_gateway_absence';
 DROP TABLE `gateway_status_absence`;
 
+# Migration to new terminal recurring notation
+UPDATE terminals
+    SET recurring = 1 WHERE recurring = 0 AND gateway != 'cybersource';
+UPDATE terminals
+    SET recurring = 3 WHERE recurring = 0 AND gateway = 'cybersource';
+UPDATE terminals
+    SET recurring = 4 WHERE recurring = 2 AND gateway = 'cybersource';
+ALTER TABLE terminals
+    MODIFY COLUMN recurring TINYINT(1) UNSIGNED DEFAULT 1;
+
+# Prod live
+UPDATE tokens
+    SET terminal_id = '5yKTyCuDne8eiz' WHERE recurring = 1;
+# Prod test
+UPDATE tokens
+    SET terminal_id = '1000SharpTrmnl' WHERE recurring = 1;
+
+# Adds cancelled_at column to invoices table
+ALTER TABLE invoices ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER paid_at;
+
 ALTER TABLE upi
-    ADD COLUMN refund_id CHAR(14) AFTER payment_id,
+    ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,
     ADD INDEX upi_refund_id_index (refund_id);
