@@ -29,7 +29,7 @@
 
 ## Refund
 
-- Make sure you are on atleast v2.3 of the doc (which has a refunds API)
+- Make sure you are on atleast v2.3 of the doc (which has the refunds API)
 
 ## Weirdness
 
@@ -38,7 +38,7 @@
   is very often "strings", instead of arrays.
 - the authorize method returns true, because we do not have a request to redirect to
 - the icici server only encrypts responses sometimes. (Take a look at mock server)
-- submerchantID is expected to be numeric 10 characters, so we always send 1234
+- submerchantID is expected to be maxinmum numeric 10 characters, so we always send 1234
 
 
 ## Testing

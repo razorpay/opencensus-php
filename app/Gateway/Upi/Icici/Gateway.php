@@ -321,17 +321,17 @@ class Gateway extends Base\Gateway
         $data = [
             // Amount and note are lowercase
             // despite being uppercase in docs
-            'amount'            => $this->formatAmount($payment['amount']),
-            'collectByDate'     => $collectByTimestamp,
-            'billNumber'        => '1234',
-            'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $payment['id'],
-            'merchantName'      => 'Razorpay',
-            'note'              => $this->getPaymentRemark($input),
-            'payerVa'           => $input['payment']['vpa'],
-            'subMerchantId'     => $this->getSubMerchantId($input),
-            'subMerchantName'   => $input['merchant']->getFilteredDba(),
-            'terminalId'        => $this->getTerminalId($input),
+            Fields::AMOUNT           => $this->formatAmount($payment['amount']),
+            Fields::COLLECT_BY_DATE  => $collectByTimestamp,
+            Fields::BILL_NUMBER      => '1234',
+            Fields::MERCHANT_ID      => $this->getMerchantId(),
+            Fields::MERCHANT_TRAN_ID => $payment['id'],
+            Fields::MERCHANT_NAME    => 'Razorpay',
+            Fields::NOTE             => $this->getPaymentRemark($input),
+            Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
+            Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
+            Fields::SUBMERCHANT_NAME => $input['merchant']->getFilteredDba(),
+            Fields::TERMINAL_ID      => $this->getTerminalId($input),
         ];
 
         $content = $this->transformRequestArrayToContent($data);
@@ -586,9 +586,9 @@ class Gateway extends Base\Gateway
         // and we are not revealing Bank RRN, this gives us a bit of
         // extra security for fake callbacks
 
-        assertEquals($content[Fields::MERCHANT_ID], $gatewayPayment->getMerchantId());
-        assertEquals($content[Fields::MERCHANT_TRAN_ID], $gatewayPayment->getPaymentId());
-        assertEquals($content[Fields::BANK_RRN], $gatewayPayment->getGatewayPaymentId());
+        assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
+        assertTrue($content[Fields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
+        assertTrue($content[Fields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
 
         if ($status !== Status::SUCCESS)
         {
