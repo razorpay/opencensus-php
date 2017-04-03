@@ -51,8 +51,6 @@ class Core extends Base\Core
 
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
 
-        $this->repo->balance->updateBalance($this->merchantBalance);
-
         return [$txn, $feesSplit];
     }
 
