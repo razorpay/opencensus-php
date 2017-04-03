@@ -429,13 +429,15 @@ trait Capture
 
         $this->repo->transaction(function() use ($payment)
         {
+            $this->updatePaymentCaptured($payment, false);
+
             $txnCore = new Transaction\Core;
 
             // This could be actually misleading.
             // We are creating a transaction even if the payment
             // is in refunded state.
 
-            list($txn, $feesSplit) = $txnCore->createFromPaymentAuthorized($payment);
+            list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
 
             $this->repo->saveOrFail($txn);
             $this->repo->saveOrFail($payment);

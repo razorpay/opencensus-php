@@ -41,7 +41,7 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
-    public function createFromPaymentAuthorized(Payment\Entity $payment, $updateFees = true)
+    public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
         $this->trace->info(
             TraceCode::PAYMENT_AUTHORIZE_CREATE_TRANSACTION,
@@ -49,36 +49,11 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, $updateFees);
-
-        // $this->updateNodalBalance($txn);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
         return [$txn, $feesSplit];
-    }
-
-    public function updateOnCapture(Payment\Entity $payment)
-    {
-        $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
-
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
-        $txn->setSettledAt($settledAt);
-
-        $this->updateCredits($txn, $payment);
-
-        $this->updateMerchantBalance($txn);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_UPDATE_TRANSACTION,
-            [
-                'payment_id'     => $payment->getId(),
-                'transaction_id' => $txn->getId(),
-            ]
-        );
-
-        return $txn;
     }
 
     /**
@@ -213,11 +188,11 @@ class Core extends Base\Core
         if ($updateFees === false)
         {
             list($txn, $feesSplit) = $this->fillEmptyTxnFeesAndAmount($txn, $payment);
-
-            return [$txn, null];
         }
-
-        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
+        else
+        {
+            list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
+        }
 
         $txnData = [
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
