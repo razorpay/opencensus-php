@@ -142,9 +142,6 @@ var app = angular.module('app', [
     }).state('app.teammanagement', {
       url: '/team',
       templateUrl: 'tpl/app_team_management.html'
-    }).state('app.credits', {
-      url: '/credits',
-      templateUrl: 'tpl/app_credits.html'
     }).state('app.keys', {
       url: '/keys',
       templateUrl: 'tpl/app_keys.html'
@@ -227,10 +224,9 @@ var app = angular.module('app', [
     }).state('app.webhooks', {
       url: '/webhooks',
       templateProvider: reactTemplateProvider('<webhooks-list />')
-    }).state('app.credit', {
-      url: '/credit',
+    }).state('app.credits', {
+      url: '/credits',
       templateProvider: reactTemplateProvider('<credits-new/>'),
-      // templateUrl: 'tpl/app_credits.html'
     })
 
       //Guest Routes
