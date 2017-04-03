@@ -19,6 +19,7 @@ class Fields
     const PAYER_MOBILE              = "PayerMobile";
     const PAYER_NAME                = "PayerName";
     const PAYER_VA                  = "PayerVA";
+    const REFUND_ID                 = "refund_id";
     const REFUND_AMOUNT             = "refundAmount";
     const RESPONSE                  = "response";
     const SUBMERCHANT_ID            = "subMerchantId";

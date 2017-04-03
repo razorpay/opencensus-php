@@ -45,6 +45,8 @@ class Gateway extends Base\Gateway
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
+        Fields::REFUND_ID                 => Entity::REFUND_ID,
+        Fields::REFUND_AMOUNT             => Entity::REFUND_AMOUNT
     ];
 
     /**
@@ -606,6 +608,10 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        $attributes = $this->getGatewayEntityAttributes($input);
+
+        $refund = $this->createGatewayPaymentEntity($attributes);
+
         $request = $this->getRefundRequest($input);
 
         $response = $this->sendGatewayRequest($request);
@@ -625,11 +631,7 @@ class Gateway extends Base\Gateway
                 $content);
         }
 
-        $response[Entity::PAYMENT_ID] = $input['payment']['id'];
-        $response[Entity::REFUND_ID] = $content['merchantTranId'];
-        $response[Entity::RECEIVED] = 1;
-
-        $this->createGatewayPaymentEntity($response);
+        $this->updateGatewayPaymentResponse($refund, $content);
     }
 
     protected function getRefundRequest(array $input)

@@ -25,6 +25,10 @@ class CreateUpi extends Migration
 
             $table->char(Upi::PAYMENT_ID, Payment::ID_LENGTH);
 
+            $table->char(Upi::REFUND_ID, Payment::ID_LENGTH);
+
+            $table->string(Upi::REFUND_AMOUNT);
+
             $table->string(Upi::ACTION);
 
             $table->string(Upi::AMOUNT);
@@ -59,6 +63,7 @@ class CreateUpi extends Migration
                   ->on(Table::PAYMENT)
                   ->on_delete('restrict');
 
+            $table->index(Upi::REFUND_ID);
             $table->index(Upi::RECEIVED);
             $table->index(Upi::GATEWAY_PAYMENT_ID);
             $table->index(Upi::BANK);

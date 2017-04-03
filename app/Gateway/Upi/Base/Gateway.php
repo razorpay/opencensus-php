@@ -20,6 +20,14 @@ class Gateway extends Base\Gateway
 
         $payment->setAmount($this->input['payment']['amount']);
 
+        if (isset($this->input['refund']['id']) === true) {
+            $payment->setRefundId($this->input['refund']['id']);
+        }
+
+        if (isset($this->input['refund']['amount']) === true) {
+            $payment->setRefundAmount($this->input['refund']['amount']);
+        }
+
         $payment->setAction($action);
 
         $payment->setAcquirer(static::ACQUIRER);
