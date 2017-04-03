@@ -1856,3 +1856,7 @@ UPDATE tokens
 
 # Adds cancelled_at column to invoices table
 ALTER TABLE invoices ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER paid_at;
+
+# Query to add international flag to terminal entity
+ALTER TABLE terminals
+    ADD COLUMN international TINYINT(1) DEFAULT 0 NOT NULL AFTER recurring;
