@@ -54,18 +54,7 @@ class Webhook extends Mailable
 
     protected function addSubject()
     {
-        $subjectName = $this->webhook->merchant->getBillingLabelElseName();
-
-        $subject = 'Razorpay | ';
-
-        if ($this->options['type'] === 'failure')
-        {
-            $subject .= 'Webhook failed for ' . $subjectName;
-        }
-        else if ($this->options['type'] === 'deactivate')
-        {
-            $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
-        }
+        $subject = $this->getSubject();
 
         $this->subject($subject);
 
@@ -95,7 +84,8 @@ class Webhook extends Mailable
 
         $data['mode'] = $this->options['mode'];
 
-        $this->with($data);
+        $data['subject'] = $this->getSubject();
+ $this->with($data);
 
         return $this;
     }
@@ -118,9 +108,29 @@ class Webhook extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.webhook');
+        $view = 'emails.webhook.' . $this->options['type'];
+
+        $this->view($view);
 
         return $this;
+    }
+
+    protected function getSubject()
+    {
+        $subjectName = $this->webhook->merchant->getBillingLabelElseName();
+
+        $subject = 'Razorpay | ';
+
+        if ($this->options['type'] === 'failure')
+        {
+            $subject .= 'Webhook failed for ' . $subjectName;
+        }
+        else if ($this->options['type'] === 'deactivate')
+        {
+            $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
+        }
+
+        return $subject;
     }
 
     protected function setEntityData(array & $mailData, array $eventData)

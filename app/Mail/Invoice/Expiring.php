@@ -3,10 +3,11 @@
 namespace RZP\Mail\Invoice;
 
 use RZP\Models\Invoice;
+use RZP\Models\Invoice\Entity as InvoiceEntity;
 
 class Expiring extends Base
 {
-    public function __construct(Invoice\Entity $invoice)
+    public function __construct(InvoiceEntity $invoice)
     {
         $this->invoice = $invoice;
 

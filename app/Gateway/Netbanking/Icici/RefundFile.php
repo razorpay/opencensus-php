@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
+use Mail;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Metadata;
 use RZP\Gateway\Base;
@@ -12,8 +13,6 @@ use RZP\Constants\MailTags;
 class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Icici_Netbanking_Refunds';
-
-    const EMAIL_BODY = 'Please forward the ICICI Netbanking refunds file to UBPS operations team';
 
     // The columns of the file
     protected static $headers = [
@@ -46,7 +45,6 @@ class RefundFile extends Base\RefundFile
 
         $fileData = [
             'file_path' => $file['local_file_path'],
-            'body'      => self::EMAIL_BODY,
         ];
 
         $this->sendRefundEmail($fileData);

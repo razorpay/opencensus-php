@@ -8,8 +8,9 @@ use RZP\Mail\Base\Mailable;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
-use RZP\Models\Methods;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\Pricing;
+use RZP\Models\Payment;
 
 class Activation extends Mailable
 {
@@ -26,12 +27,12 @@ class Activation extends Mailable
 
     protected function addRecipients()
     {
-       $email = $merchant->getEmail();
+       $email = $this->merchant->getEmail();
 
        // For marketplace accounts, send this email to the parent merchant
-       if ($this->merchant->isLinkedAccount)
+       if ($this->merchant->isLinkedAccount() === true)
        {
-            $email = $merchant->parent->getEmail();
+            $email = $this->merchant->parent->getEmail();
        }
 
        $this->to($email);
@@ -80,6 +81,7 @@ class Activation extends Mailable
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $this->merchant);
 
         $data = [
+            'merchant' => $this->merchant->toArray(),
             'plan'     => $plan,
             'name'     => $subjectName,
             'rules'    => $this->formatPricingRules($rules),
@@ -259,14 +261,13 @@ class Activation extends Mailable
      * Current checks for International, Emi and Amex
      *
      * @param array $rules Array of rules
-     * @param entity $merchant Merchant entity
      * @return array Array of rules
      **/
-    protected function filterActiveRulesForMerchant($rules, $merchant)
+    protected function filterActiveRulesForMerchant($rules)
     {
         $returnRules = [];
 
-        $merchantMethods = (new Methods\Core)->getMethods($merchant);
+        $merchantMethods = (new Methods\Core)->getMethods($this->merchant);
 
         foreach ($rules as $rule) {
             // Don't add rules other than payment
@@ -276,7 +277,7 @@ class Activation extends Mailable
             }
 
             // Don't add international rule if merchant international not active
-            if (($merchant->isInternational() === false) and
+            if (($this->merchant->isInternational() === false) and
                  ($rule[Pricing\Entity::INTERNATIONAL] === true))
             {
                 continue;

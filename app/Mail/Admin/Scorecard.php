@@ -114,4 +114,11 @@ class Scorecard extends Mailable
 
         return $this;
     }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.message');
+
+        return $this;
+    }
 }

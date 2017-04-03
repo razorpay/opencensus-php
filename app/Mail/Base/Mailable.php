@@ -13,6 +13,9 @@ class Mailable extends BaseMailable
     {
         return $this->addSender()
                     ->addRecipients()
+                    ->addCc()
+                    ->addBcc()
+                    ->addReplyTo()
                     ->addHtmlView()
                     ->addTextView()
                     ->addSubject()

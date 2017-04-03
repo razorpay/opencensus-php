@@ -12,7 +12,7 @@ class CreateSubMerchant extends Mailable
 
     protected $aggregator;
 
-    public function __construct($subMerchant, $aggregator)
+    public function __construct(array $subMerchant, array $aggregator)
     {
         $this->subMerchant = $subMerchant;
 
@@ -21,8 +21,8 @@ class CreateSubMerchant extends Mailable
 
     protected function addRecipients()
     {
-        $email = $this->subMerchant->email;
-        $name = $this->subMerchant->name;
+        $email = $this->subMerchant['email'];
+        $name = $this->subMerchant['name'];
 
         $this->to($email, $name);
 
@@ -31,9 +31,9 @@ class CreateSubMerchant extends Mailable
 
     protected function addCc()
     {
-        if ($this->subMerchant->email !== $this->aggregator->email)
+        if ($this->subMerchant['email'] !== $this->aggregator['email'])
         {
-            $this->cc($this->aggregator->email);
+            $this->cc($this->aggregator['email']);
         }
 
         return $this;
@@ -49,8 +49,8 @@ class CreateSubMerchant extends Mailable
     protected function addMailData()
     {
         $data = [
-            'name'  => $this->subMerchant->name,
-            'email' => $this->subMerchant->email
+            'name'  => $this->subMerchant['name'],
+            'email' => $this->subMerchant['email'],
         ];
 
         $this->with($data);

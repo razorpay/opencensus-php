@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
-use RZP\Models\Base;
+use RZP\Models\Batch;
 
 class RefundFile extends Mailable
 {

@@ -4,7 +4,7 @@ namespace RZP\Mail\Gateway;
 
 use Carbon\Carbon;
 use RZP\Constants\MailTags;
-use RZP\Maiil\Base\Common;
+use RZP\Mail\Base\Common;
 use RZP\Mail\Base\Mailable;
 
 class DailyFile extends Mailable
@@ -38,9 +38,7 @@ class DailyFile extends Mailable
 
     protected function addSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $subject = $this->data['bankName'] . ' Netbanking claims and refund files for ' . $today;
+        $subject = $this->subject;
 
         $this->subject($subject);
 
@@ -49,6 +47,8 @@ class DailyFile extends Mailable
 
     protected function addMailData()
     {
+        $this->data['subject'] = $this->getSubject();
+
         $this->with($this->data);
 
         return $this;
@@ -60,7 +60,7 @@ class DailyFile extends Mailable
 
         $this->view($view);
 
-        return $view;
+        return $this;
     }
 
     protected function addAttachments()
@@ -91,5 +91,14 @@ class DailyFile extends Mailable
         }
 
         return $this;
+    }
+
+    protected function getSubject()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $subject = $this->data['bankName'] . ' Netbanking claims and refund files for ' . $today;
+
+        return $subject;
     }
 }

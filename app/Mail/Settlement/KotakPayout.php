@@ -3,6 +3,7 @@
 namespace RZP\Mail\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\MailTags;
 
 class KotakPayout extends Base
 {
@@ -13,11 +14,20 @@ class KotakPayout extends Base
 
     protected function addSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $subject = "Kotak IMPS payouts files for $today";
+        $subject = $this->getSubject();
 
         $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $subject =  $this->getSubject();
+
+        $this->data['subject'] = $subject;
+
+        $this->with($this->data);
 
         return $this;
     }
@@ -32,5 +42,14 @@ class KotakPayout extends Base
         $this->view('emails.admin.payout');
 
         return $this;
+    }
+
+    protected function getSubject()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $subject = "Kotak IMPS payouts files for $today";
+
+        return $subject;
     }
 }

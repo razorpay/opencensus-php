@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Axis;
 
 use Carbon\Carbon;
+use Mail;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;

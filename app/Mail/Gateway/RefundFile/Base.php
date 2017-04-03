@@ -1,10 +1,11 @@
 <?php
 
-namespace RZP\Mail\Gateway;
+namespace RZP\Mail\Gateway\RefundFile;
 
 use Carbon\Carbon;
-use RZP\Mail\base \Mailable;
+use RZP\Constants\MailTags;
 use RZP\Mail\base \Common;
+use RZP\Mail\base \Mailable;
 
 class Base extends Mailable
 {
@@ -46,6 +47,17 @@ class Base extends Mailable
         $subject = Metadata::SUBJECT_MAP[$this->type] . $today;
 
         $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $data = [
+            'body' => Metadata::BODY_MAP[$this->type]
+        ];
+
+        $this->with($data);
 
         return $this;
     }

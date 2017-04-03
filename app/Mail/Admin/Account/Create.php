@@ -47,13 +47,15 @@ class Create extends Base
 
     protected function addMailData()
     {
-            $data = [
-            'user' => $this->admin->getEmail(),
-            // todo: Hack for now. Remove it
-            'password' => $this->input['password'],
-            'org' => $this->org->getDisplayName(),
-            'url' => $this->url,
-            ];
+        $data = [
+            'user' => [
+                'email' => $this->admin->getEmail(),
+                // todo: Hack for now. Remove it
+                'password' => $this->input['password'],
+                'org' => $this->org->getDisplayName(),
+                'url' => $this->url,
+            ]
+        ];
 
         $this->with($data);
 

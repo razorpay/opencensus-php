@@ -4,6 +4,8 @@ namespace RZP\Mail\Emi;
 
 use Carbon\Carbon;
 
+use RZP\Mail\Base\Common;
+
 class File extends Base
 {
     protected $filePath;
@@ -17,11 +19,11 @@ class File extends Base
 
     protected function addSender()
     {
-        $fromEmail = Common::MAIL_ADDRESSES[Common::EMI_FILE];
+        $fromEmail = Common::MAIL_ADDRESSES[Common::EMI];
 
         $fromHeader = $this->bankName . ' Emi File';
 
-        $this->send($fromEmail, $fromHeader);
+        $this->from($fromEmail, $fromHeader);
 
         return $this;
     }

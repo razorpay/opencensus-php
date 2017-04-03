@@ -14,9 +14,7 @@ class KotakSettlement extends Base
 
     protected function addSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $subject = "Kotak Settlement files for $today";
+        $subject = $this->getSubject();
 
         $this->subject($subject);
 
@@ -26,6 +24,17 @@ class KotakSettlement extends Base
     protected function addHtmlView()
     {
         $this->view('emails.admin.settlement');
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $subject = $this->getSubject();
+
+        $this->data['subject'] = $subject;
+
+        $this->with($this->data);
 
         return $this;
     }
@@ -43,5 +52,14 @@ class KotakSettlement extends Base
                 ->attach($file . '.txt');
 
         return $this;
+    }
+
+    protected function getSubject()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $subject = "Kotak Settlement files for $today";
+
+        return $subject;
     }
 }

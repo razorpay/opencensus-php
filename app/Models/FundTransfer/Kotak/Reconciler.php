@@ -431,11 +431,10 @@ class Reconciler
             $msg .= 'Failed settlement ids: ' . $response['failure ids'];
         }
 
-        $data['subject'] = "Re: Kotak Settlement files for $date";
         $data['date'] = $date;
         $data['body'] = $msg;
 
-        $kotakReconciliationMail = new SettlementMail\KotakReconciliationMail($data);
+        $kotakReconciliationMail = new SettlementMail\KotakReconciliation($data);
 
         Mail::queue($kotakReconciliationMail);
     }

@@ -15,6 +15,7 @@ class Common
     const ERRORS        = 'errors';
     const DEVELOPERS    = 'developers';
     const ALERTS        = 'alerts';
+    const EMI           = 'emi';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT       => 'support@razorpay.com',
@@ -27,6 +28,8 @@ class Common
         self::CARE          => 'care@razorpay.com',
         self::ERRORS        => 'errors@razorpay.com',
         self::DEVELOPERS    => 'developers@razorpay.com',
+        self::ALERTS        => 'alerts@razorpay.com',
+        self::EMI           => 'emifiles@razorpay.com'
     ];
 
     const FROM_HEADER = [

@@ -2,13 +2,13 @@
 
 namespace RZP\Mail\Invoice;
 
-use RZP\Models\Invoice;
+use RZP\Models\Invoice\Entity as InvoiceEntity;
 
 class Issued extends Base
 {
     protected $issuedPdfPath;
 
-    public function __construct(Invoice\Entity $invoice, $issuedPdfPath)
+    public function __construct(InvoiceEntity $invoice, $issuedPdfPath)
     {
         parent::__construct($invoice);
 

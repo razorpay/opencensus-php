@@ -388,13 +388,7 @@ class Processor extends Base\Core
             return;
         }
 
-        $data = [
-            'refundFile' => $filePath,
-            'body'       => 'Please find attached processed Refunds File',
-            'emails'     => $batch->merchant->getTransactionReportEmail(),
-        ];
-
-        $batchRefundMail = new BatchRefundFileMail($data);
+        $batchRefundMail = new BatchRefundFileMail($batch, $filePath);
 
         Mail::send($batchRefundMail);
     }

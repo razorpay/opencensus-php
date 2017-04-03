@@ -37,8 +37,6 @@ class NodalAccount extends Base\Core
 
     protected $queue = null;
 
-    protected $mail = null;
-
     protected $id = null;
 
     public function __construct()

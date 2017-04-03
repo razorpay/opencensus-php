@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
+use Mail;
 use RZP\Gateway\Base;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Metadata;
@@ -22,8 +23,6 @@ class RefundFile extends Base\RefundFile
     const SPECIFYOTHER          = 'specifyother';
     const MERCHANTACCOUNT       = 'Merchantaccount';
     const MERCHANT_IFSC_CODE    = 'MerchantIFSCCode';
-
-    const EMAIL_BODY = 'Please find attached refunds information for UPI';
 
     protected static $fileToWriteName = 'Icici_Upi_Refunds';
 
@@ -58,7 +57,6 @@ class RefundFile extends Base\RefundFile
 
         $fileData = [
             'file_path' => $file['local_file_path'],
-            'body' => self::EMAIL_BODY
         ];
 
         $this->sendRefundEmail($fileData);

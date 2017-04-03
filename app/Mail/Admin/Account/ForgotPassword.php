@@ -6,6 +6,8 @@ use RZP\Constants\MailTags;
 
 class ForgotPassword extends Base
 {
+    const TOKEN = 'token';
+
     public function __construct($admin, array $input)
     {
         parent::__construct($admin, $input);
@@ -24,7 +26,7 @@ class ForgotPassword extends Base
 
     protected function addHtmlView()
     {
-        $this->html('emails.auth.admin_password_reset');
+        $this->view('emails.auth.admin_password_reset');
 
         return $this;
     }

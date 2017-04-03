@@ -4,6 +4,8 @@ namespace RZP\Mail\Emi;
 
 use Carbon\Carbon;
 
+use RZP\Mail\Base\Common;
+
 class Password extends Base
 {
     protected $emiFilePassword;
@@ -21,7 +23,9 @@ class Password extends Base
 
         $fromHeader = $this->bankName . ' Emi File Password';
 
-        $this->to($fromEmail, $fromHeader);
+        $this->from($fromEmail, $fromHeader);
+
+        return $this;
     }
 
     protected function addSubject()

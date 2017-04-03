@@ -8,6 +8,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Common;
 use RZP\Exception;
+use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Type;
 use RZP\Models\Invoice\ViewDataSerializer;
 
@@ -26,7 +27,7 @@ class Base extends Mailable
 
     protected $event;
 
-    public function __construct(Invoice\Entity $invoice)
+    public function __construct(InvoiceEntity $invoice)
     {
         $this->invoice = $invoice;
 
@@ -48,7 +49,7 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $customerEmail = $this->data['invoice']['customer']['email'];
+        $customerEmail = $this->invoiceData['invoice']['customer']['email'];
 
         $this->to($customerEmail);
 
@@ -59,14 +60,14 @@ class Base extends Mailable
     {
         $merchantName = $this->invoiceData['merchant']['name'];
 
-        if (in_array($event, array_keys($this->mailSubjectTemplates), true) === false)
+        if (in_array($this->event, array_keys($this->mailSubjectTemplates), true) === false)
         {
-            throw new Exception\LogicException("No templates found for event: $event");
+            throw new Exception\LogicException("No templates found for event: $this->event");
         }
 
         $type = $this->invoice->getType();
 
-        $subject = sprintf($this->mailSubjectTemplates[$event][$type], $merchantName);
+        $subject = sprintf($this->mailSubjectTemplates[$this->event][$type], $merchantName);
 
         $this->subject($subject);
 
@@ -98,9 +99,9 @@ class Base extends Mailable
             'dashboard_url' => $dashboardUrl . $invoiceDashboardPath,
         ];
 
-        $data['invoice'] += $extraInvoicePayload;
+        $this->invoiceData['invoice'] += $extraInvoicePayload;
 
-        $this->with($data);
+        $this->with($this->invoiceData);
 
         return $this;
     }

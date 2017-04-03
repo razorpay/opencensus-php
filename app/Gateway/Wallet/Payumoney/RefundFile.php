@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Payumoney;
 
 use Carbon\Carbon;
+use Mail;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Metadata;
 use RZP\Gateway\Base;
@@ -11,8 +12,6 @@ use RZP\Constants\MailTags;
 
 class RefundFile extends Base\RefundFile
 {
-    const EMAIL_BODY = 'Please find attached refunds information for PayUMoney';
-
     protected static $fileToWriteName = 'Payumoney_Wallet_Refunds';
 
     protected static $headers = [
@@ -41,7 +40,6 @@ class RefundFile extends Base\RefundFile
 
         $fileData = [
             'file_path' => $file['local_file_path'],
-            'body'      => self::EMAIL_BODY,
         ];
 
         $this->sendRefundEmail($fileData);

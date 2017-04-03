@@ -44,7 +44,17 @@ class Base extends Mailable
 
     protected function addAttachments()
     {
-        $this->attach($this->data['file']);
+        if (isset($this->data['file']) === true)
+        {
+            $this->attach($this->data['file']);
+        }
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $this->with($this->data);
 
         return $this;
     }

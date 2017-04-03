@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Airtelmoney;
 
 use Carbon\Carbon;
+use Mail;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Metadata;
 use RZP\Gateway\Base;
@@ -11,8 +12,6 @@ use RZP\Constants\MailTags;
 
 class RefundFile extends Base\RefundFile
 {
-    const EMAIL_BODY = 'Please find attached refunds information for AirtelMoney';
-
     protected static $fileToWriteName = 'Airtelmoney_Wallet_Refunds';
 
     protected static $headers = array(
@@ -41,7 +40,6 @@ class RefundFile extends Base\RefundFile
 
         $fileData = [
             'file_path' => $file['local_file_path'],
-            'body'      => self::EMAIL_BODY,
         ];
 
         $this->sendRefundEmail($fileData);
