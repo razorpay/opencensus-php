@@ -340,6 +340,5 @@ class PaymentController extends Controller
         $data = $this->payment->updateOnHold($input);
 
         return ApiResponse::json($data);
-
     }
 }

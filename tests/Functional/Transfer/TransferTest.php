@@ -402,7 +402,7 @@ class TransferTest extends TestCase
         $expectedPayment = [
             'amount'        => $transfer['amount'],
             'on_hold'       => $transfer['on_hold'],
-            // 'on_hold_until' => $transfer['on_hold_until'],
+            'on_hold_until' => $transfer['on_hold_until'],
         ];
 
         $this->assertArraySelectiveEquals($expectedPayment, $payment);

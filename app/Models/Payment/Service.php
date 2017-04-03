@@ -1051,7 +1051,7 @@ class Service extends Base\Service
 
     /**
      * Fetch and update on_hold flag for all payment
-     * and sorce transfer with on_hold_until less than today's
+     * and source transfer with on_hold_until less than today's
      *
      * @param array $input
      * @return array
@@ -1068,7 +1068,7 @@ class Service extends Base\Service
             $timestamp = $input['testSettleTimeStamp'];
         }
 
-        $paymentsToUpdate = $this->repo->payment->getPaymentsWithOnHoldTrueBeforeTimestamp($timestamp);
+        $paymentsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp);
 
         $this->trace->debug(
             TraceCode::PAYMENT_UPDATE_HOLD_CRON,
@@ -1108,7 +1108,7 @@ class Service extends Base\Service
 
         $this->trace->debug(TraceCode::PAYMENT_UPDATE_HOLD_CRON, ['step' => 'summary', 'summary' => $cronSummary]);
 
-        $slackMessage = 'CRON: Payment on_hold false for elapsed on_hold_until';
+        $slackMessage = 'CRON: Payment on_hold deactivate for elapsed on_hold_until';
 
         $slackChannel = Config::get('slack.channels.tech_logs');
 
@@ -1128,7 +1128,7 @@ class Service extends Base\Service
 
         $txn = $payment->transaction;
 
-        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+        $txn->setAttribute(Entity::ON_HOLD, false);
 
         $this->repo->saveOrFail($txn);
 
