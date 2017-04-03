@@ -1066,9 +1066,9 @@ class Gateway extends Base\Gateway
 
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::SALE;
 
-        $this->setPaymentRequestArray($body, $input, TxnType::SALE);
-
         $body[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
+
+        $this->setPaymentRequestArray($body, $input, TxnType::SALE);
 
         $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
 

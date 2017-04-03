@@ -156,6 +156,10 @@ class Type
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
         ],
+
+        self::H2H_BUCKET_CONFIG => [
+            self::ICICI_NODAL_TRANSFER,
+        ],
     ];
 
     /**

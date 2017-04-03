@@ -327,7 +327,12 @@ trait Callback
         if ($status !== Status::CREATED)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
+                null,
+                [
+                    'payment_id' => $this->payment->getId(),
+                    'status' => $status
+                ]);
         }
 
         $code = $e->getError()->getInternalErrorCode();
