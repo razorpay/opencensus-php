@@ -17,6 +17,7 @@ use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
+use RZP\Models\Gateway\Downtime;
 
 class Checkout
 {

@@ -231,7 +231,7 @@ trait Authorize
         // Except in the cases of recurring, because, here we know that
         // we have manually skipped/by-passed the 2FA.
 
-        if ($payment->terminal->getRecurring() === Terminal\Recurring::RECURRING_N3DS)
+        if ($payment->terminal->isNon3DSRecurring() === true)
         {
             $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
         }
@@ -314,10 +314,10 @@ trait Authorize
     }
 
     /**
-     * This is a hack authorize function specially for authorizing
-     * migs pg payments. The limit there is that, migs provides
-     * reconciliation only for three days. If we miss any failed payment
-     * reconciliation there then we need to do it manually later.
+     * This is a hack authorize function specially for authorizing payments
+     * from gateways who provide payment information through their verify api's
+     * for a limited time frame (e.g axis_migs, jiomoney). If we miss any failed
+     * payment reconciliation there then we need to do it manually later.
      *
      * @param Payment\Entity $payment
      * @param array $input
@@ -334,10 +334,12 @@ trait Authorize
                 'Non failed payment given for authorization');
         }
 
-        if ($payment->getGateway() !== Payment\Gateway::AXIS_MIGS)
+        if (in_array($payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Can force authorize only on axis migs gateway');
+                                        'Cannot force authorize on this gateway',
+                                        'gateway',
+                                        $payment->getGateway());
         }
 
         if ($payment->hasCard())
@@ -1227,6 +1229,8 @@ trait Authorize
                 ($token->isRecurring() === false))
             {
                 $token->setRecurring(true);
+
+                $token->terminal()->associate($payment->terminal);
             }
 
             $this->repo->saveOrFail($token);
@@ -1329,7 +1333,7 @@ trait Authorize
     }
 
     /**
-     * @param boolean $wasFailed If a payment is being converted from authorized to failed.
+     * @param boolean $wasFailed If a payment is being converted from failed to authorized.
      */
     protected function notifyAuthorized(bool $wasFailed)
     {

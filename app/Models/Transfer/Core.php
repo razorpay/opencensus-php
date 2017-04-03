@@ -222,7 +222,7 @@ class Core extends Base\Core
     {
         $validator = new Validator;
 
-        $validator->validateInput('transfer', $input);
+        $validator->validateInput('create', $input);
 
         if (isset($input[ToType::CUSTOMER]) === true)
         {

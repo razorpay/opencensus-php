@@ -53,7 +53,7 @@ class Entity
     const FILE_HANDLER          = 'file_handler';
     const BANK_TRANSFER         = 'bank_transfer';
     const TERMINAL_ACTION       = 'terminal_action';
-    const GATEWAY_ABSENCE       = 'gateway_absence';
+    const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
@@ -101,6 +101,7 @@ class Entity
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const NETBANKING_ICICI      = 'netbanking_icici';
     const NETBANKING_AXIS       = 'netbanking_axis';
+    const NETBANKING_FEDERAL    = 'netbanking_federal';
     const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
@@ -152,7 +153,7 @@ class Entity
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
-        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
+        self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
@@ -162,6 +163,7 @@ class Entity
         self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
+        self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
@@ -188,6 +190,7 @@ class Entity
         self::NETBANKING_ICICI   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_FEDERAL => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
         self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,

@@ -33,9 +33,9 @@ class Validator extends Base\Validator
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
     //
-    // A minimum of 1 days of gap must exist between invoice issue and expired by
+    // A minimum of 15 minutes of gap must exist between invoice issue and expired by
     //
-    const MIN_EXPIRY_SECS = 86400;
+    const MIN_EXPIRY_SECS = 900;
 
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
@@ -267,30 +267,80 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantHasKeys()
+    /**
+     * Does few validations around merchant data to decide if invoice should
+     * allowed to be created or not.
+     *
+     * @return null
+     *
+     * @throws BadRequestException
+     */
+    public function validateMerchantSpecificData()
     {
-        $merchant = $this->entity->merchant;
+        $invoice = $this->entity;
+        $merchant = $invoice->merchant;
 
-        $keys = $merchant->keys;
+        $this->validateMerchantHasKeys($merchant);
+        $this->validateMerchantIsNotFeeBearer($merchant, $invoice);
+    }
 
-        foreach ($keys as $key)
+    /**
+     * Validates if merchant has API keys generated in advance before using
+     * invoices.
+     * This is done because hosted page (invoice payment) will not load
+     * and will throw an exception if Invoice gets created without
+     * merchant having API keys.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @throws BadRequestException
+     */
+    protected function validateMerchantHasKeys(Merchant\Entity $merchant)
+    {
+        //
+        // Validates if merchant has API keys generated in advance before using
+        // invoices.
+        // This is done because hosted page (invoice payment) will not load
+        // and will throw an exception if Invoice gets created without
+        // merchant having API keys.
+        //
+
+        $keys = $merchant->keys->filter(
+                    function($key, $index)
+                    {
+                        return ($key->isExpiredOrExpiring() === false);
+                    });
+
+        if ($keys->count() === 0)
         {
-            if ($key->isExpiredOrExpiring() === false)
-            {
-                return;
-            }
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
+                null,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
         }
+    }
 
+    protected function validateMerchantIsNotFeeBearer(
+        Merchant\Entity $merchant,
+        Entity $invoice)
+    {
         //
-        // Note that this exception will be thrown even if a key is present
-        // but if it is going to be expired soon or is already expired.
+        // If merchant is a customer-fee-bearer client, for now don't allow
+        // him to create invoices of type=invoice.
         //
-        throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
-            null,
-            [
-                'merchant_id' => $merchant->getId(),
-            ]);
+
+        if (($merchant->isFeeBearerCustomer() === true) and
+            ($invoice->isTypeInvoice() === true))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER,
+                null,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
     }
 
     public function validateSendNotificationRequest(string $medium)
@@ -336,6 +386,7 @@ class Validator extends Base\Validator
         switch ($operation)
         {
             case 'update':
+            case 'cancelInvoice':
                 $allowedStatuses = [
                     Status::DRAFT,
                     Status::ISSUED,
@@ -399,6 +450,12 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
+        // If expired_by is not set at all, nothing to validate.
+        if ($invoice->getExpireBy() === null)
+        {
+            return;
+        }
+
         $now = Carbon::now('Asia/Kolkata');
         $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
 
@@ -411,6 +468,12 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Invoice is only payable if it's not deleted and is in ISSUED state.
+     *
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
     public function validateInvoicePayable()
     {
         $invoice = $this->entity;

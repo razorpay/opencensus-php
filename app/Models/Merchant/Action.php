@@ -8,6 +8,8 @@ class Action
     const UNARCHIVE = 'unarchive';
     const SUSPEND   = 'suspend';
     const UNSUSPEND = 'unsuspend';
+    const CREATED   = 'created';
+    const ACTIVATED = 'activated';
 
     public static function exists($action)
     {

@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal;
 
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -26,6 +27,8 @@ class Category
     const TRAVEL_AGENCY   = 'travel_agency';
     const RETAIL_SERVICES = 'retail_services';
     const PHARMA          = 'pharma';
+    const LENDING         = 'lending';
+    const CRYPTOCURRENCY  = 'cryptocurrency';
 
 
     /**
@@ -54,6 +57,8 @@ class Category
         self::MUTUAL_FUNDS,
         self::TRAVEL_AGENCY,
         self::PHARMA,
+        self::LENDING,
+        self::CRYPTOCURRENCY,
     ];
 
 
@@ -69,18 +74,42 @@ class Category
         self::COMMODITIES,
     ];
 
+
+    /**
+     * IFSC of banks to be disabled for netbanking of a category
+     * This information can be moved to the categories if there
+     * are enough cases of this nature.
+     **/
+    const DISABLED = [
+        Method::NETBANKING => [
+            self::CRYPTOCURRENCY => [
+                IFSC::HDFC,
+                IFSC::ICIC,
+            ],
+        ],
+    ];
+
     /**
      * By default Check for the name that is mentioned as is.
      * If it is renamed, then the new name that is mentioned will be
      * used to check for a network category
+     *
+     * Keys are Merchant categories, values are Network categories
      */
     const CATEGORIES = [
         Method::NETBANKING => [
             self::DEFAULT => self::ECOMMERCE,
+            IFSC::KKBK => [
+                // In Kotak, a utilities terminal needs to be added
+                // which will be used to accept lending as well.
+                self::DEFAULT   => self::ECOMMERCE,
+                self::UTILITIES => self::UTILITIES,
+                self::LENDING   => self::UTILITIES,
+            ]
         ],
         Method::CARD => [
-            self::DEFAULT => self::ECOMMERCE,
-            self::PHARMA  => self::ECOMMERCE,
+            self::DEFAULT        => self::ECOMMERCE,
+            self::PHARMA         => self::ECOMMERCE,
             Network::AMEX     => [
                 self::DEFAULT        => self::RETAIL_SERVICES,
                 self::GROCERY        => 'sup_hypermrkt_deptstore',

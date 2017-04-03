@@ -274,7 +274,7 @@ class DatabaseSeeder extends Seeder
                     'contact_name'  => 'Test Account',
                     'contact_email' => 'test@razorpay.com',
                     'contact_mobile'=> '9876543210',
-                    'created_at'    =>  $currentTime,
+                    'created_at'    =>  1488306599, // 28/02/2017, 11:59:59 PM GMT+5:30; pre signup steps are required for people signing up on/after 01/03/2017
                     'updated_at'    =>  $currentTime,
                     )
                 );
@@ -695,7 +695,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_hdfc',
                 'gateway_terminal_id'   => 'test_terminal_hdfc',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_hdfc_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -710,7 +710,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_atom',
                 'gateway_terminal_id'   => 'test_terminal_atom',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_atom_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -725,7 +725,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_axis_migs',
                 'gateway_terminal_id'   => 'test_terminal_axis_migs',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_axis_migs_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -740,7 +740,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_axis_genius',
                 'gateway_terminal_id'   => 'test_terminal_axis_genius',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_axis_genius_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -755,7 +755,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_paytm',
                 'gateway_terminal_id'   => 'test_terminal_paytm',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_paytm_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -770,7 +770,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_hdfc',
                 'gateway_terminal_id'   => 'demo_terminal_hdfc',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_hdfc_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -785,7 +785,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_atom',
                 'gateway_terminal_id'   => 'demo_terminal_atom',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -800,7 +800,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_atom',
                 'gateway_terminal_id'   => 'shared_terminal_atom',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -815,7 +815,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_axis_migs',
                 'gateway_terminal_id'   => 'shared_terminal_axis_migs',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_axis_migs_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -842,7 +842,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_axis_genius',
                 'gateway_terminal_id'   => 'shared_terminal_axis_genius',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_axis_genius_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -857,7 +857,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_paytm',
                 'gateway_terminal_id'   => 'shared_terminal_paytm',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_paytm_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -874,7 +874,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_emi',
                 'gateway_terminal_id'   => 'shared_terminal_hdfc',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_hdfc_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -912,6 +912,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingAirtelTerminals();
         $this->createNetbankingAxisTerminal();
+        $this->createNetbankingFederalTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -932,7 +933,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_netbanking_hdfc',
                 'gateway_terminal_id'   => 'test_terminal_netbanking_hdfc',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_hdfc_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -948,7 +949,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_hdfc',
                 'gateway_terminal_id'   => 'demo_terminal_netbanking_hdfc',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_hdfc_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -965,7 +966,7 @@ class DatabaseSeeder extends Seeder
             'gateway_merchant_id'       => 'test_merchant_cybersource',
             'gateway_terminal_id'       => 'test_terminal_cybersource',
             'gateway_terminal_password' => Crypt::encrypt('demo_account_hdfc_terminal_pass'),
-            'recurring'                 => 0,
+            'recurring'                 => 1,
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);
@@ -978,7 +979,7 @@ class DatabaseSeeder extends Seeder
             'gateway_merchant_id'       => 'demo_merchant_cybersource',
             'gateway_terminal_id'       => 'demo_terminal_cybersource',
             'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
-            'recurring'                 => 0,
+            'recurring'                 => 1,
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);
@@ -996,7 +997,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_billdesk',
                 'gateway_terminal_id'   => 'test_terminal_billdesk',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_billdesk_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -1012,7 +1013,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_billdesk',
                 'gateway_terminal_id'   => 'demo_terminal_billdesk',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_billdesk_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -1031,7 +1032,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_sharp',
                 'gateway_terminal_id'   => 'test_terminal_sharp',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_sharp_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -1047,7 +1048,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_sharp',
                 'gateway_terminal_id'   => 'demo_terminal_sharp',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_sharp_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -1066,7 +1067,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_mobikwik',
                 'gateway_terminal_id'   => 'test_terminal_mobikwik',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_mobikwik_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
                 )
@@ -1082,7 +1083,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'demo_merchant_mobikwik',
                 'gateway_terminal_id'       => 'demo_terminal_mobikwik',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_mobikwik_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
                 )
@@ -1101,7 +1102,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_netbanking_kotak',
                 'gateway_terminal_id'   => 'test_terminal_netbanking_kotak',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_netbanking_kotak_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
             )
@@ -1117,7 +1118,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_kotak',
                 'gateway_terminal_id'   => 'demo_terminal_netbanking_kotak',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_kotak_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
             )
@@ -1136,7 +1137,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       =>  'test_merchant_netbanking_icici',
                 'gateway_merchant_id2'      =>  'test_submerchant_netbanking_icici',
                 'gateway_secure_secret'     =>  Crypt::encrypt('test_netbanking_master_terminal_pass'),
-                'recurring'                 =>  0,
+                'recurring'                 =>  1,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
             ]
@@ -1154,7 +1155,7 @@ class DatabaseSeeder extends Seeder
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_airtel',
                 'gateway_secure_secret' => Crypt::encrypt('test_airtel_terminal_salt'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]
@@ -1164,7 +1165,7 @@ class DatabaseSeeder extends Seeder
     protected function createNetbankingAxisTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                    => Terminal\Shared::NETBANKING_AXIS_TERMINAL,
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_AXIS,
@@ -1172,17 +1173,35 @@ class DatabaseSeeder extends Seeder
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_axis',
                 'gateway_secure_secret' => Crypt::encrypt('test_netbanking_axis_terminal_pass'),
-                'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
-            )
+                'recurring'             => 1,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingFederalTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_FEDERAL_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_FEDERAL,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_federal',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_federal_terminal_pass'),
+                'recurring'             => 1,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
         );
     }
 
     protected function createAmexTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                    => '2eBIhcdN74TBMd',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::AMEX,
@@ -1191,11 +1210,11 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_amex',
                 'gateway_terminal_id'   => 'test_terminal_amex',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_amex_terminal_pass'),
-                'recurring'             => 0,
+                'recurring'             => 1,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
-                )
-            );
+            ]
+        );
 
         DB::table(Table::TERMINAL)->insert(
             array(
@@ -1207,7 +1226,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'demo_merchant_amex',
                 'gateway_terminal_id'       => 'demo_terminal_amex',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_amex_terminal_pass'),
-                'recurring'                 => 0,
+                'recurring'                 => 1,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
                 )
@@ -1225,7 +1244,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'test_merchant_payzapp',
                 'gateway_terminal_id'       => 'test_terminal_payzapp',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_payzapp_terminal_pass'),
-                'recurring'                 => 0,
+                'recurring'                 => 1,
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 'category'                  => 1000,
@@ -1243,7 +1262,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'demo_merchant_payzapp',
                 'gateway_terminal_id'       => 'demo_terminal_payzapp',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_payzapp_terminal_pass'),
-                'recurring'                 => 0,
+                'recurring'                 => 1,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
                 )
@@ -1279,7 +1298,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'test_merchant_payumoney',
                 'gateway_terminal_id'       => 'test_terminal_payumoney',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_payumoney_terminal_pass'),
-                'recurring'                 => 0,
+                'recurring'                 => 1,
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 'category'                  => 1000,
@@ -1297,7 +1316,7 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'       => 'demo_merchant_payumoney',
                 'gateway_terminal_id'       => 'demo_terminal_payumoney',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_payumoney_terminal_pass'),
-                'recurring'                 => 0,
+                'recurring'                 => 1,
                 'created_at'                =>  time(),
                 'updated_at'                =>  time(),
             )
@@ -1314,7 +1333,7 @@ class DatabaseSeeder extends Seeder
                 'card'                      => '0',
                 'gateway_terminal_id'       => 'test_terminal_olamoney',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_olamoney_terminal_pass'),
-                'recurring'                 => 0,
+                'recurring'                 => 1,
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 'category'                  => 1000,
@@ -1331,7 +1350,7 @@ class DatabaseSeeder extends Seeder
                 'netbanking'                => '0',
                 'gateway_terminal_id'       => 'demo_terminal_olamoney',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_olamoney_terminal_pass'),
-                'recurring'                 => 0,
+                'recurring'                 => 1,
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )
