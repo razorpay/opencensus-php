@@ -205,11 +205,21 @@ class Entity extends Base\PublicEntity
 
     protected function setTxtFileIdAttribute($id)
     {
+        if ($id === null)
+        {
+            return;
+        }
+
         $this->attributes[self::TXT_FILE_ID] = FileStore::verifyIdAndSilentlyStripSign($id);
     }
 
     protected function setExcelFileIdAttribute($id)
     {
+        if ($id === null)
+        {
+            return;
+        }
+
         $this->attributes[self::EXCEL_FILE_ID] = FileStore::verifyIdAndSilentlyStripSign($id);
     }
 }

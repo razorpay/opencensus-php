@@ -40,9 +40,9 @@ trait BatchFundTransferTrait
 
         $this->batchFundTransfer->setUrls($details['urls']);
 
-        $this->batchFundTransfer->setTxtFileId($details['txt_file_id']);
+        $this->batchFundTransfer->setTxtFileId($details['txt_file_id'] ?? null);
 
-        $this->batchFundTransfer->setExcelFileId($details['excel_file_id']);
+        $this->batchFundTransfer->setExcelFileId($details['excel_file_id'] ?? null);
 
         $this->repo->saveOrFail($this->batchFundTransfer);
     }
