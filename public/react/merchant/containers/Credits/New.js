@@ -1,12 +1,18 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { getCreditsData, fetchBalance } from 'merchant/modules/credits'
+import moment from 'moment';
+
+function _getCreditsInPaisa(value) {
+  return (value/100).toFixed(2);
+}
 
 @connect(
   (state) => {
     return {
-      creditData: credits.creditData,
-      balanceData: credits.balanceData
+      creditsData: state.credits.creditsData,
+      balanceData: state.credits.balanceData,
+      user: state.session.user
     }
   },
   { getCreditsData, fetchBalance }
@@ -14,9 +20,13 @@ import { getCreditsData, fetchBalance } from 'merchant/modules/credits'
 export default class CreditsList extends Component {
   constructor() {
     super(...arguments)
+    this.state = {
+      isCreditsLogCollapsed: true
+    }
+    this.toggleCreditsLog = this.toggleCreditsLog.bind(this)
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.props.getCreditsData();
 
   /*
@@ -29,13 +39,130 @@ export default class CreditsList extends Component {
 
     this.props.fetchBalance().then((response)=>{
       $('.fake_hide_till_loaded').removeClass('fake_hide_till_loaded');
-    }).catch((err)=>{
+      this.forceUpdate();
+    }).catch((err)=> {
       $('.fake_hide_till_loaded').removeClass('fake_hide_till_loaded');
     });
   }
 
-  render() {
+  toggleCreditsLog() {
+    this.setState({
+      isCreditsLogCollapsed: !this.state.isCreditsLogCollapsed
+    })
+  }
 
+  getContent() {
+    let content;
+
+    if (this.props.user.current) {
+      let amountCredits = null;
+      let feeCredits = null;
+
+      if (this.props.balanceData) {
+        // Amount Credits
+        if (this.props.balanceData.credits) {
+          amountCredits = (
+            <a class="list-group-item">
+              <span class="pull-right">₹{_getCreditsInPaisa(this.props.balanceData.credits)}</span>
+              Amount Credits
+            </a>
+          );
+        }
+        // Fee Credits
+        if (this.props.balanceData.fee_credits) {
+          feeCredits = (
+            <a class="list-group-item">
+              <span class="pull-right">₹{_getCreditsInPaisa(this.props.balanceData.fee_credits)}</span>
+              Fee Credits
+            </a>
+          );
+        }
+      }
+
+      let toggleBtn = null;
+      let creditsMsg = null;
+      if (this.props.creditsData) {
+        if (this.props.creditsData.data.items.length != 0) {
+          toggleBtn = <button class="btn btn-default btn-xs pull-right" onClick={this.toggleCreditsLog}>Show/Hide</button>;
+        }
+        if (this.props.creditsData.data.items.length === 0) {
+          creditsMsg = <span> No credits Assigned</span>
+        }
+      }
+
+      // Credits
+      const credits = (
+        <a class="list-group-item">
+        <span class="pull-right">
+          {toggleBtn}
+          {creditsMsg}
+        </span>
+          Credits
+        </a>
+      );
+      let creditsDataItems = null;
+      let collapsibleBlock = null;
+
+      if (this.props.creditsData) {
+        creditsDataItems = [];
+        this.props.creditsData.data.items.forEach((credit, index)=>{
+          creditsDataItems.push(
+            <tr key={index}>
+              <td>{credit.id}</td>
+              <td>{credit.campaign}</td>
+              <td>{credit.type}</td>
+              <td>INR {_getCreditsInPaisa(credit.value)}</td>
+              <td>{moment.unix(credit.created_at).format("DD/MM/YYYY H:mm a")}</td>
+            </tr>
+          );
+        });
+
+        if (!this.state.isCreditsLogCollapsed) {
+          collapsibleBlock = (
+            <div class="panel-body">
+              <div class="m-t">
+                <table class="table table-striped b-light">
+                  <thead>
+                    <tr>
+                      <th>Id</th>
+                      <th>Campaign</th>
+                      <th>Type</th>
+                      <th>Value</th>
+                      <th>Created At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {creditsDataItems}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        }
+      }
+    // Content for authenticated user
+      content = (
+      <div class="row wrapper">
+        <div class="list-group">
+          {amountCredits}
+          {feeCredits}
+          {credits}
+          {collapsibleBlock}
+          </div>
+        </div>
+      );
+    } else {
+      content = (
+        <alert type="danger" class="text-center">
+          Your user account is not associated at present with any active merchant account.
+        </alert>
+      );
+    }
+    return content;
+  }
+
+  render() {
+    const content = this.getContent();
     return (
       <div class='react-root'>
 
@@ -46,74 +173,25 @@ export default class CreditsList extends Component {
           </h1>
         </div>
 
-        <div class="wrapper-md profile-wrapper" ng-controller="CreditsCtrl">
+        <div class="wrapper-md profile-wrapper">
           <div class="panel panel-default panel-form col-sm-10 col-sm-offset-1">
             <div class="panel-heading m-t m-b">
               Your Credits
 
               <small class="pull-right">
-                <a href="https://docs.razorpay.com/v1/page/credits" class="highlight" target="_blank">DOCUMENTATION &nbsp;<i class="fa fa-external-link"></i></a>
+                <a href="https://docs.razorpay.com/v1/page/credits" class="highlight" target="_blank">
+                  DOCUMENTATION &nbsp;
+                  <i class="fa fa-external-link"></i>
+                </a>
               </small>
             </div>
 
             <div class="text-center m-t">
+              {/*
               <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+              */}
             </div>
-            <alert type="danger" class="text-center" ng-show="!user.current">
-              Your user account is not associated at present with any active merchant account.
-            </alert>
-            <div class="row wrapper" ng-show="user.current">
-              <div class="list-group">
-                <a class="list-group-item" ng-show="credits != 0">
-                  <span class="pull-right">{{credits/100|rupee}}</span>
-                  Amount Credits
-                </a>
-
-                <a class="list-group-item" ng-show="fee_credits != 0">
-                  <span class="pull-right">{{fee_credits/100|rupee}}</span>
-                  Fee Credits
-                </a>
-
-                <!-- Credits -->
-                <a href class="list-group-item" ng-init="isCreditsLogCollapsed = true">
-                  <span class="pull-right">
-                    <button class="btn btn-default btn-xs pull-right" ng-click="isCreditsLogCollapsed = !isCreditsLogCollapsed"
-                    ng-show="creditsData.data.items.length != 0">
-                      Show/Hide
-                    </button>
-                    <span ng-hide="creditsData.data.items.length != 0">
-                      No credits Assigned
-                    </span>
-                  </span>
-                  Credits
-                </a>
-
-                <div collapse="isCreditsLogCollapsed" class="panel-body">
-                  <div class="m-t">
-                    <table class="table table-striped b-light">
-                      <thead>
-                      <th>Id</th>
-                      <th>Campaign</th>
-                      <th>Type</th>
-                      <th>Value</th>
-                      <th>Created At</th>
-                      </thead>
-                      <tbody>
-                      <tr ng-repeat="credit in creditsData.data.items">
-                        <td>{{credit.id}}</td>
-                        <td>{{credit.campaign}}</td>
-                        <td>{{credit.type}}</td>
-                        <td>{{credit.value/100 | rupee:"INR "}}</td>
-                        <td>{{credit.created_at*1000 | date:'short'}}</td>
-                      </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
+            {content}
           </div>
         </div>
       </div>
