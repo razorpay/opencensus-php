@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Admin;
 
 use Mail;
+use Mockery;
 
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -51,9 +52,26 @@ class AdminLeadTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        Mail::shouldReceive('queue')->times(1);
+        Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $this->assertArrayHasKey('invitation', $data);
+
+                        $this->assertArrayHasKey('adminName', $data);
+
+                        return true;
+                    }),
+                    Mockery::any()
+                );
 
         $this->startTest();
+
+        $adminLead = $this->getLastEntity('admin_lead', true);
+
+        return $adminLead;
     }
 
     public function testSelfInviteProhibited()
@@ -75,6 +93,21 @@ class AdminLeadTest extends TestCase
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testVerifyAdminLead()
+    {
+        $adminLead = $this->testCreateAdminLead();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $adminLead['token']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
 
         $this->startTest();
     }

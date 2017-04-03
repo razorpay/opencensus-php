@@ -52,4 +52,11 @@ class Service extends Base\Service
 
         return $invitations->toArrayPublic();
     }
+
+    public function verify(string $token)
+    {
+        $adminLead = $this->repo->admin_lead->findByTokenOrFail($token);
+
+        return $adminLead->toArrayPublic();
+    }
 }

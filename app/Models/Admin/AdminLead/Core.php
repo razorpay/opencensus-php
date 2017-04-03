@@ -50,9 +50,11 @@ class Core extends Base\Core
             'adminName'  => $admin->getName(),
         ];
 
+        $data['invitation']['token'] = $invitation->getToken();
+
         Mail::queue(
             'emails.admin.invite_merchant',
-            ['data' => $data],
+            $data,
             function ($message) use ($subject, $email, $contactName)
             {
                 $message->to($email, $contactName);

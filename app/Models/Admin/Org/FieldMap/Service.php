@@ -22,11 +22,11 @@ class Service extends Base\Service
 
     public function editFieldMapForEntity(
         string $orgId,
-        string $entity,
+        string $id,
         array $input)
     {
         $entityMap = $this->repo->org_field_map
-                                ->findByOrgIdAndEntity($orgId, $entity);
+                                ->findByPublicIdAndOrgId($id, $orgId);
 
         $entityMap->edit($input);
 
@@ -35,18 +35,26 @@ class Service extends Base\Service
         return $entityMap->toArrayPublic();
     }
 
-    public function getFieldsForEntity(string $orgId, string $entity)
+    public function fetchMultiple(string $orgId)
+    {
+        $collection = $this->repo->org_field_map
+                                ->fetchByOrgId($orgId);
+
+        return $collection->toArrayPublic();
+    }
+
+    public function getFieldsForEntity(string $orgId, string $id)
     {
         $entityMap = $this->repo->org_field_map
-                                ->findByOrgIdAndEntity($orgId, $entity);
+                                ->findByPublicIdAndOrgId($id, $orgId);
 
         return $entityMap->toArrayPublic();
     }
 
-    public function deleteFieldMapForEntity(string $orgId, string $entity)
+    public function deleteFieldMapForEntity(string $orgId, string $id)
     {
         $entityMap = $this->repo->org_field_map
-                                ->findByOrgIdAndEntity($orgId, $entity);
+                                ->findByPublicIdAndOrgId($id, $orgId);
 
         $this->repo->deleteOrFail($entityMap);
 

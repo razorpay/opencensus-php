@@ -40,8 +40,6 @@ class Entity extends BaseModel\PublicEntity
         {
             $orgId = $this->getAttribute(static::ORG_ID);
 
-            $validator = $this->getValidator();
-
             $validator->validateOrgSpecificInput('create', $input, $orgId);
         }
         else
@@ -60,12 +58,12 @@ class Entity extends BaseModel\PublicEntity
 
     public function edit(array $input = array(), $operation = 'edit')
     {
+        $validator = $this->getValidator();
+
         if ((isset($validator->isOrgSpecificValidationSupported) === true) and
             ($validator->isOrgSpecificValidationSupported === true))
         {
             $orgId = $this->getAttribute(static::ORG_ID);
-
-            $validator = $this->getValidator();
 
             $validator->validateOrgSpecificInput($operation, $input, $orgId);
         }

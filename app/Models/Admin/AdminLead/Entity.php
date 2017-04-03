@@ -104,6 +104,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ORG_ID);
     }
 
+    public function getToken() : string
+    {
+        return $this->getAttribute(self::TOKEN);
+    }
+
     public function getAdminId() : string
     {
         return $this->getAttribute(self::ADMIN_ID);

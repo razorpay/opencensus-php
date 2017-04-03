@@ -2,12 +2,12 @@ Hi!
 
 <br><br>
 
-{{ $data['adminName'] }} has invited you to sign up for HDFC Merchant Services. <!-- TODO Parse invitation array and fill correct data -->
+{{ $adminName }} has invited you to sign up for HDFC Merchant Services. <!-- TODO Parse invitation array and fill correct data -->
 
 <br><br>
 
-<a href="{{ url('/#/access/signup?merchant_invitation=' . $data['invitation']['token']) }}">
-    {{ URL::to('/#/access/signup?merchant_invitation='. $data['invitation']['token']) }}
+<a href="{{ url('/#/access/signup?merchant_invitation=' . $invitation['token']) }}">
+    {{ URL::to('/#/access/signup?merchant_invitation='. $invitation['token']) }}
 </a>
 
 <br><br>

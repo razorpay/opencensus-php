@@ -132,6 +132,23 @@ trait HeimdallTrait
         return $permissions;
     }
 
+    public function getTotalPermissionCount()
+    {
+        $permissionCategories = Config::get('heimdall.permissions');
+
+        $permissionCount = 0;
+
+        foreach ($permissionCategories as $permCategory)
+        {
+            foreach ($permCategory as $permission => $desc)
+            {
+                $permissionCount += 1;
+            }
+        }
+
+        return $permissionCount;
+    }
+
     public function getAssignablePermissionsByIds()
     {
         $perms = $this->getAssignablePermissions();

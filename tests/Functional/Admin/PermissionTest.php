@@ -10,8 +10,6 @@ class PermissionTest extends TestCase
 {
     use HeimdallTrait;
 
-    const TOTAL_PERMISSIONS = 120;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/PermissionData.php';
@@ -75,7 +73,7 @@ class PermissionTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(self::TOTAL_PERMISSIONS, $result['count']);
+        $this->assertEquals($this->getTotalPermissionCount(), $result['count']);
     }
 
     public function testEditPermission()

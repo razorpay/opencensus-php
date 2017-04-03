@@ -80,7 +80,7 @@ class FieldMapTest extends TestCase
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId(),
-                        $fieldMap->getNameOfEntity());
+                        $fieldMap->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -94,7 +94,7 @@ class FieldMapTest extends TestCase
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId(),
-                        $fieldMap->getNameOfEntity());
+                        $fieldMap->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -108,10 +108,39 @@ class FieldMapTest extends TestCase
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId(),
-                        $fieldMap->getNameOfEntity());
+                        $fieldMap->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $result = $this->startTest();
+    }
+
+    public function testFieldMapMultiple()
+    {
+        $this->fixtures->create(
+            'org_field_map',
+            [
+                'org_id'      => $this->orgId,
+                'entity_name' => 'org',
+                'fields'      => ['display_name', 'business_name'],
+            ]);
+
+        $this->fixtures->create(
+            'org_field_map',
+            [
+                'org_id'      => $this->orgId,
+                'entity_name' => 'admin',
+                'fields'      => ['name', 'email'],
+            ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+
+        $this->assertEquals(2, count($result['items']));
     }
 }

@@ -144,4 +144,16 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testFieldMapMultiple' => [
+        'request' => [
+            'url' => '/orgs/%s/field-map',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
 ];

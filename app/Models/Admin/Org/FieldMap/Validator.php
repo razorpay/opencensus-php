@@ -15,7 +15,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::FIELDS              => 'required|array',
+        Entity::ENTITY_NAME         => 'sometimes|string|max:250|custom',
+        Entity::ORG_ID              => 'sometimes|string|max:14',
+        Entity::FIELDS              => 'sometimes|array',
     ];
 
     protected static $createValidators = [

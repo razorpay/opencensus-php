@@ -10,9 +10,9 @@ class MailTags
      * Defines tags associated with emails, stored in the X-Mailgun-Tag header
      */
 
-    const KOTAK_BENEFICIARY_MAIL        = 'kotak_beneficiary_mail';
-    const KOTAK_SETTLEMENT_FILES        = 'kotak_settlement_files';
-    const KOTAK_PAYOUT_SUMMARY          = 'kotak_payout_summary';
+    const KOTAK_BENEFICIARY_MAIL          = 'kotak_beneficiary_mail';
+    const KOTAK_SETTLEMENT_FILES          = 'kotak_settlement_files';
+    const KOTAK_PAYOUT_SUMMARY            = 'kotak_payout_summary';
 
     const ICICI_SETTLEMENT_FILES          = 'icici_settlement_files';
 
@@ -34,6 +34,7 @@ class MailTags
     const INVOICE                         = 'invoice';
     const ECOD                            = 'ecod';
 
+    const DAILY_FILE                      = 'daily_file';
     const DAILY_REPORT                    = 'daily_report';
     const AUTH_REMINDER                   = 'auth_reminder';
     const HOLIDAY_NOTIFICATION            = 'holiday_notification';

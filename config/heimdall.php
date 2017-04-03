@@ -119,6 +119,8 @@ return [
             Permission::SCHEDULE_MIGRATION => '',
             Permission::VIEW_ACTIONS => '',
             Permission::VIEW_MERCHANT_STATS => '',
+            Permission::CREATE_MERCHANT_INVITE => '',
+            Permission::VIEW_MERCHANT_INVITE => '',
         ],
 
         PermissionCategory::ENTITY => [
@@ -167,6 +169,10 @@ return [
         // Permissions
         PermissionCategory::PERMISSION => [
             Permission::VIEW_ALL_PERMISSION => 'View all permissions',
+            Permission::GET_PERMISSION      => 'get_permission',
+            Permission::DELETE_PERMISSION   => 'Delete permission',
+            Permission::CREATE_PERMISSION   => 'Create permission',
+            Permission::EDIT_PERMISSION     => 'Edit permission',
         ],
 
         PermissionCategory::AUDIT_LOG => [
@@ -217,6 +223,9 @@ return [
             Permission::VIEW_MERCHANT_BALANCE_LIVE        => '',
 
             Permission::EDIT_MERCHANT_EMAIL => '',
+
+            Permission::CREATE_MERCHANT_INVITE => '',
+            Permission::VIEW_MERCHANT_INVITE => '',
         ],
 
         // UAM
@@ -252,6 +261,7 @@ return [
         // Permissions
         PermissionCategory::PERMISSION => [
             Permission::VIEW_ALL_PERMISSION => 'View all permissions',
+            Permission::GET_PERMISSION      => 'Get Permission',
         ],
 
         PermissionCategory::AUDIT_LOG => [

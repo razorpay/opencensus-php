@@ -11,7 +11,6 @@ class Category
     const ROLE              = 'role';
     const GROUP             = 'group';
     const ADMIN             = 'admin';
-    const ORG_FIELDMAP      = 'org_fieldmap';
     const PERMISSION        = 'permission';
     const AUDIT_LOG         = 'audit_log';
 }
