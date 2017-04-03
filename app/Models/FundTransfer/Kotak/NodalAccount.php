@@ -281,7 +281,7 @@ class NodalAccount
         $excelFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
                                               ->content($excelData)
                                               ->extension(FileStore\Format::XLSX)
-                                              ->type(FileStore\Type::FUND_TRANSFER_EXCEL)
+                                              ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
                                               ->save();
 
         // Create txt file
@@ -297,7 +297,7 @@ class NodalAccount
             $textFile = (new FileStore\Creator())->name('kotak/outgoing/' . $this->getH2HFileNameWithoutExt())
                                                  ->content($textData)
                                                  ->extension(FileStore\Format::TXT)
-                                                 ->type(FileStore\Type::FUND_TRANSFER_TXT)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_H2H)
                                                  ->metadata($metadata)
                                                  ->save();
         }
@@ -305,7 +305,7 @@ class NodalAccount
         $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
                                              ->content($textData)
                                              ->extension(FileStore\Format::TXT)
-                                             ->type(FileStore\Type::FUND_TRANSFER_TXT)
+                                             ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
                                              ->save();
 
         return [$excelFile, $textFile];
@@ -379,7 +379,7 @@ class NodalAccount
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y-H-i-s');
 
         $mode = $this->getMode();
 
