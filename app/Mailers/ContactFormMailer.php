@@ -37,6 +37,7 @@ class ContactFormMailer extends Mailer
         $this->to = 'Razorpay Contact';
         $this->email = $this->getEmailFor('contact');
         $this->view = 'emails.contact';
+        $this->mailTag = MailTags::CONTACT_FORM_SUBMISSION;
 
         return $this;
     }

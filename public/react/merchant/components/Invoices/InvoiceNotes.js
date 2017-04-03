@@ -2,8 +2,9 @@ export default ({ invoice, isSaving, onAddClick }) => {
   let status = invoice.status
   let isNew = !invoice.id
   let isPaid = status === 'paid'
+  let isCancelled = status === 'cancelled'
   let isExpired = status === 'expired'
-  let locked = isPaid || isExpired
+  let locked = isPaid || isExpired || isCancelled
 
   if (Object.keys(invoice.notes || {}).length) {
     return (

@@ -10,4 +10,3 @@
     <title>Razorpay - Admin Panel</title>
     <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-</head>

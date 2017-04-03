@@ -37,7 +37,7 @@ return [
         'auditlog_search'                    => 'orgs/{id}/auditlog/search',
 
         // Permissions
-        'permission_get_assignable'         => 'permissions/assignable',
+        'permission_get_by_type'            => 'permissions/get/{type}',
         'permission_get_multiple'           => 'orgs/{id}/permissions',
         'permission_create'                 => 'permissions',
         'permission_get'                    => 'permissions/{id}',
@@ -191,9 +191,9 @@ return [
             'url'       => 'invoices/{id}/issue',
             'routeName' => 'invoice_issue'
         ],
-        'invoice_expire'                    => [
-            'url'       => 'invoices/{id}/expire',
-            'routeName' => 'invoice_expire'
+        'invoice_cancel'                    => [
+            'url'       => 'invoices/{id}/cancel',
+            'routeName' => 'invoice_cancel'
         ],
 
         // Customers
