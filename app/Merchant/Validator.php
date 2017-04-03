@@ -55,6 +55,7 @@ class Validator extends Base\Validator
         'emi'                                       => '',
         'emi_duration'                              => '',
         'shared'                                    => '',
+        'international'                             => '',
         'category'                                  => '',
         'gateway_acquirer'                          => 'sometimes|string',
     );
