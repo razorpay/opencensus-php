@@ -38,8 +38,8 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
-    const FUND_TRANSFER_DEFAULT              = 'fund_transfer_excel';
-    const FUND_TRANSFER_H2H                 = 'fund_transfer_txt';
+    const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
+    const FUND_TRANSFER_H2H                 = 'fund_transfer_h2h';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';

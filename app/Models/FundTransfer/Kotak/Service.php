@@ -43,9 +43,14 @@ class Service extends Base\Service
 
     public function generateSettlementFile($setlAttempts)
     {
-        $urls = (new NodalAccount)->generateSettlementFile($setlAttempts, false);
+        $fileDetails = (new NodalAccount)->generateSettlementFile($setlAttempts, false);
 
-        $urls = array_column($urls, 'local_file_path');
+        $urls = [];
+
+        foreach ($fileDetails as $fileDetail)
+        {
+            $urls[($fileDetail->get())['id']] = $fileDetail->getUrl();
+        }
 
         return $urls;
     }
