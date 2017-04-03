@@ -42,6 +42,9 @@ class CreateRefunds extends Migration
             $table->tinyInteger(Refund::GATEWAY_REFUNDED)
                   ->nullable();
 
+            $table->tinyInteger(Refund::ATTEMPTS)
+                  ->nullable();
+
             $table->text(Refund::NOTES);
 
             $table->char(Refund::TRANSACTION_ID, Refund::ID_LENGTH)
@@ -50,6 +53,7 @@ class CreateRefunds extends Migration
 
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
+            $table->integer(Refund::LAST_ATTEMPTED_AT);
 
             $table->foreign(Refund::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

@@ -24,6 +24,9 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID    = 'transaction_id';
     const BATCH_ID          = 'batch_id';
 
+    const ATTEMPTS          = 'attempts';
+    const LAST_ATTEMPTED_AT = 'last_attempted_at';
+
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';

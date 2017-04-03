@@ -1855,4 +1855,6 @@ UPDATE tokens
     SET terminal_id = '1000SharpTrmnl' WHERE recurring = 1;
 
 ALTER TABLE refunds
-    ADD COLUMN status VARCHAR(255) AFTER base_amount;
+    ADD COLUMN status            VARCHAR(255) AFTER      base_amount,
+    ADD COLUMN attempts          TINYINT(1)   AFTER gateway_refunded NOT NULL DEFAULT = '1',
+    ADD COLUMN last_attempted_at  INT          AFTER       updated_at;
