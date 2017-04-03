@@ -36,7 +36,7 @@ return [
         'fees'              => 115000,
         'service_tax'       => 15000,
         'failure_reason'    => null,
-        'attempt_count'     => 1,
+        'attempts'          => 1,
     ],
 
     'fetchAndMatchSettlementsForRetryReconSuccess' => [
@@ -46,7 +46,7 @@ return [
         'fees'              => 115000,
         'service_tax'       => 15000,
         'failure_reason'    => null,
-        'attempt_count'     => 2,
+        'attempts'          => 2,
     ],
 
     'fetchAndMatchSettlementsForReconFailure' => [
@@ -57,7 +57,7 @@ return [
         'service_tax'       => 15000,
         'failure_reason'    => 'Reconciliation',
         'status'            => 'failed',
-        'attempt_count'     => 1,
+        'attempts'          => 1,
     ],
 
     // status is not matched as we keep it created till 10pm

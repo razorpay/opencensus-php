@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         Entity::FEES            => 'sometimes',
         Entity::SERVICE_TAX     => 'sometimes',
         Entity::CHANNEL         => 'required|string|custom',
-        Entity::ATTEMPT_COUNT   => 'sometimes|integer|min:1',
+        Entity::ATTEMPTS        => 'sometimes|integer|min:1',
     ];
 
     protected static $batchFetchRules = [

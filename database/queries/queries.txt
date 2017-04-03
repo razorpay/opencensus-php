@@ -1865,4 +1865,4 @@ ALTER TABLE fund_transfer_attempts
     REFERENCES files(id) ON DELETE RESTRICT;
 
 ALTER TABLE settlements
-    ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 1 AFTER channel;
+    ADD COLUMN attempts INTEGER NOT NULL DEFAULT 1 AFTER channel;

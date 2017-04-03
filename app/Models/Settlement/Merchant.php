@@ -54,8 +54,8 @@ class Merchant
         // Update Settlement Entity
         $this->updateSettlementEntity();
 
-        // Increment attempt_count in settlements
-        $this->setl->incrementAttemptCount();
+        // Increment attempts in settlements
+        $this->setl->incrementAttempts();
 
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();

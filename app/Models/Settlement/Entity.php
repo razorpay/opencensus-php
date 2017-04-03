@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX            = 'service_tax';
     const STATUS                 = 'status';
     const TRANSACTION_ID         = 'transaction_id';
-    const ATTEMPT_COUNT          = 'attempt_count';
+    const ATTEMPTS               = 'attempts';
     const CHANNEL                = 'channel';
     const UTR                    = 'utr';
     const FAILURE_REASON         = 'failure_reason';
@@ -36,7 +36,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
         self::TRANSACTION_ID,
-        self::ATTEMPT_COUNT,
+        self::ATTEMPTS,
         self::CHANNEL,
         self::AMOUNT,
     ];
@@ -51,7 +51,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::STATUS,
         self::TRANSACTION_ID,
-        self::ATTEMPT_COUNT,
+        self::ATTEMPTS,
         self::FAILURE_REASON,
         self::REMARKS,
         self::CHANNEL,
@@ -72,11 +72,11 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ATTEMPT_COUNT => 1,
+        self::ATTEMPTS => 1,
     ];
 
     protected $casts = [
-        self::ATTEMPT_COUNT => 'int',
+        self::ATTEMPTS => 'int',
     ];
 
     protected $amounts = [
@@ -176,9 +176,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
-    public function getAttemptCount()
+    public function getAttempts()
     {
-        return $this->getAttribute(self::ATTEMPT_COUNT);
+        return $this->getAttribute(self::ATTEMPTS);
     }
 
     // --------------------------------- setters -------------------------------
@@ -243,9 +243,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERSION, $version);
     }
 
-    public function setAttemptCount($count)
+    public function setAttempts($count)
     {
-        $this->setAttribute(self::ATTEMPT_COUNT, $count);
+        $this->setAttribute(self::ATTEMPTS, $count);
     }
 
     // --------------------------------- modifiers -------------------------------
@@ -299,10 +299,10 @@ class Entity extends Base\PublicEntity
         return parent::save($options);
     }
 
-    public function incrementAttemptCount()
+    public function incrementAttempts()
     {
-        $count = $this->getAttemptCount() + 1;
+        $count = $this->getAttempts() + 1;
 
-        $this->setAttemptCount($count);
+        $this->setAttempts($count);
     }
 }
