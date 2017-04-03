@@ -331,7 +331,9 @@ class PaymentController extends Controller
      * and updates the on_hold flag to false to allow settlements
      * for the payment txn.
      *
-     * If payment has a linked transfer, updates it's on_hold value too.
+     * If payment has a linked transfer, this updates it's on_hold value too.
+     *
+     * @return ApiResponse
      */
     public function updateOnHold()
     {
