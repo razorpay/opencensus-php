@@ -19,7 +19,6 @@ class Entity extends Base\Entity
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
-    const REFUND_AMOUNT         = 'refund_amount';
     const RECEIVED              = 'received';
     const STATUS_CODE           = 'status_code';
     const VPA                   = 'vpa';
@@ -42,7 +41,6 @@ class Entity extends Base\Entity
         self::GATEWAY_PAYMENT_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
-        self::REFUND_AMOUNT,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
@@ -61,14 +59,13 @@ class Entity extends Base\Entity
         self::GATEWAY_PAYMENT_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
-        self::REFUND_AMOUNT,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
     );
 
     protected $casts = array(
-        'amount'  =>  'int'
+        'amount'  =>  'int',
     );
 
     protected static $generators = [
@@ -94,11 +91,6 @@ class Entity extends Base\Entity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
-    }
-
-    public function setRefundAmount($refundAmount)
-    {
-        $this->setAttribute(self::REFUND_AMOUNT, $refundAmount);
     }
 
     public function getPaymentId()

@@ -7,7 +7,12 @@ use RZP\Error\ErrorCode;
 class ResponseCodeMap
 {
     const ERROR_CODES = array(
+        1    => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        4    => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         5    => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
+        9    => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        10   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        99   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         101  => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         5000 => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         5001 => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
@@ -28,7 +33,7 @@ class ResponseCodeMap
         5013 => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
         5014 => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE,
 
-        // 8000-8010 are all JSON parsing or encryption errors
+        // 8000-8008 are all JSON parsing or encryption errors
         8000 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         8001 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         8002 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
@@ -38,9 +43,9 @@ class ResponseCodeMap
         8006 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         8007 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         8008 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        8009 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        8010 => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-        8011 => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+
+        8009 => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+        8010 => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
 
         9999 => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
     );

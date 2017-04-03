@@ -24,6 +24,7 @@ class Fields
     const RESPONSE                  = "response";
     const SUBMERCHANT_ID            = "subMerchantId";
     const SUCCESS                   = "success";
+    const STATUS                    = "status";
     const TERMINAL_ID               = "terminalId";
     const TXN_COMPLETION_DATE       = "TxnCompletionDate";
     const TXN_INIT_DATE             = "TxnInitDate";

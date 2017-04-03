@@ -18,6 +18,7 @@ use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Utility;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Upi\Icici\ResponseCodeMap;
 
 class Gateway extends Base\Gateway
 {
@@ -46,7 +47,6 @@ class Gateway extends Base\Gateway
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
         Fields::REFUND_ID                 => Entity::REFUND_ID,
-        Fields::REFUND_AMOUNT             => Entity::REFUND_AMOUNT
     ];
 
     /**
@@ -106,7 +106,6 @@ class Gateway extends Base\Gateway
                 $errorCode,
                 $status,
                 ResponseCode::getResponseMessage($status));
-
         }
 
         return true;
@@ -260,7 +259,7 @@ class Gateway extends Base\Gateway
 
         $url = parent::getUrl($type);
 
-        return str_replace('{merchantId}', $this->getMerchantId(), $url);
+        return sprintf($url, $this->getMerchantId());
     }
 
     /**
@@ -355,6 +354,7 @@ class Gateway extends Base\Gateway
     {
         $mcc = (string) $input['merchant']->getCategory();
 
+        //Dafault merchant category code is 5411
         if ($mcc === '1234')
         {
             $mcc = '5411';
@@ -586,9 +586,9 @@ class Gateway extends Base\Gateway
         // and we are not revealing Bank RRN, this gives us a bit of
         // extra security for fake callbacks
 
-        assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
-        assertTrue($content[Fields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
-        assertTrue($content[Fields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
+        assertEquals($content[Fields::MERCHANT_ID], $gatewayPayment->getMerchantId());
+        assertEquals($content[Fields::MERCHANT_TRAN_ID], $gatewayPayment->getPaymentId());
+        assertEquals($content[Fields::BANK_RRN], $gatewayPayment->getGatewayPaymentId());
 
         if ($status !== Status::SUCCESS)
         {
@@ -619,16 +619,21 @@ class Gateway extends Base\Gateway
         $content = $this->parseGatewayResponse($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, [
-            'gateway'   => $this->gateway,
-            'response'  => $content
+            'gateway'    => $this->gateway,
+            'payment_id' => $input['payment']['id'],
+            'response'   => $content
         ]);
 
         if ($content['success'] !== 'true')
         {
+            $code = $content['response'];
+
+            $errorCode = ResponseCodeMap::getApiErrorCode($code);
+
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-                $content['success'],
-                $content);
+                $errorCode,
+                $content['status'],
+                ResponseCode::getResponseMessage($content['response']));
         }
 
         $this->updateGatewayPaymentResponse($refund, $content);
@@ -637,10 +642,12 @@ class Gateway extends Base\Gateway
     protected function getRefundRequest(array $input)
     {
         $payment = $input['payment'];
+
         $refund = $input['refund'];
 
         $repo = $this->getRepository();
-        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($payment['id'], Action::AUTHORIZE);
 
         $data = [
             Fields::MERCHANT_ID                     => $this->getMerchantId(),

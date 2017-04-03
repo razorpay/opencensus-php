@@ -19,5 +19,7 @@ class Url
 
     const TEST_AUTHORIZE    = '/newCollectPay';
     const TEST_VERIFY       = '/newTransactionStatus';
-    const TEST_REFUND       = '/api/MerchantAPI/UPI/v1/Refund/{merchantId}';
+
+    //here %s is for merchant Id string
+    const TEST_REFUND       = '/api/MerchantAPI/UPI/v1/Refund/%s';
 }

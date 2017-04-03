@@ -46,6 +46,6 @@
 - Download and install the APK from the Google Drive link above
 - You will still need the environment variables to raise the collect request
 - PIN=1234 (For the iMobile App)
-- Issue a collect request via obscure.php to `testpay@icici`
+- Issue a collect request via obscure.php to `vishnu@icici`
 - Accept the collect request
 - Verify->Authorize->Capture the payment

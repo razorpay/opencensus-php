@@ -253,7 +253,7 @@ class Entity extends Base\PublicEntity
 
     public function isUpiEnabled()
     {
-        return (bool) $this->getAttribute(self::UPI);
+        return $this->getAttribute(self::UPI);
     }
 
     public function isShared()
@@ -571,7 +571,7 @@ class Entity extends Base\PublicEntity
      */
     public function getVpa(): string
     {
-        if ($this->getUpi())
+        if ($this->getUpi() === true)
         {
             return $this->attributes[self::GATEWAY_MERCHANT_ID2];
         }

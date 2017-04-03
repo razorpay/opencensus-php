@@ -190,18 +190,130 @@ return [
         ],
     ],
 
+    'testRefundInvalidVpa'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA
+        ],
+    ],
+
+    'testRefundDuplicateRequest'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST
+        ],
+    ],
+
+    'testRefundInsufficientBalance'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE
+        ],
+    ],
+
+    'testRefundInvalidEncryptedRequest'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR
+        ],
+    ],
+
+    'testRefundInternalServerError'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED
+        ],
+    ],
+
+
+
     'testPaymentUpiEntity' => [
         'action'                => 'authorize',
         'amount'                => 50000,
-        'bank'                  => ProviderCode::getBankCode('hdfcbank'),
+        'bank'                  => ProviderCode::getBankCode('icici'),
         'acquirer'              => 'icici',
         'received'              => true,
         'email'                 => null,
         'contact'               => null,
         'gateway_merchant_id'   => '123456',
         'status_code'           => '0',
-        'vpa'                   => 'shk@hdfcbank',
-        'provider'              => 'hdfcbank',
+        'vpa'                   => 'vishnu@icici',
+        'provider'              => 'icici',
+        'entity'                => 'upi',
+    ],
+
+    'testRefundUpiEntity' => [
+        'action'                => 'refund',
+        'amount'                => 50000,
+        'bank'                  => ProviderCode::getBankCode('icici'),
+        'acquirer'              => 'icici',
+        'received'              => true,
+        'email'                 => null,
+        'contact'               => null,
+        'gateway_merchant_id'   => '123456',
+        'status_code'           => '0',
+        'vpa'                   => 'vishnu@icici',
+        'provider'              => 'icici',
+        'entity'                => 'upi',
+    ],
+
+    'testPartialRefundUpiEntity' => [
+        'action'                => 'refund',
+        'amount'                => 30000,
+        'bank'                  => ProviderCode::getBankCode('icici'),
+        'acquirer'              => 'icici',
+        'received'              => true,
+        'email'                 => null,
+        'contact'               => null,
+        'gateway_merchant_id'   => '123456',
+        'status_code'           => '0',
+        'vpa'                   => 'vishnu@icici',
+        'provider'              => 'icici',
         'entity'                => 'upi',
     ],
 

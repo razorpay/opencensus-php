@@ -1839,5 +1839,4 @@ DROP TABLE `gateway_status_absence`;
 
 ALTER TABLE upi
     ADD COLUMN refund_id CHAR(14) AFTER payment_id,
-    ADD COLUMN refund_amount VARCHAR(255) AFTER refund_id,
     ADD INDEX upi_refund_id_index (refund_id);

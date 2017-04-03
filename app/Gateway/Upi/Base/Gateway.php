@@ -20,12 +20,10 @@ class Gateway extends Base\Gateway
 
         $payment->setAmount($this->input['payment']['amount']);
 
-        if (isset($this->input['refund']['id']) === true) {
+        if ($this->action === Base\Action::REFUND) {
             $payment->setRefundId($this->input['refund']['id']);
-        }
 
-        if (isset($this->input['refund']['amount']) === true) {
-            $payment->setRefundAmount($this->input['refund']['amount']);
+            $payment->setAmount($this->input['refund']['amount']);
         }
 
         $payment->setAction($action);
