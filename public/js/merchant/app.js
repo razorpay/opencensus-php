@@ -227,6 +227,10 @@ var app = angular.module('app', [
     }).state('app.webhooks', {
       url: '/webhooks',
       templateProvider: reactTemplateProvider('<webhooks-list />')
+    }).state('app.credit', {
+      url: '/credit',
+      templateProvider: reactTemplateProvider('<credits-new/>'),
+      // templateUrl: 'tpl/app_credits.html'
     })
 
       //Guest Routes

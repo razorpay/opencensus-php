@@ -17,6 +17,7 @@ import ItemsListContainer from './containers/Items/List'
 import InvoicesListContainer from './containers/Invoices/List'
 import InvoicesNewContainer from './containers/Invoices/New'
 import InvoiceDetailsContainer from './containers/Invoices/Details'
+<<<<<<< HEAD
 
 import OrdersListContainer from './containers/Orders/List'
 import OrderDetailsContainer from './containers/Orders/Details'
@@ -25,6 +26,9 @@ import WebhooksContainer from './containers/Webhooks/List'
 import SettlementsListContainer from './containers/Settlements/List'
 import SettlementDetailsContainer from './containers/Settlements/Details'
 
+=======
+import CreditsContainer from './containers/Credits/New'
+>>>>>>> Set up react code for credits section
 // import PlansListContainer from './containers/Plans/List'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
 // import SubscriptionsNewContainer from './containers/Subscriptions/New'
@@ -98,6 +102,7 @@ createNgDirective('invoicesList', InvoicesListContainer)
 createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
 createNgDirective('customersList', CustomersListContainer)
 createNgDirective('itemsList', ItemsListContainer)
+createNgDirective('creditsNew', CreditsContainer)
 
 createNgDirective('ordersList', OrdersListContainer)
 createNgDirective('orderDetails', OrderDetailsContainer, ['id'])
