@@ -92,7 +92,7 @@ class DefaultPlan
                     'plan_id'        => '1AXludj60w4pSp',
                     'plan_name'      => 'Full Price',
                     'feature'        => 'payment',
-                    'payment_method' => 'ecollect',
+                    'payment_method' => 'bank_transfer',
                     'percent_rate'   => '0',
                     'fixed_rate'     => '0',
                     'expired_at'     => null,

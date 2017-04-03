@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Ecollect;
+namespace RZP\Models\BankTransfer;
 
 use RZP\Exception;
 
@@ -22,7 +22,7 @@ class Mode
         if (self::isValid($mode) === false)
         {
             throw new Exception\InvalidArgumentException(
-                'Not a valid Ecollect Mode: ' . $mode);
+                'Not a valid bank transfer Mode: ' . $mode);
         }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Ecollect;
+namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Bank\IFSC;
 

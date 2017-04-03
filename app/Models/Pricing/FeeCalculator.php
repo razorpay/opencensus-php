@@ -432,7 +432,6 @@ class FeeCalculator
 
         foreach ($rules as $rule)
         {
-
             $value = $rule->getAttribute($fieldName);
 
             if ($value === $fieldValue)

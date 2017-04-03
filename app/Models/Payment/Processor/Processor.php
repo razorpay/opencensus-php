@@ -170,7 +170,7 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    public function processEcollect(array $input)
+    public function processBankTransfer(array $input)
     {
         $this->repo->transaction(function() use ($input) {
             $this->createPaymentEntity($input);

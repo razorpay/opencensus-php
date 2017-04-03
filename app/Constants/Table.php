@@ -18,7 +18,7 @@ class Table
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
-    const ECOLLECT              = 'ecollect';
+    const BANK_TRANSFER         = 'bank_transfer';
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
     const SCHEDULE              = 'schedules';

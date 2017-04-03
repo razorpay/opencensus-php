@@ -1815,4 +1815,4 @@ ALTER TABLE first_data
     MODIFY COLUMN error_message VARCHAR(255);
 
 ALTER TABLE merchant_banks
-    ADD COLUMN ecollect TINYINT(1) NOT NULL DEFAULT 0 AFTER upi;
+    ADD COLUMN bank_transfer TINYINT(1) NOT NULL DEFAULT 0 AFTER upi;

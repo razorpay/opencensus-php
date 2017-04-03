@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Trace\TraceCode;
-use RZP\Models\Ecollect;
+use RZP\Models\BankTransfer;
 use ApiResponse;
 use Request;
 
@@ -13,7 +13,7 @@ class EcollectController extends Controller
     {
         parent::__construct();
 
-        $this->service = new Ecollect\Service;
+        $this->service = new BankTransfer\Service;
     }
 
     public function validateEcollect()

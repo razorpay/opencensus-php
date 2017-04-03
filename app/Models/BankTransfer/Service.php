@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Ecollect;
+namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -102,9 +102,9 @@ class Service extends Base\Service
     {
         $this->validator->validateInput('validate', $input);
 
-        $ecollect = $this->core->create($input);
+        $bankTransfer = $this->core->create($input);
 
-        $uniqueUtr = $this->validateUniqueUtr($ecollect);
+        $uniqueUtr = $this->validateUniqueUtr($bankTransfer);
 
         // TODO: Check sinks to see if a payment is expected
         $expected = $this->findBankAccount();
@@ -112,16 +112,16 @@ class Service extends Base\Service
         if (($expected === true) and
             ($uniqueUtr === true))
         {
-            $paymentInput = $this->ecollectPaymentArray($input);
+            $paymentInput = $this->bankTransferPaymentArray($input);
 
             // TODO: Id the merchant here using the input payee_account
             $merchant = $this->repo->merchant->find('10000000000000');
 
             $paymentProcessor = new Payment\Processor\Processor($merchant);
 
-            $payment = $paymentProcessor->processEcollect($paymentInput);
+            $payment = $paymentProcessor->processBankTransfer($paymentInput);
 
-            $ecollect->payment()->associate($payment);
+            $bankTransfer->payment()->associate($payment);
 
             $data = [
                 'valid'          => true,
@@ -144,19 +144,19 @@ class Service extends Base\Service
 
         $data['transaction_id'] = $input['transaction_id'];
 
-        $this->repo->saveOrFail($ecollect);
+        $this->repo->saveOrFail($bankTransfer);
 
         return $data;
     }
 
-    protected function validateUniqueUtr(Entity $ecollect)
+    protected function validateUniqueUtr(Entity $bankTransfer)
     {
-        $transactionId = $ecollect->getTransactionId();
+        $transactionId = $bankTransfer->getTransactionId();
 
-        $duplicateEcollect = $this->repo->ecollect
-                                  ->findByTransactionId($transactionId);
+        $duplicateBankTransfer = $this->repo->bank_transfer
+                                      ->findByTransactionId($transactionId);
 
-        if ($duplicateEcollect === null)
+        if ($duplicateBankTransfer === null)
         {
             return true;
         }
@@ -194,22 +194,22 @@ class Service extends Base\Service
         return true;
     }
 
-    protected function ecollectPaymentArray(array $input)
+    protected function bankTransferPaymentArray(array $input)
     {
-        $paymentArray = $this->defaultEcollectPaymentArray();
+        $paymentArray = $this->defaultBankTransferPaymentArray();
 
         $paymentArray[Payment\Entity::AMOUNT] = $input['amount'];
 
         return $paymentArray;
     }
 
-    protected function defaultEcollectPaymentArray()
+    protected function defaultBankTransferPaymentArray()
     {
         return [
             Payment\Entity::CONTACT  => Constants::CONTACT,
             Payment\Entity::EMAIL    => Constants::EMAIL,
             Payment\Entity::CURRENCY => Currency\Currency::INR,
-            Payment\Entity::METHOD   => Payment\Method::ECOLLECT,
+            Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
         ];
     }
 }

@@ -1056,7 +1056,7 @@ trait Authorize
                 $this->verifyUpiEnabled();
                 break;
 
-            case Payment\Method::ECOLLECT:
+            case Payment\Method::BANK_TRANSFER:
                 $this->verifyBankTransferEnabled();
                 break;
 
@@ -1725,7 +1725,7 @@ trait Authorize
         $merchantMethods = $this->methods;
 
         if (($merchantMethods === null) or
-            ($merchantMethods->isEcollectEnabled() === false))
+            ($merchantMethods->isBankTransferEnabled() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);

@@ -36,7 +36,6 @@ class Entity
     const FEATURE               = 'feature';
     const WEBHOOK               = 'webhook';
     const INVOICE               = 'invoice';
-    const ECOLLECT              = 'ecollect';
     const SCHEDULE              = 'schedule';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';
@@ -51,6 +50,7 @@ class Entity
     const FEE_BREAKUP           = 'fee_breakup';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
+    const BANK_TRANSFER         = 'bank_transfer';
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';
     const MERCHANT_DETAIL       = 'merchant_detail';

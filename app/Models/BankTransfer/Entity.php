@@ -1,7 +1,8 @@
 <?php
 
-namespace RZP\Models\Ecollect;
+namespace RZP\Models\BankTransfer;
 
+use RZP\Constants;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
@@ -48,7 +49,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT => 'int',
     ];
 
-    protected $entity = 'ecollect';
+    protected $entity = Constants\Entity::BANK_TRANSFER;
 
 
     // ----------------------- Associations ----------------------------------------

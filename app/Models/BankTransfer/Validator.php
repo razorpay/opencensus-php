@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Ecollect;
+namespace RZP\Models\BankTransfer;
 
 use RZP\Base;
 use RZP\Exception;
@@ -50,7 +50,7 @@ class Validator extends Base\Validator
         if (Mode::isValid($mode) === false)
         {
             throw new Exception\InvalidArgumentException(
-                'Not a valid Ecollect Mode: ' . $mode);
+                'Not a valid bank transfer Mode: ' . $mode);
         }
     }
 }

@@ -1,12 +1,13 @@
 <?php
 
-namespace RZP\Models\Ecollect;
+namespace RZP\Models\BankTransfer;
 
+use RZP\Constants;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'ecollect';
+    protected $entity = Constants\Entity::BANK_TRANSFER;
 
     public function findByTransactionId($transactionId)
     {
