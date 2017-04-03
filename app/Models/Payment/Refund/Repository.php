@@ -343,4 +343,33 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
                     ->get();
     }
+
+    public function fetchRefundsByGatewayAttemptsBetween($gateway, $attempts, $from, $to)
+    {
+        // Select * from refunds join payments on refunds.payment_id = payments.id
+        // where payments.gateway = $gateway and refunds.attempts = $attempt
+        $attrs = $this->getAttributeWithTableName('*');
+
+        $pRepo = $this->manager->payment;
+        $pTableName = $pRepo->getTableName();
+
+        $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+        $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
+        $rAttempts = $this->getAttributeWithTableName(Refund\Entity::ATTEMPTS);
+        $rStatus = $this->getAttributeWithTableName(Refund\Entity::STATUS);
+
+        $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+        $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+
+        return $this->newQuery()
+                    ->select($attrs)
+                    ->join($pTableName, $rPaymentId, '=', $pId)
+                    ->where($rAttempts, '=', $attempts)
+                    ->where($rStatus, '=', Refund\Status::FAILED)
+                    ->where($rCreatedAt, '>=', $from)
+                    ->where($rCreatedAt, '<', $to)
+                    ->where($pGateway, '=', $gateway)
+                    ->with(['payment','payment.terminal'])
+                    ->get();
+    }
 }

@@ -140,6 +140,8 @@ class TraceCode
     const MIGS_CAN_MANUAL_REFUND                        = 'MIGS_CAN_MANUAL_REFUND';
     const LATE_AUTHORIZE_AUTO_CAPTURE                   = 'LATE_AUTHORIZE_AUTO_CAPTURE';
     const MISSING_BILLDESK_CANCELLED_REFUNDS            = 'MISSING_BILLDESK_CANCELLED_REFUNDS';
+    const REFUND_RETRY_INITIATED                        = 'REFUND_RETRY_INITIATED';
+    const REFUND_RETRY_RESULT                           = 'REFUND_RETRY_RESULT';
 
     const REQUESTS_JOB_REQUEST                          = 'REQUESTS_JOB_REQUEST';
     const REQUESTS_JOB_RESPONSE                         = 'REQUESTS_JOB_RESPONSE';
@@ -728,6 +730,8 @@ class TraceCode
         self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
+        self::REFUND_RETRY_INITIATED                    => 'Retry of failed refunds initiated',
+        self::REFUND_RETRY_RESULT                       => 'Result of failed refunds retry.',
 
         self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
         self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',

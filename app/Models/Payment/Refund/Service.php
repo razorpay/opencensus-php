@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Refund;
 use Config;
 use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
@@ -33,6 +34,13 @@ class Service extends Base\Service
      * */
     const RETRY_FAILED_REFUND_GATEWAYS = [
         Payment\Gateway::BILLDESK,
+    ];
+
+    const MAX_REFUND_RETRY_ATTEMPTS = 3;
+
+    const DURATION_REFUNDS = [
+            1 => 3600,
+            2 => 10800
     ];
 
     public function create(array $input)
@@ -646,9 +654,17 @@ class Service extends Base\Service
 
     public function retryFailedRefunds(array $input = [])
     {
+        $this->trace->info(TraceCode::REFUND_RETRY_INITIATED, $input);
+
         $gateways = self::RETRY_FAILED_REFUND_GATEWAYS;
 
         $status = [];
+
+        $attempts = $input['attempts'];
+
+        $from = $input['from'];
+
+        $to = $input['to'];
 
         $action = 'refundRetry';
 
@@ -658,10 +674,32 @@ class Service extends Base\Service
             $gateways = [$input['gateway']];
         }
 
+        // Not adding a restriction on attempt and timestamp.
         foreach ($gateways as $gateway)
         {
-            $status[$gateway] = $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+            // Every combination of gateway / refund time period needs to be
+            // gone through.
+
+            // Get the appropriate refunds and pass them as part of the refund
+            // Get refunds that have failed and those that have not been
+            // retried more than 3. Post every retry update last retried at.
+            $status[$gateway] = [];
+
+            $refunds = $this->repo->refund->fetchRefundsByGatewayAttemptsBetween($gateway, $attempts, $from, $to);
+
+            foreach ($refunds as $refund)
+            {
+                $processor = $this->getNewProcessor($refund->merchant);
+
+                $refundId = $refund->getId();
+
+                $data = $processor->getGatewayDataForRefund($refund, $refund->payment);
+
+                $status[$gateway][$refundId] = $this->app['gateway']->call($gateway, $action, $data, $this->mode);
+            }
         }
+
+        $this->trace->info(TraceCode::REFUND_RETRY_RESULT, $status);
 
         return $status;
     }
