@@ -261,4 +261,9 @@ class Entity extends Base\PublicEntity
     {
         $this->getAttribute(self::ACTIVATION_PROGRESS);
     }
+
+    public function getContactMobile()
+    {
+        return $this->getAttribute(self::CONTACT_MOBILE);
+    }
 }

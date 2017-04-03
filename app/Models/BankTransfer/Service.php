@@ -17,6 +17,8 @@ class Service extends Base\Service
 
     protected $bankAccount;
 
+    protected $merchant;
+
     public function __construct()
     {
         parent::__construct();
@@ -42,7 +44,7 @@ class Service extends Base\Service
 
     public function pay(array $input): array
     {
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::ECOLLECT_PAY_REQUEST,
             $input
         );
@@ -66,7 +68,7 @@ class Service extends Base\Service
 
             if (is_null($cachedData) === false)
             {
-                $this->app['trace']->warning(
+                $this->trace->warning(
                     TraceCode::ECOLLECT_VALIDATION_DUPLICATE_UTR,
                     [
                         'cached_data'   => json_decode($cachedData, true),
@@ -106,18 +108,14 @@ class Service extends Base\Service
 
         $uniqueUtr = $this->validateUniqueUtr($bankTransfer);
 
-        // TODO: Check sinks to see if a payment is expected
-        $expected = $this->findBankAccount();
+        $expected = $this->checkAccount($bankTransfer);
 
         if (($expected === true) and
             ($uniqueUtr === true))
         {
             $paymentInput = $this->bankTransferPaymentArray($input);
 
-            // TODO: Id the merchant here using the input payee_account
-            $merchant = $this->repo->merchant->find('10000000000000');
-
-            $paymentProcessor = new Payment\Processor\Processor($merchant);
+            $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
             $payment = $paymentProcessor->processBankTransfer($paymentInput);
 
@@ -127,6 +125,8 @@ class Service extends Base\Service
                 'valid'          => true,
                 'message'        => null,
             ];
+
+            $this->repo->saveOrFail($bankTransfer);
         }
         else
         {
@@ -144,8 +144,6 @@ class Service extends Base\Service
 
         $data['transaction_id'] = $input['transaction_id'];
 
-        $this->repo->saveOrFail($bankTransfer);
-
         return $data;
     }
 
@@ -160,6 +158,14 @@ class Service extends Base\Service
         {
             return true;
         }
+
+        $this->trace->warning(
+            TraceCode::ECOLLECT_VALIDATION_DUPLICATE_UTR,
+            [
+                'existing_transfer' => $duplicateBankTransfer->toArrayPublic(),
+                'received_utr'      => $bankTransfer->getTransactionId(),
+            ]
+        );
 
         return false;
     }
@@ -189,8 +195,22 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function findBankAccount()
+    protected function checkAccount($bankTransfer)
     {
+        $accountNumber = $bankTransfer->getPayeeAccount();
+
+        $ifscCode = $bankTransfer->getPayeeIfsc();
+
+        $receiver = $this->repo->receiver
+                         ->getValidVirtualBankAccountFromNumber($accountNumber, $ifscCode);
+
+        if (is_null($receiver) === true)
+        {
+            return false;
+        }
+
+        $this->merchant = $receiver->account->merchant;
+
         return true;
     }
 
@@ -206,8 +226,6 @@ class Service extends Base\Service
     protected function defaultBankTransferPaymentArray()
     {
         return [
-            Payment\Entity::CONTACT  => Constants::CONTACT,
-            Payment\Entity::EMAIL    => Constants::EMAIL,
             Payment\Entity::CURRENCY => Currency\Currency::INR,
             Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
         ];

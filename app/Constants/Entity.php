@@ -41,6 +41,7 @@ class Entity
     const MERCHANT              = 'merchant';
     const TERMINAL              = 'terminal';
     const CUSTOMER              = 'customer';
+    const RECEIVER              = 'receiver';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
     const ADJUSTMENT            = 'adjustment';

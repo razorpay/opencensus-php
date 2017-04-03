@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const DELETED_AT                = 'deleted_at';
     const MOBILE_BANKING_ENABLED    = 'mobile_banking_enabled';
     const MPIN                      = 'mpin';
+    const VIRTUAL                   = 'virtual';
 
     // Mobile Banking Enabled
     const MPIN_SET              = 'mpin_set';
@@ -63,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_CITY,
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_PIN,
+        self::VIRTUAL,
     );
 
     protected $visible = array(
@@ -123,6 +125,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = array(
         self::MOBILE_BANKING_ENABLED => 'bool',
+        self::VIRTUAL                => 'bool',
     );
 
     protected $generateIdOnCreate = true;
@@ -265,6 +268,16 @@ class Entity extends Base\PublicEntity
         }
 
         $this->attributes[self::MPIN] = Crypt::encrypt($mpin);
+    }
+
+    public function setVirtual($virtual)
+    {
+        return $this->setAttribute(self::VIRTUAL, $virtual);
+    }
+
+    public function isVirtual()
+    {
+        return (bool) $this->getAttribute(self::VIRTUAL);
     }
 
     protected function getIfscCodeAttribute($code)

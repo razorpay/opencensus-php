@@ -18,7 +18,8 @@ class Table
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
-    const BANK_TRANSFER         = 'bank_transfer';
+    const RECEIVER              = 'receivers';
+    const BANK_TRANSFER         = 'bank_transfers';
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
     const SCHEDULE              = 'schedules';

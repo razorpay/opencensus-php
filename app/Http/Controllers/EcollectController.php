@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\BankTransfer;
+use RZP\Models\Receiver;
 use ApiResponse;
 use Request;
 
@@ -13,14 +14,16 @@ class EcollectController extends Controller
     {
         parent::__construct();
 
-        $this->service = new BankTransfer\Service;
+        $this->bankTransferService = new BankTransfer\Service;
+
+        $this->receiverService = new Receiver\Service;
     }
 
     public function validateEcollect()
     {
         $input = Request::all();
 
-        $response = $this->service->validate($input);
+        $response = $this->bankTransferService->validate($input);
 
         return ApiResponse::json($response);
     }
@@ -29,18 +32,24 @@ class EcollectController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service->pay($input);
+        $response = $this->bankTransferService->pay($input);
 
         return ApiResponse::json($response);
     }
 
-    public function createCustomerBankAccount()
+    public function createCustomerBankAccount($id)
     {
+        $response = $this->receiverService->createCustomerBankAccount($id);
 
+        return ApiResponse::json($response);
     }
 
     public function createStandingBankAccount()
     {
+        $input = Request::all();
 
+        $response = $this->receiverService->createStandingBankAccount($input);
+
+        return ApiResponse::json($response);
     }
 }

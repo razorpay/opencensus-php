@@ -279,7 +279,7 @@ class Entity extends Base\PublicEntity
 
     public function isMethodEnabled($method)
     {
-        $func = 'is' . ucfirst($method) . 'Enabled';
+        $func = 'is' . studly_case($method) . 'Enabled';
 
         return $this->$func();
     }

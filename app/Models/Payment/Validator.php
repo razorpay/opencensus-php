@@ -89,6 +89,7 @@ class Validator extends Base\Validator
         $allowedPaymentMethods = [
             'aeps',
             Payment\Method::TRANSFER,
+            Payment\Method::BANK_TRANSFER,
         ];
 
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
@@ -271,6 +272,7 @@ class Validator extends Base\Validator
         $allowedPaymentMethods = [
             'aeps',
             Payment\Method::TRANSFER,
+            Payment\Method::BANK_TRANSFER,
         ];
 
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and

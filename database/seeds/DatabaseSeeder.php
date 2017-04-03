@@ -263,6 +263,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'billing_label' => 'Test Account',
                     'org_id'        => self::RAZORPAY_ORG_ID,
                     )
                 );
@@ -272,6 +273,7 @@ class DatabaseSeeder extends Seeder
                     'merchant_id'   => Account::TEST_ACCOUNT,
                     'contact_name'  => 'Test Account',
                     'contact_email' => 'test@razorpay.com',
+                    'contact_mobile'=> '9876543210',
                     'created_at'    =>  $currentTime,
                     'updated_at'    =>  $currentTime,
                     )
