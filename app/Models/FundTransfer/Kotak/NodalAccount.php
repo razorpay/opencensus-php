@@ -379,7 +379,7 @@ class NodalAccount
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
 
         $mode = $this->getMode();
 

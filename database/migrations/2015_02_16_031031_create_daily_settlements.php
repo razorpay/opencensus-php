@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
+use RZP\Models\FileStore\Entity as FileStore;
 
 class CreateDailySettlements extends Migration
 {

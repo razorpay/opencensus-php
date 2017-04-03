@@ -73,8 +73,6 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::ICICI_NODAL_TRANSFER,
-            self::FUND_TRANSFER_EXCEL,
-            self::FUND_TRANSFER_TXT,
         ],
 
         Constants\Entity::BATCH => [
@@ -94,6 +92,11 @@ class Type
 
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
+        ],
+
+        Constants\Entity::BATCH_FUND_TRANSFER => [
+            self::FUND_TRANSFER_EXCEL,
+            self::FUND_TRANSFER_TXT,
         ],
     ];
 

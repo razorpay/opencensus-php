@@ -26,19 +26,23 @@ trait BatchFundTransferTrait
         $this->repo->saveOrFail($this->batchFundTransfer);
     }
 
-    protected function updateBatchFundTransferEntityUrls(array $urls)
+    protected function updateFileDetailsInBatchFundTransferEntity(array $details)
     {
         if ($this->batchFundTransfer === null)
         {
             throw new Exception\LogicException(
-                'Update URLs for Batch Settlement attempted before entity creation',
+                'Update file details for Batch Settlement attempted before entity creation',
                 null,
                 [
-                    'urls' => $urls
+                    'details' => $details
                 ]);
         }
 
-        $this->batchFundTransfer->setUrls($urls);
+        $this->batchFundTransfer->setUrls($details['urls']);
+
+        $this->batchFundTransfer->setTxtFileId($details['txt_file_id']);
+
+        $this->batchFundTransfer->setExcelFileId($details['excel_file_id']);
 
         $this->repo->saveOrFail($this->batchFundTransfer);
     }

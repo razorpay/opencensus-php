@@ -197,7 +197,7 @@ class SettlementTest extends TestCase
 
         // Validate 2 files were created
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 2);
+        $this->assertSame($content['count'], 3);
 
         // Reset test params
         Carbon::setTestNow();
@@ -227,7 +227,7 @@ class SettlementTest extends TestCase
 
         // Validate 2 files were created
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 2);
+        $this->assertSame($content['count'], 3);
 
         Carbon::setTestNow();
     }
@@ -255,7 +255,7 @@ class SettlementTest extends TestCase
 
         // Validate 2 files were created
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 2);
+        $this->assertSame($content['count'], 3);
 
         Carbon::setTestNow();
     }
@@ -469,14 +469,14 @@ class SettlementTest extends TestCase
         $this->assertTestResponse($batchFundTransfer, 'fetchAndMatchBatchDataSettlement');
         $this->assertGreaterThanOrEqual($batchFundTransfer['initiated_at'], time());
         $this->assertNull($batchFundTransfer['reconciled_at']);
+        $this->assertNotNull($batchFundTransfer['txt_file_id']);
+        $this->assertNotNull($batchFundTransfer['excel_file_id']);
 
         // Validate fund_transfer_attempt entity
         $bta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($bta, 'matchSettlementAttempt');
         $this->assertEquals($batchFundTransfer['id'], $bta['batch_fund_transfer_id']);
         $this->assertEquals($setl['id'], $bta['source']);
-        $this->assertNotNull($bta['txt_file_id']);
-        $this->assertNotNull($bta['excel_file_id']);
 
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 3);
@@ -592,7 +592,7 @@ class SettlementTest extends TestCase
         $this->assertNotEquals($content, null);
 
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 4);
+        $this->assertSame($content['count'], 5);
     }
 
     public function testIciciNodalTransfer()

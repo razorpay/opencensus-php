@@ -180,22 +180,6 @@ trait SettlementTrait
         return [$setl, $bankTransferAtpt];
     }
 
-    protected function updateValuesForAttempts(
-        $setlAttempts,
-        FileStore\Creator $txtFileEntity,
-        FileStore\Creator $excelFileEntity)
-    {
-        $txtFileId = ($txtFileEntity->get())['id'];
-        $excelFileId = ($excelFileEntity->get())['id'];
-
-        return $this->repo->fund_transfer_attempt->updateFileIds(
-            $setlAttempts,
-            [
-                Attempt::TXT_FILE_ID    => FileStore\Entity::verifyIdAndSilentlyStripSign($txtFileId),
-                Attempt::EXCEL_FILE_ID  => FileStore\Entity::verifyIdAndSilentlyStripSign($excelFileId),
-            ]);
-    }
-
     /**
      * Settlement is done only bank account change is not recent as we need some
      * time till beneficiary is updated in kotak

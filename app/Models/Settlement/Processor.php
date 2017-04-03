@@ -189,11 +189,11 @@ class Processor extends Base\Core
             list($txtFileEntity, $excelFileEntity) =
                 $this->generateSettlementFile($setlAttempts, $channel, $h2h);
 
-            $this->updateValuesForAttempts(
-                $setlAttempts, $txtFileEntity, $excelFileEntity);
+            $txtFileDetails = $txtFileEntity->get();
+            $excelFileDetails = $excelFileEntity->get();
 
-            $returnData['settlement_text_file'] = $txtFileEntity->get();
-            $returnData['settlement_excel_file'] = $excelFileEntity->get();
+            $returnData['settlement_text_file'] = $txtFileDetails;
+            $returnData['settlement_excel_file'] = $excelFileDetails;
 
             $txtUrl = $txtFileEntity->getUrl();
             $excelUrl = $excelFileEntity->getUrl();
@@ -203,7 +203,12 @@ class Processor extends Base\Core
                 'kotak_settlement_excel' => $excelUrl,
             ];
 
-            $this->updateBatchFundTransferEntityUrls($urls);
+            $this->updateFileDetailsInBatchFundTransferEntity(
+                [
+                    'urls' => $urls,
+                    'txt_file_id' => $txtFileDetails['id'],
+                    'excel_file_id' => $excelFileDetails['id'],
+                ]);
 
             $slackData = $returnData;
 
