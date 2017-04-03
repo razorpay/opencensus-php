@@ -10,39 +10,39 @@ use Carbon\Carbon;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'payer_account'  => 'required|string|max:20',
-        'payer_ifsc'     => 'required|string|size:11',
-        'payee_account'  => 'required|string|max:20',
-        'payee_ifsc'     => 'required|string|size:11',
-        'mode'           => 'required|custom',
-        'transaction_id' => 'required|string|max:30',
-        'time'           => 'required|integer',
-        'amount'         => 'required|integer|min:0',
-        'description'    => 'sometimes|string|max:100',
+        Entity::PAYER_ACCOUNT  => 'required|string|max:20',
+        Entity::PAYER_IFSC     => 'required|string|size:11',
+        Entity::PAYEE_ACCOUNT  => 'required|string|max:20',
+        Entity::PAYEE_IFSC     => 'required|string|size:11',
+        Entity::MODE           => 'required|custom',
+        Entity::UTR            => 'required|string|max:30',
+        Entity::TIME           => 'required|integer',
+        Entity::AMOUNT         => 'required|integer|min:0',
+        Entity::DESCRIPTION    => 'sometimes|string|max:100',
     );
 
     protected static $validateRules = array(
-        'payer_account'  => 'required|string|max:20',
-        'payer_ifsc'     => 'required|string|size:11',
-        'payee_account'  => 'required|string|max:20',
-        'payee_ifsc'     => 'required|string|size:11',
-        'mode'           => 'required|custom',
-        'transaction_id' => 'required|string|max:30',
-        'time'           => 'required|integer',
-        'amount'         => 'required|integer|min:0',
-        'description'    => 'sometimes|string|max:100',
+        Entity::PAYER_ACCOUNT  => 'required|string|max:20',
+        Entity::PAYER_IFSC     => 'required|string|size:11',
+        Entity::PAYEE_ACCOUNT  => 'required|string|max:20',
+        Entity::PAYEE_IFSC     => 'required|string|size:11',
+        Entity::MODE           => 'required|custom',
+        Entity::UTR            => 'required|string|max:30',
+        Entity::TIME           => 'required|integer',
+        Entity::AMOUNT         => 'required|integer|min:0',
+        Entity::DESCRIPTION    => 'sometimes|string|max:100',
     );
 
     protected static $payRules = array(
-        'payer_account'  => 'required|string|max:20',
-        'payer_ifsc'     => 'required|string|size:11',
-        'payee_account'  => 'required|string|max:20',
-        'payee_ifsc'     => 'required|string|size:11',
-        'mode'           => 'required|custom',
-        'transaction_id' => 'required|string|max:30',
-        'time'           => 'required|integer',
-        'amount'         => 'required|integer|min:0',
-        'description'    => 'sometimes|string|max:100',
+        Entity::PAYER_ACCOUNT  => 'required|string|max:20',
+        Entity::PAYER_IFSC     => 'required|string|size:11',
+        Entity::PAYEE_ACCOUNT  => 'required|string|max:20',
+        Entity::PAYEE_IFSC     => 'required|string|size:11',
+        Entity::MODE           => 'required|custom',
+        Entity::UTR            => 'required|string|max:30',
+        Entity::TIME           => 'required|integer',
+        Entity::AMOUNT         => 'required|integer|min:0',
+        Entity::DESCRIPTION    => 'sometimes|string|max:100',
     );
 
     protected function validateMode($attribute, $mode)

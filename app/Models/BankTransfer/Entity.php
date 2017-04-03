@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const PAYEE_IFSC     = 'payee_ifsc';
     const AMOUNT         = 'amount';
     const MODE           = 'mode';
-    const TRANSACTION_ID = 'transaction_id';
+    const UTR            = 'transaction_id';
     const TIME           = 'time';
     const DESCRIPTION    = 'description';
 
@@ -25,7 +25,7 @@ class Entity extends Base\PublicEntity
         self::PAYEE_ACCOUNT,
         self::PAYEE_IFSC,
         self::MODE,
-        self::TRANSACTION_ID,
+        self::UTR,
         self::TIME,
         self::AMOUNT,
         self::DESCRIPTION,
@@ -40,7 +40,7 @@ class Entity extends Base\PublicEntity
         self::PAYEE_IFSC,
         self::AMOUNT,
         self::MODE,
-        self::TRANSACTION_ID,
+        self::UTR,
         self::TIME,
         self::DESCRIPTION,
     );
@@ -67,9 +67,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getTransactionId()
+    public function getUtr()
     {
-        return $this->getAttribute(self::TRANSACTION_ID);
+        return $this->getAttribute(self::UTR);
     }
 
     public function getPayeeAccount()

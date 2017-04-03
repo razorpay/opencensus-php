@@ -9,10 +9,10 @@ class Repository extends Base\Repository
 {
     protected $entity = Constants\Entity::BANK_TRANSFER;
 
-    public function findByTransactionId($transactionId)
+    public function findByUtr($utr)
     {
         return $this->newQuery()
-                    ->where(Entity::TRANSACTION_ID, '=', $transactionId)
+                    ->where(Entity::UTR, '=', $utr)
                     ->first();
     }
 }

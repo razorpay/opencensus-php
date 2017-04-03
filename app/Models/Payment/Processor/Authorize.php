@@ -1840,7 +1840,10 @@ trait Authorize
 
             $payment->setAuthorizeTimestamp();
 
-            $payment->terminal->incrementUsedCount();
+            if ($payment->terminal !== null)
+            {
+                $payment->terminal->incrementUsedCount();
+            }
 
             // If payment was earlier failed, then that means it's
             // getting authorized late.
@@ -1872,7 +1875,10 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
-            $this->repo->saveOrFail($payment->terminal);
+            if ($payment->terminal !== null)
+            {
+                $this->repo->saveOrFail($payment->terminal);
+            }
 
             $this->updateTokenOnAuthorized();
 
@@ -1902,6 +1908,11 @@ trait Authorize
         if ($payment->hasCard())
         {
             $networkCode = $payment->card->getNetworkCode();
+        }
+
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
         }
 
         return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);

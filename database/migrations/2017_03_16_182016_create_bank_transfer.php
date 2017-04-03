@@ -37,7 +37,7 @@ class CreateBankTransfer extends Migration
 
             $table->string(BankTransfer::MODE, 5);
 
-            $table->string(BankTransfer::TRANSACTION_ID, 30);
+            $table->string(BankTransfer::UTR, 30);
 
             $table->integer(BankTransfer::TIME);
 

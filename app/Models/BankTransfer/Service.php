@@ -51,10 +51,24 @@ class Service extends Base\Service
 
         $this->validator->validateInput('pay', $input);
 
+        $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::UTR]);
+
+        if (($this->mode === Mode::LIVE) and
+            ($bankTransfer !== null))
+        {
+            $this->merchant = $bankTransfer->payment->merchant;
+
+            $paymentProcessor = new Payment\Processor\Processor($this->merchant);
+
+            $paymentId = $bankTransfer->payment->getId();
+
+            $paymentProcessor->processBankTransferPayment($paymentId);
+        }
+
         return [
             'success'        => true,
             'message'        => null,
-            'transaction_id' => $input['transaction_id'],
+            Entity::UTR      => $input[Entity::UTR],
         ];
     }
 
@@ -62,7 +76,7 @@ class Service extends Base\Service
     {
         if($data['valid'] === true)
         {
-            $key = 'ecollect' . $this->mode . $input['transaction_id'];
+            $key = 'ecollect' . $this->mode . $input[Entity::UTR];
 
             $cachedData = $this->cache->get($key);
 
@@ -142,17 +156,17 @@ class Service extends Base\Service
             }
         }
 
-        $data['transaction_id'] = $input['transaction_id'];
+        $data[Entity::UTR] = $input[Entity::UTR];
 
         return $data;
     }
 
     protected function validateUniqueUtr(Entity $bankTransfer)
     {
-        $transactionId = $bankTransfer->getTransactionId();
+        $utr = $bankTransfer->getUtr();
 
         $duplicateBankTransfer = $this->repo->bank_transfer
-                                      ->findByTransactionId($transactionId);
+                                      ->findByUtr($utr);
 
         if ($duplicateBankTransfer === null)
         {
@@ -163,7 +177,7 @@ class Service extends Base\Service
             TraceCode::ECOLLECT_VALIDATION_DUPLICATE_UTR,
             [
                 'existing_transfer' => $duplicateBankTransfer->toArrayPublic(),
-                'received_utr'      => $bankTransfer->getTransactionId(),
+                'received_utr'      => $bankTransfer->getUtr(),
             ]
         );
 
@@ -188,7 +202,7 @@ class Service extends Base\Service
             ];
         }
 
-        $data['transaction_id'] = $input['transaction_id'];
+        $data[Entity::UTR] = $input[Entity::UTR];
 
         $this->uniqueUtrCheck($input, $data);
 

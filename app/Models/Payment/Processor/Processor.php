@@ -189,6 +189,16 @@ class Processor
         return $this->payment;
     }
 
+    public function processBankTransferPayment($id)
+    {
+        $this->payment = $this->repo->payment->findByIdAndMerchant(
+                                                $id, $this->merchant);
+
+        $this->updateAndNotifyPaymentAuthorized();
+
+        return $this->postPaymentAuthorizeProcessing($this->payment);
+    }
+
     public function processAndReturnFees(array & $input)
     {
         if (isset($input['method']) === false)
@@ -997,6 +1007,11 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
+        if ($payment->isBankTransfer() === true)
+        {
+            return true;
+        }
+
         // We do an auto capture only if payment is associated with an order.
         if ($payment->hasOrder() === false)
         {
