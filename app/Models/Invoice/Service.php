@@ -10,20 +10,31 @@ class Service extends Base\Service
 {
     protected $core;
 
-    protected  $userId = null;
+    // This is dashboard's userId and userRole. Used to support access control
+    // for one specific use case of sellerapp.
+    // Ref: https://github.com/razorpay/api/issues/2397
+    protected $userId   = null;
+    protected $userRole = null;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->setUserId();
+        $this->setUser();
 
         $this->core = new Core();
     }
 
     public function create($input)
     {
-        $this->appendUserIdToInput($input);
+        // Appends USER_ID in create input:
+        // - if not already set, and
+        // - if available in headers via dashboard
+        if ((isset($input[Entity::USER_ID]) === false) and
+            ($this->userId !== null))
+        {
+            $input[Entity::USER_ID] = $this->userId;
+        }
 
         $invoice = $this->core->create($input, $this->merchant);
 
@@ -32,18 +43,25 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
-
+                                            $this->userId,
+                                            $this->userRole);
 
         return $invoice->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
     {
-        $this->appendUserIdToInput($input);
+        // Appends USER_ID in query input if userId available in headers via
+        // dashboard given userRole is sellerapp so only invoices created by
+        // that user is visible in fetched list.
+        if (($this->userId !== null) and
+            ($this->userRole === Constants::SELLERAPP_ROLE))
+        {
+            $input[Entity::USER_ID] = $this->userId;
+        }
 
         $invoices = $this->repo->invoice
                                ->fetch($input, $this->merchant->getId());
@@ -53,10 +71,11 @@ class Service extends Base\Service
 
     public function update(string $id, array $input)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         $invoice = $this->core->update($invoice, $input, $this->merchant);
 
@@ -65,10 +84,11 @@ class Service extends Base\Service
 
     public function issue(string $id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         $invoice = $this->core->issue($invoice, $this->merchant);
 
@@ -77,10 +97,11 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         $invoice = $this->core->delete($invoice);
 
@@ -94,10 +115,11 @@ class Service extends Base\Service
 
     public function addLineItems(string $id, array $input)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         $invoice = $this->core->addLineItems($invoice, $input, $this->merchant);
 
@@ -106,10 +128,11 @@ class Service extends Base\Service
 
     public function updateLineItem(string $id, string $lineItemId, array $input)
     {
-        $invoice  = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice  = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         $lineItem = $this->repo->line_item
                                ->findByPublicIdAndMorphEntity(
@@ -129,10 +152,11 @@ class Service extends Base\Service
 
     public function removeLineItem(string $id, string $lineItemId)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         $lineItem = $this->repo->line_item
                                ->findByPublicIdAndMorphEntity(
@@ -147,10 +171,11 @@ class Service extends Base\Service
 
     public function removeManyLineItems(string $id, array $input)
     {
-        $invoice  = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice  = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         (new LineItem\Validator)->validateInput('remove_many', $input);
 
@@ -167,24 +192,26 @@ class Service extends Base\Service
 
     public function sendNotification($id, $medium)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         $data = $this->core->sendNotification($invoice, $medium);
 
         return $data;
     }
 
-    public function expireInvoice($id)
+    public function cancelInvoice($id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
-        $invoice = $this->core->expireInvoice($invoice);
+        $invoice = $this->core->cancelInvoice($invoice);
 
         return $invoice->toArrayPublic();
     }
@@ -201,10 +228,11 @@ class Service extends Base\Service
 
     public function fetchStatus($id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         $data = $this->core->fetchStatus($invoice);
 
@@ -236,10 +264,11 @@ class Service extends Base\Service
 
     public function getInvoicePdf(string $id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
                                             $this->merchant,
-                                            $this->userId);
+                                            $this->userId,
+                                            $this->userRole);
 
         $displayName = $invoice->getPdfDisplayName();
 
@@ -249,38 +278,16 @@ class Service extends Base\Service
     }
 
     /**
-     * Ref: https://github.com/razorpay/api/issues/2397
+     * Sets userId and userRole members of this class by reading values from
+     * request headers sent from dashboard.
      *
      * @return null
      */
-    protected function setUserId()
+    protected function setUser()
     {
         $dashboardHeaders = $this->app['basicauth']->getDashboardHeaders();
 
-        $userRole = $dashboardHeaders['user_role'] ?? null;
-        $userId   = $dashboardHeaders['user_id'] ?? null;
-
-        if ($userRole === 'sellerapp')
-        {
-            $this->userId = $userId;
-        }
-    }
-
-    /**
-     * If user id is sent in headers from dashboard then we do this for two cases:
-     * - In create: To have user_id in db too.
-     * - In list (fetch multiple): To filter invoices based on user_id, restricts
-     *   visibility.
-     *
-     * @param array $input
-     *
-     * @return null
-     */
-    protected function appendUserIdToInput(array & $input)
-    {
-        if ($this->userId !== null)
-        {
-            $input[Entity::USER_ID] = $this->userId;
-        }
+        $this->userId   = $dashboardHeaders['user_id'] ?? null;
+        $this->userRole = $dashboardHeaders['user_role'] ?? null;
     }
 }

@@ -5,17 +5,26 @@ namespace RZP\Models\Invoice;
 class Status
 {
     // -------- Invoice Statuses -----------
+
+    // Almost all attributes can be edited for invoice in draft status.
     const DRAFT         = 'draft';
+    // Invoice when issued is payable by customer. And very few attributes can
+    // be changed.
     const ISSUED        = 'issued';
-    // NOTE: This status is being used in the index.blade.php file too to display a message.
+    // Invoice has been paid.
     const PAID          = 'paid';
+    // Invoice has been cancelled by the creator. It cannot be paid or viewed by
+    // customers.
+    const CANCELLED     = 'cancelled';
+    // Invoice has been expired by our system as it has went past the expire_by
+    // set for invoice.
     const EXPIRED       = 'expired';
-    const DELETED       = 'deleted';
 
     // These statuses have corresponding timestamps column in invoice
     public static $timestampedStatuses = [
         self::ISSUED,
         self::PAID,
+        self::CANCELLED,
         self::EXPIRED,
     ];
 

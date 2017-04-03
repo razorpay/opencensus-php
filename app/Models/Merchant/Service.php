@@ -135,6 +135,10 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
 
+        $this->assignDefaultSettlementSchedule($subMerchant);
+
+        $this->repo->saveOrFail($subMerchant);
+
         return $subMerchant->toArrayPublic();
     }
 
