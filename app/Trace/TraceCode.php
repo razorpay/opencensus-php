@@ -625,7 +625,9 @@ class TraceCode
 
 
     // Trace codes for gateway
-    const FIRST_DATA_PARES_MISSING                  = 'FIRST_DATA_PARES_MISSING';
+    const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
+
+    const USER_EDIT                                     = 'USER_EDIT';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

@@ -14,6 +14,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Base;
 use RZP\Models\Emi;
 use RZP\Models\Key;
+use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
