@@ -25,7 +25,6 @@ PHPUNIT_ENV_FLAG = APP_ENV=testing_docker
 AT=
 
 build: clean
-	$(SHELL) $(DOCKER_SELENIUM_DOWNLOADER)
 	@echo "Installing necessary composer packages"
 	$(COMPOSER) install
 	@echo "Building docker containers"
@@ -36,7 +35,7 @@ build: clean
 
 clean:
 	@echo "Remove orphan containers"
-	-$(DOCKER_COMPOSE) down 
+	-$(DOCKER_COMPOSE) down
 	@echo "Remove dashboard containers if available"
 	if [ "x$(DOCKER_PS_API_ALL)" != x ]; then $(DOCKER_RM) $(DOCKER_PS_API_ALL); fi
 	@echo "Remove dashboard images containers if available"
