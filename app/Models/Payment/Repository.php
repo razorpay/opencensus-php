@@ -533,6 +533,7 @@ class Repository extends Base\Repository
                      ->where(Payment\Entity::ON_HOLD, true)
                      ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
                      ->with('transfer')
+                     ->limit(500)
                      ->get();
 
         return $data;

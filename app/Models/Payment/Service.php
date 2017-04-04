@@ -26,6 +26,8 @@ class Service extends Base\Service
 
     protected $core;
 
+    protected $slack;
+
     public function __construct()
     {
         parent::__construct();
@@ -1056,17 +1058,9 @@ class Service extends Base\Service
      * @param array $input
      * @return array
      */
-    public function updateOnHold(array $input)
+    public function updateOnHold(array $input) : array
     {
-        $date = Carbon::today('Asia/Kolkata');
-
-        $timestamp = $date->timestamp;
-
-        if (($this->app['env'] === 'testing') and
-            (empty($input['testSettleTimeStamp']) === false))
-        {
-            $timestamp = $input['testSettleTimeStamp'];
-        }
+        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
 
         $paymentsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp);
 
@@ -1075,7 +1069,7 @@ class Service extends Base\Service
             [
                 'step'          => 'fetch_payments',
                 'ids_fetched'   => $paymentsToUpdate->getIds(),
-                'timestamp'     => $timestamp
+                'timestamp'     => date('Y-m-d H:i:s', $timestamp)
             ]
         );
 
@@ -1112,7 +1106,7 @@ class Service extends Base\Service
 
         $this->trace->debug(TraceCode::PAYMENT_UPDATE_HOLD_CRON, ['step' => 'summary', 'summary' => $cronSummary]);
 
-        $slackMessage = 'CRON: Payment on_hold deactivate for elapsed on_hold_until';
+        $slackMessage = 'CRON: Payment set on_hold=false for elapsed on_hold_until';
 
         $slackChannel = Config::get('slack.channels.tech_logs');
 
@@ -1129,6 +1123,8 @@ class Service extends Base\Service
         $this->repo->payment->lockForUpdateAndReload($payment);
 
         $payment->setOnHold(false);
+
+        $payment->setOnHoldUntil(null);
 
         $this->repo->saveOrFail($payment);
 
@@ -1148,7 +1144,15 @@ class Service extends Base\Service
 
             $transfer->setOnHold(false);
 
+            $transfer->setOnHoldUntil(null);
+
             $this->repo->saveOrFail($transfer);
+        }
+        // Temp: Payments can't have hold enabled right now without a linked transfer
+        // Fail if no associated transfer. @todo - Remove this when payment hold is added\
+        else
+        {
+            throw new Exception\LogicException('Hold update attempted for payment with no transfer');
         }
     }
 

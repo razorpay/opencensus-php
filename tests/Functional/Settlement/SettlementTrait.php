@@ -55,15 +55,8 @@ trait SettlementTrait
         }
     }
 
-    protected function runPaymentOnHoldUpdateCron($testTimeStamp = null)
+    protected function runPaymentOnHoldUpdateCron()
     {
-        $content = [];
-
-        if ($testTimeStamp !== null)
-        {
-            $content['testSettleTimeStamp'] = $testTimeStamp;
-        }
-
         $request = [
             'url' => '/payments/on_hold/update',
             'method' => 'POST',
