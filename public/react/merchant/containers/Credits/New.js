@@ -150,9 +150,9 @@ export default class CreditsList extends Component {
       );
     } else {
       content = (
-        <alert type="danger" class="text-center">
+        <div class="alert alert-danger text-center">
           Your user account is not associated at present with any active merchant account.
-        </alert>
+        </div>
       );
     }
     return content;
