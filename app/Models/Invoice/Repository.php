@@ -87,6 +87,12 @@ class Repository extends Base\Repository
         return new Base\PublicCollection;
     }
 
+    /**
+     * Gets all ISSUED invoice which are past EXPIRE_BY and marks them as EXPIRED.
+     * Invoices which are in DRAFT/PAID/CANCELLED status are not affected.
+     *
+     * @return Base\PublicCollection
+     */
     public function getIssuedAndPastExpiredByInvoices()
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;

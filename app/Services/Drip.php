@@ -20,8 +20,9 @@ class Drip
     protected $trace;
 
     // Drip Actions
-    const CREATED   = 'created';
-    const ACTIVATED = 'activated';
+    const CREATED       = 'created';
+    const ACTIVATED     = 'activated';
+    const KEY_GENERATED = 'keyGenerated';
 
     // Drip Urls
     const SUBSCRIBERS = 'subscribers';
@@ -29,9 +30,16 @@ class Drip
     const CONTENT_TYPE = 'application/vnd.api+json';
 
     // Drip action to bool map
-    const ACTIVATED_ACTION_MAP = [
-        self::CREATED   => false,
-        self::ACTIVATED => true,
+    const ACTION_MAP = [
+        self::CREATED       => false,
+        self::ACTIVATED     => true,
+        self::KEY_GENERATED => true,
+    ];
+
+    const ACTION_KEY_MAP = [
+        self::CREATED       => self::ACTIVATED,
+        self::ACTIVATED     => self::ACTIVATED,
+        self::KEY_GENERATED => self::KEY_GENERATED,
     ];
 
     // Drip Url maps
@@ -52,16 +60,23 @@ class Drip
         $this->trace = $app['trace'];
     }
 
-    public function sendDripMerchantInfo(string $action, Merchant\Entity $merchant)
+    public function sendDripMerchantInfo(Merchant\Entity $merchant, string $action)
     {
         switch ($action)
         {
+            //
+            // When the merchant is created we tell drip that he is not activated
+            //
             case self::CREATED:
-                $this->sendDripMerchantActivatedOrNot(self::CREATED, $merchant);
+                $this->sendDripMerchantAction($merchant, self::CREATED);
                 break;
 
             case self::ACTIVATED:
-                $this->sendDripMerchantActivatedOrNot(self::ACTIVATED, $merchant);
+                $this->sendDripMerchantAction($merchant, self::ACTIVATED);
+                break;
+
+            case self::KEY_GENERATED:
+                $this->sendDripMerchantAction($merchant, self::KEY_GENERATED);
                 break;
 
             default:
@@ -75,11 +90,13 @@ class Drip
         }
     }
 
-    public function sendDripMerchantActivatedOrNot(string $activated, Merchant\Entity $merchant)
+    public function sendDripMerchantAction(Merchant\Entity $merchant, string $action)
     {
-        $action = self::ACTIVATED_ACTION_MAP[$activated];
+        $key = self::ACTION_KEY_MAP[$action];
 
-        $data = $this->createDripSubscribersArray($action, $merchant);
+        $value = self::ACTION_MAP[$action];
+
+        $data = $this->createDripSubscribersArray($merchant, $key, $value);
 
         $this->sendRequest(self::DRIP_URL_MAP[self::SUBSCRIBERS], $data, 'post');
     }
@@ -110,14 +127,14 @@ class Drip
         $this->dispatch($job);
     }
 
-    protected function createDripSubscribersArray(bool $action, Merchant\Entity $merchant)
+    protected function createDripSubscribersArray(Merchant\Entity $merchant, string $key, bool $value)
     {
         $data = [
             'subscribers' => [
                 [
                     'email' => $merchant->getEmail(),
                     'custom_fields' => [
-                        'activated' => $action
+                        $key => $value
                     ],
                 ],
             ],

@@ -164,7 +164,7 @@ class TraceCode
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                              = 'REFUND_EXCEPTION';
 
-    const EXPIRE_INVOICE                                = 'EXPIRE_INVOICE';
+    const CANCEL_INVOICE                                = 'CANCEL_INVOICE';
     const INVOICE_EXPIRE_VIA_CRON_FAILED                = 'INVOICE_EXPIRE_VIA_CRON_FAILED';
     const INVOICES_EXPIRE_CRON_SUMMARY                  = 'INVOICES_EXPIRE_CRON_SUMMARY';
     const INVOICE_INVALID_CONTACT_NUMBER                = 'INVOICE_INVALID_CONTACT_NUMBER';

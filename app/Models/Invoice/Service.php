@@ -203,7 +203,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function expireInvoice($id)
+    public function cancelInvoice($id)
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
                                             $id,
@@ -211,7 +211,7 @@ class Service extends Base\Service
                                             $this->userId,
                                             $this->userRole);
 
-        $invoice = $this->core->expireInvoice($invoice);
+        $invoice = $this->core->cancelInvoice($invoice);
 
         return $invoice->toArrayPublic();
     }

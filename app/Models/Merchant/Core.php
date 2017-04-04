@@ -40,7 +40,7 @@ class Core extends Base\Core
         }
 
         // Updating the existing customer info and setting activated to false
-        $this->app['drip']->sendDripMerchantInfo(Merchant\Action::CREATED, $merchant);
+        $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
 
         return $merchant;
     }
