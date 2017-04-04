@@ -21,11 +21,11 @@ class Service extends Base\Service
     // public function call(array $input, $route, $auth)
     public function call(string $method, array $input)
     {
-        $baseInput = ['method' => $method];
+        $input += ['method' => $method];
 
         list($auth, $route) = $this->resolveRoute($input);
 
-        list($error, $response) = $this->makeRawApiCall($baseInput, $route, $auth);
+        list($error, $response) = $this->makeRawApiCall($input, $route, $auth);
 
         return [$error, $response];
     }

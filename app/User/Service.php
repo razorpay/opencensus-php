@@ -121,6 +121,22 @@ class Service extends Base\Service
             if (empty($tokenError) and isset($tokenData['id']))
             {
                 $adminId = $tokenData['admin_id'];
+
+                // Update sign up field against admin lead
+                $tokenSignUpUpdate = [
+                    'route_name' => 'merchant_admin_lead_put',
+
+                    'url_params' => [
+                        '{orgId}' => $tokenData['org_id'],
+                        '{id}'    => $tokenData['id'],
+                    ],
+
+                    'body' => [
+                        'signed_up' => 1
+                    ]
+                ];
+
+                list($signupTokenError, $signupTokenData) = $genericService->call('PUT', $tokenSignUpUpdate);
             }
         }
 

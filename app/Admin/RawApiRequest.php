@@ -180,7 +180,8 @@ class RawApiRequest
         else
         {
             $this->setContentType('application/x-www-form-urlencoded');
-            $this->params['body'] = Input::get('body', '');
+
+            $this->params['body'] = $this->input['body'] ?? Input::get('body', '');
         }
     }
 

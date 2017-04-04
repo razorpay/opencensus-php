@@ -56,6 +56,7 @@ return [
 
         'admin_lead_create'                 => 'orgs/{id}/admin-lead',
         'admin_lead_get_multiple'           => 'orgs/{id}/admin-lead',
+        'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
     ],
 
     // auth
@@ -260,5 +261,6 @@ return [
         'pricing_supported_networks'        => 'pricing/networks',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
+        'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
     ],
 ];
