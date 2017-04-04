@@ -74,7 +74,7 @@ return [
             'url' => '/orgs/%s/admin-lead/%s',
             'method' => 'put',
             'content' => [
-                'signed_up_at' => time(),
+                'signed_up' => true,
             ],
         ],
         'response' => [

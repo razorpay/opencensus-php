@@ -19,6 +19,9 @@ class Entity extends Base\Entity
     const DELETED_AT        = 'deleted_at';
     const SIGNED_UP_AT      = 'signed_up_at';
 
+    // Used by PUT requests to set signed_up_at
+    const SIGNED_UP         = 'signed_up';
+
     protected $entity = 'admin_lead';
 
     protected static $sign = 'adl';

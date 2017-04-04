@@ -73,11 +73,6 @@ class Core extends Base\Core
 
     public function edit(Entity $adminLead, array $input)
     {
-        if (empty($input[Entity::SIGNED_UP_AT]) === false)
-        {
-            $input[Entity::SIGNED_UP_AT] = Carbon::now('Asia/Kolkata')->timestamp;
-        }
-
         $adminLead->edit($input);
 
         $this->repo->saveOrFail($adminLead);

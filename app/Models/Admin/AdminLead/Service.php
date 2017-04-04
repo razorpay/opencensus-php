@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Admin\AdminLead;
 
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
@@ -62,6 +64,13 @@ class Service extends Base\Service
     {
         $adminLead = $this->repo->admin_lead->findByPublicIdAndOrgId(
             $id, $orgId);
+
+        if (empty($input[Entity::SIGNED_UP]) === false)
+        {
+            $input[Entity::SIGNED_UP_AT] = Carbon::now('Asia/Kolkata')->timestamp;
+
+            unset($input[Entity::SIGNED_UP]);
+        }
 
         $adminLead = $this->core()->edit($adminLead, $input);
 
