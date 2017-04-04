@@ -172,7 +172,8 @@ export default class CreditsList extends Component {
 
         <div class="wrapper-md profile-wrapper">
           <div class="panel panel-default panel-form col-sm-8 col-sm-offset-2">
-            <div class="panel-heading m-t m-b">
+            <div class="panel-heading m-t m-b"
+                 style={{backgroundColor: '#eaeff0'}}>
               Your Credits
 
               <small class="pull-right">
