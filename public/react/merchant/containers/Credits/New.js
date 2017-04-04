@@ -1,11 +1,8 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { getCreditsData, fetchBalance } from 'merchant/modules/credits'
-import moment from 'moment';
-
-function _getCreditsInPaisa(value) {
-  return (value/100).toFixed(2);
-}
+import moment from 'moment'
+import Amount from 'rzp/ui/Amount'
 
 @connect(
   (state) => {
@@ -63,7 +60,7 @@ export default class CreditsList extends Component {
         if (this.props.balanceData.credits) {
           amountCredits = (
             <a class="list-group-item">
-              <span class="pull-right">₹{_getCreditsInPaisa(this.props.balanceData.credits)}</span>
+              <Amount class="pull-right" value={this.props.balanceData.credits} />
               Amount Credits
             </a>
           );
@@ -72,7 +69,7 @@ export default class CreditsList extends Component {
         if (this.props.balanceData.fee_credits) {
           feeCredits = (
             <a class="list-group-item">
-              <span class="pull-right">₹{_getCreditsInPaisa(this.props.balanceData.fee_credits)}</span>
+              <Amount class="pull-right" value={this.props.balanceData.fee_credits} />
               Fee Credits
             </a>
           );
@@ -111,7 +108,7 @@ export default class CreditsList extends Component {
               <td>{credit.id}</td>
               <td>{credit.campaign}</td>
               <td>{credit.type}</td>
-              <td>INR {_getCreditsInPaisa(credit.value)}</td>
+              <td><Amount value={credit.value} /></td>
               <td>{moment.unix(credit.created_at).format("DD/MM/YYYY H:mm a")}</td>
             </tr>
           );
