@@ -880,23 +880,24 @@ class BasicAuth
         // Gets all headers with 'X-Dashboard' as prefix and assign them to a
         // key(with prefix removed) in $this->dashboardHeaders.
 
-        $dashboardHeaderPrefixLen = strlen(self::DASHBOARD_HEADER_PREFIX) + 1;
+        $dashHeaderPrefixLen = strlen(self::DASHBOARD_HEADER_PREFIX) + 1;
 
-        $dashboardKeys = array_filter(
-                            $headers->keys(),
-                            function ($k)
-                            {
-                                return (starts_with($k, self::DASHBOARD_HEADER_PREFIX))
-                                        and ($k !== self::DASHBOARD_HEADER_PREFIX);
-                            });
+        $dashHeadersKeys = array_filter(
+                                $headers->keys(),
+                                function ($k)
+                                {
+                                    return ($k !== self::DASHBOARD_HEADER_PREFIX) and
+                                        (starts_with($k, self::DASHBOARD_HEADER_PREFIX));
+                                });
 
-        foreach ($dashboardKeys as $k)
+        foreach ($dashHeadersKeys as $dashHeadersKey)
         {
             // Gets key for $this->dashboardHeaders, which is snake_cased header
             // with prefix removed.
-            $key = snake_case(camel_case(substr($k, $dashboardHeaderPrefixLen)));
+            $key = substr($dashHeadersKey, $dashHeaderPrefixLen);
+            $key = snake_case(camel_case($key));
 
-            $this->dashboardHeaders[$key] = $headers->get($k);
+            $this->dashboardHeaders[$key] = $headers->get($dashHeadersKey);
         }
     }
 
