@@ -87,7 +87,7 @@ class Service extends Base\Service
             $admin = $this->repo->admin->findOrFailPublic($adminId);
 
             // Attach merchant to admin
-            $this->attachAdmin($merchant->getKey(), $adminId);
+            $this->repo->sync($merchant, 'admins', [$adminId]);
         }
 
         $org = $this->repo->org->findOrFailPublic($orgId);
@@ -107,19 +107,6 @@ class Service extends Base\Service
         $schedule = $this->getOrCreateDailySettlementSchedule($defaultDelay);
 
         $merchant->schedule()->associate($schedule);
-    }
-
-    protected function attachAdmin($merchantId, $adminId)
-    {
-        DB::table('merchant_map')->insert(
-            [
-                'merchant_id' => $merchantId,
-                'entity_id'   => $adminId,
-                'entity_type' => 'admin'
-            ]
-        );
-
-        return null;
     }
 
     public function createSubMerchant(array $input)
