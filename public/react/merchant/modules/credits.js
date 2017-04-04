@@ -3,16 +3,6 @@ import ajax from 'merchant/utils/ajax'
 const CREDITS_FETCH = 'CREDITS_FETCH'
 const BALANCE_FETCH = 'BALANCE_FETCH'
 
-const _composeGetUrl = (payload) => {
-  const slug = [];
-  for (const key in payload) {
-    if (payload.hasOwnProperty(key)) {
-        slug.push(`${key}=${payload[key]}`);
-    }
-  }
-  return slug.join('&');
-};
-
 export const getCreditsData = () => {
   var params = {
     route_name: 'credits_fetch_multiple',
@@ -21,7 +11,11 @@ export const getCreditsData = () => {
   return (dispatch) => {
     return dispatch({
       type: CREDITS_FETCH,
-      payload: ajax('/generic?' + _composeGetUrl(params))
+      payload: ajax({
+        url: '/user/generic',
+        data: params,
+        appendModeInQueryParam: true
+      })
     })
   }
 };
@@ -35,7 +29,11 @@ export const fetchBalance = () => {
   return (dispatch) => {
     return dispatch({
       type: BALANCE_FETCH,
-      payload: ajax('/generic?' + _composeGetUrl(params))
+      payload: ajax({
+        url: '/user/generic',
+        data: params,
+        appendModeInQueryParam: true
+      })
     })
   }
 }
