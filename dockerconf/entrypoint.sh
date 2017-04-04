@@ -5,8 +5,10 @@ echo  "$date Fix permissions"
 cd /app/ && chmod 777 -R storage
 echo "$date Configuring App"
 
+# Install dependencies
 yarn install
 gulp
+
 # Copy config
 cp dockerconf/dashboard.conf /etc/nginx/conf.d/dashboard.conf && \
 cp environment/.env.example environment/.env.dev_docker && \

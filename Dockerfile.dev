@@ -1,15 +1,10 @@
 FROM razorpay/docker:base-nginx-php7-yarn
 
-RUN apk add --update --repository http://dl-3.alpinelinux.org/alpine/v3.5/community firefox-esr
-
-RUN apk add --update \
-    openjdk8 openssh-client lsof xvfb && \
+RUN apk add --update lsof && \
     cd /tmp && \
     /usr/local/bin/composer selfupdate && \
     /usr/local/bin/composer require "phpunit/phpunit:~5.3.4" --prefer-source --no-interaction && \
     ln -s /tmp/vendor/bin/phpunit /usr/local/bin/phpunit
-
-COPY selenium* /
 
 VOLUME ["/app"]
 
