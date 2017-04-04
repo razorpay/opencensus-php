@@ -610,7 +610,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
-        $refund = $this->createGatewayPaymentEntity($attributes);
+        $refund = $this->createGatewayRefundEntity($attributes);
 
         $request = $this->getRefundRequest($input);
 
@@ -624,16 +624,16 @@ class Gateway extends Base\Gateway
             'response'   => $content
         ]);
 
-        if ($content['success'] !== 'true')
+        if ($content[Fields::SUCCESS] !== 'true')
         {
-            $code = $content['response'];
+            $code = $content[Fields::RESPONSE];
 
             $errorCode = ResponseCodeMap::getApiErrorCode($code);
 
             throw new Exception\GatewayErrorException(
                 $errorCode,
-                $content['status'],
-                ResponseCode::getResponseMessage($content['response']));
+                $content[Fields::STATUS],
+                ResponseCode::getResponseMessage($content[Fields::RESPONSE]));
         }
 
         $this->updateGatewayPaymentResponse($refund, $content);
@@ -672,8 +672,6 @@ class Gateway extends Base\Gateway
                 'request' => $request,
                 'decrypted_content' => $data,
                 'gateway' => 'upi_icici',
-                'payment_id' => $input['payment']['id'],
-                'refund_id'  => $input['refund']['id'],
             ]);
 
         return $request;

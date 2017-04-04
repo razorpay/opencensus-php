@@ -226,6 +226,21 @@ class Entity extends Base\PublicEntity
         return $subMerchants->all();
     }
 
+    /**
+     * In case the terminal is a UPI terminal, this returns
+     * the VPA that the collect request would have been raised from
+     * @return String Virtual Payment Address of the nodal account
+     */
+    public function getVpa(): string
+    {
+        if ($this->getUpi() === true)
+        {
+            return $this->attributes[self::GATEWAY_MERCHANT_ID2];
+        }
+
+        return 'razorpay@icici';
+    }
+
     public function isEnabled()
     {
         return $this->getAttribute(self::ENABLED);
@@ -559,20 +574,5 @@ class Entity extends Base\PublicEntity
         }
 
         return $terminalData;
-    }
-
-    /**
-     * In case the terminal is a UPI terminal, this returns
-     * the VPA that the collect request would have been raised from
-     * @return String Virtual Payment Address of the nodal account
-     */
-    public function getVpa(): string
-    {
-        if ($this->getUpi() === true)
-        {
-            return $this->attributes[self::GATEWAY_MERCHANT_ID2];
-        }
-
-        return 'razorpay@icici';
     }
 }
