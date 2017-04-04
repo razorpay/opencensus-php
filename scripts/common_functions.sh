@@ -28,8 +28,8 @@ export PATH="$PATH:/usr/bin:/usr/local/bin"
 # If true, all messages will be printed. If false, only fatal errors are printed.
 DEBUG=true
 
-# Number of times to check for a resouce to be in the desired state.
-WAITER_ATTEMPTS=60
+# Number of times to check for a resource to be in the desired state.
+WAITER_ATTEMPTS=120
 
 # Number of seconds to wait between attempts for resource to be in a state.
 WAITER_INTERVAL=3

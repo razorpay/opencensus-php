@@ -33,6 +33,7 @@
         "maxmind/minfraud": "^1.3",
         "php-http/discovery": "^1.2",
         "razorpay/slack-laravel": "1.2.0",
+        "schuppo/password-strength": "~1.5",
         "ext-gmp": "*"
     },
     "repositories": [

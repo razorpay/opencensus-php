@@ -341,7 +341,7 @@ class Gateway
      */
     public static $internationalCardGateways = array(
         Gateway::HDFC,
-        // Gateway::AXIS_MIGS,
+        Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
     );
@@ -355,31 +355,6 @@ class Gateway
         IFSC::KKBK,
         IFSC::UTIB,
     ];
-
-    /**
-     * Card gateways which support domestic payments in live mode.
-     *
-     * @var array
-     */
-    public static $domesticCardGateways = array(
-        Gateway::HDFC,
-        Gateway::AXIS_MIGS,
-        Gateway::AMEX,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
-    );
-
-    /**
-     * Card gateways which support domestic payments in test mode.
-     *
-     * @var array
-     */
-    public static $domesticCardGatewaysInTest = array(
-        Gateway::ATOM,
-        Gateway::PAYTM,
-        Gateway::AXIS_GENIUS,
-        Gateway::SHARP,
-    );
 
     /**
      * Some card networks are only supported partially for one or two gateway.

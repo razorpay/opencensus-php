@@ -312,7 +312,7 @@ final class Route
         'invoice_get_status'                      => ['get',      'invoices/{id}/status',                           'InvoiceController@getInvoiceStatus'                                ],
         'invoice_view_live'                       => ['get',      'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test'                       => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
-        'invoice_expire'                          => ['post',     'invoices/{id}/expire',                           'InvoiceController@expireInvoice'                                   ],
+        'invoice_cancel'                          => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                     => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
         'invoice_view_live_post'                  => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                  => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
@@ -405,7 +405,7 @@ final class Route
         'group_delete'                            => ['delete',   'orgs/{orgId}/groups/{id}',                       'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
 
-        // Permission can only be created by certain organisations.
+        // Permission can only be created by certain organizations.
         'permission_create'                       => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
         'permission_get_by_type'                  => ['get',      'permissions/get/{type}',                         'OrganizationController@getPermissionsByType'                       ],
         'permission_get'                          => ['get',      'permissions/{id}',                               'OrganizationController@getPermission'                              ],
@@ -464,6 +464,9 @@ final class Route
         // Dummy routes to test Account Auth
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
+        'user_create'                             => ['post',     'users',                                          'UserController@postUser'                                           ],
+        'user_edit'                               => ['put',      'users/{id}',                                     'UserController@putUser'                                            ],
+        'user_attach_merchant'                    => ['put',      'users/{id}/attach',                              'UserController@attachUserToMerchant'                               ],
     );
 
     public static $public = array(
@@ -591,6 +594,7 @@ final class Route
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
+        'invoice_cancel',
         'customer_create_address',
         'customer_delete_address',
         'customer_fetch_addresses',
@@ -782,6 +786,9 @@ final class Route
         'schedule_fetch_multiple',
         'schedule_migration',
         'internal_dummy_account_test',
+        'user_create',
+        'user_edit',
+        'user_attach_merchant',
     );
 
     public static $proxy = array(
@@ -832,7 +839,6 @@ final class Route
         'invoice_update_line_item',
         'invoice_remove_line_item_bulk',
         'invoice_remove_line_item',
-        'invoice_expire',
         'item_create',
         'item_fetch',
         'item_fetch_multiple',

@@ -1,31 +1,24 @@
 <?php
 
-namespace RZP\Reconciliator\NetbankingIcici;
+namespace RZP\Reconciliator\NetbankingFederal;
 
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
-    /**
-     * Currently Icici shares only payment report
-     */
     const SUCCESS = [
-        'razorpayreports' => self::PAYMENT
+        'mis_report_razorpay' => self::PAYMENT
     ];
 
-    const EXCLUDE_FILE_STRING = 'success';
-
-    /**
-     * Currently Icici shares only payment report
-     */
     const TYPE_TO_COLUMN_HEADER_MAP = [
         self::PAYMENT => self::PAYMENT_COLUMN_HEADER
     ];
 
     const PAYMENT_COLUMN_HEADER = [
-        'ITC',
         'PRN',
+        'MID',
+        'ITC',
         'BID',
         'Amount',
         'Date'
@@ -59,15 +52,5 @@ class Reconciliate extends Base\Reconciliate
     public function getColumnHeadersForType($type)
     {
         return self::TYPE_TO_COLUMN_HEADER_MAP[$type];
-    }
-
-    public function inExcludeList(array $fileDetails)
-    {
-        if (strpos($fileDetails['file_name'], self::EXCLUDE_FILE_STRING) !== false)
-        {
-            return true;
-        }
-
-        return false;
     }
 }
