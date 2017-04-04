@@ -284,6 +284,13 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOrgFieldMapByEntity(string $orgId, string $entity)
+    {
+        $data = (new FieldMap\Service)->getByEntity($orgId, $entity);
+
+        return ApiResponse::json($data);
+    }
+
     public function deleteOrgFieldMap(string $orgId, string $id)
     {
         $data = (new FieldMap\Service)->deleteFieldMapForEntity($orgId, $id);
