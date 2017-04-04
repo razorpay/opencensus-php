@@ -1865,3 +1865,8 @@ ALTER TABLE daily_settlements
     ADD COLUMN excel_file_id CHAR(14) AFTER txt_file_id,
     ADD CONSTRAINT daily_settlements_excel_file_id_foreign
         FOREIGN KEY(excel_file_id) REFERENCES files(id) ON DELETE RESTRICT;
+
+=======
+# Query to add international flag to terminal entity
+ALTER TABLE terminals
+    ADD COLUMN international TINYINT(1) DEFAULT 0 NOT NULL AFTER recurring;

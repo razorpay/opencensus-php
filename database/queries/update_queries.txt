@@ -136,3 +136,10 @@ UPDATE axis SET vpc_Message = "Approved", vpc_TxnResponseCode = "0" WHERE id = 1
 
 UPDATE billdesk SET RefundId = 'ISBI52218128951' WHERE id = 1135026;
 UPDATE billdesk SET RefundId = 'ISBI52122271361' WHERE id = 1112770;
+
+# Queries to enable international on select terminals
+UPDATE terminals SET international = 1 WHERE gateway IN ('hdfc', 'cybersource', 'amex');
+UPDATE terminals SET international = 1 WHERE gateway = 'axis_migs' AND merchant_id != '100000Razorpay';
+UPDATE terminals SET international = 1 WHERE gateway = 'first_data' AND merchant_id IN ('6JumzrI88XDf0f', '6H7N6hlcv29OMG');
+# Only in test db
+UPDATE terminals SET international = 1 WHERE gateway = 'sharp';

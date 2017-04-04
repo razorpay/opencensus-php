@@ -58,6 +58,8 @@ class Core extends Base\Core
         $keyData = $key->toArrayPublic();
         $keyData[Key\Entity::SECRET] = $secret;
 
+        $this->app['drip']->sendDripMerchantInfo($merchant, $this->app['drip']::KEY_GENERATED);
+
         return $keyData;
     }
 
