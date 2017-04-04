@@ -17,7 +17,7 @@ class Converter
     // are separated by '|' instead of ',' and therefore we need
     // to get the columns out of these rows
     //
-    const CONVERT_TO_COLUMNS_MAP = [
+    const GATEWAY_FILE_DELIMITER = [
         Orchestrator::NETBANKING_FEDERAL => '|'
     ];
 
@@ -200,15 +200,10 @@ class Converter
                 'Unable to open file . ' . $filePath);
         }
 
-        $glue = self::DEFAULT_DELIMITER;
-
         //
-        // Using the MIS file's non default delimiter
+        // Setting glue for the csv to array conversion
         //
-        if (array_key_exists($gateway, self::CONVERT_TO_COLUMNS_MAP) === true)
-        {
-            $glue = self::CONVERT_TO_COLUMNS_MAP[$gateway];
-        }
+        $glue = self::GATEWAY_FILE_DELIMITER[$gateway] ?? self::DEFAULT_DELIMITER;
 
         try
         {
