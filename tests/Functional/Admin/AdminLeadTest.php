@@ -111,4 +111,23 @@ class AdminLeadTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testPutAdminLead()
+    {
+        $adminLead = $this->testCreateAdminLead();
+
+        $orgId = $adminLead['org_id'];
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $orgId, $adminLead['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth('test', $this->authToken);
+
+        $result = $this->startTest();
+
+        $this->assertNotNull($result['signed_up_at']);
+    }
 }

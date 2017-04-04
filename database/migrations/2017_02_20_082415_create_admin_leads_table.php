@@ -40,6 +40,9 @@ class CreateAdminLeadsTable extends Migration
             $table->integer(AdminLead::DELETED_AT)
                   ->nullable();
 
+            $table->integer(AdminLead::SIGNED_UP_AT)
+                  ->nullable();
+
             $table->foreign(AdminLead::ADMIN_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN);

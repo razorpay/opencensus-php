@@ -393,6 +393,7 @@ final class Route
         'admin_lead_create'                       => ['post',     'orgs/{orgId}/admin-lead',                        'OrganizationController@postAdminLead'                              ],
         'admin_lead_get_multiple'                 => ['get',      'orgs/{orgId}/admin-lead',                        'OrganizationController@getAdminLeadMultiple'                       ],
         'admin_lead_verify'                       => ['get',      'admin-lead/verify/{token}',                      'OrganizationController@verifyAdminLead'                            ],
+        'admin_lead_put'                          => ['put',      'orgs/{orgId}/admin-lead/{id}',                   'OrganizationController@putAdminLead'                               ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'OrganizationController@postAuthenticate'                           ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
         'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',             'OrganizationController@postForgotPassword'                         ],
@@ -883,6 +884,7 @@ final class Route
         'admin_edit',
         'admin_delete',
         'admin_lead_create',
+        'admin_lead_put',
         'admin_lead_get_multiple',
         'group_create',
         'group_edit',
@@ -945,6 +947,7 @@ final class Route
         'org_fieldmap_edit'              => [Permission::EDIT_ORG],
         'org_fieldmap_delete'            => [Permission::EDIT_ORG],
         'admin_lead_create'              => [Permission::CREATE_MERCHANT_INVITE],
+        'admin_lead_put'                 => [Permission::EDIT_MERCHANT_INVITE],
         'admin_lead_get_multiple'        => [Permission::VIEW_MERCHANT_INVITE],
         'admin_dummy_account_test'       => [Permission::VIEW_MERCHANT],
     ];

@@ -14,6 +14,10 @@ class Validator extends Base\Validator
         Entity::FORM_DATA => 'required|array',
     ];
 
+    protected static $editRules = [
+        Entity::SIGNED_UP_AT => 'required|integer',
+    ];
+
     protected static $sendInvitationRules = [
         'contact_email'         => 'required|max:255|email',
         'channel_code'          => 'required',

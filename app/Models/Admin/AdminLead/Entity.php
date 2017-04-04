@@ -17,6 +17,7 @@ class Entity extends Base\Entity
     const EMAIL             = 'email';
     const FORM_DATA         = 'form_data';
     const DELETED_AT        = 'deleted_at';
+    const SIGNED_UP_AT      = 'signed_up_at';
 
     protected $entity = 'admin_lead';
 
@@ -27,6 +28,7 @@ class Entity extends Base\Entity
     protected $fillable = [
         self::ADMIN_ID,
         self::ORG_ID,
+        self::SIGNED_UP_AT,
         self::TOKEN,
         self::EMAIL,
         self::FORM_DATA,
@@ -35,6 +37,7 @@ class Entity extends Base\Entity
     protected $public = [
         self::ID,
         self::ADMIN_ID,
+        self::SIGNED_UP_AT,
         self::ORG_ID,
         self::EMAIL,
         self::FORM_DATA,
@@ -49,12 +52,17 @@ class Entity extends Base\Entity
         self::EMAIL,
         self::FORM_DATA,
         self::CREATED_AT,
+        self::SIGNED_UP_AT,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ORG_ID,
         self::ADMIN_ID,
+    ];
+
+    protected $casts = [
+        self::SIGNED_UP_AT => 'int',
     ];
 
     public function admin()
@@ -91,7 +99,12 @@ class Entity extends Base\Entity
 
     public function setFormData(array $formData)
     {
-        return $this->setAttribute(self::FORM_DATA, $formData);
+        $this->setAttribute(self::FORM_DATA, $formData);
+    }
+
+    public function setSignedUpAt(integer $time)
+    {
+        $this->setAttribute(self::SIGNED_UP_AT, $time);
     }
 
     public function getFormData() : array

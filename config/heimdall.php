@@ -120,6 +120,7 @@ return [
             Permission::VIEW_ACTIONS => '',
             Permission::VIEW_MERCHANT_STATS => '',
             Permission::CREATE_MERCHANT_INVITE => '',
+            Permission::EDIT_MERCHANT_INVITE   => '',
             Permission::VIEW_MERCHANT_INVITE => '',
         ],
 
@@ -225,6 +226,7 @@ return [
             Permission::EDIT_MERCHANT_EMAIL => '',
 
             Permission::CREATE_MERCHANT_INVITE => '',
+            Permission::EDIT_MERCHANT_INVITE   => '',
             Permission::VIEW_MERCHANT_INVITE => '',
         ],
 

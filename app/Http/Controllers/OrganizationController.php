@@ -126,18 +126,28 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postAdminLead()
+    public function postAdminLead(string $orgId)
     {
         $input = Request::all();
 
-        $data = (new Admin\AdminLead\Service)->sendInvitation($input);
+        $data = (new Admin\AdminLead\Service)->sendInvitation($orgId, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getAdminLeadMultiple()
+    public function putAdminLead(string $orgId, string $id)
     {
-        $data = (new Admin\AdminLead\Service)->getInvitations();
+        $input = Request::all();
+
+        $data = (new Admin\AdminLead\Service)->editInvitation(
+            $orgId, $id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAdminLeadMultiple(string $orgId)
+    {
+        $data = (new Admin\AdminLead\Service)->getInvitations($orgId);
 
         return ApiResponse::json($data);
     }
