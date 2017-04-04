@@ -39,7 +39,7 @@ class Gateway extends Base\Gateway
 
         $refund = $this->getNewGatewayPaymentEntity();
 
-        $action = $action ? $action : $this->action;
+        $action = $this->action;
 
         $refund->setPaymentId($this->input['payment']['id']);
 
