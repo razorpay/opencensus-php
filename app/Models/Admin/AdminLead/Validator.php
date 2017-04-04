@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::SIGNED_UP_AT => 'required|integer',
+        Entity::SIGNED_UP_AT => 'sometimes|integer',
     ];
 
     protected static $sendInvitationRules = [

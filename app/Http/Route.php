@@ -394,6 +394,7 @@ final class Route
         'admin_lead_get_multiple'                 => ['get',      'orgs/{orgId}/admin-lead',                        'OrganizationController@getAdminLeadMultiple'                       ],
         'admin_lead_verify'                       => ['get',      'admin-lead/verify/{token}',                      'OrganizationController@verifyAdminLead'                            ],
         'admin_lead_put'                          => ['put',      'orgs/{orgId}/admin-lead/{id}',                   'OrganizationController@putAdminLead'                               ],
+        'merchant_admin_lead_put'                 => ['put',      'orgs/{orgId}/admin-lead-merchant/{id}',          'OrganizationController@putAdminLead'                               ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'OrganizationController@postAuthenticate'                           ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
         'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',             'OrganizationController@postForgotPassword'                         ],
@@ -790,6 +791,7 @@ final class Route
         'user_create',
         'user_edit',
         'user_attach_merchant',
+        'merchant_admin_lead_put',
     );
 
     public static $proxy = array(
