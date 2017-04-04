@@ -178,7 +178,7 @@ class Handler extends BaseHandler
 
         try
         {
-            $s3->getObjectUrl($bucket, $key);
+            return $s3->getObjectUrl($bucket, $key);
         }
         catch (\Exception $e)
         {

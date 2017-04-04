@@ -352,9 +352,9 @@ class Creator extends Base\Core
     }
 
     /**
-     * Returns url File Entity
+     * Returns unsigned url
      *
-     * @return array
+     * @return string
      */
     public function getUrl(): string
     {

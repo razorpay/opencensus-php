@@ -88,7 +88,7 @@ class CreateFundTransferAttemptsTable extends Migration
         Schema::table(Table::FUND_TRANSFER_ATTEMPT, function($table)
         {
             $table->dropForeign(
-                Table::FUND_TRANSFER_ATTEMPT.'_'.FundTransferAttempt::EXCEL_FILE_ID.'_foreign');
+                Table::FUND_TRANSFER_ATTEMPT.'_'.FundTransferAttempt::BATCH_FUND_TRANSFER_ID.'_foreign');
         });
 
         Schema::drop(Table::FUND_TRANSFER_ATTEMPT);
