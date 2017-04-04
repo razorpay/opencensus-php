@@ -530,10 +530,11 @@ class Repository extends Base\Repository
     public function getPaymentsOnHoldBeforeTimestamp(int $timestamp) : Base\PublicCollection
     {
         $data = $this->newQuery()
-                     ->where(Payment\Entity::ON_HOLD, 1)
+                     ->where(Payment\Entity::ON_HOLD, true)
                      ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
                      ->with('transfer')
                      ->get();
+
         return $data;
     }
 

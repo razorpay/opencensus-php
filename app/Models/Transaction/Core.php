@@ -100,7 +100,7 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED);
         }
 
-        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+        $txn->setOnHold($payment->getOnHold());
 
         $this->trace->info(
             TraceCode::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION,

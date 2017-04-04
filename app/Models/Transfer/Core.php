@@ -106,9 +106,9 @@ class Core extends Base\Core
 
         return $this->repo->transaction(function () use ($transfer, $input)
         {
-            $this->repo->saveOrFail($transfer);
+            $this->updatePaymentHold($transfer);
 
-            $this->updatePaymentHold($transfer, $input);
+            $this->repo->saveOrFail($transfer);
 
             $this->trace->info(
                 TraceCode::TRANSFER_EDIT_SUCCESS,

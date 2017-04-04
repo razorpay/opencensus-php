@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY       => 'required|size:3|in:INR',
         Entity::NOTES          => 'sometimes|notes',
         Entity::ON_HOLD        => 'required_with:on_hold_until|boolean',
-        Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+        Entity::ON_HOLD_UNTIL  => 'sometimes|epoch',
     ];
 
     protected static $createValidators = [
@@ -156,8 +156,7 @@ class Validator extends Base\Validator
 
     public function validateHoldParameters(array $input)
     {
-        if ((isset($input[Entity::ON_HOLD]) === false) and
-            (isset($input[Entity::ON_HOLD]) === false))
+        if ((isset($input[Entity::ON_HOLD]) === false))
         {
             return;
         }
