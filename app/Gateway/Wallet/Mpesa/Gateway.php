@@ -19,8 +19,8 @@ class Gateway extends Base\Gateway
     const DATE_FORMAT = 'dmY';
 
     protected $map = [
-        RequestFields::MERCHANT_CODE => Base\Entity::GATEWAY_MERCHANT_ID,
-        RequestFields::AMOUNT => Base\Entity::AMOUNT,
+        RequestFields::MERCHANT_CODE    => Base\Entity::GATEWAY_MERCHANT_ID,
+        RequestFields::AMOUNT           => Base\Entity::AMOUNT,
         RequestFields::TRANSACTION_DATE => Base\Entity::DATE,
     ];
 
@@ -63,22 +63,25 @@ class Gateway extends Base\Gateway
         $gatewayParam = array_flip($gatewayParam);
 
         $gatewayParamXml = new SimpleXMLElement("<PaymentGatewayRequest />");
+
         array_walk_recursive($gatewayParam, [$gatewayParamXml, 'addChild']);
 
-        return $gatewayParamXml->asXML();
+        $gatewayParamXml = trim(explode('?>', $gatewayParamXml->asXML())[1]);
+
+        return $gatewayParamXml;
     }
 
     protected function getGatewayParamArray()
     {
         $gatewayParam = [
-            RequestFields::MERCHANT_CODE         => '0001000269',
+            RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
             RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
-            RequestFields::TRANSACTION_TYPE      => 'W',
-            RequestFields::AMOUNT                => $this->input['payment']['amount'],
-            RequestFields::NARRATION             => 'Razorpay Payments',
+            RequestFields::TRANSACTION_TYPE      => PaymentMethod::WALLET,
+            RequestFields::AMOUNT                => $this->input['payment']['amount'] / 100,
+            RequestFields::NARRATION             => Constants::NARRATION,
             RequestFields::RETURN_URL            => $this->input['callbackUrl'],
-            RequestFields::SURCHARGE             => '0.0',
+            RequestFields::SURCHARGE             => Constants::SURCHARGE,
         ];
 
         return $gatewayParam;
