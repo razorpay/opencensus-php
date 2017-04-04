@@ -34,8 +34,6 @@ class Gateway extends Base\Gateway
         Status::IN_PROCESS => Confirmation::NO
     ];
 
-    protected $authSuccessStatus = Confirmation::YES;
-
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -330,7 +328,7 @@ class Gateway extends Base\Gateway
 
         $attributes = [Base\Entity::STATUS => $status];
 
-        $this->checkIfStatusIsToBeSaved($gatewayPayment, $attributes);
+        $attributes = $this->checkIfStatusIsToBeSaved($gatewayPayment, $attributes);
 
         if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true) and
             (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true))
@@ -341,6 +339,11 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    protected function getAuthSuccessStatus()
+    {
+        return Confirmation::getAuthSuccessStatus();
     }
 
     protected function getResponseArray($content)
