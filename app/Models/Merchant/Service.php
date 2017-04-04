@@ -639,7 +639,7 @@ class Service extends Base\Service
         $merchants = $this->repo->merchant->fetchMerchantWhereTestBankIsNull();
         $fetched = $merchants->count();
 
-        $core = new Merchant\Core;
+        $core = new BankAccount\Core;
 
         $count = 0;
 
