@@ -21,6 +21,8 @@ class Converter
         Orchestrator::NETBANKING_FEDERAL => '|'
     ];
 
+    const DEFAULT_DELIMITER = ',';
+
     const MAPPINGS = [
         'no'   => 'number',
         'num'  => 'number',
@@ -198,9 +200,19 @@ class Converter
                 'Unable to open file . ' . $filePath);
         }
 
+        $glue = self::DEFAULT_DELIMITER;
+
+        //
+        // Using the MIS file's non default delimiter
+        //
+        if (array_key_exists($gateway, self::CONVERT_TO_COLUMNS_MAP) === true)
+        {
+            $glue = self::CONVERT_TO_COLUMNS_MAP[$gateway];
+        }
+
         try
         {
-            while (($row = fgetcsv($handle)) !== false)
+            while (($row = fgetcsv($handle, 0, $glue)) !== false)
             {
                 //
                 // Skip the first few ($linesToSkipFromTop) rows
@@ -219,13 +231,6 @@ class Converter
                     ($currentLineNumber >= $totalLinesToRead))
                 {
                     break;
-                }
-
-                if (array_key_exists($gateway, self::CONVERT_TO_COLUMNS_MAP) === true)
-                {
-                    $glue = self::CONVERT_TO_COLUMNS_MAP[$gateway];
-
-                    $row = explode($glue, $row[0]);
                 }
 
                 // If headers are empty, get headers from the first row.

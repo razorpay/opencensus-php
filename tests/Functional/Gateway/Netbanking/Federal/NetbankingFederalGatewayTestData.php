@@ -64,7 +64,7 @@ return [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'FDRL',
-        'status'          => 'S'
+        'status'          => 'Y'
     ],
 
     'testPaymentFailedNetbankingEntity' => [

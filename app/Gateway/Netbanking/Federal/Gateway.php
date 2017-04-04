@@ -21,6 +21,11 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'federal';
 
+    const VERIFY_TO_CALLBACK_STATUS = [
+        Status::SUCCESS => Status::YES,
+        Status::NO      => Status::NO
+    ];
+
     protected $map = [
         RequestFields::AMOUNT     => Base\Entity::AMOUNT,
         RequestFields::PAYMENT_ID => Base\Entity::PAYMENT_ID,
@@ -297,9 +302,11 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyAttributesToSave(array $content, Base\Entity $gatewayPayment)
     {
+        $status = self::VERIFY_TO_CALLBACK_STATUS[$content[ResponseFields::STATUS]];
+
         $attributes = [
             Base\Entity::RECEIVED => true,
-            Base\Entity::STATUS   => $content[ResponseFields::STATUS]
+            Base\Entity::STATUS   => $status
         ];
 
         //
