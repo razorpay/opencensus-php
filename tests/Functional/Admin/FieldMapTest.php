@@ -143,4 +143,18 @@ class FieldMapTest extends TestCase
 
         $this->assertEquals(2, count($result['items']));
     }
+
+    public function testGetFieldMapByEntity()
+    {
+        $fieldMap = $this->createDefaultFieldMap();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(),
+                        $fieldMap->getNameOfEntity());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
 }

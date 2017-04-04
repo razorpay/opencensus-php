@@ -156,4 +156,22 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testGetFieldMapByEntity' => [
+        'request' => [
+            'url' => '/orgs/%s/field-map/entity/%s',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity_name' => 'org',
+                'fields' => [
+                    'display_name',
+                    'business_name',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
