@@ -28,6 +28,8 @@ class Gateway extends Base\Gateway
         RequestFields::ITEM_CODE          => 'caps_payment_id'
     ];
 
+    protected $authSuccessStatus = Constants::YES;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -324,6 +326,8 @@ class Gateway extends Base\Gateway
             Base\Entity::RECEIVED => true,
             Base\Entity::STATUS   => Constants::YES,
         ];
+
+        $this->checkIfStatusIsToBeSaved($gatewayPayment, $attributes);
 
         if (empty($bankPaymentId) === true)
         {

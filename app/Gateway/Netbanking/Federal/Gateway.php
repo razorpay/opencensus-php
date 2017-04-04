@@ -32,6 +32,8 @@ class Gateway extends Base\Gateway
         RequestFields::ITEM_CODE  => Base\Entity::CAPS_PAYMENT_ID
     ];
 
+    protected $authSuccessStatus = Status::YES;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -308,6 +310,8 @@ class Gateway extends Base\Gateway
             Base\Entity::RECEIVED => true,
             Base\Entity::STATUS   => $status
         ];
+
+        $this->checkIfStatusIsToBeSaved($gatewayPayment, $attributes);
 
         //
         // Saving BID from Verify response only if BID from authorize hasn't been saved

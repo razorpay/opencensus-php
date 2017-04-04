@@ -74,10 +74,10 @@ return [
         'status'          => null
     ],
 
-    'testVerifyFailedNetbankingEntity' => [
+    'testAuthSuccessVerifyFailedNetbankingEntity' => [
         'received'        => true,
         'bank'            => 'FDRL',
-        'status'          => 'N'
+        'status'          => 'Y'
     ],
 
     'testTamperedPayment' => [

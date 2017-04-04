@@ -175,7 +175,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testVerifyFailedNetbankingEntity');
+        $this->assertTestResponse($gatewayPayment, 'testAuthSuccessVerifyFailedNetbankingEntity');
     }
 
     public function testExcelRefundFileGeneration()
