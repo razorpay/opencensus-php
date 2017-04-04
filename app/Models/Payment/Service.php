@@ -1088,7 +1088,9 @@ class Service extends Base\Service
         {
             try
             {
-                $this->setHoldFalse($payment);
+                $this->repo->transaction(function () use ($payment) {
+                    $this->setHoldFalse($payment);
+                });
             }
             catch (\Exception $e)
             {
@@ -1122,13 +1124,15 @@ class Service extends Base\Service
 
     protected function setHoldFalse(Payment\Entity $payment)
     {
+        $this->repo->payment->lockForUpdateAndReload($payment);
+
         $payment->setOnHold(false);
 
         $this->repo->saveOrFail($payment);
 
-        $txn = $payment->transaction;
+        $txn = $this->repo->transaction->lockForUpdate($payment->getTransactionId());
 
-        $txn->setAttribute(Entity::ON_HOLD, false);
+        $txn->setOnHold(false);
 
         $this->repo->saveOrFail($txn);
 
@@ -1138,7 +1142,7 @@ class Service extends Base\Service
         //
         if ($payment->hasTransfer() === true)
         {
-            $transfer = $payment->transfer;
+            $transfer = $this->repo->transfer->lockForUpdate($payment->getTransferId());
 
             $transfer->setOnHold(false);
 
