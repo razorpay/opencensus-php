@@ -36,4 +36,11 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function getAttemptsPendingReconciliation()
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::STATUS, Status::PENDING_RECONCILIATION)
+                    ->get();
+    }
 }

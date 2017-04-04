@@ -79,7 +79,7 @@ class Reconciler
         return $data;
     }
 
-    public function processReconciliation($input)
+    protected function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
 
