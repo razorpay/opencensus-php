@@ -46,8 +46,8 @@ class RawApiRequest
             'defaults' => [
                 'headers'   =>  ApiRequest::getHeaders() + [
                     'X-Dashboard'   => 'true',
-                    'X-User-Agent'  => \Request::header('User-Agent'),
-                    'X-IP-Address'  => \Request::ip(),
+                    'X-User-Agent'  => Request::header('User-Agent'),
+                    'X-IP-Address'  => Request::ip(),
                 ]
             ]
         ];
@@ -58,10 +58,6 @@ class RawApiRequest
         $this->setupCredentials($input);
         $this->input = $input;
         $this->path = $path;
-
-        // Setting these in $options above wasn't working (not passing to API)
-        $this->params['headers']['X-User-Agent'] = Request::header('User-Agent');
-        $this->params['headers']['X-IP-Address'] = Request::ip();
 
         if (!empty(Request::query()) and $autoBuildQuery)
         {
