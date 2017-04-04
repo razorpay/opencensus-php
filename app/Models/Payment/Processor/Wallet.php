@@ -17,6 +17,7 @@ class Wallet
     const FREECHARGE  = 'freecharge';
     const JIOMONEY    = 'jiomoney';
     const OPENWALLET  = 'openwallet';
+    const MPESA       = 'mpesa';
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
@@ -28,6 +29,7 @@ class Wallet
         self::FREECHARGE    => 'Freecharge',
         self::JIOMONEY      => 'JioMoney',
         self::OPENWALLET    => 'RZP Open Wallet',
+        self::MPESA         => 'Vodafone Mpesa'
     );
 
     public static function exists($wallet)

@@ -8,27 +8,28 @@ use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
-    const MERCHANT_ID       = 'merchant_id';
-    const CARD              = 'card';
-    const NETBANKING        = 'netbanking';
-    const AMEX              = 'amex';
-    const BANKS             = 'banks';
-    const MOBIKWIK          = 'mobikwik';
-    const OLAMONEY          = 'olamoney';
-    const PAYTM             = 'paytm';
-    const PAYZAPP           = 'payzapp';
-    const PAYUMONEY         = 'payumoney';
-    const AIRTELMONEY       = 'airtelmoney';
-    const FREECHARGE        = 'freecharge';
-    const JIOMONEY          = 'jiomoney';
-    const OPENWALLET        = 'openwallet';
-    const EMI               = 'emi';
-    const DEBIT_CARD        = 'debit_card';
-    const CREDIT_CARD       = 'credit_card';
-    const UPI               = 'upi';
-    const AEPS              = 'aeps';
+    const MERCHANT_ID = 'merchant_id';
+    const CARD        = 'card';
+    const NETBANKING  = 'netbanking';
+    const AMEX        = 'amex';
+    const BANKS       = 'banks';
+    const MOBIKWIK    = 'mobikwik';
+    const OLAMONEY    = 'olamoney';
+    const PAYTM       = 'paytm';
+    const PAYZAPP     = 'payzapp';
+    const PAYUMONEY   = 'payumoney';
+    const AIRTELMONEY = 'airtelmoney';
+    const FREECHARGE  = 'freecharge';
+    const JIOMONEY    = 'jiomoney';
+    const OPENWALLET  = 'openwallet';
+    const MPESA       = 'mpesa';
+    const EMI         = 'emi';
+    const DEBIT_CARD  = 'debit_card';
+    const CREDIT_CARD = 'credit_card';
+    const UPI         = 'upi';
+    const AEPS        = 'aeps';
 
-    const METHODS           = 'methods';
+    const METHODS     = 'methods';
 
     protected $primaryKey = self::MERCHANT_ID;
 
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
         self::EMI,
         self::UPI,
         self::AEPS,
@@ -73,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
         self::EMI,
         self::UPI,
         self::AEPS,
@@ -86,23 +89,24 @@ class Entity extends Base\PublicEntity
         self::METHODS);
 
     protected $defaults = array(
-        self::AMEX          => false,
-        self::PAYTM         => false,
-        self::MOBIKWIK      => false,
-        self::PAYZAPP       => false,
-        self::PAYUMONEY     => false,
-        self::AIRTELMONEY   => false,
-        self::OLAMONEY      => false,
-        self::FREECHARGE    => false,
-        self::JIOMONEY      => false,
-        self::OPENWALLET    => false,
-        self::BANKS         => [],
-        self::EMI           => false,
-        self::UPI           => true,
-        self::AEPS          => false,
-        self::NETBANKING    => true,
-        self::CREDIT_CARD   => true,
-        self::DEBIT_CARD    => true,
+        self::AMEX        => false,
+        self::PAYTM       => false,
+        self::MOBIKWIK    => false,
+        self::PAYZAPP     => false,
+        self::PAYUMONEY   => false,
+        self::AIRTELMONEY => false,
+        self::OLAMONEY    => false,
+        self::FREECHARGE  => false,
+        self::JIOMONEY    => false,
+        self::OPENWALLET  => false,
+        self::MPESA       => false,
+        self::BANKS       => [],
+        self::EMI         => false,
+        self::UPI         => true,
+        self::AEPS        => false,
+        self::NETBANKING  => true,
+        self::CREDIT_CARD => true,
+        self::DEBIT_CARD  => true,
     );
 
     protected $wallets = array(
@@ -115,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::JIOMONEY,
         self::OPENWALLET,
+        self::MPESA,
     );
 
     protected static $methods = array(
@@ -131,26 +136,28 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::AIRTELMONEY,
         self::FREECHARGE,
+        self::MPESA,
     );
 
     // Casts the attributes to native types
     protected $casts = [
-        self::AMEX        => 'bool',
-        self::PAYTM       => 'bool',
-        self::CREDIT_CARD => 'bool',
-        self::DEBIT_CARD  => 'bool',
-        self::NETBANKING  => 'bool',
-        self::MOBIKWIK    => 'bool',
-        self::OLAMONEY    => 'bool',
-        self::PAYZAPP     => 'bool',
-        self::PAYUMONEY   => 'bool',
-        self::AIRTELMONEY => 'bool',
-        self::FREECHARGE  => 'bool',
-        self::JIOMONEY    => 'bool',
-        self::OPENWALLET  => 'bool',
-        self::EMI         => 'bool',
-        self::UPI         => 'bool',
-        self::AEPS        => 'bool',
+        self::AMEX           => 'bool',
+        self::PAYTM          => 'bool',
+        self::CREDIT_CARD    => 'bool',
+        self::DEBIT_CARD     => 'bool',
+        self::NETBANKING     => 'bool',
+        self::MOBIKWIK       => 'bool',
+        self::OLAMONEY       => 'bool',
+        self::PAYZAPP        => 'bool',
+        self::PAYUMONEY      => 'bool',
+        self::AIRTELMONEY    => 'bool',
+        self::FREECHARGE     => 'bool',
+        self::JIOMONEY       => 'bool',
+        self::OPENWALLET     => 'bool',
+        self::MPESA          => 'bool',
+        self::EMI            => 'bool',
+        self::UPI            => 'bool',
+        self::AEPS           => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -240,6 +247,11 @@ class Entity extends Base\PublicEntity
     public function isAirtelmoneyEnabled()
     {
         return $this->getAttribute(self::AIRTELMONEY);
+    }
+
+    public function isMpesaEnabled()
+    {
+        return $this->getAttribute(self::MPESA);
     }
 
     public function isPayumoneyEnabled()

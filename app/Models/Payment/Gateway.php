@@ -43,6 +43,7 @@ class Gateway
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const WALLET_MPESA       = 'wallet_mpesa';
 
     const ACQUIRER_HDFC      = 'hdfc';
     const ACQUIRER_ICIC      = 'icic';
@@ -143,6 +144,7 @@ class Gateway
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
         self::WALLET_JIOMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_OPENWALLET  => Settlement\Channel::KOTAK,
+        self::WALLET_MPESA       => Settlement\Channel::KOTAK,
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
         self::AEPS_ICICI         => Settlement\Channel::KOTAK,
@@ -190,6 +192,7 @@ class Gateway
             self::WALLET_FREECHARGE,
             self::WALLET_JIOMONEY,
             self::WALLET_OPENWALLET,
+            self::WALLET_MPESA,
         ],
 
         Method::EMI => [
@@ -324,7 +327,8 @@ class Gateway
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
-        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET
+        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
+        Wallet::MPESA       => Gateway::WALLET_MPESA,
     );
 
     public static $upiToGatewayMap = array(
