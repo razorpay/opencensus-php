@@ -52,9 +52,8 @@ class Authenticate {
 
 			if ($user)
 			{
-				// Note: User email is being set as merchant
-				ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
 				ApiRequest::addHeader('X-Dashboard-User-Id', $user->getAuthIdentifier());
+				ApiRequest::addHeader('X-Dashboard-User-Email', $user->email);
 
 				if ($user->currentMerchant)
 				{
