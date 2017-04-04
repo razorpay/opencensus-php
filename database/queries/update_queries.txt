@@ -130,6 +130,12 @@ update settlements set status="failed", failure_reason="Reconciliation", remarks
 update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7HX5An3eDrXUaz";
 update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7KhM07UJp7rsiZ";
 
+INSERT INTO wallet(payment_id, action, amount, wallet, received, email,
+contact, gateway_merchant_id, response_description, status_code, refund_id,
+created_at, updated_at) values('6wbhijioS7aZRF', 'refund', 19724,
+'airtelmoney', true, 'shivam_fzd@rediffmail.com', '9760099259', '34978327',
+'refunded manually by airtel', 'SUC', '7Umo8Rl6m52bTp', 1490016572, 1490016572);
+
 # update axis refund gateway record because they sent a value `Pending` for refund, which we are not currently
 # handling. We got this in the MIS file, which means, it was actually successful. The vpc_TxnResponseCode was `P`.
 UPDATE axis SET vpc_Message = "Approved", vpc_TxnResponseCode = "0" WHERE id = 1172941;
