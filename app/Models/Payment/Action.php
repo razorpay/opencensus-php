@@ -22,6 +22,7 @@ class Action
     const DEBIT                   = 'debit';
     const VERIFY                  = 'verify';
     const VERIFY_REFUND           = 'verify_refund';
+    const VERIFY_REFUND2          = 'verify_refund2';
     const VERIFY_CAPTURE          = 'verify_capture';
     const MANUAL_GATEWAY_REFUND   = 'manual_gateway_refund';
     const MANUAL_GATEWAY_CAPTURE  = 'manual_gateway_capture';

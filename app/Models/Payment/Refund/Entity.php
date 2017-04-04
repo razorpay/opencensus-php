@@ -219,6 +219,20 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
     }
 
+    public function incrementAttempts()
+    {
+        $attempts = $this->getAttribute(self::ATTEMPTS);
+
+        $this->setAttribute(self::ATTEMPTS, $attempts + 1);
+    }
+
+    public function setLastAttemptedAt()
+    {
+        $timestamp = $this->freshTimestamp();
+
+        $this->setAttribute(self::LAST_ATTEMPTED_AT, $timestamp);
+    }
+
     public function setPublicPaymentIdAttribute(array & $array)
     {
         $array[self::PAYMENT_ID] =

@@ -43,6 +43,10 @@ class Validator extends Base\Validator
         Payment\Gateway::AXIS_MIGS,
     ];
 
+    protected static $verifyRefund2Gateways = [
+        Payment\Gateway::BILLDESK,
+    ];
+
     protected $payment;
 
     public function setPayment($payment)
@@ -124,6 +128,14 @@ class Validator extends Base\Validator
     public static function validateManualGatewayRefundAllowed(string $gateway)
     {
         if (in_array($gateway, self::$manualRefundGateways, true) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
+        }
+    }
+
+    public static function validateVerifyRefund2Allowed(string $gateway)
+    {
+        if (in_array($gateway, self::$verifyRefund2Gateways, true) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }

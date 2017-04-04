@@ -31,6 +31,9 @@ class Service extends Base\Service
      * List of gateways that we wish to attempt this with.
      * This should eventually cover all API based refund
      * gateways.
+     *
+     * These gateways should have verifyRefund2 implemented.
+     * and be allowed to perform it.
      * */
     const RETRY_FAILED_REFUND_GATEWAYS = [
         Payment\Gateway::BILLDESK,
@@ -666,20 +669,15 @@ class Service extends Base\Service
 
         $to = $input['to'];
 
-        $action = 'refundRetry';
-
         if ((isset($input['gateway']) === true) and
             (in_array($input['gateway'], self::RETRY_FAILED_REFUND_GATEWAYS, true) === true))
         {
             $gateways = [$input['gateway']];
         }
 
-        // Not adding a restriction on attempt and timestamp.
         foreach ($gateways as $gateway)
         {
-            // Every combination of gateway / refund time period needs to be
-            // gone through.
-
+            // Every combination of gateway / refund needs to be processed
             // Get the appropriate refunds and pass them as part of the refund
             // Get refunds that have failed and those that have not been
             // retried more than 3. Post every retry update last retried at.
@@ -693,9 +691,7 @@ class Service extends Base\Service
 
                 $refundId = $refund->getId();
 
-                $data = $processor->getGatewayDataForRefund($refund, $refund->payment);
-
-                $status[$gateway][$refundId] = $this->app['gateway']->call($gateway, $action, $data, $this->mode);
+                $status[$gateway][$refundId] = $processor->processRefundRetry($refund);
             }
         }
 
