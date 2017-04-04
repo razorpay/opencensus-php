@@ -40,7 +40,7 @@ class Refunded extends Base
         return MailTags::REFUND_SUCCESSFUL;
     }
 
-    public function isCustomerReceiptEmailRequired()
+    public function isCustomerReceiptEmail()
     {
         if ($this->isMerchantEmail === true)
         {

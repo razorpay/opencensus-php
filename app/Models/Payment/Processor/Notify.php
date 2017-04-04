@@ -115,31 +115,37 @@ class Notify
      */
     protected function notifyViaMail($event)
     {
-        $mailables = new Base\PublicCollection;
-
         $mailableClass = $this->getMailableClass($event);
 
         if (PaymentMail\Event::isCustomerEvent($event) === true)
         {
             $mailable = new $mailableClass($this->template);
 
-            $mailables->push($mailable);
+            if ($this->invoice !== null)
+            {
+                $mailable->setInvoice($this->invoice);
+            }
+
+            if ($this->isCustomerMailEnabled($mailable) === true)
+            {
+                Mail::queue($mailable);
+            }
         }
 
         if (PaymentMail\Event::isMerchantEvent($event) === true)
         {
             $mailable = new $mailableClass($this->template, true);
 
-            $mailables->push($mailable);
-        }
+            if ($this->invoice !== null)
+            {
+                $mailable->setInvoice($this->invoice);
+            }
 
-        $mailables->each(function ($mailable)
-        {
-            if ($this->isMailEnabled($mailable) === true)
+            if ($this->isMerchantMailEnabled($mailable) === true)
             {
                 Mail::queue($mailable);
             }
-        });
+        }
     }
 
     protected function notifyViaSlack($event)
@@ -450,14 +456,6 @@ class Notify
             ];
         }
 
-        if ($this->payment->hasInvoice() === true)
-        {
-            $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
-
-            $data['invoice'] = $payloadForInvoice['invoice'];
-            $data['merchant'] += $payloadForInvoice['merchant'];
-        }
-
         return $data;
     }
 
@@ -540,16 +538,15 @@ class Notify
     }
 
     /**
-     * Whether or not we need to trigger the notifications
-     * The order of conditions in this is imporant
+     * Decides if we send a mail to customer for a payment event
      *
      * @param  Mailable $mailable Mailable object being sent
      * @return boolean
      */
-    protected function isMailEnabled(PaymentMail\Base $mailable)
+    protected function isCustomerMailEnabled(PaymentMail\Base $mailable)
     {
         // If the merchant has disabled customer emails
-        // And this was a customer receipt email
+        // And this was a customer receipt email don't send a mail
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
             ($mailable->isCustomerReceiptEmail() === true))
         {
@@ -557,7 +554,11 @@ class Notify
         }
 
         return $this->isEnabled();
+    }
 
+    protected function isMerchantMailEnabled(PaymentMail\Base $mailable)
+    {
+        return $this->isEnabled();
     }
 
     /**
@@ -596,6 +597,12 @@ class Notify
 
     protected function getMailableClass(string $event)
     {
+        if (PaymentMail\Event::isInvoiceEvent($event) === true)
+        {
+            $event = PaymentMail\Event::getInvoiceEventName($event);
+
+            return 'RZP\\Mail\\Invoice\\Payment\\' . $event;
+        }
         return 'RZP\\Mail\\Payment\\' . studly_case($event);
     }
 }

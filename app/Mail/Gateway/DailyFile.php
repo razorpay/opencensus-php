@@ -38,7 +38,7 @@ class DailyFile extends Mailable
 
     protected function addSubject()
     {
-        $subject = $this->subject;
+        $subject = $this->getSubject();
 
         $this->subject($subject);
 

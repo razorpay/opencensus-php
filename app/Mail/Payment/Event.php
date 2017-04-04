@@ -29,6 +29,11 @@ class Event
         self::INVOICE_PAYMENT_CAPTURED,
     ];
 
+    const INVOICE_EVENTS = [
+        self::INVOICE_PAYMENT_AUTHORIZED,
+        self::INVOICE_PAYMENT_CAPTURED,
+    ];
+
     const MAIL_TAG_MAP = [
         self::AUTHORIZED                 => MailTags::PAYMENT_SUCCESSFUL,
         self::REFUNDED                   => MailTags::REFUND_SUCCESSFUL,
@@ -52,6 +57,22 @@ class Event
     public static function isMerchantEvent(string $event)
     {
         return (in_array($event, self::MERCHANT_EVENTS, true) === true);
+    }
+
+    public static function isInvoiceEvent(string $event)
+    {
+        return (in_array($event, self::INVOICE_EVENTS, true) === true);
+    }
+
+    public static function getInvoiceEventName(string $event)
+    {
+        $arr = explode('_', $event);
+
+        array_pop($arr);
+
+        $event = studly_case(implode($arr, '_'));
+
+        return $event;
     }
 
     public static function isCustomerReceiptEmailRequired(string $event)
