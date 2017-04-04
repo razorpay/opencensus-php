@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -158,26 +160,30 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testDailyFileGeneration()
     {
+        Mail::fake();
+
         $payments = $this->createPaymentsToClaim();
 
         $this->createRefundForFileGeneration($payments);
 
-        $this->checkMailQueue();
-
         $data = $this->generateRefundsExcelForNB('UTIB');
 
         $this->checkRefundTextData($data);
+
+        $this->checkMailQueue();
     }
 
     public function testEmptyDailyFileGeneration()
     {
-        $payments = $this->createPaymentsToClaim();
+        Mail::fake();
 
-        $this->checkEmptyRefundsMailQueue();
+        $payments = $this->createPaymentsToClaim();
 
         $data = $this->generateRefundsExcelForNB('UTIB');
 
         $this->checkEmptyRefundTextData($data);
+
+        $this->checkEmptyRefundsMailQueue();
     }
 
     public function testFailedAuthPayment()
@@ -298,69 +304,57 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-         // Mail catch with amount and refund everywhere
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                        // Amounts are in rupees
-                        $testData = array(
-                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
-                            'amount' => [
-                                'claims'  => 1500,
-                                'refunds' => 500,
-                                'total'   => 1000,
-                            ],
-                            'count'   => [
-                                'claims'  => 3,
-                                'refunds' => 2,
-                                'total'   => 5
-                            ]
-                        );
+        // Amounts are in rupees
+        $testData = [
+            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 500,
+                    'total'   => 1000,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 2,
+                    'total'   => 5
+                ]
+        ];
 
-                        $this->assertArraySelectiveEquals($testData, $data);
+        // Mail catch with amount and refund everywhere
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function checkEmptyRefundsMailQueue()
     {
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                        // Amounts are in rupees
-                        $testData = array(
-                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
-                            'amount' => [
-                                'claims'  => 1500,
-                                'refunds' => 0,
-                                'total'   => 1500,
-                            ],
-                            'count'   => [
-                                'claims'  => 3,
-                                'refunds' => 0,
-                                'total'   => 3
-                            ]
-                        );
+        // Amounts are in rupees
+        $testData = [
+            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 0,
+                    'total'   => 1500,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 0,
+                    'total'   => 3
+                ]
+        ];
 
-                        $this->assertArraySelectiveEquals($testData, $data);
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-                        return true;
-                    }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function checkRefundTextData($data)

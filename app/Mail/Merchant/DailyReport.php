@@ -20,6 +20,13 @@ class DailyReport extends Mailable
         $this->merchant = $merchant;
     }
 
+    protected function addRecipients()
+    {
+        $this->to($this->data['email']);
+
+        return $this;
+    }
+
     protected function addSender()
     {
         $email = Common::MAIL_ADDRESSES[Common::REPORTS];
@@ -65,6 +72,13 @@ class DailyReport extends Mailable
 
             $headers->addTextHeader(MailTags::HEADER, MailTags::DAILY_REPORT);
         });
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $this->with($this->data);
 
         return $this;
     }

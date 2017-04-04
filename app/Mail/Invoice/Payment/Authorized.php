@@ -8,10 +8,6 @@ use RZP\Models\Invoice;
 
 class Authorized extends Base
 {
-    protected $data;
-
-    protected $isMerchantEmail;
-
     protected $invoice;
 
     public function setInvoice(Invoice\Entity $invoice)

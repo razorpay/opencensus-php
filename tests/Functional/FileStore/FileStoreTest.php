@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Mail;
 use Mockery;
 
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -26,8 +27,7 @@ class FileStoreTest extends TestCase
 
     public function testRefundFile()
     {
-        $this->mockMail(500);
-
+        Mail::fake();
         // Make 3 test payments
         $this->createTestPayment();
         $this->createTestPayment();
@@ -45,6 +45,8 @@ class FileStoreTest extends TestCase
         $this->validateRefundFile($content);
 
         $this->assertFileStoreItems();
+
+        $this->mockMail(500);
     }
 
     protected function createPayments($count)
@@ -147,18 +149,12 @@ class FileStoreTest extends TestCase
             ]
         ];
 
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data) use ($testData)
-                        {
-                            $this->assertArraySelectiveEquals($testData, $data);
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-                            return true;
-                        }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function validateRefundFile($content)

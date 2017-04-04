@@ -6,9 +6,9 @@ use Mail;
 use Mockery;
 use Carbon\Carbon;
 
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-
 
 class NetbankingKotakGatewayTest extends TestCase
 {
@@ -120,6 +120,8 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testRefundsFileGeneration()
     {
+        Mail::fake();
+
         // Make 6 payments
         foreach (range(0,2) as $value)
         {
@@ -148,8 +150,6 @@ class NetbankingKotakGatewayTest extends TestCase
 
         $this->moveRefundsToYesteday();
 
-        $this->setUpMailMock();
-
         $content = $this->generateRefundsExcelForNB('KKBK');
 
         foreach (['tpv', 'nonTpv'] as $fileType)
@@ -157,33 +157,28 @@ class NetbankingKotakGatewayTest extends TestCase
             $this->checkDailyFilesContent($content, $fileType);
         }
 
+        $this->setUpMailMock();
     }
 
     protected function setUpMailMock()
     {
-        // Mail catch with amount and refund everywhere
-        Mail::shouldReceive('queue')
-              ->twice()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                        {
-                            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                            $testData = array(
-                                'subject' => 'Kotak Netbanking claims and refund files for '.$date,
-                                'amount' => [
-                                    'claims' => 1500,
-                                    'refunds' => 500,
-                                    'total' => 1000,
-                                ]);
+        $testData = [
+            'subject' => 'Kotak Netbanking claims and refund files for '.$date,
+            'amount' => [
+                'claims' => 1500,
+                'refunds' => 500,
+                'total' => 1000,
+            ],
+        ];
 
-                            $this->assertArraySelectiveEquals($testData, $data);
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-                            return true;
-                        }),
-                    Mockery::any()
-                );
+            return true;
+        });
     }
 
     protected function checkDailyFilesContent($content, $fileType)

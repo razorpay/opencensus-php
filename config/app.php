@@ -224,7 +224,6 @@ return array(
         'Httplug'       => Http\Httplug\Facade\Httplug::class,
         'Lang'          => Illuminate\Support\Facades\Lang::class,
         'Log'           => Illuminate\Support\Facades\Log::class,
-        'Mail'          => Illuminate\Support\Facades\Mail::class,
         'Password'      => Illuminate\Support\Facades\Password::class,
         'Queue'         => Illuminate\Support\Facades\Queue::class,
         'Redirect'      => Illuminate\Support\Facades\Redirect::class,
@@ -249,6 +248,7 @@ return array(
         'Excel'         => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'           => Aws\Laravel\AwsFacade::class,
         'Slack'         => Razorpay\Slack\Laravel\Facade::class,
+        'Mail'          => RZP\Mail\Facade::class,
     ),
 
     'context' => env('CONTEXT'),
