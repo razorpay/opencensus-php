@@ -40,7 +40,8 @@ return array(
         'wallet_airtelmoney',
         'wallet_freecharge',
         'wallet_jiomoney',
-        'wallet_openwallet'
+        'wallet_openwallet',
+        'wallet_mpesa',
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),
@@ -71,6 +72,7 @@ return array(
     'mock_upi_idfc'           => env('UPI_IDFC_MOCK'),
     'mock_aeps_icici'         => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'  => env('FREECHARGE_MOCK'),
+    'mock_wallet_mpesa'       => env('MPESA_MOCK'),
 
     'certificate_path'        => env('CERTIFICATE_DIR_PATH'),
 
@@ -222,6 +224,11 @@ return array(
         'test_merchant_id'      => env('JIOMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_client_id'        => env('JIOMONEY_WALLET_TEST_CLIENT_ID'),
         'test_hash_secret'      => env('JIOMONEY_WALLET_TEST_HASH_SECRET')
+    ),
+
+    'wallet_mpesa' => array(
+        'test_merchant_id' => env('MPESA_WALLET_TEST_MERCHANT_ID'),
+        'test_hash_secret' => env('MPESA_WALLET_TEST_HASH_SECRET'),
     ),
 
     'netbanking_hdfc' => array(

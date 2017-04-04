@@ -67,6 +67,7 @@ class Gateway
         Wallet::PAYUMONEY,
         Wallet::OLAMONEY,
         Wallet::FREECHARGE,
+        // Wallet::MPESA,
     );
 
     const TOPUP_GATEWAYS = array(
@@ -75,6 +76,7 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::SHARP,
+        self::WALLET_MPESA,
     );
 
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
