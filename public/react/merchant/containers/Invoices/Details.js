@@ -27,7 +27,7 @@ export default class InvoiceDetailContainer extends Component {
     }
     this.showIssueConfirmModal = ::this.showIssueConfirmModal
     this.issueInvoice = ::this.issueInvoice
-    this.expireInvoice = ::this.expireInvoice
+    this.cancelInvoice = ::this.cancelInvoice
   }
 
   componentWillMount() {
@@ -80,23 +80,23 @@ export default class InvoiceDetailContainer extends Component {
     })
   }
 
-  expireInvoice() {
+  cancelInvoice() {
     let invoice = this.props.invoice
     this.context.confirm({
-      header: 'Expire Invoice?',
+      header: 'Cancel Link?',
       message: () => (
         <div class='text-semi-muted'>
-          <p>The Link will be expired and the customer will not be able to pay for it.</p>
+          <p>The Link will be cancelled and the customer will not be able to pay for it.</p>
         </div>
       ),
-      affirmativeLabel: 'Yes, Expire',
-      affirmativePendingLabel: 'Expiring...',
+      affirmativeLabel: 'Yes, Cancel',
+      affirmativePendingLabel: 'Cancelling...',
       abortLabel: 'No, don\'t!',
       action: () => {
-        return this.props.expireInvoice(invoice).then((invoice) => {
+        return this.props.cancelInvoice(invoice).then((invoice) => {
           this.props.showNotification({
             type: 'success',
-            message: 'Link expired!'
+            message: 'Link cancelled!'
           })
         }).catch(({ errors }) => {
           this.props.showNotification({
@@ -120,7 +120,7 @@ export default class InvoiceDetailContainer extends Component {
             isLoading={loading}
             statusMsg={statusMsg}
             onIssue={this.showIssueConfirmModal}
-            onExpire={this.expireInvoice}
+            onCancel={this.cancelInvoice}
           />
         </div>
       </div>

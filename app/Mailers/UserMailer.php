@@ -30,6 +30,7 @@ class UserMailer extends Mailer
     {
         $this->subject = 'Razorpay | Confirm Your Email';
         $this->view = 'emails.confirmation';
+        $this->mailTag = MailTags::ACCOUNT_CONFIRMATION_MAIL;
 
         return $this;
     }

@@ -68,11 +68,11 @@ export default class Invoice extends GenericEntity {
     })
   }
 
-  expire() {
+  cancel() {
     return this.makeGenericAjaxCall({
       method: 'post',
       data: {
-        route_name: 'invoice_expire',
+        route_name: 'invoice_cancel',
         url_params: JSON.stringify({
           '{id}': this.id,
         }),

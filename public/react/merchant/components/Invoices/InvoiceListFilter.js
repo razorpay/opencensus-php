@@ -15,6 +15,7 @@ export default (props) => {
           <option value='draft'>Draft</option>
           <option value='issued'>Issued</option>
           <option value='paid'>Paid</option>
+          <option value='cancelled'>Cancelled</option>
           <option value='expired'>Expired</option>
         </Field>
       </div>
