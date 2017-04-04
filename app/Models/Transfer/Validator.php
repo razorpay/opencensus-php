@@ -170,9 +170,9 @@ class Validator extends Base\Validator
                     'The on_hold field must be set to 1, if on_hold_until is sent');
             }
 
-            $now = Carbon::now('Asia/Kolkata');
+            $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-            if ($input[Entity::ON_HOLD_UNTIL] < $now->timestamp)
+            if ($input[Entity::ON_HOLD_UNTIL] < $now)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The on_hold_until timestamp cannot be less than the current timestamp');

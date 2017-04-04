@@ -1088,9 +1088,11 @@ class Service extends Base\Service
         {
             try
             {
-                $this->repo->transaction(function () use ($payment) {
-                    $this->setHoldFalse($payment);
-                });
+                $this->repo->transaction(
+                    function() use ($payment)
+                    {
+                        $this->setHoldFalse($payment);
+                    });
             }
             catch (\Exception $e)
             {
