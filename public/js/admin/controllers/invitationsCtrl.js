@@ -73,8 +73,6 @@ app.controller('InvitationsCtrl', [
     // exposing the entire service in scope
     $scope.utils = utils;
 
-    var form_data = invitation_cache[invitation_id].form_data;
-
-    $scope.data = JSON.parse(form_data);
+    $scope.data = invitation_cache[invitation_id].form_data;
   }
 ])

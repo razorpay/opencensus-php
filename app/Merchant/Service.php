@@ -322,19 +322,15 @@ class Service extends Base\Service
         $merchant->save();
     }
 
-    public function createMerchantOnApi($merchantId)
+    public function createMerchantOnApi($merchantId, $adminId = null)
     {
         $merchant = Merchant\Entity::findOrFail($merchantId);
 
         $merchantApiData = $merchant->generateApiData();
 
-        // Once the merchant is created we also have to tag him
-        // with the admin if he was invited by one.
-        $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
-
-        if ($lead)
+        if (! empty($adminId))
         {
-            $merchantApiData['admin_id'] = $lead->admin_id;
+            $merchantApiData['admin_id'] = $adminId;
         }
 
         // Fetch org by hostname and set the orgId in the input
@@ -763,20 +759,6 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
-    }
-
-    public function getInvitationDetails($token)
-    {
-        $error = $data = null;
-
-        $lead = \DB::table('admin_leads')->where('token', '=', $token)->first();
-
-        if (empty($lead))
-        {
-            $error = true;
-        }
-
-        return [$error, $lead];
     }
 
     public function savePreSignupDetails($merchantId, $input)

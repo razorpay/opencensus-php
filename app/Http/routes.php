@@ -18,7 +18,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::options('/contact', 'MerchantController@optionsContact');
     Route::post('/contact', 'MerchantController@postContact');
 
-    Route::get('/invitation/{token}', 'MerchantController@getInvitationDetails');
+    Route::get('/invitation', 'MerchantController@getInvitationDetails');
 
     // Org
     Route::group(['prefix' => 'admin'], function () {

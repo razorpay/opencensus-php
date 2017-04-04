@@ -19,7 +19,7 @@ app.controller('OrgsAddUsersCtrl', [
       method: 'GET',
 
       params: {
-        route_name: 'org_fieldmap_get',
+        route_name: 'org_fieldmap_get_by_entity',
 
         url_params: {
           '{entity}' : 'admin'
@@ -109,6 +109,17 @@ app.controller('OrgsAddUsersCtrl', [
         groups: getSelectedGroups(),
         allow_all_merchants: user.allow_all_merchants ? "1" : "0"
       };
+
+      // send only those fields expected by field map
+      data.body = Object.keys(data.body)
+                        .filter(function (key) {
+                          return $scope.fields.indexOf(key) !== -1 ? true : false;
+                        })
+                        .reduce(function (ob, key) {
+                          ob[key] = data.body[key];
+
+                          return ob;
+                        }, {});
 
       var request = $http.put('/admin/generic', data, {
         params: {

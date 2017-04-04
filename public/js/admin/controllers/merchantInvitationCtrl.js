@@ -22,7 +22,7 @@ app.controller('MerchantInvitationCtrl', [
       method: 'GET',
 
       params: {
-        route_name: 'org_fieldmap_get',
+        route_name: 'org_fieldmap_get_by_entity',
 
         url_params: {
           '{entity}' : 'admin_lead'

@@ -52,6 +52,7 @@ return [
         'org_fieldmap_create'               => 'orgs/{orgId}/field-map',
         'org_fieldmap_edit'                 => 'orgs/{orgId}/field-map/{id}',
         'org_fieldmap_delete'               => 'orgs/{orgId}/field-map/{id}',
+        'org_fieldmap_get_by_entity'        => 'orgs/{id}/field-map/entity/{entity}',
 
         'admin_lead_create'                 => 'orgs/{id}/admin-lead',
         'admin_lead_get_multiple'           => 'orgs/{id}/admin-lead',
@@ -257,5 +258,7 @@ return [
         'pricing_create_plan'               => 'pricing',
         'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
         'pricing_supported_networks'        => 'pricing/networks',
+
+        'admin_lead_verify'                 => 'admin-lead/verify/{token}',
     ],
 ];
