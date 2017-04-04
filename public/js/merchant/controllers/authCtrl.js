@@ -152,6 +152,7 @@ app.controller('AuthCtrl', [
           $scope.lock_email = data.data.email ? true : false;
           $scope.signup.merchantData.business_name = form_data.merchant_name;
           $scope.signup.merchantData.contact_name = form_data.contact_name;
+          $scope.merchant_invitation = true;
         }
       }).error(function () {
 

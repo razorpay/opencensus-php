@@ -326,6 +326,25 @@ class Service extends Base\Service
     {
         $merchant = Merchant\Entity::findOrFail($merchantId);
 
+        $merchantApiData = $this->getMerchantApiData($merchant);
+
+        // This is internal auth as of now
+        // We need to shift this to some other auth
+        $this->setApiCredentials();
+
+        $merchantOnApi = $this->fetchApiEntityIfExists('merchant', $merchantApiData['id']);
+
+        // Only create the merchant if it doesn't exist on the API
+        if ($merchantOnApi === null)
+        {
+            $response = $this->api->merchant->create($merchantApiData);
+        }
+
+        return $merchant;
+    }
+
+    public function getMerchantApiData($merchant)
+    {
         $merchantApiData = $merchant->generateApiData();
 
         if (! empty($adminId))
@@ -341,19 +360,7 @@ class Service extends Base\Service
 
         $merchantApiData['org_id'] = $org['id'];
 
-        // This is internal auth as of now
-        // We need to shift this to some other auth
-        $this->setApiCredentials();
-
-        $merchantOnApi = $this->fetchApiEntityIfExists('merchant', $merchantApiData['id']);
-
-        // Only create the merchant if it doesn't exist on the API
-        if ($merchantOnApi === null)
-        {
-            $response = $this->api->merchant->create($merchantApiData);
-        }
-
-        return $merchant;
+        return $merchantApiData;
     }
 
     public function tagAdmin($merchantOnApi)
@@ -783,12 +790,16 @@ class Service extends Base\Service
 
                 $user = $merchant->primaryOwner();
 
-                $user->edit([
-                        'contact_mobile' => $input['contact_mobile'],
-                        'name'           => $input['contact_name']
-                    ], 'preSignup');
+                $userEditData = [
+                    'contact_mobile' => $input['contact_mobile'],
+                    'name'           => $input['contact_name']
+                ];
+
+                $user->edit($userEditData, 'preSignup');
 
                 $user->saveOrFail();
+
+                (new User\Service)->editUserOnApi($userEditData, $user->id);
 
                 $zapierData = (new User\Service)->getZapierData($merchant, $input);
 
