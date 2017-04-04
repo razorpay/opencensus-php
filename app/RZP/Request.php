@@ -20,7 +20,7 @@ class Request extends BaseRequest
 
     public function request($method, $url, $data = null)
     {
-        $url = Api::getFullUrl($url);
+        $url = Api::$baseUrl . $url;
 
         if ($data === null)
             $data = array();
@@ -36,7 +36,7 @@ class Request extends BaseRequest
 
     public function rawRequest($method, $url, $data = null)
     {
-        $url = Api::getFullUrl($url);
+        $url = Api::$baseUrl . $url;
 
         if ($data === null)
             $data = array();

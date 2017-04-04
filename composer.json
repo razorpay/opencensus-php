@@ -4,7 +4,7 @@
     "keywords": ["dashboard", "razorpay"],
     "require": {
         "laravel/framework": "5.2.*",
-        "razorpay/razorpay": "dev-master",
+        "razorpay/razorpay": "dev-master#98b03ae27a76d5c91eed10d75fe116ecfa914ab1",
         "aws/aws-sdk-php-laravel": "~3.0",
         "barryvdh/laravel-debugbar": "2.*",
         "bogardo/mailgun": "4.0.*",
