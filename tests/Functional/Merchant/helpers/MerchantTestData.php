@@ -205,8 +205,9 @@ return [
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
             'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
             ],
         ],
         'response' => [
