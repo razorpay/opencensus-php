@@ -57,39 +57,41 @@ export default (props) => {
                         </div> : null
                     }
 
-                    <div class='list-group-item'>
+                    <div class={`list-group-item ${creditsData.items.length ? 'no-flex' : ''}`}>
                       <span>Credits</span>
                       {
                         !creditsData.items.length ?
                           <span>No credits Assigned</span> :
-                          <table class='table table-striped'>
-                            <thead>
-                              <tr>
-                                <th>Id</th>
-                                <th>Campaign</th>
-                                <th>Type</th>
-                                <th>Value</th>
-                                <th>Created At</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {
-                                creditsData.items.map((credit, index)=> {
-                                  return (
-                                    <tr key={index}>
-                                      <td>{credit.id}</td>
-                                      <td>{credit.campaign}</td>
-                                      <td>{credit.type}</td>
-                                      <td><Amount value={credit.value} /></td>
-                                      <td>
-                                        <Time value={credit.created_at} format='DD/MM/YYYY H:mm a' />
-                                      </td>
-                                    </tr>
-                                  )
-                                })
-                              }
-                            </tbody>
-                          </table>
+                          <div class='panel-body'>
+                            <table class='table table-striped'>
+                              <thead>
+                                <tr>
+                                  <th>Id</th>
+                                  <th>Campaign</th>
+                                  <th>Type</th>
+                                  <th>Value</th>
+                                  <th>Created At</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {
+                                  creditsData.items.map((credit, index)=> {
+                                    return (
+                                      <tr key={credit.id}>
+                                        <td>{credit.id}</td>
+                                        <td>{credit.campaign}</td>
+                                        <td>{credit.type}</td>
+                                        <td><Amount value={credit.value} /></td>
+                                        <td>
+                                          <Time value={credit.created_at} format='DD/MM/YYYY H:mm a' />
+                                        </td>
+                                      </tr>
+                                    )
+                                  })
+                                }
+                              </tbody>
+                            </table>
+                          </div>
                       }
                     </div>
                   </div>
