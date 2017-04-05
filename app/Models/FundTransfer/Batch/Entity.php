@@ -15,6 +15,7 @@ use Carbon\Carbon;
  */
 class Entity extends Base\PublicEntity
 {
+<<<<<<< c4ab6df5d0a6c7fe24b5973a70ceafc766b50ea2
     const ID                = 'id';
     const DATE              = 'date';
     const TYPE              = 'type';
@@ -32,6 +33,25 @@ class Entity extends Base\PublicEntity
     const EXCEL_FILE_ID     = 'excel_file_id';
     const RECONCILED_AT     = 'reconciled_at';
     const RETURNED_AT       = 'returned_at';
+=======
+    const ID                    = 'id';
+    const DATE                  = 'date';
+    const TYPE                  = 'type';
+    const CHANNEL               = 'channel';
+    const AMOUNT                = 'amount';
+    const FAILED_AMOUNT         = 'failed_amount';
+    const FEES                  = 'fees';
+    const API_FEE               = 'api_fee';
+    const GATEWAY_FEE           = 'gateway_fee';
+    const TOTAL_COUNT           = 'total_count';
+    const TOTAL_FAILED_COUNT    = 'total_failed_count';
+    const TRANSACTION_COUNT     = 'transaction_count';
+    const SERVICE_TAX           = 'service_tax';
+    const URLS                  = 'urls';
+    const INITIATED_AT          = 'initiated_at';
+    const RECONCILED_AT         = 'reconciled_at';
+    const RETURNED_AT           = 'returned_at';
+>>>>>>> [Settlement] Added failure stats in batch_fund_transfer
 
     protected $entity = 'batch_fund_transfer';
 
@@ -43,8 +63,10 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::CHANNEL,
         self::AMOUNT,
+        self::FAILED_AMOUNT,
         self::FEES,
         self::TOTAL_COUNT,
+        self::TOTAL_FAILED_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
         self::INITIATED_AT,
@@ -62,10 +84,12 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::CHANNEL,
         self::AMOUNT,
+        self::FAILED_AMOUNT,
         self::FEES,
         self::API_FEE,
         self::GATEWAY_FEE,
         self::TOTAL_COUNT,
+        self::TOTAL_FAILED_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
         self::URLS,
@@ -95,15 +119,22 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT            => 'int',
-        self::FEES              => 'int',
-        self::DATE              => 'int',
-        self::SERVICE_TAX       => 'int',
-        self::API_FEE           => 'int',
-        self::GATEWAY_FEE       => 'int',
-        self::INITIATED_AT      => 'int',
-        self::TOTAL_COUNT       => 'int',
-        self::TRANSACTION_COUNT => 'int',
+        self::AMOUNT                => 'int',
+        self::FAILED_AMOUNT         => 'int',
+        self::FEES                  => 'int',
+        self::DATE                  => 'int',
+        self::SERVICE_TAX           => 'int',
+        self::API_FEE               => 'int',
+        self::GATEWAY_FEE           => 'int',
+        self::INITIATED_AT          => 'int',
+        self::TOTAL_COUNT           => 'int',
+        self:: TOTAL_FAILED_COUNT  => 'int',
+        self::TRANSACTION_COUNT     => 'int',
+    ];
+
+    protected $defaults = [
+        self::FAILED_AMOUNT         => 0,
+        self::TOTAL_FAILED_COUNT    => 0,
     ];
 
     protected function generateDate($input)

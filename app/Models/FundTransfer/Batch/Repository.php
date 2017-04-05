@@ -90,4 +90,16 @@ class Repository extends Base\Repository
                     ->orWhereNull(Entity::SERVICE_TAX)
                     ->get();
     }
+
+    public function updateFailureStatsInBatch(array $updateAttributes)
+    {
+        foreach ($updateAttributes as $batchId => $attrs)
+        {
+            Entity::verifyIdAndSilentlyStripSign($batchId);
+
+            $this->newQuery()
+                 ->where(Entity::ID, '=', $batchId)
+                 ->update($attrs);
+        }
+    }
 }

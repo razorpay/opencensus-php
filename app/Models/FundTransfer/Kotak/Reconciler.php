@@ -46,6 +46,8 @@ class Reconciler
      */
     protected $reconciledAt;
 
+    protected $batchFundTransferUpdateAttrs = [];
+
     protected $app;
 
     protected $repo;
@@ -152,6 +154,9 @@ class Reconciler
                     $failures->push($entity);
                 }
             }
+
+            $this->repo->batch_fund_transfer->updateFailureStatsInBatch(
+                $this->batchFundTransferUpdateAttrs);
 
             $this->repo->commit();
         }
@@ -268,8 +273,41 @@ class Reconciler
             }
         }
 
+        $oldStatus = $entity->getStatus();
+
+        $source = $entity->source;
+
+        if ($oldStatus !== $status)
+        {
+            if ($entity->isPendingReconciliation() === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Old and new status not matching. ' .
+                    'Old status: ' . $oldStatus . ' New status: ' . $status .
+                    'Entity Id: ' . $entity->getPublicId());
+            }
+
+            $entity->setStatus($status);
+
+            if ($status === FundTransferAttempt\Status::FAILED)
+            {
+                $batchId = $entity->batchFundTransfer->getId();
+
+                if (isset($this->batchFundTransferUpdateAttrs[$batchId]) === false)
+                {
+                    $this->batchFundTransferUpdateAttrs[$batchId] =
+                        ['total_failed_count' => 1, 'total_failed_amount' => $source->getAmount()];
+                }
+                else
+                {
+                    $this->batchFundTransferUpdateAttrs[$batchId]['total_failed_count']++;
+
+                    $this->batchFundTransferUpdateAttrs[$batchId]['total_failed_amount'] += $source->getAmount();
+                }
+            }
+        }
+
         $entity->setUtr($utr);
-        $entity->setStatus($status);
         $entity->setFailureReason($failureReason);
         $entity->setRemarks($remarks);
         $entity->setBankStatusCode($statusCode);
@@ -278,7 +316,6 @@ class Reconciler
 
         $this->repo->saveOrFail($entity);
 
-        $source = $entity->source;
         $source->setUtr($utr);
         $source->setFailureReason($failureReason);
         $source->setStatus($status);

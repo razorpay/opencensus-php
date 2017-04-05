@@ -56,6 +56,10 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
         $this->assertNotNull($setl['utr']);
 
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertEquals(0, $batch['total_failed_count']);
+        $this->assertEquals(0, $batch['total_failed_amount']);
+
         // Validate settlement-transaction entity
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals('settlement', $txn['type']);
@@ -103,10 +107,32 @@ class ReconciliationTest extends TestCase
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 2);
 
+        // Validate batch fund transfer entity
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertEquals(1, $batch['total_failed_count']);
+        $this->assertEquals(4385000, $batch['total_failed_amount']);
+
         // Validate settlement-transaction entity
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals('settlement', $txn['type']);
         $this->assertNotNull($txn['reconciled_at']);
+
+        // Check that if a row with same payment_ref_id is processed again in a
+        // later recon file, failure stats should remain same
+
+        // Generate settlement reconciliation file
+        $generateFailedReconciliations = true;
+        $setlReconciliationFile = $this->generateSetlReconciliationFile(
+            $setlFile,
+            $generateFailedReconciliations);
+
+        // Reconcile settlements again
+        $data = $this->reconcileSettlements($setlReconciliationFile);
+
+        // Validate batch fund transfer entity
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertEquals(1, $batch['total_failed_count']);
+        $this->assertEquals(4385000, $batch['total_failed_amount']);
 
         // Resetting time
         Carbon::setTestNow();
