@@ -28,8 +28,10 @@ class Gateway extends Base\Gateway
     ];
 
     const VERIFY_STATUS_TO_CALLBACK = [
-        Status::SUCCESS => Confirmation::YES,
-        Status::FAILED  => Confirmation::NO
+        Status::SUCCESS    => Confirmation::YES,
+        Status::FAILED     => Confirmation::NO,
+        Status::REVERSED   => Confirmation::NO,
+        Status::IN_PROCESS => Confirmation::NO
     ];
 
     public function authorize(array $input)

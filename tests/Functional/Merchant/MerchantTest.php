@@ -3,9 +3,12 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use DB;
+
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -867,17 +870,18 @@ class MerchantTest extends TestCase
     protected function createMerchant()
     {
         $id = '1X4hRFHFx4UiXt';
-        $merchant = array(
+
+        $merchant = [
             'id'    => $id,
             'name'  => 'Tester 2',
             'email' => 'liveandtest@localhost.com'
-        );
+        ];
 
-        $request = array(
+        $request = [
             'content' => $merchant,
             'url' => '/merchants',
             'method' => 'POST'
-        );
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -1032,6 +1036,36 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testCreateMerchantWithAdmin()
+    {
+        $adminId = 'admin_' . Org::SUPER_ADMIN;
+
+        $id = '1X4hRFHFx4UiXt';
+
+        $merchant = [
+            'id'       => $id,
+            'name'     => 'Tester 2',
+            'email'    => 'liveandtest@localhost.com',
+            'admin_id' => $adminId,
+        ];
+
+        $request = [
+            'content' => $merchant,
+            'url'     => '/merchants',
+            'method'  => 'POST'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $row = DB::table('merchant_map')
+                   ->where('merchant_id', '=', $content['id'])
+                   ->where('entity_id', '=', Org::SUPER_ADMIN)
+                   ->where('entity_type', '=', 'admin')
+                   ->first();
+
+        $this->assertNotNull($row);
     }
 
 }

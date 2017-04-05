@@ -10,6 +10,6 @@ namespace RZP\Gateway\Netbanking\Icici;
 class Confirmation
 {
     // We use Y to generate bank_payment_id in callback response
-    const YES = 'Y';
-    const NO  = 'N';
+    const YES     = 'Y';
+    const NO      = 'N';
 }

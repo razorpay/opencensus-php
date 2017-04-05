@@ -29,12 +29,22 @@ class Selector
      * @var array
      */
     protected static $sorters = [
+        // Sorts the card terminals based on gateway priorities
         Sorters\CardSorter::class,
+
+        // Sorts the netbanking terminals based on gateway priorities
         Sorters\NetbankingSorter::class,
-        Sorters\ExclusivitySorter::class,
-        Sorters\MerchantSorter::class,
-        Sorters\InternationalCardSorter::class,
+
+        // Boost a gateway terminals based on load distribution of probabilities
         Sorters\TerminalLoadSorter::class,
+
+        // Boosts direct terminals over shared terminals
+        Sorters\ExclusivitySorter::class,
+
+        // Sorting based on merchant category
+        Sorters\MerchantSorter::class,
+
+        // Sorting based on older failed attempts
         Sorters\FailedTerminalsSorter::class,
     ];
 

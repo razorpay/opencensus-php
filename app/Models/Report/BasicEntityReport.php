@@ -33,7 +33,9 @@ class BasicEntityReport extends Base
         E::PAYMENT      => [E::CARD],
         E::REFUND       => [E::PAYMENT],
         E::ORDER        => [],
-        E::SETTLEMENT   => []
+        E::SETTLEMENT   => [],
+        E::TRANSFER     => [],
+        E::REVERSAL     => [],
     ];
 
     protected $entity;
@@ -46,7 +48,9 @@ class BasicEntityReport extends Base
         E::PAYMENT,
         E::SETTLEMENT,
         E::TRANSACTION,
-        E::MERCHANT
+        E::MERCHANT,
+        E::TRANSFER,
+        E::REVERSAL,
     );
 
     public function __construct(string $entity)
