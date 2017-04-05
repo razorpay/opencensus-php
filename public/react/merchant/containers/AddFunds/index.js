@@ -40,7 +40,7 @@ export default class AddFundsContainer extends Component {
       this.props.fetchHost().then((response) => {
         return this.props.loadCheckout(response.data)
       }),
-      this.props.fetchKeys().then((key) => {
+      this.props.fetchKeys(this.props.user.current).then((key) => {
         this.key = key
       })
     ]).catch((error) => {

@@ -7,9 +7,19 @@ export const fetchHost = () => {
   }
 }
 
-export const fetchKeys = () => {
+export const fetchKeys = (currentUser) => {
   return (dispatch) => {
-    return ajax('/keys').then((response) => {
+    let params = {
+      route_name: 'merchant_fetch_keys',
+      url_params: {
+        '{id}': currentUser
+      }
+    }
+    return ajax({
+      url: '/user/generic',
+      data: params,
+      appendModeInQueryParam: true,
+    }).then((response) => {
       if (response.data.count) {
         return response.data.items[0].id
       }
