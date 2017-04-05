@@ -184,8 +184,7 @@
                       <td>{{row.name}}</td>
                       <td>{{row.category}}</td>
                       <td>{{row.description}}</td>
-                      <td ng-if="row.assignable">{{row.assignable}}</td>
-                      <td ng-if="!row.assignable"></td>
+                      <td>{{row.assignable ? 'Yes' : 'No' }}</td>
                     </tr>
                   </tbody>
                 </table>
