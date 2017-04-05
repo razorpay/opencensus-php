@@ -214,7 +214,7 @@ class Core extends Base\Core
 
             $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 
-            $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
+            $user = $dashboardInfo['admin_username'] ?: $dashboardInfo['user_email'];
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 
