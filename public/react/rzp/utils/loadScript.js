@@ -9,7 +9,7 @@ export default (src) => {
       script.onload = function onLoad() {
         resolve();
       };
-      document.getElementsByTagName('head')[0].appendChild(script);
+      document.head.appendChild(script);
     } catch (e) {
       reject(e);
     }
