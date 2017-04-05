@@ -8,4 +8,5 @@ class Url
     const LIVE_DOMAIN = 'https://www.mpesa.in';
 
     const AUTHORIZE = '/mcommPg/paymentGateway/mrchntProcessor';
+    const VERIFY    = '/mcommerce.webservices/pgService?wsdl';
 }

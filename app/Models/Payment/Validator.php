@@ -42,7 +42,7 @@ class Validator extends Base\Validator
         'notes'                   => 'sometimes|notes',
         'notes.merchant_order_id' => 'required_with:signature',
         'callback_url'            => 'sometimes|url',
-        'order_id'                => 'sometimes|filled',
+        'order_id'                => 'sometimes',
         'customer_id'             => 'required_if:wallet,openwallet|public_id|filled',
         'subscription_id'         => 'sometimes|public_id',
         'app_token'               => 'sometimes',

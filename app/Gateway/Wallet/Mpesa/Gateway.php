@@ -9,6 +9,8 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Entity as Payment;
@@ -59,18 +61,39 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input);
     }
 
-    protected function checkCallbackStatus(array $content)
+    public function verify(array $input)
     {
-        $status = $content[ResponseFields::STATUS_CODE];
+        parent::verify($input);
 
-        if (StatusCode::checkIfSuccessStatus($status) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content[ResponseFields::STATUS_CODE],
-                $content[ResponseFields::REASON]
-            );
-        }
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $content = $this->getVerifyRequestData();
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = $this->getRequestHeaders();
+
+        // sd($request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        sd($response);
+    }
+
+    protected function getRequestHeaders()
+    {
+        $headers = [
+            'Content-Type' => 'application/xml',
+            'userId'       => 'aJtlkG0NQTRBaLgVt4YC4A==',
+            'password'     => '7p/MAUl80KP+FdRERRyvlQ==',
+        ];
+
+        return $headers;
     }
 
     public function otpGenerate($input)
@@ -80,12 +103,45 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequestData()
     {
-        $request = [
-            RequestFields::GATEWAY_PARAM => $this->getGatewayParam(),
+        $data = [
+            RequestFields::GATEWAY_PARAM => $this->getActionData(),
             RequestFields::CHECKSUM      => $this->getCheckSum(),
         ];
 
-        return $request;
+        return $data;
+    }
+
+    protected function getVerifyRequestData()
+    {
+        $data = $this->getActionData();
+
+        return $data;
+    }
+
+    protected function getActionData()
+    {
+        switch ($this->action)
+        {
+            case Base\Action::AUTHORIZE:
+                $data = $this->getGatewayParamArray();
+                $xmlRoot = "<PaymentGatewayRequest />";
+                break;
+
+            case Base\Action::VERIFY:
+                $data = $this->getQueryData();
+                $xmlRoot = "<queryPaymentTransaction />"; // pay: ??
+                break;
+        }
+
+        $actionParam = array_flip($data);
+
+        $actionParamXml = new SimpleXMLElement($xmlRoot);
+
+        array_walk_recursive($actionParam, [$actionParamXml, 'addChild']);
+
+        $actionParamXml = trim(explode('?>', $actionParamXml->asXML())[1]);
+
+        return $actionParamXml;
     }
 
     protected function getGatewayParam()
@@ -124,6 +180,41 @@ class Gateway extends Base\Gateway
         $xml = $this->getGatewayParam();
 
         return hash_hmac('sha256', $xml, $this->getSecret());
+    }
+
+    protected function getQueryData()
+    {
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $this->input['payment']['id'], Base\Action::AUTHORIZE);
+
+        $gatewayPaymentId = $wallet->getGatewayPaymentId();
+
+        $paymentId = $this->input['payment']['id'];
+
+        $queryData = [
+            RequestFields::MERCHANT_CODE             => $this->getMerchantId(),
+            RequestFields::TRANSACTION_DATE          => $this->getFormattedDate(),
+            RequestFields::COM_TRANSACTION_ID        => $gatewayPaymentId ?? "",
+            RequestFields::TRANSACTION_REFERENCE     => $paymentId,
+            RequestFields::PMT_TRANSACTION_REFERENCE => strtoupper($paymentId),
+            RequestFields::AMOUNT                    => $this->input['payment']['amount'] / 100
+        ];
+
+        return $queryData;
+    }
+
+    protected function checkCallbackStatus(array $content)
+    {
+        $status = $content[ResponseFields::STATUS_CODE];
+
+        if (StatusCode::checkIfSuccessStatus($status) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $content[ResponseFields::STATUS_CODE],
+                $content[ResponseFields::REASON]
+            );
+        }
     }
 
     protected function saveCallbackResponse(array $content)
