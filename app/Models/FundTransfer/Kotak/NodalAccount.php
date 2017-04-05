@@ -287,24 +287,19 @@ class NodalAccount
         // Create txt file
         if ($h2h === true)
         {
-            $name = $this->getH2HFileName();
+            $metadata = [
+                'gid'   => '10000',
+                'uid'   => '10001',
+                'mtime' => Carbon::now()->timestamp,
+                'mode'  => '33188',
+            ];
 
-            $this->writeToTextFileH2H($name, $textData);
-
-            // $metadata = [
-            //     'gid'   => '10000',
-            //     'uid'   => '10001',
-            //     'mtime' => Carbon::now()->timestamp,
-            //     'mode'  => '33188',
-            // ];
-
-            // $textFile = (new FileStore\Creator())->name($this->getH2HFileNameWithoutExt())
-            //                                      ->content($textData)
-            //                                      ->extension(FileStore\Format::TXT)
-            //                                      ->type(FileStore\Type::FUND_TRANSFER_H2H)
-            //                                      ->metadata($metadata)
-            //                                      // ->name('kotak/outgoing/' . $this->getH2HFileNameWithoutExt())
-            //                                      ->save();
+            $textFile = (new FileStore\Creator())->name('kotak/outgoing/' . $this->getH2HFileNameWithoutExt())
+                                                 ->content($textData)
+                                                 ->extension(FileStore\Format::TXT)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_H2H)
+                                                 ->metadata($metadata)
+                                                 ->save();
         }
 
         $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())

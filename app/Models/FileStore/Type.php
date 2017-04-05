@@ -39,7 +39,7 @@ class Type
     const INVOICE_PDF                       = 'invoice_pdf';
 
     const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
-    // const FUND_TRANSFER_H2H                 = 'fund_transfer_h2h';
+    const FUND_TRANSFER_H2H                 = 'fund_transfer_h2h';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -96,7 +96,7 @@ class Type
 
         Constants\Entity::BATCH_FUND_TRANSFER => [
             self::FUND_TRANSFER_DEFAULT,
-            // self::FUND_TRANSFER_H2H,
+            self::FUND_TRANSFER_H2H,
         ],
     ];
 
@@ -116,7 +116,7 @@ class Type
         self::ICICI_UPI_REFUND,
         self::ICICI_NODAL_TRANSFER,
         self::FUND_TRANSFER_DEFAULT,
-        // self::FUND_TRANSFER_H2H,
+        self::FUND_TRANSFER_H2H,
     ];
 
     /**
@@ -155,7 +155,7 @@ class Type
 
         self::H2H_BUCKET_CONFIG => [
             self::ICICI_NODAL_TRANSFER,
-            // self::FUND_TRANSFER_H2H,
+            self::FUND_TRANSFER_H2H,
         ],
     ];
 
