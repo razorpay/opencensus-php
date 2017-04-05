@@ -6,18 +6,6 @@ import sys
 from datetime import datetime
 import re
 
-# TODO: Slack notification pending
-
-
-class SlackNotifier:
-
-    def __init__(self, message, channel):
-        self.message = message
-        self.channel = channel
-
-    def notify():
-        pass
-
 
 class KeyStore:
     @staticmethod
@@ -40,6 +28,63 @@ class KeyStore:
     @staticmethod
     def get_prod_pipeline_id():
         return KeyStore.get_key("PROD_PIPELINE_ID")
+
+    @staticmethod
+    def get_slack_token():
+        return KeyStore.get_key('SLACK_TOKEN')
+
+
+class SlackNotifier:
+    def __init__(self):
+        # currently hardcoding this. We need to arrive at this value later
+        self.channel = "C0KHQBRJN"
+        self.icon_url = 'https://s3-us-west-2.amazonaws.com/slack-files2/bot_icons/2015-06-25/6837962368_48.png'
+        self.url = 'https://razorpay.slack.com/services/hooks/incoming-webhook?token=%s' % (
+            KeyStore.get_slack_token())
+        self.username = 'wercker'
+
+    def formatSlackMessage(self, message):
+        attachments = {}
+        slackMessage = {}
+        metadata = message['metadata']
+        startTime = metadata['startedAt'].strftime('%d-%b-%Y %H:%M:%S')
+        finishedAt = metadata['finishedAt'].strftime('%d-%b-%Y %H:%M:%S')
+        #attachments['pretext'] = 'API Deploy Logs.Started:%s, Finished:%s' %(startTime, finishedAt)
+        attachments['title'] = 'Deployed by %s' % (metadata['deployed_by'])
+        attachments['fallback'] = 'API Deploy Completed at :%s' % (
+            metadata['finishedAt'])
+        attachments['author'] = self.username
+        attachments['mrkdwn_in'] = ['text', 'fields']
+        fields = []
+        for commit in message['commits']:
+            tmp = {
+                'short': True,
+                'title': 'PR:#%s' % (commit['pr']),
+                'value': '%s' % (commit['title'])
+            }
+            fields.append(tmp)
+        fields.append(
+            {'short': True, 'title': 'Deploy Started', 'value': startTime})
+        fields.append(
+            {'short': True, 'title': 'Deploy Ended', 'value': finishedAt})
+        attachments['fields'] = fields
+        slackMessage['attachments'] = [attachments]
+        slackMessage['username'] = self.username
+        slackMessage['icon_url'] = self.icon_url
+        slackMessage['channel'] = self.channel
+        slackMessage['as_user'] = False
+        return slackMessage
+
+    def notify(self, message):
+        slackMessage = self.formatSlackMessage(message)
+        try:
+            r = requests.post(self.url, data=json.dumps(slackMessage))
+            r.raise_for_status()
+            # TODO: check response status
+        except Exception, e:
+            print "Slack Post Failed. Exception:%s, message:%s" % (e, slackMessage)
+            sys.exit(1)
+        print "Slack Post Complete"
 
 
 class GitProcessor:
@@ -107,39 +152,53 @@ class MergeCommitParser:
 
     def parseMergeCommit(self):
         runs = self.get_pipeline_runs()
-        messages = []
+        metadata = {}
+        commits = []
+        if len(runs) > 0:
+            firstRun = runs[0]
+            metadata = {
+                'startedAt': datetime.strptime(firstRun['startedAt'], '%Y-%m-%dT%H:%M:%S.%fZ'),
+                'finishedAt': datetime.strptime(firstRun['finishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ'),
+                'deployed_by': firstRun['user']['name'],
+            }
         for run in runs:
             # todo: exclude current run
             msg = run['message']
             pr_nums = self.findMergedPrs(msg)
             if len(pr_nums) > 0:
                 message = {
-                    'startedAt': datetime.strptime(run['startedAt'], '%Y-%m-%dT%H:%M:%S.%fZ'),
-                    'finishedAt': datetime.strptime(run['finishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ'),
                     'commitHash': run['commitHash'],
-                    'deployed_by': run['user']['name'],
                     'pr_nums': pr_nums
                 }
-                messages.append(message)
-        return messages
+                commits.append(message)
+        return {'metadata': metadata, 'commits': commits}
 
     def getDeployDetails(self):
         messages = self.parseMergeCommit()
-        parsed_messages = []
-        for m in messages:
+        parsed_messages = {'metadata': messages['metadata']}
+        commits = []
+        for m in messages['commits']:
             pr_nums = m['pr_nums']
             pr_details = {}
             for p in pr_nums:
                 title, body = self.github_processor.process_pr_details(p)
                 pr_details['title'] = title
                 pr_details['details'] = body
+                pr_details['pr'] = p
             del m['pr_nums']
             m.update(pr_details)
-            parsed_messages.append(messages)
+            commits.append(m)
+        parsed_messages['commits'] = commits
         return parsed_messages
+
+    def getDeployDetailsAndNotifySlack(self):
+        deployDetails = self.getDeployDetails()
+        slackNotifier = SlackNotifier()
+        slackNotifier.notify(deployDetails)
 
 
 if __name__ == "__main__":
     parser = MergeCommitParser()
-    deploy_details = parser.getDeployDetails()
-    print deploy_details
+    #deploy_details = parser.getDeployDetails()
+    # print deploy_details
+    parser.getDeployDetailsAndNotifySlack()
