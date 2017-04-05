@@ -173,6 +173,7 @@
                       <th>Permission</th>
                       <th>Category</th>
                       <th>Description</th>
+                      <th>Assignable</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -183,6 +184,8 @@
                       <td>{{row.name}}</td>
                       <td>{{row.category}}</td>
                       <td>{{row.description}}</td>
+                      <td ng-if="row.assignable">{{row.assignable}}</td>
+                      <td ng-if="!row.assignable"></td>
                     </tr>
                   </tbody>
                 </table>
