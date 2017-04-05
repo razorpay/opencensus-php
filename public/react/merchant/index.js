@@ -26,6 +26,7 @@ import AddFundsContainer from './containers/AddFunds'
 import SettlementsListContainer from './containers/Settlements/List'
 import SettlementDetailsContainer from './containers/Settlements/Details'
 
+import CreditsContainer from './containers/Credits/List'
 // import PlansListContainer from './containers/Plans/List'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
 // import SubscriptionsNewContainer from './containers/Subscriptions/New'
@@ -99,6 +100,7 @@ createNgDirective('invoicesList', InvoicesListContainer)
 createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
 createNgDirective('customersList', CustomersListContainer)
 createNgDirective('itemsList', ItemsListContainer)
+createNgDirective('creditsNew', CreditsContainer)
 
 createNgDirective('ordersList', OrdersListContainer)
 createNgDirective('orderDetails', OrderDetailsContainer, ['id'])
