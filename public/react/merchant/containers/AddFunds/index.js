@@ -129,7 +129,7 @@ export default class AddFundsContainer extends Component {
             <div class='col-sm-6 col-sm-offset-3'>
               <div class='panel panel-default'>
                 <div class='panel-heading'>
-                  Add Funds - {this.props.modeFormatted}
+                  Add Funds - {this.props.modeFormatted} Mode
                 </div>
 
                 <div class='panel-body'>
