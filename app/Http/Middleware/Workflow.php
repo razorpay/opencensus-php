@@ -36,26 +36,44 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
-        // Middleware is only used for workflow routes
+        // This middleware will only run for routes defined in
+        // Route::$workflowRoutes (whitelisting)
+
         if ((in_array($routeName, array_keys(Route::$workflowRoutes), true) === false) or
             ($this->config->get('database.es_workflow_action_mock') === true))
         {
             return $next($request);
         }
 
+        // Since we need to calculate the diffs, we'll need
+        // the main entity being acted upon by the route
+        // that's going to be executed. This is not entirely
+        // fool-proof but will work well for a good number of
+        // our routes (MVP acceptable).
+
         $entity = Route::$workflowRoutes[$routeName];
 
         $routeParams = $this->router->current()->parameters();
 
-        $entityId = array_values($routeParams)[0];
+        // Pick the `id` first, if not then the first value
+        // First value is not entirely robust though
+        $entityId = $routeParams['id'] ?? array_values($routeParams)[0];
 
+        // Necessary data to pass to WorkflowController
         $params = $this->createMakerEntity($request, $entity, $entityId);
 
+        // Replace Input for the current request
         $request->replace($params);
 
         return App::make(self::WORKFLOW_CONTROLLER)->postWorkflowAction();
     }
 
+    /*
+        Resolve a bunch of data points through which we can
+        compute a diff as well as later execute the actual
+        action once all the checkers have approved this
+        incoming request.
+    */
     private function createMakerEntity($request, $entity, $entityId)
     {
         $input = $request->input();

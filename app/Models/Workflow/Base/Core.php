@@ -68,10 +68,13 @@ class Core extends Base\Core
 
     protected function getMinLeveledWorkflow(array $permissions, $orgId)
     {
+        // Get permission IDs of the permissions passed
+        // for the current route
         $permissionIds = $this->repo
                               ->permission
                               ->retrieveIdsByNames($permissions, $orgId);
 
+        // Get all the workflows for all the permissions (n:m)
         $workflows = $this->repo
                           ->workflow
                           ->fetchWorkflowsWithStepsByPermissions($permissionIds->toArray());

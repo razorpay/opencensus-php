@@ -15,6 +15,18 @@ use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
+    /*
+        Not exposed publicly. Called by Workflow middleware.
+    */
+    public function postWorkflowAction()
+    {
+        $input = Request::all();
+
+        $data = (new Action\Service)->create($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postActionDiff(string $id)
     {
         $input = Request::all();
@@ -29,15 +41,6 @@ class WorkflowController extends Controller
         $result = (new Differ\Service)->get($id);
 
         return ApiResponse::json($result);
-    }
-
-    public function postWorkflowAction()
-    {
-        $input = Request::all();
-
-        $data = (new Action\Service)->create($input);
-
-        return ApiResponse::json($data);
     }
 
     public function getActionMultiple()
