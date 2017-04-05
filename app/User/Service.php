@@ -106,6 +106,17 @@ class Service extends Base\Service
         {
             $user = $this->buildUserEntity($input);
 
+            $userApiData = $this->getUserApiData($user);
+
+            try
+            {
+                $this->createUserOnApi($userApiData);
+            }
+            catch (\Exception $e)
+            {
+                $error[] = 'Error on creating User';
+            }
+
             // For Drip marketing. Where URL has ?email=abc@xyz.com
             $this->updateLeadIfExists($user);
         }
@@ -116,6 +127,8 @@ class Service extends Base\Service
         if ($invitationToken)
         {
             $this->attachUserToInvite($user, $invitation);
+
+            $this->attachMerchantUserOnApi($user->id, $invitation->merchant_id, $invitation->role);
 
             $data['login'] = true;
         }
@@ -130,10 +143,53 @@ class Service extends Base\Service
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
 
             (new Merchant\Service)->createMerchantOnApi($data['id']);
+
+            $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
         }
 
-        // We would never really reach this with an error because we are using exceptions here
         return [$error, $data];
+    }
+
+    public function createUserOnApi($userApiData)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->user->create($userApiData);
+
+        return $response;
+    }
+
+    public function editUserOnApi($userData, $userId)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->user->edit($userData, $userId);
+
+        return $response;
+    }
+
+
+    public function attachMerchantUserOnApi($userId, $merchantId, $role)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->user->attach($userId, $merchantId, $role);
+    }
+
+    public function getUserApiData(Entity $user)
+    {
+        $userApiData = $user->toArray();
+
+        $userApiData['password'] = $user->getAuthPassword();
+        $userApiData['password_confirmation'] = $user->getAuthPassword();
+        $userApiData['remember_token'] = $user->getRememberToken();
+        $userApiData['confirm_token'] = $user->getConfirmToken();
+        $userApiData['name'] = '';
+        unset($userApiData['created_at']);
+        unset($userApiData['updated_at']);
+        unset($userApiData['confirmed']);
+
+        return $userApiData;
     }
 
     public function createUserForSubmerchant(array $input)

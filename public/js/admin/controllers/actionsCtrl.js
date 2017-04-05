@@ -650,6 +650,9 @@ app.controller('ActionsCtrl', [
         mode: mode
       });
     };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
   }
 ]).controller('sendNewsletterCtrl', [
   '$scope',

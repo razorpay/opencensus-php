@@ -70,6 +70,13 @@ abstract class Mailer
     protected $queue = false;
 
     /**
+     * Mail Tag to be sent in the x-mailgun-tag header
+     *
+     * @var string
+     */
+    protected $mailTag;
+
+    /**
      * The method make sures that the mail job is queued
      *
      * @return self
@@ -97,17 +104,24 @@ abstract class Mailer
         $callback = $this->callback;
         $fromEmail = $this->fromEmail;
         $fromName = $this->fromName;
+        $mailTag = $this->mailTag;
 
         return Mail::$method(
             $this->view,
             $this->data,
-            function($message) use($email, $to, $subject, $callback, $fromEmail, $fromName)
+            function($message) use($email, $to, $subject, $callback, $fromEmail, $fromName, $mailTag)
             {
                 $message->to($email, $to)->subject($subject);
 
                 if ($fromEmail !== null)
                 {
                     $message->from($fromEmail, $fromName);
+                }
+
+                if ($mailTag !== null)
+                {
+                    $headers = $message->getHeaders();
+                    $headers->addTextHeader('x-mailgun-tag', $mailTag);
                 }
 
                 if (is_callable($callback))

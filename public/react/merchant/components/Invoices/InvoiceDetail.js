@@ -44,9 +44,6 @@ export default (props) => {
               }
 
               {
-                /*
-                  TODO: Uncomment this post the API release.
-
                 isIssued &&
                   <button
                     class='btn btn-default btn-sm'
@@ -54,8 +51,6 @@ export default (props) => {
                   >
                     Cancel Link
                   </button>
-
-                */
               }
             </div>
 

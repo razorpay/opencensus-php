@@ -41,6 +41,7 @@ class MerchantMailer extends Mailer
         $this->to = $this->merchantDetails['contact_name'];
         $this->email = $this->merchantDetails['contact_email'];
         $this->view = 'emails.submission';
+        $this->mailTag = MailTags::CONFIRM_ACTIVATION_SUBMISSION;
 
         return $this;
     }
@@ -57,6 +58,7 @@ class MerchantMailer extends Mailer
         $this->to = 'Razorpay Activations Team';
         $this->email = $this->getEmailFor('activations');
         $this->view = 'emails.admin_notify';
+        $this->mailTag = MailTags::NOTIFY_ACTIVATION_SUBMISSION;
 
         return $this;
     }
