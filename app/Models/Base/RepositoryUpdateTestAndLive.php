@@ -84,7 +84,7 @@ trait RepositoryUpdateTestAndLive
             });
     }
 
-    public function detach($entity, $relation, $ids = array())
+    public function detach($entity, $relation, $ids = [])
     {
         return $this->manager->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids)
@@ -97,13 +97,7 @@ trait RepositoryUpdateTestAndLive
                 //
                 list($liveEntity, $testEntity) = $this->cloneEntity($entity);
 
-                // Sync the relationship in both live and test databases.
-                // In laravel 5.2 there is no way to use the parent
-                // model connection in relations because of which this
-                // hack is used.
-                // This has been fixed in Laravel 5.4 by #16103.
-                // We'll use the parent connection once we update to
-                // L5.4
+                // Detach the relationships in both live and test
                 Config::set('database.default', Mode::LIVE);
                 $changes = $liveEntity->$relation()->detach($ids);
 
