@@ -1,38 +1,47 @@
 import ajax from 'merchant/utils/ajax'
 
-const CREDITS_FETCH = 'CREDITS_FETCH'
-const BALANCE_FETCH = 'BALANCE_FETCH'
+const FETCH_ALL = 'FETCH_ALL'
 
-export const getCreditsData = () => {
+const getCreditsData = () => {
   var params = {
-    route_name: 'credits_fetch_multiple',
-    mode: 'test'
+    route_name: 'credits_fetch_multiple'
   };
-  return (dispatch) => {
-    return dispatch({
-      type: CREDITS_FETCH,
-      payload: ajax({
-        url: '/user/generic',
-        data: params,
-        appendModeInQueryParam: true
-      })
-    })
-  }
+
+  return ajax({
+    url: '/user/generic',
+    data: params,
+    appendModeInQueryParam: true
+  })
 };
 
-export const fetchBalance = () => {
+const fetchBalance = () => {
   var params = {
-    route_name: 'balance_fetch',
-    mode: 'test'
+    route_name: 'balance_fetch'
   };
 
+  return ajax({
+    url: '/user/generic',
+    data: params,
+    appendModeInQueryParam: true
+  })
+}
+
+export const fetchCreditBalance = ()=> {
   return (dispatch) => {
     return dispatch({
-      type: BALANCE_FETCH,
-      payload: ajax({
-        url: '/user/generic',
-        data: params,
-        appendModeInQueryParam: true
+      type: FETCH_ALL,
+      payload: Promise.all([
+        getCreditsData(),
+        fetchBalance()
+      ]).then(values=> {
+        if (
+          !values[0].success ||
+          !values[1].success ||
+          !Array.isArray(values[0].data.items)
+        ) {
+          throw "Couldn't load credits data";
+        }
+        return values;
       })
     })
   }
@@ -43,28 +52,17 @@ let initialState = {
 
 export default function (state = initialState, action) {
   switch(action.type) {
-    case `${CREDITS_FETCH}::SUCCESS`:
+    case `${FETCH_ALL}::SUCCESS`:
       return {
         ...state,
-        creditsData: action.payload.success ? action.payload : null,
+        creditsData: action.payload[0].data,
+        balanceData: action.payload[1].data
       };
 
-    case `${CREDITS_FETCH}::ERROR`:
+    case `${FETCH_ALL}::ERROR`:
       return {
         ...state,
-        error: action.error
-      };
-
-    case `${BALANCE_FETCH}::SUCCESS`:
-      return {
-        ...state,
-        balanceData: action.payload.success ? action.payload.data : null,
-      };
-
-    case `${BALANCE_FETCH}::ERROR`:
-      return {
-        ...state,
-        error: action.error
+        errorData: action.payload.errors
       };
 
     default:
