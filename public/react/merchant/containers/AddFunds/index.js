@@ -32,7 +32,6 @@ export default class AddFundsContainer extends Component {
       isSaving: false,
       status: {}
     }
-    this.openCheckout = ::this.openCheckout
   }
 
   componentWillMount() {
@@ -76,7 +75,7 @@ export default class AddFundsContainer extends Component {
     })
   }
 
-  openCheckout(fieldProps) {
+  openCheckout = (fieldProps) => {
     let user = this.props.user
     let amountInPaise = Number(fieldProps.amountInINR) * 100
     let options = {
