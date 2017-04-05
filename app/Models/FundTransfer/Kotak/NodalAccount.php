@@ -315,11 +315,6 @@ class NodalAccount
         FileStore\Creator $excelFileEntity,
         FileStore\Creator $textFileEntity)
     {
-        if ($this->getMode() === 'test')
-        {
-            return;
-        }
-
         $summary = $this->summary;
 
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');

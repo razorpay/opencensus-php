@@ -100,6 +100,8 @@ class Processor extends Base\Core
                 list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel);
 
                 $response[$channel] = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel);
+
+                $this->batchFundTransfer = null;
             }
         }
         catch (\Exception $e)
