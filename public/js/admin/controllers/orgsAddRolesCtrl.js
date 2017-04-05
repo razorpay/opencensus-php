@@ -64,10 +64,10 @@ app.controller('OrgsAddRolesCtrl', [
       $scope.permissions.map(function(perm){
         $scope.selected_permissions[perm.id] = true;
       });
-    }
+    };
 
     $scope.save = function (role) {
-      var body = role;
+      var body = jQuery.extend(true, {}, role);
 
       body.permissions = [];
 
@@ -84,16 +84,57 @@ app.controller('OrgsAddRolesCtrl', [
         }
       }
 
-      return organization.addOrEditRole(body).then(function(data) {
-        $scope.alerts.addAlert('success', 'Role saved', true);
-        $state.go('app.roles.edit', {id: data.id});
-      }).catch(function(errors){
+      var roleId = body.id;
+      delete body.id;
+
+      if (roleId) {
+        var data = {
+          body: body
+        };
+
+        var request = $http.put('/admin/generic', data, {
+          params: {
+            route_name: 'role_edit',
+            url_params: {
+              '{roleId}': roleId
+            }
+          },
+          transformRequest: transformRequestAsFormPost
+        });
+      }
+      else {
+        // Request for creating
+        var request = $http({
+          url: '/admin/generic',
+          method: 'POST',
+          params: {
+            route_name: 'role_create'
+          },
+          data: {
+            body: body
+          }
+        });
+      }
+
+      request.success(function (data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Role saved', true);
+            $state.go('app.roles.edit', {id: data.data.id});
+          } else {
+            $scope.alerts.resetAlerts();
+
+            angular.forEach(data.errors, function (value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+      }).error(function(errors) {
         $scope.alerts.resetAlerts();
 
         angular.forEach(errors, function (value, key) {
           $scope.alerts.addAlert('danger', value);
         });
-      })
-    }
+      });
+    };
+
   }
 ]);
