@@ -68,7 +68,11 @@ class Core
 
     /**
      * Returns Admin's username or User's email, whichever is available from
-     * dashboard headers.
+     * dashboard headers. If both of them are not available returns literal
+     * 'DASHBOARD_INTERNAL'.
+     *
+     * This method is primary used to get an identifier for user to construct a
+     * slack message. Eg. something got edited/removed by $user.
      *
      * @return string
      */
@@ -76,9 +80,6 @@ class Core
     {
         $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 
-        // One of admin_username or user_email is expected to be there
-        // in $dashboardInfo.
-
-        return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'];
+        return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'] ?? 'DASHBOARD_INTERNAL';
     }
 }
