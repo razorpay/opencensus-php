@@ -63,9 +63,11 @@ class ReconciliationGenerator
 
             $filePath = $fileAccessor->getFile();
 
-            $reconFile = generateReconcileFile(['file' => $filePath]);
+            $fileInput = ['file' => $filePath];
 
-            $data = (new Settlement\Service)->reconcileSettlements($input);
+            $reconFile = generateReconcileFile($fileInput);
+
+            $data = (new Settlement\Service)->reconcileSettlements($fileInput);
 
             $response[] = $data;
         }
