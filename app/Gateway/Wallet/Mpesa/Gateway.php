@@ -3,8 +3,11 @@
 namespace RZP\Gateway\Wallet\Mpesa;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use SimpleXMLElement;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -39,6 +42,35 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($contentToSave);
 
         return $request;
+    }
+
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['transrefno']);
+
+        $this->saveCallbackResponse($input['gateway']);
+
+        $this->checkCallbackStatus($input['gateway']);
+
+        return $this->getCallbackResponseData($input);
+    }
+
+    protected function checkCallbackStatus(array $content)
+    {
+        $status = $content[ResponseFields::STATUS_CODE];
+
+        if (StatusCode::checkIfSuccessStatus($status) === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $content[ResponseFields::STATUS_CODE],
+                $content[ResponseFields::REASON]
+            );
+        }
     }
 
     public function otpGenerate($input)
@@ -92,6 +124,20 @@ class Gateway extends Base\Gateway
         $xml = $this->getGatewayParam();
 
         return hash_hmac('sha256', $xml, $this->getSecret());
+    }
+
+    protected function saveCallbackResponse(array $content)
+    {
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $this->input['payment']['id'], Base\Action::AUTHORIZE);
+
+        $contentToSave = [
+            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::COM_TRANSACTION_ID],
+            Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
+            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],
+        ];
+
+        $this->updateGatewayPaymentEntity($wallet, $contentToSave);
     }
 
     protected function getFormattedDate()
