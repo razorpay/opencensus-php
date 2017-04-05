@@ -301,12 +301,14 @@ class NodalAccount
                                                  ->metadata($metadata)
                                                  ->save();
         }
-
-        $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
-                                             ->content($textData)
-                                             ->extension(FileStore\Format::TXT)
-                                             ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
-                                             ->save();
+        else
+        {
+            $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+                                                 ->content($textData)
+                                                 ->extension(FileStore\Format::TXT)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                                                 ->save();
+        }
 
         return [$excelFile, $textFile];
     }

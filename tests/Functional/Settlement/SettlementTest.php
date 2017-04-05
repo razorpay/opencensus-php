@@ -195,7 +195,7 @@ class SettlementTest extends TestCase
 
         // Validate 2 files were created
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 3);
+        $this->assertSame($content['count'], 2);
 
         // Reset test params
         Carbon::setTestNow();
@@ -225,7 +225,7 @@ class SettlementTest extends TestCase
 
         // Validate 2 files were created
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 3);
+        $this->assertSame($content['count'], 2);
 
         Carbon::setTestNow();
     }
@@ -253,7 +253,7 @@ class SettlementTest extends TestCase
 
         // Validate 2 files were created
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 3);
+        $this->assertSame($content['count'], 2);
 
         Carbon::setTestNow();
     }
@@ -477,7 +477,7 @@ class SettlementTest extends TestCase
         $this->assertEquals($setl['id'], $bta['source']);
 
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 3);
+        $this->assertSame($content['count'], 2);
     }
 
     public function testSettlementIgnoredTxns()
@@ -589,7 +589,7 @@ class SettlementTest extends TestCase
         $this->assertNotEquals($content, null);
 
         $content = $this->getEntities('file_store', [], true);
-        $this->assertSame($content['count'], 5);
+        $this->assertSame($content['count'], 4);
     }
 
     public function testIciciNodalTransfer()
