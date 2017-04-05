@@ -1,61 +1,61 @@
 <?php
 
-namespace RZP\Tests\Functional\Ecollect;
+namespace RZP\Tests\Functional\BankTransfer;
 
 use Redis;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-class EcollectTest extends TestCase
+class BankTransferTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/EcollectTestData.php';
+        $this->testDataFilePath = __DIR__.'/BankTransferTestData.php';
 
         parent::setUp();
 
         $this->ba->appAuth();
     }
 
-    public function testEcollectValidate()
+    public function testBankTransferValidate()
     {
         $this->mockRedis();
 
         $this->startTest();
     }
 
-    public function testEcollectValidateRazorp()
+    public function testBankTransferValidateRazorp()
     {
         $this->mockRedis();
 
         $this->startTest();
     }
 
-    public function testEcollectValidateDuplicateUtr()
+    public function testBankTransferValidateDuplicateUtr()
     {
         $this->mockRedisGet('dummy_duplicate_data');
 
         $this->startTest();
     }
 
-    public function testEcollectValidateFalse()
+    public function testBankTransferValidateFalse()
     {
         $this->startTest();
     }
 
-    public function testEcollectValidateFailure()
+    public function testBankTransferValidateFailure()
     {
         $this->startTest();
     }
 
-    public function testEcollectPay()
+    public function testBankTransferPay()
     {
         $this->startTest();
     }
 
-    public function testEcollectPayFailure()
+    public function testBankTransferPayFailure()
     {
         $this->startTest();
     }

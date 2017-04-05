@@ -8,7 +8,7 @@ use RZP\Models\Receiver;
 use ApiResponse;
 use Request;
 
-class EcollectController extends Controller
+class BankTransferController extends Controller
 {
     public function __construct()
     {
@@ -19,7 +19,7 @@ class EcollectController extends Controller
         $this->receiverService = new Receiver\Service;
     }
 
-    public function validateEcollect()
+    public function validateBankTransfer()
     {
         $input = Request::all();
 
@@ -28,7 +28,7 @@ class EcollectController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function payEcollect()
+    public function payBankTransfer()
     {
         $input = Request::all();
 

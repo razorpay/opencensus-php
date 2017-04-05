@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Tests\Functional\Ecollect;
+namespace RZP\Tests\Functional\BankTransfer;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
 return [
-    'testEcollectValidate' => [
+    'testBankTransferValidate' => [
         'request' => [
             'url' => '/ecollect/validate',
             'method' => 'post',
@@ -31,7 +31,7 @@ return [
         ],
     ],
 
-    'testEcollectValidateRazorp' => [
+    'testBankTransferValidateRazorp' => [
         'request' => [
             'url' => '/ecollect/validate',
             'method' => 'post',
@@ -56,7 +56,7 @@ return [
         ],
     ],
 
-    'testEcollectValidateDuplicateUtr' => [
+    'testBankTransferValidateDuplicateUtr' => [
         'request' => [
             'url' => '/ecollect/validate',
             'method' => 'post',
@@ -81,7 +81,7 @@ return [
         ],
     ],
 
-    'testEcollectValidateFalse' => [
+    'testBankTransferValidateFalse' => [
         'request' => [
             'url' => '/ecollect/validate',
             'method' => 'post',
@@ -106,7 +106,7 @@ return [
         ],
     ],
 
-    'testEcollectValidateFailure' => [
+    'testBankTransferValidateFailure' => [
         'request' => [
             'url' => '/ecollect/validate',
             'method' => 'post',
@@ -138,7 +138,7 @@ return [
         ],
     ],
 
-    'testEcollectPay' => [
+    'testBankTransferPay' => [
         'request' => [
             'url' => '/ecollect/pay',
             'method' => 'post',
@@ -163,7 +163,7 @@ return [
         ],
     ],
 
-    'testEcollectPayFailure' => [
+    'testBankTransferPayFailure' => [
         'request' => [
             'url' => '/ecollect/pay',
             'method' => 'post',

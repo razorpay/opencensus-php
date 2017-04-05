@@ -33,7 +33,7 @@ class Service extends Base\Service
     public function validate(array $input): array
     {
         $this->trace->info(
-            TraceCode::ECOLLECT_VALIDATION_REQUEST,
+            TraceCode::BANK_TRANSFER_VALIDATION_REQUEST,
             $input
         );
 
@@ -45,7 +45,7 @@ class Service extends Base\Service
     public function pay(array $input): array
     {
         $this->trace->info(
-            TraceCode::ECOLLECT_PAY_REQUEST,
+            TraceCode::BANK_TRANSFER_PAY_REQUEST,
             $input
         );
 
@@ -83,7 +83,7 @@ class Service extends Base\Service
             if (is_null($cachedData) === false)
             {
                 $this->trace->warning(
-                    TraceCode::ECOLLECT_VALIDATION_DUPLICATE_UTR,
+                    TraceCode::BANK_TRANSFER_VALIDATION_DUPLICATE_UTR,
                     [
                         'cached_data'   => json_decode($cachedData, true),
                         'received_data' => $input,
@@ -174,7 +174,7 @@ class Service extends Base\Service
         }
 
         $this->trace->warning(
-            TraceCode::ECOLLECT_VALIDATION_DUPLICATE_UTR,
+            TraceCode::BANK_TRANSFER_VALIDATION_DUPLICATE_UTR,
             [
                 'existing_transfer' => $duplicateBankTransfer->toArrayPublic(),
                 'received_utr'      => $bankTransfer->getUtr(),
