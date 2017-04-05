@@ -17,10 +17,6 @@ import Amount from 'rzp/ui/Amount'
 export default class CreditsList extends Component {
   constructor() {
     super(...arguments)
-    this.state = {
-      isCreditsLogCollapsed: true
-    }
-    this.toggleCreditsLog = this.toggleCreditsLog.bind(this)
   }
 
   componentDidMount() {
@@ -42,118 +38,100 @@ export default class CreditsList extends Component {
     });
   }
 
-  toggleCreditsLog() {
-    this.setState({
-      isCreditsLogCollapsed: !this.state.isCreditsLogCollapsed
-    })
-  }
-
   getContent() {
     let content;
 
-    if (this.props.user.current) {
+    let { user, balanceData, creditsData } = this.props;
+
+    if (user.current) {
       let amountCredits = null;
       let feeCredits = null;
 
-      if (this.props.balanceData) {
+      if (balanceData) {
         // Amount Credits
-        if (this.props.balanceData.credits) {
+        if (balanceData.credits) {
           amountCredits = (
             <a class="list-group-item">
-              <Amount class="pull-right" value={this.props.balanceData.credits} />
+              <Amount class="pull-right" value={balanceData.credits} />
               Amount Credits
             </a>
           );
         }
         // Fee Credits
-        if (this.props.balanceData.fee_credits) {
+        if (balanceData.fee_credits) {
           feeCredits = (
             <a class="list-group-item">
-              <Amount class="pull-right" value={this.props.balanceData.fee_credits} />
+              <Amount class="pull-right" value={balanceData.fee_credits} />
               Fee Credits
             </a>
           );
         }
       }
 
-      let toggleBtn = null;
-      let creditsMsg = null;
-      if (this.props.creditsData) {
-        if (this.props.creditsData.data.items.length != 0) {
-          toggleBtn = <button class="btn btn-default btn-xs pull-right" onClick={this.toggleCreditsLog}>Show/Hide</button>;
-        }
-        if (this.props.creditsData.data.items.length === 0) {
-          creditsMsg = <span> No credits Assigned</span>
-        }
-      }
-
       // Credits
-      const credits = (
-        <a class="list-group-item">
-        <span class="pull-right">
-          {toggleBtn}
-          {creditsMsg}
-        </span>
-          Credits
-        </a>
-      );
-      let creditsDataItems = null;
-      let collapsibleBlock = null;
+      let credits = null
+      let creditItemBLock = null;
 
-      if (this.props.creditsData) {
-        creditsDataItems = [];
-        this.props.creditsData.data.items.forEach((credit, index)=>{
-          creditsDataItems.push(
-            <tr key={index}>
-              <td>{credit.id}</td>
-              <td>{credit.campaign}</td>
-              <td>{credit.type}</td>
-              <td><Amount value={credit.value} /></td>
-              <td>{moment.unix(credit.created_at).format("DD/MM/YYYY H:mm a")}</td>
-            </tr>
-          );
-        });
+      if (creditsData) {
+        credits = (
+          <a class="list-group-item">
+            {creditsData.data.items.length ||
+              <span class="pull-right">
+                No credits Assigned
+              </span>
+            }
+            Credits
+          </a>
+        )
 
-        if (!this.state.isCreditsLogCollapsed) {
-          collapsibleBlock = (
-            <div class="panel-body">
-              <div class="m-t">
-                <table class="table table-striped b-light">
-                  <thead>
-                    <tr>
-                      <th>Id</th>
-                      <th>Campaign</th>
-                      <th>Type</th>
-                      <th>Value</th>
-                      <th>Created At</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {creditsDataItems}
-                  </tbody>
-                </table>
-              </div>
+        creditItemBLock = !creditsData.data.items.length ? null : (
+          <div class="panel-body">
+            <div class="m-t">
+              <table class="table table-striped b-light">
+                <thead>
+                  <tr>
+                    <th>Id</th>
+                    <th>Campaign</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Created At</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {creditsData.data.items.map((credit, index)=> {
+                    return (
+                      <tr key={index}>
+                        <td>{credit.id}</td>
+                        <td>{credit.campaign}</td>
+                        <td>{credit.type}</td>
+                        <td><Amount value={credit.value} /></td>
+                        <td>{moment.unix(credit.created_at).format("DD/MM/YYYY H:mm a")}</td>
+                      </tr>
+                    )})
+                  }
+                </tbody>
+              </table>
             </div>
-          );
-        }
+          </div>
+        )
       }
     // Content for authenticated user
       content = (
-      <div class="row wrapper">
-        <div class="list-group">
-          {amountCredits}
-          {feeCredits}
-          {credits}
-          {collapsibleBlock}
+        <div class="row wrapper">
+          <div class="list-group">
+            {amountCredits}
+            {feeCredits}
+            {credits}
+            {creditItemBLock}
           </div>
         </div>
-      );
+      )
     } else {
       content = (
         <div class="alert alert-danger text-center">
           Your user account is not associated at present with any active merchant account.
         </div>
-      );
+      )
     }
     return content;
   }
