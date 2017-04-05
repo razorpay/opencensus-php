@@ -35,20 +35,27 @@ class BankCodes
         IFSC::UBIN => '1216',
         IFSC::UTBI => '1212',
         Netbanking::PUNB_R => '1381',
-        /*
+
         IFSC::UTIB => '1004',
         IFSC::BKID => '1214',
         IFSC::CIUB => '1215',
-        IFSC::HDFC => '1007',
         IFSC::ICIC => '1016',
+        /*
         IFSC::SBBJ => '1033',
         IFSC::SBHY => '1034',
         IFSC::SBIN => '1032',
         IFSC::SBMY => '1038',
         IFSC::STBP => '1035',
         IFSC::SBTR => '1039',
-        IFSC::DEUT => '1227',
+        IFSC::HDFC => '1007',
         */
+    ];
+
+    public static $redircetDisabledBanks  = [
+        IFSC::UTIB,
+        IFSC::BKID,
+        IFSC::CIUB,
+        IFSC::ICIC,
     ];
 
     public static $bank302Redirect = [

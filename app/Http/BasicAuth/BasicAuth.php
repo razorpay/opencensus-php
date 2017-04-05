@@ -867,14 +867,6 @@ class BasicAuth
         $this->dashboardHeaders =[
             // String 'true' or null
             'dashboard' => $headers->get('X-Dashboard'),
-
-            // TODO: Remove following 4 lines after Dashboard changes are gone.
-            //       Are here for backward compatibility.
-
-            // X-Dashboard-Merchant: User Email is received (not the primary merchant email)
-            'user_email'      => $headers->get('X-Dashboard-Merchant'),
-            // X-Dashboard-Username: Admin username
-            'admin_username' => $headers->get('X-Dashboard-Username'),
         ];
 
         // Gets all headers with 'X-Dashboard' as prefix and assign them to a

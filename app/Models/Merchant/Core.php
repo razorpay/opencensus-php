@@ -211,10 +211,7 @@ class Core extends Base\Core
         {
             $label   = $merchant->getBillingLabel();
             $message = $merchant->getDashboardEntityLinkForSlack($label);
-
-            $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
-
-            $user = $dashboardInfo['admin_username'] ?: $dashboardInfo['user_email'];
+            $user    = $this->getInternalUsernameOrEmail();
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 

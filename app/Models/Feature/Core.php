@@ -41,10 +41,6 @@ class Core extends Base\Core
     {
         $message = $feature->getDashboardEntityLinkForSlack($feature->getName());
 
-        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
-
-        $user = $dashboardInfo['admin_username'] ?: $dashboardInfo['user_email'];
-
         if ($featureDeleted === true)
         {
             $message .= ' deleted from ';
@@ -53,6 +49,8 @@ class Core extends Base\Core
         {
             $message .= ' added to ';
         }
+
+        $user = $this->getInternalUsernameOrEmail();
 
         $message.= $feature->getEntityId() . ' by ' . $user;
 

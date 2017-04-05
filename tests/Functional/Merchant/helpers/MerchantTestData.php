@@ -204,6 +204,10 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -252,6 +256,11 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -296,6 +305,10 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt/email',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -312,6 +325,10 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt/email',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -351,6 +368,10 @@ return [
             ],
             'url' => '/account/config',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -435,6 +456,10 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -451,6 +476,10 @@ return [
             'method' => 'post',
             'files' => [
 
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
         'response' => [
@@ -486,6 +515,10 @@ return [
             ],
             'url' => '/account/config',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -884,7 +917,11 @@ return [
                     'UTIB',
                     'PUNB',
                 ],
-            ]
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -1048,6 +1085,10 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -1182,7 +1223,11 @@ return [
                 "optout_reason" => "some reason"
             ],
             'url' => '/merchants/10000000000000/features',
-            'method' => 'post'
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [

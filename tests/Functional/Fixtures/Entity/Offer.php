@@ -14,6 +14,7 @@ class Offer extends Base
             'payment_network'     => 'VISA',
             'issuer'              => 'HDFC',
             'iins'                => ['123456'],
+            'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.'
         ];
 
         $attributes = array_merge($cardAttributes, $attributes);
