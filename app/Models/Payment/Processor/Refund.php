@@ -770,8 +770,9 @@ trait Refund
     {
         $this->validatePaymentForRefund($payment);
 
-        // Captured payments of method=transfer cannot be refunded via direct API requests
-        if ($payment->isTransfer() === true)
+        // Captured payments of transfer/bank_transfer cannot be refunded via direct API requests
+        if (($payment->isTransfer() === true) or
+            ($payment->isBankTransfer() === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);

@@ -194,9 +194,21 @@ class Processor
         $this->payment = $this->repo->payment->findByIdAndMerchant(
                                                 $id, $this->merchant);
 
-        $this->updateAndNotifyPaymentAuthorized();
+        $updated = $this->updatePaymentAuthorized();
 
-        return $this->postPaymentAuthorizeProcessing($this->payment);
+        // This is probably because payment was already in authorized state,
+        // and this is the second time the Pay API has been hit by the bank.
+        // In this case, do not attempt to capture the payment again.
+        if ($updated === false)
+        {
+            return;
+        }
+
+        $this->eventPaymentAuthorized();
+
+        $this->notifyAuthorized($wasFailed);
+
+        return $this->autoCapturePaymentIfApplicable($this->payment);
     }
 
     public function processAndReturnFees(array & $input)
@@ -1007,6 +1019,7 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
+        // Bank transfers are customer-initiated, and so are auto-captured.
         if ($payment->isBankTransfer() === true)
         {
             return true;

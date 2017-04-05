@@ -330,6 +330,13 @@ class Entity extends Base\PublicEntity
         // We are currently doing this for GoIbibo and beta test merchant
         $excludedMerchants = ['6ZLE5BE57SExGF', '7FloNFaK7P4MMo'];
 
+        // Payment is being initiated by an app, eg. Yesbank via bank_transfer
+        // No contact field in this case.
+        if ($app['basicauth']->isAppAuth() === true)
+        {
+            return;
+        }
+
         if ((in_array($app['basicauth']->getMerchantId(), $excludedMerchants, true) === true) and
             (empty($input['contact']) === true))
         {
