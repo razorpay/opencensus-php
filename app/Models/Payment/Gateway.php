@@ -312,6 +312,16 @@ class Gateway
     );
 
     /**
+     * List of gateways that support recurring payments
+     *
+     * @var array
+     */
+    public static $recurringGateways = [
+        Gateway::CYBERSOURCE,
+        Gateway::FIRST_DATA,
+    ];
+
+    /**
      * List of gateways which give s2s callback where we do not validate
      * payment callback hash
      *
@@ -331,10 +341,9 @@ class Gateway
      */
     public static $internationalCardGateways = array(
         Gateway::HDFC,
-        // Gateway::AXIS_MIGS,
+        Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
@@ -346,31 +355,6 @@ class Gateway
         IFSC::KKBK,
         IFSC::UTIB,
     ];
-
-    /**
-     * Card gateways which support domestic payments in live mode.
-     *
-     * @var array
-     */
-    public static $domesticCardGateways = array(
-        Gateway::HDFC,
-        Gateway::AXIS_MIGS,
-        Gateway::AMEX,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
-    );
-
-    /**
-     * Card gateways which support domestic payments in test mode.
-     *
-     * @var array
-     */
-    public static $domesticCardGatewaysInTest = array(
-        Gateway::ATOM,
-        Gateway::PAYTM,
-        Gateway::AXIS_GENIUS,
-        Gateway::SHARP,
-    );
 
     /**
      * Some card networks are only supported partially for one or two gateway.
@@ -450,6 +434,11 @@ class Gateway
     public static function isNetbankingBankDirectlySupported($bank)
     {
         return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
+    }
+
+    public static function isRecurringGateway($gateway)
+    {
+        return in_array($gateway, self::$recurringGateways, true);
     }
 
     public static function getChannel($gateway)

@@ -65,4 +65,21 @@ class Core
     protected function init()
     {
     }
+
+    /**
+     * Returns Admin's username or User's email, whichever is available from
+     * dashboard headers. If both of them are not available returns literal
+     * 'DASHBOARD_INTERNAL'.
+     *
+     * This method is primary used to get an identifier for user to construct a
+     * slack message. Eg. something got edited/removed by $user.
+     *
+     * @return string
+     */
+    protected function getInternalUsernameOrEmail(): string
+    {
+        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+
+        return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'] ?? 'DASHBOARD_INTERNAL';
+    }
 }

@@ -22,6 +22,7 @@ class Entity
     const VPA                   = 'vpa';
     const CARD                  = 'card';
     const ITEM                  = 'item';
+    const USER                  = 'user';
     const BATCH                 = 'batch';
     const OFFER                 = 'offer';
     const ORDER                 = 'order';
@@ -69,10 +70,10 @@ class Entity
 
     // Gateway entities
     const EBS                   = 'ebs';
-    const ATOM                  = 'atom';
-    const HDFC                  = 'hdfc';
     const UPI                   = 'upi';
     const AMEX                  = 'amex';
+    const ATOM                  = 'atom';
+    const HDFC                  = 'hdfc';
     const PAYTM                 = 'paytm';
     const SHARP                 = 'sharp';
     const WALLET                = 'wallet';
@@ -86,19 +87,19 @@ class Entity
     const CYBERSOURCE           = 'cybersource';
     const UPI_ICICI             = 'upi_icici';
     const UPI_IDFC              = 'upi_idfc';
-    const NETBANKING_HDFC       = 'netbanking_hdfc';
-    const NETBANKING_KOTAK      = 'netbanking_kotak';
-    const NETBANKING_ICICI      = 'netbanking_icici';
     const NETBANKING_AXIS       = 'netbanking_axis';
-    const NETBANKING_FEDERAL    = 'netbanking_federal';
+    const NETBANKING_HDFC       = 'netbanking_hdfc';
+    const NETBANKING_ICICI      = 'netbanking_icici';
+    const NETBANKING_KOTAK      = 'netbanking_kotak';
     const NETBANKING_AIRTEL     = 'netbanking_airtel';
+    const NETBANKING_FEDERAL    = 'netbanking_federal';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
+    const WALLET_JIOMONEY       = 'wallet_jiomoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
-    const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
-    const WALLET_JIOMONEY       = 'wallet_jiomoney';
     const WALLET_OPENWALLET     = 'wallet_openwallet';
+    const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
 
     // heimdal
     const ORG                   = 'org';
@@ -114,6 +115,7 @@ class Entity
         self::P2P                   => \RZP\Models\P2p::class,
         self::VPA                   => \RZP\Models\Upi\Vpa::class,
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
+        self::USER                  => \RZP\Models\User::class,
         self::OFFER                 => \RZP\Models\Offer::class,
         self::ORDER                 => \RZP\Models\Order::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
@@ -219,6 +221,7 @@ class Entity
         self::PRICING,
         self::EMI_PLAN,
         self::MERCHANT,
+        self::USER,
         self::SCHEDULE
     ];
 

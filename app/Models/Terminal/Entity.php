@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const UPI                           = 'upi';
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
+    const INTERNATIONAL                 = 'international';
     const TPV                           = 'tpv';
     const CURRENCY                      = 'currency';
     const SHARED                        = 'shared';
@@ -64,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::SHARED,
         self::RECURRING,
+        self::INTERNATIONAL,
         self::TPV,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
@@ -90,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EMI_DURATION,
         self::RECURRING,
+        self::INTERNATIONAL,
         self::SHARED,
         self::TPV,
         self::GATEWAY_MERCHANT_ID,
@@ -117,7 +120,10 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = ['method'];
 
-    protected static $modifiers = ['inputRemoveBlanks'];
+    protected static $modifiers = [
+        'inputRemoveBlanks',
+        self::INTERNATIONAL,
+    ];
 
     protected $defaults = [
         self::CATEGORY                  => null,
@@ -134,7 +140,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
-        self::RECURRING                 => Recurring::NON_RECURRING,
+        self::RECURRING                 => 1,
+        self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
     ];
 
@@ -143,6 +150,7 @@ class Entity extends Base\PublicEntity
         self::EMI                       => 'boolean',
         self::NETBANKING                => 'boolean',
         self::RECURRING                 => 'int',
+        self::INTERNATIONAL             => 'boolean',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
         self::ENABLED                   => 'boolean',
@@ -375,6 +383,19 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENABLED] = $status;
     }
 
+    protected function modifyInternational(& $input)
+    {
+        if (empty($input[self::INTERNATIONAL]) === true)
+        {
+            $gateway = $input[self::GATEWAY];
+
+            if (in_array($gateway, Payment\Gateway::$internationalCardGateways, true) === true)
+            {
+                $input[self::INTERNATIONAL] = 1;
+            }
+        }
+    }
+
     // ---------------------- END MODIFIERS ----------------------
 
     // ---------------------- SCOPES ----------------------
@@ -503,26 +524,6 @@ class Entity extends Base\PublicEntity
         return ($this->isTpv() === false);
     }
 
-    public function isRecurringAuthTerminal()
-    {
-        if ($this->getRecurring() === Recurring::NON_RECURRING)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function isRecurringDirectTerminal()
-    {
-        if ($this->getRecurring() === Recurring::RECURRING_N3DS)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     public function isValidEmiTerminal($gateway, $emiDuration)
     {
         if (($this->isEmiEnabled()) and
@@ -535,9 +536,36 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    protected function isRecurringTypeApplicable($type)
+    {
+        $hex = $this->getRecurring();
+
+        return Recurring::isTypeApplicable($hex, $type);
+    }
+
+    public function isNonRecurring()
+    {
+        return ($this->isRecurringTypeApplicable(Recurring::NON_RECURRING) === true);
+    }
+
+    public function is3DSRecurring()
+    {
+        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_3DS) === true);
+    }
+
     public function isNon3DSRecurring()
     {
-        return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
+        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_NON_3DS) === true);
+    }
+
+    public function isInternational()
+    {
+        return $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function isDomestic()
+    {
+        return ($this->isCardEnabled() === true);
     }
 
     public function toArrayPublic($subMerchantFlag = false)

@@ -164,7 +164,7 @@ class TraceCode
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                              = 'REFUND_EXCEPTION';
 
-    const EXPIRE_INVOICE                                = 'EXPIRE_INVOICE';
+    const CANCEL_INVOICE                                = 'CANCEL_INVOICE';
     const INVOICE_EXPIRE_VIA_CRON_FAILED                = 'INVOICE_EXPIRE_VIA_CRON_FAILED';
     const INVOICES_EXPIRE_CRON_SUMMARY                  = 'INVOICES_EXPIRE_CRON_SUMMARY';
     const INVOICE_INVALID_CONTACT_NUMBER                = 'INVOICE_INVALID_CONTACT_NUMBER';
@@ -299,6 +299,8 @@ class TraceCode
     const GATEWAY_AUTH_REQUEST                      = 'GATEWAY_AUTH_REQUEST';
     const GATEWAY_SUPPORT_REQUEST                   = 'GATEWAY_SUPPORT_REQUEST';
     const GATEWAY_SUPPORT_RESPONSE                  = 'GATEWAY_SUPPORT_RESPONSE';
+    const GATEWAY_PURCHASE_REQUEST                  = 'GATEWAY_PURCHASE_REQUEST';
+    const GATEWAY_PURCHASE_RESPONSE                 = 'GATEWAY_PURCHASE_RESPONSE';
     const GATEWAY_SUPPORT_ERROR                     = 'GATEWAY_SUPPORT_ERROR';
     const GATEWAY_UNKNOWN_ERROR                     = 'GATEWAY_UNKNOWN_ERROR';
     const GATEWAY_PAYMENT_AUTHORIZE                 = 'GATEWAY_PAYMENT_AUTHORIZE';
@@ -623,7 +625,9 @@ class TraceCode
 
 
     // Trace codes for gateway
-    const FIRST_DATA_PARES_MISSING                  = 'FIRST_DATA_PARES_MISSING';
+    const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
+
+    const USER_EDIT                                     = 'USER_EDIT';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

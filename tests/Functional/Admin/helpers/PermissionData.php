@@ -17,17 +17,15 @@ return [
         ],
     ],
 
-    'testGetMultiple' => [
+    'testGetMultipleForRazorpayOrg' => [
         'request' => [
-            'url' => '/permissions',
+            'url' => '/orgs/%s/permissions',
             'method' => 'get',
             'content' => [
-                'category' => 'test cat2',
             ]
         ],
         'response' => [
             'content' => [
-                'count' => 2,
             ],
             'status_code' => 200,
         ],

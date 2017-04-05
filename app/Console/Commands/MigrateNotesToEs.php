@@ -59,7 +59,7 @@ class MigrateNotesToEs extends Command
         $this->info("<info>Migrating $this->entityType notes from [$this->databaseMode mode] to ES index - [$this->indexName]...</info>");
 
         $skip = 0;
-        $take = 1000;
+        $take = 5000;
 
         while(true)
         {
@@ -71,17 +71,14 @@ class MigrateNotesToEs extends Command
                                                     ->take($take)
                                                     ->get();
 
-            $this->info("<info>Storing $this->entityType in ES...</info>");
-
-            $this->storeNotesInEs($entities);
-
-            $this->info('<info>Sleeping for 1 second...</info>');
-            sleep(1);
-
-            if (count($entities) < $take)
+            if (count($entities) === 0)
             {
                 break;
             }
+
+            $this->info("<info>Storing $this->entityType in ES...</info>");
+
+            $this->storeNotesInEs($entities);
 
             $skip += $take;
         }
@@ -123,7 +120,15 @@ class MigrateNotesToEs extends Command
 
             if ($errors === true)
             {
-                $this->info("<error>".json_encode($updateResponse)."</error>");
+                // Just logging the items with error(status not in 200,201)
+                $errorItems = array_filter(
+                                $updateResponse['items'],
+                                function ($v)
+                                {
+                                    return (in_array($v['index']['status'], [200, 201], true) === false);
+                                });
+
+                $this->info("<error>".json_encode($errorItems)."</error>");
             }
             else
             {

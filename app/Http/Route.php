@@ -312,7 +312,7 @@ final class Route
         'invoice_get_status'                      => ['get',      'invoices/{id}/status',                           'InvoiceController@getInvoiceStatus'                                ],
         'invoice_view_live'                       => ['get',      'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test'                       => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
-        'invoice_expire'                          => ['post',     'invoices/{id}/expire',                           'InvoiceController@expireInvoice'                                   ],
+        'invoice_cancel'                          => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                     => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
         'invoice_view_live_post'                  => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                  => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
@@ -396,10 +396,11 @@ final class Route
         'group_delete'                            => ['delete',   'orgs/{orgId}/groups/{id}',                       'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
 
-        // Permission can only be created by certain organisations.
+        // Permission can only be created by certain organizations.
         'permission_create'                       => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
+        'permission_get_by_type'                  => ['get',      'permissions/get/{type}',                         'OrganizationController@getPermissionsByType'                       ],
         'permission_get'                          => ['get',      'permissions/{id}',                               'OrganizationController@getPermission'                              ],
-        'permission_get_multiple'                 => ['get',      'permissions',                                    'OrganizationController@getMultiplePermissions'                     ],
+        'permission_get_multiple'                 => ['get',      'orgs/{orgId}/permissions',                       'OrganizationController@getMultiplePermissions'                     ],
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
         'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
@@ -454,6 +455,9 @@ final class Route
         // Dummy routes to test Account Auth
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
+        'user_create'                             => ['post',     'users',                                          'UserController@postUser'                                           ],
+        'user_edit'                               => ['put',      'users/{id}',                                     'UserController@putUser'                                            ],
+        'user_attach_merchant'                    => ['put',      'users/{id}/attach',                              'UserController@attachUserToMerchant'                               ],
     );
 
     public static $public = array(
@@ -581,6 +585,7 @@ final class Route
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
+        'invoice_cancel',
         'customer_create_address',
         'customer_delete_address',
         'customer_fetch_addresses',
@@ -771,6 +776,9 @@ final class Route
         'schedule_fetch_multiple',
         'schedule_migration',
         'internal_dummy_account_test',
+        'user_create',
+        'user_edit',
+        'user_attach_merchant',
     );
 
     public static $proxy = array(
@@ -821,7 +829,6 @@ final class Route
         'invoice_update_line_item',
         'invoice_remove_line_item_bulk',
         'invoice_remove_line_item',
-        'invoice_expire',
         'item_create',
         'item_fetch',
         'item_fetch_multiple',
@@ -863,6 +870,7 @@ final class Route
         'group_edit',
         'group_delete',
         'permission_get_multiple',
+        'permission_get_by_type',
         'permission_get',
         'permission_create',
         'permission_edit',
@@ -897,7 +905,6 @@ final class Route
         'admin_delete'                   => [Permission::DELETE_ADMIN],
         'group_edit'                     => [Permission::EDIT_GROUP],
         'group_delete'                   => [Permission::DELETE_GROUP],
-        'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
         'group_get_allowed_groups'       => [Permission::GROUP_GET_ALLOWED_GROUPS],
         'schedule_create'                => [Permission::SCHEDULE_CREATE],
         'schedule_delete'                => [Permission::SCHEDULE_DELETE],
@@ -908,6 +915,8 @@ final class Route
         'permission_create'              => [Permission::CREATE_PERMISSION],
         'permission_edit'                => [Permission::EDIT_PERMISSION],
         'permission_get'                 => [Permission::GET_PERMISSION],
+        'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
+        'permission_get_by_type'         => [Permission::EDIT_ORG],
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
@@ -1060,6 +1069,7 @@ final class Route
     public static $crossOrgRoutes = [
         'org_edit',
         'org_get',
+        'role_edit',
         'schedule_create',
         'schedule_delete',
         'schedule_update',
