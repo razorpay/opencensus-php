@@ -65,4 +65,20 @@ class Core
     protected function init()
     {
     }
+
+    /**
+     * Returns Admin's username or User's email, whichever is available from
+     * dashboard headers.
+     *
+     * @return string
+     */
+    protected function getInternalUsernameOrEmail(): string
+    {
+        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+
+        // One of admin_username or user_email is expected to be there
+        // in $dashboardInfo.
+
+        return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'];
+    }
 }
