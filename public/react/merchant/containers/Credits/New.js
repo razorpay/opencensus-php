@@ -4,6 +4,7 @@ import { fetchCreditBalance } from 'merchant/modules/credits'
 import moment from 'moment'
 import Amount from 'rzp/ui/Amount'
 import Spinner from 'rzp/ui/Spinner'
+import Header from 'rzp/ui/Header'
 
 @connect(
   (state) => {
@@ -147,12 +148,7 @@ export default class CreditsList extends Component {
     return (
       <div class='react-root'>
 
-        <div class="bg-light lter b-b wrapper-md">
-          <h1 class="m-n font-thin h3">
-            Your Credits
-            <spinner class="inline"></spinner>
-          </h1>
-        </div>
+        <Header title="Your Credits" showMode={false} />
 
         <div class="wrapper-md profile-wrapper">
           <div class="panel panel-default panel-form col-sm-8 col-sm-offset-2">
