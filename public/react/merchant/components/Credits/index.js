@@ -76,7 +76,7 @@ export default (props) => {
                               {
                                 creditsData.items.map((credit, index)=> {
                                   return (
-                                    <tr key={`credit_${index}`}>
+                                    <tr key={index}>
                                       <td>{credit.id}</td>
                                       <td>{credit.campaign}</td>
                                       <td>{credit.type}</td>
