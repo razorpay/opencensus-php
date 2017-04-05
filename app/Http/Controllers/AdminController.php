@@ -1027,4 +1027,13 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
+
+    public function getMailgunLogs()
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Service)->getMailgunLogs($input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }

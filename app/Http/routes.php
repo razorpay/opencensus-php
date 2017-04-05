@@ -309,6 +309,8 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
         Route::get('admin/get_current');
+
+        Route::get('/admin/mailgunlogs', 'AdminController@getMailgunLogs');
     });
 });
 

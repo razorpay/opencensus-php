@@ -14,6 +14,7 @@ use App\Session as SessionTable;
 use App\Providers\ApiGuard;
 use App\Schedules;
 use App\Generic;
+use Mailgun\Mailgun;
 
 use Auth;
 use Config;
@@ -2805,5 +2806,24 @@ class Service extends Base\Service
         }
 
         return $error;
+    }
+
+    public function getMailgunLogs($input)
+    {
+        $error = $data = null;
+
+        $mailgun = new Mailgun(config('mailgun.api_key'));
+        $domain = config('mailgun.domain');
+
+        try
+        {
+            $data = $mailgun->get("$domain/events", $input);
+        }
+        catch (\Exception $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
     }
 }
