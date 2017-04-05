@@ -2817,7 +2817,7 @@ class Service extends Base\Service
 
         try
         {
-            $data = $mailgun->get("$domain/events", $input);
+            $data = $mailgun->get("$domain/events", $input)->http_response_body;
         }
         catch (\Exception $e)
         {
