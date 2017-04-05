@@ -139,10 +139,6 @@ class Type
             self::BATCH_OUTPUT,
         ],
 
-        self::H2H_BUCKET_CONFIG => [
-            self::FUND_TRANSFER_H2H,
-        ],
-
         self::INVOICE_BUCKET_CONFIG => [
             self::INVOICE_PDF
         ],
@@ -159,6 +155,7 @@ class Type
 
         self::H2H_BUCKET_CONFIG => [
             self::ICICI_NODAL_TRANSFER,
+            self::FUND_TRANSFER_H2H,
         ],
     ];
 
