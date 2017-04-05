@@ -170,7 +170,7 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    public function processBankTransfer(array $input)
+    public function processBankTransfer(array $input): Payment\Entity
     {
         $this->repo->transaction(function() use ($input) {
             $this->createPaymentEntity($input);
@@ -189,7 +189,7 @@ class Processor
         return $this->payment;
     }
 
-    public function processBankTransferPayment($id)
+    public function processBankTransferPayment(string $id)
     {
         $this->payment = $this->repo->payment->findByIdAndMerchant(
                                                 $id, $this->merchant);
@@ -206,7 +206,7 @@ class Processor
 
         $this->eventPaymentAuthorized();
 
-        $this->notifyAuthorized($wasFailed);
+        $this->notifyAuthorized(false);
 
         return $this->autoCapturePaymentIfApplicable($this->payment);
     }

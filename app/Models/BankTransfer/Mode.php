@@ -16,13 +16,4 @@ class Mode
     {
         return defined(__CLASS__ . '::' . strtoupper($mode));
     }
-
-    public static function validateMode($mode)
-    {
-        if (self::isValid($mode) === false)
-        {
-            throw new Exception\InvalidArgumentException(
-                'Not a valid bank transfer Mode: ' . $mode);
-        }
-    }
 }

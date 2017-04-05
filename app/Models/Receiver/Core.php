@@ -74,9 +74,9 @@ class Core extends Base\Core
 
         $merchantDetails = [
             BankAccount\Entity::ACCOUNT_NUMBER     => $this->generateAccountNumberForProvider($provider),
-            BankAccount\Entity::BENEFICIARY_NAME   => $merchant->getBillingLabelElseName(),
+            BankAccount\Entity::BENEFICIARY_NAME   => $merchant->getBillingLabelElseName() . ' Virtual Account',
             BankAccount\Entity::BENEFICIARY_EMAIL  => $merchant->getTransactionReportEmail()[0],
-            BankAccount\Entity::BENEFICIARY_MOBILE => $merchant->merchantDetail->getContactMobile(),
+            BankAccount\Entity::BENEFICIARY_MOBILE => 9876543210//$merchant->merchantDetail->getContactMobile(),
         ];
 
         return array_merge($details, $merchantDetails);

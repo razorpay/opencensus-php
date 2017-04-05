@@ -366,7 +366,7 @@ return [
                     array(
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 11,
+                        'count' => 12,
                         'rules' => array(
                             array(),
                         ),
@@ -468,7 +468,7 @@ return [
                     array(
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 11,
+                        'count' => 12,
                         'rules' => array(
                             array(),
                         ),

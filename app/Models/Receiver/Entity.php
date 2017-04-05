@@ -83,6 +83,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::ONE_TIME_USE, $oneTimeUse);
     }
 
+    public function setValid($valid)
+    {
+        return $this->setAttribute(self::VALID, $valid);
+    }
+
     public function setEntityType($entityType)
     {
         Type::validateType($entityType);

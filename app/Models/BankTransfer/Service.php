@@ -3,21 +3,15 @@
 namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
 USE RZP\Models\Currency;
 use RZP\Trace\TraceCode;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class Service extends Base\Service
 {
-    protected $core;
+    protected $validator;
 
-    protected $cache;
-
-    protected $bankAccount;
-
-    protected $merchant;
+    protected $receiver;
 
     public function __construct()
     {
@@ -26,8 +20,6 @@ class Service extends Base\Service
         $this->validator = new Validator;
 
         $this->core = new Core;
-
-        $this->cache = $this->app['redis'];
     }
 
     public function validate(array $input): array
@@ -53,8 +45,7 @@ class Service extends Base\Service
 
         $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::UTR]);
 
-        if (($this->mode === Mode::LIVE) and
-            ($bankTransfer !== null))
+        if ($bankTransfer !== null)
         {
             $this->merchant = $bankTransfer->payment->merchant;
 
@@ -63,6 +54,8 @@ class Service extends Base\Service
             $paymentId = $bankTransfer->payment->getId();
 
             $paymentProcessor->processBankTransferPayment($paymentId);
+
+            $this->markReceiverUsed($bankTransfer);
         }
 
         return [
@@ -72,49 +65,7 @@ class Service extends Base\Service
         ];
     }
 
-    protected function uniqueUtrCheck(array $input, array & $data)
-    {
-        if($data['valid'] === true)
-        {
-            $key = 'ecollect' . $this->mode . $input[Entity::UTR];
-
-            $cachedData = $this->cache->get($key);
-
-            if (is_null($cachedData) === false)
-            {
-                $this->trace->warning(
-                    TraceCode::BANK_TRANSFER_VALIDATION_DUPLICATE_UTR,
-                    [
-                        'cached_data'   => json_decode($cachedData, true),
-                        'received_data' => $input,
-                    ]
-                );
-
-                $data['valid']   = false;
-                $data['message'] = 'Duplicate UTR received';
-            }
-            else
-            {
-                $this->cache->set($key, json_encode($input));
-            }
-        }
-    }
-
-    protected function validateReceiver($input)
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            $data = $this->validateTestMode($input);
-        }
-        else
-        {
-            $data = $this->validateLiveMode($input);
-        }
-
-        return $data;
-    }
-
-    protected function validateLiveMode($input)
+    protected function validateReceiver(array $input): array
     {
         $this->validator->validateInput('validate', $input);
 
@@ -161,7 +112,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    protected function validateUniqueUtr(Entity $bankTransfer)
+    protected function validateUniqueUtr(Entity $bankTransfer): bool
     {
         $utr = $bankTransfer->getUtr();
 
@@ -184,51 +135,43 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function validateTestMode(array $input)
+    protected function checkAccount(Entity $bankTransfer): bool
     {
-        $this->validator->validateInput('validate', $input);
+        $this->receiver = $this->getReceiverFromBankTransfer($bankTransfer);
 
-        $data = [
-            'valid'          => true,
-            'message'        => null,
-        ];
-
-        if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
-            (substr($input['payee_account'], 0, 6) !== 'RAZORP'))
+        if (is_null($this->receiver) === true)
         {
-            $data = [
-                'valid'          => false,
-                'message'        => 'Invalid account number',
-            ];
+            return false;
         }
 
-        $data[Entity::UTR] = $input[Entity::UTR];
+        $this->merchant = $this->receiver->account->merchant;
 
-        $this->uniqueUtrCheck($input, $data);
-
-        return $data;
+        return true;
     }
 
-    protected function checkAccount($bankTransfer)
+    protected function markReceiverUsed(Entity $bankTransfer)
+    {
+        $this->receiver = $this->getReceiverFromBankTransfer($bankTransfer);
+
+        if ($this->receiver->isOneTimeUse() === true)
+        {
+            $this->receiver->setValid(false);
+
+            $this->repo->saveOrFail($this->receiver);
+        }
+    }
+
+    protected function getReceiverFromBankTransfer(Entity $bankTransfer)
     {
         $accountNumber = $bankTransfer->getPayeeAccount();
 
         $ifscCode = $bankTransfer->getPayeeIfsc();
 
-        $receiver = $this->repo->receiver
-                         ->getValidVirtualBankAccountFromNumber($accountNumber, $ifscCode);
-
-        if (is_null($receiver) === true)
-        {
-            return false;
-        }
-
-        $this->merchant = $receiver->account->merchant;
-
-        return true;
+        return $this->repo->receiver
+                    ->getValidVirtualBankAccountFromNumber($accountNumber, $ifscCode);
     }
 
-    protected function bankTransferPaymentArray(array $input)
+    protected function bankTransferPaymentArray(array $input): array
     {
         $paymentArray = $this->defaultBankTransferPaymentArray();
 
@@ -237,7 +180,7 @@ class Service extends Base\Service
         return $paymentArray;
     }
 
-    protected function defaultBankTransferPaymentArray()
+    protected function defaultBankTransferPaymentArray(): array
     {
         return [
             Payment\Entity::CURRENCY => Currency\Currency::INR,
