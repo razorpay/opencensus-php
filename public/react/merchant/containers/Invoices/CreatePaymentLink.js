@@ -55,7 +55,6 @@ export default class CreatePaymentLink extends Component {
 
   constructor() {
     super(...arguments)
-    this.save = ::this.save
     this.state = {
       errors: null
     }
@@ -67,7 +66,7 @@ export default class CreatePaymentLink extends Component {
     }
   }
 
-  save(props) {
+  save = (props) => {
     return this.props.saveInvoice(props).then((invoice) => {
       this.props.onSave(invoice)
       this.props.closeModal()

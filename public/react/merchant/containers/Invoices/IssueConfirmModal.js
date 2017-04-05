@@ -26,7 +26,6 @@ export default class IssueInvoiceConfirmModal extends Component {
     this.state = {
       paymentLink: ''
     }
-    this.onIssueClick = ::this.onIssueClick
   }
 
   componentWillMount() {
@@ -39,7 +38,7 @@ export default class IssueInvoiceConfirmModal extends Component {
     }
   }
 
-  onIssueClick(props) {
+  onIssueClick = (props) => {
     return this.props.onIssue(props).then((invoice) => {
       if (props.sms_notify || props.email_notify) {
         this.props.closeModal()

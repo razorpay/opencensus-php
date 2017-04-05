@@ -19,12 +19,7 @@ import * as NotificationsActions from 'merchant/modules/notifications'
   form: 'addInternalNote'
 })
 export default class AddInternalNote extends Component {
-  constructor() {
-    super(...arguments)
-    this.addInternalNote = ::this.addInternalNote
-  }
-
-  addInternalNote(props) {
+  addInternalNote = (props) => {
     let notes = {}
     notes[props.key] = props.value
 
