@@ -77,18 +77,25 @@ export default class AddFundsContainer extends Component {
   }
 
   openCheckout(fieldProps) {
+    let user = this.props.user
     let amountInPaise = Number(fieldProps.amountInINR) * 100
     let options = {
       key: this.key,
       amount: amountInPaise,
       description: fieldProps.description,
+      amountInINR: fieldProps.amountInINR,
+      prefill: {
+        name: user.name,
+        email: user.email,
+        contact: user.contact_mobile,
+      },
       notes: {
         dashboard: true
       },
       handler: function(transaction = {}) {
         transaction.amount = amountInPaise
         this.addFunds(transaction)
-      }.bind(this)
+      }.bind(this),
     }
 
     return new Promise((resolve, reject) => {
@@ -122,7 +129,7 @@ export default class AddFundsContainer extends Component {
             <div class='col-sm-6 col-sm-offset-3'>
               <div class='panel panel-default'>
                 <div class='panel-heading'>
-                  Add Funds
+                  Add Funds - {this.props.modeFormatted}
                 </div>
 
                 <div class='panel-body'>
@@ -138,9 +145,13 @@ export default class AddFundsContainer extends Component {
                     Add Funds works over your own account. Therefore, a TDR will be deducted on this
                   as well. If you are adding funds for a large refund, send us a mail to <a href='mailto:support@razorpay.com' class='highlight'>support@razorpay.com</a>.
                   </p>
-                  <p>
-                    Since you are in test mode, this will be a test payment.
-                  </p>
+
+                  {
+                    this.props.mode === 'test' &&
+                      <p>
+                        Since you are in test mode, this will be a test payment.
+                      </p>
+                  }
 
                   <form>
                     <div class='form-group'>
