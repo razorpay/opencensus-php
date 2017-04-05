@@ -6,7 +6,8 @@ app.controller('AddOrgCtrl', [
   '$upload',
   'organization',
   'transformRequestAsFormPost',
-  function ($scope, $http, alertsFactory, $stateParams, $upload, organization, transformRequestAsFormPost) {
+  '$state',
+  function ($scope, $http, alertsFactory, $stateParams, $upload, organization, transformRequestAsFormPost, $state) {
     $scope.selected_permissions = {};
     $scope.select_all = false;
 
