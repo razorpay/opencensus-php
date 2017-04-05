@@ -1861,7 +1861,6 @@ ALTER TABLE invoices ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER paid_at;
 ALTER TABLE terminals
     ADD COLUMN international TINYINT(1) DEFAULT 0 NOT NULL AFTER recurring;
 
-
 INSERT INTO `org_field_map` (`id`, `org_id`, `entity_name`, `fields`, `created_at`, `updated_at`)
 VALUES
 	('7NamQFIGFyyNdc','100000razorpay','admin','name,email,allow_all_merchants,disabled,roles,groups',1488445356,1488445356),
@@ -1873,3 +1872,7 @@ ALTER TABLE `admins` MODIFY COLUMN `department_code` VARCHAR(255) DEFAULT NULL;
 ALTER TABLE `admins` MODIFY COLUMN `supervisor_code` VARCHAR(255) DEFAULT NULL;
 ALTER TABLE `admins` MODIFY COLUMN `branch_code` VARCHAR(255) DEFAULT NULL;
 ALTER TABLE `admins` MODIFY COLUMN `location_code` VARCHAR(255) DEFAULT NULL;
+
+# Query to add custom error message attribute to offer
+ALTER TABLE offers
+    ADD COLUMN error_message VARCHAR(255) NULL AFTER display_text;

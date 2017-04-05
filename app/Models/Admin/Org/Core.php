@@ -70,6 +70,13 @@ class Core extends Base\Core
 
         $roles = $this->repo->role->fetchByOrgId($orgId);
 
+        // Laravel detach removes all the entities in pivot table if you send
+        // empty array
+        if (empty($diffPerms) === true)
+        {
+            return;
+        }
+
         foreach ($roles as $role)
         {
             $role->permissions()->detach($diffPerms);
