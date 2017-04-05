@@ -66,7 +66,7 @@ class Core extends Base\Core
         return $minLevel;
     }
 
-    protected function getMinLeveledWorkflow(array $permissions, $orgId)
+    public function getMinLeveledWorkflow(array $permissions, $orgId)
     {
         // Get permission IDs of the permissions passed
         // for the current route

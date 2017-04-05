@@ -65,4 +65,12 @@ class Service extends Base\Service
 
         return $actions->toArrayPublic();
     }
+
+    public function permissionHasWorkflow($routePermissions, $orgId)
+    {
+        $workflow = (new Action\Core)->getMinLeveledWorkflow(
+            $routePermissions, $orgId);
+
+        return ! empty($workflow);
+    }
 }

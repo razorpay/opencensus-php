@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Workflow\Service as WorkflowService;
 use Illuminate\Foundation\Application;
 
 class Workflow
@@ -36,10 +37,19 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
-        // This middleware will only run for routes defined in
-        // Route::$workflowRoutes (whitelisting)
+        // This middleware will only run for routes whose
+        // permission have a workflow defined for them.
 
-        if ((in_array($routeName, array_keys(Route::$workflowRoutes), true) === false) or
+        $permissions = $this->getRoutePermissions($routeName);
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
+            $permissions, $admin->getOrgId());
+
+        // If the permissions has no workflow assigned to it then let's not
+        // apply any maker-checker process
+        if (($permissionHasWorkflow === false) or
             ($this->config->get('database.es_workflow_action_mock') === true))
         {
             return $next($request);
@@ -51,7 +61,13 @@ class Workflow
         // fool-proof but will work well for a good number of
         // our routes (MVP acceptable).
 
-        $entity = Route::$workflowRoutes[$routeName];
+        $entity = Route::$workflowRoutes[$routeName] ?? null;
+
+        if (empty($entity))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND);
+        }
 
         $routeParams = $this->router->current()->parameters();
 
@@ -60,7 +76,7 @@ class Workflow
         $entityId = $routeParams['id'] ?? array_values($routeParams)[0];
 
         // Necessary data to pass to WorkflowController
-        $params = $this->createMakerEntity($request, $entity, $entityId);
+        $params = $this->createDifferEntity($request, $entity, $entityId);
 
         // Replace Input for the current request
         $request->replace($params);
@@ -74,7 +90,7 @@ class Workflow
         action once all the checkers have approved this
         incoming request.
     */
-    private function createMakerEntity($request, $entity, $entityId)
+    private function createDifferEntity($request, $entity, $entityId)
     {
         $input = $request->input();
 
