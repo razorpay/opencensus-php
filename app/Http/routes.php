@@ -304,9 +304,6 @@ Route::group(['middleware' => ['web']], function () {
         // Upload logos for orgs
         Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
 
-        Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
-        Route::get('/admin/invitations', 'AdminController@getMerchantInvitations');
-
         Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
         Route::get('admin/get_current');
     });
