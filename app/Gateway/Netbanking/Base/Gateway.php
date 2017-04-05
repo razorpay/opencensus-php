@@ -93,7 +93,7 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return (new $class)->generate($input);
     }
 
-    protected function checkIfStatusIsToBeSaved(Entity $gatewayPayment, array $attributes)
+    protected function shouldStatusBeUpdated(Entity $gatewayPayment)
     {
         //
         // If the authorize status is set to Y,
@@ -102,9 +102,9 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         if ((isset($gatewayPayment[Entity::STATUS]) === true) and
             ($gatewayPayment[Entity::STATUS] === $this->getAuthSuccessStatus()))
         {
-            unset($attributes[Entity::STATUS]);
+            return false;
         }
 
-        return $attributes;
+        return true;
     }
 }

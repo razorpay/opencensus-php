@@ -67,6 +67,13 @@ return [
         'status'          => 'Y'
     ],
 
+    'testAuthFailedVerifySuccessEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        => false,
+        'bank'            => 'FDRL',
+        'status'          => 'Y'
+    ],
+
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
         'received'        => false,

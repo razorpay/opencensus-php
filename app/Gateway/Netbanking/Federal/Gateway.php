@@ -304,12 +304,10 @@ class Gateway extends Base\Gateway
     {
         $status = self::VERIFY_TO_CALLBACK_STATUS[$content[ResponseFields::STATUS]];
 
-        $attributes = [
-            Base\Entity::RECEIVED => true,
-            Base\Entity::STATUS   => $status
-        ];
-
-        $attributes = $this->checkIfStatusIsToBeSaved($gatewayPayment, $attributes);
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            $attributes[Base\Entity::STATUS] = $status;
+        }
 
         //
         // Saving BID from Verify response only if BID from authorize hasn't been saved
@@ -332,7 +330,7 @@ class Gateway extends Base\Gateway
                 }
         }
 
-        return $attributes;
+        return $attributes ?? [];
     }
 
     protected function getAuthSuccessStatus()

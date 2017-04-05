@@ -149,7 +149,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifySuccessEntity');
     }
 
     /**
