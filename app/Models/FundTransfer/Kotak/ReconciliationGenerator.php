@@ -46,28 +46,28 @@ class ReconciliationGenerator
         $nonReconciledAttempts = $this->repo->fund_transfer_attempt->getAttemptsPendingReconciliation();
 
         // get batch id of all above attempts
-        $batchIds = $nonReconciledAttempts->pluck(FundTransfer\Attempt\Entity::BATCH_FUND_TRANSFER_ID);
+        $batchIds = $nonReconciledAttempts->pluck(FundTransfer\Attempt\Entity::BATCH_FUND_TRANSFER_ID)
+                                          ->toArray();
 
         // non-reconciled batches
         $nonReconciledBatches = $this->repo->batch_fund_transfer->findManyByPublicIds($batchIds);
 
         // for above batch ids, get the txt file ids
-        $setlFileIds = $nonReconciledBatches->pluck(FundTransfer\Batch\Entity::TXT_FILE_ID);
+        $setlFileIds = $nonReconciledBatches->pluck(FundTransfer\Batch\Entity::TXT_FILE_ID)
+                                            ->toArray();
 
         // read one txt file from s3 at a time and generate recon file
         $response = [];
 
-        foreach ($fileIds as $fileId)
+        foreach ($setlFileIds as $fileId)
         {
             $fileAccessor = (new Accessor)->id($fileId);
 
             $filePath = $fileAccessor->getFile();
 
-            $fileInput = ['file' => $filePath];
+            $reconFile = $this->generateReconcileFile(['file' => $filePath]);
 
-            $reconFile = generateReconcileFile($fileInput);
-
-            $data = (new Settlement\Service)->reconcileSettlements($fileInput);
+            $data = (new Settlement\Service)->reconcileSettlements(['file' => $reconFile]);
 
             $response[] = $data;
         }

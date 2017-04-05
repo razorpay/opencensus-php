@@ -122,7 +122,7 @@ class Service extends Base\Service
 
     public function reconcileSettlementsInTestMode($input)
     {
-        return (new ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
+        return (new Kotak\ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
     }
 
     public function generateSettlementReconciliation($input)
