@@ -1,8 +1,12 @@
-<div class="workflow-feed-page" ng-controller="FeedCtrl">
+<div class="workflow-feed-page" ng-controller="WorkflowFeedCtrl">
   <div class="bg-light lter b-b wrapper-md">
     <h3 class="m-n font-thin">
-      Action - action_id_here{{action_id}} 
+      Action {{action_id}}
       <spinner class="inline"></spinner>
+
+      <a class='btn btn-info pull-right' href="javascript:void(0);" ng-click="showActionChanges()">
+        View Changes
+      </a>
     </h3>
   </div>
   <div class="wrapper-md">
@@ -79,6 +83,57 @@
           <div class=""><span class="assignee-label">Ashmeet Sidhu</span></div>
         </div>
       </div>
-    </div>  
+    </div>
   </div>
 </div>
+
+
+<script type="text/ng-template" id="actionChanges.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Entity Changes</h3>
+  </div>
+
+  <div class="modal-body new-key-modal" style="overflow: auto;">
+
+    <h4 ng-show="data.data">Change</h4>
+
+    <p ng-show="data.data.old"><em>Old Data:</em></p>
+
+    <table ng-show="data.data.old" class="table table-striped b-t b-light">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="(key, value) in data.data.old">
+          <td>{{ key }}</td>
+          <td>{{ value }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p ng-show="data.data.new"><em>New Data:</em></p>
+
+    <table ng-show="data.data.new" class="table table-striped b-t b-light">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="(key, value) in data.data.new">
+          <td>{{ key }}</td>
+          <td>{{ value }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Close</button>
+  </div>
+</script>

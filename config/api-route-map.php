@@ -62,6 +62,7 @@ return [
 
         'workflow_get_multiple'             => 'orgs/{id}/workflows',
         'workflow_delete'                   => 'workflows/{id}',
+        'action_diff_get'                   => 'w-actions/{id}/diff',
     ],
 
     // auth
