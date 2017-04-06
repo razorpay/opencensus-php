@@ -67,19 +67,28 @@ app.controller('WorkflowNewCtrl', [
       });
     });
 
+    console.log($('.role-select2').length)
 
-    var $roleSelect = $('.role-select2').select2({
-      theme: 'classic',  
-      placeholder: 'Select a role',
-    });
-    $roleSelect.on("select2:select", function (e) {
-      console.log(e)
-      var id = e.params.data.id;
-      $scope.rolesSelected.push(id);
-      $roleSelect.val(null).trigger("change");
-      // console.log(e);
-    });
+    var addRoleSelector = function (stepId) {
+      var $roleSelect = $('.role-select2').select2({
+        theme: 'classic',  
+        placeholder: 'Select a role',
+      });
+      $roleSelect.on("select2:select", function (e) {
+        console.log(e)
+        var id = e.params.data.id;
+        // var stepId = e.params.data.stepId;
+        $scope.rolesSelected.push(id);
+        $roleSelect.val(null).trigger("change");
+        // console.log(e);
+      });
+    }
+    setTimeout(addRoleSelector, 0);
 
+    $scope.steps = [];
+    $scope.addStep = function () {
+      $scope.steps.push({})
+    }
 
     $scope.new_checker = null;
 

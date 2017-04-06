@@ -34,17 +34,14 @@
       </div>
       <div class="col-xs-8">
         <div class="right-label m-b">Workflow</div>
-        <div class="action-desc-panel panel panel-default">
+        <div ng-repeat="(stepId, step) in steps" class="action-desc-panel panel panel-default">
           <div class="panel-heading">
             Step 1
           </div>
           <div class="wrapper clearfix">
             <div class="">Add a checker to approve the action. It could be either a team or an individual.</div>
             <div class="assignee-list m-b">
-              <div class="">
-                <span class="assignee-label">Shashank Kumar</span>
-              </div>
-              <div class="assignee-list m-b">
+              <div class=" m-b">
                 <div class="">
                   <span class="assignee-label">Shashank Kumar</span>
                   <span class="help-label">Minimum approvals</span>
@@ -54,7 +51,7 @@
               <div class="role-select2-container col-xs-6 row">
                 <select class="select2 role-select2 " multiple="multiple" style="width: 100%" ng-model="roleSelect">
                   <option></option>
-                  <option ng-repeat="(key, role) in roles" value="{{key}}">{{role.name}}</option>
+                  <option  ng-repeat="(key, role) in roles" data-step-id={{stepId}} value="{{key}}">{{role.name}}</option>
                 </select>
               </div>
               <!-- <div class="select2-box col-xs-4 row">
@@ -65,7 +62,7 @@
             </div>
           </div>
         </div>
-        <button type="button" class="btn btn-default">
+        <button type="button" class="btn btn-default" ng-click="addStep()">
           +  Add a Step
         </button>
         <button type="button" class="btn btn-info">
