@@ -22,6 +22,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
+        // returns Workflow\Action\Entity
         $data = (new Action\Service)->create($input);
 
         return ApiResponse::json($data);
