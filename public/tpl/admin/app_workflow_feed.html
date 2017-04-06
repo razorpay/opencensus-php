@@ -32,24 +32,40 @@
             <div class="pull-left faded-text">{{feed.comments.length}} Comments</div>
           </div>
         </div>
-        <div class="panel panel-default wrapper">
-          <i class="fa fa-check-circle approved-color"></i> <strong>Shashank Kumar</strong> <span class="">approved</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
-        </div>
-        <div class="action-desc-panel panel panel-default">
-          <div class="panel-heading">
-            <strong>{{feed.checkers[0]}}</strong> commented <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+
+        <!-- Cards Start -->
+
+        <div class="cards" ng-repeat="card in cards" ng-switch on="card.type">
+
+          <div class="panel panel-default wrapper" ng-switch-when="status">
+            <i class="fa fa-check-circle approved-color"></i> <strong>Shashank Kumar</strong> <span class="">approved</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
           </div>
-          <div class="wrapper clearfix">
-            <div class="">This is a very acidic comment. pH = 0</div>
+
+          <div class="action-desc-panel panel panel-default" ng-switch-when="comment">
+            <div class="panel-heading">
+              <strong>{{ card.admin_name }}</strong>
+              commented at
+              <span title="{{feed.timestamp}}" class="timestamp">
+                {{ card.created_at * 1000 | date:'medium' }}
+              </span>
+            </div>
+            <div class="wrapper clearfix">
+              <div class="">{{ card.comment }}</div>
+            </div>
           </div>
+
+          <!-- <div class="panel panel-default wrapper">
+            <i class="fa fa-times-circle rejected-color"></i> <strong>Ashmeet Sidhu</strong> <span class="">rejected</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+          </div> -->
+
         </div>
-        <div class="panel panel-default wrapper">
-          <i class="fa fa-times-circle rejected-color"></i> <strong>Ashmeet Sidhu</strong> <span class="">rejected</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
-        </div>
+
+        <!-- Cards End -->
+
         <div class="panel panel-default">
           <form class="panel-heading clearfix wrapper">
-            <textarea class="form-control wrapper-xs" rows="4" id="comment"></textarea>
-            <button class="pull-right btn btn-info m-t" type="submit">Comment</button>
+            <textarea class="form-control wrapper-xs" rows="4" id="comment" ng-model="new_comment"></textarea>
+            <button class="pull-right btn btn-info m-t" type="submit" ng-click="saveComment()">Comment</button>
           </form>
         </div>
       </div>

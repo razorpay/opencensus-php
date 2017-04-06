@@ -48,6 +48,76 @@ app.controller('WorkflowFeedCtrl', [
       });
     };
 
+    $scope.saveComment = function () {
+      var body = {
+        comment: $scope.new_comment
+      };
+
+      var request = $http({
+        url: '/admin/generic',
+        method: 'POST',
+        params: {
+          route_name: 'action_comment_create',
+          url_params: {
+            '{id}': $stateParams.action_id
+          }
+        },
+        data: {
+          body: body
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          commentMod(data.data);
+
+          $scope.cards.push(data.data);
+
+          $scope.new_comment = null;
+        }
+      })
+    };
+
+    // Change passed object by reference
+    var commentMod = function (comment) {
+      comment.type = 'comment';
+
+      // Resolve name
+      var name = comment.admin.name ? comment.admin.name : (!comment.admin.username ? comment.admin.username : comment.admin.email);
+      comment.admin_name = name;
+    };
+
+    $scope.fetchAllComments = function () {
+      var request = $http({
+        url: '/admin/generic',
+        method: 'GET',
+        params: {
+          route_name: 'action_comment_fetch',
+          url_params: {
+            '{id}': $stateParams.action_id
+          }
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          data.data.items.forEach(function (item, k) {
+            commentMod(item);
+
+            data.data.items[k] = item;
+          });
+
+          $scope.cards = $scope.cards.concat(data.data.items);
+        }
+      });
+    };
+
+    $scope.fetchAllComments();
+
+    // Cards data
+
+    $scope.cards = [];
+
     $scope.feed = {
       actionName: 'edit_merchant_name',
       action_state: 'Pending',
