@@ -88,8 +88,6 @@ class TransferTest extends TestCase
 
     public function testTransferOnHoldUntilInvalid()
     {
-        $this->markTestSkipped('on_hold_until removed for now');
-
         $body = $this->getTransferRequestBody('account')['content'];
 
         unset($body['on_hold']);
@@ -102,8 +100,6 @@ class TransferTest extends TestCase
 
     public function testTransferOnHoldUntilOnHoldFalse()
     {
-        $this->markTestSkipped('on_hold_until removed for now');
-
         $body = $this->getTransferRequestBody('account')['content'];
 
         $body['on_hold'] = '0';
@@ -155,8 +151,6 @@ class TransferTest extends TestCase
 
     public function testPatchTransferOnHoldUntilOnHoldFalse()
     {
-        $this->markTestSkipped('on_hold_until removed for now');
-
         $transfer = $this->createTransfer('account');
 
         $body = $this->getTransferRequestBody('account', 'patch')['content'];
@@ -262,13 +256,18 @@ class TransferTest extends TestCase
         return $this->getResponse($request, $data);
     }
 
-    protected function createReversal(string $id, $amount = null)
+    protected function createReversal(string $id, $amount = null, array $notes = [])
     {
         $request = $this->getReversalRequestBody($id);
 
         if ($amount !== null)
         {
             $request['content']['amount'] = $amount;
+        }
+
+        if (empty($notes) === false)
+        {
+            $request['content']['notes'] = $notes;
         }
 
         return $this->getResponse($request);
@@ -302,12 +301,18 @@ class TransferTest extends TestCase
 
         $amount = $transfer['amount'] - $amount;
 
-        $reversal = $this->createReversal($transfer['id'], $amount);
+        $notes  = [
+            'order_info'    => 'random_string',
+            'version'       => 2,
+        ];
+
+        $reversal = $this->createReversal($transfer['id'], $amount, $notes);
 
         $expected = [
             'amount'        => $amount,
             'transfer_id'   => $transfer['id'],
             'currency'      => $transfer['currency'],
+            'notes'         => $notes,
         ];
 
         $this->assertArraySelectiveEquals($expected, $reversal);
@@ -327,6 +332,7 @@ class TransferTest extends TestCase
 
     protected function getTransferRequestBody(string $type, string $action = 'create')
     {
+        // fetches the array from TransferTestData
         $request = $this->testData[$action . 'Transfer'];
 
         $key = $action . title_case($type) . 'TransferRequest';
@@ -396,7 +402,7 @@ class TransferTest extends TestCase
         $expectedPayment = [
             'amount'        => $transfer['amount'],
             'on_hold'       => $transfer['on_hold'],
-            // 'on_hold_until' => $transfer['on_hold_until'],
+            'on_hold_until' => $transfer['on_hold_until'],
         ];
 
         $this->assertArraySelectiveEquals($expectedPayment, $payment);

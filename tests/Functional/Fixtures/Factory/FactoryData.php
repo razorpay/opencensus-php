@@ -7,6 +7,7 @@ use Config;
 use Eloquent;
 use RZP\Tests\TestDummy\Factory;
 use RZP\Models;
+use Carbon\Carbon;
 
 final class FactoryData
 {
@@ -413,6 +414,10 @@ final class FactoryData
             'auth_type'     => 'password',
         ]);
 
+        $factory(\RZP\Models\Admin\Org\FieldMap\Entity::class, [
+            'id'            => $faker->uniqueid,
+        ]);
+
         $factory(\RZP\Models\Admin\Org\Hostname\Entity::class, [
             'id'            => $faker->uniqueid,
             'org_id'        => $faker->uniqueid,
@@ -558,6 +563,7 @@ final class FactoryData
             'amount'             => 200,
             'currency'           => 'INR',
             'amount_reversed'    => 0,
+            'notes'              => null,
             'on_hold'            => 0,
             'on_hold_until'      => null,
             'merchant_id'        => '10000000000000',
@@ -569,9 +575,22 @@ final class FactoryData
             'id'                 => $faker->uniqueid,
             'amount'             => 200,
             'currency'           => 'INR',
+            'notes'              => null,
             'merchant_id'        => '10000000000000',
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Schedule\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '100000Razorpay',
+            'name'              => 'Basic T3',
+            'type'              => 'settlement',
+            'period'            => 'daily',
+            'interval'          => 1,
+            'delay'             => 3,
+            'hour'              => 5,
+            'next_run'          => 1451586600,
         ]);
     }
 }

@@ -90,7 +90,7 @@ class Core extends Base\Core
     {
         $methods = $this->getPaymentMethods($merchant);
 
-        $supportedBanks = Netbanking::getSupportedBanks($merchant->isTPVRequired());
+        $supportedBanks = Netbanking::getSupportedBanks($merchant);
 
         $methods->setBanks($supportedBanks);
 
@@ -251,10 +251,7 @@ class Core extends Base\Core
         {
             $label   = $merchant->getBillingLabel();
             $message = $merchant->getDashboardEntityLinkForSlack($label);
-
-            $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
-
-            $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
+            $user    = $this->getInternalUsernameOrEmail();
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 

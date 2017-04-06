@@ -149,8 +149,6 @@ class OrderTest extends TestCase
     public function testStatusAfterAutoCapturePaymentWoCallback()
     {
         $order = $this->testCreateAutoCaptureOrder();
-        $order = $this->getLastEntity('order');
-        $this->assertEquals($order['status'], 'created');
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order['id'];
@@ -379,6 +377,28 @@ class OrderTest extends TestCase
         $payment = $this->getDefaultWalletPaymentArray();
         $payment['order_id'] = $order['id'];
         $payment['amount'] = $order['amount'];
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->fixtures->merchant->disableMobikwik();
+    }
+
+    public function testPaymentWithFailedOfferWithCustomErrorMessage()
+    {
+        $this->fixtures->merchant->enableMobikwik();
+
+        $offer = $this->fixtures->create('offer:card', ['error_message' => 'Custom error message']);
+
+        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+
+        $payment = $this->getDefaultWalletPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
 
         $testData = $this->testData[__FUNCTION__];
         $this->runRequestResponseFlow($testData, function () use ($payment)

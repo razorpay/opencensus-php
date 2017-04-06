@@ -198,6 +198,10 @@ class Fields
 
     const TERM_URL                      = 'TermUrl';
 
+    const MERCHANT_DEFINED_DATA         = 'merchantDefinedData';
+
+    const MDD_FIELD                     = 'mddField';
+
     // Verify Fields
     const R_FLAG                        = 'RFlag';
 

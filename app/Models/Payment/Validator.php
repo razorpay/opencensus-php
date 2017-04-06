@@ -3,7 +3,9 @@
 namespace RZP\Models\Payment;
 
 use Cache;
+use Carbon\Carbon;
 use Lib\PhoneBook;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
@@ -13,6 +15,7 @@ use RZP\Models\Card;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
@@ -41,8 +44,8 @@ class Validator extends Base\Validator
         'recurring'               => 'sometimes_if:method,card|in:0,1',
         'fee'                     => 'sometimes|filled|integer|max:50000000',
         'service_tax'             => 'sometimes|filled|integer|max:50000000',
-        'on_hold'                 => 'sometimes|boolean',
-        // 'on_hold_until'           => 'sometimes|integer',
+        'on_hold'                 => 'sometimes_if:method,transfer|boolean',
+        'on_hold_until'           => 'sometimes_if:method,transfer|epoch',
         'ip'                      => 'sometimes|ip',
         'referer'                 => 'sometimes|string|max:2083',
         'user_agent'              => 'sometimes|string',
@@ -60,7 +63,8 @@ class Validator extends Base\Validator
         'reverse_all'             => 'sometimes|boolean',
         'reversals'               => 'sometimes|array',
         'reversals.*.transfer'    => 'required|public_id',
-        'reversals.*.amount'      => 'required|integer|min:100'
+        'reversals.*.amount'      => 'required|integer|min:100',
+        'reversals.*.notes'       => 'sometimes|notes',
     ];
 
     protected static $transferRules = [
@@ -69,8 +73,9 @@ class Validator extends Base\Validator
         'transfers.*.account'        => 'sometimes|public_id',
         'transfers.*.amount'         => 'required|integer|min:100',
         'transfers.*.currency'       => 'required|string|size:3',
+        'transfers.*.notes'          => 'sometimes|notes',
         'transfers.*.on_hold'        => 'sometimes|boolean',
-        // 'transfers.*.on_hold_until'  => 'sometimes|integer',
+        'transfers.*.on_hold_until'  => 'sometimes|epoch',
     ];
 
     protected static $createValidators = [
@@ -82,6 +87,7 @@ class Validator extends Base\Validator
         'fee',
         'contact',
         'email',
+        'hold_parameters',
     ];
 
     protected function validateEmail(array $input)
@@ -113,7 +119,7 @@ class Validator extends Base\Validator
         $vpaParts = explode('@', $vpa);
 
         if ((count($vpaParts) !== 2) or
-            (strlen($vpaParts[1]) > 50))
+            (ProviderCode::validate($vpaParts[1]) === false))
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
@@ -326,10 +332,6 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'Attribute fee is not allowed and should not be sent');
             }
-            else if (empty($input['fee']))
-            {
-                ;
-            }
         }
         if ((isset($input['fee'])) and
             (empty($input['fee'])))
@@ -365,6 +367,31 @@ class Validator extends Base\Validator
         foreach ($status as $value)
         {
             self::validateStatus($value);
+        }
+    }
+
+    public function validateHoldParameters(array $input)
+    {
+        if (isset($input[Entity::ON_HOLD]) === false)
+        {
+            return;
+        }
+
+        if (isset($input[Entity::ON_HOLD_UNTIL]) === true)
+        {
+            if ($input[Entity::ON_HOLD] === '0')
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The on_hold field must be set to 1, if on_hold_until is sent');
+            }
+
+            $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+            if ($input[Entity::ON_HOLD_UNTIL] < $now)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The on_hold_until timestamp cannot be less than the current timestamp');
+            }
         }
     }
 

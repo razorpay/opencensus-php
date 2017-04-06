@@ -11,22 +11,25 @@ class Table
     const KEY                   = 'keys';
     const CARD                  = 'cards';
     const ITEM                  = 'items';
+    const USER                  = 'users';
     const BATCH                 = 'batches';
+    const OFFER                 = 'offers';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const COUPON                = 'coupons';
+    const DEVICE                = 'devices';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
-    const SCHEDULE              = 'schedules';
-    const DEVICE                = 'devices';
     const UPI_VPA               = 'upi_vpa';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
     const ADDRESS               = 'addresses';
     const FEATURE               = 'features';
+    const SCHEDULE              = 'schedules';
     const TERMINAL              = 'terminals';
     const MERCHANT              = 'merchants';
     const CUSTOMER              = 'customers';
@@ -41,15 +44,14 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
-    const CUSTOMER_BALANCE      = 'customer_balance';
-    const CUSTOMER_TRANSACTION  = 'customer_transactions';
-    const BATCH_FUND_TRANSFER   = 'daily_settlements';
-    const SETTLEMENT_DETAILS    = 'settlement_details';
-    const MERCHANT_DETAIL       = 'merchant_details';
-    const MERCHANT_TERMINAL     = 'merchant_terminal';
-    const OFFER                 = 'offers';
-    const COUPON                = 'coupons';
+    const MERCHANT_USERS        = 'merchant_users';
     const MERCHANT_OFFER        = 'merchant_offer';
+    const MERCHANT_DETAIL       = 'merchant_details';
+    const CUSTOMER_BALANCE      = 'customer_balance';
+    const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const SETTLEMENT_DETAILS    = 'settlement_details';
+    const BATCH_FUND_TRANSFER   = 'daily_settlements';
+    const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
     // organization roles permissions
@@ -65,6 +67,8 @@ class Table
     const ADMIN_TOKEN           = 'admin_tokens';
     const ROLE_MAP              = 'role_map';
     const LOGIN_ATTEMPT         = 'login_attempts';
+    const ADMIN_LEAD            = 'admin_leads';
+    const ORG_FIELD_MAP         = 'org_field_map';
 
     // Gateway related
     const EBS                   = 'ebs';
@@ -89,7 +93,7 @@ class Table
     // Terminal Performance
 
     const TERMINAL_ACTION       = 'terminal_action_logs';
-    const GATEWAY_ABSENCE       = 'gateway_status_absence';
+    const GATEWAY_DOWNTIME      = 'gateway_downtimes';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

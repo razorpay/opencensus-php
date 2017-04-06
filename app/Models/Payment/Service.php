@@ -26,11 +26,15 @@ class Service extends Base\Service
 
     protected $core;
 
+    protected $slack;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->core = new Payment\Core;
+
+        $this->slack = $this->app['slack'];
     }
 
     /**
@@ -377,7 +381,7 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+        $transaction = $this->repo->transaction->findByEntityId($payment->getId(), $this->merchant, true);
 
         return $transaction->toArrayPublic();
     }
@@ -912,12 +916,16 @@ class Service extends Base\Service
         {
             $this->merchant = $payment->merchant;
 
-            $res = $this->getNewProcessor()->autoCapturePayment($payment);
-
-            if ($res)
+            try
             {
-                $count++;
+                $this->getNewProcessor()->autoCapturePayment($payment);
             }
+            catch (Exception\RecoverableException $e)
+            {
+                continue;
+            }
+
+            $count++;
         }
 
         return ['count' => $count];
@@ -1041,6 +1049,111 @@ class Service extends Base\Service
         }
 
         return $result;
+    }
+
+    /**
+     * Fetch and update on_hold flag for all payment
+     * and source transfer with on_hold_until less than today's
+     *
+     * @param array $input
+     * @return array
+     */
+    public function updateOnHold(array $input) : array
+    {
+        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $paymentsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp);
+
+        $this->trace->debug(
+            TraceCode::PAYMENT_UPDATE_HOLD_CRON,
+            [
+                'step'          => 'fetch_payments',
+                'ids_fetched'   => $paymentsToUpdate->getIds(),
+                'timestamp'     => Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-m-Y H:i:s')
+            ]
+        );
+
+        $cronSummary = [
+            'total_count' => $paymentsToUpdate->count(),
+            'failed_ids'  => []
+        ];
+
+        foreach ($paymentsToUpdate as $payment)
+        {
+            try
+            {
+                $this->repo->transaction(
+                    function() use ($payment)
+                    {
+                        $this->setHoldFalse($payment);
+                    });
+            }
+            catch (\Exception $e)
+            {
+                $cronSummary['failed_ids'][] = $payment->getId();
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYMENT_UPDATE_HOLD_CRON,
+                    [
+                        'step'  => 'update_failed',
+                        'id'    => $payment->getId()
+                    ]
+                );
+            }
+        }
+
+        $this->trace->debug(TraceCode::PAYMENT_UPDATE_HOLD_CRON, ['step' => 'summary', 'summary' => $cronSummary]);
+
+        $slackMessage = 'CRON: Payment set on_hold=false for elapsed on_hold_until';
+
+        $slackChannel = Config::get('slack.channels.tech_logs');
+
+        $this->slack->queue($slackMessage, $cronSummary, ['channel' => $slackChannel]);
+
+        return [
+            'success'   => true,
+            'summary'   => $cronSummary
+        ];
+    }
+
+    protected function setHoldFalse(Payment\Entity $payment)
+    {
+        $this->repo->payment->lockForUpdateAndReload($payment);
+
+        $payment->setOnHold(false);
+
+        $payment->setOnHoldUntil(null);
+
+        $this->repo->saveOrFail($payment);
+
+        $txn = $this->repo->transaction->lockForUpdate($payment->getTransactionId());
+
+        $txn->setOnHold(false);
+
+        $this->repo->saveOrFail($txn);
+
+        //
+        // If the payment has a transfer, update the
+        // on_hold flag for the transfer as well
+        //
+        if ($payment->hasTransfer() === true)
+        {
+            $transfer = $this->repo->transfer->lockForUpdate($payment->getTransferId());
+
+            $transfer->setOnHold(false);
+
+            $transfer->setOnHoldUntil(null);
+
+            $this->repo->saveOrFail($transfer);
+        }
+        // Temp: Payments can't have hold enabled right now without a linked transfer
+        // Fail if no associated transfer. @todo - Remove this when payment hold is added\
+        else
+        {
+            throw new Exception\LogicException('Hold update attempted for payment with no transfer');
+        }
     }
 
     /**

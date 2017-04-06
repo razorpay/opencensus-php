@@ -25,9 +25,18 @@ class Account
         self::NODAL_ACCOUNT,
         self::ATOM_ACCOUNT);
 
+    protected static $testAccounts = array(
+        self::DEMO_ACCOUNT,
+        self::TEST_ACCOUNT,
+    );
+
     public static function isNodalAccount($id)
     {
         return in_array($id, self::$nodalAccounts);
     }
 
+    public static function isTestAccount($id)
+    {
+        return in_array($id, self::$testAccounts);
+    }
 }

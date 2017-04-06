@@ -114,8 +114,9 @@ class ErrorCode
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                               = 'BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                                  = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                               = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET';
+    const BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID                               = 'BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                     = 'BAD_REQUEST_UNAUTHORIZED_INVALID_HASH';
-    const BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_AUTHORIZE                              = 'BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_AUTHORIZE';
+    const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                                   = 'BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                              = 'BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                      = 'BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED                             = 'BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED';
@@ -442,6 +443,7 @@ class ErrorCode
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                         = 'BAD_REQUEST_INVOICE_EXPIRE_FAILED';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
+    const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                                   = 'BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER';
 
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                    = 'BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED';
     const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
@@ -464,12 +466,14 @@ class ErrorCode
     const BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED                                = 'BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED';
 
     const BAD_REQUEST_INVALID_ADMIN_EMAIL                                           = 'BAD_REQUEST_INVALID_ADMIN_EMAIL';
+    const BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME                                  = 'BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                         = 'BAD_REQUEST_AUTHENTICATION_FAILED';
     const BAD_REQUEST_USER_ACCOUNT_LOCKED                                           = 'BAD_REQUEST_USER_ACCOUNT_LOCKED';
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                         = 'BAD_REQUEST_USER_ACCOUNT_DISABLED';
     const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                    = 'BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED';
+    const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                                  = 'BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                                  = 'BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE';
     const BAD_REQUEST_ORG_ID_REQUIRED                                               = 'BAD_REQUEST_ORG_ID_REQUIRED';
     const BAD_REQUEST_INVALID_PERMISSIONS_USAGE                                     = 'BAD_REQUEST_INVALID_PERMISSIONS_USAGE';
@@ -478,7 +482,6 @@ class ErrorCode
     const BAD_REQUEST_INVALID_OFFER_DURATION                                        = 'BAD_REQUEST_INVALID_OFFER_DURATION';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                          = 'BAD_REQUEST_OFFER_ALREADY_EXISTS';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK               = 'BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK';
-    const BAD_REQUEST_PAYMENT_INVALID_OFFER                                         = 'BAD_REQUEST_PAYMENT_INVALID_OFFER';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                                  = 'BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER';
     const BAD_REQUEST_INVALID_FORMAT_FOR_IINS                                       = 'BAD_REQUEST_INVALID_FORMAT_FOR_IINS';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                     = 'BAD_REQUEST_OFFER_ALREADY_DEACTIVATED';
@@ -493,4 +496,10 @@ class ErrorCode
 
     // ES related error codes
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
+
+    // Error code for data missing during force authorize flow
+    const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                     = 'BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING';
+
+    // File store
+    const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
 }

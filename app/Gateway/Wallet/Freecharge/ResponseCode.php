@@ -55,6 +55,7 @@ class ResponseCode extends Base\ResponseCode
         'E701'      => 'Invalid OTP id',
         'E702'      => 'Invalid OTP',
         'E705'      => 'CallbackUrl is not registered',
+        'E867'      => 'Your account is suspended by freecharge',
         // UI Status Codes
         'EU001'     => 'Issue occurred while processing. Please contact customer support.',
         'EU002'     => 'User does not exist',

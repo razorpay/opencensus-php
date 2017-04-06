@@ -124,4 +124,7 @@ class Name
     const CREATE_PERMISSION               = 'create_permission';
     const EDIT_PERMISSION                 = 'edit_permission';
     const DELETE_MERCHANT_FEATURES        = 'delete_merchant_features';
+    const CREATE_MERCHANT_INVITE          = 'create_merchant_invite';
+    const EDIT_MERCHANT_INVITE            = 'edit_merchant_invite';
+    const VIEW_MERCHANT_INVITE            = 'view_merchant_invite';
 }

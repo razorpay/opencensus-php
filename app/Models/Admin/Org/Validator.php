@@ -14,13 +14,14 @@ class Validator extends Base\Validator
         Hostname\Entity::HOSTNAME   => 'sometimes|string',
         Entity::EMAIL               => 'required|email',
         Entity::EMAIL_DOMAINS       => 'required|custom',
-        Entity::ALLOW_SIGN_UP       => 'required|boolean',
+        Entity::ALLOW_SIGN_UP       => 'sometimes|boolean',
         Entity::AUTH_TYPE           => 'required|string|max:255|in:password,google_auth',
         Entity::LOGIN_LOGO_URL      => 'sometimes|url',
         Entity::MAIN_LOGO_URL       => 'sometimes|url',
         Entity::INVOICE_LOGO_URL    => 'sometimes|url',
         Entity::ADMIN               => 'required|array',
         Entity::CUSTOM_CODE         => 'required',
+        Entity::PERMISSIONS         => 'required|array',
     ];
 
     protected static $editRules = [
@@ -29,12 +30,13 @@ class Validator extends Base\Validator
         Hostname\Entity::HOSTNAME   => 'sometimes|string',
         Entity::EMAIL               => 'sometimes|email',
         Entity::EMAIL_DOMAINS       => 'sometimes|custom',
-        Entity::ALLOW_SIGN_UP       => 'required|boolean',
+        Entity::ALLOW_SIGN_UP       => 'sometimes|boolean',
         Entity::AUTH_TYPE           => 'sometimes|string|max:255|in:password,google_auth',
         Entity::LOGIN_LOGO_URL      => 'sometimes|url',
         Entity::MAIN_LOGO_URL       => 'sometimes|url',
         Entity::INVOICE_LOGO_URL    => 'sometimes|url',
         Entity::CUSTOM_CODE         => 'sometimes',
+        Entity::PERMISSIONS         => 'sometimes|array',
     ];
 
     protected function validateEmailDomains($attribute, $domains)

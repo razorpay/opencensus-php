@@ -45,7 +45,11 @@ class FeaturesTest extends TestCase
 
         $request = [
             'url'       => '/features/10000000000000/dummy',
-            'method'    => 'delete'
+            'method'    => 'delete',
+            'server' => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
         ];
 
         $content = $this->makeRequestAndGetContent($request);

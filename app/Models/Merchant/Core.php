@@ -39,6 +39,9 @@ class Core extends Base\Core
             $this->repo->sync($merchant, 'groups', $input['groups']);
         }
 
+        // Updating the existing customer info and setting activated to false
+        $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
+
         return $merchant;
     }
 
@@ -208,10 +211,7 @@ class Core extends Base\Core
         {
             $label   = $merchant->getBillingLabel();
             $message = $merchant->getDashboardEntityLinkForSlack($label);
-
-            $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
-
-            $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
+            $user    = $this->getInternalUsernameOrEmail();
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 

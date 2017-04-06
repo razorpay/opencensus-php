@@ -23,7 +23,7 @@ class Repository extends Base\Repository
         Entity::USER_ID          => 'sometimes|alpha_num',
         Entity::STATUS           => 'sometimes|string',
         Entity::TYPE             => 'sometimes|string|max:16',
-        Entity::CUSTOMER_NAME    => 'sometimes|string|max:255',
+        Entity::CUSTOMER_NAME    => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
         Entity::CUSTOMER_CONTACT => 'sometimes|contact_syntax',
         Entity::CUSTOMER_EMAIL   => 'sometimes|email',
     ];
@@ -34,25 +34,32 @@ class Repository extends Base\Repository
     ];
 
     /**
-     * - Fetches invoice entity for given public id and merchant.
-     * - Follows by a check if the invoice's user id is same as the passed user
-     *   id, failing which it throws a 403.
+     * Fetches invoice entity for given public id and merchant, followed by
+     * an access check for user info (userId and userRole) passed.
      *
      * @param string          $id
      * @param Merchant\Entity $merchant
      * @param string|null     $userId
+     * @param string|null     $userRole
      *
      * @return Entity
      * @throws Exception\BadRequestException
      */
-    public function findByPublicIdAndMerchantAndUserId(
+    public function findByPublicIdAndMerchantAndUser(
         string $id,
         Merchant\Entity $merchant,
-        string $userId = null)
+        string $userId = null,
+        string $userRole = null)
     {
         $invoice = $this->findByPublicIdAndMerchant($id, $merchant);
 
-        if (($userId !== null) and ($invoice->getUserId() !== $userId))
+        //
+        // If userId is set and userRole is sellerapp we throw 403 if invoice's
+        // user id is not same as passed userId.
+        //
+        if (($userId !== null) and
+            ($userRole === Constants::SELLERAPP_ROLE) and
+            ($invoice->getUserId() !== $userId))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
@@ -80,6 +87,12 @@ class Repository extends Base\Repository
         return new Base\PublicCollection;
     }
 
+    /**
+     * Gets all ISSUED invoice which are past EXPIRE_BY and marks them as EXPIRED.
+     * Invoices which are in DRAFT/PAID/CANCELLED status are not affected.
+     *
+     * @return Base\PublicCollection
+     */
     public function getIssuedAndPastExpiredByInvoices()
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;

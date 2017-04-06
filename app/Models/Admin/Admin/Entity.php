@@ -154,11 +154,6 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        self::BRANCH_CODE         => 'default_branch',
-        self::SUPERVISOR_CODE     => 'default_supervisor',
-        self::DEPARTMENT_CODE     => 'default_location',
-        self::LOCATION_CODE       => 'default_department',
-        self::EMPLOYEE_CODE       => 'default_employee',
         self::ALLOW_ALL_MERCHANTS => false,
     ];
 
@@ -286,6 +281,11 @@ class Entity extends Base\Entity
         return explode(' ', $this->getName())[0];
     }
 
+    public function getOrgId()
+    {
+        return $this->getAttribute(self::ORG_ID);
+    }
+
     public function getOAuthAccessToken()
     {
         return $this->getAttribute(self::OAUTH_ACCESS_TOKEN);
@@ -392,7 +392,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::PASSWORD);
     }
 
-    public function getEmail()
+    public function getEmail() : string
     {
         return $this->getAttribute(self::EMAIL);
     }
@@ -461,5 +461,15 @@ class Entity extends Base\Entity
         $orgId = $this->getAttribute(self::ORG_ID);
 
         return Org\Entity::getSignedId($orgId);
+    }
+
+    public function getInputFields() : array
+    {
+        $extra = [
+            self::ROLES,
+            self::GROUPS
+        ];
+
+        return array_merge($this->fillable, $extra);
     }
 }

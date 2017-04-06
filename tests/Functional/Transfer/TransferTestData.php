@@ -21,21 +21,29 @@ return [
         'account'       => 'acc_10000000000001',
         'amount'        => 1000,
         'currency'      => 'INR',
+        'notes'         => [
+            'order_info'    => 'random_string',
+            'version'       => 2,
+        ],
         'on_hold'       => '1',
-        // 'on_hold_until' => 1586055431,
+        'on_hold_until' => 1586055431,
     ],
 
     'createCustomerTransferRequest' => [
         'customer'      => 'cust_200000customer',
         'amount'        => 1000,
         'currency'      => 'INR',
+        'notes'         => [
+            'order_info'    => 'random_string',
+            'version'       => 2,
+        ],
         'on_hold'       => '1',
-        // 'on_hold_until' => 1586055431,
+        'on_hold_until' => 1586055431,
     ],
 
     'patchAccountTransferRequest' => [
         'on_hold'       => '1',
-        // 'on_hold_until' => 1586055431,
+        'on_hold_until' => 1586055431,
     ],
 
     'testLiveModeTransferToNonActivatedAccount' => [

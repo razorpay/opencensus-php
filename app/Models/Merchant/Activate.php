@@ -64,6 +64,8 @@ class Activate extends Base\Core
             TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
             ['merchant_id' => $merchant->getId()]);
 
+        $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
+
         $this->sendActivationEmail($merchant, $plan);
 
         return $merchant->toArrayPublic();
@@ -86,10 +88,10 @@ class Activate extends Base\Core
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
         $data = [
-            'merchant'  =>  $merchant->toArray(),
-            'plan'      =>  $plan,
-            'rules'     =>  $this->formatPricingRules($rules),
-            'subject'   =>  $subject,
+            'merchant' => $merchant->toArray(),
+            'plan'     => $plan,
+            'rules'    => $this->formatPricingRules($rules),
+            'subject'  => $subject,
         ];
 
         $config = $this->app->config->get('applications.mailgun');
@@ -180,8 +182,8 @@ class Activate extends Base\Core
             // Support currently for only one set of amountRangeRules
             if ($rule[Pricing\Entity::AMOUNT_RANGE_ACTIVE] === true)
             {
-                $amountRangeMin = $rule[Pricing\Entity::AMOUNT_RANGE_MIN]/100;
-                $amountRangeMax = $rule[Pricing\Entity::AMOUNT_RANGE_MAX]/100;
+                $amountRangeMin = $rule[Pricing\Entity::AMOUNT_RANGE_MIN] / 100;
+                $amountRangeMax = $rule[Pricing\Entity::AMOUNT_RANGE_MAX] / 100;
 
                 if ($amountRangeMin === 0)
                 {
