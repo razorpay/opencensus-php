@@ -10,7 +10,10 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\FileStore;
 use RZP\Models\Merchant\Account;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak;
 
 class ReconciliationTest extends TestCase
 {
@@ -18,6 +21,7 @@ class ReconciliationTest extends TestCase
     use SettlementTrait;
     use PayoutTrait;
     use ReconciliationTrait;
+    use FileHandlerTrait;
 
     public function setUp()
     {
@@ -252,5 +256,144 @@ class ReconciliationTest extends TestCase
 
         // Validate batch settlement entity
         $this->fetchAndMatchBatchData('payout');
+    }
+
+    public function testReconciliationInTestMode()
+    {
+        $txtFile1 = $this->createSettlementsAndSettlementFile(3);
+
+        // Added so that a new file name is created for next settlement
+        sleep(1);
+
+        $txtFile2 = $this->createSettlementsAndSettlementFile(
+            2, Carbon::today("Asia/Kolkata")->subDays(5)->timestamp);
+
+        $request = [
+            'url' => '/settlements/reconcile/test',
+            'method' => 'POST',
+            'content' => []
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $ftas = $this->getEntities('fund_transfer_attempt', [], true);
+
+        $attemptsWithUtr = $attemptsWithoutUtr = 0;
+        // s($ftas);
+        foreach ($ftas['items'] as $attempt)
+        {
+            if ($attempt['utr'] === null)
+            {
+                $attemptsWithoutUtr++;
+            }
+            else
+            {
+                $attemptsWithUtr++;
+            }
+        }
+
+        $this->assertEquals(2, $attemptsWithoutUtr);
+        $this->assertEquals(3, $attemptsWithUtr);
+    }
+
+    protected function createSettlementsAndSettlementFile(
+        $settlementCount = 2,
+        $setlAttemptTimestamp = null): FileStore\Creator
+    {
+        $timestamp = $setlAttemptTimestamp ?: Carbon::today("Asia/Kolkata")->timestamp;
+
+        // Create merchant
+        $merchant = $this->fixtures->create('merchant');
+        $merchantId = $merchant->getId();
+
+        // Create settlements
+        $settlements = $this->fixtures->times($settlementCount)->create(
+            'settlement',
+            [
+                'merchant_id' => $merchantId,
+                'utr' => null,
+                'created_at' => $timestamp,
+            ]);
+
+        // Create batch of settlement
+        $batchTransferEntity = $this->fixtures->create(
+            'batch_fund_transfer',
+            [
+                'total_count' => 1,
+                'transaction_count' => $settlementCount,
+                'created_at' => $timestamp
+            ]);
+
+        // Create fund transfer attempts
+        $textData = [];
+        foreach ($settlements as $settlement)
+        {
+            // Create transaction
+            $transaction = $this->fixtures->create(
+                                'transaction',
+                                [
+                                    'merchant_id' => $merchantId,
+                                    'type' => 'settlement',
+                                    'entity_id' => $settlement->getId()
+                                ]);
+
+            $this->fixtures->edit('settlement', $settlement->getId(), ['transaction_id' => $transaction->getId()]);
+
+            $fta = $this->fixtures->create(
+                'fund_transfer_attempt',
+                [
+                    'source_id' => $settlement->getId(),
+                    'created_at' => $timestamp,
+                    'batch_fund_transfer_id' => $batchTransferEntity->getId(),
+                ]
+            );
+
+            $array = [
+                Kotak\Headings::CLIENT_CODE             => 'mock_client_code',
+                Kotak\Headings::PRODUCT_CODE            => 'mock_product_code',
+                Kotak\Headings::PAYMENT_TYPE            => 'mock_type',
+                Kotak\Headings::PAYMENT_REF_NO          => $fta->getId(),
+                Kotak\Headings::PAYMENT_DATE            => Carbon::today('Asia/Kolkata')->format('d/m/Y'),
+                Kotak\Headings::DR_AC_NO                => 'mock_account_number',
+                Kotak\Headings::AMOUNT                  => 122,
+                Kotak\Headings::BANK_CODE_INDICATOR     => 'M',
+                Kotak\Headings::BENEFICIARY_CODE        => 'mock_beneficiary_code',
+                Kotak\Headings::CREDIT_NARRATION        => 'mock_credit_narration',
+                Kotak\Headings::PAYMENT_DETAILS_1       => 'mock_details',
+                Kotak\Headings::MERCHANT_ID             => $merchant->getPublicId(),
+                Kotak\Headings::BANK_ACCOUNT_ID         => random_integer(10),
+                Kotak\Headings::BATCH_FUND_TRANSFER_ID  => $batchTransferEntity->getId(),
+                Kotak\Headings::SOURCE_ID               => $settlement->getPublicId(),
+                Kotak\Headings::VERSION                 => 'V2',
+            ];
+
+            $array = Kotak\NodalAccount::getAllFields($array);
+
+            $textDataArray = $array;
+            $textDataArray['Amount'] = (string) $settlement->getAmount() / 100;
+
+            array_push($textData, $textDataArray);
+        }
+
+        $txt = $this->generateText($textData);
+
+        $textFile = (new FileStore\Creator())
+                        ->name('kotak/outgoing/' . Kotak\NodalAccount::getH2HFileNameWithoutExt())
+                        ->content($txt)
+                        ->extension(FileStore\Format::TXT)
+                        ->type(FileStore\Type::FUND_TRANSFER_H2H)
+                        ->save();
+
+        // Update batch with generated settlement file id
+        $batchTransferEntity->setTxtFileId(($textFile->get())['id']);
+        $this->fixtures->edit(
+            'batch_fund_transfer',
+            $batchTransferEntity->getId(),
+            ['txt_file_id' => ($textFile->get())['id']]
+        );
+
+        return $textFile;
     }
 }

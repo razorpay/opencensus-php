@@ -37,10 +37,13 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getAttemptsPendingReconciliation()
+    /**
+     * Fetches all attempts pending reconciliation between given timstamps (both including)
+     */
+    public function getAttemptsBetweenTimestamps(int $from, int $to)
     {
         return $this->newQuery()
-                    ->whereIn(Entity::STATUS, Status::PENDING_RECONCILIATION)
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
                     ->get();
     }
 }

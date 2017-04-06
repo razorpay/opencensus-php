@@ -44,12 +44,19 @@ class ReconciliationGenerator
 
     public function reconcileSettlementsInTestMode($input)
     {
-        // // get all attempts that are in created state
-        $nonReconciledAttempts = $this->repo->fund_transfer_attempt->getAttemptsPendingReconciliation();
+        // get all attempts for today
+        $start = Carbon::today("Asia/Kolkata")->timestamp;
+
+        $end = Carbon::today("Asia/Kolkata")->addDay()->timestamp - 1;
+
+        $nonReconciledAttempts = $this->repo
+                                      ->fund_transfer_attempt
+                                      ->getAttemptsBetweenTimestamps($start, $end);
 
         // get batch id of all above attempts
         $batchIds = $nonReconciledAttempts->pluck(FundTransfer\Attempt\Entity::BATCH_FUND_TRANSFER_ID)
                                           ->toArray();
+
         // non-reconciled batches
         $nonReconciledBatches = $this->repo->batch_fund_transfer->findManyByPublicIds($batchIds);
 

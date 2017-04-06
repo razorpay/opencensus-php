@@ -110,7 +110,7 @@ class NodalAccount
                 Headings::VERSION                 => $version,
             ];
 
-            $array = $this->getAllFields($array);
+            $array = self::getAllFields($array);
 
             $textDataArray = $array;
             $textDataArray['Amount'] = (string) $amount;
@@ -166,7 +166,7 @@ class NodalAccount
                 Headings::BATCH_FUND_TRANSFER_ID  => $payout->getBatchFundTransferId(),
             ];
 
-            $array = $this->getAllFields($array);
+            $array = self::getAllFields($array);
 
             $textDataArray = $array;
 
@@ -179,7 +179,7 @@ class NodalAccount
 
         $txt = $this->generateText($textData);
 
-        $name = $this->getH2HFileName();
+        $name = self::getH2HFileName();
 
         $urlText = $this->writeToTextFileH2H($name, $txt);
 
@@ -254,7 +254,7 @@ class NodalAccount
         $this->summary[$type]['count']++;
     }
 
-    protected function getEmptyArray()
+    protected static function getEmptyArray()
     {
         $headings = self::getHeadings();
 
@@ -263,9 +263,9 @@ class NodalAccount
         return array_combine($headings, array_fill(0, $count, null));
     }
 
-    protected function getAllFields($partialValues)
+    public static function getAllFields($partialValues)
     {
-        $dict = $this->getEmptyArray();
+        $dict = self::getEmptyArray();
 
         foreach ($partialValues as $key => $value)
         {
@@ -278,7 +278,7 @@ class NodalAccount
     protected function createSettlementFiles($excelData, $textData, bool $h2h): array
     {
         // Create excel file
-        $excelFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+        $excelFile = (new FileStore\Creator())->name(self::getFileToWriteNameWithoutExt())
                                               ->content($excelData)
                                               ->extension(FileStore\Format::XLSX)
                                               ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
@@ -294,7 +294,7 @@ class NodalAccount
                 'mode'  => '33188',
             ];
 
-            $textFile = (new FileStore\Creator())->name('kotak/outgoing/' . $this->getH2HFileNameWithoutExt())
+            $textFile = (new FileStore\Creator())->name('kotak/outgoing/' . self::getH2HFileNameWithoutExt())
                                                  ->content($textData)
                                                  ->extension(FileStore\Format::TXT)
                                                  ->type(FileStore\Type::FUND_TRANSFER_H2H)
@@ -302,7 +302,7 @@ class NodalAccount
                                                  ->save();
         }
 
-        $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+        $textFile = (new FileStore\Creator())->name(self::getFileToWriteNameWithoutExt())
                                              ->content($textData)
                                              ->extension(FileStore\Format::TXT)
                                              ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
@@ -377,7 +377,7 @@ class NodalAccount
         });
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    public static function getFileToWriteNameWithoutExt()
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y-H-i-s');
 
@@ -387,14 +387,14 @@ class NodalAccount
     }
 
     // @codingStandardsIgnoreStart
-    protected function getH2HFileName()
+    public static function getH2HFileName()
     {
-        $name = $this->getH2HFileNameWithoutExt() . '.txt';
+        $name = self::getH2HFileNameWithoutExt() . '.txt';
 
         return $name;
     }
 
-    protected function getH2HFileNameWithoutExt()
+    public static function getH2HFileNameWithoutExt()
     {
         $name = 'RAZORNODAL_'. Carbon::now('Asia/Kolkata')->format('dmYHis');
 
