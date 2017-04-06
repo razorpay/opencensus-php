@@ -14,8 +14,6 @@ use Illuminate\Foundation\Application;
 
 class Workflow
 {
-    const USER_HEADER = 'X-Dashboard-Username';
-
     const WILDCARD_PERMISSION = '*';
 
     const WORKFLOW_CONTROLLER = 'RZP\Http\Controllers\WorkflowController';
@@ -31,6 +29,8 @@ class Workflow
         $this->config = $this->app['config'];
 
         $this->router = $app['router'];
+
+        $this->ba = $this->app['basicauth'];
     }
 
     public function handle($request, Closure $next)
@@ -47,7 +47,7 @@ class Workflow
         {
             $permissions = $this->getRoutePermissions($routeName);
 
-            $admin = $this->app['basicauth']->getAdmin();
+            $admin = $this->ba->getAdmin();
 
             $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
                 $permissions, $admin->getOrgId());
@@ -120,10 +120,15 @@ class Workflow
 
         $permissions = $this->getRoutePermissions($routeName);
 
+        $admin = $this->ba->getAdmin();
+
+        $maker = $admin->getName() ?? $admin->getUsername() ?? $admin->getEmail();
+
         $differEntity = [
            Differ\Entity::ENTITY_NAME  => $entity,
            Differ\Entity::ENTITY_ID    => $entityId,
-           Differ\Entity::ACTOR        => $request->header(self::USER_HEADER),
+           Differ\Entity::ADMIN_ID     => $admin->id,
+           Differ\Entity::MAKER        => $maker,
            Differ\Entity::TYPE         => Differ\Type::MAKER,
            Differ\Entity::URL          => $request->getUri(),
            Differ\Entity::ROUTE_PARAMS => $routeParams,

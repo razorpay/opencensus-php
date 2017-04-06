@@ -21,13 +21,15 @@ class Core extends Base\Core
         // $minLevel = $this->getMinLevelFromSteps($input[Entity::STEPS]);
         // $this->validateExistingWorkflows($input[Entity::PERMISSIONS], $minLevel);
 
-        // Create the steps and workflow in a single transaction
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
+            // 1. Create a workflow
             $this->repo->saveOrFail($workflow);
 
+            // 2. Sync its permissions
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
+            // 3. Create its steps
             foreach ($input[Entity::STEPS] as $step)
             {
                 $step[Step\Entity::WORKFLOW_ID] = $workflow->getId();
