@@ -44,6 +44,39 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditOrgWithPermissions()
+    {
+        $org = $this->fixtures->create('org');
+
+        $firstOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $secondOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->addAssignablePermissionsToOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $permissions = $this->getAssignablePermissionsByIds();
+
+        $newPermissions = array_slice($permissions, 0, 3);
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $newPermissions;
+
+        $result = $this->startTest();
+
+        $this->assertEquals(3, count($result['permissions']));
+
+        $role = $this->ba->getAdmin()->roles()->get()[0];
+
+        $rolePermissions = $role->permissions()->getRelatedIds()->toArray();
+
+        $this->assertEquals(3, count($rolePermissions));
+    }
+
     public function testEditOtherOrg()
     {
         $org = $this->fixtures->create('org', ['cross_org_access' => true]);

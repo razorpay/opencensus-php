@@ -143,6 +143,13 @@ class Repository extends \Razorpay\Spine\Repository
         return $this;
     }
 
+    public function detach($entity, $relation, $ids = [])
+    {
+        $entity->$relation()->detach($ids);
+
+        return $this;
+    }
+
     public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
     {
         $entity->$relation()->attach($id, $attributes, $touch);
