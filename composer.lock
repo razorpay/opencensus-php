@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "32351122a7c15a5199b8a73579db725d",
+    "content-hash": "279c5ded90471d8e0f81c1b80ac3500b",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -3093,12 +3093,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/razorpay-php.git",
-                "reference": "0ebdd89ad5a92869660a9fdd5f380643add1f662"
+                "reference": "98b03ae27a76d5c91eed10d75fe116ecfa914ab1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/0ebdd89ad5a92869660a9fdd5f380643add1f662",
-                "reference": "0ebdd89ad5a92869660a9fdd5f380643add1f662",
+                "url": "https://api.github.com/repos/razorpay/razorpay-php/zipball/98b03ae27a76d5c91eed10d75fe116ecfa914ab1",
+                "reference": "98b03ae27a76d5c91eed10d75fe116ecfa914ab1",
                 "shasum": ""
             },
             "require": {
@@ -3933,9 +3933,9 @@
             ],
             "authors": [
                 {
-                    "name": "Sunra",
+                    "name": "sunra",
                     "email": "sunra@yandex.ru",
-                    "homepage": "https://github.com/sunra"
+                    "homepage": "http://github.com/sunra"
                 }
             ],
             "description": "Composer adaptation of: A HTML DOM parser written in PHP5+ let you manipulate HTML in a very easy way! Require PHP 5+. Supports invalid HTML. Find tags on an HTML page with selectors just like jQuery. Extract contents from HTML in a single line.",
