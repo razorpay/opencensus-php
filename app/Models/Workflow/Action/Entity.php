@@ -148,4 +148,15 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::ADMIN_ID);
     }
+
+    public function toArrayPublicWithAdminAndSteps()
+    {
+        $data = $this->toArrayPublic();
+
+        $data['admin'] = $this->admin;
+
+        $data['workflow_steps'] = $this->workflow->steps;
+
+        return $data;
+    }
 }
