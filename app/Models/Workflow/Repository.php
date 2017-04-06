@@ -19,7 +19,6 @@ class Repository extends Base\Repository
                     ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
                     ->with($relations)
                     ->whereIn('workflow_permissions.permission_id', $permissionIds)
-                    ->whereNotIn(Entity::ID, $options[Step\Entity::WORKFLOW_ID])
                     ->get();
     }
 

@@ -32,7 +32,11 @@ class Core extends Base\Core
 
         $permissionIds = $this->repo
                               ->permission
-                              ->retrieveIdsByNames($commonPermissions, $admin->getOrgId());
+                              ->retrieveIdsByNames($commonPermissions, $admin->getOrgId())
+                              ->map(function ($permission){
+                                    return $permission->getId();
+                                })
+                              ->toArray();
 
         $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($permissionIds);
 

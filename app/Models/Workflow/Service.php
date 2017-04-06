@@ -70,7 +70,11 @@ class Service extends Base\Service
     {
         $permissionIds = $this->repo
                               ->permission
-                              ->retrieveIdsByNames($routePermissions, $orgId);
+                              ->retrieveIdsByNames($routePermissions, $orgId)
+                              ->map(function ($permission){
+                                    return $permission->getId();
+                                })
+                              ->toArray();
 
         $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($permissionIds);
 
