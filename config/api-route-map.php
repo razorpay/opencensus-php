@@ -61,6 +61,7 @@ return [
         // Workflows
 
         'workflow_get_multiple'             => 'orgs/{id}/workflows',
+        'workflow_delete'                   => 'workflows/{id}',
     ],
 
     // auth

@@ -10,6 +10,9 @@
       <div class="panel-heading">
         List of all Workflows
       </div>
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
       <div class="row wrapper">
         <div class="col-md-6 m-b-xs">
           <label for='filter' class='m-r'>Search</label>
@@ -44,8 +47,8 @@
                     <i class="fa fa-pencil-square"></i>
                     edit
                   </a>
-                  <button class="btn btn-default btn-xs" ng-confirm-click="Are you sure you want to delete this Permission?"
-                    ng-click="deletePermission(row.id)" ng-show="admin.permissions && admin.permissions.indexOf('edit_workflow') === -1">
+                  <button class="btn btn-default btn-xs" ng-confirm-click="Are you sure you want to delete this Workflow?"
+                    ng-click="deleteWorkflow(row.id)" ng-show="admin.permissions && admin.permissions.indexOf('edit_workflow') === -1">
                     <i class="fa fa-trash text-danger"></i>
                     delete
                   </button>
