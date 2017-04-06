@@ -65,6 +65,7 @@ return [
         'action_diff_get'                   => 'w-actions/{id}/diff',
         'action_comment_create'             => 'w-actions/{id}/comments',
         'action_comment_fetch'              => 'w-actions/{id}/comments',
+        'workflow_action_details'           => 'w-actions/{id}/details',
     ],
 
     // auth

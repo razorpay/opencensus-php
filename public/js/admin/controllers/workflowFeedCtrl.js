@@ -74,6 +74,8 @@ app.controller('WorkflowFeedCtrl', [
           $scope.cards.push(data.data);
 
           $scope.new_comment = null;
+
+          $scope.comment_count += 1;
         }
       })
     };
@@ -108,11 +110,34 @@ app.controller('WorkflowFeedCtrl', [
           });
 
           $scope.cards = $scope.cards.concat(data.data.items);
+
+          $scope.comment_count = data.data.count;
         }
       });
     };
 
     $scope.fetchAllComments();
+
+    $scope.fetchActionDetails = function () {
+      var request = $http({
+        url: '/admin/generic',
+        method: 'GET',
+        params: {
+          route_name: 'workflow_action_details',
+          url_params: {
+            '{id}': $stateParams.action_id
+          }
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.action_details = data.data;
+        }
+      });
+    };
+
+    $scope.fetchActionDetails();
 
     // Cards data
 
