@@ -35,11 +35,9 @@ class Core extends Base\Core
                                })
                                ->toArray();
 
-        $minLevel = $this->getMinLevelFromSteps($allSteps);
-
-        $options = [Entity::WORKFLOW_ID => [$step->workflow->getId()]];
-
-        $this->validateExistingWorkflows($allPermissions, $minLevel, $options);
+        // $minLevel = $this->getMinLevelFromSteps($allSteps);
+        // $options = [Entity::WORKFLOW_ID => [$step->workflow->getId()]];
+        // $this->validateExistingWorkflows($allPermissions, $minLevel, $options);
 
         $this->repo->saveOrFail($step);
 

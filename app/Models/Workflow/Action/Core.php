@@ -30,7 +30,9 @@ class Core extends Base\Core
 
         $commonPermissions = array_intersect($routePermissions, $adminPersmissions);
 
-        $workflow = $this->getMinLeveledWorkflow($commonPermissions, $admin->getOrgId());
+        $workflows = $this->repo->fetchWorkflowsWithStepsByPermissions($commonPermissions);
+
+        $workflow = $workflows->first();
 
         $params[Entity::WORKFLOW_ID] = $workflow->getId();
 
