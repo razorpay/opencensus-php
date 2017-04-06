@@ -42,11 +42,6 @@ class Core extends Base\Core
 
     public function create(Action\Entity $action, array $input)
     {
-        if (isset($input[Entity::PAYLOAD]['org_id']) === true)
-        {
-            unset($input[Entity::PAYLOAD]['org_id']);
-        }
-
         $diff = (new Entity)->generateId();
 
         $input[Entity::ACTION_ID] = $action->getId();
@@ -55,6 +50,7 @@ class Core extends Base\Core
 
         $diff[Entity::CREATED_AT] = Carbon::now('Asia/Kolkata')->timestamp;
 
+        // makerAction
         $function = $input['type'] . 'Action';
 
         $diff = $this->$function($diff);
@@ -112,7 +108,9 @@ class Core extends Base\Core
     {
         try
         {
-            if ($this->config->get('database.es_workflow_action_mock') === false)
+            $mock = $this->config->get('database.es_workflow_action_mock');
+
+            if ($mock === false)
             {
                 $this->esDao->storeAdminEvent(
                     strtolower($this->baseIndex), self::ES_TYPE, $action);
@@ -124,6 +122,12 @@ class Core extends Base\Core
         }
     }
 
+    /*
+        This method is responsible for:
+        1. Running Validator
+        2. Creating Diff
+        3. Storing Diff in ES
+    */
     protected function makerAction(Entity $differ)
     {
         $entity = $differ->getEntityName();
@@ -134,10 +138,12 @@ class Core extends Base\Core
 
         $newEntity = clone $oldEntity;
 
+        // Get the appropriate validator
         $validator = EntityValidator::getValidator($differ->getRoute());
 
         if ($validator !== null)
         {
+            // Run validator
             $newEntity = $newEntity->edit($differ->getPayload(), $validator);
 
             $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
@@ -145,11 +151,13 @@ class Core extends Base\Core
             $differ->setDiff($diff);
         }
 
+        // Calls `saveToEs` above
         event(new DifferEvent($differ->toArray()));
 
         return $differ;
     }
 
+    // TODO: Recursion
     protected function createDiff(array $oldEntity, array $newEntity)
     {
         $diff = [];
