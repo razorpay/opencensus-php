@@ -32,7 +32,7 @@ class Core extends Base\Core
 
         $permissionIds = $this->repo
                               ->permission
-                              ->retrieveIdsByNames($commonPermissions, $admin->getOrgId())
+                              ->retrieveIdsByNamesAndOrg($commonPermissions, $admin->getOrgId())
                               ->map(function ($permission){
                                     return $permission->getId();
                                 })
