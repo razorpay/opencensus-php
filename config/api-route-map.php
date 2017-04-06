@@ -66,6 +66,7 @@ return [
         'action_comment_create'             => 'w-actions/{id}/comments',
         'action_comment_fetch'              => 'w-actions/{id}/comments',
         'workflow_action_details'           => 'w-actions/{id}/details',
+        'workflow_get_actions_by_maker'     => 'w-manager/get-actions-by-maker',
     ],
 
     // auth

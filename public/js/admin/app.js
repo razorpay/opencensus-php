@@ -222,10 +222,13 @@ var app = angular.module('app', [
     }).state('app.workflows', {
       url: '/workflows',
       template: '<div ui-view class=""></div>'
-    }).state('app.workflows.feed', {
-      url: '/feed',
+    }).state('app.workflows.actions', {
+      url: '/actions',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.workflows.actions.list', {
+      url: '/list',
       templateUrl: 'tpl/admin/app_workflow_feed_list.html'
-    }).state('app.workflows.feed.detail', {
+    }).state('app.workflows.actions.detail', {
       url: '/:action_id',
       templateUrl: 'tpl/admin/app_workflow_feed.html'
     }).state('app.workflows.list', {
