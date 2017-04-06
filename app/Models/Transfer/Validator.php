@@ -18,17 +18,17 @@ class Validator extends Base\Validator
         Entity::AMOUNT         => 'required|integer|min:100',
         Entity::CURRENCY       => 'required|size:3|in:INR',
         Entity::NOTES          => 'sometimes|notes',
-        Entity::ON_HOLD        => 'sometimes|boolean',
-        // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+        Entity::ON_HOLD        => 'required_with:on_hold_until|boolean',
+        Entity::ON_HOLD_UNTIL  => 'sometimes|epoch',
     ];
 
-    protected static $transferValidators = [
+    protected static $createValidators = [
         'hold_parameters'
     ];
 
     protected static $editRules = [
         Entity::ON_HOLD        => 'required|boolean',
-        // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+        Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
 
     protected static $editValidators = [
@@ -156,8 +156,7 @@ class Validator extends Base\Validator
 
     public function validateHoldParameters(array $input)
     {
-        if ((isset($input[Entity::ON_HOLD]) === false) and
-            (isset($input[Entity::ON_HOLD]) === false))
+        if (isset($input[Entity::ON_HOLD]) === false)
         {
             return;
         }
@@ -170,9 +169,9 @@ class Validator extends Base\Validator
                     'The on_hold field must be set to 1, if on_hold_until is sent');
             }
 
-            $now = Carbon::now('Asia/Kolkata');
+            $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-            if ($input[Entity::ON_HOLD_UNTIL] < $now->timestamp)
+            if ($input[Entity::ON_HOLD_UNTIL] < $now)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The on_hold_until timestamp cannot be less than the current timestamp');

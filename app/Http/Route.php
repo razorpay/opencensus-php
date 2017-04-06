@@ -451,6 +451,7 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+        'payment_update_on_hold'                  => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
 
         // Dummy routes to test Account Auth
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
@@ -779,6 +780,7 @@ final class Route
         'user_create',
         'user_edit',
         'user_attach_merchant',
+        'payment_update_on_hold',
     );
 
     public static $proxy = array(
@@ -996,6 +998,7 @@ final class Route
             'schedule_migration',
             'offer_deactivate',
             'merchant_patch_beneficiary_code',
+            'payment_update_on_hold',
         ),
 
         'kotak' => array(
