@@ -225,6 +225,9 @@ var app = angular.module('app', [
     }).state('app.workflows.feed', {
       url: '/feed',
       templateUrl: 'tpl/admin/app_workflow_feed.html'
+    }).state('app.workflows.feed.detail', {
+      url: '/:action_id',
+      templateUrl: 'tpl/admin/app_workflow_feed.html'
     }).state('app.workflows.new', {
       url: '/new',
       templateUrl: 'tpl/admin/app_workflow_new.html'
