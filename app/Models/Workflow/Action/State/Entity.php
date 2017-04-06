@@ -56,6 +56,11 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
     ];
 
+    protected $publicSetters = [
+        self::ADMIN_ID,
+        self::ACTION_ID,
+    ];
+
     public function setNameAttribute(string $state)
     {
         $this->getValidator()->validateName(self::NAME, $state);

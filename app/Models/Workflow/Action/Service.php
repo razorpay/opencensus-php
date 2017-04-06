@@ -70,8 +70,12 @@ class Service extends Base\Service
 
         $states = $this->repo
                        ->action_state
-                       ->fetchStateTransitionsByActionId($actionId);
+                       ->fetchStateTransitionsByActionId($actionId)
+                       ->map(function ($state) {
+                        return $state->toArrayPublic();
+                       })
+                       ->toArray();
 
-        return $states->toArrayPublic();
+        return $states;
     }
 }
