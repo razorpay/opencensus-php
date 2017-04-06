@@ -23,11 +23,18 @@ class Core extends Base\Core
             Entity::ADMIN_ID    => $admin->getId()
         ];
 
+        $adminPermissions = $admin->getPermissionsList();
+
         $routePermissions = $input[Differ\Entity::PERMISSIONS];
 
-        $commonPermissions = array_intersect($routePermissions, $adminPersmissions);
+        // Not all route permissions could be present in admin.
+        $commonPermissions = array_intersect($routePermissions, $adminPermissions);
 
-        $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($commonPermissions);
+        $permissionIds = $this->repo
+                              ->permission
+                              ->retrieveIdsByNames($commonPermissions, $admin->getOrgId());
+
+        $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($permissionIds);
 
         $workflow = $workflows->first();
 
