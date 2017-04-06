@@ -18,6 +18,9 @@ class Entity extends Base\Entity
     const CURRENT_LEVEL  = 'current_level';
     const DIFFER         = 'differ';
 
+    // Relations
+    const WORKFLOW       = 'workflow';
+
     protected static $sign = 'w_action';
 
     protected $entity = 'workflow_action';
@@ -35,6 +38,7 @@ class Entity extends Base\Entity
         self::TITLE,
         self::DESCRIPTION,
         self::WORKFLOW_ID,
+        self::WORKFLOW,
         self::ADMIN_ID,
         self::ORG_ID,
         self::APPROVED,
@@ -54,6 +58,7 @@ class Entity extends Base\Entity
         self::TITLE,
         self::DESCRIPTION,
         self::WORKFLOW_ID,
+        self::WORKFLOW,
         self::ADMIN_ID,
         self::ORG_ID,
         self::APPROVED,
