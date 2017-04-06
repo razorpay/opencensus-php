@@ -99,10 +99,12 @@ trait RepositoryUpdateTestAndLive
 
                 // Detach the relationships in both live and test
                 Config::set('database.default', Mode::LIVE);
-                $changes = $liveEntity->$relation()->detach($ids);
+                $liveDetachedEntitiesCount = $liveEntity->$relation()->detach($ids);
 
                 Config::set('database.default', Mode::TEST);
-                $testEntity->$relation()->detach($ids);
+                $testDetachedEntitiesCount = $testEntity->$relation()->detach($ids);
+
+                assert ($liveDetachedEntitiesCount === $testDetachedEntitiesCount);
 
                 return $changes;
             });
