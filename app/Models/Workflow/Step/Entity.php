@@ -32,6 +32,7 @@ class Entity extends Base\Entity
         self::WORKFLOW_ID,
         self::LEVEL,
         self::ROLE_ID,
+        'role',
         self::REVIEWER_COUNT,
     ];
 
@@ -40,6 +41,7 @@ class Entity extends Base\Entity
         self::WORKFLOW_ID,
         self::LEVEL,
         self::ROLE_ID,
+        'role',
         self::REVIEWER_COUNT,
     ];
 

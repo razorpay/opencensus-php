@@ -32,6 +32,8 @@ class Entity extends Base\Entity
 
     protected $visible = [
         self::ID,
+        self::TITLE,
+        self::DESCRIPTION,
         self::WORKFLOW_ID,
         self::ADMIN_ID,
         self::ORG_ID,
@@ -49,6 +51,8 @@ class Entity extends Base\Entity
 
     protected $public = [
         self::ID,
+        self::TITLE,
+        self::DESCRIPTION,
         self::WORKFLOW_ID,
         self::ADMIN_ID,
         self::ORG_ID,
@@ -154,9 +158,18 @@ class Entity extends Base\Entity
     {
         $data = $this->toArrayPublic();
 
-        $data['admin'] = $this->admin;
+        $data['admin'] = $this->admin->toArrayPublic();
 
-        $data['workflow_steps'] = $this->workflow->steps;
+        $data['workflow_steps'] = [];
+
+        foreach ($this->workflow->steps as $step)
+        {
+            $thisStep = $step->toArrayPublic();
+
+            $thisStep['role'] = $step->role->toArrayPublic();
+
+            $data['workflow_steps'][] = $thisStep;
+        }
 
         return $data;
     }
