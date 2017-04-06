@@ -141,10 +141,11 @@ export default class InvoicesNewContainer extends Component {
   }
 
   getMerchantInfo() {
-    return this.props.fetchConfig().then((config) => {
+    return this.props.fetchConfig().then((res) => {
       let user = this.props.session.user
       let merchant = user.merchants[user.current]
       let logoUrl = ''
+      const config = res.data
 
       if (config.logo_url) {
         let cdnName = window.location.hostname.indexOf('-') !== -1 ? 'betacdn' : 'cdn'
