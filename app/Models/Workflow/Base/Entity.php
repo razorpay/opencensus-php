@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow\Base;
 
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
+use RZP\Models\Workflow;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Base as BaseModel;
 
@@ -35,7 +36,7 @@ class Entity extends BaseModel\PublicEntity
 
         if ($workflowId !== null)
         {
-            $attributes[Step\Entity::WORKFLOW_ID] = Role\Entity::getSignedId($workflowId);
+            $attributes[Step\Entity::WORKFLOW_ID] = Workflow\Entity::getSignedId($workflowId);
         }
     }
 }
