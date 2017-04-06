@@ -18,9 +18,8 @@ class Core extends Base\Core
 
         $workflow->build($input);
 
-        $minLevel = $this->getMinLevelFromSteps($input[Entity::STEPS]);
-
-        $this->validateExistingWorkflows($input[Entity::PERMISSIONS], $minLevel);
+        // $minLevel = $this->getMinLevelFromSteps($input[Entity::STEPS]);
+        // $this->validateExistingWorkflows($input[Entity::PERMISSIONS], $minLevel);
 
         // Create the steps and workflow in a single transaction
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
@@ -48,9 +47,8 @@ class Core extends Base\Core
 
         $permissionIds = $this->getPermissionIds($workflow, $input[Entity::PERMISSIONS]);
 
-        $minLevel = $this->getMinLevelFromSteps($workflow->steps);
-
-        $this->validateExistingWorkflows($input[Entity::PERMISSIONS] ,$minLevel);
+        // $minLevel = $this->getMinLevelFromSteps($workflow->steps);
+        // $this->validateExistingWorkflows($input[Entity::PERMISSIONS] ,$minLevel);
 
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $permissionIds)
         {

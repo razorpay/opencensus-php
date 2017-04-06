@@ -11,6 +11,9 @@ use RZP\Models\Workflow\Step;
 
 class Core extends Base\Core
 {
+    /**
+     * Unused at the moment
+     * */
     protected function validateExistingWorkflows($permissions, $minLevel, $options = [])
     {
         $workflows = $this->repo
@@ -20,6 +23,9 @@ class Core extends Base\Core
         $this->validateWorkflowsForLevel($workflows, $minLevel);
     }
 
+    /**
+     * Unused at the moment
+     * */
     protected function validateWorkflowsForLevel($workflows, $minLevel)
     {
         foreach ($workflows as $workflow)
@@ -34,6 +40,9 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Unused at the moment
+     * */
     protected function getMinLevelForWorkflow(Workflow\Entity $workflow)
     {
         $minLevel = PHP_INT_MAX;
@@ -51,6 +60,9 @@ class Core extends Base\Core
         return $minLevel;
     }
 
+    /**
+     * Unused at the moment
+     * */
     protected function getMinLevelFromSteps(array $steps)
     {
         $minLevel = PHP_INT_MAX;
@@ -66,7 +78,10 @@ class Core extends Base\Core
         return $minLevel;
     }
 
-    public function getMinLeveledWorkflow(array $permissions, $orgId)
+    /**
+     * Unused at the moment
+     * */
+    protected function getMinLeveledWorkflow(array $permissions, $orgId)
     {
         // Get permission IDs of the permissions passed
         // for the current route

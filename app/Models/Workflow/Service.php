@@ -68,9 +68,16 @@ class Service extends Base\Service
 
     public function permissionHasWorkflow($routePermissions, $orgId)
     {
-        $workflow = (new Action\Core)->getMinLeveledWorkflow(
-            $routePermissions, $orgId);
+        $permissionIds = $this->repo
+                              ->permission
+                              ->retrieveIdsByNames($routePermissions, $orgId)
+                              ->map(function ($permission){
+                                    return $permission->getId();
+                                })
+                              ->toArray();
 
-        return ! empty($workflow);
+        $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($permissionIds);
+
+        return ($workflows->isEmpty() === false);
     }
 }
