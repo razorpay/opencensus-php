@@ -287,7 +287,7 @@ class Processor extends Base\Core
             return [false, Holidays::HOLIDAY_MESSAGE];
         }
 
-        if ($this->checkInvalidSettlementTime() === true)
+        if ($this->isInvalidSettlementTime() === true)
         {
             return [false, ['message' => 'settlements cannot be processed now']];
         }
@@ -300,7 +300,7 @@ class Processor extends Base\Core
      *  uploaded anytime.
      * @return [boolean] [returns if settlement can be proessed now]
      */
-    protected function checkInvalidSettlementTime()
+    protected function isInvalidSettlementTime()
     {
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;

@@ -399,24 +399,6 @@ class SettlementTest extends TestCase
         $input = ['count' => 10];
         $txns = $this->getEntities('transaction', $input, true);
 
-        // Setup to validate email send
-        Mail::shouldReceive('send')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $expectedKeys = ['subject', 'summary', 'excelFile', 'textFile'];
-
-                        $arrayDiff = array_diff_key($expectedKeys, array_keys($data));
-
-                        $this->assertEmpty($arrayDiff);
-
-                        return true;
-                    }),
-                    Mockery::any()
-                );
-
         $request = [
             'url' => '/settlements/initiate/kotak',
             'method' => 'POST'
@@ -557,23 +539,6 @@ class SettlementTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $batch = $this->getLastEntity('batch_fund_transfer', true);
-
-        // Setup to validate email send on file generation below
-        Mail::shouldReceive('send')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $this->assertArrayHasKey('subject', $data);
-                        $this->assertArrayHasKey('summary', $data);
-                        $this->assertArrayHasKey('excelFile', $data);
-                        $this->assertArrayHasKey('textFile', $data);
-
-                        return true;
-                    }),
-                    Mockery::any()
-                );
 
         // Generate settlement-file generation
         $request = array(

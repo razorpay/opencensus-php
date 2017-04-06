@@ -15,6 +15,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
 use RZP\Models\Transaction;
 
 class NodalAccount
@@ -317,6 +318,11 @@ class NodalAccount
         FileStore\Creator $excelFileEntity,
         FileStore\Creator $textFileEntity)
     {
+        if ($this->getMode() === Mode::TEST)
+        {
+            return;
+        }
+
         $summary = $this->summary;
 
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
