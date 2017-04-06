@@ -150,6 +150,18 @@ var app = angular.module('app', [
     }).state('app.orgs.edit', {
       url: '/:id/edit',
       templateUrl: 'tpl/admin/app_add_org.html'
+    }).state('app.orgs.fieldmaps', {
+      url: '/:id/fieldmaps',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.orgs.fieldmaps.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_org_fieldmaps_list.html'
+    }).state('app.orgs.fieldmaps.new', {
+      url: '/new',
+      templateUrl: 'tpl/admin/app_org_add_fieldmap.html'
+    }).state('app.orgs.fieldmaps.edit', {
+      url: '/:fieldMapId/edit',
+      templateUrl: 'tpl/admin/app_org_add_fieldmap.html'
     }).state('app.users', {
       url: '/users',
       template: '<div ui-view class="fade-in-down"></div>'

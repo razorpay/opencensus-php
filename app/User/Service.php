@@ -98,6 +98,48 @@ class Service extends Base\Service
             $input['email'] = $invitation->email;
         }
 
+        $heimdallInvitationToken = Input::get('merchant_invitation');
+
+        $adminId = NULL;
+
+        if ($heimdallInvitationToken)
+        {
+            // Check if this token is valid or not
+
+            $heimdallInvitationTokenInput = [
+                'route_name' => 'admin_lead_verify',
+
+                'url_params' => [
+                    '{token}' => $heimdallInvitationToken
+                ]
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($tokenError, $tokenData) = $genericService->call('GET', $heimdallInvitationTokenInput);
+
+            if (empty($tokenError) and isset($tokenData['id']))
+            {
+                $adminId = $tokenData['admin_id'];
+
+                // Update sign up field against admin lead
+                $tokenSignUpUpdate = [
+                    'route_name' => 'merchant_admin_lead_put',
+
+                    'url_params' => [
+                        '{orgId}' => $tokenData['org_id'],
+                        '{id}'    => $tokenData['id'],
+                    ],
+
+                    'body' => [
+                        'signed_up' => 1
+                    ]
+                ];
+
+                list($signupTokenError, $signupTokenData) = $genericService->call('PUT', $tokenSignUpUpdate);
+            }
+        }
+
         // $user would not be null in a very rare edge case here
         // Which is two subsequent invitations without either being
         // accepted. Once the second one is accepted, this block
@@ -142,7 +184,7 @@ class Service extends Base\Service
 
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
 
-            (new Merchant\Service)->createMerchantOnApi($data['id']);
+            (new Merchant\Service)->createMerchantOnApi($data['id'], $adminId);
 
             $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
         }

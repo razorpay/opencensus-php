@@ -10,6 +10,28 @@ app.controller('OrgsAddUsersCtrl', [
   '$state',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams, $state) {
     $scope.alerts = alertsFactory.getHandler();
+    $scope.obBug = {};
+
+    // Get dynamic user fields
+    var request = $http({
+      url: '/admin/generic',
+
+      method: 'GET',
+
+      params: {
+        route_name: 'org_fieldmap_get_by_entity',
+
+        url_params: {
+          '{entity}' : 'admin'
+        }
+      }
+    });
+
+    request.success(function (data) {
+      if (data.success) {
+        $scope.fields = data.data.fields;
+      }
+    });
 
     $scope.fetchUser = function(id) {
       var request = $http({
@@ -25,16 +47,16 @@ app.controller('OrgsAddUsersCtrl', [
 
       request.success(function(data) {
         if (data.success) {
-          var user = data.data
-          var userGroups = user.groups || []
-          var userRole = user.roles && user.roles[0] && user.roles[0].id
+          var user = data.data;
+          var userGroups = user.groups || [];
+          var userRole = user.roles && user.roles[0] && user.roles[0].id;
 
           userGroups.map(function(group){
             $scope.selected_groups[group.id] = true;
           });
 
-          $scope.role = userRole
-          $scope.user = user
+          $scope.obBug.role = userRole;
+          $scope.user = user;
         }
       })
     }
@@ -42,7 +64,7 @@ app.controller('OrgsAddUsersCtrl', [
     $scope.user = {};
     $scope.selected_groups = [];
     $scope.select_all = false;
-    $scope.role = '';
+    $scope.obBug.role = '';
 
     organization.fetchRoles().then(function(roles) {
       $scope.roles = {};
@@ -88,6 +110,17 @@ app.controller('OrgsAddUsersCtrl', [
         allow_all_merchants: user.allow_all_merchants ? "1" : "0"
       };
 
+      // send only those fields expected by field map
+      data.body = Object.keys(data.body)
+                        .filter(function (key) {
+                          return $scope.fields.indexOf(key) !== -1 ? true : false;
+                        })
+                        .reduce(function (ob, key) {
+                          ob[key] = data.body[key];
+
+                          return ob;
+                        }, {});
+
       var request = $http.put('/admin/generic', data, {
         params: {
           route_name: 'admin_edit',
@@ -125,11 +158,13 @@ app.controller('OrgsAddUsersCtrl', [
     }
 
     function getSelectedRoles() {
-      var roles = []
-      if ($scope.role) {
-        roles.push($scope.role)
+      var roles = [];
+
+      if ($scope.obBug.role) {
+        roles.push($scope.obBug.role);
       }
-      return roles
+
+      return roles;
     }
 
     $scope.save = function(user) {
