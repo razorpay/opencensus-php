@@ -126,6 +126,8 @@ class FeeCalculator
         $this->getBasicPricingRule($pricing, $entityName);
 
         $this->getAddOnPricingRule($pricing, $features, $entityName);
+
+        $this->traceAllRules($this->pricingRules);
     }
 
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
@@ -144,8 +146,6 @@ class FeeCalculator
             $this->trace->debug(
                 TraceCode::PRICING_RULE_SELECTION,
                 ['count' => count($rules)]);
-
-            $this->traceAllRules($rules);
 
             if ((count($rules) > 0) and
                 $entityName === Pricing\Feature::PAYMENT)
@@ -171,8 +171,6 @@ class FeeCalculator
         $this->trace->debug(
             TraceCode::PRICING_RULE_SELECTION,
             ['count' => count($rules)]);
-
-        $this->traceAllRules($rules);
 
         if ($feature === Pricing\Feature::PAYMENT)
         {
@@ -400,8 +398,6 @@ class FeeCalculator
             $this->trace->debug(
                 TraceCode::PAYMENT_PRICING_RULE_SELECTION,
                 ['filter' => $filter, 'count' => count($rules)]);
-
-            $this->traceAllRules($rules);
         }
 
         return $rules;
@@ -504,12 +500,8 @@ class FeeCalculator
 
     protected function validateAndGetOnePricingRule($pricing)
     {
-        $this->traceAllRules($pricing);
-
         if (count($pricing) > 1)
         {
-            $this->traceAllRules($pricing);
-
             throw new Exception\LogicException(
                 'Only 1 pricing rule should have been present here. Found: ' . count($pricing));
         }
@@ -563,6 +555,8 @@ class FeeCalculator
 
     protected function traceAllRules($rules)
     {
+        // This is sending a lot of traces and so for
+        // this tracing is not required.
         $array = [];
 
         foreach ($rules as $rule)
