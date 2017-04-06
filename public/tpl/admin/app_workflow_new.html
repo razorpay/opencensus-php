@@ -15,18 +15,18 @@
           </div>
           <div class="wrapper clearfix">
             <div class="workflow-select2-container">
-              <select class="select2 workflow-select2" multiple="multiple" style="width: 100%" ng-model="workflowSelect">
+              <select class="select2 workflow-select2 " multiple="multiple" style="width: 100%" ng-model="workflowSelect">
                 <option></option>
-                <option ng-repeat="(key, id) in workflows" value="{{key}}">{{id}}</option>
+                <option ng-repeat="(key, perm) in permissions" value="{{key}}">{{perm.name}}</option>
               </select>
             </div>
             <div class="list-group">
               <div 
                 class="list-group-item table-striped table" 
-                ng-repeat="(key, id) in selectedWorkflows track by key"
+                ng-repeat="(key, id) in permissionsSelected track by key"
               >
-                {{workflows[id].name}}
-                <button class="btn btn-default pull-right" ng-click="deselectWorkflow(row.id)"><i class="fa fa-trash-o"></i></button>
+                {{permissions[id].name}}
+                <button class="btn btn-default pull-right" ng-click="deselectWorkflow(id)"><i class="fa fa-trash-o"></i></button>
               </div>
             </div>
           </div>
@@ -51,14 +51,17 @@
                   <input type="number" min="1" max="50"/>
                 </div>
               </div>
-              <div class="select2-box col-xs-4 row">
-                <select class="select2" style="width: 100%" ng-model="new_checker">
+              <div class="role-select2-container col-xs-6 row">
+                <select class="select2 role-select2 " multiple="multiple" style="width: 100%" ng-model="roleSelect">
                   <option></option>
-                  <option xng-repeat="(key, row) in checkers" value="0">Rishabh</option>
-                  <option xng-repeat="(key, row) in checkers" value="1">Ashmeet</option>
-                  <option xng-repeat="(key, row) in checkers" value="2">Chetty</option>
+                  <option ng-repeat="(key, role) in roles" value="{{key}}">{{role.name}}</option>
                 </select>
               </div>
+              <!-- <div class="select2-box col-xs-4 row">
+                <select class="select2" style="width: 100%" ng-model="new_checker">
+                  <option></option>
+                </select>
+              </div> -->
             </div>
           </div>
         </div>

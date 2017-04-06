@@ -4,64 +4,84 @@ app.controller('WorkflowNewCtrl', [
   '$scope',
   '$http',
   'alertsFactory',
+  'organization',
   '$state',
   '$modal',
   '$stateParams',
   'admin',
-  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
-    $scope.new_checker = null;
-    $scope.workflows = {
-      0: "Initiate Settlement",
-      1: "Upload Settlement Reconciliation (UTR)",
-      2: "Upload Reconciliation File (Payment/Refund)",
-      3: "Add IIN Rule",
-      4: "Add EMI Plan",
-      5: "Verify Payment",
-      6: "Archive Merchant",
-      7: "Confirm User",
-      8: "Verify All Payments",
-      9: "Generate Refunds Excel (Netbanking)",
-      10: "Generate Beneficiary File",
-      11: "Download Beneficiary File",
-      12: "Authorize Failed Payment",
-      13: "Send Merchant Newsletter",
-      14: "Create Schedule",
-      15: "Trigger Dummy Error",
-      16: "Make API Call",
+  function ($scope, $http, alertsFactory, organization, $state, $modal, $stateParams, admin) {
+    $scope.permissions = {};
+    $scope.permissionsOptions = [];
+    $scope.permissionsSelected = [];
+    $scope.roles = [];
+    $scope.rolesSelected = [];
+    var fetchPermissions = function () {
+      var request = $http.get('/admin/generic', {
+        ignoreErrors: true,
+        params: {
+          route_name: 'permission_get_multiple',
+          count: 1000,  /* A very high number, todo discuss with Rishabh */
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          // $scope.permissions = data.data.items;
+          var permissions = data.data.items;
+          for (var i = 0; i < permissions.length; i++) {
+            $scope.permissions[permissions[i]['id']] = permissions[i];
+            $scope.permissionsOptions.push(permissions[i]['id']);
+          }
+        }
+      });
     }
-    $scope.workflowOptions = Object.keys($scope.workflows);
-    $scope.selectedWorkflows = [];
-    $scope.checkers = [
-    {
-      id: 0,
-      name: 'Ashmeet'
-    }, {
-      id: 1,
-      name: 'Rishabh'
-    }, {
-      id: 2,
-      name: 'Chetty'
-    }];
-    var $workflowSelect = $('.workflow-select2').select2({
+    fetchPermissions()
+
+    var $permSelect = $('.workflow-select2').select2({
       theme: 'classic',  
       placeholder: 'Select an action',
-
     });
-    $workflowSelect.on("select2:select", function (e) {
+    $permSelect.on("select2:select", function (e) {
       var id = e.params.data.id;
-      $scope.selectedWorkflows.push(id);
-      var index = $scope.workflowOptions.indexOf(id);
+      $scope.permissionsSelected.push(id);
+      var index = $scope.permissionsOptions.indexOf(id);
       if (index > -1) {
-        $scope.workflowOptions.splice(index, 1);
+        $scope.permissionsOptions.splice(index, 1);
       }
-      $workflowSelect.val(null).trigger("change");
-      console.log(e);
+      $permSelect.val(null).trigger("change");
+      // console.log(e);
     });
     $scope.deselectWorkflow = function (id) {
-      var workflow = $scope.selectedWorkflows[id];
+      var workflow = $scope.permissionsSelected[id];
       $scope.workflows.push(workflow);
-      console.log($scope.workflows)
-      delete $scope.selectedWorkflows[id];
+      // console.log($scope.workflows)
+      delete $scope.permissionsSelected[id];
     }
+
+    organization.fetchRoles().then(function(roles) {
+      $scope.roles = roles;
+    }).catch(function(errors){
+      $scope.alerts.resetAlerts();
+      angular.forEach(errors, function (value, key) {
+        $scope.alerts.addAlert('danger', value);
+      });
+    });
+
+
+    var $roleSelect = $('.role-select2').select2({
+      theme: 'classic',  
+      placeholder: 'Select a role',
+    });
+    $roleSelect.on("select2:select", function (e) {
+      console.log(e)
+      var id = e.params.data.id;
+      $scope.rolesSelected.push(id);
+      $roleSelect.val(null).trigger("change");
+      // console.log(e);
+    });
+
+
+    $scope.new_checker = null;
+
   }
 ]);
