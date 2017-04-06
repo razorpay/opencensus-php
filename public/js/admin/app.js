@@ -207,6 +207,12 @@ var app = angular.module('app', [
     }).state('app.invitations.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_invitations_list.html'
+    }).state('app.mailgunlogs', {
+      url: '/mailgunlogs',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.mailgunlogs.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_mailgun_logs_list.html'
     })
 
     //Guest Routes
