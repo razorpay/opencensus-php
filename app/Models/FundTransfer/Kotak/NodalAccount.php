@@ -381,7 +381,7 @@ class NodalAccount
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y-H-i-s');
 
-        $mode = $this->getMode();
+        $mode = \BasicAuth::getMode();
 
         return static::$fileToWriteName.'_'.$mode.'_'.$time;
     }
