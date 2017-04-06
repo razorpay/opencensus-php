@@ -41,6 +41,8 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::LOCATION,
         self::CREATED_AT,
+        self::BUCKET,
+        self::REGION,
     ];
 
     protected $fillable = [

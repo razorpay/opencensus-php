@@ -76,6 +76,37 @@ return [
         ],
     ],
 
+    'testEditOrgWithPermissions' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'hostname' => 'test1.com, test2.com',
+                'email' => 'test@hdfc.com',
+                'allow_sign_up' => true,
+                'display_name' => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type' => 'password',
+                'custom_code' => 'test custom code',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email_domains' => [
+                    'fbapi.com'
+                ],
+                'allow_sign_up' => true,
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testEditOtherOrg' => [
         'request' => [
             'url' => '/orgs',
