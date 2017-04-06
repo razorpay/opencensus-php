@@ -1032,7 +1032,7 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        list($error, $response) = (new Admin\Service)->getMailgunLogs($input);
+        list($error, $response) = (new Admin\Mailgun)->getMailgunLogs($input);
 
         return AppResponse::jsonResponse($error, $response);
     }
