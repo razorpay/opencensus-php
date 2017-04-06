@@ -72,7 +72,7 @@ class Service extends Base\Service
     {
         $actions = (new Manager)->getActionsByMaker();
 
-        return $actions;
+        return $actions->toArrayPublic();
     }
 
     public function permissionHasWorkflow($routePermissions, $orgId)
