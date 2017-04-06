@@ -1884,3 +1884,7 @@ ALTER TABLE `admins` MODIFY COLUMN `location_code` VARCHAR(255) DEFAULT NULL;
 # Query to add custom error message attribute to offer
 ALTER TABLE offers
     ADD COLUMN error_message VARCHAR(255) NULL AFTER display_text;
+
+ALTER TABLE daily_settlements
+    ADD COLUMN failed_amount bigint(20) unsigned NOT NULL AFTER amount,
+    ADD COLUMN total_failed_count int(11) NOT NULL AFTER total_count;

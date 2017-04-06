@@ -296,13 +296,13 @@ class Reconciler
                 if (isset($this->batchFundTransferUpdateAttrs[$batchId]) === false)
                 {
                     $this->batchFundTransferUpdateAttrs[$batchId] =
-                        ['total_failed_count' => 1, 'total_failed_amount' => $source->getAmount()];
+                        ['total_failed_count' => 1, 'failed_amount' => $source->getAmount()];
                 }
                 else
                 {
                     $this->batchFundTransferUpdateAttrs[$batchId]['total_failed_count']++;
 
-                    $this->batchFundTransferUpdateAttrs[$batchId]['total_failed_amount'] += $source->getAmount();
+                    $this->batchFundTransferUpdateAttrs[$batchId]['failed_amount'] += $source->getAmount();
                 }
             }
         }

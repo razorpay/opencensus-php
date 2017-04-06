@@ -34,7 +34,7 @@ class CreateDailySettlements extends Migration
             $table->bigInteger(BatchFundTransfer::AMOUNT)
                   ->unsigned();
 
-            $table->bigInteger(BatchFundTransfer::TOTAL_FAILED_AMOUNT)
+            $table->bigInteger(BatchFundTransfer::FAILED_AMOUNT)
                   ->unsigned();
 
             $table->integer(BatchFundTransfer::FEES);
