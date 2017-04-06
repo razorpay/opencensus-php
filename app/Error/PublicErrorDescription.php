@@ -334,6 +334,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
 
     const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a valid email';
+    const BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME                              = 'Email provided does not have the correct hostname';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                     = 'Authentication failed';
 
     const BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED             = 'The sum of amount requested for transfer is greater than the captured amount';
@@ -355,6 +356,7 @@ class PublicErrorDescription
     const BAD_REQUEST_USER_ACCOUNT_LOCKED                                       = 'Your account has been locked';
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                     = 'Your account has been disabled';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';
+    const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                              = 'Self-Invitation not allowed';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                              = 'SuperAdmin Role is not editable';
 
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
@@ -362,7 +364,6 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_OFFER_DURATION                                    = 'Offer end date must be later than offer start date';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                      = 'Offer already exists. Please check the values and try again';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK           = 'Flat cashback cannot be combined wih percent rate or max cashback in an offer';
-    const BAD_REQUEST_PAYMENT_INVALID_OFFER                                     = 'Offer not applicable on payment';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                              = 'Iins can only be editable for card offer';
     const BAD_REQUEST_INVALID_FORMAT_FOR_IINS                                   = 'Iins should be a valid array';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                 = 'Offer has already been deactivated';

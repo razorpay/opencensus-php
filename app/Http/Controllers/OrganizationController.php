@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Models\Admin;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Org\FieldMap;
 
 class OrganizationController extends Controller
 {
@@ -125,6 +126,39 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postAdminLead(string $orgId)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\AdminLead\Service)->sendInvitation($orgId, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putAdminLead(string $orgId, string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\AdminLead\Service)->editInvitation(
+            $orgId, $id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAdminLeadMultiple(string $orgId)
+    {
+        $data = (new Admin\AdminLead\Service)->getInvitations($orgId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyAdminLead(string $token)
+    {
+        $data = (new Admin\AdminLead\Service)->verify($token);
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for Admins   ---------------------------------------
 
 // --------------------- CRUD for roles  -----------------------------------------
@@ -225,6 +259,56 @@ class OrganizationController extends Controller
     }
 
 // --------------------- END CRUD for Groups  -------------------------------------
+
+// --------------------- CRUD for Org FieldMap ----------------------------------------
+
+    public function postOrgFieldMap(string $orgId)
+    {
+        $input = Request::all();
+
+        $data = (new FieldMap\Service)->createFieldMapForEntity($orgId, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putOrgFieldMap(string $orgId, string $id)
+    {
+        $input = Request::all();
+
+        $data = (new FieldMap\Service)->editFieldMapForEntity($orgId, $id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getOrgFieldMapMultiple(string $orgId)
+    {
+        $data = (new FieldMap\Service)->fetchMultiple($orgId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getOrgFieldMap(string $orgId, string $id)
+    {
+        $data = (new FieldMap\Service)->getFieldsForEntity($orgId, $id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getOrgFieldMapByEntity(string $orgId, string $entity)
+    {
+        $data = (new FieldMap\Service)->getByEntity($orgId, $entity);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteOrgFieldMap(string $orgId, string $id)
+    {
+        $data = (new FieldMap\Service)->deleteFieldMapForEntity($orgId, $id);
+
+        return ApiResponse::json($data);
+    }
+
+// --------------------- END CRUD for Org FieldMap ----------------------------------------
 
 // --------------------- CRUD for Permissions ----------------------------------------
 

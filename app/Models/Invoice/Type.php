@@ -36,10 +36,10 @@ class Type
         {
             case self::LINK:
             case self::ECOD:
-                return 'payment link';
+                return 'Payment Link';
 
             case self::INVOICE:
-                return 'invoice';
+                return 'Invoice';
         }
     }
 }

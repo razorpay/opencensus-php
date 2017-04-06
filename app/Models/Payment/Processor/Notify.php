@@ -482,7 +482,7 @@ class Notify
                 break;
             case self::INVOICE_PAYMENT_AUTHORIZED:
             case self::INVOICE_PAYMENT_CAPTURED:
-                $action = ucwords($this->invoice->getTypeLabel()) . '\'s Payment';
+                $action = $this->invoice->getTypeLabel() . '\'s Payment';
                 break;
             default:
                 $action = 'Payment';

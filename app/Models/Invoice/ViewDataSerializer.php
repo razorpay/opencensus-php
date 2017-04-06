@@ -40,11 +40,18 @@ class ViewDataSerializer extends Base\Core
      */
     public function get()
     {
+        $publicId = $this->invoice->getPublicId();
+
         if ($this->invoice->isDraft())
         {
-            $id = $this->invoice->getPublicId();
+            throw new Exception\BadRequestValidationFailureException(
+                "Invoice with id $publicId is not issued yet");
+        }
 
-            throw new Exception\BadRequestValidationFailureException("Invoice with id $id is not issued yet");
+        if ($this->invoice->isCancelled())
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invoice with id $publicId is cancelled");
         }
 
         $invoiceData = $this->getFormattedInvoiceDataForView();

@@ -119,6 +119,12 @@ class AdminAccess
         return [
             'org_create',
             'org_get_multiple',
+            'org_fieldmap_create',
+            'org_fieldmap_get_multiple',
+            'org_fieldmap_get',
+            'org_fieldmap_get_by_entity',
+            'org_fieldmap_edit',
+            'org_fieldmap_delete',
             // Permission API are not exposed and org agnostic
             'permission_get',
             'permission_create',
