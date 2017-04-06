@@ -30,11 +30,11 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Employee / Department / Branch / Location / Supervisor Code</th>
+            <th ng-if="fields.indexOf('name') !== -1">Name</th>
+            <th ng-if="fields.indexOf('username') !== -1">Username</th>
+            <th ng-if="fields.indexOf('email') !== -1">Email</th>
+            <th ng-if="fields.indexOf('roles') !== -1">Role</th>
+            <th ng-if="fields.indexOf('employee_code') !== -1">Employee / Department / Branch / Location / Supervisor Code</th>
             <th>Locked</th>
             <th>Enabled</th>
             <th>Actions</th>
@@ -43,13 +43,13 @@
         <tbody>
           <tr ng-repeat="row in users"  ng-hide="row.id == admin.id">
             <td>{{row.id}}</td>
-            <td>{{row.name}}</td>
-            <td>{{row.username}}</td>
-            <td>{{row.email}}</td>
-            <td>
+            <td ng-if="fields.indexOf('name') !== -1">{{row.name}}</td>
+            <td ng-if="fields.indexOf('username') !== -1">{{row.username}}</td>
+            <td ng-if="fields.indexOf('email') !== -1">{{row.email}}</td>
+            <td ng-if="fields.indexOf('roles') !== -1">
               {{row.roles && row.roles.length ? row.roles[0].name : '--'}}
             </td>
-            <td>
+            <td ng-if="fields.indexOf('employee_code') !== -1">
               {{row.employee_code}} /
               {{row.department_code}} /
               {{row.branch_code}} /

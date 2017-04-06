@@ -25,16 +25,13 @@ export default class InvoiceDetailContainer extends Component {
     this.state = {
       statusMsg: {}
     }
-    this.showIssueConfirmModal = ::this.showIssueConfirmModal
-    this.issueInvoice = ::this.issueInvoice
-    this.cancelInvoice = ::this.cancelInvoice
   }
 
   componentWillMount() {
     this.props.fetchInvoice(this.props.id)
   }
 
-  issueInvoice(props, notifyProps) {
+  issueInvoice = (props, notifyProps) => {
     let promises = []
 
     if (notifyProps.email_notify) {
@@ -59,7 +56,7 @@ export default class InvoiceDetailContainer extends Component {
     })
   }
 
-  showIssueConfirmModal() {
+  showIssueConfirmModal = () => {
     let customer = this.props.invoice.customer
     if (!customer.contact && !customer.email) {
       this.props.showNotification({
@@ -80,7 +77,7 @@ export default class InvoiceDetailContainer extends Component {
     })
   }
 
-  cancelInvoice() {
+  cancelInvoice = () => {
     let invoice = this.props.invoice
     this.context.confirm({
       header: 'Cancel Link?',

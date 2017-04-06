@@ -27,116 +27,13 @@ class GenericController extends Controller
     {
         $method = Request::method();
 
-        $input = ['method' => $method];
+        $input = Input::all();
 
-        list($auth, $route) = $this->resolveRoute();
+        $genericService = new Generic\Service;
 
-        list($error, $data) = (new Generic\Service)->call($input, $route, $auth);
+        list($error, $data) = $genericService->call($method, $input);
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    private function resolveRoute()
-    {
-        $routeName = Input::get('route_name');
-
-        if (! isset($routeName))
-        {
-            throw new \Razorpay\Api\Errors\BadRequestError(
-                'Route mapping not found',
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
-        $routeMap = Config::get('api-route-map');
-
-        foreach ($routeMap as $auth => $routes)
-        {
-            if (isset($routes[$routeName]))
-            {
-                $route = $routes[$routeName];
-
-                break;
-            }
-        }
-
-        if (! isset($route))
-        {
-            throw new \Razorpay\Api\Errors\BadRequestError(
-                'Route mapping not found',
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
-        /**
-         * 2 different formats:
-         * 'payment_fetch_multiple' => 'payments'
-         *
-         * 'payment_fetch_multiple' => [
-         *      'url'       => 'payments',
-         *      'routeName' => 'get_payments'
-         * ],
-         */
-        if (is_array($route))
-        {
-            $endpointUrl = $route['url'];
-
-            // Permission checker
-            if ( isset($route['routeName']) )
-            {
-                $routeName = $route['routeName'];
-
-                if (\Gate::has($routeName) and \Gate::denies($routeName))
-                {
-                    abort(403, 'Forbidden');
-                }
-            }
-        }
-        else
-        {
-            $endpointUrl = $route;
-        }
-
-        $route = $this->parseUrlParams($endpointUrl);
-
-        return [ $auth, $route ];
-    }
-
-    private function parseUrlParams($route)
-    {
-
-        // Logic to parse URL Params
-        // Eg: /orgs/{id} becomes /orgs/6dLbNSpv5XbCOG (actual ID passed in `url_params`)
-
-        // Will be JSON string / array
-        $urlParams = Input::get('url_params') ?? [];
-
-        if (! is_array($urlParams))
-        {
-            $urlParams = json_decode($urlParams, true) ?: [];
-        }
-
-        // Check if the route is for an orgs/... related API call
-        $pos = strpos($route, 'orgs');
-
-        if ($pos === 0 and !isset($urlParams['{id}']))
-        {
-            $urlParams['{id}'] = Auth::guard('api')->user()->org_id;
-        }
-
-        if (! empty($urlParams))
-        {
-            $keys = array_keys($urlParams);
-            $vals = array_values($urlParams);
-
-            $vals = array_map('basename', $vals);
-
-            $route = str_replace($keys, $vals, $route);
-        }
-
-        return $route;
     }
 
 }

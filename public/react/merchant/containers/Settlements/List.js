@@ -15,16 +15,11 @@ import * as ModalActions from 'merchant/modules/modals'
   { fetchSettlements, ...ModalActions }
 )
 export default class SettlementsListContainer extends ListContainer {
-  constructor() {
-    super(...arguments)
-    this.showBreakup = ::this.showBreakup
-  }
-
   fetchEntityList(params) {
     return this.props.fetchSettlements(params)
   }
 
-  showBreakup(settlement) {
+  showBreakup = (settlement) => {
     this.props.openModal({
       component: <SettlementBreakupModal settlementId={settlement.id} />
     })
