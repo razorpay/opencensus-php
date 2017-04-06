@@ -27,8 +27,6 @@ export default class AddItem extends Component {
     this.state = {
       errors: null
     }
-
-    this.save = ::this.save
   }
 
   componentWillMount() {
@@ -37,7 +35,7 @@ export default class AddItem extends Component {
     }
   }
 
-  save(props) {
+  save = (props) => {
     return this.props.saveItem(props).then((item) => {
       this.props.onSave(item)
       this.props.showNotification({

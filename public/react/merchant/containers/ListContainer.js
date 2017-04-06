@@ -13,15 +13,13 @@ export default class ListContainer extends Component {
     this.state = {
       status: {}
     }
-    this.search = ::this.search
-    this.fetchAll = ::this.fetchAll
   }
 
   componentWillMount() {
     this.fetchAll()
   }
 
-  fetchAll(params = this.getDefaultPageParams()) {
+  fetchAll = (params = this.getDefaultPageParams()) => {
     if (params) {
       this.setState(params)
     }
@@ -43,7 +41,7 @@ export default class ListContainer extends Component {
     })
   }
 
-  search(params) {
+  search = (params) => {
     return this.fetchAll({
       ...this.getDefaultPageParams(),
       ...params

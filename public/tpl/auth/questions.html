@@ -67,7 +67,7 @@
             </label>
           </div>
         </div>
-        <button override-tab ng-disabled="!signup.merchantData.business_type" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+        <button override-tab ng-disabled="!signup.merchantData.business_type" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
           Next
         </button>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
@@ -86,7 +86,7 @@
             </label>
           </div>
         </div>
-        <button override-tab ng-disabled="!signup.merchantData.transaction_volume" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+        <button override-tab ng-disabled="!signup.merchantData.transaction_volume" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
           Next
         </button>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
@@ -105,7 +105,7 @@
             </label>
           </div>
         </div>
-        <button override-tab ng-disabled="!signup.merchantData.role" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+        <button override-tab ng-disabled="!signup.merchantData.role" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
           Next
         </button>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
@@ -124,7 +124,7 @@
             </label>
           </div>
         </div>
-        <button override-tab ng-disabled="!signup.merchantData.department" class="btn btn-primary form-control signup-details-button" ng-click="sendDetails()">
+        <button override-tab ng-disabled="!signup.merchantData.department" class="btn btn-primary form-control signup-details-button" ng-click="quickSendDetails()">
           Next
         </button>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  

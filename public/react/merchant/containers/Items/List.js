@@ -18,18 +18,11 @@ import * as ModalActions from 'merchant/modules/modals'
   form: 'newItem',
 })
 export default class ItemsListContainer extends ListContainer {
-  constructor() {
-    super(...arguments)
-    this.showItemModal = ::this.showItemModal
-    this.highlightRowAndClose = ::this.highlightRowAndClose
-    this.deleteItem = ::this.deleteItem
-  }
-
   fetchEntityList(params) {
     return this.props.fetchItems(params)
   }
 
-  showItemModal(item = null) {
+  showItemModal = (item = null) => {
     this.props.openModal({
       size: 'small',
       component: <ItemCreation
@@ -40,12 +33,12 @@ export default class ItemsListContainer extends ListContainer {
     })
   }
 
-  highlightRowAndClose(item) {
+  highlightRowAndClose = (item) => {
     this.props.highlightItemRow(item)
     this.props.closeModal()
   }
 
-  deleteItem(item) {
+  deleteItem = (item) => {
     this.context.confirm({
       message: 'Are you sure to delete the item?',
       affirmativeLabel: 'Delete',

@@ -104,14 +104,6 @@ export default class InvoicesNewContainer extends Component {
     this.state = {
       status: {}
     }
-    this.save = ::this.save
-    this.selectCustomerAndCloseModal = ::this.selectCustomerAndCloseModal
-    this.quickCreateCustomer = ::this.quickCreateCustomer
-    this.resendInvoice = ::this.resendInvoice
-    this.deleteInvoice = ::this.deleteInvoice
-    this.cancelInvoice = ::this.cancelInvoice
-    this.addInternalNote = ::this.addInternalNote
-    this.handleBackNavClick = ::this.handleBackNavClick
   }
 
   componentWillMount() {
@@ -177,12 +169,12 @@ export default class InvoicesNewContainer extends Component {
     return this.calculateItemsSubTotal()
   }
 
-  selectCustomerAndCloseModal(customer) {
+  selectCustomerAndCloseModal = (customer) => {
     this.props.change('customer_id', customer.id)
     this.props.closeModal()
   }
 
-  quickCreateCustomer({ searchTerm = '' }) {
+  quickCreateCustomer = ({ searchTerm = '' }) => {
     this.props.openModal({
       size: 'small',
       component: <CustomerCreation
@@ -217,7 +209,7 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
-  save(props) {
+  save = (props) => {
     return this._save(props).then((invoice) => {
       this.props.showNotification({
         type: 'success',
@@ -248,7 +240,7 @@ export default class InvoicesNewContainer extends Component {
     }, false)
   }
 
-  resendInvoice(props) {
+  resendInvoice = (props) => {
     this.showIssueConfirmModal((notifyProps) => {
       let promises = []
 
@@ -290,7 +282,7 @@ export default class InvoicesNewContainer extends Component {
     return this.context.ngRouter.transitionTo('app.invoices.list')
   }
 
-  deleteInvoice() {
+  deleteInvoice = () => {
     if (!this.props.dirty) {
       return this.navigateToList()
     }
@@ -329,7 +321,7 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
-  cancelInvoice() {
+  cancelInvoice = () => {
     let invoice = this.props.invoice
     this.context.confirm({
       header: 'Cancel Invoice?',
@@ -358,7 +350,7 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
-  addInternalNote(props) {
+  addInternalNote = (props) => {
     let invoice = this.props.invoice
     this.props.openModal({
       size: 'small',
@@ -376,7 +368,7 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
-  handleBackNavClick() {
+  handleBackNavClick = () => {
     if (!(this.props.anyTouched && this.props.dirty)) {
       return this.navigateToList()
     }

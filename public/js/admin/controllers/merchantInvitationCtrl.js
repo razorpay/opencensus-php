@@ -8,21 +8,58 @@ app.controller('MerchantInvitationCtrl', [
   '$state',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, $state) {
     $scope.alerts = alertsFactory.getHandler();
-    $scope.merchant = {
-      promo_code: 'RP_StartUP',
-      merchant_type: 'stp',
-    };
+    $scope.merchant = {};
+
     /**
      * Actions
      */
 
+    // Get the dynamic fields
+
+    var request = $http({
+      url: '/admin/generic',
+
+      method: 'GET',
+
+      params: {
+        route_name: 'org_fieldmap_get_by_entity',
+
+        url_params: {
+          '{entity}' : 'admin_lead'
+        }
+      }
+    });
+
+    request.success(function (data) {
+      if (data.success) {
+        $scope.fields = data.data.fields;
+
+        if (data.data.fields.indexOf('promo_code') !== -1) {
+          $scope.merchant.promo_code = 'RP_StartUP';
+        }
+
+        if (data.data.fields.indexOf('merchant_type') !== -1) {
+          $scope.merchant.merchant_type = 'stp';
+        }
+      }
+    });
+
     $scope.inviteMerchant = function(merchant) {
+
       var request = $http({
-        method: 'post',
-        url: '/admin/merchants/invite',
-        transformRequest: transformRequestAsFormPost,
-        data: merchant
+        url: '/admin/generic',
+
+        method: 'POST',
+
+        params: {
+          route_name: 'admin_lead_create'
+        },
+
+        data: {
+          body: merchant
+        }
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Invitation has been sent to ' +

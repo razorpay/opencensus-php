@@ -23,8 +23,6 @@ export default class AddWebhook extends Component {
     this.state = {
       errors: null
     }
-
-    this.save = ::this.save
   }
 
   componentWillMount() {
@@ -33,7 +31,7 @@ export default class AddWebhook extends Component {
     }
   }
 
-  save(props) {
+  save = (props) => {
     return this.props.saveWebhook(props).then((webhook) => {
       this.props.onSave(webhook)
       this.props.showNotification({
