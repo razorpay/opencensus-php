@@ -197,6 +197,7 @@ return [
             Permission::VIEW_MERCHANT_BANK_ACCOUNTS => '',
 
             Permission::VIEW_MERCHANT_SCREENSHOT => '',
+            Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
 
             Permission::CREATE_PRICING_PLAN => '',
             Permission::SET_PRICING_RULES => '',
