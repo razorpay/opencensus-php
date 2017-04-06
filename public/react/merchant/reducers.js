@@ -14,6 +14,7 @@ import orderReducer from 'merchant/modules/orders/details'
 import settlementsReducer from 'merchant/modules/settlements/list'
 import settlementReducer from 'merchant/modules/settlements/details'
 import webhooksReducer from 'merchant/modules/webhooks'
+import keysReducer from 'merchant/modules/keys'
 
 export default combineReducers({
   form: formReducer,
@@ -31,4 +32,5 @@ export default combineReducers({
   settlements: settlementsReducer,
   settlement: settlementReducer,
   webhooks: webhooksReducer,
+  keys: keysReducer
 })

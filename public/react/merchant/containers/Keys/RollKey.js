@@ -1,0 +1,108 @@
+import { Component, PropTypes } from 'react'
+import { connect } from 'react-redux'
+import { Field, reduxForm } from 'redux-form'
+import AsyncButton from 'react-async-button'
+import InputField from 'rzp/ui/Forms/InputField'
+import ModalHeader from 'rzp/ui/ModalHeader'
+import Alert from 'rzp/ui/Forms/Alert'
+import { isBlank } from 'rzp/utils/rzp-utils'
+import { generateKey } from 'merchant/modules/keys'
+import { required, phone, email } from 'rzp/utils/validators'
+
+@connect(
+  (state) => state.session
+)
+@reduxForm({
+  form: 'rollKey',
+  initialValues: {
+    'delay_roll': '1'
+  }
+})
+export default class RollKey extends Component {
+  static contextTypes = {
+    session: PropTypes.object
+  }
+
+  constructor() {
+    super(...arguments)
+    this.save = ::this.save
+    this.state = {
+      errors: null
+    }
+  }
+
+  save(props) {
+    var key = this.props.currentKey
+    key.delay_roll = props.delay_roll
+    key.merchantId = this.props.merchantId
+
+    return this.props.generateKey(key).catch(({ errors }) => {
+      this.setState({
+        errors
+      })
+    })
+  }
+
+  render() {
+    const { handleSubmit, currentKey } = this.props
+
+    return (
+      <div>
+        <ModalHeader
+          title='Roll Key'
+          onCloseClick={this.props.closeModal}
+        />
+
+        <form class='form-horizontal payment-link-form' onSubmit={handleSubmit(this.save)}>
+          <div class='modal-body'>
+            <Alert
+              type='error'
+              message={this.state.errors}
+            />
+
+            <div class='radio'>
+              <label class='i-checks'>
+                <Field
+                  component='input'
+                  name='delay_roll'
+                  type="radio"
+                  value="0" />
+                  <i></i>
+                De-activate Old Key Immediately
+              </label>
+            </div>
+            <div class='radio'>
+              <label class='i-checks'>
+                <Field
+                  component='input'
+                  name='delay_roll'
+                  type="radio"
+                  value="1" />
+                  <i></i>
+                  De-activate old key in 24 hours
+              </label>
+            </div>
+          </div>
+
+          <div class='modal-footer'>
+            <button
+              type='button'
+              class='btn btn-default btn-rounded'
+              onClick={this.props.closeModal}
+            >
+              Cancel
+            </button>
+
+            <AsyncButton
+              type='submit'
+              class='btn btn-primary btn-rounded'
+              text='OK'
+              pendingText='Saving...'
+              onClick={handleSubmit(this.save)}
+            />
+          </div>
+        </form>
+      </div>
+    )
+  }
+}

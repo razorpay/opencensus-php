@@ -1,0 +1,115 @@
+import React, { Component, PropTypes } from 'react'
+import { connect } from 'react-redux'
+import Pager from 'rzp/ui/Pager'
+import Alert from 'rzp/ui/Forms/Alert'
+import Header from 'rzp/ui/Header/Header'
+// import Role from 'merchant/components/Role'
+import KeysList from 'merchant/components/Keys/KeysList'
+import ListContainer from 'merchant/containers/ListContainer'
+import * as KeyActions from 'merchant/modules/keys'
+import * as ModalActions from 'merchant/modules/modals'
+import RollKey from './RollKey'
+import NewKey from './NewKey'
+
+@connect(
+  (state) => {
+    return {
+      keys: state.keys,
+      session: state.session
+    }
+  },
+  { ...KeyActions, ...ModalActions }
+)
+
+
+export default class KeysListContainer extends ListContainer {
+  static MODAL_CLOSE_TIMEOUT = 300
+
+  constructor() {
+    super(...arguments)
+    this.generateKey = ::this.generateKey
+    this.showRollKeyModal = ::this.showRollKeyModal
+    this.showNewKeyModal = ::this.showNewKeyModal
+  }
+
+  fetchEntityList(params) {
+    return this.props.fetchKeys({
+      'id': this.props.session.user.id
+    });
+  }
+
+  showRollKeyModal(key = null) {
+    this.props.openModal({
+      component: <RollKey
+        currentKey={key}
+        merchantId={this.props.session.user.id}
+        closeModal={this.props.closeModal}
+        generateKey={this.generateKey}
+      />
+    })
+  }
+
+  showNewKeyModal(key) {
+    this.props.openModal({
+      component: <NewKey
+        currentKey={key}
+        onSave={(key) => {
+        }}
+        closeModal={this.props.closeModal}
+      />
+    })
+  }
+
+  generateKey(key) {
+    const self = this;
+    return this.props.generateKey(key).then(function(response){
+      var key = response
+      if (key.new) {
+        key = key.new
+      }
+      self.props.closeModal();
+      self.showNewKeyModal(key)
+    })
+  }
+
+  render() {
+    let { loading, keys } = this.props.keys
+    let mode = this.props.session.modeFormatted
+    let status = this.state.status
+
+    return (
+      <div class='react-root'>
+        <Header title='API Keys'>
+        </Header>
+        <div class='content-wrapper'>
+          <div class='panel panel-default'>
+            <div class='panel-heading'>
+              {`${mode} Keys`}
+            </div>
+
+            <Alert
+              type={status.type}
+              message={status.message}
+            />
+
+            <KeysList
+              keys={keys}
+              isLoading={loading}
+              mode={mode}
+              generateKey={this.generateKey}
+              showRollKeyModal={this.showRollKeyModal}
+              merchantId={this.props.session.user.id}
+            />
+
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={keys.length}
+              onClick={this.fetchAll}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+}

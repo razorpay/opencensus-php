@@ -145,9 +145,6 @@ var app = angular.module('app', [
     }).state('app.credits', {
       url: '/credits',
       templateUrl: 'tpl/app_credits.html'
-    }).state('app.keys', {
-      url: '/keys',
-      templateUrl: 'tpl/app_keys.html'
     }).state('app.activation', {
       url: '/activation',
       templateUrl: 'tpl/app_activation.html'
@@ -227,6 +224,9 @@ var app = angular.module('app', [
     }).state('app.webhooks', {
       url: '/webhooks',
       templateProvider: reactTemplateProvider('<webhooks-list />')
+    }).state('app.keys', {
+      url: '/keys',
+      templateProvider: reactTemplateProvider('<keys-list />')
     })
 
       //Guest Routes
