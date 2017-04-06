@@ -28,6 +28,7 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    // Not being used
     public function postActionDiff(string $id)
     {
         $input = Request::all();
@@ -176,6 +177,7 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    // Not being used
     public function createWorkflowStep(string $id)
     {
         $input = Request::all();
@@ -185,6 +187,7 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    // Not being used
     public function getWorkflowStep(string $id, string $stepId)
     {
         $data = (new Workflow\Step\Service)->fetch($id, $stepId);
