@@ -20,6 +20,27 @@ class Repository extends Base\Repository
             $options[Step\Entity::WORKFLOW_ID] = [];
         }
 
+        /*
+            $workflows:
+
+            SELECT *
+            FROM workflows
+            JOIN workflow_permissions ON workflow.id = workflow_permissions.workflow_id
+            WHERE workflow_permissions.permission_id IN ($permissionIds)
+
+            $workflow->steps:
+
+            SELECT *
+            FROM workflow_steps
+            WHERE workflow_steps.id IN ($workflowIds)
+
+            $workflow->permissions:
+
+            SELECT *
+            FROM workflow_permissions
+            WHERE workflow_permissions.id IN ($workflowIds)
+        */
+
         return $this->newQuery()
                     ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
                     ->with([Entity::STEPS, Entity::PERMISSIONS])
