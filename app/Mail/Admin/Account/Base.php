@@ -14,8 +14,6 @@ class Base extends Mailable
 
     protected $input;
 
-    protected $header;
-
     public function __construct($admin, array $input)
     {
         $this->admin = $admin;
@@ -28,7 +26,7 @@ class Base extends Mailable
     protected function addSender()
     {
         $from = Common::MAIL_ADDRESSES[Common::SUPPORT];
-        $fromHeader = Common::FROM_HEADER[Common::SUPPORT];
+        $fromHeader = Common::HEADERS[Common::SUPPORT];
 
         $this->from($from, $fromHeader);
 
@@ -49,6 +47,19 @@ class Base extends Mailable
         $replyTo = Common::MAIL_ADDRESSES[Common::SUPPORT];
 
         $this->replyTo($replyTo);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $mailTag = $this->getMailTag();
+
+            $headers = $message->getHeaders();
+            $headers->addTextHeader(MailTags::HEADER, $mailTag);
+        });
 
         return $this;
     }

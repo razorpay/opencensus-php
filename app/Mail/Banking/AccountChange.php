@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Mail;
+namespace RZP\Mail\Banking;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
@@ -14,15 +14,8 @@ class AccountChange extends Mailable
 
     protected $merchant;
 
-    /**
-     * Create a new message instance.
-     *
-     * @return void
-     */
     public function __construct(BankAccount\Entity $bankAccount, Merchant\Entity $merchant)
     {
-        parent::__construct();
-
         $this->bankAccount = $bankAccount;
 
         $this->merchant = $merchant;
@@ -30,7 +23,12 @@ class AccountChange extends Mailable
 
     protected function addRecipients()
     {
-        $this->to($this->merchant->getEmail(), $this->merchant->getName());
+        $email = $this->merchant->getEmail();
+        $name = $this->merchant->getName();
+
+        $this->to($email, $name);
+
+        return $this;
     }
 
     protected function addSubject()
@@ -46,7 +44,7 @@ class AccountChange extends Mailable
 
     protected function addMailData()
     {
-        $data = array_merge($this->merchant->toArray(), $this->newBankAccount->toArray());
+        $data = array_merge($this->merchant->toArray(), $this->bankAccount->toArray());
 
         $this->with($data);
 

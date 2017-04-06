@@ -29,7 +29,7 @@ class DailyFile extends Mailable
 
     protected function addRecipients()
     {
-        $emails = [Common::MAIL_ADDRESSES[Common::SETTLEMENTS]];
+        $emails = Common::MAIL_ADDRESSES[Common::SETTLEMENTS];
 
         $this->to($emails);
 

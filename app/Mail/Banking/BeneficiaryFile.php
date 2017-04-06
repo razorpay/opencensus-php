@@ -8,20 +8,20 @@ use RZP\Mail\Base\Common;
 
 class BeneficiaryFile extends Mailable
 {
-    const KOTAK_BENEFICIARY_MAIL = 'kotak_beneficiary_file@razorpay.com';
+    const KOTAK_BENEFICIARY_MAIL       = 'kotak_beneficiary_file@razorpay.com';
     const KOTAK_BENEFICARY_FROM_HEADER = 'Razorpay Kotak Beneficiary File';
-    const RECIPIENT_EMAILS = ['aanchal.wadhwani@kotak.com', 'settlements@razorpay.com'];
-    const CC_EMAILS = ['uphendra.bn@kotak.com', 'Abhijit.B.Joshi@kotak.com', 'anupam.namdeo@kotak.com'];
+    const RECIPIENT_EMAILS             = ['aanchal.wadhwani@kotak.com', 'settlements@razorpay.com'];
+    const CC_EMAILS                    = [
+                                            'uphendra.bn@kotak.com',
+                                            'Abhijit.B.Joshi@kotak.com',
+                                            'anupam.namdeo@kotak.com'
+                                         ];
 
-    protected $filePath;
+    protected $data;
 
-    protected $merchantsCount;
-
-    public function __construct(string $filePath, int $merchantsCount)
+    public function __construct(array $data)
     {
-        $this->filePath = $filePath;
-
-        $this->merchantsCount = $merchantsCount;
+        $this->data = $data;
     }
 
     protected function addSender()
@@ -59,7 +59,7 @@ class BeneficiaryFile extends Mailable
     {
         $data['body'] = 'Please find attached updated beneficiary file for ' .
                         'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $this->merchantsCount .'.';
+                        'Beneficiaries Count is '. $this->data['merchantsCount'] .'.';
 
         $this->with($data);
 
@@ -68,7 +68,7 @@ class BeneficiaryFile extends Mailable
 
     protected function addAttachments()
     {
-        $this->attach($this->filePath);
+        $this->attach($this->data['filePath']);
 
         return $this;
     }

@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 use Cache;
 use Closure;
 use Carbon\Carbon;
+use Mail;
+
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -377,6 +380,8 @@ EOT;
 
     public function testRefundExcelFile()
     {
+        Mail::fake();
+
         $payment = $this->testPaymentWithS2S();
         $this->capturePayment($payment['id'], 50000);
 
@@ -405,6 +410,15 @@ EOT;
 
         $this->assertEquals(3, $data['upi_icici']['count']);
         $this->assertTrue(file_exists($data['upi_icici']['file']));
+
+        Mail::assertSent(RefundFileMail::class, function ($mail)
+        {
+            $body = 'Please find attached refunds information for UPI';
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            return true;
+        });
 
         unlink($data['upi_icici']['file']);
     }

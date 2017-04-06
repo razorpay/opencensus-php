@@ -2,19 +2,17 @@
 
 namespace RZP\Mail\Admin\Account;
 
+use Config;
+
 use RZP\Constants\MailTags;
 
 class Create extends Base
 {
-    protected $url;
-
-    public function __construct($admin, array $input, string $url)
+    public function __construct($admin, array $input)
     {
         parent::__construct($admin, $input);
 
         $this->header = MailTags::ADMIN_CREATE;
-
-        $this->url = $url;
     }
 
     public function canSend()
@@ -53,7 +51,7 @@ class Create extends Base
                 // todo: Hack for now. Remove it
                 'password' => $this->input['password'],
                 'org' => $this->org->getDisplayName(),
-                'url' => $this->url,
+                'url' => Config::get('applications.dashboard.url'),
             ]
         ];
 
@@ -62,14 +60,8 @@ class Create extends Base
         return $this;
     }
 
-    protected function addHeaders()
+    protected function getMailTag()
     {
-        $this->withSwiftMessage(function ($message)
-        {
-            $headers = $message->getHeaders();
-            $headers->addTextHeader(MailTags::HEADER, MailTags::ADMIN_CREATE);
-        });
-
-        return $this;
+        return MailTags::ADMIN_CREATE;
     }
 }

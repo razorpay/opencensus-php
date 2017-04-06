@@ -20,7 +20,7 @@ class Metadata
         self::WALLET_PAYUMONEY   => ['settlements@razorpay.com']
     ];
 
-    const FROM_HEADER_MAP = [
+    const HEADER_MAP = [
         self::NETBANKING_HDFC    => 'Hdfc Netbanking refunds',
         self::NETBANKING_ICICI   => 'Icici Netbanking refunds',
         self::UPI_ICICI          => 'UPI Icici Refunds',
@@ -45,10 +45,10 @@ class Metadata
     ];
 
     const BODY_MAP = [
-        self::NETBANKING_HDFC => 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',
-        self::NETBANKING_ICICI => 'Please forward the ICICI Netbanking refunds file to UBPS operations team',
-        self::UPI_ICICI => 'Please find attached refunds information for UPI',
+        self::NETBANKING_HDFC    => 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',
+        self::NETBANKING_ICICI   => 'Please forward the ICICI Netbanking refunds file to UBPS operations team',
+        self::UPI_ICICI          => 'Please find attached refunds information for UPI',
         self::WALLET_AIRTELMONEY => 'Please find attached refunds information for AirtelMoney',
-        self::WALLET_PAYUMONEY => 'Please find attached refunds information for PayUMoney',
+        self::WALLET_PAYUMONEY   => 'Please find attached refunds information for PayUMoney',
     ];
 }

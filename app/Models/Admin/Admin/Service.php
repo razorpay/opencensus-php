@@ -271,9 +271,7 @@ class Service extends Base\Service
 
     public function sendAdminCreateEmail($admin, $input)
     {
-        $url = $this->app['config']->get('applications.dashboard.url');
-
-        $createAdminMail = new AdminMail\Create($admin, $input, $url);
+        $createAdminMail = new AdminMail\Create($admin, $input);
 
         Mail::queue($createAdminMail);
     }

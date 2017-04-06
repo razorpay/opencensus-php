@@ -30,7 +30,7 @@ class Scorecard extends Mailable
     {
         $fromEmail = Common::MAIL_ADDRESSES[Common::SCORECARD];
 
-        $fromHeader = Common::FROM_HEADER[Common::SCORECARD];
+        $fromHeader = Common::HEADERS[Common::SCORECARD];
 
         $this->from($fromEmail, $fromHeader);
 
@@ -51,15 +51,15 @@ class Scorecard extends Mailable
     protected function addMailData()
     {
         $message = '
-            Yesterday Volume        - ' . $this->data['yesterdayVolume']->getAttribute('amount') / 100 . ' <br />
+            Yesterday\'s Volume        - ' . $this->data['yesterdayVolume']->getAttribute('amount') / 100 . ' <br />
             Monthly Volume till now - ' . $this->data['monthVolume']->getAttribute('amount') / 100 . ' <br /><br />';
 
 
         $message .= '
-            Yesterday Transactions count        - ' . $this->data['yesterdayVolume']->getAttribute('count') . ' <br />
+            Yesterday\'s Transactions count        - ' . $this->data['yesterdayVolume']->getAttribute('count') . ' <br />
             Monthly Transactions count till now - ' . $this->data['monthVolume']->getAttribute('count') . ' <br /><br />';
 
-        $message .= 'Yesterday Top Merchants By Volume - <br />';
+        $message .= 'Yesterday\'s Top Merchants By Volume - <br />';
         $message .= $this->getTabularFormattedMerchantVolumeScorecard($this->data['yesterdayMerchantVolume']);
 
         $message .= 'Monthly Top Merchants By Volume - <br />';

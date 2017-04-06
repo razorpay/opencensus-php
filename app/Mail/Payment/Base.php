@@ -22,7 +22,7 @@ class Base extends Mailable
     protected function addSender()
     {
         $email = Common::MAIL_ADDRESSES[Common::REPORTS];
-        $header = Common::FROM_HEADER[Common::REPORTS];
+        $header = Common::HEADERS[Common::REPORTS];
 
         $this->from($email, $header);
 

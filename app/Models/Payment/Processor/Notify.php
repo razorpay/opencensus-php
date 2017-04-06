@@ -166,7 +166,6 @@ class Notify
 
         // Send out Slack notifications for the event
         // You can control slack posts via SLACK_ENABLE
-
         if ((array_key_exists($event, $slackMessages)) and
             ($this->isSlackEnabled()))
         {

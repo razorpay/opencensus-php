@@ -37,7 +37,7 @@ class DailyReport extends Mailable
     protected function addReplyTo()
     {
         $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
-        $header =Common::FROM_HEADER[Common::SUPPORT];
+        $header =Common::HEADERS[Common::SUPPORT];
 
         $this->replyTo($email, $header);
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace RZP\Mail\Invoice;
+
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 
 class Expired extends Base

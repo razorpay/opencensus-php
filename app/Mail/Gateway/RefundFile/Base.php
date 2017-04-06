@@ -24,7 +24,7 @@ class Base extends Mailable
     {
         $fromEmail = Common::MAIL_ADDRESSES[Common::REFUNDS];
 
-        $fromHeader = Metadata::FROM_HEADER_MAP[$this->type];
+        $fromHeader = Metadata::HEADER_MAP[$this->type];
 
         $this->from($fromEmail, $fromHeader);
 

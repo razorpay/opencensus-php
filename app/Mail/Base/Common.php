@@ -32,7 +32,7 @@ class Common
         self::EMI           => 'emifiles@razorpay.com'
     ];
 
-    const FROM_HEADER = [
+    const HEADERS = [
         self::SUPPORT   => 'Team Razorpay',
         self::SCORECARD => 'Razorpay Scorecard',
         self::REFUNDS   => 'Refunds File',

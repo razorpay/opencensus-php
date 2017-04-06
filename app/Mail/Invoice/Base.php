@@ -21,10 +21,6 @@ class Base extends Mailable
 
     protected $invoice;
 
-    protected $invoiceData;
-
-    protected $mailSubjectTemplates;
-
     protected $event;
 
     public function __construct(InvoiceEntity $invoice)
@@ -32,8 +28,6 @@ class Base extends Mailable
         $this->invoice = $invoice;
 
         $this->invoiceData = (new ViewDataSerializer($this->invoice))->get();
-
-        $this->setMailSubjectTemplates();
     }
 
     protected function addSender()
@@ -60,14 +54,14 @@ class Base extends Mailable
     {
         $merchantName = $this->invoiceData['merchant']['name'];
 
-        if (in_array($this->event, array_keys($this->mailSubjectTemplates), true) === false)
+        if (in_array($this->event, array_keys(Event::MAIL_SUBJECT_TEMPLATES), true) === false)
         {
             throw new Exception\LogicException("No templates found for event: $this->event");
         }
 
         $type = $this->invoice->getType();
 
-        $subject = sprintf($this->mailSubjectTemplates[$this->event][$type], $merchantName);
+        $subject = sprintf(Event::MAIL_SUBJECT_TEMPLATES[$this->event][$type], $merchantName);
 
         $this->subject($subject);
 
@@ -78,7 +72,7 @@ class Base extends Mailable
     {
         $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
 
-        $header = Common::FROM_HEADER[Common::SUPPORT];
+        $header = Common::HEADERS[Common::SUPPORT];
 
         $this->replyTo($email, $header);
 
@@ -110,7 +104,9 @@ class Base extends Mailable
     {
         $this->withSwiftMessage(function ($message)
         {
-            $label = self::MAIL_TAG_MAP[$this->invoice->getType()] ?? MailTags::INVOICE;
+            $invoiceType = $this->invoice->getType();
+
+            $label = self::MAIL_TAG_MAP[$invoiceType] ?? MailTags::INVOICE;
 
             $headers = $message->getHeaders();
 
@@ -120,26 +116,5 @@ class Base extends Mailable
         });
 
         return $this;
-    }
-
-    protected function setMailSubjectTemplates()
-    {
-        $this->mailSubjectTemplates = [
-            Event::INVOICE_ISSUED => [
-                Type::LINK    => ' Payment requested by %s',
-                Type::ECOD    => ' Payment requested by %s',
-                Type::INVOICE => ' Invoice from %s',
-            ],
-            Event::INVOICE_EXPIRED => [
-                Type::LINK    => ' Payment requested from %s has expired',
-                Type::ECOD    => ' Payment requested from %s has expired',
-                Type::INVOICE => ' Invoice from %s has expired',
-            ],
-            Event::INVOICE_EXPIRING => [
-                Type::LINK    => ' Payment request from %s is expiring',
-                Type::ECOD    => ' Payment request from %s is expiring',
-                Type::INVOICE => ' Invoice from %s is expiring',
-            ],
-        ];
     }
 }

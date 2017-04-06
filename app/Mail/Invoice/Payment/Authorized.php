@@ -19,7 +19,7 @@ class Authorized extends Base
     {
         $email = Common::MAIL_ADDRESSES[Common::CARE];
 
-        $header = Common::FROM_HEADER[Common::CARE];
+        $header = Common::HEADERS[Common::CARE];
 
         $this->from($email, $header);
 

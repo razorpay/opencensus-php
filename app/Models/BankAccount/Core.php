@@ -3,7 +3,7 @@
 namespace RZP\Models\BankAccount;
 
 use RZP\Constants\Mode;
-use RZP\Mail\BankAccountChange as BankAccountChangeMail;
+use RZP\Mail\Banking\AccountChange as BankAccountChangeMail;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Constants\MailTags;
@@ -164,7 +164,7 @@ class Core extends Base\Core
 
     protected function sendBankAccountChangeEmail($newBankAccount, $merchant)
     {
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) and ($this->app->environment('dev', 'testing') === false))
         {
             return;
         }

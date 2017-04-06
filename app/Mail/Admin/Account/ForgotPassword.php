@@ -11,8 +11,6 @@ class ForgotPassword extends Base
     public function __construct($admin, array $input)
     {
         parent::__construct($admin, $input);
-
-        $this->header = MailTags::FORGOT_PASSWORD;
     }
 
     protected function addSubject()
@@ -42,5 +40,10 @@ class ForgotPassword extends Base
         $this->with($data);
 
         return $this;
+    }
+
+    protected function getMailTag()
+    {
+        return MailTags::FORGOT_PASSWORD;
     }
 }

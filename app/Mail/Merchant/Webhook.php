@@ -25,7 +25,7 @@ class Webhook extends Mailable
     {
         $email = Common::MAIL_ADDRESSES[Common::ALERTS];
 
-        $header = Common::FROM_HEADER[Common::ALERTS];
+        $header = Common::HEADERS[Common::ALERTS];
 
         $this->from($email, $header);
 
@@ -45,7 +45,7 @@ class Webhook extends Mailable
     {
         $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
 
-        $header = Common::FROM_HEADER[Common::SUPPORT];
+        $header = Common::HEADERS[Common::SUPPORT];
 
         $this->replyTo($email, $header);
 

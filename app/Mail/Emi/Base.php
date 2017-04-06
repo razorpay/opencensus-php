@@ -7,10 +7,10 @@ use RZP\Mail\Base\Mailable;
 
 class Base extends Mailable
 {
-    const AXIS = 'Axis';
+    const AXIS     = 'Axis';
     const INDUSIND = 'IndusInd';
-    const KOTAK = 'Kotak';
-    const RBL = 'Rbl';
+    const KOTAK    = 'Kotak';
+    const RBL      = 'Rbl';
 
     const BANK_RECIPIENTS_MAP = [
         self::AXIS     => ['axiscards.emi@razorpay.com'],

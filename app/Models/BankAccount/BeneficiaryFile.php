@@ -102,7 +102,12 @@ class BeneficiaryFile
 
     protected function sendKotakBeneficiaryFileMail($fullpath, $merchantsCount)
     {
-        $beneficiaryFileMail = new BeneficiaryFileMail($fullpath, $merchantsCount);
+        $data = [
+            'filePath'       => $fullpath,
+            'merchantsCount' => $merchantsCount,
+        ];
+
+        $beneficiaryFileMail = new BeneficiaryFileMail($data);
 
         Mail::queue($beneficiaryFileMail);
     }
