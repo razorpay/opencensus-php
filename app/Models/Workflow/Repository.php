@@ -13,6 +13,16 @@ class Repository extends Base\Repository
         Entity::ORG_ID        => 'sometimes|string|max:14',
     ];
 
+    public function fetchWorkflowsByPermissions(array $permissionIds, array $relations = [])
+    {
+        return $this->newQuery()
+                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
+                    ->with($relations)
+                    ->whereIn('workflow_permissions.permission_id', $permissionIds)
+                    ->whereNotIn(Entity::ID, $options[Step\Entity::WORKFLOW_ID])
+                    ->get();
+    }
+
     public function fetchWorkflowsWithStepsByPermissions(array $permissionIds, array $options = [])
     {
         if (isset($options[Step\Entity::WORKFLOW_ID]) === false)

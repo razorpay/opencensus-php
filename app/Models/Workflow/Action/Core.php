@@ -27,7 +27,7 @@ class Core extends Base\Core
 
         $commonPermissions = array_intersect($routePermissions, $adminPersmissions);
 
-        $workflows = $this->repo->fetchWorkflowsWithStepsByPermissions($commonPermissions);
+        $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($commonPermissions);
 
         $workflow = $workflows->first();
 
