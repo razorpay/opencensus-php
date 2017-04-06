@@ -224,7 +224,7 @@ var app = angular.module('app', [
       template: '<div ui-view class=""></div>'
     }).state('app.workflows.feed', {
       url: '/feed',
-      templateUrl: 'tpl/admin/app_workflow_feed.html'
+      templateUrl: 'tpl/admin/app_workflow_feed_list.html'
     }).state('app.workflows.feed.detail', {
       url: '/:action_id',
       templateUrl: 'tpl/admin/app_workflow_feed.html'

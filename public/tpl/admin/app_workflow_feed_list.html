@@ -1,0 +1,54 @@
+<div ng-controller="WorkflowRequestsCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Workflow Requests - Total {{count}}
+      <spinner class="inline"></spinner>
+    </h1>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        List of all Workflow Requests
+      </div>
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div class="row wrapper">
+        <div class="col-md-6 m-b-xs">
+          <label for='filter' class='m-r'>Search</label>
+          <input id="filter" type="text"
+            class="form-control input-sm w-sm inline m-r">
+        </div>
+      </div>
+      <div>
+        <table ui-jq="footable" data-filter="#filter" data-page="false" class="table-responsive table table-striped b-t b-light">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Created At</th>
+              <th>Action</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="row in workflow_requests">
+              <td>{{row.id}}</td>
+              <td>{{row.title}}</td>
+              <td>{{row.created_at*1000 | date:'medium'}}</td>
+              <td>
+                <div class="btn-group">
+                  <a class="btn btn-default btn-xs" ui-sref="app.workflows.edit({ id: row.id })">
+                    <i class="fa fa-pencil-square"></i>
+                    view
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr ng-show="workflow_requests.length == 0">
+              <td colspan="6">No Workflows</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
