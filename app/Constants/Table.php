@@ -97,7 +97,7 @@ class Table
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
 
-    const REPORT                = 'report';
+    const REPORT                = 'reports';
 
     protected static $entityToTableMap = array(
         Entity::AXIS_MIGS           => self::MIGS,

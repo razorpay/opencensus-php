@@ -10,6 +10,7 @@ class Core extends Base\Core
 {
     /**
      * @param   $input
+     *          Expected params in $input are : start_time, end_time, entity
      * @return  Entity
      */
     public function create(array $input, Merchant\Entity $merchant)

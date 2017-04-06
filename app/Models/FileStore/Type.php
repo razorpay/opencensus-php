@@ -38,7 +38,7 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
-    const MERCHANT_REPORT                   = 'merchant_report';
+    const REPORT                            = 'report';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -72,7 +72,7 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::ICICI_NODAL_TRANSFER,
-            self::MERCHANT_REPORT,
+            self::REPORT,
         ],
 
         Constants\Entity::BATCH => [

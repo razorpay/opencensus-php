@@ -24,25 +24,22 @@ class CreateReportTable extends Migration
             $table->char(Report::ID, Report::ID_LENGTH)
                   ->primary();
 
-            $table->char(Report::MERCHANT_ID, Report::ID_LENGTH);
+            $table->char(Report::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->char(Report::FILE_ID)
-                    ->nullable();
+                  ->nullable();
 
-            $table->char(Report::ENTITY)
-                    ->nullable();
+            $table->char(Report::ENTITY);
 
             $table->integer(Report::GENERATED_AT)
-                    ->unsigned()
-                    ->nullable();
+                  ->unsigned()
+                  ->nullable();
 
             $table->integer(Report::START_TIME)
-                    ->unsigned()
-                    ->nullable();
+                  ->unsigned();
 
             $table->integer(Report::END_TIME)
-                    ->unsigned()
-                    ->nullable();
+                  ->unsigned();
 
             $table->integer(Report::CREATED_AT);
 
@@ -53,6 +50,10 @@ class CreateReportTable extends Migration
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->index(Report::CREATED_AT);
+
+            $table->index(Report::MERCHANT_ID);
         });
     }
 

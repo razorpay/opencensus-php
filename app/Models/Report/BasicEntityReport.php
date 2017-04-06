@@ -299,7 +299,7 @@ class BasicEntityReport extends Base
                             ->localFile($file)
                             ->name($fileName)
                             ->store(FileStore\Store::S3)
-                            ->type(FileStore\Type::MERCHANT_REPORT)
+                            ->type(FileStore\Type::REPORT)
                             ->save()
                             ->getSignedUrl();
 
@@ -308,22 +308,26 @@ class BasicEntityReport extends Base
 
     /**
      * Checks if a report entity exists for give parameters
+     * @param $from integer
+     * @param $to   integer
+     * @return $report Report\Entity
      */
     protected function getReportEntity($from, $to)
     {
-        $params = [
-            Entity::START_TIME  => $from,
-            Entity::END_TIME    => $to,
-            Entity::ENTITY      => $this->entity,
-        ];
+        $merchant = $this->merchant;
 
-        $service = new Service;
-
-        $report = $service->fetchMerchantReport($params);
+        $report = $this->repo->report->fetchReportEntity(
+                                        $from, $to, $this->entity, $merchant->getId());
 
         if (is_null($report) === true)
         {
-            $report = $service->create($params);
+            $params = [
+                Entity::START_TIME  => $from,
+                Entity::END_TIME    => $to,
+                Entity::ENTITY      => $this->entity,
+            ];
+
+            $report = (new Core)->create($params, $merchant);
         }
 
         return $report;

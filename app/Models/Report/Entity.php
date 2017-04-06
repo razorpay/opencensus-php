@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
         self::END_TIME,
         self::FILE_ID,
         self::ENTITY,
+        self::MERCHANT_ID,
         self::GENERATED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::END_TIME,
         self::FILE_ID,
         self::ENTITY,
+        self::MERCHANT_ID,
         self::GENERATED_AT,
     ];
 
@@ -58,12 +60,12 @@ class Entity extends Base\PublicEntity
 
     public function setGeneratedAt($time)
     {
-        $this->attributes[self::GENERATED_AT] = $time;
+        $this->setAttribute(self::GENERATED_AT, $time);
     }
 
     public function setFileId($fileId)
     {
-        $this->attributes[self::FILE_ID] = $fileId;
+        $this->setAttribute(self::FILE_ID, $fileId);
     }
 
     // ----------------------------------- SETTERS END -------------------------------

@@ -9,10 +9,16 @@ class Repository extends Base\Repository
     protected $entity = 'report';
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID     => 'required|alpha_num',
+        Entity::MERCHANT_ID     => 'required|alpha_dash',
         Entity::ENTITY          => 'sometimes|string'
     ];
 
+    /**
+     * @param   $start
+     * @param   $end
+     * @param   $entity
+     * @return  Report\Entity
+     */
     public function fetchReportEntity($start, $end, $entity, $merchantId)
     {
         return $this->newQuery()
