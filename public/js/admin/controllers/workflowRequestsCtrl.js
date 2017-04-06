@@ -21,7 +21,7 @@ app.controller('WorkflowRequestsCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.workflow_requests = data.data;
+          $scope.workflow_requests = data.data.items;
         }
       }).error(function () {
 
