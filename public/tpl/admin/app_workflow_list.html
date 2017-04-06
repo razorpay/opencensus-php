@@ -16,7 +16,7 @@
           <input id="filter" type="text"
             class="form-control input-sm w-sm inline m-r">
         </div>
-        <div class="col-md-6" ng-show="admin.permissions && admin.permissions.indexOf('create_permission') !== -1">
+        <div class="col-md-6" ng-show="admin.permissions && admin.permissions.indexOf('create_workflow') === -1">
           <a class='btn btn-default pull-right'
             ui-sref='app.workflows.new'>
             Add New Workflow
@@ -30,21 +30,22 @@
               <th>ID</th>
               <th>Name</th>
               <th>Created At</th>
+              <th>Action</th>
           </thead>
           <tbody>
-            <tr ng-repeat="row in permissions">
+            <tr ng-repeat="row in workflows">
               <td>{{row.id}}</td>
               <td>{{row.name}}</td>
-              <td>{{row.created_At}}</td>
+              <td>{{row.created_at*1000 | date:'medium'}}</td>
               <td>
                 <div class="btn-group">
-                  <a class="btn btn-default btn-xs" ui-sref="app.permissions.edit({ id: row.id })"
-                    ng-show="admin.permissions && admin.permissions.indexOf('edit_permission') !== -1">
+                  <a class="btn btn-default btn-xs" ui-sref="app.workflows.edit({ id: row.id })"
+                    ng-show="admin.permissions && admin.permissions.indexOf('edit_workflow') === -1">
                     <i class="fa fa-pencil-square"></i>
                     edit
                   </a>
                   <button class="btn btn-default btn-xs" ng-confirm-click="Are you sure you want to delete this Permission?"
-                    ng-click="deletePermission(row.id)" ng-show="admin.permissions && admin.permissions.indexOf('delete_permission') !== -1">
+                    ng-click="deletePermission(row.id)" ng-show="admin.permissions && admin.permissions.indexOf('edit_workflow') === -1">
                     <i class="fa fa-trash text-danger"></i>
                     delete
                   </button>

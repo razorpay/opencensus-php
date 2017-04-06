@@ -57,6 +57,10 @@ return [
         'admin_lead_create'                 => 'orgs/{id}/admin-lead',
         'admin_lead_get_multiple'           => 'orgs/{id}/admin-lead',
         'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
+
+        // Workflows
+
+        'workflow_get_multiple'             => 'orgs/{id}/workflows',
     ],
 
     // auth
