@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+
 use RZP\Constants\Table;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Admin\Permission\Category as PermissionCategory;
@@ -15,9 +16,9 @@ class PermissionSeeder extends Seeder
 
     public function __construct()
     {
-        self::$permissions = \Config::get('heimdall.permissions');
+        self::$permissions = Config::get('heimdall.permissions');
 
-        self::$assignablePermissions = \Config::get('heimdall.assignablePermissions');
+        self::$assignablePermissions = Config::get('heimdall.assignablePermissions');
     }
 
     /**
@@ -114,7 +115,6 @@ class PermissionSeeder extends Seeder
                     }
                 }
             }
-
             // end of transaction
         });
     }

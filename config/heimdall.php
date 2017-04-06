@@ -119,6 +119,9 @@ return [
             Permission::SCHEDULE_MIGRATION => '',
             Permission::VIEW_ACTIONS => '',
             Permission::VIEW_MERCHANT_STATS => '',
+            Permission::CREATE_MERCHANT_INVITE => '',
+            Permission::EDIT_MERCHANT_INVITE   => '',
+            Permission::VIEW_MERCHANT_INVITE => '',
         ],
 
         PermissionCategory::ENTITY => [
@@ -221,6 +224,10 @@ return [
             Permission::VIEW_MERCHANT_BALANCE_LIVE        => '',
 
             Permission::EDIT_MERCHANT_EMAIL => '',
+
+            Permission::CREATE_MERCHANT_INVITE => '',
+            Permission::EDIT_MERCHANT_INVITE   => '',
+            Permission::VIEW_MERCHANT_INVITE => '',
         ],
 
         // UAM

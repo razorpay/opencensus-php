@@ -47,15 +47,20 @@ class CreateAdmins extends Migration
             $table->string(Admin::USER_TYPE)
                   ->nullable();
 
-            $table->string(Admin::EMPLOYEE_CODE);
+            $table->string(Admin::EMPLOYEE_CODE)
+                  ->nullable();
 
-            $table->string(Admin::BRANCH_CODE);
+            $table->string(Admin::BRANCH_CODE)
+                  ->nullable();
 
-            $table->string(Admin::DEPARTMENT_CODE);
+            $table->string(Admin::DEPARTMENT_CODE)
+                  ->nullable();
 
-            $table->string(Admin::SUPERVISOR_CODE);
+            $table->string(Admin::SUPERVISOR_CODE)
+                  ->nullable();
 
-            $table->string(Admin::LOCATION_CODE);
+            $table->string(Admin::LOCATION_CODE)
+                  ->nullable();
 
             // account disabled by supervisor
             $table->boolean(Admin::DISABLED)
