@@ -10,9 +10,9 @@ import { saveInvoice } from 'merchant/modules/invoices/list'
 import { required, phone, email } from 'rzp/utils/validators'
 
 @connect(
-  (state) => state.session,
-  { saveInvoice }
+  (state) => state.session
 )
+
 @reduxForm({
   form: 'newKeyModal'
 })

@@ -47,7 +47,6 @@ export default function (state = initialState, action) {
       })
 
     case `${KEY_GENERATE}::SUCCESS`:
-      console.log(action);
       return merge(state, {
         loading: false,
         keys: [action.payload]

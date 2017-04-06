@@ -76,67 +76,7 @@ export default class Key extends GenericEntity {
     return this.isNew ? 'post' : 'put';
   }
 
-
   resourceFields() {
     return this.isNew ? [] : rollKeyFields
-  }
-
-  notify(type) {
-    return ajax({
-      url: `/invoices/${this.id}/notify/${type}`,
-      method: 'post',
-    })
-  }
-
-  cancel() {
-    return this.makeGenericAjaxCall({
-      method: 'post',
-      data: {
-        route_name: 'invoice_cancel',
-        url_params: JSON.stringify({
-          '{id}': this.id,
-        }),
-      }
-    }).then((response) => {
-      return new Invoice().deserialize(response.data)
-    })
-  }
-
-  serializeProperty(prop) {
-    return super.serializeProperty(prop)
-  }
-
-  deserializeProperty(prop, value) {
-    switch(prop) {
-      case 'customer_details':
-        this.customer = {
-          name: value.customer_name,
-          email: value.customer_email,
-          contact: value.customer_contact,
-          address: value.customer_address
-        }
-        break
-
-      case 'amount':
-        this.amountInINR = getFixedINRAmount(value)
-        break
-
-      case 'line_items':
-        value = value.map((item) => {
-          item.amountInINR = getFixedINRAmount(item.amount)
-          return item
-        })
-        break
-
-      case 'sms_status':
-        this.sms_notify = !isBlank(value)
-        break
-
-      case 'email_status':
-        this.email_notify = !isBlank(value)
-        break
-    }
-
-    return super.deserializeProperty(prop, value)
   }
 }
