@@ -19,7 +19,7 @@ class Repository extends BaseRepository
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         return $this->newQuery()
-                    ->where(self::ORG_ID, '=', $orgId)
+                    ->orgId($orgId)
                     ->where(Entity::ID, '=', $id)
                     ->get();
     }
@@ -31,5 +31,28 @@ class Repository extends BaseRepository
         return $this->newQuery()
                     ->where(self::ACTION_ID, '=', $actionId)
                     ->get();
+    }
+
+    public function findByIdAndOrgIdWithRelations($id, $orgId, $relations = [])
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->with($relations)
+                    ->where(Entity::ID, '=', $id)
+                    ->firstOrFailPublic();
+    }
+
+    public function findByPublicIdAndOrgIdWithRelations(
+        $id,
+        $orgId,
+        $relations = [])
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSign($id);
+
+        return $this->findByIdAndOrgIdWithRelations($id, $orgId, $relations);
     }
 }

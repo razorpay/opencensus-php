@@ -19,11 +19,11 @@ class Service extends Base\Service
         return $workflow->toArrayPublic();
     }
 
-    public function fetch(string $id)
+    public function fetch(string $orgId, string $id)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $workflow = $this->repo->workflow->findOrFailPublic($id);
+        $workflow = $this->repo->workflow
+                               ->findByPublicIdAndOrgIdWithRelations(
+                                   $id, $orgId, ['steps', 'permissions']);
 
         return $workflow->toArrayPublic();
     }

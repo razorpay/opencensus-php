@@ -36,6 +36,8 @@ class Entity extends Base\Entity
         self::ORG_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::STEPS,
+        self::PERMISSIONS,
     ];
 
     protected $public = [
@@ -43,6 +45,8 @@ class Entity extends Base\Entity
         self::NAME,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::STEPS,
+        self::PERMISSIONS,
     ];
 
     public function getName()

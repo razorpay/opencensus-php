@@ -147,7 +147,9 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Workflow\Service)->fetch($id);
+        $orgId = Request::header('X-Org-Id');
+
+        $data = (new Workflow\Service)->fetch($orgId, $id);
 
         return ApiResponse::json($data);
     }
