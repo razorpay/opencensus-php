@@ -38,11 +38,11 @@ class Service extends Base\Service
 
     public function getActionDetails(string $actionId)
     {
-        $admin = $this->repo['basicauth']->getAdmin();
+        $admin = $this->app['basicauth']->getAdmin();
 
         $orgId = $admin->getOrgId();
 
-        Action\Entity::verifyIdAndStripSign($actionId);
+        Entity::verifyIdAndStripSign($actionId);
 
         $action = $this->repo
                        ->workflow_action

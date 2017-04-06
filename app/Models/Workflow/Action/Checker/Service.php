@@ -32,9 +32,7 @@ class Service extends Base\Service
         (new Action\Validator)->validateActionBelongsToAdminOrg(
             $action, $admin);
 
-        $input[Entity::ACTION_ID] = $actionId;
-
-        $checkers = $this->repo->action_checker->fetch($input);
+        $checkers = $this->repo->action_checker->fetchByActionId($actionId);
 
         return $checkers->toArrayPublic();
     }

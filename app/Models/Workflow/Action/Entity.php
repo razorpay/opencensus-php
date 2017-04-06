@@ -97,7 +97,7 @@ class Entity extends Base\Entity
         $this->setAttribute(self::CURRENT_LEVEL, $level);
     }
 
-    public function getCurrentLevel() : integer
+    public function getCurrentLevel() : int
     {
         return $this->getAttribute(self::CURRENT_LEVEL);
     }

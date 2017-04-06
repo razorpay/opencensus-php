@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Workflow;
 
+use App;
 
 /****
  * Workflow Manager manages all workflows and activities relating to it.
@@ -50,13 +51,7 @@ class Manager
         $actions = $this->repo->workflow_action->findByOrgId(
             $admin->getOrgId());
 
-        $adminRoles = $admin->roles()->get(['id']);
-
-        $adminRoles = array_map(function($role)
-        {
-            return $role->getId();
-
-        }, $adminRoles);
+        $adminRoles = $admin->roles()->getRelatedIds()->toArray();
 
         $actionsForAdmin = [];
 

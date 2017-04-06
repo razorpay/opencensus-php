@@ -21,7 +21,7 @@ class Validator extends Base\Validator
 
     public function validateActionBelongsToAdminOrg($action, $admin)
     {
-        if ($admin->getOrgId() !== $action->getAdmin()->getOrgId())
+        if ($admin->getOrgId() !== $action->admin->getOrgId())
         {
             $data = [
                 'admin'      => $admin->getId(),

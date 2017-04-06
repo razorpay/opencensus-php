@@ -208,7 +208,7 @@ class WorkflowController extends Controller
         return ApiResponse::json($result);
     }
 
-    public function getActionComment(string $actionId)
+    public function getActionComments(string $actionId)
     {
         $result = (new Comment\Service)->fetchByActionId($actionId);
 

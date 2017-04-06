@@ -19,7 +19,6 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
-        self::COMMENT,
         self::ADMIN_ID,
         self::ACTION_ID,
         self::ADMIN_ID,
@@ -28,7 +27,6 @@ class Entity extends Base\Entity
 
     protected $visible = [
         self::ID,
-        self::COMMENT,
         self::ADMIN_ID,
         self::ACTION_ID,
         self::COMMENT,
@@ -38,12 +36,17 @@ class Entity extends Base\Entity
 
     protected $public = [
         self::ID,
-        self::COMMENT,
         self::ADMIN_ID,
         self::ACTION_ID,
         self::COMMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ADMIN_ID,
+        self::ACTION_ID,
     ];
 
     public function admin()
