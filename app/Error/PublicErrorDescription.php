@@ -383,6 +383,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FILE_NOT_FOUND                                            = 'There was error while retrieving the file';
 
     // Workflow Related Errors
+    const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                 = 'Workflow entity not found';
     const BAD_REQUEST_ACTION_INVALID_TYPE                                       = 'The given action type is not valid';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                     = 'The given action method is not valid';
     const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                             = 'Action State is not valid';

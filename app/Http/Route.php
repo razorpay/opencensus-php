@@ -1135,7 +1135,8 @@ final class Route
      * Its the map of the entity vs route name
      */
     public static $workflowRoutes = [
-       'merchant_edit_email' => 'merchant',
+       'merchant_edit_email'                        => 'merchant',
+       'admin_edit'                                 => 'hello', // will change
     ];
 
     const RAZORPAYJS_ROUTES = array(

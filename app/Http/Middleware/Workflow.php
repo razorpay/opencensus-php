@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Workflow\Service as WorkflowService;
 use Illuminate\Foundation\Application;
 
 class Workflow
@@ -36,27 +37,60 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
-        // Middleware is only used for workflow routes
-        if ((in_array($routeName, array_keys(Route::$workflowRoutes), true) === false) or
+        // This middleware will only run for routes whose
+        // permission have a workflow defined for them.
+
+        $permissions = $this->getRoutePermissions($routeName);
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
+            $permissions, $admin->getOrgId());
+
+        // If the permissions has no workflow assigned to it then let's not
+        // apply any maker-checker process
+        if (($permissionHasWorkflow === false) or
             ($this->config->get('database.es_workflow_action_mock') === true))
         {
             return $next($request);
         }
 
-        $entity = Route::$workflowRoutes[$routeName];
+        // Since we need to calculate the diffs, we'll need
+        // the main entity being acted upon by the route
+        // that's going to be executed. This is not entirely
+        // fool-proof but will work well for a good number of
+        // our routes (MVP acceptable).
+
+        $entity = Route::$workflowRoutes[$routeName] ?? null;
+
+        if (empty($entity))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND);
+        }
 
         $routeParams = $this->router->current()->parameters();
 
-        $entityId = array_values($routeParams)[0];
+        // Pick the `id` first, if not then the first value
+        // First value is not entirely robust though
+        $entityId = $routeParams['id'] ?? array_values($routeParams)[0];
 
-        $params = $this->createMakerEntity($request, $entity, $entityId);
+        // Necessary data to pass to WorkflowController
+        $params = $this->createDifferEntity($request, $entity, $entityId);
 
+        // Replace Input for the current request
         $request->replace($params);
 
         return App::make(self::WORKFLOW_CONTROLLER)->postWorkflowAction();
     }
 
-    private function createMakerEntity($request, $entity, $entityId)
+    /*
+        Resolve a bunch of data points through which we can
+        compute a diff as well as later execute the actual
+        action once all the checkers have approved this
+        incoming request.
+    */
+    private function createDifferEntity($request, $entity, $entityId)
     {
         $input = $request->input();
 

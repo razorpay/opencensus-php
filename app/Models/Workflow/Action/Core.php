@@ -18,13 +18,10 @@ class Core extends Base\Core
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        $params = [];
-
-        $params[Entity::ORG_ID] = $admin->getOrgId();
-
-        $params[Entity::ADMIN_ID] = $admin->getId();
-
-        $adminPersmissions = $admin->getPermissionsList();
+        $params = [
+            Entity::ORG_ID      => $admin->getOrgId(),
+            Entity::ADMIN_ID    => $admin->getId()
+        ];
 
         $routePermissions = $input[Differ\Entity::PERMISSIONS];
 
