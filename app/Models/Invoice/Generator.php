@@ -214,7 +214,7 @@ class Generator extends Base\Core
         // any keys at all.
         //
 
-        $invoice->getValidator()->validateMerchantHasKeys();
+        $invoice->getValidator()->validateMerchantSpecificData();
 
         //
         // This is being done so that we can do associations
@@ -238,6 +238,8 @@ class Generator extends Base\Core
     {
         $this->invoice->getValidator()
                       ->validateInvoiceIssue();
+
+        $this->invoice->setDefaultExpireByIfNotAlreadySet();
 
         $this->invoice->setStatus(Status::ISSUED);
 

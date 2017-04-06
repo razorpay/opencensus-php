@@ -228,43 +228,60 @@ class OrganizationController extends Controller
 
 // --------------------- CRUD for Permissions ----------------------------------------
 
-     public function createPermission()
-     {
-         $input = Request::all();
+    public function createPermission()
+    {
+        $input = Request::all();
 
-         $data = (new Admin\Permission\Service)->createPermission($input);
+        $data = (new Admin\Permission\Service)->createPermission($input);
 
-         return ApiResponse::json($data);
+        return ApiResponse::json($data);
      }
 
-     public function deletePermission(string $permId)
-     {
-         $data = (new Admin\Permission\Service)->deletePermission($permId);
+    public function deletePermission(string $permId)
+    {
+        $data = (new Admin\Permission\Service)->deletePermission($permId);
 
-         return ApiResponse::json($data);
+        return ApiResponse::json($data);
      }
 
-     public function getPermission(string $id)
-     {
-         $data = (new Admin\Permission\Service)->getPermission($id);
+    public function getPermission(string $id)
+    {
+        $data = (new Admin\Permission\Service)->getPermission($id);
 
-         return ApiResponse::json($data);
-     }
+        return ApiResponse::json($data);
+    }
 
-     public function putPermission(string $id)
-     {
-         $input = Request::all();
+    public function putPermission(string $id)
+    {
+        $input = Request::all();
 
-         $data = (new Admin\Permission\Service)->editPermission($id, $input);
+        $data = (new Admin\Permission\Service)->editPermission($id, $input);
 
-         return ApiResponse::json($data);
-     }
+        return ApiResponse::json($data);
+    }
 
-     public function getMultiplePermissions()
-     {
-         $input = Request::all();
+    public function getMultiplePermissions(string $orgId)
+    {
+        $data = (new Admin\Permission\Service)->getMultiplePermissions($orgId);
 
-         $data = (new Admin\Permission\Service)->getMultiplePermissions($input);
+        return ApiResponse::json($data);
+    }
+
+    public function getPermissionsByType($type)
+    {
+        switch ($type)
+        {
+            case 'assignable':
+                $data = (new Admin\Permission\Service)->getAssignablePermissions();
+
+                break;
+
+            case 'all':
+            default:
+                $data = (new Admin\Permission\Service)->getAllPermissions();
+
+                break;
+         }
 
          return ApiResponse::json($data);
      }

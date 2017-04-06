@@ -13,17 +13,19 @@ class Table
     const CARD                  = 'cards';
     const PLAN                  = 'plans';
     const ITEM                  = 'items';
+    const USER                  = 'users';
     const BATCH                 = 'batches';
+    const OFFER                 = 'offers';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const COUPON                = 'coupons';
+    const DEVICE                = 'devices';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
-    const SCHEDULE              = 'schedules';
-    const DEVICE                = 'devices';
     const UPI_VPA               = 'upi_vpa';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
@@ -31,6 +33,7 @@ class Table
     const MERCHANT              = 'merchants';
     const EMI_PLAN              = 'emi_plans';
     const FEATURE               = 'features';
+    const SCHEDULE              = 'schedules';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
@@ -48,11 +51,10 @@ class Table
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const MERCHANT_USERS        = 'merchant_users';
+    const MERCHANT_OFFER        = 'merchant_offer';
     const MERCHANT_DETAIL       = 'merchant_details';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
-    const OFFER                 = 'offers';
-    const COUPON                = 'coupons';
-    const MERCHANT_OFFER        = 'merchant_offer';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
     // organization roles permissions
@@ -92,7 +94,7 @@ class Table
     // Terminal Performance
 
     const TERMINAL_ACTION       = 'terminal_action_logs';
-    const GATEWAY_ABSENCE       = 'gateway_status_absence';
+    const GATEWAY_DOWNTIME      = 'gateway_downtimes';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

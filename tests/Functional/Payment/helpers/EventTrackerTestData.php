@@ -26,7 +26,7 @@ return [
                             'terminal'      => [
                                 'id'        => '1000AmexShared',
                                 'gateway'   => 'amex',
-                                'recurring' => 0
+                                'recurring' => 1
                             ]
                         ]
                     ]
@@ -65,7 +65,7 @@ return [
                             'terminal'      => [
                                 'id'        => '1000AmexShared',
                                 'gateway'   => 'amex',
-                                'recurring' => 0
+                                'recurring' => 1
                             ]
                         ]
                     ]

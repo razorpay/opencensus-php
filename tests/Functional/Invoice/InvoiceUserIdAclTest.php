@@ -25,6 +25,19 @@ class InvoiceUserIdAclTest extends TestCase
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
+    /**
+     * Even if userRole is something other than sellerapp we would want to record
+     * userId in invoices.user_id column.
+     *
+     * @return void
+     */
+    public function testCreateInvoiceWithUserIdAndDiffRoleHeader()
+    {
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
     public function testGetInvoiceWithUserIdHeaderSuccess()
     {
         $this->createInvoice(['user_id' => '10000000UserId']);
@@ -107,7 +120,7 @@ class InvoiceUserIdAclTest extends TestCase
         $this->startTest();
     }
 
-    public function testExpireInvoiceWithUserIdHeaderSuccess()
+    public function testCancelInvoiceWithUserIdHeaderSuccess()
     {
         $this->createInvoice(['user_id' => '10000000UserId', 'status' => 'issued']);
 
@@ -116,7 +129,7 @@ class InvoiceUserIdAclTest extends TestCase
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
-    public function testExpireInvoiceWithUserIdHeaderForbidden()
+    public function testCancelInvoiceWithUserIdHeaderForbidden()
     {
         $this->createInvoice(['user_id' => '10000001UserId', 'status' => 'issued']);
 

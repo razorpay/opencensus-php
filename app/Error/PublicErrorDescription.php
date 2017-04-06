@@ -132,6 +132,9 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
+    const BAD_REQUEST_MERCHANT_INVALID                                          = 'The payment has been rejected by the gateway.';
+    const BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED                 = 'Recurring payments are not supported for this merchant.';
+    const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                               = 'This payment could not be authorized by the processing bank.';
     const BAD_REQUEST_KEY_EXPIRED                                               = 'Key is expired';
     const BAD_REQUEST_KEY_EXPIRING_SOON                                         = 'Key is already set to expire soon';
     const BAD_REQUEST_KEY_OF_DEMO_ACCOUNT                                       = 'Operation failed for the key because it\'s of a demo account';
@@ -147,6 +150,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                           = 'Please provide your api key for authentication purposes.';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                              = 'The api key provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                           = 'The api secret provided is invalid';
+    const BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID                           = 'The Account ID provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                          = 'Please provide api secret';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                  = 'Please do not provide your secret on public sided requests';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED                         = 'Please provide your Razorpay Api Key Id';
@@ -230,7 +234,6 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
-    const BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_AUTHORIZE                          = 'Unable to authorize.';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
@@ -332,6 +335,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PASSWORD_EXPIRED                                          = 'Account password has expired. Please contact administrator';
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                 = 'Duplicate value for receipt in invoice';
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                     = 'Invoice expiry failed as payment exists or is in progress for this invoice.';
+    const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                               = 'Invoices disabled because fee bearer is customer';
 
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                = 'Cannot edit/delete an item with which invoices have been created already';
@@ -369,7 +373,6 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_OFFER_DURATION                                    = 'Offer end date must be later than offer start date';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                      = 'Offer already exists. Please check the values and try again';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK           = 'Flat cashback cannot be combined wih percent rate or max cashback in an offer';
-    const BAD_REQUEST_PAYMENT_INVALID_OFFER                                     = 'Offer not applicable on payment';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                              = 'Iins can only be editable for card offer';
     const BAD_REQUEST_INVALID_FORMAT_FOR_IINS                                   = 'Iins should be a valid array';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                 = 'Offer has already been deactivated';
@@ -384,6 +387,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                = 'Gateway not valid for payment method';
 
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                 = 'Es debug method is not valid';
+
+    const BAD_REQUEST_PAYMENT_AUTH_DATA_MISSING                                 = 'Incomplete data for force authorization';
 
     const BAD_REQUEST_FILE_NOT_FOUND                                            = 'There was error while retrieving the file';
 }

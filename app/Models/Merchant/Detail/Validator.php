@@ -136,32 +136,6 @@ class Validator extends Base\Validator
         Entity::SUBMIT                          => 'sometimes|boolean',
     ];
 
-    protected static $editAfterLockRules = [
-        Entity::LOCKED                          => 'sometimes|boolean',
-        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
-        Entity::COMMENT                         => 'sometimes|max:255',
-        Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
-        Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:40',
-        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_BENEFICIARY_ADDRESS1       => 'sometimes|max:30',
-        Entity::BANK_BENEFICIARY_ADDRESS2       => 'sometimes|max:30',
-        Entity::BANK_BENEFICIARY_ADDRESS3       => 'sometimes|max:30',
-        Entity::BANK_BENEFICIARY_CITY           => 'sometimes|max:30',
-        Entity::BANK_BENEFICIARY_STATE          => 'sometimes|max:2',
-        Entity::BANK_BENEFICIARY_PIN            => 'sometimes|max:15',
-    ];
-
-    protected static $migrateRules = [
-        Entity::MERCHANT_ID                     => 'required',
-        Entity::BUSINESS_PROOF_URL              => 'sometimes|url',
-        Entity::BUSINESS_OPERATION_PROOF_URL    => 'sometimes|url',
-        Entity::BUSINESS_PAN_URL                => 'sometimes|url',
-        Entity::ADDRESS_PROOF_URL               => 'sometimes|url',
-        Entity::PROMOTER_PROOF_URL              => 'sometimes|url',
-        Entity::PROMOTER_PAN_URL                => 'sometimes|url',
-        Entity::PROMOTER_ADDRESS_URL            => 'sometimes|url',
-    ];
-
     public function validateTransactionReportEmail($attribute, $value)
     {
         $emails = explode(',', $value);

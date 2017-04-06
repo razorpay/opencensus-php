@@ -26,7 +26,7 @@ return [
             'version'       => 2,
         ],
         'on_hold'       => '1',
-        // 'on_hold_until' => 1586055431,
+        'on_hold_until' => 1586055431,
     ],
 
     'createCustomerTransferRequest' => [
@@ -38,12 +38,12 @@ return [
             'version'       => 2,
         ],
         'on_hold'       => '1',
-        // 'on_hold_until' => 1586055431,
+        'on_hold_until' => 1586055431,
     ],
 
     'patchAccountTransferRequest' => [
         'on_hold'       => '1',
-        // 'on_hold_until' => 1586055431,
+        'on_hold_until' => 1586055431,
     ],
 
     'testLiveModeTransferToNonActivatedAccount' => [

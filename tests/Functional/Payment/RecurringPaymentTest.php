@@ -11,8 +11,6 @@ class RecurringPaymentTest extends TestCase
 {
     use PaymentTrait;
 
-    protected $recurringPlan;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/RecurringPaymentTestData.php';
@@ -235,7 +233,11 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
 
-        $this->fixtures->base->editEntity('token', '100000custcard', ["recurring" => true]);
+        $this->fixtures->base->editEntity('token', '100000custcard',
+            [
+                'recurring'   => true,
+                'terminal_id' => '1000CybrsTrmnl',
+            ]);
 
         $content = $this->doS2SRecurringPayment($payment);
 

@@ -327,7 +327,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doS2SUpiPayment($payment = null)
+    protected function doS2sUpiPayment($payment = null)
     {
         if ($payment === null)
         {
@@ -352,7 +352,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doS2SPrivateAuthAndCapturePayment($payment = null)
+    protected function doS2sPrivateAuthAndCapturePayment($payment = null)
     {
         $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
 
@@ -452,7 +452,7 @@ trait PaymentTrait
         return $this->sendRequest($request);
     }
 
-    protected function makeS2SCallbackAndGetContent($content)
+    protected function makeS2sCallbackAndGetContent($content)
     {
         $request = [
             'url'    => '/callback/' . $this->gateway,
@@ -937,7 +937,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function generateRefundsExcelForNB($bank)
+    protected function generateRefundsExcelForNb($bank)
     {
         $this->ba->appAuth();
 
@@ -1166,7 +1166,9 @@ trait PaymentTrait
             }
             else
             {
-                list($url, $method, $values) = $this->getFormDataFromResponse($response->getContent(), 'https://localhost');
+                list($url, $method, $values) = $this->getFormDataFromResponse(
+                                                    $response->getContent(),
+                                                    'https://localhost');
             }
         }
 

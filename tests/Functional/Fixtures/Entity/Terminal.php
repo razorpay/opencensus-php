@@ -21,6 +21,7 @@ class Terminal extends Base
         $this->createSharedNetbankingIciciTerminal();
         $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
+        $this->createSharedNetbankingFederalTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -338,6 +339,7 @@ class Terminal extends Base
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
+            'recurring'                 => 3,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
@@ -390,15 +392,30 @@ class Terminal extends Base
 
         // Add recurring 3ds terminal;
         $attributes['id'] = '1RecurringTerm';
-        $attributes['recurring'] = 1;
+        $attributes['recurring'] = 3;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         // Add recurring 3ds
         $attributes['id'] = '2RecurringTerm';
-        $attributes['recurring'] = 2;
+        $attributes['recurring'] = 4;
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedFirstDataRecurringTerminals()
+    {
+        $attributes = [
+            'id'                        => 'FrstDtRcrgTrml',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'first_data',
+            'card'                      => 1,
+            'shared'                    => 1,
+            'recurring'                 => 6,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
     public function createSharedCybersourceAxisTerminal(array $attributes = [])
@@ -581,7 +598,7 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
-            'emi'                       => 1
+            'emi'                       => 1,
         ];
 
         return parent::create($attributes);
@@ -602,7 +619,7 @@ class Terminal extends Base
             'card'                      => 1,
             'emi'                       => 1,
             'emi_duration'              => 9,
-            'shared'                    => 1
+            'shared'                    => 1,
         ];
 
         return parent::create($attributes);
@@ -706,8 +723,8 @@ class Terminal extends Base
             'id'                        => Shared::NETBANKING_ICICI_TERMINAL,
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_icici',
-            'gateway_merchant_id'       => 'razorpay_icici',
-            'gateway_merchant_id2'      => 'razorpay_submerchant',
+            'gateway_merchant_id'       => 'razorpay_submerchant',
+            'gateway_merchant_id2'      => 'razorpay_icici',
             'gateway_secure_secret'     => 'razorpay_password',
             'netbanking'                => 1,
             'shared'                    => 1
@@ -773,6 +790,24 @@ class Terminal extends Base
         ];
 
         $this->createSharedNetbankingAxisTerminal($attributes);
+    }
+
+    public function createSharedNetbankingFederalTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_FEDERAL_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_federal',
+            'gateway_merchant_id'       => 'netbanking_federal_merchant_id',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])

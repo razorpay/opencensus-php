@@ -334,6 +334,17 @@ class Entity extends Base\PublicEntity
 
     protected function modifyContact(& $input)
     {
+        // We need to remove this once they fix it on their end.
+        $app = \App::getFacadeRoot();
+        // We are currently doing this for GoIbibo and beta test merchant
+        $excludedMerchants = ['6ZLE5BE57SExGF', '7FloNFaK7P4MMo'];
+
+        if ((in_array($app['basicauth']->getMerchantId(), $excludedMerchants, true) === true) and
+            (empty($input['contact']) === true))
+        {
+            $input['contact'] = '+919999999999';
+        }
+
         if (isset($input['contact']) === false)
         {
             return;
@@ -557,7 +568,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SIGNED, $signed);
     }
 
-    public function setOnHold($onHold)
+    public function setOnHold(bool $onHold)
     {
         $this->setAttribute(self::ON_HOLD, $onHold);
     }
@@ -859,6 +870,11 @@ class Entity extends Base\PublicEntity
     public function hasInvoice()
     {
         return ($this->isAttributeNotNull(self::INVOICE_ID));
+    }
+
+    public function hasTransfer()
+    {
+        return ($this->isAttributeNotNull(self::TRANSFER_ID));
     }
 
     public function hasMetadata($key = null)

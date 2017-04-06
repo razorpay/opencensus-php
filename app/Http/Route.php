@@ -168,6 +168,7 @@ final class Route
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
         'merchant_activation_files'               => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
+        'merchant_activation_upload_file_admin'   => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
@@ -199,8 +200,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
-        'setl_initiate_schedule'                  => ['post',     'settlements/initiate2/{channel?}',               'SettlementController@postSettlementInitiateV2'                     ],
-        'setl_retry'                              => ['post',     'settlements/retry/{channel?}',                   'SettlementController@postSettlementRetry'                          ],
+        'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
@@ -312,7 +312,7 @@ final class Route
         'invoice_get_status'                      => ['get',      'invoices/{id}/status',                           'InvoiceController@getInvoiceStatus'                                ],
         'invoice_view_live'                       => ['get',      'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test'                       => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
-        'invoice_expire'                          => ['post',     'invoices/{id}/expire',                           'InvoiceController@expireInvoice'                                   ],
+        'invoice_cancel'                          => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                     => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
         'invoice_view_live_post'                  => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                  => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
@@ -337,10 +337,10 @@ final class Route
         'gateway_fetch_priorities'                => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'               => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
         'gateway_remove_priorities'               => ['patch',    'gateway/priorities/{method}/remove',             'GatewayController@removeGatewayPriority'                           ],
-        'gateway_create_absence'                  => ['post',     'gateway/absence',                                'GatewayController@postCreateGatewayAbsence'                        ],
-        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putUpdateGatewayAbsence'                         ],
-        'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                           'GatewayController@deleteGatewayAbsence'                            ],
-        'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
+        'gateway_create_downtime'                 => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
+        'gateway_update_downtime'                 => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
+        'gateway_fetch_downtime'                  => ['get',      'gateway/downtimes',                              'GatewayController@getAbsentGateways'                               ],
+        'gateway_downtime_source_webhook'         => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'plan_create'                             => ['post',     'plans',                                          'PlanController@postCreatePlan'                                     ],
@@ -402,10 +402,11 @@ final class Route
         'group_delete'                            => ['delete',   'orgs/{orgId}/groups/{id}',                       'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
 
-        // Permission can only be created by certain organisations.
+        // Permission can only be created by certain organizations.
         'permission_create'                       => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
+        'permission_get_by_type'                  => ['get',      'permissions/get/{type}',                         'OrganizationController@getPermissionsByType'                       ],
         'permission_get'                          => ['get',      'permissions/{id}',                               'OrganizationController@getPermission'                              ],
-        'permission_get_multiple'                 => ['get',      'permissions',                                    'OrganizationController@getMultiplePermissions'                     ],
+        'permission_get_multiple'                 => ['get',      'orgs/{orgId}/permissions',                       'OrganizationController@getMultiplePermissions'                     ],
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
         'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
@@ -456,6 +457,14 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+        'payment_update_on_hold'                  => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
+
+        // Dummy routes to test Account Auth
+        'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
+        'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
+        'user_create'                             => ['post',     'users',                                          'UserController@postUser'                                           ],
+        'user_edit'                               => ['put',      'users/{id}',                                     'UserController@putUser'                                            ],
+        'user_attach_merchant'                    => ['put',      'users/{id}/attach',                              'UserController@attachUserToMerchant'                               ],
     );
 
     public static $public = array(
@@ -583,6 +592,7 @@ final class Route
         'invoice_create',
         'invoice_fetch',
         'invoice_fetch_multiple',
+        'invoice_cancel',
         'customer_create_address',
         'customer_delete_address',
         'customer_fetch_addresses',
@@ -608,6 +618,7 @@ final class Route
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
+        'merchant_activation_upload_file_admin',
         'merchant_secret',
         'merchant_create',
         'merchant_edit',
@@ -662,7 +673,6 @@ final class Route
         'pricing_delete_plan_rule_force',
         'setl_initiate',
         'payout_initiate',
-        'setl_initiate_schedule',
         'setl_retry',
         'setl_file_generate',
         'setl_reconcile',
@@ -732,10 +742,9 @@ final class Route
         'gateway_fetch_priorities',
         'gateway_update_priorities',
         'gateway_remove_priorities',
-        'gateway_create_absence',
-        'gateway_update_absence',
-        'gateway_delete_absence',
-        'gateway_fetch_absence',
+        'gateway_create_downtime',
+        'gateway_update_downtime',
+        'gateway_fetch_downtime',
         'order_refund_multiple_authorized',
         'refund_create_gateway_record',
         'gateway_validate_unknown_refund',
@@ -779,6 +788,11 @@ final class Route
         'schedule_fetch',
         'schedule_fetch_multiple',
         'schedule_migration',
+        'internal_dummy_account_test',
+        'user_create',
+        'user_edit',
+        'user_attach_merchant',
+        'payment_update_on_hold',
     );
 
     public static $proxy = array(
@@ -829,7 +843,6 @@ final class Route
         'invoice_update_line_item',
         'invoice_remove_line_item_bulk',
         'invoice_remove_line_item',
-        'invoice_expire',
         'item_create',
         'item_fetch',
         'item_fetch_multiple',
@@ -871,6 +884,7 @@ final class Route
         'group_edit',
         'group_delete',
         'permission_get_multiple',
+        'permission_get_by_type',
         'permission_get',
         'permission_create',
         'permission_edit',
@@ -881,6 +895,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'admin_dummy_account_test',
     ];
 
     public static $adminPermission = [
@@ -904,7 +919,6 @@ final class Route
         'admin_delete'                   => [Permission::DELETE_ADMIN],
         'group_edit'                     => [Permission::EDIT_GROUP],
         'group_delete'                   => [Permission::DELETE_GROUP],
-        'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
         'group_get_allowed_groups'       => [Permission::GROUP_GET_ALLOWED_GROUPS],
         'schedule_create'                => [Permission::SCHEDULE_CREATE],
         'schedule_delete'                => [Permission::SCHEDULE_DELETE],
@@ -915,9 +929,12 @@ final class Route
         'permission_create'              => [Permission::CREATE_PERMISSION],
         'permission_edit'                => [Permission::EDIT_PERMISSION],
         'permission_get'                 => [Permission::GET_PERMISSION],
+        'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
+        'permission_get_by_type'         => [Permission::EDIT_ORG],
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
+        'admin_dummy_account_test'       => [Permission::VIEW_MERCHANT],
     ];
 
     public static $direct = array(
@@ -943,6 +960,7 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
+        'gateway_downtime_source_webhook',
         'checkout_onyx',
         'checkout_hosted',
         'mock_event_tracker',
@@ -960,7 +978,6 @@ final class Route
         'cron' => array(
             'setl_initiate',
             'payout_initiate',
-            'setl_initiate_schedule',
             'setl_reconcile_generate',
             'setl_return_generate',
             'payment_auth_notify',
@@ -997,6 +1014,7 @@ final class Route
             'schedule_migration',
             'offer_deactivate',
             'merchant_patch_beneficiary_code',
+            'payment_update_on_hold',
         ),
 
         'kotak' => array(
@@ -1072,10 +1090,12 @@ final class Route
     public static $crossOrgRoutes = [
         'org_edit',
         'org_get',
+        'role_edit',
         'schedule_create',
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'admin_dummy_account_test',
     ];
 
     const RAZORPAYJS_ROUTES = array(

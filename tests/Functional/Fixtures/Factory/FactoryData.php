@@ -7,6 +7,7 @@ use Config;
 use Eloquent;
 use RZP\Tests\TestDummy\Factory;
 use RZP\Models;
+use Carbon\Carbon;
 
 final class FactoryData
 {
@@ -594,6 +595,18 @@ final class FactoryData
             'merchant_id'        => '10000000000000',
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Schedule\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '100000Razorpay',
+            'name'              => 'Basic T3',
+            'type'              => 'settlement',
+            'period'            => 'daily',
+            'interval'          => 1,
+            'delay'             => 3,
+            'hour'              => 5,
+            'next_run'          => 1451586600,
         ]);
     }
 }

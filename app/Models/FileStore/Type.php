@@ -20,6 +20,8 @@ class Type
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
 
+    const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -49,6 +51,7 @@ class Type
     const BATCH_BUCKET_CONFIG                   = 'batch_bucket_config';
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
+    const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
 
     /**
      * Map of types allowed for each entity.
@@ -61,6 +64,7 @@ class Type
             self::HDFC_NETBANKING_REFUND,
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
+            self::FEDERAL_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
@@ -97,6 +101,7 @@ class Type
         self::HDFC_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
+        self::FEDERAL_NETBANKING_REFUND,
         self::AXIS_NETBANKING_CLAIMS,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
@@ -135,6 +140,10 @@ class Type
             self::MERCHANT_PROMOTER_PROOF_URL,
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
+        ],
+
+        self::H2H_BUCKET_CONFIG => [
+            self::ICICI_NODAL_TRANSFER,
         ],
     ];
 
