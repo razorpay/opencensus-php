@@ -247,5 +247,11 @@ return [
         'pricing_create_plan'               => 'pricing',
         'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
         'pricing_supported_networks'        => 'pricing/networks',
+
+        // EMI
+        'emi_plan_add'                      => 'emi',
+
+        // IIN
+        'iin_add'                           => 'iins',
     ],
 ];

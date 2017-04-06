@@ -32,11 +32,14 @@ app.controller('ActionsCtrl', [
       $scope.addIIN = function (iin) {
         iin.emi = iin.emi ? 1 : 0;
 
+        var data = {
+          route_name: 'iin_add',
+          body: iin
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/iin/add',
-          transformRequest: transformRequestAsFormPost,
-          data: iin
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -52,11 +55,14 @@ app.controller('ActionsCtrl', [
         });
       };
       $scope.addEMI = function (emi) {
+        var data = {
+          route_name: 'emi_plan_add',
+          body: emi
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/emi',
-          transformRequest: transformRequestAsFormPost,
-          data: emi
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
