@@ -173,5 +173,5 @@ return array(
 
     'es_audit_mock' => env('ES_AUDIT_MOCK'),
 
-    'es_workflow_action_mock' => env('ES_WORKFLOW_ACTION_MOCK'),
+    'es_workflow_action_mock' => env('ES_WORKFLOW_ACTION_MOCK', false),
 );

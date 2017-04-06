@@ -276,6 +276,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::NAME);
     }
 
+    public function getUsername() : string
+    {
+        return $this->getAttribute(self::USERNAME);
+    }
+
     public function getFirstName()
     {
         return explode(' ', $this->getName())[0];

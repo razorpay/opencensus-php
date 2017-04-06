@@ -1000,7 +1000,10 @@ final class Route
 
         'workflow_create'                  => ['*'], // Fix permissions
         'workflow_get'                     => ['*'],
+        'workflow_update'                  => ['*'],
         'workflow_step_create'             => ['*'],
+        'workflow_step_get'                => ['*'],
+        'workflow_step_get_multiple'       => ['*'],
         'action_checker_create'            => ['*'],
         'action_checker_multiple'          => ['*'],
         'action_checker_get'               => ['*'],
@@ -1177,7 +1180,7 @@ final class Route
      */
     public static $workflowRoutes = [
        'merchant_edit_email'                        => 'merchant',
-       'admin_edit'                                 => 'hello', // will change
+       'admin_edit'                                 => 'admin', // will change
     ];
 
     const RAZORPAYJS_ROUTES = array(
