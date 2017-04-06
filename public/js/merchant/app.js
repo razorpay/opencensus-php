@@ -136,9 +136,6 @@ var app = angular.module('app', [
     }).state('app.generatereport', {
       url: '/generatereport',
       templateUrl: 'tpl/app_generate_report.html'
-    // }).state('app.teammanagement', {
-    //   url: '/team',
-    //   templateUrl: 'tpl/app_team_management.html'
     }).state('app.keys', {
       url: '/keys',
       templateUrl: 'tpl/app_keys.html'
