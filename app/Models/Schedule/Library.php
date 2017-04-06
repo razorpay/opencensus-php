@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 class Library
 {
-    public static function getNextApplicableTime($currentTime, $schedule)
+    public static function getNextApplicableTime($currentTime, $schedule, $nextRunAt)
     {
         // Minimum delay before the settlement of any payment. In case of hourly
         // schedules, this is set to zero, but settlement time is pushed forward
@@ -15,10 +15,19 @@ class Library
 
         $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
-        return $settledAt->timestamp;
+        $nextRun = Carbon::createFromTimestamp($nextRunAt, 'Asia/Kolkata');
+
+        // If minimum delay is more than the time till next run of the settlement
+        // schedule, then we calculate the *next* next run, and set that.
+        if ($settledAt > $nextRun)
+        {
+            $nextRun = self::computeFutureRun($schedule, $settledAt, $nextRun);
+        }
+
+        return $nextRun->getTimestamp();
     }
 
-    public static function computeFutureRun($schedule, $referenceTime)
+    public static function computeFutureRun($schedule, $referenceTime, $nextRun)
     {
         if ($schedule->getAnchor() !== null)
         {
@@ -33,7 +42,7 @@ class Library
             // the time between payment and settlement, or after a fixed period
             // of time. For example, settlements that happen N days after their
             // corresponding payments, or settlements that happen every N hours.
-            $futureRun = self::resolveUnAnchored($referenceTime, $schedule);
+            $futureRun = self::resolveUnAnchored($referenceTime, $schedule, $nextRun);
         }
 
         // If anchor date is a holiday, don't wait till next anchor
@@ -70,10 +79,8 @@ class Library
         return $nextRun;
     }
 
-    protected static function resolveUnAnchored($refTime, $schedule)
+    protected static function resolveUnAnchored($refTime, $schedule, $nextRun)
     {
-        $nextRun = self::getNextRun($schedule);
-
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
 
@@ -157,15 +164,5 @@ class Library
         $step = 'add' . $stepType;
 
         return $step;
-    }
-
-    // Get Carbon object for last_run
-    protected static function getNextRun($schedule)
-    {
-        $nextRunTimestamp = $schedule->getNextRun();
-
-        $nextRun = Carbon::createFromTimestamp($nextRunTimestamp, 'Asia/Kolkata');
-
-        return $nextRun;
     }
 }

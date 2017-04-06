@@ -77,7 +77,10 @@ class Processor extends Base\Core
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
 
-        $this->updateSettlementNextRun();
+        $this->updateSettlementScheduleTaskNextRun();
+
+        // this is needed temp until we move to pivot
+        $this->updateSettlementScheduleNextRun();
 
         return $data;
     }
@@ -200,6 +203,7 @@ class Processor extends Base\Core
 
     protected function createSettlements($channel): array
     {
+        s($this->setlTime);
         $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime, $channel);
 
         list($settlements, $settledTxnsCount, $setlAttempts) =
@@ -290,11 +294,20 @@ class Processor extends Base\Core
         return false;
     }
 
-    protected function updateSettlementNextRun()
+    protected function updateSettlementScheduleTaskNextRun()
     {
-        $schedules = $this->repo->schedule_task->fetchExpiredScheduleTasks(
+        $scheduleTasks = $this->repo->schedule_task->fetchExpiredScheduleTasks(
                         ScheduleTask\Type::SETTLEMENT,
                         $this->setlTime);
+
+        $scheduleTasks->callOnEveryItem('updateNextRun');
+
+        $this->repo->saveOrFailCollection($scheduleTasks);
+    }
+
+    protected function updateSettlementScheduleNextRun()
+    {
+        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
 
         $schedules->callOnEveryItem('updateNextRun');
 

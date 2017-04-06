@@ -62,17 +62,10 @@ class Core extends Base\Core
         $scheduleTasks = $this->repo->schedule_task
                                   ->fetchByMerchant($merchant, Type::SETTLEMENT);
 
-        if ($scheduleTasks->count() > 0)
-        {
-            $schedule = $this->filterAndGetScheduleByMethodOrDefault(
+        $scheduleTask = $this->filterAndGetScheduleByMethodOrDefault(
                                     $scheduleTasks, $method);
-        }
-        else
-        {
-            $schedule = $merchant->schedule;
-        }
 
-        return $schedule;
+        return $scheduleTask;
     }
 
     /**
@@ -82,7 +75,7 @@ class Core extends Base\Core
         $scheduleTasks,
         $method)
     {
-        $schedule = null;
+        $defaultScheduleTask = null;
 
         foreach ($scheduleTasks as $scheduleTask)
         {
@@ -90,16 +83,14 @@ class Core extends Base\Core
 
             if ($scheduleMethod === $method)
             {
-                $schedule = $scheduleTask->schedule;
-
-                break;
+                return $scheduleTask;
             }
             else if ($scheduleMethod === null)
             {
-                $schedule = $scheduleTask->schedule;
+                $defaultScheduleTask = $scheduleTask;
             }
         }
 
-        return $schedule;
+        return $defaultScheduleTask;
     }
 }

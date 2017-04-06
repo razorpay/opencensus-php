@@ -906,11 +906,23 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        $schedule = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
+        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
 
-        if ($schedule !== null)
+        $schedule = $merchant->schedule;
+
+        if ($scheduleTask !== null)
         {
-            $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule);
+            $schedule = $scheduleTask->schedule;
+
+            $nextRunAt = $scheduleTask->getNextRunAt();
+
+            $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule, $nextRunAt);
+        }
+        else if ($schedule !== null)
+        {
+            $nextRunAt = $schedule->getNextRun();
+
+            $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule, $nextRunAt);
         }
         else
         {
