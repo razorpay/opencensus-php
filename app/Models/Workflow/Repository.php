@@ -13,6 +13,13 @@ class Repository extends Base\Repository
         Entity::ORG_ID        => 'sometimes|string|max:14',
     ];
 
+    public function findByOrgId(string $orgId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->get();
+    }
+
     public function fetchWorkflowsByPermissions(array $permissionIds, array $relations = [])
     {
         return $this->newQuery()

@@ -28,6 +28,15 @@ class Service extends Base\Service
         return $workflow->toArrayPublic();
     }
 
+    public function fetchMultiple(string $orgId, array $input)
+    {
+        Org\Entity::verifyIdAndStripSign($orgId);
+
+        $workflows = $this->repo->workflow->findByOrgId($orgId);
+
+        return $workflows->toArrayPublic();
+    }
+
     public function update(string $id, array $input)
     {
         Entity::verifyIdAndStripSign($id);

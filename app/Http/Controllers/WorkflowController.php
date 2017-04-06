@@ -151,6 +151,15 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getWorkflowMultiple(string $orgId)
+    {
+        $input = Request::all();
+
+        $data = (new Workflow\Service)->fetchMultiple($orgId, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateWorkflow(string $id)
     {
         $input = Request::all();

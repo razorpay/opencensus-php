@@ -245,7 +245,7 @@ final class Route
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
-        'admin_get_file'                          => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                           ],
+        'admin_get_file'                          => ['get',      'files/{fileId}/signed-url',                      'FileStoreController@getFile'                                       ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
         'gateway_payment_callback_axis'           => ['post',     'callback/axis',                                  'GatewayController@callbackAxis'                                    ],
@@ -420,6 +420,7 @@ final class Route
         // Workflows API
         'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                            => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
+        'workflow_get_multiple'                   => ['get',      'orgs/{orgId}/workflows',                         'WorkflowController@getWorkflowMultiple'                            ],
         'workflow_update'                         => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                         => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_step_get_multiple'              => ['get',      'workflows/{id}/steps',                           'WorkflowController@getWorkflowSteps'                               ],
@@ -931,6 +932,7 @@ final class Route
         // workflows
         'workflow_create',
         'workflow_get',
+        'workflow_get_multiple',
         'workflow_update',
         'workflow_delete',
         'workflow_step_get',
@@ -1000,6 +1002,7 @@ final class Route
 
         'workflow_create'                  => ['*'], // Fix permissions
         'workflow_get'                     => ['*'],
+        'workflow_get_multiple'            => ['*'],
         'workflow_update'                  => ['*'],
         'workflow_step_create'             => ['*'],
         'workflow_step_get'                => ['*'],
