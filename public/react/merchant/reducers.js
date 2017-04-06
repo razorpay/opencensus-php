@@ -33,6 +33,6 @@ export default combineReducers({
   settlements: settlementsReducer,
   settlement: settlementReducer,
   webhooks: webhooksReducer,
-  keys: keysReducer
+  keys: keysReducer,
   credits: creditsReducer
 })
