@@ -14,7 +14,7 @@ class Service extends Base\Service
 
         Workflow\Entity::verifyIdAndStripSign($wid);
 
-        $step = $this->repo->fetchByWorkflowIdAndStepId($wid, $stepId);
+        $step = $this->repo->workflow_step->fetchByWorkflowIdAndStepId($wid, $stepId);
 
         return $step->toArrayPublic();
     }
