@@ -16,7 +16,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::APPROVED  => 'required|boolean',
+        Entity::TITLE       => 'sometimes|string',
+        Entity::DESCRIPTION => 'sometimes|string',
+        Entity::APPROVED    => 'sometimes|boolean',
     ];
 
     public function validateActionBelongsToAdminOrg($action, $admin)

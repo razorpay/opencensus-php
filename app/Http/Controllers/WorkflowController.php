@@ -134,6 +134,15 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateWorkflowAction(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Action\Service)->updateWorkflowAction($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createWorkflow()
     {
         $input = Request::all();

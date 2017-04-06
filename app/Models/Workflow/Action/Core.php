@@ -181,4 +181,18 @@ class Core extends Base\Core
     {
         return $this->repo->workflow_action->findOrFailPublic($id);
     }
+
+    public function edit(string $actionId, array $input)
+    {
+         $action = $this->repo->workflow_action->findOrFailPublic($actionId);
+
+         $this->repo->transactionOnLiveAndTest(function() use($action, $input)
+         {
+             $action->edit($input);
+
+             $this->repo->workflow_action->saveOrFail($action);
+         });
+
+         return $action;
+    }
 }

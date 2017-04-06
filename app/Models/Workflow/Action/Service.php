@@ -64,14 +64,27 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function updateWorkflowAction(string $actionId, array $input)
+    {
+        Entity::verifyIdAndStripSign($actionId);
+
+        $action = $this->core()->edit($actionId, $input);
+
+        return $action->toArrayPublic();
+    }
+
     public function getStatesOfAction(string $actionId)
     {
         Entity::verifyIdAndStripSign($actionId);
 
         $states = $this->repo
                        ->action_state
-                       ->fetchStateTransitionsByActionId($actionId);
+                       ->fetchStateTransitionsByActionId($actionId)
+                       ->map(function ($state) {
+                        return $state->toArrayPublic();
+                       })
+                       ->toArray();
 
-        return $states->toArrayPublic();
+        return $states;
     }
 }

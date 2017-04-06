@@ -167,6 +167,7 @@ class AdminAccess
             'workflow_step_get',
             'workflow_action_get_multiple',
             'action_checker_create',
+            'workflow_action_update',
             'workflow_action_details',
             'workflow_action_states',
             'action_checker_multiple',
