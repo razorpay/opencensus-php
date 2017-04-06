@@ -11,12 +11,14 @@ class PlanController extends Controller
     protected $planService;
     protected $subscriptionService;
 
-    public function __construct()
+    public function __construct(
+        Plan\Service $planService,
+        Plan\Subscription\Service $subscriptionService)
     {
         parent::__construct();
 
-        $this->planService = new Plan\Service;
-        $this->subscriptionService = new Plan\Subscription\Service;
+        $this->planService = $planService;
+        $this->subscriptionService = $subscriptionService;
     }
 
     public function postCreatePlan()
@@ -28,7 +30,7 @@ class PlanController extends Controller
         return ApiResponse::json($plan);
     }
 
-    public function postCreateSubscription($planId)
+    public function postCreateSubscription(string $planId)
     {
         $input = Request::all();
 

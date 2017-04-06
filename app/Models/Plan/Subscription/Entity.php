@@ -110,6 +110,10 @@ class Entity extends Base\PublicEntity
         self::UPFRONT_AMOUNT    => 'int',
     ];
 
+    protected $amounts = [
+        self::UPFRONT_AMOUNT,
+    ];
+
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
@@ -193,6 +197,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOKEN_ID);
     }
 
+    public function hasToken()
+    {
+        return $this->isAttributeNotNull(self::TOKEN_ID);
+    }
+
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
@@ -205,7 +214,7 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenAuthenticated()
     {
-        return ($this->getAttribute(self::AUTHENTICATED_AT) !== null);
+        return $this->isAttributeNotNull(self::AUTHENTICATED_AT);
     }
 
     public function isCreated()

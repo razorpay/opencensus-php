@@ -362,9 +362,9 @@ class Notifier extends Base\Core
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_PAID,
                 null,
                 [
-                    'invoice_id' => $this->invoice->getId(),
-                    'subscription_id' => $subscription->getId(),
-                    'invoice_status' => $this->invoice->getStatus(),
+                    'invoice_id'        => $this->invoice->getId(),
+                    'subscription_id'   => $subscription->getId(),
+                    'invoice_status'    => $this->invoice->getStatus(),
                 ]);
         }
 

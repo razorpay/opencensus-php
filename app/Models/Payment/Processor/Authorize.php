@@ -476,7 +476,7 @@ trait Authorize
                 ]);
         }
 
-        if ($subscription->token === null)
+        if ($subscription->hasToken() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED,
@@ -514,7 +514,7 @@ trait Authorize
         // For the first transaction, the subscription should be in created state
         // and should not have any token associated with it already.
         //
-        if ($subscription->token !== null)
+        if ($subscription->hasToken() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED,
@@ -1615,7 +1615,7 @@ trait Authorize
         // to run `handleCaptureSuccess` for capturing an upfront amount or
         // authorizing just the auth txn amount.
         //
-        if ($authTxnCharge)
+        if ($authTxnCharge === true)
         {
             if ($payment->isCaptured() === false)
             {

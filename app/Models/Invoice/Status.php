@@ -37,6 +37,12 @@ class Status
     ];
 
     public static $subStatuses = [
+        //
+        // All the invoices created when the subscription
+        // was on_hold, are not charged by our system.
+        // Invoices created before and after the
+        // subscription was on_hold are charged.
+        //
         self::ON_HOLD,
     ];
 

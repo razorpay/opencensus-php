@@ -45,11 +45,11 @@ class Service extends Base\Service
             {
                 $this->core->createInvoiceBeforeCharge($subscription);
 
-                $invoicesCreated += 1;
+                $invoicesCreated++;
             }
             catch (\Exception $ex)
             {
-                $failed += 1;
+                $failed++;
                 $failures[] = $subscription->getId();
 
                 $this->trace->traceException(
@@ -92,7 +92,7 @@ class Service extends Base\Service
             }
             catch (\Exception $ex)
             {
-                $failed += 1;
+                $failed++;
                 $failures[] = $subscription->getId();
 
                 $this->trace->traceException(
@@ -133,11 +133,11 @@ class Service extends Base\Service
                 $subscription = $invoice->subscription;
 
                 $this->core->charge($subscription, $invoice);
-                $queued += 1;
+                $queued++;
             }
             catch (\Exception $ex)
             {
-                $failed += 1;
+                $failed++;
                 $failures[] = $subscription->getId();
 
                 $this->trace->traceException(
@@ -177,20 +177,18 @@ class Service extends Base\Service
             try
             {
                 $this->core->retry($subscription);
-                $queued += 1;
+                $queued++;
             }
             catch (\Exception $ex)
             {
-                $failed += 1;
+                $failed++;
                 $failures[] = $subscription->getId();
 
-                $this->trace->traceException($ex);
-
-                $this->trace->error(
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
                     TraceCode::SUBSCRIPTION_RETRY_QUEUE_FAILED,
-                    [
-                        'subscription_id' => $subscription->getId(),
-                    ]);
+                    ['susbcription_id' => $subscription->getId()]);
             }
         }
 

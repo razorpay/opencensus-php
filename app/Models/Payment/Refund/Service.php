@@ -449,11 +449,11 @@ class Service extends Base\Service
 
             if ($success === true)
             {
-                $successes += 1;
+                $successes++;
             }
             else
             {
-                $failures += 1;
+                $failures++;
                 $failureRefundIds[] = $refundWithoutTxn->getId();
             }
         }
@@ -534,11 +534,11 @@ class Service extends Base\Service
                 $this->getNewProcessor($merchant)
                      ->createRefundOnApiForCancelledBilldeskRefund($payment, $refundId, $refundAmount);
 
-                $successes += 1;
+                $successes++;
             }
             catch (\Exception $ex)
             {
-                $failures += 1;
+                $failures++;
 
                 $failureRefunds[] = $refundId;
 

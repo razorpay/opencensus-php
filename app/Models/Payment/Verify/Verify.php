@@ -261,7 +261,7 @@ class Verify extends Base\Core
             }
             else
             {
-                $notApplicable += 1;
+                $notApplicable++;
             }
 
             $this->releasePaymentAfterVerify($payment);
@@ -557,7 +557,7 @@ class Verify extends Base\Core
 
         foreach ($boundaries as $boundary)
         {
-            $verifyBucket += 1;
+            $verifyBucket++;
 
             if ($diff >= $boundary)
             {

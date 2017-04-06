@@ -16,7 +16,7 @@ class Status
      * But, no charge has been made on this yet.
      * This status could be used as something like a trial period by the merchant.
      */
-     const AUTHENTICATED     = 'authenticated';
+     const AUTHENTICATED    = 'authenticated';
 
     /**
      * The first charge on the subscription has been made. Basically, the subscription

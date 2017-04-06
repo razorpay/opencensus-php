@@ -145,6 +145,7 @@ return array(
         // tech_logs_verify
         'tech_logs_verify'  => 'C3AJ9V9EY',
         // subscriptions
+        // TODO: Use channel_id once the channel is created.
         'subscriptions'     => '#subscriptions',
     ],
 

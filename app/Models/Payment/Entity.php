@@ -334,27 +334,19 @@ class Entity extends Base\PublicEntity
 
     protected function modifyContact(& $input)
     {
-        // We need to remove this once they fix it on their end.
-        $app = \App::getFacadeRoot();
-        // We are currently doing this for GoIbibo and beta test merchant
-        $excludedMerchants = ['6ZLE5BE57SExGF', '7FloNFaK7P4MMo'];
-
-        if ((in_array($app['basicauth']->getMerchantId(), $excludedMerchants, true) === true) and
-            (empty($input['contact']) === true))
-        {
-            $input['contact'] = '+919999999999';
-        }
+        // TODO: Remove this sometime!
+        $this->fillContactForCertainMerchants($input);
 
         if (isset($input['contact']) === false)
         {
-            return;
+            return null;
         }
 
         $contact = & $input['contact'];
 
         if (is_string($contact) === false)
         {
-            return;
+            return null;
         }
 
         $contact = str_replace(' ', '', $contact);
@@ -370,6 +362,37 @@ class Entity extends Base\PublicEntity
         }
 
         return $contact;
+    }
+
+    /**
+     * This should be removed once the "certain" merchants
+     * fix the issue on their end.
+     *
+     * @param $input
+     */
+    protected function fillContactForCertainMerchants(& $input)
+    {
+        $app = \App::getFacadeRoot();
+
+        // We are currently doing this for GoIbibo and beta test merchant
+        $excludedMerchants = ['6ZLE5BE57SExGF', '7FloNFaK7P4MMo'];
+
+        $merchant = $app['basicauth']->getMerchant();
+
+        //
+        // When a payment is created via a cron, the merchant will not be set.
+        // Example: A charge being made for a subscription.
+        //
+        if ($merchant === null)
+        {
+            return;
+        }
+
+        if ((in_array($merchant->getId(), $excludedMerchants, true) === true) and
+            (empty($input['contact']) === true))
+        {
+            $input['contact'] = '+919999999999';
+        }
     }
 
     protected function modifyMethodBasedInput(& $input)
@@ -1449,7 +1472,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicSubscriptionIdAttribute(array & $array)
     {
-        if (isset($array[self::SUBSCRIPTION_ID]))
+        if (isset($array[self::SUBSCRIPTION_ID]) === true)
         {
             $subscriptionId = $this->getAttribute(self::SUBSCRIPTION_ID);
 

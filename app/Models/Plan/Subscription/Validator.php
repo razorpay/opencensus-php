@@ -9,9 +9,14 @@ use Carbon\Carbon;
 
 class Validator extends Base\Validator
 {
-    // Number of seconds in 365 days.
-    // TODO: We may have to take into consideration leap years also.
-    const ONE_YEAR = 31536000;
+    /**
+     * Number of years allowed for a subscription.
+     *
+     * TODO: We may have to take into consideration leap years also.
+     */
+    const MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION = 1;
+
+    const SECONDS_IN_ONE_YEAR = 31536000;
 
     protected static $createRules = [
         Entity::CUSTOMER_ID     => 'required|string|size:19',
@@ -78,17 +83,18 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        $oneYearFromStartAt = $startAt + self::ONE_YEAR;
+        $maxSecondsFromStartAt = $startAt + (self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR);
 
-        if ($endAt > $oneYearFromStartAt)
+        if ($endAt > $maxSecondsFromStartAt)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'end_at should be within one year of start_at.',
+                'end_at should be within ' . self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION . ' years of start_at.',
                 null,
                 [
                     'start_at'  => $startAt,
                     'end_at'    => $endAt,
-                    'one_year'  => $oneYearFromStartAt,
+                    'max_years' => self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+                    'seconds'   => $maxSecondsFromStartAt,
                 ]);
         }
     }
@@ -135,16 +141,17 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        $oneYearFromCurrentTime = $currentTime + self::ONE_YEAR;
+        $maxSecondsFromCurrentTime = $currentTime + (self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR);
 
-        if ($value > $oneYearFromCurrentTime)
+        if ($value > $maxSecondsFromCurrentTime)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'start_at must be less than one year from now.',
                 null,
                 [
                     'start_at'  => $value,
-                    'one_year'  => $oneYearFromCurrentTime,
+                    'max_year'  => self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+                    'seconds'   => $maxSecondsFromCurrentTime,
                 ]);
         }
     }
