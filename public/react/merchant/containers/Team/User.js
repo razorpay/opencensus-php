@@ -78,12 +78,14 @@ export default class EditInvitation extends Component {
             <AsyncButton
               class='btn btn-sm btn-success'
               text='Update'
+              data-tip="Updates the user's role"
               onClick={handleSubmit(this.updateUser)}
             />
 
             <AsyncButton
               class='btn btn-sm btn-danger'
               text='Remove'
+              data-tip='Removes user from your team'
               onClick={handleSubmit(this.removeUser)}
             />
           </div>
