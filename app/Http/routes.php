@@ -18,7 +18,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::options('/contact', 'MerchantController@optionsContact');
     Route::post('/contact', 'MerchantController@postContact');
 
-    Route::get('/invitation/{token}', 'MerchantController@getInvitationDetails');
+    Route::get('/invitation', 'MerchantController@getInvitationDetails');
 
     // Org
     Route::group(['prefix' => 'admin'], function () {
@@ -303,9 +303,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // Upload logos for orgs
         Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
-
-        Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
-        Route::get('/admin/invitations', 'AdminController@getMerchantInvitations');
 
         Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
         Route::get('admin/get_current');

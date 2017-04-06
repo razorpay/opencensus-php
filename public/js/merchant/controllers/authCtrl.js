@@ -132,14 +132,27 @@ app.controller('AuthCtrl', [
       $scope.signup.data.merchant_invitation = $location.search().merchant_invitation;
 
       // Get invitation details
-      $http.get('/invitation/' + $scope.signup.data.merchant_invitation).success(function (data) {
+      $http({
+        url: '/invitation',
+
+        method: 'GET',
+
+        params: {
+          route_name: 'admin_lead_verify',
+
+          url_params: {
+            '{token}' : $scope.signup.data.merchant_invitation
+          }
+        }
+      }).success(function (data) {
         if (data.success) {
-          var form_data = JSON.parse(data.data.form_data);
+          var form_data = data.data.form_data;
 
           $scope.signup.data.email = data.data.email;
           $scope.lock_email = data.data.email ? true : false;
           $scope.signup.merchantData.business_name = form_data.merchant_name;
           $scope.signup.merchantData.contact_name = form_data.contact_name;
+          $scope.merchant_invitation = true;
         }
       }).error(function () {
 
@@ -257,7 +270,7 @@ app.controller('AuthCtrl', [
               goToVerification();
             }
           })
-          // else 
+          // else
         } else {
           angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
@@ -434,7 +447,7 @@ app.controller('AuthCtrl', [
         $scope.login.data.email = userDetails.email;
         Object.assign($scope.signup.merchantData, userDetails.pre_signup);
         $scope.login.currentStep = 2;
-        goToRelevantQuestion();  
+        goToRelevantQuestion();
       }
     }
 

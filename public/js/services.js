@@ -366,52 +366,6 @@ angular.module('app.services', [])
 
         return deferred.promise;
       },
-      addOrEditRole: function (role) {
-        var deferred = $q.defer();
-        var roleId = role.id;
-
-        delete role.id;
-
-        // Request for creating
-        var request_data = {
-          url: '/admin/generic',
-          method: 'POST',
-          params: {
-            route_name: 'role_create'
-          },
-          data: {
-            body: role
-          }
-        };
-
-        if (roleId) {
-          request_data = $.extend(request_data, {
-            method: 'PUT',
-            params: {
-              route_name: 'role_edit',
-              url_params: {
-                '{roleId}': roleId
-              }
-            },
-
-          });
-        }
-
-        $http(request_data)
-        .success(function (data) {
-          if (data.success) {
-            _roles = undefined;
-            deferred.resolve(data.data);
-          } else {
-            deferred.reject(data.errors);
-          }
-        })
-        .error(function(data) {
-          deferred.reject(data.errors);
-        });
-
-        return deferred.promise;
-      },
       fetchRoles: function () {
         var deferred = $q.defer();
 

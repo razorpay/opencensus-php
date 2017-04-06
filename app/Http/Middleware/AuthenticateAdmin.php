@@ -23,8 +23,11 @@ class AuthenticateAdmin {
             return response()->json(array('success' => false, 'errors' => ['Unauthorised']), 401);
         }
 
-        $adminUsername = $admin->username;
-        ApiRequest::addHeader('X-Dashboard-Username', $adminUsername);
+        $adminUsername = $admin->username ?? null;
+        ApiRequest::addHeader('X-Dashboard-Admin-Username', $adminUsername);
+
+        $adminEmail = $admin->email ?? null;
+        ApiRequest::addHeader('X-Dashboard-Admin-Email', $adminEmail);
 
         return $next($request);
     }

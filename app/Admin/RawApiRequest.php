@@ -43,9 +43,12 @@ class RawApiRequest
             'base_url' => Config::get('api.url'),
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
-            'headers'   =>  ApiRequest::getHeaders() + [
-                'X-Dashboard'   => 'true',
-                'User-Agent'    => 'Razorpay-PHP/guzzle6'
+            'defaults' => [
+                'headers'   =>  ApiRequest::getHeaders() + [
+                    'X-Dashboard'   => 'true',
+                    'X-User-Agent'  => Request::header('User-Agent'),
+                    'X-IP-Address'  => Request::ip(),
+                ]
             ]
         ];
 
@@ -55,10 +58,6 @@ class RawApiRequest
         $this->setupCredentials($input);
         $this->input = $input;
         $this->path = $path;
-
-        // Setting these in $options above wasn't working (not passing to API)
-        $this->params['headers']['X-User-Agent'] = Request::header('User-Agent');
-        $this->params['headers']['X-IP-Address'] = Request::ip();
 
         if (!empty(Request::query()) and $autoBuildQuery)
         {
@@ -180,7 +179,8 @@ class RawApiRequest
         else
         {
             $this->setContentType('application/x-www-form-urlencoded');
-            $this->params['body'] = Input::get('body', '');
+
+            $this->params['body'] = $this->input['body'] ?? Input::get('body', '');
         }
     }
 

@@ -21,12 +21,13 @@ import InvoiceDetailsContainer from './containers/Invoices/Details'
 import OrdersListContainer from './containers/Orders/List'
 import OrderDetailsContainer from './containers/Orders/Details'
 import WebhooksContainer from './containers/Webhooks/List'
+import AddFundsContainer from './containers/AddFunds'
 
 import SettlementsListContainer from './containers/Settlements/List'
 import SettlementDetailsContainer from './containers/Settlements/Details'
 
 import KeysListContainer from './containers/Keys/List'
-
+import CreditsContainer from './containers/Credits/List'
 
 // import PlansListContainer from './containers/Plans/List'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
@@ -101,6 +102,7 @@ createNgDirective('invoicesList', InvoicesListContainer)
 createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
 createNgDirective('customersList', CustomersListContainer)
 createNgDirective('itemsList', ItemsListContainer)
+createNgDirective('creditsNew', CreditsContainer)
 
 createNgDirective('ordersList', OrdersListContainer)
 createNgDirective('orderDetails', OrderDetailsContainer, ['id'])
@@ -111,7 +113,7 @@ createNgDirective('settlementDetails', SettlementDetailsContainer, ['id'])
 createNgDirective('webhooksList', WebhooksContainer)
 
 createNgDirective('keysList', KeysListContainer)
-
+createNgDirective('addFunds', AddFundsContainer)
 
 // createNgDirective('subscriptionsList', SubscriptionsListContainer)
 // createNgDirective('subscriptionsNew', SubscriptionsNewContainer)
