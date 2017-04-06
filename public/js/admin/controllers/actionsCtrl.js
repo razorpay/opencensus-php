@@ -227,9 +227,14 @@ app.controller('ActionsCtrl', [
       };
 
       $scope.verifyPayment = function (payment_id) {
-        var request = $http({
-          method: 'get',
-          url: '/admin/payment/' + payment_id + '/verify'
+        var data = {
+          route_name: 'payment_verify',
+          url_params: {
+            '{id}' : payment_id
+          }
+        };
+        var request = $http.get('/admin/generic', {
+          params: data
         });
         request.success(function (data) {
           if (data.success) {
