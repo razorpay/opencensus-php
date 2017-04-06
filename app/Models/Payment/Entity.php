@@ -559,7 +559,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SIGNED, $signed);
     }
 
-    public function setOnHold($onHold)
+    public function setOnHold(bool $onHold)
     {
         $this->setAttribute(self::ON_HOLD, $onHold);
     }
@@ -856,6 +856,11 @@ class Entity extends Base\PublicEntity
     public function hasInvoice()
     {
         return ($this->isAttributeNotNull(self::INVOICE_ID));
+    }
+
+    public function hasTransfer()
+    {
+        return ($this->isAttributeNotNull(self::TRANSFER_ID));
     }
 
     public function hasMetadata($key = null)

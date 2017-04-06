@@ -51,7 +51,8 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        if ($input['payment']['method'] === Payment\Method::NETBANKING)
+        if (($input['payment']['method'] === Payment\Method::NETBANKING) and
+           (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$redircetDisabledBanks, true) === false))
         {
             $request = $this->makeRequestAndGetBankUrl($request, $input);
         }

@@ -370,6 +370,12 @@ final class Route
         'org_get_multiple'                        => ['get',      'orgs',                                           'OrganizationController@getOrganizations'                           ],
         'org_edit'                                => ['put',      'orgs/{orgId}',                                   'OrganizationController@putOrganization'                            ],
         'org_delete'                              => ['delete',   'orgs/{orgId}',                                   'OrganizationController@deleteOrganization'                         ],
+        'org_fieldmap_create'                     => ['post',     'orgs/{orgId}/field-map',                         'OrganizationController@postOrgFieldMap'                            ],
+        'org_fieldmap_get_multiple'               => ['get',      'orgs/{orgId}/field-map',                         'OrganizationController@getOrgFieldMapMultiple'                     ],
+        'org_fieldmap_get'                        => ['get',      'orgs/{orgId}/field-map/{id}',                    'OrganizationController@getOrgFieldMap'                             ],
+        'org_fieldmap_get_by_entity'              => ['get',      'orgs/{orgId}/field-map/entity/{entity}',         'OrganizationController@getOrgFieldMapByEntity'                     ],
+        'org_fieldmap_edit'                       => ['put',      'orgs/{orgId}/field-map/{id}',                    'OrganizationController@putOrgFieldMap'                             ],
+        'org_fieldmap_delete'                     => ['delete',   'orgs/{orgId}/field-map/{id}',                    'OrganizationController@deleteOrgFieldMap'                          ],
         'role_create'                             => ['post',     'orgs/{orgId}/roles',                             'OrganizationController@createRole'                                 ],
         'role_get_multiple'                       => ['get',      'orgs/{orgId}/roles',                             'OrganizationController@getMultipleRoles'                           ],
         'role_get'                                => ['get',      'orgs/{orgId}/roles/{id}',                        'OrganizationController@getRole'                                    ],
@@ -384,6 +390,11 @@ final class Route
         'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
         'admin_fetch_merchants'                   => ['get',      'orgs/{orgId}/admins/{id}/merchants',             'OrganizationController@getMerchants'                               ],
         'admin_delete'                            => ['delete',   'orgs/{orgId}/admins/{id}',                       'OrganizationController@deleteAdmin'                                ],
+        'admin_lead_create'                       => ['post',     'orgs/{orgId}/admin-lead',                        'OrganizationController@postAdminLead'                              ],
+        'admin_lead_get_multiple'                 => ['get',      'orgs/{orgId}/admin-lead',                        'OrganizationController@getAdminLeadMultiple'                       ],
+        'admin_lead_verify'                       => ['get',      'admin-lead/verify/{token}',                      'OrganizationController@verifyAdminLead'                            ],
+        'admin_lead_put'                          => ['put',      'orgs/{orgId}/admin-lead/{id}',                   'OrganizationController@putAdminLead'                               ],
+        'merchant_admin_lead_put'                 => ['put',      'orgs/{orgId}/admin-lead-merchant/{id}',          'OrganizationController@putAdminLead'                               ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'OrganizationController@postAuthenticate'                           ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
         'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',             'OrganizationController@postForgotPassword'                         ],
@@ -396,7 +407,7 @@ final class Route
         'group_delete'                            => ['delete',   'orgs/{orgId}/groups/{id}',                       'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
 
-        // Permission can only be created by certain organisations.
+        // Permission can only be created by certain organizations.
         'permission_create'                       => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
         'permission_get_by_type'                  => ['get',      'permissions/get/{type}',                         'OrganizationController@getPermissionsByType'                       ],
         'permission_get'                          => ['get',      'permissions/{id}',                               'OrganizationController@getPermission'                              ],
@@ -451,10 +462,14 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+        'payment_update_on_hold'                  => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
 
         // Dummy routes to test Account Auth
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
+        'user_create'                             => ['post',     'users',                                          'UserController@postUser'                                           ],
+        'user_edit'                               => ['put',      'users/{id}',                                     'UserController@putUser'                                            ],
+        'user_attach_merchant'                    => ['put',      'users/{id}/attach',                              'UserController@attachUserToMerchant'                               ],
     );
 
     public static $public = array(
@@ -753,6 +768,7 @@ final class Route
         'admin_get_by_attr',
         'org_get_self',
         'org_get_by_hostname',
+        'admin_lead_verify',
         'admin_lock_old_accounts',
         'admin_forgot_password',
         'admin_reset_password',
@@ -773,6 +789,11 @@ final class Route
         'schedule_fetch_multiple',
         'schedule_migration',
         'internal_dummy_account_test',
+        'user_create',
+        'user_edit',
+        'user_attach_merchant',
+        'merchant_admin_lead_put',
+        'payment_update_on_hold',
     );
 
     public static $proxy = array(
@@ -851,6 +872,12 @@ final class Route
         'org_create',
         'org_edit',
         'org_delete',
+        'org_fieldmap_create',
+        'org_fieldmap_get_multiple',
+        'org_fieldmap_get',
+        'org_fieldmap_get_by_entity',
+        'org_fieldmap_edit',
+        'org_fieldmap_delete',
         'role_create',
         'role_get_multiple',
         'role_get',
@@ -860,6 +887,9 @@ final class Route
         'admin_get',
         'admin_edit',
         'admin_delete',
+        'admin_lead_create',
+        'admin_lead_put',
+        'admin_lead_get_multiple',
         'group_create',
         'group_edit',
         'group_delete',
@@ -914,6 +944,15 @@ final class Route
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
+        'org_fieldmap_create'            => [Permission::EDIT_ORG],
+        'org_fieldmap_get_multiple'      => [Permission::EDIT_ORG],
+        'org_fieldmap_get'               => [Permission::EDIT_ORG],
+        'org_fieldmap_get_by_entity'     => ['*'],
+        'org_fieldmap_edit'              => [Permission::EDIT_ORG],
+        'org_fieldmap_delete'            => [Permission::EDIT_ORG],
+        'admin_lead_create'              => [Permission::CREATE_MERCHANT_INVITE],
+        'admin_lead_put'                 => [Permission::EDIT_MERCHANT_INVITE],
+        'admin_lead_get_multiple'        => [Permission::VIEW_MERCHANT_INVITE],
         'admin_dummy_account_test'       => [Permission::VIEW_MERCHANT],
     ];
 
@@ -990,6 +1029,7 @@ final class Route
             'schedule_migration',
             'offer_deactivate',
             'merchant_patch_beneficiary_code',
+            'payment_update_on_hold',
         ),
 
         'kotak' => array(

@@ -178,6 +178,7 @@ return array(
         Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Http\Httplug\HttplugServiceProvider::class,
+        Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
 
     ),
 

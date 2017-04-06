@@ -12,6 +12,15 @@ class Converter
 {
     const CSV_EXTENSION = 'csv';
 
+    //
+    // For some gateways like Netbanking Federal, the csv columns
+    // are separated by '|' instead of ',' and therefore we need
+    // to get the columns out of these rows
+    //
+    const CONVERT_TO_COLUMNS_MAP = [
+        Orchestrator::NETBANKING_FEDERAL => '|'
+    ];
+
     const MAPPINGS = [
         'no'   => 'number',
         'num'  => 'number',
@@ -169,7 +178,7 @@ class Converter
         return $rows;
     }
 
-    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip = [])
+    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip = [], $gateway)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -210,6 +219,13 @@ class Converter
                     ($currentLineNumber >= $totalLinesToRead))
                 {
                     break;
+                }
+
+                if (array_key_exists($gateway, self::CONVERT_TO_COLUMNS_MAP) === true)
+                {
+                    $glue = self::CONVERT_TO_COLUMNS_MAP[$gateway];
+
+                    $row = explode($glue, $row[0]);
                 }
 
                 // If headers are empty, get headers from the first row.

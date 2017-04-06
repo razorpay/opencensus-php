@@ -215,19 +215,20 @@ class Netbanking
         IFSC::YESB,
         Netbanking::LAVB_R,
         Netbanking::PUNB_R,
-        /*
+
+        IFSC::UTIB,
         IFSC::BKID,
         IFSC::CIUB,
-        IFSC::DEUT,
-        IFSC::HDFC,
         IFSC::ICIC,
+
+        /*
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBIN,
         IFSC::SBMY,
         IFSC::STBP,
         IFSC::SBTR,
-        IFSC::UTIB,
+        IFSC::HDFC,
         */
     );
 

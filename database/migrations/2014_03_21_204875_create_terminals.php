@@ -82,6 +82,9 @@ class CreateTerminals extends Migration
                   ->unsigned()
                   ->default(1);
 
+            $table->tinyInteger(Terminal::INTERNATIONAL)
+                  ->default(0);
+
             $table->tinyInteger(Terminal::SHARED)
                    ->default(0);
 

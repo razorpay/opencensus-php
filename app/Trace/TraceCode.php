@@ -73,6 +73,7 @@ class TraceCode
     const PAYMENT_USER_AGENT_ANOMALY                    = 'PAYMENT_USER_AGENT_ANOMALY';
     const PAYMENT_CARD_IIN_MISSING                      = 'PAYMENT_CARD_IIN_MISSING';
     const PAYMENT_UPDATE_HOLD                           = 'PAYMENT_UPDATE_HOLD';
+    const PAYMENT_UPDATE_HOLD_CRON                      = 'PAYMENT_UPDATE_HOLD_CRON';
     const PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION        = 'PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION';
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE         = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
     const TRANSACTION_AMOUNT_CREDITS                    = 'TRANSACTION_AMOUNT_CREDITS';
@@ -625,7 +626,9 @@ class TraceCode
 
 
     // Trace codes for gateway
-    const FIRST_DATA_PARES_MISSING                  = 'FIRST_DATA_PARES_MISSING';
+    const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
+
+    const USER_EDIT                                     = 'USER_EDIT';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

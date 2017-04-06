@@ -387,6 +387,28 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableMobikwik();
     }
 
+    public function testPaymentWithFailedOfferWithCustomErrorMessage()
+    {
+        $this->fixtures->merchant->enableMobikwik();
+
+        $offer = $this->fixtures->create('offer:card', ['error_message' => 'Custom error message']);
+
+        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+
+        $payment = $this->getDefaultWalletPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->fixtures->merchant->disableMobikwik();
+    }
+
     public function testPaymentWithBlockPaymentDisabledOnOffer()
     {
         $offer = $this->fixtures->create('offer:card', ['block' => false]);
