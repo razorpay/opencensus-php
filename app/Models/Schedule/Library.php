@@ -15,16 +15,7 @@ class Library
 
         $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
-        $nextRun = self::getNextRun($schedule);
-
-        // If minimum delay is more than the time till next run of the settlement
-        // schedule, then we calculate the *next* next run, and set that.
-        if ($settledAt > $nextRun)
-        {
-            $nextRun = self::computeFutureRun($schedule, $settledAt);
-        }
-
-        return $nextRun->getTimestamp();
+        return $settledAt->timestamp;
     }
 
     public static function computeFutureRun($schedule, $referenceTime)
@@ -151,6 +142,8 @@ class Library
         {
             // Delay of N days means N working days.
             $current = Holidays::getNthWorkingDayFrom($current, $minimumDelay);
+
+            $current->hour($schedule->getHour());
         }
 
         return $current;

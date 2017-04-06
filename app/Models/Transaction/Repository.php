@@ -58,7 +58,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchUnsettledTransactions($timestamp)
+    public function fetchUnsettledTransactions($timestamp, $channel)
     {
         $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
@@ -72,20 +72,13 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::ON_HOLD, 0)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
+                    ->where(Entity::CHANNEL, '=', $channel)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
                     ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
                     ->get();
-
-        $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
-                    $txns,
-                    'source',
-                    [
-                        E::PAYMENT => [],
-                        E::REFUND => [E::PAYMENT]
-                    ]);
 
         return $txns;
     }

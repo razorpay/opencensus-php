@@ -34,7 +34,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            $query->where(ScheduleTask\Entity::METHOD, $method);
+            $query->where(ScheduleTask\Entity::METHOD, '=', $method);
         }
 
         return $query->first();
@@ -51,7 +51,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            $query->where(ScheduleTask\Entity::METHOD, $method);
+            $query->where(ScheduleTask\Entity::METHOD, '=', $method);
         }
 
         return $query->with('schedule')
@@ -60,17 +60,25 @@ class Repository extends Base\Repository
 
     public function fetchByMerchant(Merchant\Entity $merchant, $type)
     {
-        return $query = $this->newQuery()
-                             ->merchantId($merchant->getId())
-                             ->where(ScheduleTask\Entity::TYPE, '=', $type)
-                             ->with('schedule')
-                             ->get();
+        return $this->newQuery()
+                    ->merchantId($merchant->getId())
+                    ->where(ScheduleTask\Entity::TYPE, '=', $type)
+                    ->with('schedule')
+                    ->get();
     }
 
     public function fetchScheduleCountById(string $scheduleId)
     {
         return $this->newQuery()
-                    ->where(ScheduleTask\Entity::SCHEDULE_ID, $scheduleId)
+                    ->where(ScheduleTask\Entity::SCHEDULE_ID, '=', $scheduleId)
                     ->count();
+    }
+
+    public function fetchExpiredScheduleTasks($type, $timestamp)
+    {
+        return $this->newQuery()
+                    ->where(ScheduleTask\Entity::TYPE, '=', $type)
+                    ->where(ScheduleTask\Entity::NEXT_RUN_AT, '<', $timestamp)
+                    ->get();
     }
 }

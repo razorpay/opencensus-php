@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Trace\TraceCode;
 
 class Processor extends Base\Core
@@ -76,13 +77,7 @@ class Processor extends Base\Core
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
 
-        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
-
-        $schedules->callOnEveryItem('updateNextRun');
-
-        $this->repo->saveOrFailCollection($schedules);
-
-        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
+        $this->updateSettlementNextRun();
 
         return $data;
     }
@@ -205,7 +200,7 @@ class Processor extends Base\Core
 
     protected function createSettlements($channel): array
     {
-        $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime, $channel);
+        $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime, $channel);
 
         list($settlements, $settledTxnsCount, $setlAttempts) =
             $this->processUnsettledTransactions($txns, $channel);
@@ -293,5 +288,18 @@ class Processor extends Base\Core
         }
 
         return false;
+    }
+
+    protected function updateSettlementNextRun()
+    {
+        $schedules = $this->repo->schedule_task->fetchExpiredScheduleTasks(
+                        ScheduleTask\Type::SETTLEMENT,
+                        $this->setlTime);
+
+        $schedules->callOnEveryItem('updateNextRun');
+
+        $this->repo->saveOrFailCollection($schedules);
+
+        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
     }
 }

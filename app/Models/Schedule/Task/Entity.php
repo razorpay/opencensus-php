@@ -4,6 +4,7 @@ namespace RZP\Models\Schedule\Task;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Schedule\Library;
 
 class Entity extends Base\PublicEntity
 {
@@ -129,5 +130,18 @@ class Entity extends Base\PublicEntity
     public function setNextRunAt($timestamp)
     {
         return $this->setAttribute(self::NEXT_RUN_AT, $timestamp);
+    }
+
+    // ------------------------- Helper mehtods --------------------------------
+
+    public function updateNextRun()
+    {
+        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), 'Asia/Kolkata');
+
+        $currentTime = Carbon::now('Asia/Kolkata');
+
+        $nextRun = Library::computeFutureRun($this->schedule, $currentTime);
+
+        $this->setNextRunAt($nextRun->timestamp);
     }
 }
