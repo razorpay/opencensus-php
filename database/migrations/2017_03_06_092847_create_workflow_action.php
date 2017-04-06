@@ -26,6 +26,10 @@ class CreateWorkflowAction extends Migration
             $table->char(Action::ID, Action::ID_LENGTH)
                   ->primary();
 
+            $table->string(Action::TITLE, 255);
+
+            $table->text(Action::DESCRIPTION);
+
             $table->char(Action::WORKFLOW_ID, Action::ID_LENGTH);
 
             $table->char(Action::ADMIN_ID, Action::ID_LENGTH);

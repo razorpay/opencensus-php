@@ -40,24 +40,44 @@ class Core extends Base\Core
             }
         });
 
+        $id = $workflow->getPublicId();
+        $orgId = $this->app['basicauth']->getAdminOrgId();
+
+        $workflow = $this->repo->workflow
+                               ->findByPublicIdAndOrgIdWithRelations(
+                                   $id, $orgId, ['steps', 'permissions']);
+
         return $workflow;
     }
 
     public function update(Entity $workflow, array $input)
     {
-        $workflow->edit($input);
+        $openWorkflows = (new Action\Core)->fetchOpenWorkflows($workflow->getId());
 
-        $permissionIds = $this->getPermissionIds($workflow, $input[Entity::PERMISSIONS]);
+        if (count($openWorkflows) > 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
+        }
+
+        $workflow->edit($input);
 
         // $minLevel = $this->getMinLevelFromSteps($workflow->steps);
         // $this->validateExistingWorkflows($input[Entity::PERMISSIONS] ,$minLevel);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($workflow, $permissionIds)
+        $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
 
-            $workflow->permissions()->sync($permissionIds);
+            $workflow->permissions()->sync($input[Entity::PERMISSIONS]);
         });
+
+        $id = $workflow->getPublicId();
+        $orgId = $this->app['basicauth']->getAdminOrgId();
+
+        $workflow = $this->repo->workflow
+                               ->findByPublicIdAndOrgIdWithRelations(
+                                   $id, $orgId, ['steps', 'permissions']);
 
         return $workflow;
     }

@@ -996,6 +996,7 @@ final class Route
         'admin_lead_put'                   => [Permission::EDIT_MERCHANT_INVITE],
         'admin_lead_get_multiple'          => [Permission::VIEW_MERCHANT_INVITE],
         'admin_dummy_account_test'         => [Permission::VIEW_MERCHANT],
+        'feature_delete'                   => [Permission::DELETE_MERCHANT_FEATURES],
 
         'workflow_create'                  => ['*'], // Fix permissions
         'workflow_get'                     => ['*'],

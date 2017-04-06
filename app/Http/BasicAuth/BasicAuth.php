@@ -358,6 +358,8 @@ class BasicAuth
 
             $this->admin = $adminToken->admin;
 
+            $this->adminOrgId = $this->admin->getOrgId();
+
             return $this->checkAndSetAccountScope();
         }
 
@@ -973,6 +975,11 @@ class BasicAuth
     public function getAdmin()
     {
         return $this->admin;
+    }
+
+    public function getAdminOrgId()
+    {
+        return $this->adminOrgId;
     }
 
     public function getMerchantId()

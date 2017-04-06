@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Permission;
 
-use RZP\Base;
+use RZP\Models\Admin\Base;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Permission;
 

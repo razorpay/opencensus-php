@@ -88,8 +88,10 @@ class Manager
             $admin = $this->app['basicauth']->getAdmin();
         }
 
-        $actions = $this->repo->workflow_action->findByAdminIdAndOrgId(
-            $admin->getId(), $admin->getOrgId());
+        $relations = ['workflow'];
+
+        $actions = $this->repo->workflow_action->findByAdminIdAndOrgIdWithRelations(
+            $admin->getId(), $admin->getOrgId(), $relations);
 
         return $actions;
     }

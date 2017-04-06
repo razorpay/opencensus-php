@@ -44,18 +44,22 @@ class Service extends Base\Service
 
         Entity::verifyIdAndStripSign($actionId);
 
+        $relations = ['workflow.steps', 'admin'];
+
         $action = $this->repo
                        ->workflow_action
-                       ->findByIdAndOrgId($actionId, $orgId);
+                       ->findByIdAndOrgId($actionId, $orgId, $relations)
+                       ->first();
 
         $checkers = $this->repo
                          ->action_checker
                          ->fetchByActionId($actionId);
 
-        $data = [
-            'action'   => $action->toArrayPublic(),
-            'checkers' => $checkers->toArrayPublic(),
-        ];
+        $data = $action->toArrayPublicWithAdminAndSteps();
+
+        $data['checkers'] = $checkers->map(function ($checker) {
+            return $checker-toPublicArray();
+        })->toArray();
 
         return $data;
     }
