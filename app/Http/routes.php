@@ -231,7 +231,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
 
         // Admin Payment Actions
-        Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
         Route::get('/admin/{mode}/payments/{id}/analytics', 'AdminController@getPaymentAnalytics');
         Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
         Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');

@@ -900,27 +900,6 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function getVerifyPayment($mode, $id)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $data = $this->api->admin->fetchEntityById('payment', $id)
-                                    ->verify()
-                                    ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
     public function authorizeFailedPayment($mode, $id)
     {
         $data = [];
