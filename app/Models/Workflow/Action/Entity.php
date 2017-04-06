@@ -8,13 +8,14 @@ use RZP\Models\Workflow\Action\State;
 class Entity extends Base\Entity
 {
     const ID             = 'id';
+    const TITLE          = 'title';
+    const DESCRIPTION    = 'description';
     const WORKFLOW_ID    = 'workflow_id';
     const ADMIN_ID       = 'admin_id';
     const ORG_ID         = 'org_id';
     const APPROVED       = 'approved';
     const STATE          = 'state';
     const CURRENT_LEVEL  = 'current_level';
-
     const DIFFER         = 'differ';
 
     protected static $sign = 'w_action';
