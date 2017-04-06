@@ -19,7 +19,7 @@ export default class Notifications extends Component {
   }
 
   render() {
-    let { notifications } = this.props
+    let { notifications, hideAllPrev } = this.props
 
     if (!notifications.length) {
       return null
@@ -36,6 +36,7 @@ export default class Notifications extends Component {
               showClose={notification.showClose}
               onClose={() => this.closeNotification(notification)}
               closeTimeout={notification.closeTimeout}
+              hideAllPrev={hideAllPrev && idx>0}
             />
           ))
         }

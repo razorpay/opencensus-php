@@ -16,6 +16,13 @@ class Notification extends Component {
     }, this.props.closeTimeout)
   }
 
+  componentWillUpdate(nextProps) {
+    if(nextProps.hideAllPrev) {
+      clearTimeout(this.timerId)
+      this.close()
+    }
+  }
+
   componentWillUnmount() {
     this.close()
   }
@@ -35,7 +42,12 @@ class Notification extends Component {
   }
 
   render() {
-    let { type, message, showClose } = this.props
+    let { type, message, showClose, hideAllPrev } = this.props
+
+    if(hideAllPrev) {
+      return null
+    }
+
     return (
       <div
         ref={(notificationEle) => { this.notificationEle = notificationEle }}
@@ -45,7 +57,7 @@ class Notification extends Component {
             message() : Array.isArray(message) ?
               <ul class='list-unstyled'>
                 {
-                  message.map((msg) => <li key={+new Date()}>{msg}</li>)
+                  message.map((msg, idx) => <li key={idx}>{msg}</li>)
                 }
               </ul> : message
         }
