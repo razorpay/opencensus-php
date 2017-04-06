@@ -240,7 +240,7 @@ trait RequestResponseFlowTrait
         {
             $adminHeaders = $this->ba->getAdminHeaders();
 
-            if ($adminHeaders)
+            if (empty($adminHeaders) === false)
             {
                 $request['server'] += $this->transformHeadersToServerVars($adminHeaders);
             }
