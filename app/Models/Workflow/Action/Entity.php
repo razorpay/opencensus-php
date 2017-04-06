@@ -25,6 +25,8 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
+        self::TITLE,
+        self::DESCRIPTION,
         self::ORG_ID,
         self::ADMIN_ID,
         self::WORKFLOW_ID,
