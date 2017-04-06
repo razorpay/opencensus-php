@@ -8,12 +8,7 @@ import LineItem from './LineItem'
 })
 
 export default class InvoiceLineItemTable extends Component {
-  constructor() {
-    super(...arguments)
-    this.addInvoiceItem = ::this.addInvoiceItem
-  }
-
-  addInvoiceItem() {
+  addInvoiceItem = () => {
     this.props.fields.push({
       item_id: '',
       quantity: 1,

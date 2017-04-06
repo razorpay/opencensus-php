@@ -9,16 +9,11 @@ import * as SettlementActions from 'merchant/modules/settlements/details'
   SettlementActions
 )
 export default class SettlementDetailsContainer extends Component {
-  constructor() {
-    super(...arguments)
-    this.fetchBreakupDetails = ::this.fetchBreakupDetails
-  }
-
   componentWillMount() {
     this.props.fetchSettlement(this.props.id)
   }
 
-  fetchBreakupDetails(settlement) {
+  fetchBreakupDetails = (settlement) => {
     return this.props.fetchBreakupDetails(settlement)
   }
 

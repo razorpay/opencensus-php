@@ -45,6 +45,18 @@ return [
         'permission_delete'                 => 'permissions/{id}',
 
         'merchant_attach_admin'             => 'merchants/{id}/admins',
+
+        // Org Field Maps
+        'org_fieldmap_get_multiple'         => 'orgs/{orgId}/field-map',
+        'org_fieldmap_get'                  => 'orgs/{orgId}/field-map/{id}',
+        'org_fieldmap_create'               => 'orgs/{orgId}/field-map',
+        'org_fieldmap_edit'                 => 'orgs/{orgId}/field-map/{id}',
+        'org_fieldmap_delete'               => 'orgs/{orgId}/field-map/{id}',
+        'org_fieldmap_get_by_entity'        => 'orgs/{id}/field-map/entity/{entity}',
+
+        'admin_lead_create'                 => 'orgs/{id}/admin-lead',
+        'admin_lead_get_multiple'           => 'orgs/{id}/admin-lead',
+        'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
     ],
 
     // auth
@@ -257,5 +269,8 @@ return [
 
         // Verify Payment
         'payment_verify'                    => 'payments/{id}/verify',
+
+        'admin_lead_verify'                 => 'admin-lead/verify/{token}',
+        'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
     ],
 ];
