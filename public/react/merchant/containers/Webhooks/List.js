@@ -18,17 +18,11 @@ import * as ModalActions from 'merchant/modules/modals'
   { ...WebhookActions, ...ModalActions }
 )
 export default class WebhooksContainer extends ListContainer {
-  constructor() {
-    super(...arguments)
-    this.showWebhookModal = ::this.showWebhookModal
-    this.highlightRowAndClose = ::this.highlightRowAndClose
-  }
-
   fetchEntityList(params) {
     return this.props.fetchWebhooks(params)
   }
 
-  showWebhookModal(webhook = null) {
+  showWebhookModal = (webhook = null) => {
     this.props.openModal({
       component: <WebhookCreation
         webhook={webhook}
@@ -37,7 +31,7 @@ export default class WebhooksContainer extends ListContainer {
     })
   }
 
-  highlightRowAndClose(webhook) {
+  highlightRowAndClose = (webhook) => {
     this.props.highlightWebhookRow(webhook)
     this.props.closeModal()
   }

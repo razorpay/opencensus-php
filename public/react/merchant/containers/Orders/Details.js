@@ -9,16 +9,11 @@ import * as OrderActions from 'merchant/modules/orders/details'
   OrderActions
 )
 export default class OrderDetailsContainer extends Component {
-  constructor() {
-    super(...arguments)
-    this.fetchOrderPayments = ::this.fetchOrderPayments
-  }
-
   componentWillMount() {
     this.props.fetchOrder(this.props.id)
   }
 
-  fetchOrderPayments(order) {
+  fetchOrderPayments = (order) => {
     return this.props.fetchOrderPayments(order)
   }
 

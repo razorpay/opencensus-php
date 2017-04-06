@@ -38,7 +38,6 @@ export default class AddCustomer extends Component {
     this.state = {
       errors: null
     }
-    this.save = ::this.save
   }
 
   componentWillMount() {
@@ -47,7 +46,7 @@ export default class AddCustomer extends Component {
     }
   }
 
-  save(props) {
+  save = (props) => {
     return this.props.saveCustomer(props).then((customer) => {
       this.props.onSave(customer)
       this.props.showNotification({

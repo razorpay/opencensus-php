@@ -19,18 +19,11 @@ import * as NotificationActions from 'merchant/modules/notifications'
   }
 )
 export default class CustomersListContainer extends ListContainer {
-  constructor() {
-    super(...arguments)
-    this.showCustomerModal = ::this.showCustomerModal
-    this.highlightRowAndClose = ::this.highlightRowAndClose
-    this.deleteCustomer = ::this.deleteCustomer
-  }
-
   fetchEntityList(params) {
     return this.props.fetchCustomers(params)
   }
 
-  showCustomerModal(customer = null) {
+  showCustomerModal = (customer = null) => {
     this.props.openModal({
       size: 'small',
       component: <CustomerCreation
@@ -41,12 +34,12 @@ export default class CustomersListContainer extends ListContainer {
     })
   }
 
-  highlightRowAndClose(customer) {
+  highlightRowAndClose = (customer) => {
     this.props.highlightCustomerRow(customer)
     this.props.closeModal()
   }
 
-  deleteCustomer(customer) {
+  deleteCustomer = (customer) => {
     this.context.confirm({
       message: 'Are you sure to delete the customer?',
       affirmativeLabel: 'Delete',

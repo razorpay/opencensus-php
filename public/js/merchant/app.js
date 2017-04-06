@@ -133,9 +133,6 @@ var app = angular.module('app', [
     }).state('app.transactions.detail', {
       url: '/:id',
       templateUrl: 'tpl/app_transaction_detail.html'
-    }).state('app.addfunds', {
-      url: '/addfunds',
-      templateUrl: 'tpl/app_addfunds.html'
     }).state('app.generatereport', {
       url: '/generatereport',
       templateUrl: 'tpl/app_generate_report.html'
@@ -227,6 +224,9 @@ var app = angular.module('app', [
     }).state('app.credits', {
       url: '/credits',
       templateProvider: reactTemplateProvider('<credits-new/>'),
+    }).state('app.addfunds', {
+      url: '/addfunds',
+      templateProvider: reactTemplateProvider('<add-funds />')
     })
 
       //Guest Routes
