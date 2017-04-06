@@ -79,7 +79,7 @@ class Core extends Base\Core
 
         foreach ($roles as $role)
         {
-            $role->permissions()->detach($diffPerms);
+            $this->repo->detach($role, 'permissions', $diffPerms);
         }
     }
 

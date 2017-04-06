@@ -22,7 +22,7 @@ class Repository extends Base\Repository
     }
 
     public function findByLevelAndWorkflowId(
-        integer $level,
+        int $level,
         string $workflowId,
         $columns = array('*'))
     {
@@ -34,7 +34,7 @@ class Repository extends Base\Repository
     }
 
     public function getNumCheckersByLevel(
-        integer $level,
+        int $level,
         string $workflowId)
     {
         return $this->newQuery()

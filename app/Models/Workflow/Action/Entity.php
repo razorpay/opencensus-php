@@ -39,6 +39,13 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::WORKFLOW_ID,
+        self::ADMIN_ID,
+        self::ORG_ID,
+    ];
+
     protected $public = [
         self::ID,
         self::WORKFLOW_ID,
@@ -90,7 +97,7 @@ class Entity extends Base\Entity
         $this->setAttribute(self::CURRENT_LEVEL, $level);
     }
 
-    public function getCurrentLevel() : integer
+    public function getCurrentLevel() : int
     {
         return $this->getAttribute(self::CURRENT_LEVEL);
     }
@@ -105,11 +112,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::APPROVED);
     }
 
-    public function getFinalState() : string
+    public function getFinalState()
     {
         if (empty($this->getId()) === true)
         {
-            return;
+            return ;
         }
 
         $state = $this->repo->action_state->getLatestState($this->getId());

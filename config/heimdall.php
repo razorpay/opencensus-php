@@ -122,6 +122,7 @@ return [
             Permission::CREATE_MERCHANT_INVITE => '',
             Permission::EDIT_MERCHANT_INVITE   => '',
             Permission::VIEW_MERCHANT_INVITE => '',
+            Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
         ],
 
         PermissionCategory::ENTITY => [
