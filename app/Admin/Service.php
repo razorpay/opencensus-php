@@ -15,7 +15,6 @@ use App\Providers\ApiGuard;
 use App\Schedules;
 use App\Generic;
 
-
 use Auth;
 use Config;
 use Hash;
