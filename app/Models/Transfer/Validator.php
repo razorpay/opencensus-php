@@ -156,7 +156,7 @@ class Validator extends Base\Validator
 
     public function validateHoldParameters(array $input)
     {
-        if ((isset($input[Entity::ON_HOLD]) === false))
+        if (isset($input[Entity::ON_HOLD]) === false)
         {
             return;
         }

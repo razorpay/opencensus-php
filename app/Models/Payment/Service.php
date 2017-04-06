@@ -1069,7 +1069,7 @@ class Service extends Base\Service
             [
                 'step'          => 'fetch_payments',
                 'ids_fetched'   => $paymentsToUpdate->getIds(),
-                'timestamp'     => date('Y-m-d H:i:s', $timestamp)
+                'timestamp'     => Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-m-Y H:i:s')
             ]
         );
 
