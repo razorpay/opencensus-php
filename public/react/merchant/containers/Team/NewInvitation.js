@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
-import { required } from 'rzp/utils/validators'
+import { required, email } from 'rzp/utils/validators'
 import { roles, sendInvitation, fetchTeamDetails } from 'merchant/modules/team'
 import * as NotificationsActions from 'merchant/modules/notifications'
 
@@ -23,6 +23,7 @@ const selector = formValueSelector('newInvitation')
 @reduxForm({
   form: 'newInvitation',
   initialValues: {
+    email: '',
     role: 'manager'
   }
 })
@@ -30,6 +31,7 @@ export default class NewInvitation extends Component {
   save = (props) => {
     return this.props.sendInvitation(props).then(() => {
       this.props.fetchTeamDetails()
+      this.props.initialize(this.props.initialValues)
       this.props.showNotification({
         type: 'success',
         message: `Invitation has been successfully sent to ${props.email}`
@@ -60,7 +62,10 @@ export default class NewInvitation extends Component {
                 class='form-control'
                 placeholder='Email address of the user'
                 autoFocus={true}
-                validate={required()}
+                validate={[
+                  required(),
+                  email('Invalid Email'),
+                ]}
               />
             </div>
 
