@@ -22,11 +22,21 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByAdminIdAndOrgId($adminId, $orgId)
+    public function findByAdminIdAndOrgIdWithRelations($adminId, $orgId, $relations = [])
     {
         return $this->newQuery()
                     ->where(Entity::ADMIN_ID, '=', $adminId)
                     ->where(Entity::ORG_ID, '=', $orgId)
+                    ->with($relations)
+                    ->get();
+    }
+
+    public function findByAdminIdAndOrgId($adminId, $orgId, $relations = [])
+    {
+        return $this->newQuery()
+                    ->where(Entity::ADMIN_ID, '=', $adminId)
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->with($relations)
                     ->firstOrFailPublic();
     }
 
