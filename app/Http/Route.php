@@ -755,7 +755,6 @@ final class Route
         'billdesk_reconcile_cancelled',
         'feature_get_multiple',
         'feature_add',
-        'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
         'upi_fill_bank',
@@ -905,6 +904,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'feature_delete',
         'admin_dummy_account_test',
     ];
 
@@ -944,6 +944,7 @@ final class Route
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
+        'feature_delete'                 => [Permission::DELETE_MERCHANT_FEATURES],
         'org_fieldmap_create'            => [Permission::EDIT_ORG],
         'org_fieldmap_get_multiple'      => [Permission::EDIT_ORG],
         'org_fieldmap_get'               => [Permission::EDIT_ORG],
