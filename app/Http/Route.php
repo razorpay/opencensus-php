@@ -1004,6 +1004,7 @@ final class Route
         'workflow_get'                     => ['*'],
         'workflow_get_multiple'            => ['*'],
         'workflow_update'                  => ['*'],
+        'workflow_delete'                  => ['*'],
         'workflow_step_create'             => ['*'],
         'workflow_step_get'                => ['*'],
         'workflow_step_get_multiple'       => ['*'],

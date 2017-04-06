@@ -32,9 +32,15 @@ class Repository extends Base\Repository
 
     public function findOpenWorkflows(string $workflowId)
     {
+        /*
+            SELECT *
+            FROM workflow_actions
+            WHERE workflow_id = $workflow_id AND state IN ('open')
+        */
+
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
-                    ->whereIn(Entity::STATE, [State\Entity::APPROVED, State\Entity::EXECUTED, State\Entity::OPEN])
+                    ->whereIn(Entity::STATE, [State\Entity::OPEN])
                     ->get();
     }
 }
