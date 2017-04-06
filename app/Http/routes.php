@@ -194,7 +194,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // EMI Routes
         Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
-        Route::post('/admin/emi', 'AdminController@postAddEMIPlan');
 
         // Admin merchant actions
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
@@ -226,7 +225,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
 
         // IIN Routes
-        Route::post('/admin/iin/add', 'AdminController@postAddIIN');
         Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
         Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
         // EMI Plan Routes

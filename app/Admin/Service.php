@@ -900,25 +900,6 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function postAddIIN($input)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $data = $this->api->IIN->create($input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
     public function getVerifyPayment($mode, $id)
     {
         $data = [];
@@ -2251,24 +2232,6 @@ class Service extends Base\Service
         try
         {
             $data = $this->api->EMI->setId($emiId)->delete($emiId);
-        }
-        catch (ApiError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
-    public function addEMI($input)
-    {
-        // EMI Plans are modeless so we don't care about live or test
-        $this->setApiCredentials(null);
-        $error = $data = [];
-
-        try
-        {
-            $data = $this->api->EMI->create($input);
         }
         catch (ApiError $e)
         {
