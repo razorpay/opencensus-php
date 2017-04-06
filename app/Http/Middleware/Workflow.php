@@ -37,10 +37,14 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
+        // Config to disable workflows mock
+        if ($this->config->get('heimdall.workflows.mock') === true)
+        {
+            return $next($request);
+        }
+
         try
         {
-            // This middleware will only run for routes whose
-            // permission have a workflow defined for them.
             $permissions = $this->getRoutePermissions($routeName);
 
             $admin = $this->app['basicauth']->getAdmin();
@@ -48,19 +52,24 @@ class Workflow
             $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
                 $permissions, $admin->getOrgId());
 
-            // If the permissions has no workflow assigned to it then let's not
-            // apply any maker-checker process
-            if (($permissionHasWorkflow === false) or
-                ($this->config->get('database.es_workflow_action_mock') === true))
+            // If the permissions has no workflow assigned to it
+            // then let's not apply any maker-checker process
+            if ($permissionHasWorkflow === false)
             {
                 return $next($request);
             }
         }
         catch(Exception\BadRequestException $ex)
         {
+            // This middleware will only run for routes whose
+            // permission have a workflow defined for them.
             if ($ex->getCode() === ErrorCode::BAD_REQUEST_PERMISSION_ERROR)
             {
                 return $next($request);
+            }
+            else
+            {
+                throw $ex;
             }
         }
 

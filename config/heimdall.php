@@ -264,4 +264,7 @@ return [
         ],
     ],
 
+    'workflows' => [
+        'mock'  => env('HEIMDALL_WORKFLOWS_MOCK', false),
+    ],
 ];
