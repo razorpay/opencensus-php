@@ -156,6 +156,7 @@ class Validator extends Base\Validator
 
     protected static $firstDataEditTerminalRules = [
         Entity::INTERNATIONAL => 'sometimes|boolean',
+        Entity::RECURRING     => 'sometimes|integer|max:7',
     ];
 
     protected static $cybersourceEditTerminalRules = [
