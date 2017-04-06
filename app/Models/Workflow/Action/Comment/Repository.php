@@ -12,10 +12,11 @@ class Repository extends Base\Repository
         Entity::ACTION_ID      => 'sometimes|string|size:20',
     ];
 
-    public function fetchByActionId(string $actionId)
+    public function fetchByActionIdWithRelations(string $actionId, $relations = [])
     {
         return $this->newQuery()
                     ->where(Entity::ACTION_ID, '=', $actionId)
+                    ->with($relations)
                     ->get();
     }
 }

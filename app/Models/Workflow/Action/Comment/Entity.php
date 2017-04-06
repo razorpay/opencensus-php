@@ -12,6 +12,9 @@ class Entity extends Base\Entity
     const ADMIN_ID       = 'admin_id';
     const COMMENT        = 'comment';
 
+    // Relations
+    const ADMIN         = 'admin';
+
     protected static $sign = 'a_comment';
 
     protected $entity = 'action_comment';
@@ -28,6 +31,7 @@ class Entity extends Base\Entity
     protected $visible = [
         self::ID,
         self::ADMIN_ID,
+        self::ADMIN,
         self::ACTION_ID,
         self::COMMENT,
         self::CREATED_AT,
@@ -37,6 +41,7 @@ class Entity extends Base\Entity
     protected $public = [
         self::ID,
         self::ADMIN_ID,
+        self::ADMIN,
         self::ACTION_ID,
         self::COMMENT,
         self::CREATED_AT,

@@ -15,14 +15,25 @@ class Service extends Base\Service
 
         $comment = $this->core()->create($input);
 
-        return $comment->toArrayPublic();
+        // Get relations
+
+        $admin = $comment->admin;
+
+        // Resolve final array to return
+
+        $comment = $comment->toArrayPublic();
+
+        $comment['admin'] = $admin;
+
+        return $comment;
     }
 
     public function fetchByActionId(string $actionId)
     {
         Action::verifyIdAndStripSign($actionId);
 
-        $comments = $this->repo->action_comment->fetchByActionId($actionId);
+        $comments = $this->repo->action_comment->fetchByActionIdWithRelations(
+            $actionId, [Entity::ADMIN]);
 
         return $comments->toArrayPublic();
     }
