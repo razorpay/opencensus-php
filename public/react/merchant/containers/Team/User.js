@@ -61,6 +61,7 @@ export default class EditInvitation extends Component {
     return (
       <tr>
         <td>{user.email}</td>
+        <td>{user.name}</td>
         <td>
           <Field
             name='role'
