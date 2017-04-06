@@ -470,6 +470,6 @@ class Entity extends Base\Entity
             self::GROUPS
         ];
 
-        return $this->fillable + $extra;
+        return array_merge($this->fillable, $extra);
     }
 }
