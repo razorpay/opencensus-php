@@ -19,7 +19,7 @@ if (screen && screen.width > 480) {
         $('#sk-footer, .app-icon, .app-name, .sk-messages-container').hide();
         var intro_text = 'We are temporarily unavailable on chat, please write to us at <b style="font-weight:bold">support@razorpay.com</b> and we will get back to you asap.';
         if (window.smoochUserLoaded) {
-          intro_text += '<br><br>[OR] you can reach us on <br><b style="font-weight: bold">1800-270-0323</b>  for urgent queries.'
+        //   intro_text += '<br><br>[OR] you can reach us on <br><b style="font-weight: bold">1800-270-0323</b>  for urgent queries.'
         }
         var sk_intro = $('.intro-text').html(intro_text)
           .css({
