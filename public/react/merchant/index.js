@@ -27,6 +27,7 @@ import SettlementsListContainer from './containers/Settlements/List'
 import SettlementDetailsContainer from './containers/Settlements/Details'
 
 import CreditsContainer from './containers/Credits/List'
+import TeamContainer from './containers/Team'
 // import PlansListContainer from './containers/Plans/List'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
 // import SubscriptionsNewContainer from './containers/Subscriptions/New'
@@ -110,6 +111,7 @@ createNgDirective('settlementDetails', SettlementDetailsContainer, ['id'])
 
 createNgDirective('webhooksList', WebhooksContainer)
 createNgDirective('addFunds', AddFundsContainer)
+createNgDirective('manageTeam', TeamContainer)
 
 // createNgDirective('subscriptionsList', SubscriptionsListContainer)
 // createNgDirective('subscriptionsNew', SubscriptionsNewContainer)

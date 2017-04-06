@@ -15,6 +15,7 @@ import settlementsReducer from 'merchant/modules/settlements/list'
 import settlementReducer from 'merchant/modules/settlements/details'
 import webhooksReducer from 'merchant/modules/webhooks'
 import creditsReducer from 'merchant/modules/credits'
+import teamReducer from 'merchant/modules/team'
 
 export default combineReducers({
   form: formReducer,
@@ -32,5 +33,6 @@ export default combineReducers({
   settlements: settlementsReducer,
   settlement: settlementReducer,
   webhooks: webhooksReducer,
-  credits: creditsReducer
+  credits: creditsReducer,
+  team: teamReducer,
 })

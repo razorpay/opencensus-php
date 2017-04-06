@@ -1,0 +1,100 @@
+import { Component } from 'react'
+import { connect } from 'react-redux'
+import { Field, reduxForm, formValueSelector } from 'redux-form'
+import AsyncButton from 'react-async-button'
+import InputField from 'rzp/ui/Forms/InputField'
+import { required } from 'rzp/utils/validators'
+import { roles, sendInvitation, fetchTeamDetails } from 'merchant/modules/team'
+import * as NotificationsActions from 'merchant/modules/notifications'
+
+const selector = formValueSelector('newInvitation')
+@connect(
+  (state) => {
+    return {
+      selectedRole: selector(state, 'role')
+    }
+  },
+  {
+    sendInvitation,
+    fetchTeamDetails,
+    ...NotificationsActions,
+  }
+)
+@reduxForm({
+  form: 'newInvitation',
+  initialValues: {
+    role: 'manager'
+  }
+})
+export default class NewInvitation extends Component {
+  save = (props) => {
+    return this.props.sendInvitation(props).then(() => {
+      this.props.fetchTeamDetails()
+      this.props.showNotification({
+        type: 'success',
+        message: `Invitation has been successfully sent to ${props.email}`
+      })
+    }).catch((err) => {
+      this.props.showNotification({
+        type: 'error',
+        message: err.errors
+      })
+    })
+  }
+
+  render() {
+    const {
+      handleSubmit,
+      invalid,
+      selectedRole,
+    } = this.props
+
+    return (
+      <form class='text-center' onSubmit={handleSubmit(this.save)} style={{marginBottom: '35px'}}>
+        <div class='form-group'>
+          <div class='row'>
+            <div class='col-md-7'>
+              <Field
+                name='email'
+                component={InputField}
+                class='form-control'
+                placeholder='Email address of the user'
+                autoFocus={true}
+                validate={required()}
+              />
+            </div>
+
+            <div class='col-md-5'>
+              <Field
+                name='role'
+                component='select'
+                class='form-control'
+              >
+                {
+                  Object.keys(roles).map((role) => <option key={role} value={role}>{roles[role].label}</option>)
+                }
+              </Field>
+            </div>
+          </div>
+        </div>
+
+        <div class='form-group'>
+          {
+            roles[selectedRole] && roles[selectedRole].desc ?
+              <div class='alert alert-info'>
+                {roles[selectedRole].desc}
+              </div> : null
+          }
+        </div>
+
+        <AsyncButton
+          class='btn btn-primary'
+          text='Send Invitation'
+          pendingText='Sending Invitation...'
+          disabled={invalid}
+          onClick={handleSubmit(this.save)}
+        />
+      </form>
+    )
+  }
+}
