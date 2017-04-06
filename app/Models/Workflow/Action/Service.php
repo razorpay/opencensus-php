@@ -31,7 +31,7 @@ class Service extends Base\Service
 
         $input[Entity::ORG_ID] = $orgId;
 
-        $actions = $this->repo->workflow_action->fetch($input);
+        $actions = $this->repo->workflow_action->findByOrgId($orgId);
 
         return $actions->toArrayPublic();
     }
