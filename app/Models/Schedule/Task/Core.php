@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Schedule\Task;
 
+use Config;
+
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
@@ -35,10 +38,10 @@ class Core extends Base\Core
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
-        return $this->repo->transactionOnLiveAndTest(function() use ($merchant, $entity, $input)
-        {
-            $scheduleTask = $this->create($merchant, $entity, $input);
+        $scheduleTask = $this->create($merchant, $entity, $input);
 
+        $this->repo->transactionOnLiveAndTest(function() use ($scheduleTask)
+        {
             if ($scheduleTask->isTypeSettlement() === true)
             {
                 $this->createOrUpdateInMode($scheduleTask, Mode::LIVE);
@@ -48,9 +51,11 @@ class Core extends Base\Core
             {
                 $this->createOrUpdateInMode($scheduleTask, $this->mode);
             }
-
-            return $scheduleTask;
         });
+
+        $this->traceAndNotifyScheduleAssignment($scheduleTask);
+
+        return $scheduleTask;
     }
 
     protected function createOrUpdateInMode($scheduleTask, $mode)
@@ -131,4 +136,22 @@ class Core extends Base\Core
         return $defaultScheduleTask;
     }
 
+    protected function traceAndNotifyScheduleAssignment($scheduleTask)
+    {
+        $data = $scheduleTask->toArrayPublic();
+
+        $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
+
+        $user = $this->getInternalUsernameOrEmail();
+
+        $this->slack->queue(
+                "Schedule assigned to Merchant by $user",
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.operations_log'),
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:',
+                ]
+            );
+    }
 }

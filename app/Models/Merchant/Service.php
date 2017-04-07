@@ -335,30 +335,7 @@ class Service extends Base\Service
 
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
-        $this->traceAndNotifyScheduleAssignment($scheduleTask);
-
         return $scheduleTask->toArrayPublic();
-    }
-
-    protected function traceAndNotifyScheduleAssignment($scheduleTask)
-    {
-        $data = $scheduleTask->toArrayPublic();
-
-        $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
-
-        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
-
-        $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
-
-        $this->slack->queue(
-                "Schedule assigned to Merchant by $user",
-                $data,
-                [
-                    'channel'  => Config::get('slack.channels.operations_log'),
-                    'username' => 'Jordan Belfort',
-                    'icon'     => ':boom:',
-                ]
-            );
     }
 
     public function migrateMerchantToSettlementSchedules($input)

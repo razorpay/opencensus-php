@@ -29,6 +29,12 @@ class Core
     protected $trace;
 
     /**
+     * Slack Client instance
+     * @var Razorpay\Slack\Facades\Slack
+     */
+    protected $slack;
+
+    /**
      * Test/Live mode
      *
      * @var string
@@ -53,6 +59,8 @@ class Core
         $this->merchant = $this->app['basicauth']->getMerchant();
 
         $this->device = $this->app['basicauth']->getDevice();
+
+        $this->slack = $this->app['slack'];
 
         $this->init();
     }
