@@ -147,7 +147,7 @@ class Core extends Base\Core
 
         $user = $this->getInternalUsernameOrEmail();
 
-        $this->slack->queue(
+        $this->app['slack']->queue(
                 "Schedule assigned to Merchant by $user",
                 $data,
                 [
