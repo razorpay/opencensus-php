@@ -73,8 +73,6 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Core)->create($input);
 
-        $this->assignDefaultSettlementSchedule($merchant);
-
         //
         // Once the merchant is created we must
         // tag him to the admin referral
@@ -102,23 +100,6 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    protected function assignDefaultSettlementSchedule($merchant)
-    {
-        $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
-
-        $schedule = $this->getOrCreateDailySettlementSchedule($defaultDelay);
-
-        $merchant->schedule()->associate($schedule);
-
-        $input = [
-            ScheduleTask\Entity::METHOD      => null,
-            ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
-            ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
-        ];
-
-        (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
-    }
-
     public function createSubMerchant(array $input)
     {
         $merchant = $this->merchant;
@@ -131,8 +112,6 @@ class Service extends Base\Service
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
-
-        $this->assignDefaultSettlementSchedule($subMerchant);
 
         $this->repo->saveOrFail($subMerchant);
 
@@ -154,8 +133,6 @@ class Service extends Base\Service
 
             $input['groups'] = $groupIds;
         }
-
-        $this->setSettlementScheduleIdIfNeeded($merchant, $input);
 
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 
@@ -363,41 +340,18 @@ class Service extends Base\Service
         return $scheduleTask->toArrayPublic();
     }
 
-    protected function setSettlementScheduleIfNeeded($merchant, $schedule)
-    {
-        if (($schedule->getPeriod() === Schedule\Period::DAILY) and
-            ($schedule->getInterval() === 1))
-        {
-            $delay = $schedule->getDelay();
-
-            $merchant->setSettlementSchedule($delay);
-        }
-    }
-
-    protected function setSettlementScheduleIdIfNeeded($merchant, $input)
-    {
-        if (isset($input[Entity::SETTLEMENT_SCHEDULE]) === true)
-        {
-            $requiredDelay = $input[Entity::SETTLEMENT_SCHEDULE];
-
-            $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
-
-            $merchant->schedule()->associate($schedule);
-        }
-    }
-
     protected function traceAndNotifyScheduleAssignment($scheduleTask)
     {
         $data = $scheduleTask->toArrayPublic();
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
 
-        // $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
+        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 
-        // $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
+        $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
 
         $this->slack->queue(
-                "Schedule assigned to Merchant",
+                "Schedule assigned to Merchant by $user",
                 $data,
                 [
                     'channel'  => Config::get('slack.channels.operations_log'),
@@ -462,33 +416,6 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_COMPLETE, $migrationSummary);
 
         return $migrationSummary;
-    }
-
-    protected function getOrCreateDailySettlementSchedule($requiredDelay)
-    {
-        $schedule = $this->repo->schedule->getDailySettlementScheduleByDelay($requiredDelay);
-
-        if (is_null($schedule) === true)
-        {
-            $requiredScheduleData = $this->getRequiredScheduleData($requiredDelay);
-
-            $schedule = (new Schedule\Core)->createSchedule($requiredScheduleData);
-
-            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
-        }
-
-        return $schedule;
-    }
-
-    protected function getRequiredScheduleData($requiredDelay)
-    {
-        return [
-            Schedule\Entity::NAME     => "Basic T$requiredDelay",
-            Schedule\Entity::TYPE     => Schedule\Type::SETTLEMENT,
-            Schedule\Entity::PERIOD   => Schedule\Period::DAILY,
-            Schedule\Entity::INTERVAL => 1,
-            Schedule\Entity::DELAY    => $requiredDelay,
-        ];
     }
 
     public function getPricingPlan($id)

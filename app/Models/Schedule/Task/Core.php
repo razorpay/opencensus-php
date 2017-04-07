@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Schedule\Task;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
@@ -10,26 +11,62 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 class Core extends Base\Core
 {
     /**
+     * create a default schedule for merchant
+     */
+    public function createDefaultSettlementSchedule($merchant)
+    {
+        $defaultDelay = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+        $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
+
+        $merchant->schedule()->associate($schedule);
+
+        $input = [
+            ScheduleTask\Entity::METHOD      => null,
+            ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
+            ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
+        ];
+
+        $this->createOrUpdate($merchant, $merchant, $input);
+    }
+
+    /**
      * Create a merchant schedule entity and deletes the existing entity if any
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
-        return $this->repo->transaction(function() use ($merchant, $entity, $input)
+        return $this->repo->transactionOnLiveAndTest(function() use ($merchant, $entity, $input)
         {
             $scheduleTask = $this->create($merchant, $entity, $input);
 
-            $currentSchedule = $this->repo->schedule_task
-                                    ->fetchDuplicate($scheduleTask);
-
-            if ($currentSchedule !== null)
+            if ($scheduleTask->isTypeSettlement() === true)
             {
-                $this->repo->deleteOrFail($currentSchedule);
+                $this->createOrUpdateInMode($scheduleTask, Mode::LIVE);
+                $this->createOrUpdateInMode($scheduleTask, Mode::TEST);
             }
-
-            $this->repo->saveOrFail($scheduleTask);
+            else
+            {
+                $this->createOrUpdateInMode($scheduleTask, $this->mode);
+            }
 
             return $scheduleTask;
         });
+    }
+
+    protected function createOrUpdateInMode($scheduleTask, $mode)
+    {
+        $scheduleTask->setConnection($mode);
+
+        $currentSchedule = $this->repo
+                                ->schedule_task
+                                ->fetchDuplicate($scheduleTask, $mode);
+
+        if ($currentSchedule !== null)
+        {
+            $this->repo->deleteOrFail($currentSchedule);
+        }
+
+        $this->repo->saveOrFail($scheduleTask);
     }
 
     /**
@@ -93,4 +130,5 @@ class Core extends Base\Core
 
         return $defaultScheduleTask;
     }
+
 }

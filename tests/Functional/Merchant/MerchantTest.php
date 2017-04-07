@@ -1054,6 +1054,13 @@ class MerchantTest extends TestCase
 
         $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
         $this->assertEquals(NULL , $scheduleTask['method']);
+
+        $this->ba->appAuthLive();
+
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+
+        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
+        $this->assertEquals(NULL , $scheduleTask['method']);
     }
 
     public function testCreateMerchantWithAdmin()

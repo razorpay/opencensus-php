@@ -144,4 +144,9 @@ class Entity extends Base\PublicEntity
 
         $this->setNextRunAt($nextRun->timestamp);
     }
+
+    public function isTypeSettlement()
+    {
+        return ($this->getType() === Type::SETTLEMENT);
+    }
 }
