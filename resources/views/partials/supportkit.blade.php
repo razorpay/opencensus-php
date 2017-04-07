@@ -1,37 +1,4 @@
 <script>
-
-window.skFocusListener = function(){
-  var props = {};
-  var inputs = window.skIntro.find('input');
-  var prevent = false;
-  inputs.each(function(i, el){
-    if(el.validity && !el.validity.valid) {
-      el.focus();
-      prevent = true;
-    }
-
-    if(el.name === 'email' || (el.name === 'phone' && new RegExp(el.getAttribute('pattern')).test(el.value))) {
-      props[el.name] = el.value;
-    }
-  });
-
-  if(prevent){
-    return;
-  }
-  if(!props.email){
-    inputs.eq(0).focus();
-    return;
-  }
-
-  Smooch.updateUser({
-    email: props.email,
-    properties: props
-  });
-
-  window.skIntro.html('');
-  $(this).off('focus', window.skFocusListener);
-}
-
 if (screen && screen.width > 480) {
   window.smoochScript = $.getScript('https://cdn.smooch.io/smooch.min.js', function(){
     var rzp_email = '';
@@ -49,13 +16,19 @@ if (screen && screen.width > 480) {
     Smooch.on('ready', function(){
       // Show the `email` & `phone` when there are no conversation
       Smooch.getConversation().catch(function(conversation) {
-        if (!window.smoochUserLoaded) {
-          window.skIntro = $('.sk-intro').html('Please provide your email or phone number for further communication: <br>\
-                <div class="sk-input-wrap"><input value="'+rzp_email+'" name="email" placeholder="Email*" type="email" pattern="^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$"></div>\
-                <div class="sk-input-wrap"><input value="'+rzp_phone+'" name="phone" placeholder="10 digit phone number (optional)" type="tel" pattern="[0-9]{10}" maxlength="10"></div>');
-
-          $('#sk-footer input').on('focus', window.skFocusListener);
+        $('#sk-footer, .app-icon, .app-name, .sk-messages-container').hide();
+        var intro_text = 'We are temporarily unavailable on chat, please write to us at <b style="font-weight:bold">support@razorpay.com</b> and we will get back to you asap.';
+        if (window.smoochUserLoaded) {
+        //   intro_text += '<br><br>[OR] you can reach us on <br><b style="font-weight: bold">1800-270-0323</b>  for urgent queries.'
         }
+        var sk_intro = $('.intro-text').html(intro_text)
+          .css({
+            fontSize: '14px',
+            color: '#444',
+            lineHeight: '1.5',
+            margin: '16px',
+            textAlign: 'justify'
+          })
       });
     })
   })
