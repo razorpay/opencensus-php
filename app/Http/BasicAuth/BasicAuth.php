@@ -352,6 +352,8 @@ class BasicAuth
 
         if ($adminToken->getAdminId() !== null)
         {
+            $this->checkForDashboardMerchantHeader();
+
             $this->setDashboardHeaders();
 
             $this->admin = $adminToken->admin;

@@ -617,7 +617,62 @@ class SettlementTest extends TestCase
         $this->assertFalse($txn['settled']);
     }
 
-    public function testSettletmentForTransferReversal()
+    public function testSettlementAccountTransferOnHoldUntil()
+    {
+        $payment = $this->createPaymentEntities(1);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+
+        $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
+
+        $transfer = $this->fixtures->create(
+            'transfer:to_account',
+            [
+                'account'       => $account,
+                'source_id'     => $payment->getId(),
+                'source_type'   => 'payment',
+                'amount'        => 5000,
+                'currency'      => 'INR',
+                'on_hold'       => '1',
+                'on_hold_until' => Carbon::today('Asia/Kolkata')->timestamp - 600,
+                'created_at'    => $createdAt,
+                'updated_at'    => $createdAt + 10
+            ]);
+
+        // Generate settlements
+        $content = $this->initiateSettlements();
+
+        // 1 payment txn + 1 transfer txn
+        $this->assertEquals(2, $content['kotak']['transaction_count']);
+
+        // Marketplace linked account balance is credited with 5000 after transfer
+        $this->assertEquals(255000, $account->balance->reload()->getBalance());
+
+        //
+        // Run the payment on_hold update cron:
+        // This should allow the txn to be picked up for settlement
+        //
+        $cronResult = $this->runPaymentOnHoldUpdateCron();
+
+        $this->assertEquals(1, $cronResult['summary']['total_count']);
+
+        // Run the next settlement in 3 days to workaround the T+3 schedule
+        $threeDaysInSeconds = 259200;
+
+        // Generate settlements
+        $content = $this->initiateSettlements('kotak', time() + $threeDaysInSeconds);
+
+        // 1 transfer-payment txn
+        $this->assertEquals(1, $content['kotak']['transaction_count']);
+
+        //
+        // After settling the transfer, the linked account balance should have
+        // gone back to 250000
+        //
+        $this->assertEquals(250000, $account->balance->reload()->getBalance());
+    }
+
+    public function testSettlementForTransferReversal()
     {
         $payment = $this->createPaymentEntities(1);
 

@@ -15,6 +15,8 @@ class AdminAccess
 {
     const WILDCARD_PERMISSION = '*';
 
+    const ORG_HEADER_KEY = 'X-Org-Id';
+
     protected $app;
 
     public function __construct(Application $app)
@@ -91,24 +93,47 @@ class AdminAccess
         }
 
         // Fetch public org Id from uri
-        $orgId = $this->router->current()->getParameter('orgId');
-
-        if ($orgId === null)
-        {
-            $orgId = $request->input('org_id');
-
-            if ($orgId === null)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ORG_ID_REQUIRED);
-            }
-        }
+        $orgId = $this->getOrgIdForRoute($request);
 
         if ($orgId !== $admin->getPublicOrgId())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
         }
+    }
+
+    /**
+     * Get the OrgId from different source.
+     * Precedence of sources
+     * 1. Route
+     * 2. Params or PostData
+     * 3. Headers
+     *
+     * @param request
+     *
+     * @return orgId
+     */
+    private function getOrgIdForRoute($request)
+    {
+        $orgId = $this->router->current()->getParameter('orgId');
+
+        if ($orgId === null)
+        {
+            $orgId = $request->input('org_id');
+        }
+
+        if ($orgId === null)
+        {
+            $orgId = $request->headers->get(self::ORG_HEADER_KEY);
+        }
+
+        if ($orgId === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORG_ID_REQUIRED);
+        }
+
+        return $orgId;
     }
 
     /*
@@ -119,6 +144,12 @@ class AdminAccess
         return [
             'org_create',
             'org_get_multiple',
+            'org_fieldmap_create',
+            'org_fieldmap_get_multiple',
+            'org_fieldmap_get',
+            'org_fieldmap_get_by_entity',
+            'org_fieldmap_edit',
+            'org_fieldmap_delete',
             // Permission API are not exposed and org agnostic
             'permission_get',
             'permission_create',

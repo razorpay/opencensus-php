@@ -68,6 +68,17 @@ class Entity
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
 
+    // heimdal
+    const ORG                   = 'org';
+    const ORG_HOSTNAME          = 'org_hostname';
+    const ROLE                  = 'role';
+    const PERMISSION            = 'permission';
+    const GROUP                 = 'group';
+    const ADMIN                 = 'admin';
+    const ADMIN_LEAD            = 'admin_lead';
+    const ADMIN_TOKEN           = 'admin_token';
+    const ORG_FIELD_MAP         = 'org_field_map';
+
     // Gateway entities
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
@@ -101,14 +112,6 @@ class Entity
     const WALLET_OPENWALLET     = 'wallet_openwallet';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
 
-    // heimdal
-    const ORG                   = 'org';
-    const ORG_HOSTNAME          = 'org_hostname';
-    const ROLE                  = 'role';
-    const PERMISSION            = 'permission';
-    const GROUP                 = 'group';
-    const ADMIN                 = 'admin';
-    const ADMIN_TOKEN           = 'admin_token';
 
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
@@ -184,9 +187,11 @@ class Entity
         self::ROLE                  => \RZP\Models\Admin\Role::class,
         self::ADMIN                 => \RZP\Models\Admin\Admin::class,
         self::GROUP                 => \RZP\Models\Admin\Group::class,
+        self::ADMIN_LEAD            => \RZP\Models\Admin\AdminLead::class,
         self::PERMISSION            => \RZP\Models\Admin\Permission::class,
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
         self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
+        self::ORG_FIELD_MAP         => \RZP\Models\Admin\Org\FieldMap::class,
     ];
 
     protected static $repository = [
@@ -210,11 +215,13 @@ class Entity
     protected static $syncedInLiveAndTest = [
         self::ORG,
         self::ORG_HOSTNAME,
+        self::ORG_FIELD_MAP,
         self::ROLE,
         self::PERMISSION,
         self::GROUP,
         self::ADMIN,
         self::ADMIN_TOKEN,
+        self::ADMIN_LEAD,
         self::IIN,
         self::FEATURE,
         self::METHODS,

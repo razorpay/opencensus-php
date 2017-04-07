@@ -86,8 +86,10 @@ class Core extends Base\Core
      * Update the corresponding transaction when
      * hold attributes of a Payment are updated
      *
-     * @param  Payment\Entity       $payment
+     * @param  Payment\Entity $payment
+     *
      * @return Transaction\Entity
+     * @throws Exception\BadRequestException
      */
     public function updateOnHoldToggle(Payment\Entity $payment)
     {
@@ -99,19 +101,14 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED);
         }
 
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
-        // $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
-
-        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+        $txn->setOnHold($payment->getOnHold());
 
         $this->trace->info(
             TraceCode::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION,
             [
                 'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId(),
-                'on_hold'        => $payment->getOnHold(),
-                'settled_at'     => $settledAt,
+                'on_hold'        => $payment->getOnHold()
             ]
         );
 
@@ -930,11 +927,6 @@ class Core extends Base\Core
 
             $returnTime = $this->calculateSettledAtTimestamp($capturedAt, $addDays);
         }
-
-        // Implements delayed settlements, commented temporarily
-        // $onHoldUntilTime = $payment->getOnHoldUntil();
-
-        // return max($returnTime, $onHoldUntilTime);
 
         return $returnTime;
     }

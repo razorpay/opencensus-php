@@ -647,8 +647,8 @@ class Gateway extends Base\Gateway
                 $type   = $transactionValue->children('v1', true)->CreditCardTxType->Type->__toString();
 
                 // Verify response contains separate states for all transactions, possibly multiple for refund/capture.
-                // We're only interested in the preauth transaction state, so loop to that one, and check status.
-                if (in_array($type, [TxnType::AUTH, TxnType::SALE], true) === true)
+                // We're only interested in one transaction state, so loop to that one, and check status.
+                if ($this->isRelevantVerifyType($type) === true)
                 {
                     $verifyAuthResponse = $transactionValue;
                 }
@@ -684,6 +684,26 @@ class Gateway extends Base\Gateway
         // expects it to be an array. This avoids an error being thrown
         // during failed->auth process.
         $verify->setVerifyResponseContent([]);
+    }
+
+    protected function isRelevantVerifyType(string $type)
+    {
+        // Verify response components contain a CreditCardTxType field,
+        // that tells us if the corresponding component is significant.
+        //
+        // For an ordinary payment, we look for the preauth component.
+        // For purchase transaction, we look for the sale component.
+        // For second recurring payments, we look for the periodic component.
+        //
+        // More than one of these cannot appear in the same verify response.
+        // So we simply loop through components and look for any one of them.
+        $significantTypes = [
+            TxnType::AUTH,
+            TxnType::SALE,
+            TxnType::PERIODIC,
+        ];
+
+        return (in_array($type, $significantTypes, true) === true);
     }
 
     protected function getVerifyApiStatus(Entity $gatewayPayment, array $payment)

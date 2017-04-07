@@ -181,6 +181,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AUTH_TYPE);
     }
 
+    public function getCustomCode()
+    {
+        return $this->getAttribute(self::CUSTOM_CODE);
+    }
+
     public function isCrossOrgAccessEnabled()
     {
         return $this->getAttribute(self::CROSS_ORG_ACCESS);
@@ -201,5 +206,10 @@ class Entity extends Base\Entity
         }
 
         $this->attributes[self::EMAIL_DOMAINS] = $emailDomains;
+    }
+
+    public function getInputFields()
+    {
+        return $this->fillable;
     }
 }
