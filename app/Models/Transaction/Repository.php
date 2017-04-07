@@ -9,7 +9,6 @@ use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Settlement;
 use RZP\Models\Schedule;
 use RZP\Models\Transaction;
@@ -75,53 +74,6 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, '=', $channel)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
-                    ->orderBy($transactionMerchantId)
-                    ->orderBy($transactionId)
-                    ->get();
-
-        return $txns;
-    }
-
-    public function fetchUnsettledTxnsForDueSchedules($timestamp, $channel)
-    {
-        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
-        $scheduleId = $this->manager->schedule->getAttributeWithTableName(Schedule\Entity::ID);
-
-        $merScheduleMerchantId = $this->manager
-                                      ->schedule_task
-                                      ->getAttributeWithTableName(ScheduleTask\Entity::MERCHANT_ID);
-
-        $merScheduleScheduleId = $this->manager
-                                      ->schedule_task
-                                      ->getAttributeWithTableName(ScheduleTask\Entity::SCHEDULE_ID);
-
-        $merScheduleType = $this->manager
-                                ->schedule_task
-                                ->getAttributeWithTableName(ScheduleTask\Entity::TYPE);
-
-        $merScheduleNextRunAt = $this->manager
-                                     ->schedule_task
-                                     ->getAttributeWithTableName(ScheduleTask\Entity::NEXT_RUN_AT);
-
-        $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
-        $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
-        $transactionType = $this->getAttributeWithTableName(Transaction\Entity::TYPE);
-        $transactionData = $this->getAttributeWithTableName('*');
-
-        $txns = $this->newQuery()
-                    ->select($transactionData)
-                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->join(Table::SCHEDULE_TASK, $merchantId, '=', $merScheduleMerchantId)
-                    ->join(Table::SCHEDULE, $scheduleId, '=', $merScheduleScheduleId)
-                    ->where(Entity::ON_HOLD, 0)
-                    ->where(Entity::SETTLED_AT, '<', $timestamp)
-                    ->where(Entity::SETTLED, '=', 0)
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->where($transactionType, '!=', Type::SETTLEMENT)
-                    ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->where($merScheduleType, '=', ScheduleTask\Type::SETTLEMENT)
-                    ->where($merScheduleNextRunAt, '<', $timestamp)
                     ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
