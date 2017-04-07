@@ -147,24 +147,38 @@ class Core extends Base\Core
         return $action;
     }
 
-    public function updateCurrentLevelIfNeeded(Entity $action)
+    public function updateCurrentLevelIfNeeded(Entity $action, $step, $admin)
     {
-        //
-        // get all the checkers in the current level
-        // fetch the reviewer count in the current level of steps
-        // if checkers === reviewer count, update the current level
-        //
-
+        // get all workflow steps in same level
+        // for each step confirm num of checkers
+        // is equal to required number of checkers
         $level = $action->getCurrentLevel();
 
-        $requiredCheckers = $this->repo->workflow_step->getNumCheckersByLevel(
-            $level, $action->getWorkflowId());
+        $workflow = $action->workflow;
 
-        $numCheckers = $this->repo->action_checker->fetchCountByActionId($action->getId());
+        $steps = $this->repo
+                      ->workflow_step
+                      ->findByLevelAndWorkflowId($level, $workflow->getId());
 
-        // If all the checkers in the same level have given their review,
-        // increment the level
-        if ($numCheckers === $requiredCheckers)
+        $updateLevel = true;
+
+        foreach ($steps as $step)
+        {
+            $requiredCheckers = $step->getReviewerCount();
+
+            $numCheckers = $this->repo
+                                ->action_checker
+                                ->fetchCountByActionIdForStep($action->getId(), $step->getId());
+
+            if ($numCheckers < $requiredCheckers)
+            {
+                $updateLevel = false;
+            }
+        }
+
+        // If all step reviewer counts are satisfied
+        // update level
+        if ($updateLevel === true)
         {
             $action->incrementCurrentLevel();
 

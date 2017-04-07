@@ -30,6 +30,15 @@ class Repository extends Base\Repository
                     ->count();
     }
 
+    public function fetchCountByActionIdForStep($actionId, $stepId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACTION_ID, '=', $actionId)
+                    ->where(Entity::STEP_ID, '=', $stepId)
+                    ->whereNotNull(Entity::APPROVED)
+                    ->count();
+    }
+
     public function findByIdAndActionId($checkerId, $actionId)
     {
         Action\Entity::verifyIdAndSilentlyStripSign($actionId);

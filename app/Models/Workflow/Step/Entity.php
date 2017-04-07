@@ -78,4 +78,9 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::WORKFLOW_ID);
     }
+
+    public function getReviewerCount()
+    {
+        return $this->getAttribute(self::REVIEWER_COUNT);
+    }
 }

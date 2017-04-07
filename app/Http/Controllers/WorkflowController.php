@@ -66,7 +66,7 @@ class WorkflowController extends Controller
         $input = Request::all();
 
         // Do not execute the action if it is not approved by all checkers
-        $isActionApproved (new Action\Core)->checkAndMarkActionApproved($action);
+        $isActionApproved = (new Action\Core)->checkAndMarkActionApproved($action);
 
         if ($isActionApproved === false)
         {

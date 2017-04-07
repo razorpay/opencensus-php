@@ -33,6 +33,19 @@ class Repository extends Base\Repository
 
     }
 
+    public function findByLevelWorkflowIdAndRoleId(
+        int $level,
+        string $workflowId,
+        string $roleId,
+        $columns = array('*'))
+    {
+        return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                    ->where(Entity::LEVEL, '=', $level)
+                    ->where(Entity::ROLE_ID, '=', $roleId)
+                    ->get($columns);
+    }
+
     public function getNumCheckersByLevel(
         int $level,
         string $workflowId)

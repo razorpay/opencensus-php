@@ -4,7 +4,9 @@ namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Action\State;
 
 class Core extends Base\Core
@@ -13,16 +15,29 @@ class Core extends Base\Core
     {
         $admin = $this->app['basicauth']->getAdmin();
 
+        $action = $this->repo->workflow_action->findOrFailPublic(
+            $input[Entity::ACTION_ID]);
+
+        $currentLevel = $action->getCurrentLevel();
+
+        $workflowId = $action->workflow->getId();
+
+        $roleId = $admin->role->getId();
+
+        // Assumption is only one step should be returned here.
+        $step = $this->repo->workflow_steps
+                           ->findByLevelWorkflowIdAndRoleId($currentLevel, $workflowId, $roleId)
+                           ->first();
+
         // Maker is the authorized admin from whom we got the request
         $input[Entity::ADMIN_ID] = $admin->getId();
+
+        $input[Entity::STEP_ID] = $step->getId();
 
         // Create action_checker Entity
         $checker = new Entity;
 
         $checker->generateId();
-
-        $action = $this->repo->workflow_action->findOrFailPublic(
-            $input[Entity::ACTION_ID]);
 
         $checker->build($input);
 
@@ -36,7 +51,7 @@ class Core extends Base\Core
 
         });
 
-        (new Action\Core)->updateCurrentLevelIfNeeded();
+        (new Action\Core)->updateCurrentLevelIfNeeded($action, $step, $admin);
 
         // TODO can do it async using laravel events
         (new Action\Core)->checkAndMarkActionApproved();
@@ -44,6 +59,7 @@ class Core extends Base\Core
         return $checker;
     }
 
+    // TO CHECK
     protected function createStateTransitionForChecker(Entity $checker)
     {
         $state = $checker->getStatusOnAction();
