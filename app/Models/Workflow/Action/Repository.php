@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Action\State;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -51,6 +52,32 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->whereIn(Entity::STATE, [State\Entity::OPEN])
+                    ->get();
+    }
+
+    public function findActionsForChecker(array $roleIds)
+    {
+        /*
+            SELECT wa.id, wa.title, wa.description
+            FROM workflow_actions wa
+            JOIN
+                workflow_steps ws ON wa.workflow_id = ws.workflow_id
+                AND wa.current_level = ws.level
+            WHERE
+                wa.state = 'open'
+                AND ws.role_id IN ($adminIds);
+        */
+
+        $wStep = Table::WORKFLOW_STEP;
+
+        return $this->newQuery()
+                    ->select(Table::WORKFLOW_ACTION . '.*')
+                    ->join($wStep, function ($join) {
+                        $join->on('workflow_actions.workflow_id', '=', 'workflow_steps.workflow_id')
+                             ->on('workflow_actions.current_level', '=', 'workflow_steps.level');
+                    })
+                    ->where('workflow_actions.state', '=', State\Entity::OPEN)
+                    ->whereIn('workflow_steps.role_id', $roleIds)
                     ->get();
     }
 }

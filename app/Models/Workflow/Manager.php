@@ -35,7 +35,7 @@ class Manager
         $this->repo = $this->app['repo'];
     }
 
-    public function getActionsForAdmin($admin = null)
+    public function getActionsForChecker($admin = null)
     {
         //
         // Get all the actions in the admin's org
@@ -48,36 +48,11 @@ class Manager
             $admin = $this->app['basicauth']->getAdmin();
         }
 
-        $actions = $this->repo->workflow_action->findByOrgId(
-            $admin->getOrgId());
+        $adminRoleIds = $admin->roles()->getRelatedIds()->toArray();
 
-        $adminRoles = $admin->roles()->getRelatedIds()->toArray();
+        $actions = $this->repo->workflow_action->findActionsForChecker($adminRoleIds);
 
-        $actionsForAdmin = [];
-
-        // TODO simplify the number of db calls by fetching in bulk and mapping
-        // in memory
-        foreach ($actions as $action)
-        {
-            $level = $action->getCurrentLevel();
-
-            $steps = $this->repo->workflow_step->findByLevelAndWorkflowId(
-                $level, $action->getWorkflowId(), ['role_id']);
-
-            $actionRoles = [];
-
-            foreach ($steps as $step)
-            {
-                $roleId = $step->getRoleId();
-
-                if (in_array($roleId, $adminRoles, true) === true)
-                {
-                    $actionsForAdmin[] = [$action->getPublicId(), $step->getPublicId()];
-                }
-            }
-        }
-
-        return $actionsForAdmin;
+        return $actions->toArrayPublic();
     }
 
     public function getActionsByMaker($admin = null)

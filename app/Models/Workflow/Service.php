@@ -63,7 +63,7 @@ class Service extends Base\Service
 
     public function getActionsForChecker()
     {
-        $data = (new Manager)->getActionsForAdmin();
+        $data = (new Manager)->getActionsForChecker();
 
         return $data;
     }
