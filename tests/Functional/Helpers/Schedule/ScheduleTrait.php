@@ -54,6 +54,8 @@ trait ScheduleTrait
 
         $request['content']['schedule_id'] = $schedule['id'];
 
+        $this->ba->adminAuth();
+
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($schedule['id'], $response['schedule_id']);

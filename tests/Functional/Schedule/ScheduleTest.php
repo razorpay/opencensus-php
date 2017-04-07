@@ -154,6 +154,7 @@ class ScheduleTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($schedule)
         {
+            $this->ba->adminAuth();
             $this->deleteSchedule($schedule['id']);
         });
 

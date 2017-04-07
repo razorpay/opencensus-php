@@ -60,18 +60,21 @@ class Core extends Base\Core
 
     protected function createOrUpdateInMode($scheduleTask, $mode)
     {
-        $scheduleTask->setConnection($mode);
+        $entity = clone $scheduleTask;
+
+        $entity->setConnection($mode);
 
         $currentSchedule = $this->repo
                                 ->schedule_task
-                                ->fetchDuplicate($scheduleTask, $mode);
+                                ->connection($mode)
+                                ->fetchDuplicate($entity);
 
         if ($currentSchedule !== null)
         {
             $this->repo->deleteOrFail($currentSchedule);
         }
 
-        $this->repo->saveOrFail($scheduleTask);
+        $this->repo->saveOrFail($entity);
     }
 
     /**
