@@ -63,7 +63,7 @@
     <span>User Access Management</span>
   </li>
 
-  <li>
+  <li ng-show="admin.permissions && admin.permissions.indexOf('view_merchant_invite') !== -1">
     <a id="invitationsNav" ui-sref="app.invitations.list">
       <i class="fa fa-envelope-o icon text-warning-lter"></i>
       <span>Invitations</span>

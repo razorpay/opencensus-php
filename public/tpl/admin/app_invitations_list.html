@@ -20,7 +20,8 @@
             class="form-control input-sm w-sm inline m-r">
         </div>
         <div class="col-md-6">
-          <button id='sendInvitationButton' class='btn btn-default pull-right' ui-sref="app.merchants.invite">
+          <button id='sendInvitationButton' class='btn btn-default pull-right' ui-sref="app.merchants.invite"
+            ng-show="admin.permissions && admin.permissions.indexOf('create_merchant_invite') !== -1">
             Invite a Merchant
           </button>
         </div>
