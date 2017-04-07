@@ -58,8 +58,12 @@ app.controller('WorkflowNewCtrl', [
       delete $scope.permissionsSelected[id];
     }
 
+    $scope.roleNames = {};
     organization.fetchRoles().then(function(roles) {
       $scope.roles = roles;
+      for (var i = 0; i < roles.length; i++) {
+        $scope.roleNames[roles[i].id] = roles[i].name;
+      }
     }).catch(function(errors){
       $scope.alerts.resetAlerts();
       angular.forEach(errors, function (value, key) {
@@ -67,27 +71,30 @@ app.controller('WorkflowNewCtrl', [
       });
     });
 
-    console.log($('.role-select2').length)
-
     var addRoleSelector = function (stepId) {
-      var $roleSelect = $('.role-select2').select2({
-        theme: 'classic',  
+      var $roleSelect = $($('.role-select2')[$('.role-select2').length - 1]).select2({
+        theme: 'classic',
         placeholder: 'Select a role',
       });
       $roleSelect.on("select2:select", function (e) {
-        console.log(e)
-        var id = e.params.data.id;
-        // var stepId = e.params.data.stepId;
-        $scope.rolesSelected.push(id);
+        var data = e.params.data;
+        var elem = e.params.data.element;
+        var roleId = elem.getAttribute('data-role-id');
+        var stepIndex = elem.getAttribute('data-step-index');
+        if ($scope.steps[stepIndex].filter(function(role){return role.role_id === roleId}).length === 0) {
+          $scope.steps[stepIndex].push({
+            role_id: roleId,
+            reviewer_count: 1
+          });
+        }
         $roleSelect.val(null).trigger("change");
-        // console.log(e);
       });
     }
-    setTimeout(addRoleSelector, 0);
 
     $scope.steps = [];
     $scope.addStep = function () {
-      $scope.steps.push({})
+      $scope.steps.push([])
+      setTimeout(addRoleSelector, 0);
     }
 
     $scope.new_checker = null;
