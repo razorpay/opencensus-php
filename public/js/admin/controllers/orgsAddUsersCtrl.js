@@ -134,7 +134,7 @@ app.controller('OrgsAddUsersCtrl', [
       request.success(function (data) {
         if (data.success) {
           if (data.data.workflow_id) {
-            $state.go('app.workflows.feed.detail', {action_id: data.data.id});
+            $state.go('app.workflows.actions.detail', {action_id: data.data.id});
           }
           else {
             $scope.alerts.addAlert('success', 'User updated', true);

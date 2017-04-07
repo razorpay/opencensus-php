@@ -2165,11 +2165,13 @@ class Service extends Base\Service
 
     public function deleteEntityFeature($entityId, $featureName)
     {
-        $this->setApiCredentials();
+        $this->setAdminCredentials();
 
         try
         {
             $response = $this->api->feature->deleteFeature($entityId, $featureName);
+
+            $this->setApiCredentials();
 
             $features = $this->api->feature->getFeatures($entityId);
         }

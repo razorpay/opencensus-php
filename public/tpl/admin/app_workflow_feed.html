@@ -1,8 +1,12 @@
-<div class="workflow-feed-page" ng-controller="FeedCtrl">
+<div class="workflow-feed-page" ng-controller="WorkflowFeedCtrl">
   <div class="bg-light lter b-b wrapper-md">
     <h3 class="m-n font-thin">
-      Action - action_id_here{{action_id}} 
+      Action {{action_id}}
       <spinner class="inline"></spinner>
+
+      <a class='btn btn-info pull-right' href="javascript:void(0);" ng-click="showActionChanges()">
+        View Changes
+      </a>
     </h3>
   </div>
   <div class="wrapper-md">
@@ -10,42 +14,62 @@
       <div class="col-xs-9">
         <div class="action-desc-panel panel panel-default">
           <div class="panel-heading">
-            <strong>{{feed.makers[0]}}</strong> performed <strong>{{feed.actionName}}</strong> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+            <strong>{{ action_details.admin.name }}</strong>
+            performed this action
+            <span title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
+
             <span class="label pending-bg-color pull-right action-state">{{feed.action_state}}</span>
           </div>
           <div class="wrapper clearfix">
-            <div class="h3 m-b">{{feed.action_text}}</div>
+            <div class="h3 m-b">{{ action_details.title }}</div>
             <div class="border-bottom m-b"></div>
+            <div class="description">
+              {{ action_details.description }}
+            </div>
             <div class="assignment-container ">
-              <div class="strong assignee-heading">Assigned to:</div>
+              <div class="strong assignee-heading m-t"><strong>Assigned to:</strong></div>
               <div class="assignees-container m-b">
-                <span class="assignee-label">Ashmeet Sidhu</span>
-                <span class="assignee-label">Ashmeet Sidhu</span>
-                <span class="assignee-label">Ashmeet Sidhu</span>
+                <span class="assignee-label" ng-repeat="step in action_details.workflow_steps">{{ step.role.name }}</span>
               </div>
             </div>
             <div class="border-bottom m-b"></div>
-            <div class="pull-left faded-text">{{feed.comments.length}} Comments</div>
+            <div class="pull-left faded-text">{{comment_count}} Comments</div>
           </div>
         </div>
-        <div class="panel panel-default wrapper">
-          <i class="fa fa-check-circle approved-color"></i> <strong>Shashank Kumar</strong> <span class="">approved</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
-        </div>
-        <div class="action-desc-panel panel panel-default">
-          <div class="panel-heading">
-            <strong>{{feed.checkers[0]}}</strong> commented <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+
+        <!-- Cards Start -->
+
+        <div class="cards" ng-repeat="card in cards" ng-switch on="card.type">
+
+          <div class="panel panel-default wrapper" ng-switch-when="status">
+            <i class="fa fa-check-circle approved-color"></i> <strong>Shashank Kumar</strong> <span class="">approved</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
           </div>
-          <div class="wrapper clearfix">
-            <div class="">This is a very acidic comment. pH = 0</div>
+
+          <div class="action-desc-panel panel panel-default" ng-switch-when="comment">
+            <div class="panel-heading">
+              <strong>{{ card.admin_name }}</strong>
+              commented at
+              <span title="{{feed.timestamp}}" class="timestamp">
+                {{ card.created_at * 1000 | date:'medium' }}
+              </span>
+            </div>
+            <div class="wrapper clearfix">
+              <div class="">{{ card.comment }}</div>
+            </div>
           </div>
+
+          <!-- <div class="panel panel-default wrapper">
+            <i class="fa fa-times-circle rejected-color"></i> <strong>Ashmeet Sidhu</strong> <span class="">rejected</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+          </div> -->
+
         </div>
-        <div class="panel panel-default wrapper">
-          <i class="fa fa-times-circle rejected-color"></i> <strong>Ashmeet Sidhu</strong> <span class="">rejected</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
-        </div>
+
+        <!-- Cards End -->
+
         <div class="panel panel-default">
           <form class="panel-heading clearfix wrapper">
-            <textarea class="form-control wrapper-xs" rows="4" id="comment"></textarea>
-            <button class="pull-right btn btn-info m-t" type="submit">Comment</button>
+            <textarea class="form-control wrapper-xs" rows="4" id="comment" ng-model="new_comment"></textarea>
+            <button class="pull-right btn btn-info m-t" type="submit" ng-click="saveComment()">Comment</button>
           </form>
         </div>
       </div>
@@ -79,6 +103,57 @@
           <div class=""><span class="assignee-label">Ashmeet Sidhu</span></div>
         </div>
       </div>
-    </div>  
+    </div>
   </div>
 </div>
+
+
+<script type="text/ng-template" id="actionChanges.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Entity Changes</h3>
+  </div>
+
+  <div class="modal-body new-key-modal" style="overflow: auto;">
+
+    <h4 ng-show="data.data">Change</h4>
+
+    <p ng-show="data.data.old"><em>Old Data:</em></p>
+
+    <table ng-show="data.data.old" class="table table-striped b-t b-light">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="(key, value) in data.data.old">
+          <td>{{ key }}</td>
+          <td>{{ value }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p ng-show="data.data.new"><em>New Data:</em></p>
+
+    <table ng-show="data.data.new" class="table table-striped b-t b-light">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="(key, value) in data.data.new">
+          <td>{{ key }}</td>
+          <td>{{ value }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Close</button>
+  </div>
+</script>
