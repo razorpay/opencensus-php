@@ -14,10 +14,23 @@
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="row wrapper">
-        <div class="col-md-6 m-b-xs">
+        <div class="col-md-8 m-b-xs">
           <label for='filter' class='m-r'>Search</label>
           <input id="filter" type="text"
             class="form-control input-sm w-sm inline m-r">
+        </div>
+
+        <div class="col-md-4">
+          <div class="input-group">
+            <select class="input-sm form-control merchant_type" name="workflow_request_type" ng-model="workflow_request_type">
+              <option value="maker">Made by You</option>
+              <option value="checker">Awaiting your Approval</option>
+            </select>
+            <span class="input-group-btn">
+              <button class="btn btn-sm btn-default merchant_go" type="button" ng-click="changeWorkflowRequestUrlType()" busy="...">Go!</button>
+              <!-- <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button> -->
+            </span>
+          </div>
         </div>
       </div>
       <div>

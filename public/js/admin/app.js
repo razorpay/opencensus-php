@@ -226,7 +226,7 @@ var app = angular.module('app', [
       url: '/actions',
       template: '<div ui-view class="fade-in-down smooth"></div>'
     }).state('app.workflows.actions.list', {
-      url: '/list',
+      url: '/list/:type',
       templateUrl: 'tpl/admin/app_workflow_feed_list.html'
     }).state('app.workflows.actions.detail', {
       url: '/:action_id',
