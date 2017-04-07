@@ -203,7 +203,6 @@ class Processor extends Base\Core
 
     protected function createSettlements($channel): array
     {
-        s($this->setlTime);
         $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime, $channel);
 
         list($settlements, $settledTxnsCount, $setlAttempts) =
