@@ -16,11 +16,12 @@ class Core extends Base\Core
         // Maker is the authorized admin from whom we got the request
         $input[Entity::ADMIN_ID] = $admin->getId();
 
+        // Create action_checker Entity
         $checker = new Entity;
 
         $checker->generateId();
 
-        $action = $this->repo->workflow_action->findByPublicId(
+        $action = $this->repo->workflow_action->findOrFailPublic(
             $input[Entity::ACTION_ID]);
 
         $checker->build($input);

@@ -157,7 +157,7 @@ class Core extends Base\Core
 
         $level = $action->getCurrentLevel();
 
-        $requiredCheckers = $this->repo->workflow_step->getNumCheckersByLevelAndWorkflowId(
+        $requiredCheckers = $this->repo->workflow_step->getNumCheckersByLevel(
             $level, $action->getWorkflowId());
 
         $numCheckers = $this->repo->action_checker->fetchCountByActionId($action->getId());
