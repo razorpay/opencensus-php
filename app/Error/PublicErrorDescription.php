@@ -383,6 +383,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_FILE_NOT_FOUND                                            = 'There was error while retrieving the file';
 
+    const BAD_REQUEST_ACCESS_DENIED                                             = 'Access Denied';
+
     // Workflow Related Errors
     const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                 = 'Workflow entity not found';
     const BAD_REQUEST_ACTION_INVALID_TYPE                                       = 'The given action type is not valid';

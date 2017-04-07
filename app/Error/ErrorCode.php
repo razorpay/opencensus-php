@@ -428,6 +428,8 @@ class ErrorCode
     const BAD_REQUEST_INVALID_COUNTRY                                               = 'BAD_REQUEST_INVALID_COUNTRY';
 
     // Heimdall Error Codes
+    const BAD_REQUEST_ACCESS_DENIED                                                 = 'BAD_REQUEST_ACCESS_DENIED';
+
     const BAD_REQUEST_ROLE_NOT_ASSIGNED                                             = 'BAD_REQUEST_ROLE_NOT_ASSIGNED';
     const BAD_REQUEST_MERCHANT_NOT_ASSIGNED                                         = 'BAD_REQUEST_MERCHANT_NOT_ASSIGNED';
     const BAD_REQUEST_PASSWORD_EXPIRED                                              = 'BAD_REQUEST_PASSWORD_EXPIRED';

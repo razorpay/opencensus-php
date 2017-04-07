@@ -58,7 +58,8 @@ class AdminAccess
 
             if ($authorized === false)
             {
-                return ApiResponse::routeNotFound();
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ACCESS_DENIED);
             }
         }
 
