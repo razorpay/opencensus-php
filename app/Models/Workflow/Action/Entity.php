@@ -20,6 +20,7 @@ class Entity extends Base\Entity
 
     // Relations
     const WORKFLOW       = 'workflow';
+    const Admin          = 'admin';
 
     protected static $sign = 'w_action';
 

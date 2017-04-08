@@ -51,15 +51,28 @@ class Service extends Base\Service
                        ->findByIdAndOrgId($actionId, $orgId, $relations)
                        ->first();
 
-        $checkers = $this->repo
-                         ->action_checker
-                         ->fetchByActionId($actionId);
-
         $data = $action->toArrayPublicWithAdminAndSteps();
 
+        // Checkers
+        $checkers = $this->repo
+                         ->action_checker
+                         ->fetchByActionIdWithRelations(
+                             $actionId, [Entity::ADMIN]);
+
         $data['checkers'] = $checkers->map(function ($checker) {
-            return $checker-toPublicArray();
+            return $checker->toArrayPublic();
         })->toArray();
+
+        // Comments
+        $comments = $this->repo
+                         ->action_comment
+                         ->fetchByActionIdWithRelations(
+                             $actionId, [Entity::ADMIN]);
+
+        $data['comments'] = $comments->map(function ($comment)
+        {
+            return $comment->toArrayPublic();
+        });
 
         return $data;
     }

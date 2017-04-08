@@ -22,6 +22,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchByActionIdWithRelations(string $actionId, $relations = [])
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACTION_ID, '=', $actionId)
+                    ->with($relations)
+                    ->get();
+    }
+
     public function fetchCountByActionId()
     {
         return $this->newQuery()
