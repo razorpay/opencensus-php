@@ -21,6 +21,16 @@ class Repository extends Base\Repository
                     ->sum(Entity::REVIEWER_COUNT);
     }
 
+    public function getTotalReviewerCountAtLevel(
+        int $level,
+        string $workflowId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                    ->where(Entity::LEVEL, '=', $level)
+                    ->sum(Entity::REVIEWER_COUNT);
+    }
+
     public function findByLevelAndWorkflowId(
         int $level,
         string $workflowId,
@@ -33,16 +43,19 @@ class Repository extends Base\Repository
 
     }
 
+    /*
+        Find a workflow step definition level, workflow_id and role_id
+    */
     public function findByLevelWorkflowIdAndRoleId(
         int $level,
         string $workflowId,
-        string $roleId,
+        array $roleIds,
         $columns = array('*'))
     {
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->where(Entity::LEVEL, '=', $level)
-                    ->where(Entity::ROLE_ID, '=', $roleId)
+                    ->whereIN(Entity::ROLE_ID, $roleIds)
                     ->get($columns);
     }
 

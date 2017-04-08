@@ -131,12 +131,12 @@ class Entity extends Base\Entity
             return ;
         }
 
-        $state = $this->repo->action_state->getLatestState($this->getId());
+        $state = (new State\Repository)->getLatestState($this->getId());
 
         return $state;
     }
 
-    public function isValid() : boolean
+    public function isValid() : bool
     {
         // Get the final state in the automata and
         // check if the action is still open

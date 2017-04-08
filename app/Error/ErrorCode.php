@@ -505,6 +505,7 @@ class ErrorCode
     const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                                  = 'BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE';
     const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                               = 'BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE';
     const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND';
+    const BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL                           = 'BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL';
 
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';

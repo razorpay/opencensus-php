@@ -149,9 +149,10 @@ class Core extends Base\Core
 
     public function updateCurrentLevelIfNeeded(Entity $action, $step, $admin)
     {
-        // get all workflow steps in same level
-        // for each step confirm num of checkers
-        // is equal to required number of checkers
+        // 1. Get the total reviewer_count required across all
+        // the roles (all the workflow_step entries)
+        // for the current level of the action
+
         $level = $action->getCurrentLevel();
 
         $workflow = $action->workflow;
@@ -160,29 +161,34 @@ class Core extends Base\Core
                       ->workflow_step
                       ->findByLevelAndWorkflowId($level, $workflow->getId());
 
-        $updateLevel = true;
+        $totalReviewerCount = 0;
+
+        $stepIds = [];
 
         foreach ($steps as $step)
         {
-            $requiredCheckers = $step->getReviewerCount();
+            $totalReviewerCount += $step->getReviewerCount();
 
-            $numCheckers = $this->repo
-                                ->action_checker
-                                ->fetchCountByActionIdForStep($action->getId(), $step->getId());
-
-            if ($numCheckers < $requiredCheckers)
-            {
-                $updateLevel = false;
-            }
+            $stepIds[] = $step->getId();
         }
 
-        // If all step reviewer counts are satisfied
-        // update level
-        if ($updateLevel === true)
-        {
-            $action->incrementCurrentLevel();
+        // 2. Get total number of people who have approved (checked) this action
 
-            $this->repo->saveOrFail($action);
+        $totalCheckerApprovals = $this->repo
+                                      ->action_checker
+                                      ->fetchCountByActionIdAndStepIds($action->getId(), $stepIds);
+
+        // 3. Finally if total approvals received is more than
+        // total reviewer count (approvals) required then
+        // update the level of the action
+
+        if ($totalCheckerApprovals >= $totalReviewerCount)
+        {
+            $this->repo->transactionOnLiveAndTest(function () use ($action) {
+                $action->current_level += 1;
+
+                $this->repo->saveOrFail($action);
+            });
         }
     }
 

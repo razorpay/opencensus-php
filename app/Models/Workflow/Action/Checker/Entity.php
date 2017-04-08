@@ -31,8 +31,8 @@ class Entity extends Base\Entity
         self::ADMIN_ID,
         self::ACTION_ID,
         self::STEP_ID,
-        self::CREATED_AT,
         self::APPROVED,
+        self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
