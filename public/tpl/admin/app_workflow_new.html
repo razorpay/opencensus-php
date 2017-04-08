@@ -44,10 +44,18 @@
           <div class="wrapper clearfix">
             <div class="m-b">Add a checker to approve the action. Select a role.</div>
             <div class="assignee-list m-b">
-              <div class=" " ng-repeat="(roleIndex, role) in step">
-                <span class="assignee-label">{{roleNames[role.role_id]}} <i class="delete-btn fa fa-times m-l" ng-click="removeRoleFromStep(roleIndex, stepIndex)" ></i></span>
-                <span class="help-label m-l">Minimum approvals</span>
-                <input ng-model="role.reviewer_count" type="text" ng-pattern="/^[0-9]{1,2}$/"/>
+              <div class="" ng-repeat="(roleIndex, role) in step">
+                <span class="assignee-row" >
+                  <span class="assignee-label">{{roleNames[role.role_id]}} <i class="delete-btn fa fa-times m-l" ng-click="removeRoleFromStep(roleIndex, stepIndex)" ></i></span>
+                  <span class="help-label m-l">Minimum approvals</span>
+                  <input ng-model="role.reviewer_count" type="text" ng-pattern="/^[0-9]{1,2}$/" class="form-control m-l reviewer-count"/>
+                  <div class="reviewer-count-inc-btn" ng-click="incReviewerCount(roleIndex, stepIndex)">
+                    <i class="fa fa-angle-up "></i>
+                  </div>
+                  <div class="reviewer-count-dec-btn" ng-click="decReviewerCount(roleIndex, stepIndex)">
+                    <i class="fa fa-angle-down "></i>
+                  </div>
+                </span>
               </div>
             </div>
             <div class="role-select2-container col-xs-6 row">

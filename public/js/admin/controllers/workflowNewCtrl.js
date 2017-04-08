@@ -105,6 +105,17 @@ app.controller('WorkflowNewCtrl', [
       step.splice(roleIndex, 1);
     }
 
+    $scope.incReviewerCount = function (roleIndex, stepIndex) {
+      if ($scope.steps[stepIndex][roleIndex].reviewer_count >= 99) return; 
+      $scope.steps[stepIndex][roleIndex].reviewer_count++;
+    }
+
+    $scope.decReviewerCount = function (roleIndex, stepIndex) {
+      if ($scope.steps[stepIndex][roleIndex].reviewer_count <= 1) return; 
+      $scope.steps[stepIndex][roleIndex].reviewer_count--;
+    }
+
+
     $scope.new_checker = null;
     $scope.saveWorkflow = function () {
       console.log($scope.steps);
