@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Auth;
 use App;
 use Closure;
+use Config;
 use App\RZP\Permission;
 use Illuminate\Contracts\Auth\Guard;
 use App\Admin\Service as AdminService;
@@ -44,34 +45,45 @@ class AdminAccess {
     {
         $user = Auth::guard('api')->user();
 
-        list($error, $adminData) = (new AdminService)->getAdminData($user);
-
         $routeName = $this->router->currentRouteName();
 
-        $authorized = $this->policyChecker($adminData, $routeName);
+        if (isset($routeName) === false)
+        {
+            // No route name, proceed
+            return $next($request);
+        }
+
+        $routePermissions = $this->getRoutePermissions($routeName);
+
+        if (empty($routePermissions))
+        {
+            // No permission required, proceed
+            return $next($request);
+        }
+
+        list($error, $adminData) = (new AdminService)->getAdminData($user);
+
+        $authorized = $this->policyChecker($adminData, $routePermissions);
 
         if ($authorized === false)
         {
-            return response('Unauthorized.', 401);
+            return response()->json(array('success' => false, 'errors' => ['Unauthorised']), 401);
         }
 
         return $next($request);
     }
 
-    private function policyChecker($admin, $routeName)
+    private function policyChecker($admin, $routePermissions)
     {
-        $permissions = $this->getRoutePermissions($routeName);
-
         $adminPermissions = $admin['permissions'];
 
-        if (in_array(self::WILDCARD_PERMISSION, $permissions, true) === true)
+        if (in_array(self::WILDCARD_PERMISSION, $routePermissions, true) === true)
         {
-            $this->validateWildCardPermissionRules($permissions);
-
+            $this->validateWildCardPermissionRules($routePermissions);
             return true;
         }
 
-        foreach ($permissions as $permission)
+        foreach ($routePermissions as $permission)
         {
             if (in_array($permission, $adminPermissions, true) === false)
             {
@@ -84,12 +96,11 @@ class AdminAccess {
 
     private function getRoutePermissions(string $routeName)
     {
-        $adminAuthRoutes = Permission::$adminPermission;
+        $adminAuthRoutes = Config::get('admin-auth-routes');
 
         if (isset($adminAuthRoutes[$routeName]) === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+            return [];
         }
 
         return $adminAuthRoutes[$routeName];
