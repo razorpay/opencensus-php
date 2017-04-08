@@ -147,7 +147,7 @@ class Core extends Base\Core
         return $action;
     }
 
-    public function updateCurrentLevelIfNeeded(Entity $action, $step, $admin)
+    public function updateCurrentLevelIfNeeded(Entity $action)
     {
         // 1. Get the total reviewer_count required across all
         // the roles (all the workflow_step entries)

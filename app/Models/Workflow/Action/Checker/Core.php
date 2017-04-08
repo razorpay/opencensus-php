@@ -117,7 +117,7 @@ class Core extends Base\Core
         // Once all the roles x reviewer_count have approved
         // an action, we need to update the level so that
         // we can show the action to next level/step checkers
-        (new Action\Core)->updateCurrentLevelIfNeeded($action, $step, $admin);
+        (new Action\Core)->updateCurrentLevelIfNeeded($action);
 
         // If all the checkers have approved then approve
         // and close the action
