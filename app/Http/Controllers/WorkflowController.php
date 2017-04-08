@@ -100,7 +100,7 @@ class WorkflowController extends Controller
             $state = State\Entity::FAILED;
         }
 
-        (new Action\Core)->updateStatus($action, $state);
+        (new Action\Core)->updateState($action, $state);
 
         $adminId = $this->app['basicauth']->getAdmin()->getId();
 
