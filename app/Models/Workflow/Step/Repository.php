@@ -14,11 +14,16 @@ class Repository extends Base\Repository
         Entity::LEVEL         => 'sometimes|integer|max:14',
     ];
 
+    /*
+        Get required checkers across (roles, levels)
+    */
     public function getNumCheckers(string $workflowId)
     {
-        return $this->newQuery()
-                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
-                    ->sum(Entity::REVIEWER_COUNT);
+        // sum() returns string
+
+        return (int) $this->newQuery()
+                          ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                          ->sum(Entity::REVIEWER_COUNT);
     }
 
     public function getTotalReviewerCountAtLevel(

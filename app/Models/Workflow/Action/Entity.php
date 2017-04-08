@@ -31,9 +31,11 @@ class Entity extends Base\Entity
     protected $fillable = [
         self::TITLE,
         self::DESCRIPTION,
+        self::APPROVED,
         self::ORG_ID,
         self::ADMIN_ID,
         self::WORKFLOW_ID,
+        self::STATE,
     ];
 
     protected $visible = [
@@ -100,7 +102,7 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
     }
 
-    public function setApproved(boolean $status)
+    public function setApproved(bool $status)
     {
         $this->setAttribute(self::APPROVED);
     }
@@ -120,7 +122,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::WORKFLOW_ID);
     }
 
-    public function getApproved() : boolean
+    public function getApproved() : bool
     {
         return $this->getAttribute(self::APPROVED);
     }

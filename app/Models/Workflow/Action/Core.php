@@ -48,8 +48,8 @@ class Core extends Base\Core
 
         $action->build($params);
 
-        $this->repo->transactionOnLiveAndTest(function() use($action, $params) {
-
+        $this->repo->transactionOnLiveAndTest(function() use($action, $params)
+        {
             $this->repo->saveOrFail($action);
 
             $this->createInitialStateForAction($action);
@@ -81,42 +81,35 @@ class Core extends Base\Core
 
     public function checkAndMarkActionApproved(Entity $action)
     {
-        // Number of checks done on the action
-        // TODO fetch the checker count instead of all the checkers
-        // save query time
-        $checkers = $this->repo->action_checker->fetchByActionId($action->getId());
+        if ($action->getApproved() === true)
+        {
+            return true;
+        }
+
+        $actionId = $action->getId();
 
         $workflowId = $action->getWorkflowId();
 
-        // Number of checks required for the action
-        $numCheckers = $this->repo
-                            ->workflow_step
-                            ->getNumCheckers($workflowId);
+        // 1. Get total checker approvals
 
-        // If all checks are not done, do not review the action
-        if (count($checkers) !== $numCheckers)
+        $checkerApprovalCount = $this->repo
+                                     ->action_checker
+                                     ->fetchApprovedCountByActionId($actionId);
+
+        // 2. Get total checker approvals required
+
+        $requiredCheckersCount = $this->repo
+                                      ->workflow_step
+                                      ->getNumCheckers($workflowId);
+
+        // If current checker approvals count doesn't match
+        // the required checker approvals then don't do anything
+        if ($checkerApprovalCount !== $requiredCheckersCount)
         {
-            return;
+            return false;
         }
 
-        $actionApprovedByCheckers = false;
-
-        // If all the checkers have reviewed and approved
-        // approve the action for execution
-        foreach ($checkers as $checker)
-        {
-            if ($checker->getStatus() !== State\Entity::APPROVED)
-            {
-                $actionApprovedByCheckers = false;
-
-                return false;
-            }
-        }
-
-        if ($actionApprovedByCheckers === true)
-        {
-            $action = $this->approveAction($action);
-        }
+        $action = $this->approveAction($action);
 
         return true;
     }
@@ -125,7 +118,7 @@ class Core extends Base\Core
     {
         // Set the action as approved and create a state change that it has
         // been moved to approved.
-        $this->repo->transactionOnLiveAndTest(function() use($action)
+        $this->repo->transactionOnLiveAndTest(function() use ($action)
         {
             $data = [
                 Entity::APPROVED => true,
@@ -159,11 +152,11 @@ class Core extends Base\Core
 
         $level = $action->getCurrentLevel();
 
-        $workflow = $action->workflow;
+        $workflowId = $action->getWorkflowId();
 
         $steps = $this->repo
                       ->workflow_step
-                      ->findByLevelAndWorkflowId($level, $workflow->getId());
+                      ->findByLevelAndWorkflowId($level, $workflowId);
 
         $totalReviewerCount = 0;
 
@@ -188,7 +181,7 @@ class Core extends Base\Core
 
         $nextLevelStep = $this->repo
                           ->workflow_step
-                          ->getNextLevelOfWorkflowId($level, $workflow->getId());
+                          ->getNextLevelOfWorkflowId($level, $workflowId);
 
         // 4. Finally if there's a next level AND
         // total approvals received is more than

@@ -67,4 +67,3 @@ class Validator extends Base\Validator
         }
     }
 }
-
