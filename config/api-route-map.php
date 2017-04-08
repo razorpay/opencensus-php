@@ -72,6 +72,7 @@ return [
         'workflow_get_actions_by_maker'     => 'w-manager/get-actions-by-maker',
         'workflow_get_actions_for_checker'  => 'w-manager/get-actions-for-checker',
         'action_checker_create'             => 'w-actions/{id}/checkers',
+        'action_request_execute'            => 'w-actions/{id}/execute',
     ],
 
     // auth

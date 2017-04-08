@@ -174,26 +174,35 @@ app.controller('WorkflowFeedCtrl', [
 
     $scope.actionStateChange = function (state) {
       var body = {};
+      var route_name;
 
       if (state === 'approve') {
         body = {
           approved: 1
         };
+
+        route_name = 'action_checker_create';
       }
 
       if (state === 'reject') {
         body = {
           approved: 0
         };
+
+        route_name = 'action_checker_create';
       }
 
-      if (typeof body.approved !== 'undefined') {
+      if (state === 'execute') {
+        route_name = 'action_request_execute';
+      }
+
+      if (typeof route_name !== 'undefined') {
         var request = $http({
           url: '/admin/generic',
           method: 'POST',
 
           params: {
-            route_name: 'action_checker_create',
+            route_name: route_name,
 
             url_params: {
               '{id}': $stateParams.action_id
