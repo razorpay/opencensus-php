@@ -20,7 +20,7 @@ class Entity extends Base\Entity
 
     // Relations
     const WORKFLOW       = 'workflow';
-    const Admin          = 'admin';
+    const ADMIN          = 'admin';
 
     protected static $sign = 'w_action';
 
@@ -137,6 +137,11 @@ class Entity extends Base\Entity
         $state = (new State\Repository)->getLatestState($this->getId());
 
         return $state;
+    }
+
+    public function getState()
+    {
+        return $this->getAttribute(self::STATE);
     }
 
     public function isValid() : bool

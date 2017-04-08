@@ -20,12 +20,9 @@ class Core extends Base\Core
         // as well as whether we need any more approvals
         // for the action at the current level or not.
 
-        // Get checker roles
-
-        // todo: we are not doing check against action_checker
-
         $admin = $this->app['basicauth']->getAdmin();
 
+        // Get checker roles
         $roleIds = $admin->roles()->getRelatedIds()->toArray();
 
         // We will need workflow ID and current level
@@ -34,6 +31,12 @@ class Core extends Base\Core
 
         $action = $this->repo->workflow_action->findOrFailPublic(
             $input[Entity::ACTION_ID]);
+
+        if ($action->getState() !== State\Entity::OPEN)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES);
+        }
 
         $currentLevel = $action->getCurrentLevel();
 
