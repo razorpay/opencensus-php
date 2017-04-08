@@ -43,19 +43,18 @@ app.controller('WorkflowNewCtrl', [
     });
     $permSelect.on("select2:select", function (e) {
       var id = e.params.data.id;
-      $scope.permissionsSelected.push(id);
-      var index = $scope.permissionsOptions.indexOf(id);
-      if (index > -1) {
-        $scope.permissionsOptions.splice(index, 1);
+      if ($scope.permissionsSelected.indexOf(id) === -1) {
+        $scope.permissionsSelected.push(id);
       }
       $permSelect.val(null).trigger("change");
-      // console.log(e);
     });
-    $scope.deselectWorkflow = function (id) {
-      var workflow = $scope.permissionsSelected[id];
-      $scope.workflows.push(workflow);
-      // console.log($scope.workflows)
-      delete $scope.permissionsSelected[id];
+    
+    $scope.deselectPermission = function (id) {
+      var permIndex = $scope.permissionsSelected.indexOf(id);
+      if (permIndex === -1) {
+        return;
+      }
+      $scope.permissionsSelected.splice(permIndex, 1)
     }
 
     $scope.roleNames = {};
@@ -97,7 +96,18 @@ app.controller('WorkflowNewCtrl', [
       setTimeout(addRoleSelector, 0);
     }
 
-    $scope.new_checker = null;
+    $scope.removeStep = function (stepIndex) {
+      $scope.steps.splice(stepIndex, 1);
+    }
 
+    $scope.removeRoleFromStep = function (roleIndex, stepIndex) {
+      var step = $scope.steps[stepIndex];
+      step.splice(roleIndex, 1);
+    }
+
+    $scope.new_checker = null;
+    $scope.saveWorkflow = function () {
+      console.log($scope.steps);
+    }
   }
 ]);

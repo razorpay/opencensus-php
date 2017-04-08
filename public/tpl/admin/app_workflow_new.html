@@ -14,7 +14,7 @@
             Actions List
           </div>
           <div class="wrapper clearfix">
-            <div class="workflow-select2-container">
+            <div class="workflow-select2-container m-b">
               <select class="select2 workflow-select2 " multiple="multiple" style="width: 100%" ng-model="workflowSelect">
                 <option></option>
                 <option ng-repeat="(key, perm) in permissions" value="{{key}}">{{perm.name}}</option>
@@ -22,11 +22,13 @@
             </div>
             <div class="list-group">
               <div 
-                class="list-group-item table-striped table" 
+                class="list-group-item perm-row" 
                 ng-repeat="(key, id) in permissionsSelected track by key"
               >
-                {{permissions[id].name}}
-                <button class="btn btn-default pull-right" ng-click="deselectWorkflow(id)"><i class="fa fa-trash-o"></i></button>
+                <div class="description pull-left col-xs-12 row truncate">
+                  {{permissions[id].name}}
+                </div>
+                <i class="delete-btn pull-right fa fa-times" ng-click="deselectPermission(id)" ></i>
               </div>
             </div>
           </div>
@@ -37,28 +39,29 @@
         <div ng-repeat="(stepIndex, step) in steps" class="action-desc-panel panel panel-default">
           <div class="panel-heading">
             Step {{stepIndex + 1}}
+            <i class="delete-btn pull-right fa fa-times" ng-click="removeStep(stepIndex)" ></i>    
           </div>
           <div class="wrapper clearfix">
-            <div class="">Add a checker to approve the action. Select a role.</div>
+            <div class="m-b">Add a checker to approve the action. Select a role.</div>
             <div class="assignee-list m-b">
-              <div class=" m-b" ng-repeat="(roleIndex, role) in step">
-                <span class="assignee-label">{{roleNames[role.role_id]}}</span>
-                <span class="help-label">Minimum approvals</span>
-                <input ng-model="role.reviewer_count" type="number" min="1" max="50"/>
+              <div class=" " ng-repeat="(roleIndex, role) in step">
+                <span class="assignee-label">{{roleNames[role.role_id]}} <i class="delete-btn fa fa-times m-l" ng-click="removeRoleFromStep(roleIndex, stepIndex)" ></i></span>
+                <span class="help-label m-l">Minimum approvals</span>
+                <input ng-model="role.reviewer_count" type="text" ng-pattern="/^[0-9]{1,2}$/"/>
               </div>
-              <div class="role-select2-container col-xs-6 row">
-                <select class="select2 role-select2 " multiple="multiple" style="width: 100%" ng-model="roleSelect">
-                  <option></option>
-                  <option  ng-repeat="(key, role) in roles" data-step-index={{stepIndex}} data-role-id={{role.id}} value="{{key}}">{{role.name}}</option>
-                </select>
-              </div>
+            </div>
+            <div class="role-select2-container col-xs-6 row">
+              <select class="select2 role-select2 " multiple="multiple" style="width: 100%" ng-model="roleSelect">
+                <option></option>
+                <option  ng-repeat="(key, role) in roles" data-step-index={{stepIndex}} data-role-id={{role.id}} value="{{key}}">{{role.name}}</option>
+              </select>
             </div>
           </div>
         </div>
         <button type="button" class="btn btn-default" ng-click="addStep()">
           +  Add a Step
         </button>
-        <button type="button" class="btn btn-info">
+        <button type="button" class="btn btn-info m-l save-btn" ng-click="saveWorkflow()">
           Save Changes
         </button>
       </div>
