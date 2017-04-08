@@ -9,6 +9,7 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Comment;
 use RZP\Models\Workflow\Action\Checker;
@@ -65,6 +66,8 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
+        $action = (new Action\Repository)->findOrFailPublic($id);
+
         // Do not execute the action if it is not approved by all checkers
         $isActionApproved = (new Action\Core)->checkAndMarkActionApproved($action);
 
@@ -97,7 +100,13 @@ class WorkflowController extends Controller
             $state = State\Entity::FAILED;
         }
 
-        (new Differ\Service)->changeActionState($id, $state);
+        (new Action\Core)->updateStatus($action, $state);
+
+        $adminId = $this->app['basicauth']->getAdmin()->getId();
+
+        (new State\Core)->changeActionState($action->getId(), $state, $adminId);
+
+        (new Differ\Core)->updateStateInEs($action->getId(), $state);
 
         return $response;
     }

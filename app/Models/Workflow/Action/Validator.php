@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Workflow\Action;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -19,8 +21,34 @@ class Validator extends Base\Validator
         Entity::TITLE       => 'sometimes|string',
         Entity::DESCRIPTION => 'sometimes|string',
         Entity::APPROVED    => 'sometimes|boolean',
-        Entity::STATE       => 'sometimes|string',
+        Entity::STATE       => 'sometimes|string|max:25',
     ];
+
+    public function validateLiveActionsOnEntity(
+        string $entity,
+        string $entityId)
+    {
+        $app = App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getAdminOrgId();
+
+        $diffs = (new Differ\Core)->fetchByEntityAndEntityId(
+            $entity, $entityId);
+
+        if (empty($diffs) === false)
+        {
+            $actionIds = [];
+
+            foreach ($diffs as $diff)
+            {
+                $actionIds[] = $diff[Differ\Entity::ACTION_ID];
+            }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS,
+                $actionIds);
+        }
+    }
 
     public function validateActionBelongsToAdminOrg($action, $admin)
     {

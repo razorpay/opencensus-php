@@ -9,6 +9,7 @@ use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Action\State;
+use RZP\Models\Workflow\Action\Differ;
 
 class Core extends Base\Core
 {
@@ -138,5 +139,9 @@ class Core extends Base\Core
         $adminId = $checker->getAdminId();
 
         (new State\Core)->changeActionState($actionId, $state, $adminId);
+
+        (new Action\Core)->updateState($action, $state);
+
+        (new Differ\Core)->updateStateInEs($actionId, $state);
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Constants\Table;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Base;
 
@@ -86,6 +87,13 @@ class Entity extends Base\Entity
     public function getAdminId() : string
     {
         return $this->getAttribute(self::ADMIN_ID);
+    }
+
+    public function getPublicActionId() : string
+    {
+        $actionId = $this->getAttribute(self::ACTION_ID);
+
+        return Action\Entity::getSignedId($actionId);
     }
 
     public function getStepId() : string

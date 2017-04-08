@@ -80,4 +80,16 @@ class Repository extends Base\Repository
                     ->whereIn('workflow_steps.role_id', $roleIds)
                     ->get();
     }
+
+    public function findOpenActionsByOrgId(string $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $openStates = State\Entity::OPEN_STATES;
+
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->whereIn(Entity::STATE, $openStates)
+                    ->get();
+    }
 }

@@ -23,7 +23,10 @@ class Core extends Base\Core
         return $actionState;
     }
 
-    public function changeActionState(Action\Entity $action, string $state)
+    public function changeActionState(
+        string $actionId,
+        string $state,
+        string $adminId = null)
     {
         $input = [
             State\Entity::ACTION_ID  => $action->getId(),
