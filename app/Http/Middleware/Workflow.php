@@ -93,6 +93,8 @@ class Workflow
         // First value is not entirely robust though
         $entityId = $routeParams['id'] ?? array_values($routeParams)[0];
 
+        (new Action\Validator)->validateLiveActionsOnEntity($entity, $entityId);
+
         // Necessary data to pass to WorkflowController
         $params = $this->createDifferEntity($request, $entity, $entityId);
 

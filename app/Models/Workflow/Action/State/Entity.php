@@ -28,6 +28,11 @@ class Entity extends Base\Entity
         self::FAILED,
     ];
 
+    const OPEN_STATES = [
+        self::OPEN,
+        self::APPROVED,
+    ];
+
     protected static $sign = 'a_state';
 
     protected $entity = 'action_state';
