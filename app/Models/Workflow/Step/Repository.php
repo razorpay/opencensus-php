@@ -43,6 +43,14 @@ class Repository extends Base\Repository
 
     }
 
+    public function getNextLevelOfWorkflowId(int $level, string $workflowId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                    ->where(Entity::LEVEL, '>', $level)
+                    ->first();
+    }
+
     /*
         Find a workflow step definition level, workflow_id and role_id
     */

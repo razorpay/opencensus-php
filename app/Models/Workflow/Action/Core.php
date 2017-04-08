@@ -178,14 +178,23 @@ class Core extends Base\Core
                                       ->action_checker
                                       ->fetchCountByActionIdAndStepIds($action->getId(), $stepIds);
 
-        // 3. Finally if total approvals received is more than
-        // total reviewer count (approvals) required then
-        // update the level of the action
+        // 3. Check if there is any level (or step basically)
+        // after workflow_actions.current_level
 
-        if ($totalCheckerApprovals >= $totalReviewerCount)
+        $nextLevelStep = $this->repo
+                          ->workflow_step
+                          ->getNextLevelOfWorkflowId($level, $workflow->getId());
+
+        // 4. Finally if there's a next level AND
+        // total approvals received is more than
+        // total reviewer count (approvals) required then
+        // update the level of the action.
+
+        if ((! empty($nextLevelStep)) and
+            ($totalCheckerApprovals >= $totalReviewerCount))
         {
             $this->repo->transactionOnLiveAndTest(function () use ($action) {
-                $action->current_level += 1;
+                $action->current_level = $nextLevelStep->getLevel();
 
                 $this->repo->saveOrFail($action);
             });
