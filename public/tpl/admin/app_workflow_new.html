@@ -8,7 +8,14 @@
   <div class="wrapper-md">
     <div class="row panel-container">
       <div class="col-xs-4">
-        <div class="right-label m-b">Actions</div>
+        <div class="action-desc-panel panel panel-default">
+          <div class="panel-heading">
+            Name your workflow
+          </div>
+          <div class="wrapper clearfix">
+            <input type="text" ng-model="workflowName" placeholder="Atleast 4 characters" class="form-control">
+          </div>
+        </div>
         <div class="action-desc-panel panel panel-default">
           <div class="panel-heading">
             Actions List
@@ -35,7 +42,7 @@
         </div>
       </div>
       <div class="col-xs-8">
-        <div class="right-label m-b">Workflow</div>
+        <div class="right-label m-b">{{workflowName || "Workflow"}} - Steps</div>
         <div ng-repeat="(stepIndex, step) in steps" class="action-desc-panel panel panel-default">
           <div class="panel-heading">
             Step {{stepIndex + 1}}

@@ -15,6 +15,7 @@ app.controller('WorkflowNewCtrl', [
     $scope.permissionsSelected = [];
     $scope.roles = [];
     $scope.rolesSelected = [];
+    $scope.workflowName = "";
     var fetchPermissions = function () {
       var request = $http.get('/admin/generic', {
         ignoreErrors: true,
