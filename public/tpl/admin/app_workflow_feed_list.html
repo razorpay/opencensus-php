@@ -40,6 +40,7 @@
               <th>ID</th>
               <th>Title</th>
               <th>Created At</th>
+              <th>State</th>
               <th>Action</th>
           </thead>
           <tbody>
@@ -47,6 +48,7 @@
               <td>{{row.id}}</td>
               <td>{{row.title}}</td>
               <td>{{row.created_at*1000 | date:'medium'}}</td>
+              <td>{{row.state}}</td>
               <td>
                 <div class="btn-group">
                   <a class="btn btn-default btn-xs" ui-sref="app.workflows.actions.detail({ action_id: row.id })">
