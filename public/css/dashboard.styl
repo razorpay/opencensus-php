@@ -394,3 +394,152 @@ a.highlight:hover, a.highlight:focus {
   color: #b4b6bd;
   background-color: transparent;
 }
+
+.workflow-feed-page {
+  textarea {
+    resize: vertical;
+  }
+  .panel-default > .panel-heading {
+    color: inherit;
+  }
+  .h3 {
+    font-weight: bold;
+    color: #333;
+  }
+  .panel-container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .action-state {
+    font-weight: bold;
+    font-size: 12px;
+    line-height: 14px;
+    text-shadow: none;
+  }
+  .approved-color {
+    color: #17C446;
+  }
+  .rejected-color {
+    color: #F14F4B;
+  }
+  .pending-color {
+    color: #FCCB00;
+  }
+  .pending-bg-color {
+    background-color: #FCCB00;
+  }
+  .assignee-heading {
+    margin-bottom: 4px
+  }
+  .assignee-label {
+    background: #EBEBEB;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-weight: bold;
+    margin-right: 8px;
+    line-height: 36px;
+  }
+  .faded-text {
+    color: #ccc;
+  }
+  .timestamp {
+    cursor: help;
+  }
+  .right-label {
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 12px;
+  }
+}
+
+.workflow-new-page {
+  .workflow-select2-container, .role-select2-container {
+    input {
+      width: auto !important;
+    }
+  }
+  .delete-btn {
+    line-height: 20px;
+    color: #ccc;
+    cursor: pointer;
+    &:hover {
+      color: inherit;
+    }
+  }
+  .perm-row {
+    height: 42px;
+  }
+  .truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .assignee-row {
+    position: relative;
+  }
+  .reviewer-count {
+    display: inline-block;
+    width: 72px;
+    height: 28px;
+  }
+  .reviewer-count-inc-btn {
+    position: absolute;
+    right: 0;
+    top: -3px;
+    height: 14px;
+    border: 0px solid #cfdadd;
+    color: #cfdadd;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+    width: 30px;
+    text-align: center;
+    line-height: 12px;
+    cursor: pointer;
+    &:hover {
+      color: inherit;
+    }
+    > i {
+      line-height: 12px;
+    }
+  }
+  .reviewer-count-dec-btn {
+    position: absolute;
+    right: 0;
+    top: 10px;
+    height: 14px;
+    border: 0px solid #cfdadd;
+    color: #cfdadd;
+    border-left-width: 1px;
+    width: 30px;
+    text-align: center;
+    line-height: 14px;
+    cursor: pointer;
+    &:hover {
+      color: inherit;
+    }
+    > i {
+      line-height: 12px;
+    }
+  }
+  .assignee-label {
+    background: #EBEBEB;
+    border-radius: 4px;
+    padding: 4px 6px;
+    font-weight: bold;
+    margin-right: 8px;
+    line-height: 36px;
+  }
+  .help-label {
+    font-size: 12px;
+    color: #999;
+  }
+  .save-btn {
+    border-radius: 17px;
+  }
+  .select2-selection {
+    border-color: #cfdadd;
+  }
+  .name-input {
+    font-size: 14px;
+  }
+}

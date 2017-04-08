@@ -57,6 +57,22 @@ return [
         'admin_lead_create'                 => 'orgs/{id}/admin-lead',
         'admin_lead_get_multiple'           => 'orgs/{id}/admin-lead',
         'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
+
+        // Workflows
+
+        'workflow_get_multiple'             => 'orgs/{id}/workflows',
+        'workflow_create'                   => 'workflows',
+        'workflow_get'                      => 'workflows/{id}',
+        'workflow_update'                   => 'workflows/{id}',
+        'workflow_delete'                   => 'workflows/{id}',
+        'action_diff_get'                   => 'w-actions/{id}/diff',
+        'action_comment_create'             => 'w-actions/{id}/comments',
+        'action_comment_fetch'              => 'w-actions/{id}/comments',
+        'workflow_action_details'           => 'w-actions/{id}/details',
+        'workflow_get_actions_by_maker'     => 'w-manager/get-actions-by-maker',
+        'workflow_get_actions_for_checker'  => 'w-manager/get-actions-for-checker',
+        'action_checker_create'             => 'w-actions/{id}/checkers',
+        'action_request_execute'            => 'w-actions/{id}/execute',
     ],
 
     // auth
