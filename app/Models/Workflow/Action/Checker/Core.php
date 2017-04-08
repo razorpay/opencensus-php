@@ -105,55 +105,38 @@ class Core extends Base\Core
 
         $checker->build($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($checker)
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker)
         {
             $this->repo->saveOrFail($checker);
 
-            // If the checker is final approver or rejects an action,
-            // Create a state transition for the action
-            $this->createStateTransitionForChecker($checker);
+            // State change if checker rejected
+            if ((int) $input[Entity::APPROVED] === Entity::APPROVED_ENUM['rejected'])
+            {
+                $this->applyActionRejectionStateChanges($action, $checker);
+            }
+            else {
+                // Once all the roles x reviewer_count have approved
+                // an action, we need to update the level so that
+                // we can show the action to next level/step checkers
+                (new Action\Core)->updateCurrentLevelIfNeeded($action);
+
+                // If all the checkers have approved then approve
+                // and close the action
+                (new Action\Core)->checkAndMarkActionApproved($action);
+            }
         });
-
-        // Once all the roles x reviewer_count have approved
-        // an action, we need to update the level so that
-        // we can show the action to next level/step checkers
-        (new Action\Core)->updateCurrentLevelIfNeeded($action);
-
-        // If all the checkers have approved then approve
-        // and close the action
-        (new Action\Core)->checkAndMarkActionApproved($action);
 
         return $checker;
     }
 
-    // TO CHECK
-    protected function createStateTransitionForChecker(Entity $checker)
+    protected function applyActionRejectionStateChanges($action, $checker)
     {
-        return; // since the methods used here don't exist, we'll refactor
+        $state = State\Entity::REJECTED;
 
-        $state = $checker->getStatusOnAction();
+        $actionId = $action->getId();
 
-        if ($state === null)
-        {
-            return;
-        }
+        $adminId = $checker->getAdminId();
 
-        if ($state === State\Entity::REJECTED)
-        {
-            $this->createStateTransitionOnRejection();
-        }
-
-        (new Action\Core)->checkIfActionApproved();
-    }
-
-    protected function createStateTransitionOnRejection()
-    {
-        $input = [
-            State\Entity::NAME      => State\Entity::REJECTED,
-            State\Entity::ACTION_ID => $checker->getActionId(),
-            State\Entity::ADMIN_ID  => $checker->getAdminId(),
-        ];
-
-        (new State\Core)->create($input);
+        (new State\Core)->changeActionState($actionId, $state, $adminId);
     }
 }

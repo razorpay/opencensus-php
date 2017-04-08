@@ -14,6 +14,12 @@ class Entity extends Base\Entity
     const STEP_ID        = 'step_id';
     const APPROVED       = 'approved';
 
+    // APPROVED column values
+    const APPROVED_ENUM = [
+        'approved' => 1,
+        'rejected' => 0,
+    ];
+
     // Relations
     const ADMIN = 'admin';
 
