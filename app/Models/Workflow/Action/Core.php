@@ -136,6 +136,9 @@ class Core extends Base\Core
             ];
 
             (new State\Core)->create($stateData);
+
+            (new Differ\Core)->updateStateInEs(
+                $action, $stateData[State\Entity::NAME]);
         });
 
         return $action;
@@ -185,11 +188,12 @@ class Core extends Base\Core
         // total reviewer count (approvals) required then
         // update the level of the action.
 
-        if ((! empty($nextLevelStep)) and
+        if ((empty($nextLevelStep) === false) and
             ($totalCheckerApprovals >= $totalReviewerCount))
         {
             $this->repo->transactionOnLiveAndTest(function () use ($action) {
-                $action->current_level = $nextLevelStep->getLevel();
+
+                $action->setCurrentLevel( $nextLevelStep->getLevel());
 
                 $this->repo->saveOrFail($action);
             });
@@ -218,5 +222,14 @@ class Core extends Base\Core
          });
 
          return $action;
+    }
+
+    public function updateStatus(Entity $action, string $state)
+    {
+        $input = [
+            Entity::STATE => $state,
+        ];
+
+        return $this->edit($action, $state);
     }
 }

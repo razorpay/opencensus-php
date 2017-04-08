@@ -53,6 +53,7 @@ class Entity extends Base\Entity
     const ROUTE        = 'route';
     const DIFF         = 'diff';
     const ACTION_ID    = 'action_id';
+    const STATE        = 'state';
 
     const CREATED_AT    = 'created_at';
 
@@ -132,6 +133,11 @@ class Entity extends Base\Entity
     public function getRoute() : string
     {
         return $this->getAttribute(self::ROUTE);
+    }
+
+    public function getState() : string
+    {
+        return $this->getAttribute(self::STATE);
     }
 
     public function getPayload()

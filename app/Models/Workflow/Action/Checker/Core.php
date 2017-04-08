@@ -9,6 +9,7 @@ use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Action\State;
+use RZP\Models\Workflow\Action\Differ;
 
 class Core extends Base\Core
 {
@@ -140,20 +141,26 @@ class Core extends Base\Core
 
         if ($state === State\Entity::REJECTED)
         {
-            $this->createStateTransitionOnRejection();
+            $this->createStateTransitionOnRejection($checker);
         }
 
         (new Action\Core)->checkIfActionApproved();
     }
 
-    protected function createStateTransitionOnRejection()
+    protected function createStateTransitionOnRejection(Entity $checker)
     {
+        $state = State\Entity::REJECTED;
+
         $input = [
-            State\Entity::NAME      => State\Entity::REJECTED,
+            State\Entity::NAME      => $state,
             State\Entity::ACTION_ID => $checker->getActionId(),
             State\Entity::ADMIN_ID  => $checker->getAdminId(),
         ];
 
         (new State\Core)->create($input);
+
+        (new Action\Core)->updateState($checker->state, $state);
+
+        (new Differ\Core)->updateStateInEs($checker->getActionId(), $state);
     }
 }

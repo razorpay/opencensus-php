@@ -8,6 +8,7 @@ use Closure;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
+use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Service as WorkflowService;
 use Illuminate\Foundation\Application;
@@ -93,6 +94,8 @@ class Workflow
         // First value is not entirely robust though
         $entityId = $routeParams['id'] ?? array_values($routeParams)[0];
 
+        (new Action\Validator)->validateLiveActionsOnEntity($entity, $entityId);
+
         // Necessary data to pass to WorkflowController
         $params = $this->createDifferEntity($request, $entity, $entityId);
 
@@ -134,6 +137,7 @@ class Workflow
            Differ\Entity::ROUTE_PARAMS => $routeParams,
            Differ\Entity::METHOD       => $request->getMethod(),
            Differ\Entity::PAYLOAD      => $input,
+           Differ\Entity::STATE        => State\Entity::OPEN,
            Differ\Entity::CONTROLLER   => $controller,
            Differ\Entity::ROUTE        => $routeName,
            Differ\Entity::PERMISSIONS  => $permissions,

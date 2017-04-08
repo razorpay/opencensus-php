@@ -37,12 +37,13 @@ class Service extends Base\Service
         return $this->core()->fetchRequest($action);
     }
 
-    public function changeActionState(string $actionId, State\Entity $state)
+    public function changeActionState(
+        string $actionId,
+        State\Entity $state,
+        string $adminId = null)
     {
         Action\Entity::verifyIdAndStripSign($actionId);
 
-        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
-
-        (new State\Core)->changeActionState($action, $state);
+        (new State\Core)->changeActionState($actionId, $state, $adminId);
     }
 }
