@@ -13,9 +13,15 @@ app.controller('WorkflowNewCtrl', [
     $scope.permissions = {};
     $scope.permissionsOptions = [];
     $scope.permissionsSelected = [];
+    $scope.steps = [];
     $scope.roles = [];
-    $scope.rolesSelected = [];
+    $scope.roleNames = {};
     $scope.workflowName = "";
+    $scope.alerts = alertsFactory.getHandler();
+    admin.identity().then(function (data) {
+      $scope.admin = data;
+    });
+
     var fetchPermissions = function () {
       var request = $http.get('/admin/generic', {
         ignoreErrors: true,
@@ -58,7 +64,6 @@ app.controller('WorkflowNewCtrl', [
       $scope.permissionsSelected.splice(permIndex, 1)
     }
 
-    $scope.roleNames = {};
     organization.fetchRoles().then(function(roles) {
       $scope.roles = roles;
       for (var i = 0; i < roles.length; i++) {
@@ -91,7 +96,6 @@ app.controller('WorkflowNewCtrl', [
       });
     }
 
-    $scope.steps = [];
     $scope.addStep = function () {
       $scope.steps.push([])
       setTimeout(addRoleSelector, 0);
@@ -116,10 +120,64 @@ app.controller('WorkflowNewCtrl', [
       $scope.steps[stepIndex][roleIndex].reviewer_count--;
     }
 
-
     $scope.new_checker = null;
     $scope.saveWorkflow = function () {
-      console.log($scope.steps);
+      // console.log($scope.steps);
+      $scope.alerts.resetAlerts()
+      var valid = true;
+      var payload = {
+        steps: [],
+        org_id: $scope.admin.org_id
+      };
+      if (!$scope.workflowName) {
+        valid = false;
+        $scope.alerts.addAlert('danger', 'Please enter workflow name');
+      }
+      payload.name = $scope.workflowName
+      if (!$scope.permissionsSelected.length) {
+        valid = false;
+        $scope.alerts.addAlert('danger', 'Please select atleast one permission');
+      }
+      payload.permissions = $scope.permissionsSelected.slice()
+      if (!$scope.steps.length) {
+        valid = false;
+        $scope.alerts.addAlert('danger', 'Please add atleast one step');
+      }
+      for (var s_i = 0; s_i < $scope.steps.length; s_i++) {
+        var step = $scope.steps[s_i];
+        if (!step.length) {
+          $scope.alerts.addAlert('danger', 'Please add atleast one role to all the steps');
+          valid = false;
+          break;
+        }
+        for (var r_i = 0; r_i < step.length; r_i++) {
+          var role_perm = {
+            level: s_i + 1,
+            role_id: step[r_i].role_id,
+            reviewer_count: step[r_i].reviewer_count,
+          }
+          payload.steps.push(role_perm);
+        }
+      }
+      if (!valid) return;
+      
+      var request = $http({
+        url: '/admin/generic',
+        method: 'POST',
+        params: {
+          route_name: 'workflow_create',
+        },
+        data: {
+          body: payload
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', $scope.workflowName + ' - Workflow created successfully')
+        } 
+
+      })
     }
   }
 ]);

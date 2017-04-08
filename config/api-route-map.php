@@ -61,6 +61,7 @@ return [
         // Workflows
 
         'workflow_get_multiple'             => 'orgs/{id}/workflows',
+        'workflow_create'                   => 'workflows',
         'workflow_delete'                   => 'workflows/{id}',
         'action_diff_get'                   => 'w-actions/{id}/diff',
         'action_comment_create'             => 'w-actions/{id}/comments',

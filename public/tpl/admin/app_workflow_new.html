@@ -7,13 +7,16 @@
   </div>
   <div class="wrapper-md">
     <div class="row panel-container">
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
       <div class="col-xs-4">
         <div class="action-desc-panel panel panel-default">
           <div class="panel-heading">
             Name your workflow
           </div>
           <div class="wrapper clearfix">
-            <input type="text" ng-model="workflowName" placeholder="Atleast 4 characters" class="form-control">
+            <input type="text" ng-model="workflowName" placeholder="Atleast 4 characters" class="form-control name-input wrapper-xs">
           </div>
         </div>
         <div class="action-desc-panel panel panel-default">
