@@ -10,6 +10,8 @@ app.controller('WorkflowFeedCtrl', [
   'admin',
   function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
 
+    $scope.alerts = alertsFactory.getHandler();
+
     if (typeof $stateParams.action_id !== 'undefined') {
       $scope.action_id = $stateParams.action_id;
     }
@@ -170,34 +172,55 @@ app.controller('WorkflowFeedCtrl', [
 
     $scope.cards = [];
 
-    $scope.feed = {
-      actionName: 'edit_merchant_name',
-      action_state: 'Pending',
-      action_text: 'Edited merchant name from M1 to M2',
-      makers: ['maker@bank.org'],
-      timeago: moment().from(new Date()),
-      timestamp: (new Date()).toString(),
-      checkers: ['checker1@bank.org', 'checker2@bank.org'],
-      comments: [
-      {
-        type: 'comment',
-        text: 'I think we should wait to implement this change.',
-        user: 'checker1@bank.org',
-        timestamp: Date.now()
-      },
-      {
-        type: 'comment',
-        text: 'Looks good to me.',
-        user: 'checker2@bank.org',
-        timestamp: Date.now()
-      },
-      {
-        type: 'approval',
-        text: 'checker2@bank.org approved the action.',
-        user: 'checker2@bank.org',
-        timestamp: Date.now()
+    $scope.actionStateChange = function (state) {
+      var body = {};
+
+      if (state === 'approve') {
+        body = {
+          approved: 1
+        };
       }
-      ]
+
+      if (state === 'reject') {
+        body = {
+          approved: 0
+        };
+      }
+
+      if (typeof body.approved !== 'undefined') {
+        var request = $http({
+          url: '/admin/generic',
+          method: 'POST',
+
+          params: {
+            route_name: 'action_checker_create',
+
+            url_params: {
+              '{id}': $stateParams.action_id
+            }
+          },
+
+          data: {
+            body: body
+          }
+        });
+
+        request.success(function (data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Action performed successfully!', true);
+          }
+          else {
+            angular.forEach(data.errors, function (value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        }).error(function (errors) {
+          angular.forEach(errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        })
+      }
+
     };
 
   }

@@ -11,6 +11,9 @@
   </div>
   <div class="wrapper-md">
     <div class="row panel-container">
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
       <div class="col-xs-9">
         <div class="action-desc-panel panel panel-default">
           <div class="panel-heading">
@@ -81,18 +84,18 @@
       <div class="col-xs-3">
         <div class="right-label m-b">Actions</div>
         <div class="row btn-group-vertical btn-block m-b" role="group" aria-label="...">
-          <button type="button" class="btn btn-default wrapper-sm">
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('approve')">
             <i class="fa fa-check-circle approved-color"></i>
             Approve
           </button>
-          <button type="button" class="btn btn-default wrapper-sm">
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('reject')">
             <i class="fa fa-times-circle rejected-color"></i>
             Reject
           </button>
-          <button type="button" class="btn btn-default wrapper-sm">
+          <!-- <button type="button" class="btn btn-default wrapper-sm">
             <i class="fa fa-eye-slash pending-color"></i>
             Ignore
-          </button>
+          </button> -->
         </div>
         <div class="right-label m-b m-t">Approved by</div>
         <div class="assignee-list m-b">

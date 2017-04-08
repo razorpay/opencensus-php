@@ -71,6 +71,7 @@ return [
         'workflow_action_details'           => 'w-actions/{id}/details',
         'workflow_get_actions_by_maker'     => 'w-manager/get-actions-by-maker',
         'workflow_get_actions_for_checker'  => 'w-manager/get-actions-for-checker',
+        'action_checker_create'             => 'w-actions/{id}/checkers',
     ],
 
     // auth
