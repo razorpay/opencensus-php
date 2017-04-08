@@ -21,6 +21,7 @@ class Validator extends Base\Validator
         Entity::TITLE       => 'sometimes|string',
         Entity::DESCRIPTION => 'sometimes|string',
         Entity::APPROVED    => 'sometimes|boolean',
+        Entity::STATE       => 'sometimes|string|max:25',
     ];
 
     public function validateLiveActionsOnEntity(
@@ -31,14 +32,8 @@ class Validator extends Base\Validator
 
         $orgId = $app['basicauth']->getAdminOrgId();
 
-        $actions = (new Repository)->findOpenActionsByOrgId($orgId);
-
-        $openActionIds = array_map(function ($action){
-            return $action[Entity::ID];
-        }, $actions->toArray());
-
         $diffs = (new Differ\Core)->fetchByEntityAndEntityId(
-            $entity, $entityId, $openActionIds);
+            $entity, $entityId);
 
         if (empty($diffs) === false)
         {

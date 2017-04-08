@@ -337,6 +337,34 @@ class EsDao
         return $this->es->searchHeimdall($params);
     }
 
+    public function searchDifferByParams(
+        string $indexName,
+        string $typeName,
+        array $matchParams,
+        array $openStates)
+    {
+         $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'body'  => [
+                'query' => [
+                    'state' => [
+                        'filter' => [
+                            'bool' => [
+                                'must' => [
+                                    'terms' => $openStates,
+                                ],
+                            ],
+                        ],
+                    ],
+                   'match' => $matchParams,
+                ],
+            ],
+        ];
+
+        return $this->es->searchHeimdall($params);
+    }
+
     public function searchAuditLogs($orgId, $options = [])
     {
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];

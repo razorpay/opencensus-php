@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Workflow\Action\State;
 
 class Core extends Base\Core
 {
@@ -177,5 +178,36 @@ class Core extends Base\Core
         }
 
         return $diff;
+    }
+
+    public function fetchByEntityAndActionIds(
+        string $entity,
+        string $entityId)
+    {
+        $openStates = State\Entity::OPEN_STATES;
+
+        $matchParams = [
+            Entity::ENTITY_NAME => $entity,
+            Entity::ENTITY_ID   => $entityId,
+        ];
+
+        $esResponse = $this->esDao->search(
+            strtolower($this->baseIndex),
+            self::ES_TYPE, $matchParams, $openStates);
+
+        if ($esResponse === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+        $diffs = [];
+
+        foreach ($esResponse as $document)
+        {
+            $diffs = $document[0]['_source'][Entity::DIFF];
+        }
+
+        return $diffs;
     }
 }
