@@ -17,10 +17,47 @@ app.controller('WorkflowNewCtrl', [
     $scope.roles = [];
     $scope.roleNames = {};
     $scope.workflowName = "";
+    $scope.workflowId = "";
+    $scope.editLayout = false;
     $scope.alerts = alertsFactory.getHandler();
     admin.identity().then(function (data) {
       $scope.admin = data;
     });
+
+    if ($state.current.name === 'app.workflows.edit') {
+      $scope.editLayout = true;
+      $scope.workflowId = $stateParams.id
+    }
+
+    var fetchWorkflow = function (id) {
+      var request = $http.get('/admin/generic', {
+        ignoreErrors: true,
+        params: {
+          route_name: 'workflow_get',
+          url_params: {
+            '{id}': id
+          }
+        }
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.workflowName = data.data.name;
+          for (var i = 0; i < data.data.permissions.length; i++) {
+            $scope.permissionsSelected.push(data.data.permissions[i].id)
+          }
+          for (var i = 0; i < data.data.steps.length; i++) {
+            var role_perm = data.data.steps[i]
+            $scope.steps[role_perm.level - 1] = $scope.steps[role_perm.level - 1] || [];
+            $scope.steps[role_perm.level - 1].push(role_perm)
+          }
+        }
+
+      })
+    }
+
+    if ($scope.editLayout) {
+      fetchWorkflow($scope.workflowId);
+    }
 
     var fetchPermissions = function () {
       var request = $http.get('/admin/generic', {
@@ -121,7 +158,7 @@ app.controller('WorkflowNewCtrl', [
     }
 
     $scope.new_checker = null;
-    $scope.saveWorkflow = function () {
+    $scope.createWorkflow = function () {
       // console.log($scope.steps);
       $scope.alerts.resetAlerts()
       var valid = true;
@@ -175,8 +212,47 @@ app.controller('WorkflowNewCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', $scope.workflowName + ' - Workflow created successfully')
+          $state.transitionTo('app.workflows.edit', {id: data.data.id}, {notify: false})
+          $scope.editLayout = true;
         } 
+      })
+    }
 
+    $scope.editWorkflow = function () {
+      $scope.alerts.resetAlerts()
+      var valid = true;
+      var payload = {};
+      if (!$scope.workflowName) {
+        valid = false;
+        $scope.alerts.addAlert('danger', 'Please enter workflow name');
+      } else {
+        payload.name = $scope.workflowName
+      }
+      if (!$scope.permissionsSelected.length) {
+        valid = false;
+        $scope.alerts.addAlert('danger', 'Please select atleast one permission');
+      } else {
+        payload.permissions = $scope.permissionsSelected.slice();
+      }
+      if (!valid) return;
+
+      var request = $http({
+        url: '/admin/generic',
+        method: 'PUT',
+        params: {
+          route_name: 'workflow_update',
+          url_params: {
+            '{id}': $scope.workflowId
+          }
+        },
+        data: {
+          body: payload
+        }
+      });
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', $scope.workflowName + ' - Workflow updated successfully')
+        } 
       })
     }
   }
