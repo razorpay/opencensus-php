@@ -21,7 +21,6 @@ class Core extends Base\Core
 
         // Get checker roles
 
-        // todo: there can be multiple roles
         // todo: we are not doing check against action_checker
 
         $admin = $this->app['basicauth']->getAdmin();
@@ -39,22 +38,60 @@ class Core extends Base\Core
 
         $workflowId = $action->workflow->getId();
 
-        // Assumption is only one step should be returned here.
-        //
-        // THIS is the action's current step's definition
-        $step = $this->repo->workflow_step
-                           ->findByLevelWorkflowIdAndRoleId($currentLevel, $workflowId, $roleIds)
-                           ->first();
+        // In future if an admin can have multiple roles
+        // we could get more than 1 step in this call.
+        $steps = $this->repo->workflow_step
+                            ->findByLevelWorkflowIdAndRoleId($currentLevel, $workflowId, $roleIds);
+
+        $checkNotRequired = false;
 
         // In the current level (given that exists and is
         // supposed to be worked upon), no checking is required
         // from the checker's (assigned) roles.
-        if (empty($step))
+        if ($steps->count() === 0)
+        {
+            $checkNotRequired = true;
+        }
+
+        foreach ($steps as $step)
+        {
+            // Check if $step requires any check by matching
+            // workflow_step.reviewer_count with count(action_checkers)
+
+            $requiredReviewerCount = $step->getReviewerCount();
+
+            $totalActionCheckers = $this->repo
+                                        ->action_checker
+                                        ->fetchCountByActionIdForStep(
+                                            $action->getId(), $step->getId());
+
+            // For a particular step (in current foreach context)
+            // check may not be required hence we set $checkNotRequired
+            // to `true`. But in the next step if it is required
+            // then we'll set $checkNotRequired to false and break
+            // from the loop. We'll continue working with the step for which
+            // check IS required.
+            if ($totalActionCheckers >= $requiredReviewerCount)
+            {
+                $checkNotRequired = true;
+            }
+            else
+            {
+                $checkNotRequired = false;
+
+                // Once we break from foreach $step will be the one
+                // in current context right before break. $step in current
+                // context will be used for further operations.
+                break;
+            }
+        }
+
+        if ($checkNotRequired === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL);
         }
-        sd($step);
+
         // ADMIN_ID is the checker's ID (current request's admin)
         $input[Entity::ADMIN_ID] = $admin->getId();
 

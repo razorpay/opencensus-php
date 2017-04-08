@@ -35,7 +35,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ACTION_ID, '=', $actionId)
                     ->where(Entity::STEP_ID, '=', $stepId)
-                    ->whereNotNull(Entity::APPROVED)
+                    // ->whereNotNull(Entity::APPROVED)
                     ->count();
     }
 
@@ -46,7 +46,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ACTION_ID, '=', $actionId)
                     ->whereIn(Entity::STEP_ID, $stepIds)
-                    ->where(Entity::APPROVED, 1) // checked
+                    ->where(Entity::APPROVED, '=', 1) // checked
                     ->count();
     }
 
