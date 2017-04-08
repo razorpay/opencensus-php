@@ -30,11 +30,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCountByActionId()
+    public function fetchApprovedCountByActionId(string $actionId)
     {
         return $this->newQuery()
                     ->where(Entity::ACTION_ID, '=', $actionId)
-                    ->whereNotNull(Entity::APPROVED)
+                    ->where(Entity::APPROVED, '=', 1) // checked
                     ->count();
     }
 

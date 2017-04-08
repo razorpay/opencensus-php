@@ -121,7 +121,7 @@ class Core extends Base\Core
 
         // If all the checkers have approved then approve
         // and close the action
-        (new Action\Core)->checkAndMarkActionApproved();
+        (new Action\Core)->checkAndMarkActionApproved($action);
 
         return $checker;
     }
