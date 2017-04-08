@@ -146,6 +146,13 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::STATE);
     }
 
+    public function isExecuted()
+    {
+        $state = $this->getState();
+
+        return ($state === State\Entity::EXECUTED);
+    }
+
     public function isValid() : bool
     {
         // Get the final state in the automata and

@@ -29,8 +29,8 @@ class Core extends Base\Core
         string $adminId = null)
     {
         $input = [
-            State\Entity::ACTION_ID  => $action->getId(),
-            State\Entity::ADMIN_ID   => $action->getAdminId(),
+            State\Entity::ACTION_ID  => $actionId,
+            State\Entity::ADMIN_ID   => $adminId,
             State\Entity::NAME       => $state,
         ];
 

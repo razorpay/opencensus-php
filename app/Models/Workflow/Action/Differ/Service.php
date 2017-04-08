@@ -30,7 +30,7 @@ class Service extends Base\Service
 
     public function fetchRequest(string $actionId)
     {
-        Action\Entity::verifyIdAndStripSign($actionId);
+        Action\Entity::verifyIdAndSilentlyStripSign($actionId);
 
         $action = $this->repo->workflow_action->findOrFailPublic($actionId);
 

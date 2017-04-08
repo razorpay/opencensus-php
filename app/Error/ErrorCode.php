@@ -501,6 +501,7 @@ class ErrorCode
     const BAD_REQUEST_ACTION_INVALID_TYPE                                           = 'BAD_REQUEST_ACTION_INVALID_TYPE';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
     const BAD_REQUEST_ACTION_NOT_APPROVED                                           = 'BAD_REQUEST_ACTION_NOT_APPROVED';
+    const BAD_REQUEST_ACTION_ALREADY_EXECUTED                                       = 'BAD_REQUEST_ACTION_ALREADY_EXECUTED';
     const BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED                                   = 'BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED';
     const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                                  = 'BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE';
     const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                               = 'BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE';

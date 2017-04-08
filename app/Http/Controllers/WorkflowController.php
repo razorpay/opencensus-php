@@ -7,6 +7,7 @@ use Request;
 use ApiResponse;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\State;
@@ -66,15 +67,20 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
+        Action\Entity::verifyIdAndStripSign($id);
+
         $action = (new Action\Repository)->findOrFailPublic($id);
 
-        // Do not execute the action if it is not approved by all checkers
-        $isActionApproved = (new Action\Core)->checkAndMarkActionApproved($action);
-
-        if ($isActionApproved === false)
+        if ($action->getApproved() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ACTION_NOT_APPROVED);
+        }
+
+        if ($action->isExecuted() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_ALREADY_EXECUTED);
         }
 
         $diff = (new Differ\Service)->fetchRequest($id);
@@ -100,9 +106,11 @@ class WorkflowController extends Controller
             $state = State\Entity::FAILED;
         }
 
-        (new Action\Core)->updateState($action, $state);
-
         $adminId = $this->app['basicauth']->getAdmin()->getId();
+
+        // Update states
+
+        (new Action\Core)->updateState($action, $state);
 
         (new State\Core)->changeActionState($action->getId(), $state, $adminId);
 

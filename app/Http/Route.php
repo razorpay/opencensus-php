@@ -435,7 +435,7 @@ final class Route
         'action_checker_get'                      => ['get',      'w-actions/{id}/checker/{checkerId}',             'WorkflowController@getActionChecker'                               ],
         // 'action_diff_create'                      => ['post',     'w-actions/{id}/diff',                            'WorkflowController@postActionDiff'                                 ],
         'action_diff_get'                         => ['get',      'w-actions/{id}/diff',                            'WorkflowController@getActionDiff'                                  ],
-        'action_request_execute'                  => ['post',     'w-actions/{id}/execute-diff',                    'WorkflowController@postExecuteAction'                              ],
+        'action_request_execute'                  => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                   => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'action_comment_fetch'                    => ['get',      'w-actions/{id}/comments',                        'WorkflowController@getActionComments'                              ],
         'workflow_get_actions_for_checker'        => ['get',      'w-manager/get-actions-for-checker',              'WorkflowController@getActionsForChecker'                           ],
