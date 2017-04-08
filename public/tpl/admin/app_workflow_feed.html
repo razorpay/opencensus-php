@@ -42,7 +42,12 @@
         <div class="cards" ng-repeat="card in cards" ng-switch on="card.type">
 
           <div class="panel panel-default wrapper" ng-switch-when="status">
-            <i class="fa fa-check-circle approved-color"></i> <strong>Shashank Kumar</strong> <span class="">approved</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+            <i class="fa {{ card.approved ? 'fa-check-circle approved-color' : 'fa-times-circle rejected-color' }}"></i>
+            <strong>{{ card.admin_name }}</strong>
+            {{ card.approved ? 'approved' : 'rejected' }} at
+            <span title="{{feed.timestamp}}" class="timestamp">
+              {{ card.created_at * 1000 | date:'medium' }}
+            </span>
           </div>
 
           <div class="action-desc-panel panel panel-default" ng-switch-when="comment">

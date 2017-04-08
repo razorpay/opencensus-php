@@ -69,7 +69,7 @@ app.controller('WorkflowFeedCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          commentMod(data.data);
+          commentMod(data.data, 'comment');
 
           $scope.cards.push(data.data);
 
@@ -81,42 +81,42 @@ app.controller('WorkflowFeedCtrl', [
     };
 
     // Change passed object by reference
-    var commentMod = function (comment) {
-      comment.type = 'comment';
+    var commentMod = function (comment, type) {
+      comment.type = type;
 
       // Resolve name
       var name = comment.admin.name ? comment.admin.name : (!comment.admin.username ? comment.admin.username : comment.admin.email);
       comment.admin_name = name;
     };
 
-    $scope.fetchAllComments = function () {
-      var request = $http({
-        url: '/admin/generic',
-        method: 'GET',
-        params: {
-          route_name: 'action_comment_fetch',
-          url_params: {
-            '{id}': $stateParams.action_id
-          }
-        }
-      });
-
-      request.success(function (data) {
-        if (data.success) {
-          data.data.items.forEach(function (item, k) {
-            commentMod(item);
-
-            data.data.items[k] = item;
-          });
-
-          $scope.cards = $scope.cards.concat(data.data.items);
-
-          $scope.comment_count = data.data.count;
-        }
-      });
-    };
-
-    $scope.fetchAllComments();
+    // $scope.fetchAllComments = function () {
+    //   var request = $http({
+    //     url: '/admin/generic',
+    //     method: 'GET',
+    //     params: {
+    //       route_name: 'action_comment_fetch',
+    //       url_params: {
+    //         '{id}': $stateParams.action_id
+    //       }
+    //     }
+    //   });
+    //
+    //   request.success(function (data) {
+    //     if (data.success) {
+    //       data.data.items.forEach(function (item, k) {
+    //         commentMod(item);
+    //
+    //         data.data.items[k] = item;
+    //       });
+    //
+    //       $scope.cards = $scope.cards.concat(data.data.items);
+    //
+    //       $scope.comment_count = data.data.count;
+    //     }
+    //   });
+    // };
+    //
+    // $scope.fetchAllComments();
 
     $scope.fetchActionDetails = function () {
       var request = $http({
@@ -132,7 +132,34 @@ app.controller('WorkflowFeedCtrl', [
 
       request.success(function (data) {
         if (data.success) {
+          // Action details
           $scope.action_details = data.data;
+
+          // Action comments
+
+          var comments = data.data.comments;
+
+          comments.forEach(function (item, k) {
+            commentMod(item, 'comment');
+
+            comments[k] = item;
+          });
+
+          $scope.cards = $scope.cards.concat(comments);
+
+          $scope.comment_count = comments.length;
+
+          // Action approvals/rejections
+
+          var checkers = data.data.checkers;
+
+          checkers.forEach(function (item, k) {
+            commentMod(item, 'status');
+
+            checkers[k] = item;
+          });
+
+          $scope.cards = $scope.cards.concat(checkers);
         }
       });
     };
