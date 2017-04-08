@@ -180,7 +180,7 @@ class Core extends Base\Core
         return $diff;
     }
 
-    public function fetchByEntityAndActionIds(
+    public function fetchByEntityAndEntityId(
         string $entity,
         string $entityId)
     {
@@ -192,23 +192,9 @@ class Core extends Base\Core
         ];
 
         $esResponse = $this->esDao->searchDifferByParams(
-            strtolower($this->baseIndex),
-            self::ES_TYPE, $matchParams, $openStates);
+            strtolower($this->baseIndex), self::ES_TYPE, $matchParams, $openStates);
 
-        if ($esResponse === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
-        }
-
-        $diffs = [];
-
-        foreach ($esResponse as $document)
-        {
-            $diffs = $document[0]['_source'][Entity::DIFF];
-        }
-
-        return $diffs;
+        return $esResponse;
     }
 
     public function updateStateInEs(

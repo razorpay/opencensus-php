@@ -361,23 +361,32 @@ class EsDao
         array $matchParams,
         array $openStates)
     {
-         $params = [
+        $matchParamsForQuery = [];
+
+        foreach ($matchParams as $key => $val)
+        {
+            $matchParamsForQuery[] = [
+                'match' => [ $key => $val ]
+            ];
+        }
+
+        $body = [
+            "query" => [
+                "bool" => [
+                    "must" => $matchParamsForQuery,
+                    "filter" => [
+                        "terms" => [
+                            "state" => $openStates // ['open', 'approved']
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $params = [
             'index' => $indexName,
             'type'  => $typeName,
-            'body'  => [
-                'query' => [
-                    'state' => [
-                        'filter' => [
-                            'bool' => [
-                                'must' => [
-                                    'terms' => $openStates,
-                                ],
-                            ],
-                        ],
-                    ],
-                   'match' => $matchParams,
-                ],
-            ],
+            'body'  => $body,
         ];
 
         return $this->es->searchHeimdall($params);

@@ -22,6 +22,7 @@ class Validator extends Base\Validator
         Entity::CONTROLLER   => 'required|string',
         Entity::ROUTE        => 'required|string',
         Entity::ACTION_ID    => 'required|string|max:14',
+        Entity::STATE        => 'required|string|max:25',
     ];
 
     protected function validateType($attribute, $type)

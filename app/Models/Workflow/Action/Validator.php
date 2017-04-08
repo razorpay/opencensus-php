@@ -32,16 +32,17 @@ class Validator extends Base\Validator
 
         $orgId = $app['basicauth']->getAdminOrgId();
 
-        $diffs = (new Differ\Core)->fetchByEntityAndEntityId(
+        $actions = (new Differ\Core)->fetchByEntityAndEntityId(
             $entity, $entityId);
 
-        if (empty($diffs) === false)
+        // If there are any action in progress
+        if (empty($actions) === false)
         {
             $actionIds = [];
 
-            foreach ($diffs as $diff)
+            foreach ($actions as $action)
             {
-                $actionIds[] = $diff[Differ\Entity::ACTION_ID];
+                $actionIds[] = $action['_source'][Differ\Entity::ACTION_ID];
             }
 
             throw new Exception\BadRequestException(

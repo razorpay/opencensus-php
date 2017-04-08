@@ -76,7 +76,8 @@ class Entity extends Base\Entity
         self::ROUTE,
         self::DIFF,
         self::ACTION_ID,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::STATE,
     ];
 
     protected $visible = [
@@ -94,7 +95,8 @@ class Entity extends Base\Entity
         self::ROUTE,
         self::DIFF,
         self::ACTION_ID,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::STATE,
     ];
 
     protected $public = [
@@ -112,7 +114,8 @@ class Entity extends Base\Entity
         self::ROUTE,
         self::DIFF,
         self::ACTION_ID,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::STATE,
     ];
 
     public function setDiff(array $diff)
