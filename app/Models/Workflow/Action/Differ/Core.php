@@ -191,7 +191,7 @@ class Core extends Base\Core
             Entity::ENTITY_ID   => $entityId,
         ];
 
-        $esResponse = $this->esDao->search(
+        $esResponse = $this->esDao->searchDifferByParams(
             strtolower($this->baseIndex),
             self::ES_TYPE, $matchParams, $openStates);
 

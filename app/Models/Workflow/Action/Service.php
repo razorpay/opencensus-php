@@ -81,7 +81,9 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($actionId);
 
-        $action = $this->core()->edit($actionId, $input);
+        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
+
+        $action = $this->core()->edit($action, $input);
 
         return $action->toArrayPublic();
     }
