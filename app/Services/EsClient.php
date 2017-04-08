@@ -194,6 +194,18 @@ class EsClient
         return $entityResults;
     }
 
+    public function updateHeimdall($params)
+    {
+        if ($this->esHeimdallMock === true)
+        {
+            return null;
+        }
+
+        $updateResponse = $this->heimdallClient->update($params);
+
+        return true;
+    }
+
     public function index($params)
     {
         $this->client->index($params);

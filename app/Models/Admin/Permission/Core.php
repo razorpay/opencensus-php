@@ -11,6 +11,8 @@ class Core extends Base\Core
     {
         $permission = (new Entity)->build($input);
 
+        $permission->generateId();
+
         $permission->setAuditAction(Action::CREATE_PERMISSION);
 
         $this->repo->saveOrFail($permission);
