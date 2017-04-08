@@ -102,7 +102,9 @@ class WorkflowController extends Controller
 
         (new Action\Core)->updateStatus($action, $state);
 
-        (new State\Core)->changeActionState($action, $state);
+        $adminId = $this->app['basicauth']->getAdmin()->getId();
+
+        (new State\Core)->changeActionState($action->getId(), $state, $adminId);
 
         (new Differ\Core)->updateStateInEs($action->getId(), $state);
 

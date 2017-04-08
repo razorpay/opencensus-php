@@ -210,4 +210,20 @@ class Core extends Base\Core
 
         return $diffs;
     }
+
+    public function updateStateInEs(
+        string $actionId,
+        string $state)
+    {
+        $esResponse = $this->esDao->updateActionState(
+            strtolower($this->baseIndex), self::ES_TYPE, $action->getId(), $state);
+
+        if ($esResponse === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+
+    }
 }
