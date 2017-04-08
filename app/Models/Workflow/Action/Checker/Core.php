@@ -122,7 +122,8 @@ class Core extends Base\Core
                 (new Action\Core)->updateCurrentLevelIfNeeded($action);
 
                 // If all the checkers have approved then approve
-                // and close the action
+                // and close the action. This will also update
+                // action_state (state machine).
                 (new Action\Core)->checkAndMarkActionApproved($action);
             }
         });
