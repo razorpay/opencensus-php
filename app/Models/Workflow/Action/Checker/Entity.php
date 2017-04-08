@@ -101,7 +101,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::STEP_ID);
     }
 
-    public function isApproved() : boolean
+    public function isApproved() : bool
     {
         return $this->getAttribute(self::APPROVED);
     }

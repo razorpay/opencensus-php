@@ -337,22 +337,46 @@ class EsDao
         return $this->es->searchHeimdall($params);
     }
 
-    public function updateActionState($indexName, $typeName, $id, $state)
+    public function updateActionState($indexName, $typeName, $documentId, $state)
     {
         $params = [
             'index' => $indexName,
             'type'  => $typeName,
+            'id'    => $documentId,
             'body'  => [
-                'query' => [
-                   'match' => [
-                        'action_id' => $id
-                    ]
-                ],
                 'script' => sprintf('ctx._source.state="%s";', $state)
             ],
         ];
 
         return $this->es->updateHeimdall($params);
+    }
+
+    public function getDocumentByFields($indexName, $typeName, $terms)
+    {
+        $matchParamsForQuery = [];
+
+        foreach ($terms as $key => $val)
+        {
+            $matchParamsForQuery[] = [
+                'match' => [ $key => $val ]
+            ];
+        }
+
+        $body = [
+            "query" => [
+                "bool" => [
+                    "must" => $matchParamsForQuery
+                ]
+            ]
+        ];
+
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'body'  => $body,
+        ];
+
+        return $this->es->searchHeimdall($params);
     }
 
     public function searchDifferByParams(

@@ -201,15 +201,27 @@ class Core extends Base\Core
         string $actionId,
         string $state)
     {
-        $esResponse = $this->esDao->updateActionState(
-            strtolower($this->baseIndex), self::ES_TYPE, $actionId, $state);
 
-        if ($esResponse === null)
+        $searchTerms = [
+            'action_id' => $actionId
+        ];
+
+        $documents = $this->esDao->getDocumentByFields(
+            strtolower($this->baseIndex), self::ES_TYPE, $searchTerms);
+
+        if (empty($documents) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
         }
 
+        $document = current($documents);
 
+        $documentId = $document['_id'];
+
+        $esResponse = $this->esDao->updateActionState(
+            strtolower($this->baseIndex), self::ES_TYPE, $documentId, $state);
+
+        return $esResponse;
     }
 }

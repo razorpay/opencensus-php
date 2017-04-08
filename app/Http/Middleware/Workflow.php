@@ -95,7 +95,8 @@ class Workflow
         // First value is not entirely robust though
         $entityId = $routeParams['id'] ?? array_values($routeParams)[0];
 
-        //
+        // Check if any actions are in open/approved state on the same
+        // entity. If yes then prevent any further operations on this.
         (new Action\Validator)->validateLiveActionsOnEntity($entity, $entityId);
 
         // Necessary data to pass to WorkflowController

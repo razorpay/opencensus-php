@@ -138,7 +138,7 @@ class Core extends Base\Core
             (new State\Core)->create($stateData);
 
             (new Differ\Core)->updateStateInEs(
-                $action, $stateData[State\Entity::NAME]);
+                $action->getId(), $stateData[State\Entity::NAME]);
         });
 
         return $action;
@@ -191,7 +191,7 @@ class Core extends Base\Core
         if ((empty($nextLevelStep) === false) and
             ($totalCheckerApprovals >= $totalReviewerCount))
         {
-            $this->repo->transactionOnLiveAndTest(function () use ($action) {
+            $this->repo->transactionOnLiveAndTest(function () use ($action, $nextLevelStep) {
 
                 $action->setCurrentLevel( $nextLevelStep->getLevel());
 

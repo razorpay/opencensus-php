@@ -114,7 +114,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($checker);
 
             // State change if checker rejected
-            if ((int) $input[Entity::APPROVED] === Entity::APPROVED_ENUM['rejected'])
+            if ($checker->isApproved() === false)
             {
                 $this->applyActionRejectionStateChanges($action, $checker);
             }
@@ -134,6 +134,9 @@ class Core extends Base\Core
         return $checker;
     }
 
+    /*
+        State changes on rejection
+    */
     protected function applyActionRejectionStateChanges($action, $checker)
     {
         $state = State\Entity::REJECTED;

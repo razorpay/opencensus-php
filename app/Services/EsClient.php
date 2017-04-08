@@ -203,14 +203,7 @@ class EsClient
 
         $updateResponse = $this->heimdallClient->update($params);
 
-        if ($updateResponse['hits']['total'] === 0)
-        {
-            return null;
-        }
-
-        $entityResults = $updateResponse['hits']['hits'];
-
-        return $entityResults;
+        return true;
     }
 
     public function index($params)
