@@ -19,6 +19,7 @@ class Validator extends Base\Validator
         Entity::TITLE       => 'sometimes|string',
         Entity::DESCRIPTION => 'sometimes|string',
         Entity::APPROVED    => 'sometimes|boolean',
+        Entity::STATE       => 'sometimes|string',
     ];
 
     public function validateActionBelongsToAdminOrg($action, $admin)
@@ -38,4 +39,3 @@ class Validator extends Base\Validator
         }
     }
 }
-

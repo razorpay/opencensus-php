@@ -35,6 +35,7 @@ class Entity extends Base\Entity
         self::ORG_ID,
         self::ADMIN_ID,
         self::WORKFLOW_ID,
+        self::STATE,
     ];
 
     protected $visible = [

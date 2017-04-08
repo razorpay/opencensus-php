@@ -48,8 +48,8 @@ class Core extends Base\Core
 
         $action->build($params);
 
-        $this->repo->transactionOnLiveAndTest(function() use($action, $params) {
-
+        $this->repo->transactionOnLiveAndTest(function() use($action, $params)
+        {
             $this->repo->saveOrFail($action);
 
             $this->createInitialStateForAction($action);
@@ -122,6 +122,7 @@ class Core extends Base\Core
         {
             $data = [
                 Entity::APPROVED => true,
+                Entity::STATE    => State\Entity::APPROVED,
             ];
 
             $action->edit($data);
