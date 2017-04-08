@@ -176,7 +176,8 @@ class Core extends Base\Core
 
         $totalCheckerApprovals = $this->repo
                                       ->action_checker
-                                      ->fetchCountByActionIdAndStepIds($action->getId(), $stepIds);
+                                      ->fetchApprovedCountByActionIdAndStepIds(
+                                          $action->getId(), $stepIds);
 
         // 3. Check if there is any level (or step basically)
         // after workflow_actions.current_level

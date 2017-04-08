@@ -47,7 +47,7 @@ class Repository extends Base\Repository
                     ->count();
     }
 
-    public function fetchCountByActionIdAndStepIds(
+    public function fetchApprovedCountByActionIdAndStepIds(
         string $actionId,
         array $stepIds)
     {
