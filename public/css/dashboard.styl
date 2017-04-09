@@ -458,7 +458,58 @@ a.highlight:hover, a.highlight:focus {
     z-index: 4;
     width: 100%;
     height: 70px;
-    line-height: 46px;
+    line-height: 48px;
+    padding: 12px 0px;
+    cursor: pointer;
+    &:hover {
+      .bg-white, .heading-text {
+        opacity: 0.3
+      }
+      
+      .desc-edit-icon > i{
+        opacity: 0.7;
+      }
+    }
+    .desc-edit-icon > i {
+      opacity: 0;
+    }
+    .bg-white {
+      position: absolute;
+      top: 12px;
+      bottom: 12px;
+      left: -8px;
+      right: -8px;
+      background: white;
+      z-index: -1;
+      // &:hover {        
+      //   opacity: 0.3
+      // }
+    }
+    .title-editing {
+      z-index: initial;
+    }
+  }
+  .title-highlight-container {
+    padding: 12px 0;
+    #title-input {
+      border-radius: 4px 0px 0 4px;
+      padding: 0px 7px;
+      font-size: 24px;
+      line-height: 24px;
+    }
+    #title-input-button {
+      border-radius: 0px 4px 4px 0px;
+    }
+  }
+  .description {
+    position: relative;
+  }
+  .desc-text {
+    position: absolute;
+    z-index: 4;
+    width: 100%;
+    // height: 70px;
+    line-height: 24px;
     padding: 12px 0px;
     cursor: pointer;
     &:hover {
@@ -485,18 +536,8 @@ a.highlight:hover, a.highlight:focus {
     .title-editing {
       z-index: initial;
     }
-    
-      
   }
-  .title-highlight-container {
-    padding: 12px 0;
-    #title-input {
-      border-radius: 4px 0px 0 4px;
-    }
-    #title-input-button {
-      border-radius: 0px 4px 4px 0px;
-    }
-  }
+
 }
 .padding-0 {
   padding: 0 !important;

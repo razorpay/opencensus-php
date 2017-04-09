@@ -288,6 +288,45 @@ app.controller('WorkflowFeedCtrl', [
       console.log(title)
     }
 
+    $scope.saveDesc = function() {
+      var desc = $scope.action_details.description;
+      if (!desc) {
+        $scope.setDescInactive();
+        $scope.alerts.addAlert('danger', 'Please enter a description');
+        return;
+      }
+      var request = $http({
+        url: '/admin/generic',
+        method: 'PUT',
+        params: {
+          route_name: 'workflow_action_update',
+          url_params: {
+            '{id}': $stateParams.action_id
+          }
+        },
+        data: {
+          body: {
+            description: desc
+          }
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Description changed successfully!', true);
+        }
+        else {
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function (errors) {
+        angular.forEach(errors, function (value, key) {
+          $scope.alerts.addAlert('danger', value);
+        });
+      })
+      console.log(title)
+    }
   }
 ])
 .controller('actionChangeCtrl', [

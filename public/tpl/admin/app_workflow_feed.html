@@ -30,7 +30,7 @@
                 <span class="heading-text">
                   {{ action_details.title || "Click to add a title" }}
                 </span>
-                <span class="desc-edit-icon"><i class="fa fa-pencil-square-o"></i></span>
+                <span class="desc-edit-icon"><i class="fa fa-pencil"></i></span>
                 <div class="clearfix"></div>
               </div>
               <div class="row title-highlight-container " ng-class="{'title-active': titleActive}">
@@ -52,10 +52,21 @@
             </div>
             <div class="border-bottom m-b"></div>
             <div class="description">
-              <div class="description-text">
-                {{ action_details.description || "Click to add a description" }}
+              <div class="desc-text wrapper-sm" ng-click="setDescActive();alerts.resetAlerts();" ng-show="!descActive">
+                <div class="bg-white"></div>
+                <span class="description-text">
+                  {{ action_details.description || "Click to add a description" }}
+                </span>
+                <span class="desc-edit-icon"><i class="fa fa-pencil"></i></span>
+                <div class="clearfix"></div>
               </div>
-              <div class="desc-edit-btn"><i class="fa fa-pencil-square-o"></i></div>
+              <form class=" clearfix ">
+                <textarea class="form-control wrapper-xs" rows="4" id="comment" ng-model="new_comment"></textarea>
+                <button class="pull-right btn btn-info m-t" type="submit" ng-click="saveComment()">Comment</button>
+              </form>
+              <!-- <div class="description-text">
+                {{ action_details.description || "Click to add a description" }}
+              </div> -->
             </div>
             <div class="assignment-container ">
               <div class="strong assignee-heading m-t"><strong>Assigned to:</strong></div>
