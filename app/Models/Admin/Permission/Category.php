@@ -13,4 +13,5 @@ class Category
     const ADMIN             = 'admin';
     const PERMISSION        = 'permission';
     const AUDIT_LOG         = 'audit_log';
+    const INVITATION        = 'invitation';
 }
