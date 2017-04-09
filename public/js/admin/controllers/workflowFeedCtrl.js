@@ -232,6 +232,62 @@ app.controller('WorkflowFeedCtrl', [
 
     };
 
+    $scope.titleActive = false;
+    $scope.descActive = false;
+    $scope.setTitleActive = function () {
+      $scope.titleActive = true;
+      $('#title-input').focus();
+    };
+    $scope.setTitleInactive = function () {
+      $scope.titleActive = false;
+    };
+    $scope.setDescActive = function () {
+      $scope.descActive = true;
+    };
+    $scope.setDescInactive = function () {
+      $scope.descActive = false;
+    };
+
+    $scope.saveTitle = function() {
+      var title = $scope.action_details.title;
+      if (!title) {
+        $scope.setTitleInactive();
+        $scope.alerts.addAlert('danger', 'Please enter a title');
+        return;
+      }
+      var request = $http({
+        url: '/admin/generic',
+        method: 'PUT',
+        params: {
+          route_name: 'workflow_action_update',
+          url_params: {
+            '{id}': $stateParams.action_id
+          }
+        },
+        data: {
+          body: {
+            title: title
+          }
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Title changed successfully!', true);
+        }
+        else {
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function (errors) {
+        angular.forEach(errors, function (value, key) {
+          $scope.alerts.addAlert('danger', value);
+        });
+      })
+      console.log(title)
+    }
+
   }
 ])
 .controller('actionChangeCtrl', [

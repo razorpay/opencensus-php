@@ -460,21 +460,27 @@ a.highlight:hover, a.highlight:focus {
     height: 70px;
     line-height: 46px;
     padding: 12px 0px;
+    cursor: pointer;
     &:hover {
-      opacity: 0.3
-      .desc-edit-icon {
-        opacity: initial;
+      .bg-white, .heading-text {
+        opacity: 0.3
+      }
+      
+      .desc-edit-icon > i{
+        opacity: 0.7;
       }
     }
-    &:before {
+    .bg-white {
       position: absolute;
-      content: ' ';
       top: 12px;
       bottom: 12px;
       left: -8px;
       right: -8px;
       background: white;
       z-index: -1;
+      // &:hover {        
+      //   opacity: 0.3
+      // }
     }
     .title-editing {
       z-index: initial;
@@ -484,8 +490,11 @@ a.highlight:hover, a.highlight:focus {
   }
   .title-highlight-container {
     padding: 12px 0;
-    input {
-
+    #title-input {
+      border-radius: 4px 0px 0 4px;
+    }
+    #title-input-button {
+      border-radius: 0px 4px 4px 0px;
     }
   }
 }
