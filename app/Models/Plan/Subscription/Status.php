@@ -51,11 +51,9 @@ class Status
      * When the user does not make an auth transaction by the time
      * the subscription's start_at, we mark it as expired.
      * Auth txn cannot be made after this. The merchant will
-     * have to create a new transaction.
+     * have to create a new subscription.
      */
     const EXPIRED           = 'expired';
-
-    const FAILED            = 'failed';
 
     // ---------------- End subscription statuses ----------------
 

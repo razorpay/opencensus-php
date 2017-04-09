@@ -21,7 +21,7 @@ class Repository extends Base\Repository
     public function getSubscriptionsToRetry()
     {
         return $this->getBaseSubscriptionsQuery()
-                    ->where(Entity::STATUS, '=', Status::ON_HOLD)
+                    ->where(Entity::STATUS, '=', Status::OVERDUE)
                     ->where(Entity::ERROR_STATUS, Status::AUTH_FAILURE)
                     ->where(Entity::AUTH_ATTEMPTS, '>', 0)
                     ->where(Entity::AUTH_ATTEMPTS, '<', Charge::MAX_AUTH_ATTEMPTS)

@@ -96,5 +96,7 @@ add_cron "7 * * * *"        "freecharge_validate_refund_rec" POST "$BASE_URL/ref
 add_cron "30 * * * *"       "refund_gateway_refunded_txns"   POST "$BASE_URL/refunds/gateway_refunded/transaction"       ""                              $LIVE_AUTH
 add_cron "*/10 * * * *"     "invoice_expire_bulk"            POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
 
+add_cron "*/10 * * * *"     "subscriptions_charge"           POST "$BASE_URL/subscriptions/invoices/charge"              ""                              $LIVE_AUTH
+
 # Install the generated crontab
 crontab $TMP_CRONTAB

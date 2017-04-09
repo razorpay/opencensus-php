@@ -88,7 +88,7 @@ class Validator extends Base\Validator
         if ($endAt > $maxSecondsFromStartAt)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'end_at should be within ' . self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION . ' years of start_at.',
+                'end_at should be within ' . self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION . ' year/s of start_at.',
                 null,
                 [
                     'start_at'  => $startAt,

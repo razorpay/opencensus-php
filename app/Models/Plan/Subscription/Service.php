@@ -151,10 +151,10 @@ class Service extends Base\Service
         }
 
         $summary = [
-            'total' => $invoicesToCharge->count(),
-            'queued' => $queued,
-            'failed' => $failed,
-            'failure_subscriptions' => $failures,
+            'total'    => $invoicesToCharge->count(),
+            'queued'   => $queued,
+            'failed'   => $failed,
+            'failures' => $failures,
         ];
 
         $this->trace->info(

@@ -119,9 +119,19 @@ class CreateSubscription extends Migration
         Schema::table(Table::INVOICE, function($table)
         {
             $table->foreign(Invoice\Entity::SUBSCRIPTION_ID)
-                ->references(Entity::ID)
-                ->on(Table::SUBSCRIPTION)
-                ->on_delete('restrict');
+                  ->references(Entity::ID)
+                  ->on(Table::SUBSCRIPTION)
+                  ->on_delete('restrict');
+        });
+
+        // This should be here and not in payments table because
+        // subscription table is created after payments.
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->foreign(Payment\Entity::SUBSCRIPTION_ID)
+                  ->references(Entity::ID)
+                  ->on(Table::SUBSCRIPTION)
+                  ->on_delete('restrict');
         });
     }
 

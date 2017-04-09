@@ -384,37 +384,6 @@ class Entity extends Base\PublicEntity
         return $contact;
     }
 
-    /**
-     * This should be removed once the "certain" merchants
-     * fix the issue on their end.
-     *
-     * @param $input
-     */
-    protected function fillContactForCertainMerchants(& $input)
-    {
-        $app = \App::getFacadeRoot();
-
-        // We are currently doing this for GoIbibo and beta test merchant
-        $excludedMerchants = ['6ZLE5BE57SExGF', '7FloNFaK7P4MMo'];
-
-        $merchant = $app['basicauth']->getMerchant();
-
-        //
-        // When a payment is created via a cron, the merchant will not be set.
-        // Example: A charge being made for a subscription.
-        //
-        if ($merchant === null)
-        {
-            return;
-        }
-
-        if ((in_array($merchant->getId(), $excludedMerchants, true) === true) and
-            (empty($input['contact']) === true))
-        {
-            $input['contact'] = '+919999999999';
-        }
-    }
-
     protected function modifyMethodBasedInput(& $input)
     {
         if (isset($input['method']) === false)

@@ -117,7 +117,7 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::SUBSCRIPTION_INVOICE_CREATED,
                     [
-                        'invoice_id' => $invoice->getId(),
+                        'invoice_id'      => $invoice->getId(),
                         'subscription_id' => $subscription->getId(),
                         'invoice_details' => $invoice->toArray(),
                     ]);
@@ -152,7 +152,7 @@ class Core extends Base\Core
                 'The status should have been authenticated since the subscription has not been paid even once.',
                 null,
                 [
-                    'status' => $subscription->getStatus(),
+                    'status'          => $subscription->getStatus(),
                     'subscription_id' => $subscription->getId()
                 ]);
         }
@@ -178,6 +178,10 @@ class Core extends Base\Core
      */
     protected function createInvoiceIfApplicable(Entity $subscription)
     {
+        //
+        // If start_at is not null, it means that the auth transactions
+        // does not include the first charge.
+        //
         if ($subscription->getStartAt() !== null)
         {
             return;
@@ -201,9 +205,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::SUBSCRIPTION_INVOICE_CREATED,
             [
-                'invoice_id' => $invoice->getId(),
-                'subscription_id' => $subscription->getId(),
-                'invoice_details' => $invoice->toArray(),
+                'invoice_id'        => $invoice->getId(),
+                'subscription_id'   => $subscription->getId(),
+                'invoice_details'   => $invoice->toArray(),
             ]);
     }
 
@@ -215,17 +219,17 @@ class Core extends Base\Core
         // TODO: The amount here may differ in cases of prorate.
         $lineItems = [
             [
-                LineItem\Entity::NAME => $plan->getName(),
+                LineItem\Entity::NAME   => $plan->getName(),
                 LineItem\Entity::AMOUNT => $plan->getAmount()
             ]
         ];
 
         $invoiceInput = [
-            Invoice\Entity::CUSTOMER_ID => $customer->getPublicId(),
-            Invoice\Entity::LINE_ITEMS => $lineItems,
-            Invoice\Entity::CURRENCY => $plan->getCurrency(),
-            Invoice\Entity::SMS_NOTIFY => '0',
-            Invoice\Entity::EMAIL_NOTIFY => '0',
+            Invoice\Entity::CUSTOMER_ID     => $customer->getPublicId(),
+            Invoice\Entity::LINE_ITEMS      => $lineItems,
+            Invoice\Entity::CURRENCY        => $plan->getCurrency(),
+            Invoice\Entity::SMS_NOTIFY      => '0',
+            Invoice\Entity::EMAIL_NOTIFY    => '0',
         ];
 
         return $invoiceInput;

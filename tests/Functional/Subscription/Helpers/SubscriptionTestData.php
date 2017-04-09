@@ -359,7 +359,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'end_at should be within one year of start_at.',
+                    'description' => 'end_at should be within 1 year/s of start_at.',
                 ],
             ],
             'status_code' => 400,
