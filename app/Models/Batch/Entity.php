@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const COMMENT                   = 'comment';
     const PROCESSED_AT              = 'processed_at';
     const TYPE                      = 'type';
+
     const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
     const FILE                      = 'file';

@@ -110,7 +110,12 @@ class FileStoreTest extends TestCase
             $bucketConfig);
 
         $this->checkBucketAndRegion(
-            'icici_nodal_transfer',
+            'fund_transfer_default',
+            'settlement_bucket_config',
+            $bucketConfig);
+
+        $this->checkBucketAndRegion(
+            'fund_transfer_h2h',
             'h2h_bucket_config',
             $bucketConfig);
     }
