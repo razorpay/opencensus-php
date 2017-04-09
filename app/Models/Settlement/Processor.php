@@ -80,7 +80,7 @@ class Processor extends Base\Core
         $this->updateSettlementScheduleTaskNextRun();
 
         // this is needed temp until we move to pivot
-        $this->updateSettlementScheduleNextRun();
+        // $this->updateSettlementScheduleNextRun();
 
         return $data;
     }

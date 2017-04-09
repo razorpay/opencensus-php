@@ -333,6 +333,18 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
+        // this is a hack until dashboard starts using the route with new values
+        if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
+        {
+            $scheduleId = $input[Entity::SETTLEMENT_SCHEDULE_ID];
+
+            $input = [
+                ScheduleTask\Entity::METHOD      => null,
+                ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
+                ScheduleTask\Entity::SCHEDULE_ID => $scheduleId
+            ];
+        }
+
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
         return $scheduleTask->toArrayPublic();
