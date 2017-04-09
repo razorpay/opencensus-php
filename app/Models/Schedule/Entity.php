@@ -67,7 +67,7 @@ class Entity extends Base\PublicEntity
 
         $currentTime = Carbon::now('Asia/Kolkata');
 
-        $nextRun = Library::computeFutureRun($this, $currentTime);
+        $nextRun = Library::computeFutureRun($this, $currentTime, $lastRun);
 
         $this->setNextRun($nextRun->timestamp);
     }

@@ -26,6 +26,8 @@ class Constants
     const PAYOUT              = 'payout';
     const OPENWALLET          = 'openwallet';
     const MARKETPLACE         = 'marketplace';
+    const EMAIL_OPTIONAL      = 'email_optional';
+    const CONTACT_OPTIONAL    = 'contact_optional';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -48,6 +50,8 @@ class Constants
         self::PAYOUT              => true,
         self::OPENWALLET          => true,
         self::MARKETPLACE         => true,
+        self::EMAIL_OPTIONAL      => true,
+        self::CONTACT_OPTIONAL    => true,
     ];
 
     public static $visibleFeaturesMap = [

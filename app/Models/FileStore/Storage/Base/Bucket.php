@@ -33,7 +33,7 @@ class Bucket
             }
         }
 
-        if ($env !== 'production')
+        if (($env !== 'production') and ($env !== 'testing'))
         {
             $bucketConfigName = static::TEST_BUCKET_NAME;
         }

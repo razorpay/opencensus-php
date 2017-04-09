@@ -53,6 +53,9 @@ class MailTags
 
     const ICICI_FILES                     = 'icici_files';
 
+    // Heimdall Email Tags
+    const ADMIN_INVITE_MERCHANT        = 'admin_invite_merchant';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

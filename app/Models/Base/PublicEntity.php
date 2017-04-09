@@ -41,7 +41,6 @@ class PublicEntity extends UniqueIdEntity
         $attributes = $this->attributesToArray();
 
         $relations = $this->relationsToArrayPublic();
-
         $array = array_merge($attributes, $relations);
 
         $this->setPublicAttributes($array);

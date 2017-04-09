@@ -284,6 +284,13 @@ class Checkout
 
         $data['version'] = 1;
 
+        $optionalInputConfig = $merchant->getOptionalInputConfig();
+
+        if (empty($optionalInputConfig) === false)
+        {
+            $data['optional'] = $optionalInputConfig;
+        }
+
         return $data;
     }
 

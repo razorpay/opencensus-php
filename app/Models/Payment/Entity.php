@@ -247,6 +247,7 @@ class Entity extends Base\PublicEntity
     protected $appends = [self::PUBLIC_ID, self::CAPTURED];
 
     protected static $modifiers = [
+        self::EMAIL,
         self::CONTACT,
         self::BANK,
         'method_based_input',
@@ -326,20 +327,39 @@ class Entity extends Base\PublicEntity
     // window in secs, used to fetch payments with same checkout id
     const PAYMENT_WINDOW                = 1800;
 
+    const DUMMY_EMAIL = 'void@razorpay.com';
+
+    const DUMMY_PHONE = '+919999999999';
+
 // --------------------- Generators --------------------------------------------
 
 // --------------------- Generators Ends ---------------------------------------
 
 // --------------------- Modifiers ---------------------------------------------
 
+    protected function modifyEmail(& $input)
+    {
+        if (empty($input['email']) === true)
+        {
+            $isEmailOptional = $this->merchant->isEmailOptional();
+
+            if ($isEmailOptional === true)
+            {
+                $input['email'] = self::DUMMY_EMAIL;
+            }
+        }
+    }
+
     protected function modifyContact(& $input)
     {
-        // TODO: Remove this sometime!
-        $this->fillContactForCertainMerchants($input);
-
-        if (isset($input['contact']) === false)
+        if (empty($input['contact']) === true)
         {
-            return null;
+            $isPhoneOptional = $this->merchant->isPhoneOptional();
+
+            if ($isPhoneOptional === true)
+            {
+                $input['contact'] = self::DUMMY_PHONE;
+            }
         }
 
         $contact = & $input['contact'];
