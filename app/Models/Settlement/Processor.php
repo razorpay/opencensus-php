@@ -170,35 +170,57 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel, $h2h=true)
+    protected function generateAndSendSettlementFile(
+        $settlements,
+        $setlAttempts,
+        $txnCount,
+        $channel,
+        $h2h = true)
     {
-        $data = [
+        $returnData = [
             'count'             => $settlements->count(),
             'transaction_count' => $txnCount,
         ];
 
         if ($setlAttempts->count() > 0)
         {
-            list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts, $channel, $h2h);
+            list($txtFileEntity, $excelFileEntity) =
+                $this->generateSettlementFile($setlAttempts, $channel, $h2h);
+
+            $txtFileDetails = $txtFileEntity->get();
+            $excelFileDetails = $excelFileEntity->get();
+
+            $returnData['settlement_text_file'] = $txtFileDetails;
+            $returnData['settlement_excel_file'] = $excelFileDetails;
+
+            $txtUrl = $txtFileEntity->getUrl();
+            $excelUrl = $excelFileEntity->getUrl();
 
             $urls = [
-                'kotak_settlement_txt'   => $urlText,
-                'kotak_settlement_excel' => $urlExcel
+                'kotak_settlement_txt'   => $txtUrl,
+                'kotak_settlement_excel' => $excelUrl,
             ];
 
-            $this->updateBatchFundTransferEntityUrls($urls);
+            $this->updateFileDetailsInBatchFundTransferEntity(
+                [
+                    'urls' => $urls,
+                    'txt_file_id' => $txtFileDetails['id'],
+                    'excel_file_id' => $excelFileDetails['id'],
+                ]);
 
-            $data['settlement_text_file']  = $urlText;
-            $data['settlement_excel_file'] = $urlExcel;
+            $slackData = $returnData;
 
-            $this->successNotification($data, $settlements, TraceCode::SETTLEMENT_INITIATED);
+            $slackData['settlement_text_file'] = $txtUrl;
+            $slackData['settlement_excel_file'] = $excelUrl;
+
+            $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
         else
         {
-            $data['message'] = 'No settlements found!';
+            $returnData['message'] = 'No settlements found!';
         }
 
-        return $data;
+        return $returnData;
     }
 
     protected function createSettlements($channel): array
@@ -263,7 +285,7 @@ class Processor extends Base\Core
             return [false, Holidays::HOLIDAY_MESSAGE];
         }
 
-        if ($this->checkInvalidSettlementTime() === true)
+        if ($this->isInvalidSettlementTime() === true)
         {
             return [false, ['message' => 'settlements cannot be processed now']];
         }
@@ -276,7 +298,7 @@ class Processor extends Base\Core
      *  uploaded anytime.
      * @return [boolean] [returns if settlement can be proessed now]
      */
-    protected function checkInvalidSettlementTime()
+    protected function isInvalidSettlementTime()
     {
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;

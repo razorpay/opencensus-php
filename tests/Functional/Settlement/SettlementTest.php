@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
+use Mail;
+use Mockery;
 
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
@@ -111,6 +113,9 @@ class SettlementTest extends TestCase
         $content = $this->initiateSettlements();
 
         $this->assertEquals(0, $content['kotak']['transaction_count']);
+
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 0);
     }
 
     protected function createPaymentEntities(int $count = 5)
@@ -155,6 +160,9 @@ class SettlementTest extends TestCase
 
         $this->assertEquals('Today is a holiday! Happy holidays :)', $content['message']);
 
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 0);
+
         // Reset test params
         Carbon::setTestNow();
         $this->ba->publicAuth();
@@ -185,6 +193,10 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(5, $content['kotak']['transaction_count']);
 
+        // Validate 2 files were created
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 2);
+
         // Reset test params
         Carbon::setTestNow();
         $this->ba->publicAuth();
@@ -211,6 +223,10 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(5, $content['kotak']['transaction_count']);
 
+        // Validate 2 files were created
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 2);
+
         Carbon::setTestNow();
     }
 
@@ -234,6 +250,10 @@ class SettlementTest extends TestCase
         $content = $this->initiateSettlements();
 
         $this->assertEquals(5, $content['kotak']['transaction_count']);
+
+        // Validate 2 files were created
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 2);
 
         Carbon::setTestNow();
     }
@@ -380,7 +400,11 @@ class SettlementTest extends TestCase
             'method' => 'POST'
         ];
 
-        $content = $this->makeRequestAndGetContent($request);
+        $setlResponse = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($setlResponse['kotak']);
+        $this->assertNotNull($setlResponse['kotak']['settlement_text_file']);
+        $this->assertNotNull($setlResponse['kotak']['settlement_excel_file']);
 
         $setl = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementForV2');
@@ -421,12 +445,17 @@ class SettlementTest extends TestCase
         $this->assertTestResponse($batchFundTransfer, 'fetchAndMatchBatchDataSettlement');
         $this->assertGreaterThanOrEqual($batchFundTransfer['initiated_at'], time());
         $this->assertNull($batchFundTransfer['reconciled_at']);
+        $this->assertNotNull($batchFundTransfer['txt_file_id']);
+        $this->assertNotNull($batchFundTransfer['excel_file_id']);
 
         // Validate fund_transfer_attempt entity
         $bta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($bta, 'matchSettlementAttempt');
         $this->assertEquals($batchFundTransfer['id'], $bta['batch_fund_transfer_id']);
         $this->assertEquals($setl['id'], $bta['source']);
+
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 2);
     }
 
     public function testSettlementIgnoredTxns()
@@ -471,45 +500,25 @@ class SettlementTest extends TestCase
         {
             $this->assertEquals($txn['settled'], false);
         }
+
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 0);
+
     }
 
     public function testSettlementFileGeneration()
     {
-        $this->testMerchantSettlementV2();
-
-        $setl = $this->getLastEntity('settlement', true);
-        $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-
-        $request = array(
-            'url' => '/settlements/file/generate',
-            'method' => 'POST',
-            'content' => [
-                'batch_fund_transfer_id' => $setlAttempt['batch_fund_transfer_id']
-            ]
-        );
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertNotEquals($content, null);
-    }
-
-    public function testSettlementFileGenerationV1()
-    {
         $this->ba->appAuth();
 
-        // Create payments for old date
-        $createdAt = 1481500800; // 12th Dec 2016
-        $capturedAt = $createdAt + 10;
+        $payments = $this->createPaymentEntities();
 
-        $this->fixtures->times(2)->create(
-            'payment:captured',
-            [
-                'captured_at' => $capturedAt,
-                'method'      => 'card',
-                'created_at'  => $createdAt,
-                'updated_at'  => $createdAt + 10
-            ]
-        );
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payments[0],
+                      'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
 
         // Generate settlements for above transactions
         $request = array(
@@ -519,10 +528,7 @@ class SettlementTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        // Modify created_at of batch so that the old settlement file generation can kick in
         $batch = $this->getLastEntity('batch_fund_transfer', true);
-
-        $this->fixtures->edit('batch_fund_transfer', $batch['id'], ['created_at' => $capturedAt + 50]);
 
         // Generate settlement-file generation
         $request = array(
@@ -536,6 +542,9 @@ class SettlementTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals($content, null);
+
+        $content = $this->getEntities('file_store', [], true);
+        $this->assertSame($content['count'], 4);
     }
 
     public function testIciciNodalTransfer()
