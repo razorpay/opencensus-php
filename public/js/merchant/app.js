@@ -133,18 +133,12 @@ var app = angular.module('app', [
     }).state('app.transactions.detail', {
       url: '/:id',
       templateUrl: 'tpl/app_transaction_detail.html'
-    }).state('app.addfunds', {
-      url: '/addfunds',
-      templateUrl: 'tpl/app_addfunds.html'
     }).state('app.generatereport', {
       url: '/generatereport',
       templateUrl: 'tpl/app_generate_report.html'
     }).state('app.teammanagement', {
       url: '/team',
       templateUrl: 'tpl/app_team_management.html'
-    }).state('app.credits', {
-      url: '/credits',
-      templateUrl: 'tpl/app_credits.html'
     }).state('app.keys', {
       url: '/keys',
       templateUrl: 'tpl/app_keys.html'
@@ -227,6 +221,12 @@ var app = angular.module('app', [
     }).state('app.webhooks', {
       url: '/webhooks',
       templateProvider: reactTemplateProvider('<webhooks-list />')
+    }).state('app.credits', {
+      url: '/credits',
+      templateProvider: reactTemplateProvider('<credits-new/>'),
+    }).state('app.addfunds', {
+      url: '/addfunds',
+      templateProvider: reactTemplateProvider('<add-funds />')
     })
 
       //Guest Routes

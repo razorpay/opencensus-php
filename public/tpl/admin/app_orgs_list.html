@@ -46,6 +46,10 @@
               <td>{{row.email_domains.join(', ')}}</td>
               <td>
                 <div class="btn-group">
+                  <a class="btn btn-default btn-xs" ui-sref="app.orgs.fieldmaps.list({ id: row.id })">
+                    <i class="fa fa-pencil-square"></i>
+                    fieldMaps
+                  </a>
                   <a class="btn btn-default btn-xs" ui-sref="app.orgs.edit({ id: row.id })">
                     <i class="fa fa-pencil-square"></i>
                     edit

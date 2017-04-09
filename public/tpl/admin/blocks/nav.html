@@ -48,10 +48,28 @@
   <li class="line dk"></li>
 
   <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+    <span>Workflows</span>
+  </li>
+  <li>
+    <a id="workflowsNav" ui-sref="app.workflows.list" >
+      <i class="fa fa-exchange icon text-warning-lter"></i>
+      <span>Workflows</span>
+    </a>
+  </li>
+  <li>
+    <a id="workflowFeedNav" ui-sref="app.workflows.actions.list({ type: 'maker' })" >
+      <i class="fa fa-exchange icon text-warning-lter"></i>
+      <span>Requests</span>
+    </a>
+  </li>
+
+  <li class="line dk"></li>
+
+  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>User Access Management</span>
   </li>
 
-  <li>
+  <li ng-show="admin.permissions && admin.permissions.indexOf('view_merchant_invite') !== -1">
     <a id="invitationsNav" ui-sref="app.invitations.list">
       <i class="fa fa-envelope-o icon text-warning-lter"></i>
       <span>Invitations</span>

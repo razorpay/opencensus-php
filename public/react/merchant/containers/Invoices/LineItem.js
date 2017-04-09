@@ -23,14 +23,7 @@ const selector = formValueSelector('newInvoice')
   destroyOnUnmount: false
 })
 export default class InvoiceLineItem extends Component {
-  constructor() {
-    super(...arguments)
-    this.quickCreateItem = ::this.quickCreateItem
-    this.updateLineItemRow = ::this.updateLineItemRow
-    this.selectItemAndCloseModal = ::this.selectItemAndCloseModal
-  }
-
-  quickCreateItem({ searchTerm = '' }) {
+  quickCreateItem = ({ searchTerm = '' }) => {
     this.props.openModal({
       size: 'small',
       component: <ItemCreation
@@ -43,12 +36,12 @@ export default class InvoiceLineItem extends Component {
     })
   }
 
-  selectItemAndCloseModal(item) {
+  selectItemAndCloseModal = (item) => {
     this.updateLineItemRow(item)
     this.props.closeModal()
   }
 
-  updateLineItemRow(item) {
+  updateLineItemRow = (item) => {
     let fieldName = this.props.fieldName
     this.props.change(`${fieldName}.item_id`, item.id || 'NULL') // since redux-form converts falsy values into empty strings
     this.props.change(`${fieldName}.quantity`, 1)

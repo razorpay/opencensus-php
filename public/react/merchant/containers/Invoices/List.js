@@ -15,11 +15,6 @@ import * as ModalActions from 'merchant/modules/modals'
   { ...InvoiceActions, ...ModalActions }
 )
 export default class InvoicesListContainer extends ListContainer {
-  constructor() {
-    super(...arguments)
-    this.editInvoice = ::this.editInvoice
-  }
-
   fetchEntityList(params) {
     return this.props.fetchInvoices(params)
   }
@@ -36,7 +31,7 @@ export default class InvoicesListContainer extends ListContainer {
     })
   }
 
-  editInvoice(invoice) {
+  editInvoice = (invoice) => {
     if (invoice.type === 'link') {
       this.showPaymentLinkModal(invoice)
     } else if (invoice.type === 'invoice') {
