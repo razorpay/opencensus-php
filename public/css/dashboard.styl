@@ -450,8 +450,48 @@ a.highlight:hover, a.highlight:focus {
     font-weight: bold;
     font-size: 12px;
   }
-}
+  .heading-container {
+    position: relative;
+  }
+  .title-text {
+    position: absolute;
+    z-index: 4;
+    width: 100%;
+    height: 70px;
+    line-height: 46px;
+    padding: 12px 0px;
+    &:hover {
+      opacity: 0.3
+      .desc-edit-icon {
+        opacity: initial;
+      }
+    }
+    &:before {
+      position: absolute;
+      content: ' ';
+      top: 12px;
+      bottom: 12px;
+      left: -8px;
+      right: -8px;
+      background: white;
+      z-index: -1;
+    }
+    .title-editing {
+      z-index: initial;
+    }
+    
+      
+  }
+  .title-highlight-container {
+    padding: 12px 0;
+    input {
 
+    }
+  }
+}
+.padding-0 {
+  padding: 0 !important;
+}
 .workflow-new-page {
   .workflow-select2-container, .role-select2-container {
     input {

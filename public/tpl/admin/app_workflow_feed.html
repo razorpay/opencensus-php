@@ -24,10 +24,32 @@
             <span class="label pending-bg-color pull-right action-state">{{ action_details.state }}</span>
           </div>
           <div class="wrapper clearfix">
-            <div class="h3 m-b">{{ action_details.title }}</div>
+            <div class="heading-container h3 m-b">
+              <div class="title-text wrapper-sm">
+                <span class="heading-text">
+                  {{ action_details.title || "Click to add a title" }}
+                </span>
+                <span class="desc-edit-icon"><i class="fa fa-pencil-square-o"></i></span>
+                <div class="clearfix"></div>
+              </div>
+              <div class="row title-highlight-container " >
+                <div class="col-xs-12" style="padding: 0 7px;">
+                  <div class="input-group input-group-lg">
+                    <input type="text" class="form-control"  aria-describedby="sizing-addon1"> <!-- placeholder="Add a title" -->
+                    <span class="input-group-btn " >
+                      <button class="btn btn-info" type="button">{{titleEditing ? "Save" : "Click to edit"}}</button>
+                    </span>
+                  </div>
+                  <div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
             <div class="border-bottom m-b"></div>
             <div class="description">
-              {{ action_details.description }}
+              <div class="description-text">
+                {{ action_details.description || "Click to add a description" }}
+              </div>
+              <div class="desc-edit-btn"><i class="fa fa-pencil-square-o"></i></div>
             </div>
             <div class="assignment-container ">
               <div class="strong assignee-heading m-t"><strong>Assigned to:</strong></div>
