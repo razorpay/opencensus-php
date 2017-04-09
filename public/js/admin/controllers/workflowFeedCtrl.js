@@ -250,7 +250,6 @@ app.controller('WorkflowFeedCtrl', [
     $scope.setDescInactive = function () {
       $scope.descActive = false;
     };
-    window.sc = $scope;
 
     $scope.saveTitle = function() {
       var title = $scope.action_details.title;
