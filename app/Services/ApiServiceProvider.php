@@ -257,6 +257,7 @@ class ApiServiceProvider extends BaseServiceProvider
             // file store
             'merchant'        => Merchant\Entity::class,
             'merchant_detail' => Merchant\Detail\Entity::class,
+            'account'         => Merchant\Account\Entity::class,
 
             // transaction
             'adjustment'      => Adjustment\Entity::class,

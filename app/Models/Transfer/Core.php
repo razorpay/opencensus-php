@@ -316,6 +316,7 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
+            // @todo: Add proper code.
             $this->trace->traceException($e);
         }
 

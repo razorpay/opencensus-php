@@ -516,7 +516,7 @@ class Service extends Base\Service
         $act->activate($merchant);
 
         // Fire a webhook on activation, for marketplace account
-        if ($merchant->isAccount() === true)
+        if ($merchant->isLinkedAccount() === true)
         {
             $this->app['events']->fire('api.account.activated', [$merchant]);
         }

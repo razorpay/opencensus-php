@@ -52,7 +52,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::SOURCE_TYPE, E::PAYMENT)
                     ->where(Entity::SOURCE_ID, $paymentId)
-                    ->where(Entity::TO_TYPE, 'merchant')
+                    ->where(Entity::TO_TYPE, E::ACCOUNT)
                     ->where(Entity::TO_ID, $accountId)
                     ->merchantId($marketplace->getId())
                     ->get();

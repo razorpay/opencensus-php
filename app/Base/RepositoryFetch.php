@@ -357,7 +357,17 @@ trait RepositoryFetch
                        ->merchantId($merchant->getId())
                        ->findOrFailPublic($id);
 
-        $entity->merchant()->associate($merchant);
+        //
+        // Entities can be filtered on Merchant ID virtually and
+        // hence may not have the merchant() association defined
+        // Refer: Merchant\Account\Entity
+        //
+        // Skip association if the relation is not defined.
+        //
+        if (method_exists($entity, 'merchant') === true)
+        {
+            $entity->merchant()->associate($merchant);
+        }
 
         return $entity;
     }
