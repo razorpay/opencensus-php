@@ -1046,8 +1046,6 @@ class MerchantTest extends TestCase
 
         $merchant = $this->createMerchant();
 
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
-
         $this->startTest();
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);

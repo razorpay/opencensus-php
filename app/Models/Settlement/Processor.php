@@ -295,7 +295,7 @@ class Processor extends Base\Core
 
     protected function updateSettlementScheduleTaskNextRun()
     {
-        $scheduleTasks = $this->repo->schedule_task->fetchExpiredScheduleTasks(
+        $scheduleTasks = $this->repo->schedule_task->fetchDueScheduleTasks(
                         ScheduleTask\Type::SETTLEMENT,
                         $this->setlTime);
 

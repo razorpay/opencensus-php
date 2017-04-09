@@ -32,7 +32,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::SCHEDULE_DELETE_REQUEST, ['schedule_id' => $id]);
 
-        $count = $this->repo->schedule_task->fetchScheduleCountById($id);
+        $count = $this->repo->schedule_task->fetchScheduleUsageCountById($id);
 
         if ($count > 0)
         {

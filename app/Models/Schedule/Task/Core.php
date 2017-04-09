@@ -14,7 +14,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 class Core extends Base\Core
 {
     /**
-     * create a default schedule for merchant
+     * create a default settlement schedule for merchant
      */
     public function createDefaultSettlementSchedule($merchant)
     {
@@ -34,7 +34,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Create a merchant schedule entity and deletes the existing entity if any
+     * Create a merchant schedule task entity and deletes the existing entity if any
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
@@ -42,6 +42,7 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use ($scheduleTask)
         {
+            // for settlements, we want to keep schedules in sync in test and live
             if ($scheduleTask->isTypeSettlement() === true)
             {
                 $this->createOrUpdateInMode($scheduleTask, Mode::LIVE);
@@ -67,7 +68,7 @@ class Core extends Base\Core
         $currentSchedule = $this->repo
                                 ->schedule_task
                                 ->connection($mode)
-                                ->fetchDuplicate($entity);
+                                ->fetchExistingScheduleTask($entity);
 
         if ($currentSchedule !== null)
         {

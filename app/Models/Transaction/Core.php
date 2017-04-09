@@ -907,6 +907,7 @@ class Core extends Base\Core
 
         $schedule = $merchant->schedule;
 
+        // use schedule from pivot schedule_task if defined and use next run from there
         if ($scheduleTask !== null)
         {
             $schedule = $scheduleTask->schedule;
@@ -915,6 +916,7 @@ class Core extends Base\Core
 
             $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule, $nextRunAt);
         }
+        // else fall back to default schedule assigned in merchant enittiy
         else if ($schedule !== null)
         {
             $nextRunAt = $schedule->getNextRun();

@@ -111,7 +111,7 @@ class ScheduleTest extends TestCase
     {
         $input = $this->testData['timedScheduleBody'];
 
-        // Create and assing timed schedule having hour set to 5
+        // Create and assign timed schedule having hour set to 5
         $response = $this->createAndAssignSchedule($input);
 
         $data = ['amount' => 100];

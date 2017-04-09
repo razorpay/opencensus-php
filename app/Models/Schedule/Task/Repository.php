@@ -20,7 +20,7 @@ class Repository extends Base\Repository
      * Returns merchant schedule if it matches the one passed in the argument.
      * Method and merchant_id has to be same for it to be duplicate
      */
-    public function fetchDuplicate(ScheduleTask\Entity $scheduleTask)
+    public function fetchExistingScheduleTask(ScheduleTask\Entity $scheduleTask)
     {
         $query = $this->newQuery()
                       ->merchantId($scheduleTask->getMerchantId())
@@ -67,14 +67,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchScheduleCountById(string $scheduleId)
+    public function fetchScheduleUsageCountById(string $scheduleId)
     {
         return $this->newQuery()
                     ->where(ScheduleTask\Entity::SCHEDULE_ID, '=', $scheduleId)
                     ->count();
     }
 
-    public function fetchExpiredScheduleTasks($type, $timestamp)
+    public function fetchDueScheduleTasks($type, $timestamp)
     {
         return $this->newQuery()
                     ->where(ScheduleTask\Entity::TYPE, '=', $type)
