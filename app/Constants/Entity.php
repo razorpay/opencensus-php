@@ -15,7 +15,6 @@ class Entity
     //
     // Core entities
     //
-
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const P2P                   = 'p2p';
@@ -79,6 +78,17 @@ class Entity
     const ADMIN_TOKEN           = 'admin_token';
     const ORG_FIELD_MAP         = 'org_field_map';
 
+    //
+    // Workflow Entities
+    //
+    const WORKFLOW              = 'workflow';
+    const WORKFLOW_STEP         = 'workflow_step';
+    const WORKFLOW_ACTION       = 'workflow_action';
+    const ACTION_CHECKER        = 'action_checker';
+    const ACTION_STATE          = 'action_state';
+    const ACTION_COMMENT        = 'action_comment';
+
+    //
     // Gateway entities
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
@@ -192,6 +202,13 @@ class Entity
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
         self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
         self::ORG_FIELD_MAP         => \RZP\Models\Admin\Org\FieldMap::class,
+
+        self::WORKFLOW              => \RZP\Models\Workflow::class,
+        self::WORKFLOW_STEP         => \RZP\Models\Workflow\Step::class,
+        self::WORKFLOW_ACTION       => \RZP\Models\Workflow\Action::class,
+        self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
+        self::ACTION_STATE          => \RZP\Models\Workflow\Action\State::class,
+        self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
     ];
 
     protected static $repository = [
@@ -229,7 +246,13 @@ class Entity
         self::EMI_PLAN,
         self::MERCHANT,
         self::USER,
-        self::SCHEDULE
+        self::SCHEDULE,
+        self::WORKFLOW,
+        self::WORKFLOW_STEP,
+        self::WORKFLOW_ACTION,
+        self::ACTION_CHECKER,
+        self::ACTION_STATE,
+        self::ACTION_COMMENT,
     ];
 
     public static function getEntityNamespace(string $entity)

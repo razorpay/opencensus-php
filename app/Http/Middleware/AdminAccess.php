@@ -58,7 +58,8 @@ class AdminAccess
 
             if ($authorized === false)
             {
-                return ApiResponse::routeNotFound();
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ACCESS_DENIED);
             }
         }
 
@@ -156,6 +157,29 @@ class AdminAccess
             'permission_get_by_type',
             'permission_delete',
             'permission_edit',
+
+            // workflow
+            'workflow_create',
+            'workflow_get',
+            'workflow_update',
+            'workflow_delete',
+            'workflow_step_get_multiple',
+            'workflow_step_create',
+            'workflow_step_get',
+            'workflow_action_get_multiple',
+            'action_checker_create',
+            'workflow_action_update',
+            'workflow_action_details',
+            'workflow_action_states',
+            'action_checker_multiple',
+            'action_checker_get',
+            'action_diff_create',
+            'action_diff_get',
+            'action_request_execute',
+            'action_comment_create',
+            'action_comment_fetch',
+            'workflow_get_actions_for_checker',
+            'workflow_get_actions_by_maker',
         ];
     }
 

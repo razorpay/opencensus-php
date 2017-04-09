@@ -264,10 +264,8 @@ class TraceCode
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
 
-    /*
-     * Gateway component error messages
-     */
 
+    // Gateway component error messages
     const GATEWAY_RESPONSE                          = 'GATEWAY_RESPONSE';
     const GATEWAY_ENROLL_REQUEST                    = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE                   = 'GATEWAY_ENROLL_RESPONSE';
@@ -562,6 +560,7 @@ class TraceCode
     const HEIMDALL_AUDIT_LOG                            = 'HEIMDALL_AUDIT_LOG';
     const HEIMDALL_AUDIT_LOG_FAIL                       = 'HEIMDALL_AUDIT_LOG_FAIL';
     const HEIMDALL_AUDIT_LOG_SEARCH_FAIL                = 'HEIMDALL_AUDIT_LOG_SEARCH_FAIL';
+    const HEIMDALL_ACTION_LOG_FAIL                      = 'HEIMDALL_ACTION_LOG_FAIL';
 
 // Trace for Payment/Transfers
     const PAYMENT_TRANSFER_REQUEST                      = 'PAYMENT_TRANSFER_REQUEST';
@@ -624,10 +623,8 @@ class TraceCode
     const REMOVE_GATEWAY_PRIORITY_REQUEST               = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const REDIS_DATA_FETCHED                            = 'REDIS_DATA_FETCHED';
 
-
     // Trace codes for gateway
     const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
-
     const USER_EDIT                                     = 'USER_EDIT';
 
     protected static $messages = array(

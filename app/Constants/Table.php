@@ -71,6 +71,15 @@ class Table
     const ADMIN_LEAD            = 'admin_leads';
     const ORG_FIELD_MAP         = 'org_field_map';
 
+    // Workflows
+    const WORKFLOW              = 'workflows';
+    const WORKFLOW_STEP         = 'workflow_steps';
+    const WORKFLOW_ACTION       = 'workflow_actions';
+    const ACTION_COMMENT        = 'action_comments';
+    const ACTION_STATE          = 'action_state';
+    const ACTION_CHECKER        = 'action_checker';
+    const WORKFLOW_PERMISSION   = 'workflow_permissions';
+
     // Gateway related
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
