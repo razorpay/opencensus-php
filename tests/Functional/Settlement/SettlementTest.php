@@ -362,10 +362,6 @@ class SettlementTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $schedule = $this->createAndAssignSchedule();
-
-        $this->ba->appAuth();
-
         $payments = $this->createPaymentEntities();
 
         foreach ($payments as $payment)
@@ -437,8 +433,6 @@ class SettlementTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $schedule = $this->createAndAssignSchedule();
-
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
         $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
 
@@ -501,10 +495,6 @@ class SettlementTest extends TestCase
 
     public function testSettlementFileGenerationV1()
     {
-        $this->ba->adminAuth();
-
-        $schedule = $this->createAndAssignSchedule();
-
         $this->ba->appAuth();
 
         // Create payments for old date
@@ -731,26 +721,6 @@ class SettlementTest extends TestCase
         //  1 transfer payment refund txn + 1 reversal txn)
         //
         $this->assertEquals(7, $content['kotak']['transaction_count']);
-    }
-
-    protected function createAndAssignSchedule()
-    {
-        $request = array(
-            'url' => '/merchants/'. Account::TEST_ACCOUNT . '/schedules',
-            'method' => 'POST',
-            'content' => array(
-                'name'        => 'Basic T3',
-                'type'        => 'settlement',
-                'period'      => 'daily',
-                'interval'    => 1,
-                'delay'       => 3,
-                'next_run'    => 1451586600,
-            )
-        );
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
     }
 
     protected function startTest($testDataToReplace = array())

@@ -44,6 +44,7 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
+    const SCHEDULE_TASK         = 'schedule_tasks';
     const MERCHANT_USERS        = 'merchant_users';
     const MERCHANT_OFFER        = 'merchant_offer';
     const MERCHANT_DETAIL       = 'merchant_details';
