@@ -243,6 +243,7 @@ app.controller('WorkflowFeedCtrl', [
     };
     $scope.setDescActive = function () {
       $scope.descActive = true;
+      $('#desc-textarea').focus();
     };
     $scope.setDescInactive = function () {
       $scope.descActive = false;
