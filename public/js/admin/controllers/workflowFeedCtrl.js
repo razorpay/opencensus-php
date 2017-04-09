@@ -234,6 +234,8 @@ app.controller('WorkflowFeedCtrl', [
 
     $scope.titleActive = false;
     $scope.descActive = false;
+    $scope.titleStatus = "";
+    $scope.descStatus = "";
     $scope.setTitleActive = function () {
       $scope.titleActive = true;
       $('#title-input').focus();
@@ -248,14 +250,17 @@ app.controller('WorkflowFeedCtrl', [
     $scope.setDescInactive = function () {
       $scope.descActive = false;
     };
+    window.sc = $scope;
 
     $scope.saveTitle = function() {
       var title = $scope.action_details.title;
+      $scope.alerts.resetAlerts();
       if (!title) {
         $scope.setTitleInactive();
         $scope.alerts.addAlert('danger', 'Please enter a title');
         return;
       }
+      $scope.titleStatus = "saving";
       var request = $http({
         url: '/admin/generic',
         method: 'PUT',
@@ -273,8 +278,11 @@ app.controller('WorkflowFeedCtrl', [
       });
 
       request.success(function (data) {
+        $scope.titleStatus = "";
+
         if (data.success) {
           $scope.alerts.addAlert('success', 'Title changed successfully!', true);
+          $scope.setTitleInactive();
         }
         else {
           angular.forEach(data.errors, function (value, key) {
@@ -286,16 +294,17 @@ app.controller('WorkflowFeedCtrl', [
           $scope.alerts.addAlert('danger', value);
         });
       })
-      console.log(title)
     }
 
     $scope.saveDesc = function() {
       var desc = $scope.action_details.description;
+      $scope.alerts.resetAlerts();
       if (!desc) {
         $scope.setDescInactive();
         $scope.alerts.addAlert('danger', 'Please enter a description');
         return;
       }
+      $scope.descStatus = "saving";
       var request = $http({
         url: '/admin/generic',
         method: 'PUT',
@@ -313,8 +322,10 @@ app.controller('WorkflowFeedCtrl', [
       });
 
       request.success(function (data) {
+        $scope.descStatus = "";
         if (data.success) {
           $scope.alerts.addAlert('success', 'Description changed successfully!', true);
+          $scope.setDescInactive();
         }
         else {
           angular.forEach(data.errors, function (value, key) {
@@ -326,7 +337,6 @@ app.controller('WorkflowFeedCtrl', [
           $scope.alerts.addAlert('danger', value);
         });
       })
-      console.log(title)
     }
   }
 ])
