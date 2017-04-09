@@ -113,6 +113,16 @@ return [
             'routeName' => 'get_order_payments'
         ],
 
+        // Refunds
+        'refund_fetch'                      => [
+            'url'       => 'refunds',
+            'routeName' => 'get_refunds'
+        ],
+        'refund_fetch_by_id'                => [
+            'url'       => 'refunds/{id}',
+            'routeName' => 'get_refund'
+        ],
+
         // Settlements
         'setl_fetch_multiple'               => [
             'url'       => 'settlements',
