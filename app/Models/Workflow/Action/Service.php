@@ -109,10 +109,13 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
+        $action = $this->repo->workflow_action->findOrFailPublic($id);
 
         $this->core()->close($action, $admin);
 
-        return ['success' => true];
+        // fetch again from db to get updated values
+        $action = $this->repo->workflow_action->findOrFailPublic($id);
+
+        return $action->toArrayPublic();
     }
 }

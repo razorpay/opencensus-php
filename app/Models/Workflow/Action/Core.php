@@ -234,7 +234,6 @@ class Core extends Base\Core
                 State\Entity::NAME      => $state,
             ];
 
-
             $this->updateState($action, $state);
 
             (new State\Core)->create($stateData);

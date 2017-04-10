@@ -34,7 +34,7 @@ class WorkflowController extends Controller
     {
         $data = (new Action\Service)->closeAction($id);
 
-        return ApiResponse::json($result);
+        return ApiResponse::json($data);
     }
 
     // Not being used

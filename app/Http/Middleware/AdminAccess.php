@@ -180,7 +180,7 @@ class AdminAccess
             'action_comment_fetch',
             'workflow_get_actions_for_checker',
             'workflow_get_actions_by_maker',
-            'workflow_action_delete',
+            'workflow_action_close',
         ];
     }
 
