@@ -14,6 +14,8 @@ use RZP\Models\Invoice\ViewDataSerializer;
 
 class Base extends Mailable
 {
+    use InvoiceData;
+
     const MAIL_TAG_MAP = [
         Type::ECOD    => MailTags::ECOD,
         Type::INVOICE => MailTags::INVOICE,
@@ -21,13 +23,11 @@ class Base extends Mailable
 
     protected $invoice;
 
-    protected $event;
-
     public function __construct(InvoiceEntity $invoice)
     {
         $this->invoice = $invoice;
 
-        $this->invoiceData = (new ViewDataSerializer($this->invoice))->get();
+        $this->invoiceData = $this->getInvoiceData();
     }
 
     protected function addSender()
@@ -54,14 +54,11 @@ class Base extends Mailable
     {
         $merchantName = $this->invoiceData['merchant']['name'];
 
-        if (in_array($this->event, array_keys(Event::MAIL_SUBJECT_TEMPLATES), true) === false)
-        {
-            throw new Exception\LogicException("No templates found for event: $this->event");
-        }
-
         $type = $this->invoice->getType();
 
-        $subject = sprintf(Event::MAIL_SUBJECT_TEMPLATES[$this->event][$type], $merchantName);
+        $subjectTemplate = $this->getSubjectTemplate();
+
+        $subject = sprintf($subjectTemplate, $merchantName);
 
         $this->subject($subject);
 
@@ -81,20 +78,6 @@ class Base extends Mailable
 
     protected function addMailData()
     {
-        $id = $this->invoice->getPublicId();
-
-        $invoiceDashboardPath = $this->invoice->getDashboardPath();
-
-        $dashboardUrl = Config::get('applications.dashboard.url');
-
-        $extraInvoicePayload = [
-            'type_label'    => ucwords($this->invoice->getTypeLabel()),
-            'pdf_url'       => url("v1/invoices/$id/pdf"),
-            'dashboard_url' => $dashboardUrl . $invoiceDashboardPath,
-        ];
-
-        $this->invoiceData['invoice'] += $extraInvoicePayload;
-
         $this->with($this->invoiceData);
 
         return $this;

@@ -6,12 +6,19 @@ use Config;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Common;
+use RZP\Mail\Invoice\InvoiceData;
 use RZP\Mail\Payment\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Invoice\ViewDataSerializer;
 
+/**
+ * We are extending Mail\Payment\Base class here instead of Invoice|base
+ * as this mailable requires some payment related dara too
+ */
 class Captured extends Base
 {
+    use InvoiceData;
+
     protected $invoice;
 
     public function setInvoice(Invoice\Entity $invoice)
