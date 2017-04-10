@@ -598,7 +598,7 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
-            'emi'                       => 1
+            'emi'                       => 1,
         ];
 
         return parent::create($attributes);
@@ -619,7 +619,7 @@ class Terminal extends Base
             'card'                      => 1,
             'emi'                       => 1,
             'emi_duration'              => 9,
-            'shared'                    => 1
+            'shared'                    => 1,
         ];
 
         return parent::create($attributes);

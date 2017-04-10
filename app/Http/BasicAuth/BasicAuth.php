@@ -52,6 +52,11 @@ class BasicAuth
     const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
 
     /**
+     * Dashboard headers are prefixed with following literal.
+     */
+    const DASHBOARD_HEADER_PREFIX = 'x-dashboard';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -347,7 +352,13 @@ class BasicAuth
 
         if ($adminToken->getAdminId() !== null)
         {
+            $this->checkForDashboardMerchantHeader();
+
+            $this->setDashboardHeaders();
+
             $this->admin = $adminToken->admin;
+
+            $this->adminOrgId = $this->admin->getOrgId();
 
             return $this->checkAndSetAccountScope();
         }
@@ -857,13 +868,33 @@ class BasicAuth
     {
         $headers = $this->request->headers;
 
-        $this->dashboardHeaders = array(
-            'dashboard'     => $headers->get('X-Dashboard'),
-            'merchant'      => $headers->get('X-Dashboard-Merchant'),
-            'admin_user'    => $headers->get('X-Dashboard-Username'),
-            'user_id'       => $headers->get('X-Dashboard-User-Id'),
-            'user_role'     => $headers->get('X-Dashboard-User-Role'),
-        );
+        $this->dashboardHeaders =[
+            // String 'true' or null
+            'dashboard' => $headers->get('X-Dashboard'),
+        ];
+
+        // Gets all headers with 'X-Dashboard' as prefix and assign them to a
+        // key(with prefix removed) in $this->dashboardHeaders.
+
+        $dashHeaderPrefixLen = strlen(self::DASHBOARD_HEADER_PREFIX) + 1;
+
+        $dashHeadersKeys = array_filter(
+                                $headers->keys(),
+                                function ($k)
+                                {
+                                    return ($k !== self::DASHBOARD_HEADER_PREFIX) and
+                                        (starts_with($k, self::DASHBOARD_HEADER_PREFIX));
+                                });
+
+        foreach ($dashHeadersKeys as $dashHeadersKey)
+        {
+            // Gets key for $this->dashboardHeaders, which is snake_cased header
+            // with prefix removed.
+            $key = substr($dashHeadersKey, $dashHeaderPrefixLen);
+            $key = snake_case(camel_case($key));
+
+            $this->dashboardHeaders[$key] = $headers->get($dashHeadersKey);
+        }
     }
 
     public function getDashboardHeaders()
@@ -944,6 +975,11 @@ class BasicAuth
     public function getAdmin()
     {
         return $this->admin;
+    }
+
+    public function getAdminOrgId()
+    {
+        return $this->adminOrgId;
     }
 
     public function getMerchantId()

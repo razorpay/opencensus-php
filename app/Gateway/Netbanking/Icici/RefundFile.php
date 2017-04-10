@@ -11,8 +11,6 @@ class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Icici_Netbanking_Refunds';
 
-    const EMAIL_BODY = 'Please forward the ICICI Netbanking refunds file to UBPS operations team';
-
     // The columns of the file
     protected static $headers = [
         RefundFileFields::SERIAL_NO,
@@ -29,7 +27,7 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        $data = $this->getRefundData($input);
+        list($totalAmount, $data) = $this->getRefundData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -42,9 +40,14 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
+
         $fileData = [
+            'subject'   => 'Icici Netbanking refunds file for ' . $today,
             'file_path' => $file['local_file_path'],
-            'body'      => self::EMAIL_BODY,
+            'count'     => count($data),
+            'amount'    => number_format($totalAmount, 2, '.', ''),
+            'date'      => $today
         ];
 
         $this->sendRefundEmail($fileData);
@@ -54,6 +57,8 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
+        $totalAmount = 0;
+
         foreach ($input['data'] as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
@@ -71,22 +76,22 @@ class RefundFile extends Base\RefundFile
                 RefundFileFields::REFUND_MODE        => 'C',
                 RefundFileFields::REMARKS            => '',
             ];
+
+            $totalAmount += $row['refund']['amount'] / 100;
         }
 
-        return $data;
+        return [$totalAmount, $data];
     }
 
     protected function sendRefundEmail($fileData = [])
     {
-        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
+        $this->mail->queue('emails.admin.icici_refunds', $fileData, function ($message) use ($fileData)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['icici.netbanking.refunds@razorpay.com'];
 
             $message->from('refunds@razorpay.com', 'Icici Netbanking refunds');
 
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('Icici Netbanking refunds file for ' . $today);
+            $message->subject($fileData['subject']);
 
             $message->to($emails);
 

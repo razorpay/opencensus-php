@@ -15,6 +15,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
 use RZP\Models\Transaction;
 
 class NodalAccount
@@ -125,9 +126,6 @@ class NodalAccount
         $txt = $this->generateText($textData);
 
         list($excelFileEntity, $textFileEntity) = $this->createSettlementFiles($excelData, $txt, $h2h);
-
-        $excelFileEntity = $excelFileEntity->get();
-        $textFileEntity = $textFileEntity->get();
 
         $this->sendSettlementMail($excelFileEntity, $textFileEntity);
 
@@ -284,7 +282,7 @@ class NodalAccount
         $excelFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
                                               ->content($excelData)
                                               ->extension(FileStore\Format::XLSX)
-                                              ->type(FileStore\Type::FUND_TRANSFER_EXCEL)
+                                              ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
                                               ->save();
 
         // Create txt file
@@ -300,7 +298,7 @@ class NodalAccount
             $textFile = (new FileStore\Creator())->name('kotak/outgoing/' . $this->getH2HFileNameWithoutExt())
                                                  ->content($textData)
                                                  ->extension(FileStore\Format::TXT)
-                                                 ->type(FileStore\Type::FUND_TRANSFER_TXT)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_H2H)
                                                  ->metadata($metadata)
                                                  ->save();
         }
@@ -309,8 +307,7 @@ class NodalAccount
             $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
                                                  ->content($textData)
                                                  ->extension(FileStore\Format::TXT)
-                                                 ->type(FileStore\Type::FUND_TRANSFER_TXT)
-                                                 ->store(FileStore\Store::LOCAL)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
                                                  ->save();
         }
 
@@ -318,15 +315,23 @@ class NodalAccount
     }
 
     protected function sendSettlementMail(
-        array $excelFileEntity,
-        array $textFileEntity)
+        FileStore\Creator $excelFileEntity,
+        FileStore\Creator $textFileEntity)
     {
+        if ($this->getMode() === Mode::TEST)
+        {
+            return;
+        }
+
         $summary = $this->summary;
 
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
         $subject = "Kotak Settlement files for $today";
 
         $data = compact('summary', 'subject');
+
+        $excelFileEntity = $excelFileEntity->get();
+        $textFileEntity = $textFileEntity->get();
 
         $data['excelFile'] = $excelFileEntity['local_file_path'];
         $data['textFile'] = $textFileEntity['local_file_path'];
@@ -378,6 +383,15 @@ class NodalAccount
 
             $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_PAYOUT_SUMMARY);
         });
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y-H-i-s');
+
+        $mode = $this->getMode();
+
+        return static::$fileToWriteName.'_'.$mode.'_'.$time;
     }
 
     // @codingStandardsIgnoreStart

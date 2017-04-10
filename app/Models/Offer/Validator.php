@@ -41,6 +41,7 @@ class Validator extends Base\Validator
         Entity::STARTS_AT                 => 'sometimes|epoch',
         Entity::ENDS_AT                   => 'required|epoch',
         Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
+        Entity::ERROR_MESSAGE             => 'sometimes|string|max:255',
         Entity::TERMS                     => 'required|string'
     ];
 
@@ -49,6 +50,7 @@ class Validator extends Base\Validator
         Entity::IINS                      => 'sometimes|array',
         Entity::ACTIVE                    => 'sometimes|in:0',
         Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
+        Entity::ERROR_MESSAGE             => 'sometimes|string|max:255',
         Entity::TERMS                     => 'sometimes|string'
     ];
 

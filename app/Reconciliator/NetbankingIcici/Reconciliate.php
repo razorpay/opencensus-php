@@ -14,6 +14,8 @@ class Reconciliate extends Base\Reconciliate
         'razorpayreports' => self::PAYMENT
     ];
 
+    const EXCLUDE_FILE_STRING = 'success';
+
     /**
      * Currently Icici shares only payment report
      */
@@ -57,5 +59,15 @@ class Reconciliate extends Base\Reconciliate
     public function getColumnHeadersForType($type)
     {
         return self::TYPE_TO_COLUMN_HEADER_MAP[$type];
+    }
+
+    public function inExcludeList(array $fileDetails)
+    {
+        if (strpos($fileDetails['file_name'], self::EXCLUDE_FILE_STRING) !== false)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

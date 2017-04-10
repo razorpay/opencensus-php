@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Batch;
 
 use RZP\Models\Base;
+use RZP\Models\FileStore\Entity as FileStore;
 use Carbon\Carbon;
 
 /**
@@ -27,6 +28,8 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX       = 'service_tax';
     const URLS              = 'urls';
     const INITIATED_AT      = 'initiated_at';
+    const TXT_FILE_ID       = 'txt_file_id';
+    const EXCEL_FILE_ID     = 'excel_file_id';
     const RECONCILED_AT     = 'reconciled_at';
     const RETURNED_AT       = 'returned_at';
 
@@ -48,6 +51,8 @@ class Entity extends Base\PublicEntity
         self::API_FEE,
         self::GATEWAY_FEE,
         self::URLS,
+        self::TXT_FILE_ID,
+        self::EXCEL_FILE_ID,
     );
 
     protected $public = array(
@@ -65,6 +70,8 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::URLS,
         self::INITIATED_AT,
+        self::TXT_FILE_ID,
+        self::EXCEL_FILE_ID,
         self::RECONCILED_AT,
         self::RETURNED_AT,
         self::CREATED_AT,
@@ -162,6 +169,16 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute('urls', $urls);
     }
 
+    public function setTxtFileId($id)
+    {
+        $this->setAttribute(self::TXT_FILE_ID, $id);
+    }
+
+    public function setExcelFileId($id)
+    {
+        $this->setAttribute(self::EXCEL_FILE_ID, $id);
+    }
+
     public function setFees($fees)
     {
         $this->setAttribute(self::FEES, $fees);
@@ -184,5 +201,25 @@ class Entity extends Base\PublicEntity
         $urls = json_encode($urls);
 
         $this->attributes[self::URLS] = $urls;
+    }
+
+    protected function setTxtFileIdAttribute($id)
+    {
+        if ($id === null)
+        {
+            return;
+        }
+
+        $this->attributes[self::TXT_FILE_ID] = FileStore::verifyIdAndSilentlyStripSign($id);
+    }
+
+    protected function setExcelFileIdAttribute($id)
+    {
+        if ($id === null)
+        {
+            return;
+        }
+
+        $this->attributes[self::EXCEL_FILE_ID] = FileStore::verifyIdAndSilentlyStripSign($id);
     }
 }

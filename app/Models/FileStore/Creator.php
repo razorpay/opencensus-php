@@ -333,7 +333,7 @@ class Creator extends Base\Core
     }
 
     /**
-     * Returns url and id of File Entity
+     * Returns signed url and id of File Entity
      *
      * @return array
      */
@@ -349,6 +349,19 @@ class Creator extends Base\Core
             'id'  => $this->file->getId(),
             'url' => $url,
         ];
+    }
+
+    /**
+     * Returns unsigned url
+     *
+     * @return string
+     */
+    public function getUrl(): string
+    {
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(), $this->env);
+
+        return $this->storageHandler->getUrl($bucketConfig, $this->file->location);
     }
 
     /**

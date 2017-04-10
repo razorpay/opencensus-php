@@ -3,6 +3,7 @@
 namespace RZP\Models\Ecollect;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -32,7 +33,8 @@ class Service extends Base\Service
         ];
 
         if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
-            (substr($input['payee_account'], 0, 6) !== 'RAZORP'))
+            (substr($input['payee_account'], 0, 6) !== 'RAZORP') or
+            ($this->mode === Mode::LIVE))
         {
             $data = [
                 'valid'          => false,
@@ -65,7 +67,7 @@ class Service extends Base\Service
 
     protected function uniqueUtrCheck(array $input, array & $data)
     {
-        if($data['valid'] === true)
+        if ($data['valid'] === true)
         {
             $key = 'ecollect' . $this->mode . $input['transaction_id'];
 

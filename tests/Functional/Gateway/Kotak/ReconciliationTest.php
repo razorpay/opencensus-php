@@ -100,7 +100,6 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconFailure');
         $this->assertNotNull($settlementAttempt['utr']);
 
-        // Validate 2 files were created
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 2);
 
@@ -145,7 +144,7 @@ class ReconciliationTest extends TestCase
         $this->assertNotNull($content['kotak']['settlement_text_file']);
 
         // Check reconciliation
-        $setlFile = $content['kotak']['settlement_text_file'];
+        $setlFile = $content['kotak']['settlement_text_file']['local_file_path'];
 
         // Validate 4 files we created in all
         $content = $this->getEntities('file_store', [], true);

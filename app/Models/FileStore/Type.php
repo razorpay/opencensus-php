@@ -28,8 +28,6 @@ class Type
 
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
-    const ICICI_NODAL_TRANSFER              = 'icici_nodal_transfer';
-
     const BATCH_INPUT                       = 'batch_input';
 
     const BATCH_OUTPUT                      = 'batch_output';
@@ -38,8 +36,8 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
-    const FUND_TRANSFER_EXCEL               = 'fund_transfer_excel';
-    const FUND_TRANSFER_TXT                 = 'fund_transfer_txt';
+    const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
+    const FUND_TRANSFER_H2H                 = 'fund_transfer_h2h';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -72,9 +70,6 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
-            self::ICICI_NODAL_TRANSFER,
-            self::FUND_TRANSFER_EXCEL,
-            self::FUND_TRANSFER_TXT,
         ],
 
         Constants\Entity::BATCH => [
@@ -95,6 +90,11 @@ class Type
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
         ],
+
+        Constants\Entity::BATCH_FUND_TRANSFER => [
+            self::FUND_TRANSFER_DEFAULT,
+            self::FUND_TRANSFER_H2H,
+        ],
     ];
 
     /**
@@ -111,9 +111,8 @@ class Type
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
-        self::ICICI_NODAL_TRANSFER,
-        self::FUND_TRANSFER_EXCEL,
-        self::FUND_TRANSFER_TXT,
+        self::FUND_TRANSFER_DEFAULT,
+        self::FUND_TRANSFER_H2H,
     ];
 
     /**
@@ -128,16 +127,12 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
-            self::FUND_TRANSFER_EXCEL,
+            self::FUND_TRANSFER_DEFAULT,
         ],
 
         self::BATCH_BUCKET_CONFIG => [
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
-        ],
-
-        self::H2H_BUCKET_CONFIG => [
-            self::FUND_TRANSFER_TXT,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
@@ -152,6 +147,10 @@ class Type
             self::MERCHANT_PROMOTER_PROOF_URL,
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
+        ],
+
+        self::H2H_BUCKET_CONFIG => [
+            self::FUND_TRANSFER_H2H,
         ],
     ];
 
