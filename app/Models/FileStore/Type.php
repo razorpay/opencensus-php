@@ -72,7 +72,6 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
-            self::ICICI_NODAL_TRANSFER,
             self::REPORT,
         ],
 
