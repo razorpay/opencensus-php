@@ -483,11 +483,9 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postAddIIN()
+    public function postInitiateSetl($channel)
     {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postAddIIN($input);
+        list($error, $data) = (new Admin\Service)->postInitiateSetl($channel);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -495,15 +493,6 @@ class AdminController extends Controller
     public function getPaymentRefunds($mode, $paymentId)
     {
         list($error, $data) = (new Admin\Service)->getPaymentRefunds($mode, $paymentId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getVerifyPayment($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Admin\Service)->getVerifyPayment($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -839,16 +828,6 @@ class AdminController extends Controller
     {
         list($error, $data) = $response = (new Admin\Service)
             ->deleteEmi($emiId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postAddEMIPlan()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)
-            ->addEMI($input);
 
         return AppResponse::jsonResponse($error, $data);
     }

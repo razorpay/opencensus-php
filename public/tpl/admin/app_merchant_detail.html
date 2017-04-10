@@ -176,12 +176,12 @@
                 <table class="table table-striped b-light">
                   <thead>
                     <th>Feature Name</th>
-                    <th class="text-right">Action</th>
+                    <th class="text-right" ng-show="admin.permissions && admin.permissions.indexOf('delete_merchant_features') !== -1">Action</th>
                   </thead>
                   <tbody>
                     <tr ng-repeat="feature in merchant.details.features">
                       <td>{{feature.name}}</td>
-                      <td class="text-right"><a class="btn btn-danger btn-sm" ng-click="deleteFeature(feature.name)">Delete</a></td>
+                      <td class="text-right" ng-show="admin.permissions && admin.permissions.indexOf('delete_merchant_features') !== -1"><a class="btn btn-danger btn-sm" ng-click="deleteFeature(feature.name)">Delete</a></td>
                     </tr>
                   </tbody>
                 </table>
