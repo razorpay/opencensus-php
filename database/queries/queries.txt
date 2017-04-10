@@ -1889,3 +1889,15 @@ ALTER TABLE offers
 ALTER TABLE payments
     ADD INDEX `payments_on_hold_index` (`on_hold`),
     ADD INDEX `payments_on_hold_until_index` (`on_hold_until`);
+
+# Add attempts to settlements
+ALTER TABLE settlements
+    ADD COLUMN attempts INTEGER NOT NULL DEFAULT 1 AFTER channel;
+
+UPDATE settlements
+SET attempts = (
+    SELECT COUNT(id) FROM fund_transfer_attempts
+    WHERE fund_transfer_attempts.source_id = settlements.id
+    AND fund_transfer_attempts.source_type = 'settlement'
+    GROUP BY fund_transfer_attempts.source_id
+);
