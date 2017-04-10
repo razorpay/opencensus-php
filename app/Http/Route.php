@@ -1002,11 +1002,11 @@ final class Route
         'admin_dummy_account_test'         => [Permission::VIEW_MERCHANT],
         'feature_delete'                   => [Permission::DELETE_MERCHANT_FEATURES],
 
-        'workflow_create'                  => [Permission::VIEW_WORKFLOW], // Fix permissions
-        'workflow_get'                     => ['*'],
-        'workflow_get_multiple'            => ['*'],
-        'workflow_update'                  => [Permission::VIEW_WORKFLOW],
-        'workflow_delete'                  => [Permission::VIEW_WORKFLOW],
+        'workflow_create'                  => [Permission::CREATE_WORKFLOW], // Fix permissions
+        'workflow_get'                     => [Permission::VIEW_WORKFLOW],
+        'workflow_get_multiple'            => [Permission::VIEW_ALL_WORKFLOW],
+        'workflow_update'                  => [Permission::EDIT_WORKFLOW],
+        'workflow_delete'                  => [Permission::DELETE_WORKFLOW],
         'workflow_step_get_multiple'       => ['*'],
         'action_checker_create'            => ['*'],
         'action_checker_multiple'          => ['*'],

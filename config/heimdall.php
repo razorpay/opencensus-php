@@ -139,7 +139,11 @@ return [
 
         // Workflow
         PermissionCategory::WORKFLOW => [
-            Permission::VIEW_WORKFLOW  => 'View Worfklows',
+            Permission::VIEW_WORKFLOW      => 'View Workflows',
+            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
+            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
+            Permission::VIEW_ALL_WORKFLOWS => 'View all workflows',
+            Permission::CREATE_WORKFLOW    => 'Create a workflow',
         ],
 
         // Roles
@@ -289,7 +293,11 @@ return [
         ],
 
         PermissionCategory::WORKFLOW => [
-            Permission::VIEW_WORKFLOW  => 'View Worfklows',
+            Permission::VIEW_WORKFLOW      => 'View Workflows',
+            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
+            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
+            Permission::VIEW_ALL_WORKFLOWS => 'View all workflows',
+            Permission::CREATE_WORKFLOW    => 'Create a workflow',
         ],
     ],
 
