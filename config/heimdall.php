@@ -137,6 +137,15 @@ return [
             Permission::DELETE_ORG    => 'Delete organization',
         ],
 
+        // Workflow
+        PermissionCategory::WORKFLOW => [
+            Permission::VIEW_WORKFLOW      => 'View Workflows',
+            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
+            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
+            Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
+            Permission::CREATE_WORKFLOW    => 'Create a workflow',
+        ],
+
         // Roles
         PermissionCategory::ROLE => [
             Permission::VIEW_ALL_ROLE => 'View all roles',
@@ -281,6 +290,14 @@ return [
             Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
             Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
             Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
+        ],
+
+        PermissionCategory::WORKFLOW => [
+            Permission::VIEW_WORKFLOW      => 'View Workflows',
+            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
+            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
+            Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
+            Permission::CREATE_WORKFLOW    => 'Create a workflow',
         ],
     ],
 
