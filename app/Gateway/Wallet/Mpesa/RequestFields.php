@@ -20,8 +20,9 @@ class RequestFields
     const SURCHARGE                 = 'SURCHARGE';
 
     // Verify params
+    const QUERY_TRANSACTION_DATE    = 'txnDate';
+    const QUERY_TRANSACTION_REF     = 'transRefNo';
     const QUERY_PAYMENT_TRANSACTION = 'queryPaymentTransaction';
-    const COM_TRANSACTION_ID        = 'MCOMPGTRANSID';
-    const PMT_TRANSACTION_REFERENCE = 'PAYMENTTRANSREFNO';
-    const COMMAND_ID                = 'CMDID';
+    const COM_TRANSACTION_ID        = 'mcomPgTransID';
+    const PMT_TRANSACTION_REFERENCE = 'paymentTransRefNo';
 }

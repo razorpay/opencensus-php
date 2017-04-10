@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\Wallet\Mpesa;
 
+use SoapVar;
+use SoapClient;
+use SoapHeader;
 use Carbon\Carbon;
 use RZP\Exception;
 use SimpleXMLElement;
@@ -72,17 +75,21 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $content = $this->getVerifyRequestData();
+        $data = $this->getActionData();
+
+        $data = str_replace('queryPaymentTransaction', 'pay:queryPaymentTransaction', $data);
+
+        $content = $this->getSoapRequestContent($data);
 
         $request = $this->getStandardRequestArray($content);
 
         $request['headers'] = $this->getRequestHeaders();
 
-        // sd($request);
+        sd($request);
 
         $response = $this->sendGatewayRequest($request);
 
-        sd($response);
+        sd($response->body);
     }
 
     protected function getRequestHeaders()
@@ -111,52 +118,24 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getVerifyRequestData()
-    {
-        $data = $this->getActionData();
-
-        return $data;
-    }
-
     protected function getActionData()
     {
         switch ($this->action)
         {
             case Base\Action::AUTHORIZE:
-                $data = $this->getGatewayParamArray();
+                $array = $this->getGatewayParamArray();
                 $xmlRoot = "<PaymentGatewayRequest />";
+                $data = $this->getXmlData($array, $xmlRoot);
                 break;
 
             case Base\Action::VERIFY:
-                $data = $this->getQueryData();
-                $xmlRoot = "<queryPaymentTransaction />"; // pay: ??
+                $array = $this->getQueryData();
+                $soapRoot = "<pay:queryPaymentTransaction />";
+                $data = $this->getSoapData($array, $soapRoot);
                 break;
         }
 
-        $actionParam = array_flip($data);
-
-        $actionParamXml = new SimpleXMLElement($xmlRoot);
-
-        array_walk_recursive($actionParam, [$actionParamXml, 'addChild']);
-
-        $actionParamXml = trim(explode('?>', $actionParamXml->asXML())[1]);
-
-        return $actionParamXml;
-    }
-
-    protected function getGatewayParam()
-    {
-        $gatewayParam = $this->getGatewayParamArray();
-
-        $gatewayParam = array_flip($gatewayParam);
-
-        $gatewayParamXml = new SimpleXMLElement("<PaymentGatewayRequest />");
-
-        array_walk_recursive($gatewayParam, [$gatewayParamXml, 'addChild']);
-
-        $gatewayParamXml = trim(explode('?>', $gatewayParamXml->asXML())[1]);
-
-        return $gatewayParamXml;
+        return $data;
     }
 
     protected function getGatewayParamArray()
@@ -175,13 +154,6 @@ class Gateway extends Base\Gateway
         return $gatewayParam;
     }
 
-    protected function getCheckSum()
-    {
-        $xml = $this->getGatewayParam();
-
-        return hash_hmac('sha256', $xml, $this->getSecret());
-    }
-
     protected function getQueryData()
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
@@ -193,14 +165,60 @@ class Gateway extends Base\Gateway
 
         $queryData = [
             RequestFields::MERCHANT_CODE             => $this->getMerchantId(),
-            RequestFields::TRANSACTION_DATE          => $this->getFormattedDate(),
+            RequestFields::QUERY_TRANSACTION_DATE    => $this->getFormattedDate(),
             RequestFields::COM_TRANSACTION_ID        => $gatewayPaymentId ?? "",
-            RequestFields::TRANSACTION_REFERENCE     => $paymentId,
+            RequestFields::QUERY_TRANSACTION_REF     => $paymentId,
             RequestFields::PMT_TRANSACTION_REFERENCE => strtoupper($paymentId),
             RequestFields::AMOUNT                    => $this->input['payment']['amount'] / 100
         ];
 
         return $queryData;
+    }
+
+    protected function getCheckSum()
+    {
+        $xml = $this->getActionData();
+
+        return hash_hmac('sha256', $xml, $this->getSecret());
+    }
+
+    protected function getXmlData(array $array, string $xmlRoot)
+    {
+        $actionParam = array_flip($array);
+
+        $actionParamXml = new SimpleXMLElement($xmlRoot);
+
+        array_walk_recursive($actionParam, [$actionParamXml, 'addChild']);
+
+        $actionParamXml = trim(explode('?>', $actionParamXml->asXML())[1]);
+
+        return $actionParamXml;
+    }
+
+    protected function getSoapData($array, $soapRoot)
+    {
+        $client = new SoapClient($this->getUrl());
+
+        $headers = $this->getSoapHeaders();
+
+        $client->__setSoapHeaders($headers);
+
+        $response = $client->__soapCall(RequestFields::QUERY_PAYMENT_TRANSACTION,
+                                        [$soapRoot => $array]);
+
+        sd($response);
+    }
+
+    protected function getSoapHeaders()
+    {
+        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
+
+        $headers = [
+            new SoapHeader($wsseNs, 'userId', $this->getSoapUserId()),
+            new SoapHeader($wsseNs, 'password', $this->getSoapPassword())
+        ];
+
+        return $headers;
     }
 
     protected function checkCallbackStatus(array $content)
@@ -228,7 +246,7 @@ class Gateway extends Base\Gateway
             Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],
         ];
 
-        $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+        $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
     }
 
     protected function getFormattedDate()
@@ -244,5 +262,15 @@ class Gateway extends Base\Gateway
         }
 
         return $this->terminal['gateway_merchant_id'];
+    }
+
+    protected function getSoapUserId()
+    {
+        return $this->config['test_user_id'];
+    }
+
+    protected function getSoapPassword()
+    {
+        return $this->config['test_password'];
     }
 }

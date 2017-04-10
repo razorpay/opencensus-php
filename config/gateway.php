@@ -229,6 +229,8 @@ return array(
     'wallet_mpesa' => array(
         'test_merchant_id' => env('MPESA_WALLET_TEST_MERCHANT_ID'),
         'test_hash_secret' => env('MPESA_WALLET_TEST_HASH_SECRET'),
+        'test_user_id'     => env('MPESA_WALLET_TEST_USER_ID'),
+        'test_password'    => env('MPESA_WALLET_TEST_PASSWORD'),
     ),
 
     'netbanking_hdfc' => array(
