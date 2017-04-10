@@ -10,8 +10,6 @@ class Core extends Base\Core
     {
         $bankTransfer = (new Entity)->build($input);
 
-        $bankTransfer->generateId();
-
         return $bankTransfer;
     }
 }

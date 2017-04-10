@@ -4,6 +4,7 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 USE RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 
@@ -12,6 +13,11 @@ class Service extends Base\Service
     protected $validator;
 
     protected $receiver;
+
+    const DEFAULT_BANK_TRANSFER_ARRAY = [
+        Payment\Entity::CURRENCY => Currency\Currency::INR,
+        Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
+    ];
 
     public function __construct()
     {
@@ -41,7 +47,7 @@ class Service extends Base\Service
             $input
         );
 
-        $this->validator->validateInput('pay', $input);
+        $this->validator->validateInput('create', $input);
 
         $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::UTR]);
 
@@ -49,7 +55,7 @@ class Service extends Base\Service
         {
             $this->merchant = $bankTransfer->payment->merchant;
 
-            $paymentProcessor = new Payment\Processor\Processor($this->merchant);
+            $paymentProcessor = new PaymentProcessor($this->merchant);
 
             $paymentId = $bankTransfer->payment->getId();
 
@@ -67,20 +73,19 @@ class Service extends Base\Service
 
     protected function validateReceiver(array $input): array
     {
-        $this->validator->validateInput('validate', $input);
+        $this->validator->validateInput('create', $input);
 
         $bankTransfer = $this->core->create($input);
 
         $uniqueUtr = $this->validateUniqueUtr($bankTransfer);
 
-        $expected = $this->checkAccount($bankTransfer);
+        $expected = $this->transferExpected($bankTransfer);
 
-        if (($expected === true) and
-            ($uniqueUtr === true))
+        if (($expected === true) and ($uniqueUtr === true))
         {
             $paymentInput = $this->bankTransferPaymentArray($input);
 
-            $paymentProcessor = new Payment\Processor\Processor($this->merchant);
+            $paymentProcessor = new PaymentProcessor($this->merchant);
 
             $payment = $paymentProcessor->processBankTransfer($paymentInput);
 
@@ -135,11 +140,11 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function checkAccount(Entity $bankTransfer): bool
+    protected function transferExpected(Entity $bankTransfer): bool
     {
         $this->receiver = $this->getReceiverFromBankTransfer($bankTransfer);
 
-        if (is_null($this->receiver) === true)
+        if ($this->receiver === null)
         {
             return false;
         }
@@ -173,18 +178,10 @@ class Service extends Base\Service
 
     protected function bankTransferPaymentArray(array $input): array
     {
-        $paymentArray = $this->defaultBankTransferPaymentArray();
+        $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
         $paymentArray[Payment\Entity::AMOUNT] = $input['amount'];
 
         return $paymentArray;
-    }
-
-    protected function defaultBankTransferPaymentArray(): array
-    {
-        return [
-            Payment\Entity::CURRENCY => Currency\Currency::INR,
-            Payment\Entity::METHOD   => Payment\Method::BANK_TRANSFER,
-        ];
     }
 }

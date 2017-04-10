@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
     const TIME           = 'time';
     const DESCRIPTION    = 'description';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::PAYMENT_ID,
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
@@ -29,9 +29,9 @@ class Entity extends Base\PublicEntity
         self::TIME,
         self::AMOUNT,
         self::DESCRIPTION,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::PAYMENT_ID,
         self::PAYER_ACCOUNT,
@@ -43,13 +43,15 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::TIME,
         self::DESCRIPTION,
-    );
+    ];
 
     protected $casts = [
         self::AMOUNT => 'int',
     ];
 
     protected $entity = Constants\Entity::BANK_TRANSFER;
+
+    protected $generateIdOnCreate = true;
 
 
     // ----------------------- Associations ----------------------------------------

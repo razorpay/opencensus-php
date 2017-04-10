@@ -96,8 +96,9 @@ class Core extends Base\Core
 
             if ($appliedOffer->shouldBlock() === true)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_INVALID_OFFER);
+                $errorMessage = $appliedOffer->getErrorMessage();
+
+                throw new Exception\BadRequestValidationFailureException($errorMessage);
             }
         }
 

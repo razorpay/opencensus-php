@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
 
     const DELETED_AT = 'deleted_at';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::ONE_TIME_USE,
         self::EXPECTED_AMOUNT,
@@ -30,15 +30,15 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::ENTITY_ID,
         self::VALID,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ONE_TIME_USE,
         self::EXPECTED_AMOUNT,
         self::ACCEPT_PARTIAL,
         self::AMOUNT_PAID,
-    );
+    ];
 
     protected $casts = [
         self::ONE_TIME_USE         => 'bool',

@@ -12,32 +12,32 @@ class Core extends Base\Core
 
     public function addVirtualBankAccountForCustomer($customer)
     {
-        $ba = $this->buildBankAccount($this->merchant);
+        $bankAccount = $this->buildBankAccount($this->merchant);
 
-        $ba->associateCustomer($customer);
+        $bankAccount->associateCustomer($customer);
 
-        $ba->setVirtual(true);
+        $bankAccount->setVirtual(true);
 
-        $this->createReceiverFromBankAccount($ba);
+        $this->createReceiverFromBankAccount($bankAccount);
 
-        $this->repo->saveOrFail($ba);
+        $this->repo->saveOrFail($bankAccount);
 
-        return $ba;
+        return $bankAccount;
     }
 
     public function addStandingBankAccount()
     {
-        $ba = $this->buildBankAccount($this->merchant);
+        $bankAccount = $this->buildBankAccount($this->merchant);
 
-        $ba->associateMerchant($this->merchant);
+        $bankAccount->associateMerchant($this->merchant);
 
-        $ba->setVirtual(true);
+        $bankAccount->setVirtual(true);
 
-        $this->createReceiverFromBankAccount($ba, false);
+        $this->createReceiverFromBankAccount($bankAccount, false);
 
-        $this->repo->saveOrFail($ba);
+        $this->repo->saveOrFail($bankAccount);
 
-        return $ba;
+        return $bankAccount;
     }
 
     protected function createReceiverFromBankAccount($bankAccount, $oneTimeUse = true)
@@ -53,20 +53,20 @@ class Core extends Base\Core
 
     protected function buildBankAccount($merchant)
     {
-        $ba = new BankAccount\Entity;
+        $bankAccount = new BankAccount\Entity;
 
-        $baInput = $this->defaultVirtualBankAccountInput($merchant);
+        $bankAccountInput = $this->generateVirtualBankAccountInput($merchant);
 
-        $ba = $ba->build($baInput);
+        $bankAccount = $bankAccount->build($bankAccountInput);
 
-        $ba->getValidator()->validateIfscCode();
+        $bankAccount->getValidator()->validateIfscCode();
 
-        $ba->merchant()->associate($merchant);
+        $bankAccount->merchant()->associate($merchant);
 
-        return $ba;
+        return $bankAccount;
     }
 
-    protected function defaultVirtualBankAccountInput($merchant)
+    protected function generateVirtualBankAccountInput($merchant)
     {
         $provider = $this->selectProvider($merchant);
 
@@ -87,6 +87,20 @@ class Core extends Base\Core
         return Provider::YES_BANK;
     }
 
+    /**
+     * Generates unique account number for a given provider
+     *
+     * Each provider has a pre-decided 'master' or prefix that must be used.
+     * Max length of account number is 20 characters. We use the timestamp
+     * in seconds, followed by random digits to pad.
+     *
+     * So if YesBank is giving us a master of length 6, and timestamps are
+     * currently 10 digits long, this logic allows us to generate ~10000
+     * unique numbers every second.
+     *
+     * @param  string $provider Descripter for provider of Virtual a/c services
+     * @return string Unique account number
+     */
     protected function generateAccountNumberForProvider($provider)
     {
         $master = Provider::MASTER[$provider];
@@ -97,7 +111,7 @@ class Core extends Base\Core
 
         $digits = self::ACCOUNT_NUMBER_LENGTH - strlen($accountNumber);
 
-        $accountNumber .= rand(pow(10, $digits-1), pow(10, $digits)-1);
+        $accountNumber .= rand(pow(10, $digits - 1), pow(10, $digits) - 1);
 
         return $accountNumber;
     }

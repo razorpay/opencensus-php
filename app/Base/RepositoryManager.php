@@ -54,11 +54,18 @@ class RepositoryManager extends \Illuminate\Support\Manager
         return $repo->sync($entity, $relation, $ids);
     }
 
+    public function detach($entity, $relation, $ids = [])
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
+
+        return $repo->detach($entity, $relation, $ids);
+    }
+
     public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
     {
         $repo = $this->getRepositoryClassFromObject($entity);
 
-        return $repo->sync($entity, $relation, $id, $attributes, $touch);
+        return $repo->attach($entity, $relation, $id, $attributes, $touch);
     }
 
     public function delete($entity)

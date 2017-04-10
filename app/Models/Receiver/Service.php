@@ -19,15 +19,15 @@ class Service extends Base\Service
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $ba = $this->core->addVirtualBankAccountForCustomer($customer);
+        $bankAccount = $this->core->addVirtualBankAccountForCustomer($customer);
 
-        return $ba->toArrayPublic();
+        return $bankAccount->toArrayPublic();
     }
 
     public function createStandingBankAccount()
     {
-        $ba = $this->core->addStandingBankAccount();
+        $bankAccount = $this->core->addStandingBankAccount();
 
-        return $ba->toArrayPublic();
+        return $bankAccount->toArrayPublic();
     }
 }

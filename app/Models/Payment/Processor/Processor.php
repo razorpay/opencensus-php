@@ -141,7 +141,7 @@ class Processor
         {
             $input['method'] = Payment\Method::CARD;
         }
-        else if (empty($input['method']))
+        else if (empty($input['method']) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Please provide appropriate payment method',

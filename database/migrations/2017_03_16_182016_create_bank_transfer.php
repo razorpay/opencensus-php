@@ -46,6 +46,8 @@ class CreateBankTransfer extends Migration
 
             $table->integer(BankTransfer::CREATED_AT);
             $table->integer(BankTransfer::UPDATED_AT);
+
+            $table->index(BankTransfer::UTR);
         });
     }
 

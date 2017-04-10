@@ -97,7 +97,7 @@ class ScheduleLibraryTest extends TestCase
         {
             $initialTime = $this->getTimeStamp($case['initialTime']);
 
-            $nextTime = Schedule\Library::getNextApplicableTime($initialTime, $schedule);
+            $nextTime = Schedule\Library::getNextApplicableTime($initialTime, $schedule, $schedule->getNextRun());
 
             $calculatedTime = $this->getFormattedTime($nextTime);
 

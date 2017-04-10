@@ -119,6 +119,7 @@ return [
             Permission::SCHEDULE_MIGRATION => '',
             Permission::VIEW_ACTIONS => '',
             Permission::VIEW_MERCHANT_STATS => '',
+            Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
         ],
 
         PermissionCategory::ENTITY => [
@@ -177,6 +178,13 @@ return [
             Permission::VIEW_AUDITLOG     => 'View auditlog for activities',
         ],
 
+        // Invitations
+        PermissionCategory::INVITATION => [
+            Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
+            Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
+            Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
+        ],
+
     ],
 
     // trimmed down assignable permissions which an HDFC manager would have
@@ -193,6 +201,7 @@ return [
             Permission::VIEW_MERCHANT_BANK_ACCOUNTS => '',
 
             Permission::VIEW_MERCHANT_SCREENSHOT => '',
+            Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
 
             Permission::CREATE_PRICING_PLAN => '',
             Permission::SET_PRICING_RULES => '',
@@ -221,6 +230,10 @@ return [
             Permission::VIEW_MERCHANT_BALANCE_LIVE        => '',
 
             Permission::EDIT_MERCHANT_EMAIL => '',
+
+            Permission::CREATE_MERCHANT_INVITE => '',
+            Permission::EDIT_MERCHANT_INVITE   => '',
+            Permission::VIEW_MERCHANT_INVITE => '',
         ],
 
         // UAM
@@ -262,6 +275,16 @@ return [
         PermissionCategory::AUDIT_LOG => [
             Permission::VIEW_AUDITLOG   => 'View auditlog for activities',
         ],
+
+        // Invitations
+        PermissionCategory::INVITATION => [
+            Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
+            Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
+            Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
+        ],
     ],
 
+    'workflows' => [
+        'mock'  => env('HEIMDALL_WORKFLOWS_MOCK', false),
+    ],
 ];

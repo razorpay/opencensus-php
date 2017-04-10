@@ -6,11 +6,12 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Pricing;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Terminal;
-use RZP\Models\Feature;
 use RZP\Exception;
 use RZP\Models\Admin\Action;
 
@@ -40,7 +41,7 @@ class Core extends Base\Core
         }
 
         // Updating the existing customer info and setting activated to false
-        $this->app['drip']->sendDripMerchantInfo(Merchant\Action::CREATED, $merchant);
+        $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
 
         return $merchant;
     }
@@ -96,6 +97,8 @@ class Core extends Base\Core
         (new Methods\Core)->setDefaultMethods($merchant);
 
         (new Detail\Service)->createMerchantDetails($merchant);
+
+        (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
     }
 
     /**
@@ -211,10 +214,7 @@ class Core extends Base\Core
         {
             $label   = $merchant->getBillingLabel();
             $message = $merchant->getDashboardEntityLinkForSlack($label);
-
-            $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
-
-            $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
+            $user    = $this->getInternalUsernameOrEmail();
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 
