@@ -1864,9 +1864,6 @@ ALTER TABLE fund_transfer_attempts
     ADD CONSTRAINT fund_transfer_attempts_excel_file_id_foreign FOREIGN KEY(excel_file_id)
     REFERENCES files(id) ON DELETE RESTRICT;
 
-ALTER TABLE settlements
-    ADD COLUMN attempts INTEGER NOT NULL DEFAULT 1 AFTER channel;
-
 # Adds cancelled_at column to invoices table
 ALTER TABLE invoices ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER paid_at;
 
@@ -1897,3 +1894,14 @@ ALTER TABLE `admins` MODIFY COLUMN `location_code` VARCHAR(255) DEFAULT NULL;
 # Query to add custom error message attribute to offer
 ALTER TABLE offers
     ADD COLUMN error_message VARCHAR(255) NULL AFTER display_text;
+
+ALTER TABLE settlements
+    ADD COLUMN attempts INTEGER NOT NULL DEFAULT 1 AFTER channel;
+
+UPDATE settlements
+SET attempts = (
+    SELECT COUNT(id) FROM fund_transfer_attempts
+    WHERE fund_transfer_attempts.source_id = settlements.id
+    AND fund_transfer_attempts.source_type = 'settlement'
+    GROUP BY fund_transfer_attempts.source_id
+);

@@ -301,8 +301,6 @@ class Entity extends Base\PublicEntity
 
     public function incrementAttempts()
     {
-        $count = $this->getAttempts() + 1;
-
-        $this->setAttempts($count);
+        $this->increment(self::ATTEMPTS);
     }
 }
