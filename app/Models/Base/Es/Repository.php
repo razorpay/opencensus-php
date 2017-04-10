@@ -51,11 +51,26 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $esDao;
     protected $trace;
-    // Name of the index to which this repo might correspond to.
+
+    /**
+     * Name of the index to which this repo might correspond to.
+     *
+     * @var null|string
+     */
     protected $indexName = null;
-    // Fields indexed in es and their mappings.
+
+    /**
+     * Fields indexed in ES
+     *
+     * @var array
+     */
     protected $fields         = [];
-    protected $fieldMappings  = [];
+
+    /**
+     * Fields against with 'q' param will be matched against from ES
+     *
+     * @var array
+     */
     protected $queryFields    = [];
 
     /**

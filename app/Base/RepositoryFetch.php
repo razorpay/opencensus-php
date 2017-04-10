@@ -25,12 +25,12 @@ trait RepositoryFetch
 
     protected $originalFetchParamRules;
 
-    //
-    // TODO:
-    // This is temporary.
-    // Will be removed once old notes index is migrated to new flow.
-    // Many more cleanup will happen once we do above.
-    //
+    /**
+     * TODO: This is temporary. Will be removed once old notes index is migrated
+     * to new flow. Many more cleanup will happen once we do above.
+     *
+     * @var array
+     */
     protected $esEntitiesInOldFlow = [
         Constants\Entity::ORDER,
         Constants\Entity::PAYMENT,
@@ -56,12 +56,26 @@ trait RepositoryFetch
       // Default params
 //    protected $defaultFetchParams = array();
 
-    // Params for repository fetch
+    /**
+     * Params for repository fetch
+     *
+     * @var array
+     */
     protected $params      = [];
 
-    // The params var gets split in mysqlParams and esParams which holds
-    // params to be queried from MySQL and ES respectively.
+    /**
+     * $params var gets split in $mysqlParams and $esParams which holds params to
+     * be queried from MySQL and ES respectively.
+     *
+     * @var array
+     */
     protected $mysqlParams = [];
+
+    /**
+     * Holds params to be searched from ES.
+     *
+     * @var array
+     */
     protected $esParams    = [];
 
     protected $merchantIdRequiredForMultipleFetch = true;

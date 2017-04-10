@@ -38,6 +38,8 @@ class PublicEntity extends UniqueIdEntity
 
     /**
      * Loads given relations of an entity.
+     * Overriding? Allows use to use entity keys constant. We array_map that to
+     * camel case values so parent's load works as usual.
      *
      * @param array $relations
      *
@@ -45,8 +47,6 @@ class PublicEntity extends UniqueIdEntity
      */
     public function load($relations): self
     {
-        // Allows use to use entity keys constant. We array_map that to camel case
-        // values so parent's load works as usual.
         $relations = array_map(
                         function ($v)
                         {
