@@ -4,7 +4,7 @@ namespace RZP\Mail\Settlement;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 
 class Base extends Mailable
 {
@@ -17,7 +17,7 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $email =  Common::MAIL_ADDRESSES[Common::SETTLEMENTS];
+        $email =  Constants::MAIL_ADDRESSES[Constants::SETTLEMENTS];
 
         $this->to($email);
 
@@ -26,7 +26,7 @@ class Base extends Mailable
 
     protected function addSender()
     {
-        $email = Common::MAIL_ADDRESSES[Common::SETTLEMENTS];
+        $email = Constants::MAIL_ADDRESSES[Constants::SETTLEMENTS];
 
         $header = $this->getFromHeader();
 

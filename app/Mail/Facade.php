@@ -4,6 +4,11 @@ namespace RZP\Mail;
 
 use Illuminate\Support\Facades\Mail as BaseFacade;
 
+/**
+ * This facade class extednds the Illuminate Mail as we want to replace
+ * the MailFake class with our own instance as the Illuminate MailFake doesn't
+ * call the build method on Mailables
+ */
 class Facade extends BaseFacade
 {
     /**
@@ -14,15 +19,5 @@ class Facade extends BaseFacade
     public static function fake()
     {
         static::swap(new MailFake);
-    }
-
-    /**
-     * Get the registered name of the component.
-     *
-     * @return string
-     */
-    protected static function getFacadeAccessor()
-    {
-        return 'mailer';
     }
 }

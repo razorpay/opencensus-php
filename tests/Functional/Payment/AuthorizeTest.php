@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Mail;
+use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
@@ -37,8 +39,13 @@ class AuthorizeTest extends TestCase
 
     public function testJsonpPayment()
     {
+        Mail::fake();
+
         $content = $this->startTest();
+
         $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        Mail::assertSent(AuthorizedMail::class);
     }
 
     public function testEmailMissing()

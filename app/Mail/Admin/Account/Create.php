@@ -5,10 +5,11 @@ namespace RZP\Mail\Admin\Account;
 use Config;
 
 use RZP\Constants\MailTags;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 
 class Create extends Base
 {
-    public function __construct($admin, array $input)
+    public function __construct(AdminEntity $admin, array $input)
     {
         parent::__construct($admin, $input);
 

@@ -2,9 +2,13 @@
 
 namespace RZP\Mail\Invoice\Payment;
 
+use Config;
+
+use RZP\Constants\MailTags;
+use RZP\Mail\Base\Constants;
 use RZP\Mail\Payment\Base;
-use RZP\Mail\Base\Common;
 use RZP\Models\Invoice;
+use RZP\Models\Invoice\ViewDataSerializer;
 
 class Authorized extends Base
 {
@@ -17,9 +21,9 @@ class Authorized extends Base
 
     protected function addSender()
     {
-        $email = Common::MAIL_ADDRESSES[Common::CARE];
+        $email = Constants::MAIL_ADDRESSES[Constants::CARE];
 
-        $header = Common::HEADERS[Common::CARE];
+        $header = Constants::HEADERS[Constants::CARE];
 
         $this->from($email, $header);
 

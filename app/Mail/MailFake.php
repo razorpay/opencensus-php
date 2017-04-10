@@ -8,22 +8,23 @@ use Illuminate\Support\Testing\Fakes\MailFake as BaseMailFake;
 class MailFake extends BaseMailFake
 {
     /**
-     * Send a new message using a view.
+     * Mocks the sending of a mail using mailable. Used for mocking the Mail facade
+     * to assert if a mail was sent
      *
-     * @param  string|array  $view
+     * @param  Mailable obkect $mailable
      * @param  array  $data
      * @param  \Closure|string  $callback
      * @return void
      */
-    public function send($view, array $data = [], $callback = null)
+    public function send($mailable, array $data = [], $callback = null)
     {
-        if (($view instanceof Mailable) === false)
+        if (($mailable instanceof Mailable) === false)
         {
             return;
         }
 
-        $view->build();
+        $mailable->build();
 
-        $this->mailables[] = $view;
+        $this->mailables[] = $mailable;
     }
 }

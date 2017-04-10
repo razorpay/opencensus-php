@@ -4,8 +4,7 @@ namespace RZP\Mail\Gateway\RefundFile;
 
 use Carbon\Carbon;
 use RZP\Constants\MailTags;
-use RZP\Mail\base \Common;
-use RZP\Mail\base \Mailable;
+use RZP\Mail\Base\Mailable;
 
 class Base extends Mailable
 {
@@ -22,9 +21,9 @@ class Base extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Common::MAIL_ADDRESSES[Common::REFUNDS];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::REFUNDS];
 
-        $fromHeader = Metadata::HEADER_MAP[$this->type];
+        $fromHeader = Constants::HEADER_MAP[$this->type];
 
         $this->from($fromEmail, $fromHeader);
 
@@ -33,7 +32,7 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $emails = Metadata::RECIPIENT_EMAILS_MAP[$this->type];
+        $emails = Constants::RECIPIENT_EMAILS_MAP[$this->type];
 
         $this->to($emails);
 
@@ -44,7 +43,7 @@ class Base extends Mailable
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        $subject = Metadata::SUBJECT_MAP[$this->type] . $today;
+        $subject = Constants::SUBJECT_MAP[$this->type] . $today;
 
         $this->subject($subject);
 
@@ -54,7 +53,7 @@ class Base extends Mailable
     protected function addMailData()
     {
         $data = [
-            'body' => Metadata::BODY_MAP[$this->type]
+            'body' => Constants::BODY_MAP[$this->type]
         ];
 
         $this->with($data);
@@ -78,7 +77,7 @@ class Base extends Mailable
 
     protected function addHeaders()
     {
-        $header = Metadata::MAILTAG_MAP[$this->type];
+        $header = Constants::MAILTAG_MAP[$this->type];
 
         $this->withSwiftMessage(function ($message) use ($header)
         {

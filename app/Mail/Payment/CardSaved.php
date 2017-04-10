@@ -3,13 +3,13 @@
 namespace RZP\Mail\Payment;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 
 class CardSaved extends Base
 {
     protected function addSender()
     {
-        $email = Common::MAIL_ADDRESSES[Common::CARE];
+        $email = Constants::MAIL_ADDRESSES[Constants::CARE];
 
         $this->from($email);
 

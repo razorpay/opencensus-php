@@ -3,7 +3,7 @@
 namespace RZP\Mail\Merchant;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 use RZP\Models\Merchant\Webhook\Event;
@@ -23,9 +23,9 @@ class Webhook extends Mailable
 
     protected function addSender()
     {
-        $email = Common::MAIL_ADDRESSES[Common::ALERTS];
+        $email = Constants::MAIL_ADDRESSES[Constants::ALERTS];
 
-        $header = Common::HEADERS[Common::ALERTS];
+        $header = Constants::HEADERS[Constants::ALERTS];
 
         $this->from($email, $header);
 
@@ -43,9 +43,9 @@ class Webhook extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
+        $email = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
 
-        $header = Common::HEADERS[Common::SUPPORT];
+        $header = Constants::HEADERS[Constants::SUPPORT];
 
         $this->replyTo($email, $header);
 
@@ -85,7 +85,8 @@ class Webhook extends Mailable
         $data['mode'] = $this->options['mode'];
 
         $data['subject'] = $this->getSubject();
- $this->with($data);
+
+        $this->with($data);
 
         return $this;
     }
@@ -145,6 +146,7 @@ class Webhook extends Mailable
         $entityType = Event::$eventsToEntityMap[$event];
 
         $mailData['entity_id'] = $eventData['payload'][$entityType]['entity']['id'];
+
         $mailData['field_description'] = (studly_case($entityType) . " " . "Id");
     }
 }

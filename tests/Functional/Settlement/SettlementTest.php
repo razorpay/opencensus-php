@@ -3,7 +3,11 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
+use Mail;
 
+use RZP\Mail\Settlement\IciciSettlement as IciciSettlementMail;
+use RZP\Mail\Settlement\KotakSettlement as KotakSettlementMail;
+use RZP\Mail\Settlement\KotakPayout as KotakPayoutMail;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\Entity as SettlementEntity;
@@ -263,6 +267,8 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlement()
     {
+        Mail::fake();
+
         $this->ba->appAuth();
 
         // $this->fixtures->merchant->createBankAccount();
@@ -356,6 +362,8 @@ class SettlementTest extends TestCase
 
         $settlementReport = $this->fetchReport('settlement', $input);
         assert(count($settlementReport) === 1);
+
+        Mail::assertSent(KotakSettlementMail::class);
     }
 
     public function testMerchantSettlementV2()
@@ -550,6 +558,8 @@ class SettlementTest extends TestCase
 
     public function testIciciNodalTransfer()
     {
+        Mail::fake();
+
         $this->ba->appAuth();
 
         $request = [
@@ -563,6 +573,8 @@ class SettlementTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals(null, $content['file']);
+
+        Mail::assertSent(IciciSettlementMail::class);
     }
 
     public function testSettlementWithAccountTransfer()

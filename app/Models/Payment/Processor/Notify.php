@@ -115,6 +115,7 @@ class Notify
      */
     protected function notifyViaMail($event)
     {
+
         $mailableClass = $this->getMailableClass($event);
 
         if (PaymentMail\Event::isCustomerEvent($event) === true)
@@ -150,8 +151,6 @@ class Notify
 
     protected function notifyViaSlack($event)
     {
-        $slackData = $this->getSlackData($event);
-
         // We don't send out a notification on capture
         $slackMessages = [
             self::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
@@ -169,6 +168,8 @@ class Notify
         if ((array_key_exists($event, $slackMessages)) and
             ($this->isSlackEnabled()))
         {
+            $slackData = $this->getSlackData($event);
+
             $this->app['slack']->queue($slackMessages[$event], $slackData, $settings);
         }
     }
@@ -350,11 +351,6 @@ class Notify
             // Capture is unused right now
             case self::CAPTURED:
                 $data = $this->template['payment'];
-                break;
-
-            case self::INVOICE_PAYMENT_AUTHORIZED:
-            case self::INVOICE_PAYMENT_CAPTURED:
-                $data = $this->template['invoice'];
                 break;
 
             case self::REFUNDED:

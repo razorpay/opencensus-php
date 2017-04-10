@@ -25,11 +25,12 @@ class RefundFile extends Base\Core
         ;
     }
 
-    protected function createFile(string $extension,
-                                    $content,
-                                    string $fileName,
-                                    string $type,
-                                    string $store = FileStore\Store::S3)
+    protected function createFile(
+                        string $extension,
+                        $content,
+                        string $fileName,
+                        string $type,
+                        string $store = FileStore\Store::S3)
     {
         $creator = new FileStore\Creator;
 

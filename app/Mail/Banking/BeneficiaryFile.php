@@ -27,6 +27,7 @@ class BeneficiaryFile extends Mailable
     protected function addSender()
     {
         $fromEmail = self::KOTAK_BENEFICIARY_MAIL;
+
         $fromHeader = self::KOTAK_BENEFICARY_FROM_HEADER;
 
         $this->from($fromEmail, $fromHeader);

@@ -91,9 +91,19 @@ class InvoiceTest extends TestCase
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
-        Mail::assertSent(InvoiceAuthorizedMail::class);
+        Mail::assertSent(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
+        {
+            $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
 
-        Mail::assertSent(InvoiceCapturedMail::class);
+            return true;
+        });
+
+        Mail::assertSent(InvoiceCapturedMail::class, function ($mail) use ($invoice)
+        {
+            $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
+
+            return true;
+        });
     }
 
     public function testCreateLinkWithSource()

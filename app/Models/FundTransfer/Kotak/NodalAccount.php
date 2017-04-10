@@ -288,14 +288,16 @@ class NodalAccount
         ];
 
         $fileName = $this->getFileToWriteNameWithoutExt();
+
         $path = $this->getStorageDir();
+
         $fullpath = $path . '/'. $fileName;
 
         $data['file'] = $fullpath;
 
         $kotakSettlementMail = new SettlementMail\KotakSettlement($data);
 
-        Mail::queue($kotakSettlementMail);
+        Mail::send($kotakSettlementMail);
     }
 
     protected function sendKotakPayoutsMail($fileName, $count, $amounts)
@@ -308,7 +310,7 @@ class NodalAccount
 
         $kotakPayoutMail = new SettlementMail\KotakPayout($data);
 
-        Mail::queue($kotakPayoutMail);
+        Mail::send($kotakPayoutMail);
     }
 
     // @codingStandardsIgnoreStart

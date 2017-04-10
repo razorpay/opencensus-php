@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Carbon\Carbon;
 use Mail;
 
+use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Mail\Banking\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Models\Transaction;
@@ -323,6 +324,8 @@ class MerchantTest extends TestCase
 
     public function testActivateMerchant()
     {
+        Mail::fake();
+
         $this->ba->appAuthLive();
 
         $ba = $this->fixtures
@@ -348,6 +351,8 @@ class MerchantTest extends TestCase
         $testData['response']['content']['balance'] = 0;
 
         $this->runRequestResponseFlow($testData);
+
+        Mail::assertSent(ActivationMail::class);
 
         // Because rest of the tests require appAuth, reset it back
         $this->ba->appAuthLive();

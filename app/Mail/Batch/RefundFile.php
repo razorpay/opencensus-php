@@ -5,7 +5,7 @@ namespace RZP\Mail\Batch;
 use Carbon\Carbon;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Batch;
 
@@ -33,8 +33,8 @@ class RefundFile extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Common::MAIL_ADDRESSES[Common::REFUNDS];
-        $fromHeader = Common::HEADERS[Common::REFUNDS];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::REFUNDS];
+        $fromHeader = Constants::HEADERS[Constants::REFUNDS];
 
         $this->from($fromEmail, $fromHeader);
 

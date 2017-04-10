@@ -22,6 +22,7 @@ class CreateSubMerchant extends Mailable
     protected function addRecipients()
     {
         $email = $this->subMerchant['email'];
+
         $name = $this->subMerchant['name'];
 
         $this->to($email, $name);

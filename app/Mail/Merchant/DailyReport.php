@@ -4,7 +4,7 @@ namespace RZP\Mail\Merchant;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 use RZP\Models\Merchant;
 
 class DailyReport extends Mailable
@@ -29,15 +29,15 @@ class DailyReport extends Mailable
 
     protected function addSender()
     {
-        $email = Common::MAIL_ADDRESSES[Common::REPORTS];
+        $email = Constants::MAIL_ADDRESSES[Constants::REPORTS];
 
         $this->from($email);
     }
 
     protected function addReplyTo()
     {
-        $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
-        $header =Common::HEADERS[Common::SUPPORT];
+        $email = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+        $header = Constants::HEADERS[Constants::SUPPORT];
 
         $this->replyTo($email, $header);
 
@@ -46,7 +46,7 @@ class DailyReport extends Mailable
 
     protected function addCc()
     {
-        $email = Common::MAIL_ADDRESSES[Common::NOTIFICATIONS];
+        $email = Constants::MAIL_ADDRESSES[Constants::NOTIFICATIONS];
 
         $this->cc($email);
 

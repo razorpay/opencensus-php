@@ -4,7 +4,7 @@ namespace RZP\Mail\Gateway;
 
 use Carbon\Carbon;
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 
 class DailyFile extends Mailable
@@ -18,7 +18,7 @@ class DailyFile extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Common::MAIL_ADDRESSES[Common::SETTLEMENTS];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::SETTLEMENTS];
 
         $fromHeader = $this->data['bankName'] . ' Netbanking Refunds';
 
@@ -29,7 +29,7 @@ class DailyFile extends Mailable
 
     protected function addRecipients()
     {
-        $emails = Common::MAIL_ADDRESSES[Common::SETTLEMENTS];
+        $emails = Constants::MAIL_ADDRESSES[Constants::SETTLEMENTS];
 
         $this->to($emails);
 

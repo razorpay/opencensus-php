@@ -3,7 +3,7 @@
 namespace RZP\Mail\Payment;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 
 class FailedToAuthorized extends Base
 {
@@ -11,9 +11,9 @@ class FailedToAuthorized extends Base
     {
         if ($this->isMerchantEmail === false)
         {
-            $email = Common::MAIL_ADDRESSES[Common::CARE];
+            $email = Constants::MAIL_ADDRESSES[Constants::CARE];
 
-            $header = Common::HEADERS[Common::CARE];
+            $header = Constants::HEADERS[Constants::CARE];
 
             $this->from($email);
 

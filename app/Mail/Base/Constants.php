@@ -2,7 +2,7 @@
 
 namespace RZP\Mail\Base;
 
-class Common
+class Constants
 {
     const SUPPORT       = 'support';
     const SCORECARD     = 'scorecard';
@@ -22,7 +22,7 @@ class Common
         self::SCORECARD     => 'scorecard@razorpay.com',
         self::REFUNDS       => 'refunds@razorpay.com',
         self::SETTLEMENTS   => 'settlements@razorpay.com',
-        self::INVOICES      => 'invoices@arzorpay.com',
+        self::INVOICES      => 'invoices@razorpay.com',
         self::NOTIFICATIONS => 'notifications@razorpay.com',
         self::REPORTS       => 'reports@razorpay.com',
         self::CARE          => 'care@razorpay.com',

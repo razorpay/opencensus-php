@@ -3,7 +3,7 @@
 namespace RZP\Mail\Merchant;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
@@ -56,7 +56,7 @@ class Activation extends Mailable
 
     protected function addCc()
     {
-        $this->cc(Common::MAIL_ADDRESSES[Common::NOTIFICATIONS]);
+        $this->cc(Constants::MAIL_ADDRESSES[Constants::NOTIFICATIONS]);
 
         return $this;
     }

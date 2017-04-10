@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mail;
+
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -140,11 +143,18 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchant()
     {
+        Mail::fake();
+
         $this->fixtures->merchant->addFeatures(['aggregator']);
 
         $this->ba->proxyAuth();
 
         $this->startTest();
+
+        Mail::assertSent(CreateSubMerchantMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com', 'Submerchant');
+        });
     }
 
     public function testCreateSubMerchantWithEmail()

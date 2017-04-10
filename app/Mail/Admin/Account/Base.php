@@ -3,8 +3,9 @@
 namespace RZP\Mail\Admin\Account;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 
 class Base extends Mailable
 {
@@ -14,7 +15,7 @@ class Base extends Mailable
 
     protected $input;
 
-    public function __construct($admin, array $input)
+    public function __construct(AdminEntity $admin, array $input)
     {
         $this->admin = $admin;
 
@@ -25,8 +26,8 @@ class Base extends Mailable
 
     protected function addSender()
     {
-        $from = Common::MAIL_ADDRESSES[Common::SUPPORT];
-        $fromHeader = Common::HEADERS[Common::SUPPORT];
+        $from = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+        $fromHeader = Constants::HEADERS[Constants::SUPPORT];
 
         $this->from($from, $fromHeader);
 
@@ -44,7 +45,7 @@ class Base extends Mailable
 
     protected function addReplyTo()
     {
-        $replyTo = Common::MAIL_ADDRESSES[Common::SUPPORT];
+        $replyTo = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
 
         $this->replyTo($replyTo);
 

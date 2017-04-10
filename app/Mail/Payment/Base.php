@@ -4,7 +4,7 @@ namespace RZP\Mail\Payment;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 
 class Base extends Mailable
 {
@@ -21,8 +21,8 @@ class Base extends Mailable
 
     protected function addSender()
     {
-        $email = Common::MAIL_ADDRESSES[Common::REPORTS];
-        $header = Common::HEADERS[Common::REPORTS];
+        $email = Constants::MAIL_ADDRESSES[Constants::REPORTS];
+        $header = Constants::HEADERS[Constants::REPORTS];
 
         $this->from($email, $header);
 
@@ -31,7 +31,7 @@ class Base extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
+        $email = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
 
         $this->replyTo($email);
 

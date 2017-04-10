@@ -68,9 +68,9 @@ class Event
     {
         $arr = explode('_', $event);
 
-        array_pop($arr);
+        $event = array_pop($arr);
 
-        $event = studly_case(implode($arr, '_'));
+        $event = studly_case($event);
 
         return $event;
     }

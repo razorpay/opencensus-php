@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 
 class Scorecard extends Mailable
 {
@@ -19,7 +19,7 @@ class Scorecard extends Mailable
 
     protected function addRecipients()
     {
-        $to = Common::MAIL_ADDRESSES[Common::SCORECARD];
+        $to = Constants::MAIL_ADDRESSES[Constants::SCORECARD];
 
         $this->to($to);
 
@@ -28,9 +28,9 @@ class Scorecard extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Common::MAIL_ADDRESSES[Common::SCORECARD];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::SCORECARD];
 
-        $fromHeader = Common::HEADERS[Common::SCORECARD];
+        $fromHeader = Constants::HEADERS[Constants::SCORECARD];
 
         $this->from($fromEmail, $fromHeader);
 

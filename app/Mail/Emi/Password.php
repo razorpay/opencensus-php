@@ -4,7 +4,7 @@ namespace RZP\Mail\Emi;
 
 use Carbon\Carbon;
 
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 
 class Password extends Base
 {
@@ -19,7 +19,7 @@ class Password extends Base
 
     protected function addSender()
     {
-        $fromEmail = Common::MAIL_ADDRESSES[Common::EMI];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::EMI];
 
         $fromHeader = $this->bankName . ' Emi File Password';
 

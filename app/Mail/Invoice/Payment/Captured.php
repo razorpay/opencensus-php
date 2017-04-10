@@ -2,9 +2,13 @@
 
 namespace RZP\Mail\Invoice\Payment;
 
-use RZP\Mail\Payment\Base;
+use Config;
+
+use RZP\Constants\MailTags;
 use RZP\Mail\Base\Common;
+use RZP\Mail\Payment\Base;
 use RZP\Models\Invoice;
+use RZP\Models\Invoice\ViewDataSerializer;
 
 class Captured extends Base
 {

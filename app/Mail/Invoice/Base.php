@@ -6,7 +6,7 @@ use Config;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 use RZP\Exception;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Type;
@@ -32,7 +32,7 @@ class Base extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Common::MAIL_ADDRESSES[Common::INVOICES];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::INVOICES];
 
         $fromHeader = $this->invoiceData['merchant']['name'];
 
@@ -70,9 +70,9 @@ class Base extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Common::MAIL_ADDRESSES[Common::SUPPORT];
+        $email = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
 
-        $header = Common::HEADERS[Common::SUPPORT];
+        $header = Constants::HEADERS[Constants::SUPPORT];
 
         $this->replyTo($email, $header);
 

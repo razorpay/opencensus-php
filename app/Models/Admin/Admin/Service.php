@@ -135,7 +135,7 @@ class Service extends Base\Service
     {
         $forgotPasswordMail = new AdminMail\ForgotPassword($admin, $input);
 
-        Mail::send($forgotPasswordMail);
+        Mail::queue($forgotPasswordMail);
     }
 
     protected function generateToken()

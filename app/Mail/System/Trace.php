@@ -4,7 +4,7 @@ namespace RZP\Mail\System;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
-use RZP\Mail\Base\Common;
+use RZP\Mail\Base\Constants;
 
 class Trace extends Mailable
 {
@@ -23,7 +23,7 @@ class Trace extends Mailable
 
     protected function addSender()
     {
-        $email = Common::MAIL_ADDRESSES[Common::ERRORS];
+        $email = Constants::MAIL_ADDRESSES[Constants::ERRORS];
 
         $this->from($email);
 
@@ -32,7 +32,7 @@ class Trace extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Common::MAIL_ADDRESSES[Common::DEVELOPERS];
+        $email = Constants::MAIL_ADDRESSES[Constants::DEVELOPERS];
 
         $this->replyTo($email);
 
@@ -44,6 +44,22 @@ class Trace extends Mailable
         $subject = self::CHANNEL . '-' . $this->mode . ' - Critical error occurred';
 
         $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.message');
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $this->with([
+                'msg' => $msg
+        ]);
 
         return $this;
     }
