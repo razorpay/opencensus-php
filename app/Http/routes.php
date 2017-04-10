@@ -247,7 +247,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // Admin Main Actions, mostly initiated from the Actions screen
         Route::post('/admin/trigger/error', 'AdminController@triggerError');
-        Route::post('/admin/settlement/initiate/{channel}', 'AdminController@postInitiateSetl');
         // Newsletter
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
         Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');

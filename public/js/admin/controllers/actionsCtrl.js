@@ -12,9 +12,16 @@ app.controller('ActionsCtrl', [
       $scope.response = null;
       $scope.alerts = alertsFactory.getHandler();
       $scope.initiateSetl = function (channel) {
+        var data = {
+          route_name: 'setl_initiate',
+          url_params: {
+            '{channel?}' : channel
+          }
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/settlement/initiate/' + channel
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {

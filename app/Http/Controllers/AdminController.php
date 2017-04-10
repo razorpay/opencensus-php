@@ -483,13 +483,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postInitiateSetl($channel)
-    {
-        list($error, $data) = (new Admin\Service)->postInitiateSetl($channel);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postAddIIN()
     {
         $input = Input::all();
