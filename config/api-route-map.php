@@ -277,6 +277,16 @@ return [
         'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
         'pricing_supported_networks'        => 'pricing/networks',
 
+        // Actions
+        // EMI
+        'emi_plan_add'                      => 'emi',
+
+        // IIN
+        'iin_add'                           => 'iins',
+
+        // Verify Payment
+        'payment_verify'                    => 'payments/{id}/verify',
+
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
     ],
