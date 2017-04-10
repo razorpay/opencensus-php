@@ -43,7 +43,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        $status = [Federal\Status::YES];
+        $status = [Federal\Status::getAuthSuccessStatus()];
 
         return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
                                                                      Action::AUTHORIZE,
