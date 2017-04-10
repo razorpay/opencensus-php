@@ -15,7 +15,7 @@ import { roles, updateUser, removeUser, fetchTeamDetails } from 'merchant/module
   }
 )
 @reduxForm()
-export default class EditInvitation extends Component {
+export default class EditUser extends Component {
   componentWillMount() {
     this.props.initialize({
       role: this.props.user.pivot.role
