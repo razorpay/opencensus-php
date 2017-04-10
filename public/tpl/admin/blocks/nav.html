@@ -44,8 +44,8 @@
   <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
     <span>Workflows</span>
   </li>
-  <li>
-    <a id="workflowsNav" ui-sref="app.workflows.list" >
+  <li ng-show="admin.permissions && admin.permissions.indexOf('view_all_workflow') !== -1">
+    <a id="workflowsNav" ui-sref="app.workflows.list">
       <i class="fa fa-exchange icon text-warning-lter"></i>
       <span>Workflows</span>
     </a>
