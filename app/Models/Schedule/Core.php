@@ -28,4 +28,26 @@ class Core extends Base\Core
 
         return $schedule;
     }
+
+    public function getOrCreateDefaultSchedule($delay)
+    {
+        $schedule = $this->repo->schedule->getDailySettlementScheduleByDelay($delay);
+
+        if (is_null($schedule) === true)
+        {
+            $input = [
+                Schedule\Entity::NAME     => "Basic T$requiredDelay",
+                Schedule\Entity::TYPE     => Schedule\Type::SETTLEMENT,
+                Schedule\Entity::PERIOD   => Schedule\Period::DAILY,
+                Schedule\Entity::INTERVAL => 1,
+                Schedule\Entity::DELAY    => $delay,
+            ];
+
+            $schedule = (new Schedule\Core)->createSchedule($input);
+
+            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
+        }
+
+        return $schedule;
+    }
 }

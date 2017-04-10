@@ -1,0 +1,73 @@
+<?php
+
+namespace RZP\Models\Workflow;
+
+use App;
+
+/****
+ * Workflow Manager manages all workflows and activities relating to it.
+ *
+ * It has functions which are universal to all the project's models not only of
+ * workflows entity
+ */
+
+class Manager
+{
+    protected $app;
+
+    protected $repo;
+
+    protected $trace;
+
+    protected $mode;
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
+
+        $this->trace = $this->app['trace'];
+
+        $this->repo = $this->app['repo'];
+    }
+
+    public function getActionsForChecker($admin = null)
+    {
+        //
+        // Get all the actions in the admin's org
+        // Based on current level, get the steps/roles in the workflow
+        // if the admin has the role, give the checker the action_id, step_id
+        //
+
+        if ($admin === null)
+        {
+            $admin = $this->app['basicauth']->getAdmin();
+        }
+
+        $adminRoleIds = $admin->roles()->getRelatedIds()->toArray();
+
+        $actions = $this->repo->workflow_action->findActionsForChecker($adminRoleIds);
+
+        return $actions->toArrayPublic();
+    }
+
+    public function getActionsByMaker($admin = null)
+    {
+        // if admin is not passed, accept admin as authAdmin
+        if ($admin === null)
+        {
+            $admin = $this->app['basicauth']->getAdmin();
+        }
+
+        $relations = ['workflow'];
+
+        $actions = $this->repo->workflow_action->findByAdminIdAndOrgIdWithRelations(
+            $admin->getId(), $admin->getOrgId(), $relations);
+
+        return $actions;
+    }
+}

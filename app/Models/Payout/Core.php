@@ -145,7 +145,7 @@ class Core extends Base\Core
             'kotak_payout_txt'   => $urlText,
         ];
 
-        $this->updateBatchFundTransferEntityUrls($urls);
+        $this->updateFileDetailsInBatchFundTransferEntity(['urls' => $urls]);
 
         $data['payout_text_file'] = $urlText;
 

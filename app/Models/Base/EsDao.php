@@ -320,6 +320,102 @@ class EsDao
         }
     }
 
+    public function search($indexName, $typeName, $id)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'body'  => [
+                'query' => [
+                   'match' => [
+                        'action_id' => $id
+                    ]
+                ]
+            ]
+        ];
+
+        return $this->es->searchHeimdall($params);
+    }
+
+    public function updateActionState($indexName, $typeName, $documentId, $state)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'id'    => $documentId,
+            'body'  => [
+                'script' => sprintf('ctx._source.state="%s";', $state)
+            ],
+        ];
+
+        return $this->es->updateHeimdall($params);
+    }
+
+    public function getDocumentByFields($indexName, $typeName, $terms)
+    {
+        $matchParamsForQuery = [];
+
+        foreach ($terms as $key => $val)
+        {
+            $matchParamsForQuery[] = [
+                'match' => [ $key => $val ]
+            ];
+        }
+
+        $body = [
+            "query" => [
+                "bool" => [
+                    "must" => $matchParamsForQuery
+                ]
+            ]
+        ];
+
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'body'  => $body,
+        ];
+
+        return $this->es->searchHeimdall($params);
+    }
+
+    public function searchDifferByParams(
+        string $indexName,
+        string $typeName,
+        array $matchParams,
+        array $openStates)
+    {
+        $matchParamsForQuery = [];
+
+        foreach ($matchParams as $key => $val)
+        {
+            $matchParamsForQuery[] = [
+                'match' => [ $key => $val ]
+            ];
+        }
+
+        $body = [
+            "query" => [
+                "bool" => [
+                    "must" => $matchParamsForQuery,
+                    "filter" => [
+                        "terms" => [
+                            "state" => $openStates // ['open', 'approved']
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'body'  => $body,
+        ];
+
+        return $this->es->searchHeimdall($params);
+    }
+
     public function searchAuditLogs($orgId, $options = [])
     {
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];

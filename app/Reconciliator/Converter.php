@@ -17,9 +17,11 @@ class Converter
     // are separated by '|' instead of ',' and therefore we need
     // to get the columns out of these rows
     //
-    const CONVERT_TO_COLUMNS_MAP = [
+    const GATEWAY_FILE_DELIMITER = [
         Orchestrator::NETBANKING_FEDERAL => '|'
     ];
+
+    const DEFAULT_DELIMITER = ',';
 
     const MAPPINGS = [
         'no'   => 'number',
@@ -198,9 +200,14 @@ class Converter
                 'Unable to open file . ' . $filePath);
         }
 
+        //
+        // Setting glue for the csv to array conversion
+        //
+        $glue = self::GATEWAY_FILE_DELIMITER[$gateway] ?? self::DEFAULT_DELIMITER;
+
         try
         {
-            while (($row = fgetcsv($handle)) !== false)
+            while (($row = fgetcsv($handle, 0, $glue)) !== false)
             {
                 //
                 // Skip the first few ($linesToSkipFromTop) rows
@@ -219,13 +226,6 @@ class Converter
                     ($currentLineNumber >= $totalLinesToRead))
                 {
                     break;
-                }
-
-                if (array_key_exists($gateway, self::CONVERT_TO_COLUMNS_MAP) === true)
-                {
-                    $glue = self::CONVERT_TO_COLUMNS_MAP[$gateway];
-
-                    $row = explode($glue, $row[0]);
                 }
 
                 // If headers are empty, get headers from the first row.

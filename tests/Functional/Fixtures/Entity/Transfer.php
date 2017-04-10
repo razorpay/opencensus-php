@@ -46,6 +46,7 @@ class Transfer extends Base
                 'transfer_id'   => $transfer->getId(),
                 'merchant_id'   => $transfer->getToId(),
                 'on_hold'       => $transfer->getOnHold(),
+                'on_hold_until' => $transfer->getOnHoldUntil(),
                 'created_at'    => $transfer->getCreatedAt(),
                 'updated_at'    => $transfer->getCreatedAt(),
             ]);

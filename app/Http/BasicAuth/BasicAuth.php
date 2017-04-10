@@ -352,9 +352,13 @@ class BasicAuth
 
         if ($adminToken->getAdminId() !== null)
         {
+            $this->checkForDashboardMerchantHeader();
+
             $this->setDashboardHeaders();
 
             $this->admin = $adminToken->admin;
+
+            $this->adminOrgId = $this->admin->getOrgId();
 
             return $this->checkAndSetAccountScope();
         }
@@ -971,6 +975,11 @@ class BasicAuth
     public function getAdmin()
     {
         return $this->admin;
+    }
+
+    public function getAdminOrgId()
+    {
+        return $this->adminOrgId;
     }
 
     public function getMerchantId()

@@ -326,7 +326,12 @@ class Gateway extends Base\Gateway
 
         $status = self::VERIFY_STATUS_TO_CALLBACK[$content[ResponseFields::STATUS]];
 
-        $attributes = [Base\Entity::STATUS => $status];
+        $attributes = [];
+
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            $attributes = [Base\Entity::STATUS => $status];
+        }
 
         if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true) and
             (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true))
@@ -337,6 +342,11 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    protected function getAuthSuccessStatus()
+    {
+        return Confirmation::getAuthSuccessStatus();
     }
 
     protected function getResponseArray($content)

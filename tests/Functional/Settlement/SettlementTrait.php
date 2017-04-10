@@ -55,6 +55,21 @@ trait SettlementTrait
         }
     }
 
+    protected function runPaymentOnHoldUpdateCron()
+    {
+        $request = [
+            'url' => '/payments/on_hold/update',
+            'method' => 'POST',
+            'content' => []
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function initiateSettlements($channel = 'kotak', $testTimeStamp = null)
     {
         $content = ['all' => 1];
