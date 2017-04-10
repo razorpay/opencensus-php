@@ -9,4 +9,7 @@ return [
     'admin_merchant_login'  => ['view_merchant_login'],
     'admin_fetch_entity'    => ['view_all_entity'],
     'admin_payment_capture' => ['edit_payment_capture'],
+
+    // Mailgun logs
+    'mailgun_logs_get'      => ['view_email_logs'],
 ];
