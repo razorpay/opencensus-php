@@ -7,7 +7,7 @@ const RefundsListItem = ({ refund }) => {
       <td>
         <a
           target='_blank'
-          href={`#/app/refunds/${refund.id}/details`}
+          href={`#/app/refunds/${refund.id}`}
         >
           {refund.id}
         </a>
@@ -26,7 +26,6 @@ const RefundsListItem = ({ refund }) => {
 }
 
 export default ({ refunds, isLoading }) => {
-  debugger
   return (
     <div class='table-responsive'>
       <table class='table table-hover table-striped'>
