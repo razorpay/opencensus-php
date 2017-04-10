@@ -75,8 +75,6 @@ class Index extends Command
      */
     protected function doIndexing()
     {
-        $this->esRepo->createIndexIfNotExists();
-
         $skip = 0;
         $take = 100;
 

@@ -357,24 +357,12 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceAndAssertEsSync()
     {
-        $esMock = $this->createEsMock(['indexExists', 'createIndex', 'bulkUpdate']);
+        $esMock = $this->createEsMock(['bulkUpdate']);
 
         //
         // For the first time, it will createIndex as indexExists will return false.
         // Asserting all of it.
         //
-
-
-        $esMock->expects($this->once())
-               ->method('indexExists')
-               ->with(['index' => 'invoice_test'])
-               ->willReturn(false);
-
-        $expected = $this->testData['expectedCreateIndexParams'];
-
-        $esMock->expects($this->once())
-               ->method('createIndex')
-               ->with($expected);
 
         $expected = $this->getExpectedUpsertIndexParams();
 

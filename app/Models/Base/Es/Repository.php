@@ -73,8 +73,6 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->trace = $app['trace'];
 
-        $this->setFieldMappings();
-
         $this->esDao = new Base\EsDao;
 
         // If entity name is set as part of constructor arg, get corresponding
@@ -92,14 +90,6 @@ class Repository extends \Razorpay\Spine\Repository
             }
         }
     }
-
-    /**
-     * Sets field mappings for the es type.
-     *
-     * This method to be overridden in the entity's EsRepository which should
-     * set $fieldMappings var.
-     */
-    protected function setFieldMappings() {}
 
     public function getFields(): array
     {
@@ -216,20 +206,6 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     // DEPRECATED METHODS ENDS ------------------------------------------------
-
-    /**
-     * Creates index corresponding to this repo if it not exists already.
-     *
-     * @return
-     */
-    public function createIndexIfNotExists()
-    {
-        $settings = Mapping::$indexSettings;
-
-        $mappings = Mapping::mappings($this->indexName, $this->fields, $this->fieldMappings);
-
-        $this->esDao->createIndexIfNotExistsInDefaultHost($this->indexName, $settings, $mappings);
-    }
 
     /**
      * Makes search in ES on this model with given params.

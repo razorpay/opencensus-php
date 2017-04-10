@@ -58,9 +58,6 @@ class EsSync extends Job implements ShouldQueue
 
             $this->trace->debug(TraceCode::ES_SYNC_REQUEST, $tracePayload);
 
-            // We do this to ensure index with proper settings is created already.
-            $this->esRepo->createIndexIfNotExists();
-
             $this->sync();
 
             $this->delete();

@@ -28,18 +28,4 @@ class EsRepository extends Es\Repository
         Entity::TERMS,
         Entity::NOTES . '.*',
     ];
-
-    protected function setFieldMappings()
-    {
-        $this->fieldMappings = [
-            Entity::RECEIPT          => Es\Mapping::$textFieldMapping,
-            Entity::CUSTOMER_NAME    => Es\Mapping::$textFieldMapping,
-            Entity::CUSTOMER_CONTACT => Es\Mapping::$textFieldMapping,
-            Entity::CUSTOMER_EMAIL   => Es\Mapping::$textFieldMapping,
-            Entity::DESCRIPTION      => Es\Mapping::$textFieldMapping,
-            Entity::TERMS            => Es\Mapping::$textFieldMapping,
-            Entity::NOTES            => Es\Mapping::$objectFieldMapping,
-            Entity::CREATED_AT       => Es\Mapping::$epochFieldMapping,
-        ];
-    }
 }
