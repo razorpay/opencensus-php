@@ -81,6 +81,7 @@ class Repository extends Base\Repository
                     ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
                     ->where($pmTable . '.entity_id', '=', $orgId)
                     ->where($pmTable . '.entity_type', '=', 'org')
+                    ->whereIn(Entity::NAME, $permissionNames)
                     ->get(['id']);
     }
 }
