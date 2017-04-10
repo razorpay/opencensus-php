@@ -32,10 +32,10 @@ export default class KeysListContainer extends ListContainer {
     })
   }
 
-  showRollKeyModal = (key = null) => {
+  showRollKeyModal = (params = null) => {
     this.props.openModal({
       component: <RollKey
-        apiKey={key}
+        params={params}
         merchantId={this.props.session.user.id}
         generateKey={this.generateKey}
       />
@@ -50,8 +50,8 @@ export default class KeysListContainer extends ListContainer {
     })
   }
 
-  generateKey = (key) => {
-    return this.props.generateKey(key).then((response) => {
+  generateKey = (params) => {
+    return this.props.generateKey(params).then((response) => {
       var key = response.new || response
 
       this.props.closeModal()

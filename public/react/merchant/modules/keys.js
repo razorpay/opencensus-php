@@ -15,7 +15,8 @@ export const fetchKeys = (params) => {
   }
 }
 
-export const generateKey = (key) => {
+export const generateKey = (params) => {
+  var key = new Key(params)
   return (dispatch) => {
     return dispatch({
       type: key.isNew ? KEY_GENERATE : KEY_ROLL,
