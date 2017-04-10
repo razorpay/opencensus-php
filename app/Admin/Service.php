@@ -940,27 +940,6 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function authorizeFailedPayment($mode, $id)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $data = $this->api->admin->fetchEntityById('payment', $id)
-                ->authorizeFailed()
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
     public function refundAuthorizedPayment($mode, $merchantId, $id)
     {
         $data = [];
@@ -1734,22 +1713,6 @@ class Service extends Base\Service
         ]);
     }
 
-    public function generateBeneficiaryFile()
-    {
-        $this->setApiCredentials();
-        try
-        {
-            $response = $this->api->merchant->generateBeneficiaryFile();
-        }
-
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array();
-    }
-
     /**
      * Fires off a queue worker to start capturing screenshots
      * @param  string $id merchant id
@@ -2057,23 +2020,6 @@ class Service extends Base\Service
             return [null, $response->toArray()];
         }
 
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [[$e->getMessage()], null];
-        }
-
-    }
-
-    public function generateNetBankingRefunds($input)
-    {
-        $this->setApiCredentials(null, $input['mode']);
-        unset($input['mode']);
-
-        try
-        {
-            $response = $this->api->refund->generateNetBankingExcel($input);
-            return [null, $response->toArray()];
-        }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return [[$e->getMessage()], null];
@@ -2652,31 +2598,6 @@ class Service extends Base\Service
         catch (\Exception $e)
         {
             $error[] = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
-    /**
-    * Create new schedule
-    * Uses admin auth on the API
-    *
-    * @param $input input array
-    * @return $data array with schedule details created
-    */
-    public function createSchedule($input)
-    {
-        $error = $data = null;
-
-        $this->setAdminCredentials();
-
-        try
-        {
-            $data = $this->api->schedule->createSchedule($input);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
         }
 
         return [$error, $data];

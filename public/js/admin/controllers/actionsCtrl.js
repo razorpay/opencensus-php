@@ -90,11 +90,15 @@ app.controller('ActionsCtrl', [
         });
       };
       $scope.generateNetBankingRefunds = function (params) {
-        var url = 'admin/' + params.mode + '/refunds/netbanking';
+        var data = {
+          route_name: 'refund_netbanking_generate_excel',
+          body: params,
+          mode: params.mode
+        };
         var request = $http({
-          method: 'POST',
-          url: url,
-          data: params
+          method: 'post',
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -240,9 +244,17 @@ app.controller('ActionsCtrl', [
         });
       };
       $scope.authorizeFailedPayment = function (payment_id, mode) {
+        var data = {
+          route_name: 'payment_authorize_failed',
+          url_params: {
+            '{id}' : payment_id
+          },
+          mode: mode
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/' + mode + '/payments/' + payment_id + '/authorize_failed'
+          url: '/admin/generic',
+          data: data,
         });
         request.success(function (data) {
           if (data.success) {
@@ -433,9 +445,10 @@ app.controller('ActionsCtrl', [
         }, $.noop);
       };
       $scope.generateBeneficiaryFile = function () {
-        var request = $http({
-          method: 'post',
-          url: '/admin/beneficiary'
+        var request = $http.get('/admin/generic', {
+          params: {
+            route_name: 'merchant_beneficiary_file'
+          }
         });
         request.success(function (data) {
           if (data.success) {
@@ -542,13 +555,15 @@ app.controller('ActionsCtrl', [
       modalInstance.result.then($scope.addSchedule, $.noop);
     };
     $scope.addSchedule = function (schedule) {
+      var data = {
+        route_name: 'schedule_create',
+        body: schedule
+      };
       var request = $http({
         method: 'post',
-        url: 'admin/schedules',
-        transformRequest: transformRequestAsFormPost,
-        data: schedule
+        url: '/admin/generic',
+        data: data,
       });
-
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Schedule added successfully', true);
