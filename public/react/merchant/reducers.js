@@ -3,6 +3,7 @@ import { reducer as formReducer } from 'redux-form';
 import sessionReducer from 'merchant/modules/session';
 import modalReducer from 'rzp/modules/modals';
 import notificationsReducer from 'rzp/modules/notifications';
+import homeReducer from 'merchant/modules/home'
 import invoicesReducer from 'merchant/modules/invoices/list';
 import invoiceDetailsReducer from 'merchant/modules/invoices/details';
 import subscriptionsReducer from 'merchant/modules/subscriptions';
@@ -23,6 +24,7 @@ import refundReducer from 'merchant/modules/refunds/details';
 import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 
 export default combineReducers({
+  home: homeReducer,
   form: formReducer,
   session: sessionReducer,
   modal: modalReducer,
