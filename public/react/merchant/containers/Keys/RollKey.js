@@ -33,7 +33,7 @@ export default class RollKey extends Component {
   }
 
   save = (props) => {
-    var key = this.props.currentKey
+    var key = this.props.apiKey
     key.delay_roll = props.delay_roll
     key.merchantId = this.props.merchantId
 
@@ -45,7 +45,7 @@ export default class RollKey extends Component {
   }
 
   render() {
-    const { handleSubmit, currentKey } = this.props
+    const { handleSubmit, apiKey } = this.props
 
     return (
       <div>

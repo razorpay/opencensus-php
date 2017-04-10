@@ -33,7 +33,7 @@ export default class NewKey extends Component {
   }
 
   componentWillMount() {
-    const key = this.props.currentKey
+    const key = this.props.apiKey
     if (key) {
       this.props.initialize({
         keyId: key.id,
@@ -53,8 +53,8 @@ export default class NewKey extends Component {
   }
 
   render() {
-    const { handleSubmit, currentKey } = this.props
-    const key = currentKey;
+    const { handleSubmit, apiKey } = this.props
+    const key = apiKey;
 
     return (
       <div>

@@ -5,7 +5,7 @@ import Key from 'merchant/models/Key'
 
 const KeysListItem = (props) => {
   let mode = props.mode
-  let {id, created_at, expired_at } = props.keyObj
+  let {id, created_at, expired_at } = props.apiKey
   let key = new Key({id});
   return (
     <tr>
@@ -68,7 +68,7 @@ export default (props) => {
               keys.map((key) =>
                 <KeysListItem
                   key={key.id}
-                  keyObj={key}
+                  apiKey={key}
                   mode={mode}
                   showRollKeyModal={showRollKeyModal}
                 />

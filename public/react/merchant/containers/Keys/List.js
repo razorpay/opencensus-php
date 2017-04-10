@@ -35,7 +35,7 @@ export default class KeysListContainer extends ListContainer {
   showRollKeyModal = (key = null) => {
     this.props.openModal({
       component: <RollKey
-        currentKey={key}
+        apiKey={key}
         merchantId={this.props.session.user.id}
         generateKey={this.generateKey}
       />
@@ -45,7 +45,7 @@ export default class KeysListContainer extends ListContainer {
   showNewKeyModal = (key) => {
     this.props.openModal({
       component: <NewKey
-        currentKey={key}
+        apiKey={key}
       />
     })
   }
