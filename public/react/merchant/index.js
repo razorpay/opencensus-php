@@ -3,6 +3,7 @@ import 'merchant/styles/layout.styl';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+import { Tabs } from 'react-tabs'
 import NgRouterProvider from 'rzp/Providers/NgRouterProvider';
 import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
 import ModalDialog from 'rzp/ui/ModalDialog';
@@ -30,7 +31,7 @@ import KeysListContainer from './containers/Keys/List';
 import CreditsContainer from './containers/Credits/List';
 import ReportsContainer from './containers/Reports';
 import TeamContainer from './containers/Team';
-
+import ActivationWizard from './containers/Activation'
 import ConfigContainer from './containers/Configuration';
 
 import RefundsListContainer from './containers/Refunds/List';
@@ -48,6 +49,8 @@ import PaymentDetails from './containers/Payments/Details';
 // This is required for ngReact. Remove this finally
 window.React = React;
 window.ReactDOM = ReactDOM;
+
+Tabs.setUseDefaultStyles(false)
 
 /*
  * Below is a transpiled version of
@@ -131,6 +134,7 @@ createNgDirective('keysList', KeysListContainer);
 createNgDirective('addFunds', AddFundsContainer);
 createNgDirective('generateReport', ReportsContainer);
 createNgDirective('manageTeam', TeamContainer);
+createNgDirective('activationWizard', ActivationWizard)
 
 createNgDirective('refundsList', RefundsListContainer);
 createNgDirective('refundDetails', RefundDetailsContainer, ['id']);
