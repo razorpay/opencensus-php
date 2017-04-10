@@ -137,6 +137,8 @@ class Core extends Base\Core
 
         $oldEntity = $this->repo->$entity->findByPublicId($entityId);
 
+        $diffFields = $this->getDiffFieldsForEntity($oldEntity);
+
         $newEntity = clone $oldEntity;
 
         // Get the appropriate validator
@@ -147,7 +149,10 @@ class Core extends Base\Core
             // Run validator
             $newEntity = $newEntity->edit($differ->getPayload(), $validator);
 
-            $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
+            $diff = $this->createDiff(
+                $oldEntity->toArray(),
+                $newEntity->toArray(),
+                $diffFields);
 
             $differ->setDiff($diff);
         }
@@ -159,13 +164,13 @@ class Core extends Base\Core
     }
 
     // TODO: Recursion
-    protected function createDiff(array $oldEntity, array $newEntity)
+    protected function createDiff(array $oldEntity, array $newEntity, array $skipDiffFields)
     {
         $diff = [];
 
         $keys = array_keys($oldEntity);
 
-        $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
+        $diffKeys = array_diff($keys, $skipDiffFields);
 
         foreach ($diffKeys as $key)
         {
@@ -223,5 +228,15 @@ class Core extends Base\Core
             strtolower($this->baseIndex), self::ES_TYPE, $documentId, $state);
 
         return $esResponse;
+    }
+
+    public function getDiffFieldsForEntity($entity)
+    {
+        if (empty($entity::skipDiffFields) === true)
+        {
+            return self::skipDiffFields;
+        }
+
+        return array_unique(array_merge($entity::skipDiffFields, self::skipDiffFields));
     }
 }
