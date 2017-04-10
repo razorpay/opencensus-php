@@ -72,6 +72,8 @@ class Core extends Base\Core
 
         if ($currentSchedule !== null)
         {
+            $entity->setNextRunAt($currentSchedule->getNextRunAt());
+
             $this->repo->deleteOrFail($currentSchedule);
         }
 
@@ -142,7 +144,12 @@ class Core extends Base\Core
 
     protected function traceAndNotifyScheduleAssignment($scheduleTask)
     {
-        $data = $scheduleTask->toArrayPublic();
+        $data = [
+            ScheduleTask\Entity::MERCHANT_ID => $scheduleTask->getMerchantId(),
+            ScheduleTask\Entity::SCHEDULE_ID => $scheduleTask->getScheduleId(),
+            ScheduleTask\Entity::TYPE        => $scheduleTask->getType(),
+            ScheduleTask\Entity::METHOD      => $scheduleTask->getMethod()
+        ];
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
 
