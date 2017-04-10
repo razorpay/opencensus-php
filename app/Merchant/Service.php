@@ -12,9 +12,9 @@ use App\Merchant;
 use App\User;
 use App\Invitation;
 use App\MerchantDetails;
+use App\Mailers\UserMailer;
 use App\Admin;
 use App\Exceptions\EntityNotFoundException;
-use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 
@@ -384,7 +384,7 @@ class Service extends Base\Service
 
             if ($user->once($credentials))
             {
-                $user = Auth::user()->get();
+                $user = Auth::user();
 
                 if ($user->getConfirmToken() === null)
                 {
@@ -392,6 +392,7 @@ class Service extends Base\Service
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
                 }
 
+                $user->token = $user->getConfirmToken();
                 (new UserMailer($user))->accountVerification()->queueAndDeliver();
 
                 return array(array(),array());

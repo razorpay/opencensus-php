@@ -165,7 +165,8 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('/admin/features/{entityId}', 'AdminController@getEntityFeatures');
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
-        Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature');
+        Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature')
+                ->name('admin_delete_features');
 
         // This is the merchant's bank account
         Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
