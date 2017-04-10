@@ -37,7 +37,11 @@ function formatFromNow(unixSeconds) {
   (state) => {
     return {
       mode: state.session.mode,
+
+      // graph data
       analytics: state.home.analytics,
+
+      // numbers
       aggregations: state.home.aggregations
     }
   },
@@ -304,7 +308,7 @@ class RecentEntityTable extends Component {
       <h4 className='font-thin m-t-none m-b-md text-muted'>Recent {capitalize(entity)}s</h4>
         {data.count ? data.items.slice(0, 5).map((item, index)=> {
           return <div className='m-b m-l row' key={index}>
-              <a href='#/app/payments/pay_7VBun74YJV4Sx8'>
+              <a href={`#/app/payments/${item.id}`}>
                 <div
                   className={'col-xs-4 col-md-3 label text-base bg-' + (colorClass[item.status] || 'light')}
                   data-tip={capitalize(item.status)} data-place='right'>
