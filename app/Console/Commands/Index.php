@@ -84,7 +84,7 @@ class Index extends Command
         {
             $this->info('Offset: ' . $skip);
 
-            $documents = $this->repo->fetchForIndexing($skip, $take);
+            $documents = $this->repo->findManyForIndexing($skip, $take);
 
             if (count($documents) === 0)
             {

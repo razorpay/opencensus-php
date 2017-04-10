@@ -31,7 +31,7 @@ trait RepositoryFetch
     // Will be removed once old notes index is migrated to new flow.
     // Many more cleanup will happen once we do above.
     //
-    protected $entitiesInOldFlow = [
+    protected $esEntitiesInOldFlow = [
         Constants\Entity::ORDER,
         Constants\Entity::PAYMENT,
         Constants\Entity::REFUND,
@@ -217,7 +217,7 @@ trait RepositoryFetch
 
     protected function isEntityInOldEsFlow(string $entity): bool
     {
-        return in_array($entity, $this->entitiesInOldFlow, true);
+        return in_array($entity, $this->esEntitiesInOldFlow, true);
     }
 
     protected function buildFetchQuery($query, $params)

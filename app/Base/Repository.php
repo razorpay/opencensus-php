@@ -17,6 +17,12 @@ use RZP\Jobs\EsSync;
 
 class Repository extends \Razorpay\Spine\Repository
 {
+    /**
+     * Delay in making es job available for queue consumer.
+     * Value is in seconds.
+     */
+    const ES_JOB_DELAY = 3;
+
     use RepositoryFetch;
     use DispatchesJobs;
 
@@ -32,13 +38,21 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $manager;
 
-    // Corresponding esRepo instance of entity.
-    // When intending to use please set it first by calling setEsRepoIfExist().
+    /**
+     * Corresponding esRepo instance of entity.
+     * When intending to use please set it first by calling setEsRepoIfExist().
+     *
+     * @var EsRepository
+     */
     protected $esRepo = null;
 
-    // Holds list of relations to be loaded with newQuery() (find/fetch).
-    // Use like - repo->with([Entity::LINE_ITEMS])->fetch().
-    // Optimizes query in general by doing mysql IN() query.
+    /**
+     * Holds list of relations to be loaded with newQuery() (find/fetch).
+     * Use like - repo->with([Entity::LINE_ITEMS])->fetch().
+     * Optimizes query in general by doing mysql IN() query.
+     *
+     * @var array
+     */
     protected $relations = [];
 
     public function __construct()
@@ -397,7 +411,7 @@ class Repository extends \Razorpay\Spine\Repository
      * Sets $esRepo
      *
      * Needs to be called explicitly one time when intending to use. This cannot
-     * be put in _constuct of this class as it needs rzp.mode and that is not
+     * be put in _construct of this class as it needs rzp.mode and that is not
      * set in few flows - tests etc.
      *
      * @return
@@ -448,7 +462,7 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @return array
      */
-    public function fetchForIndexing(int $skip = 0, int $take = 100): array
+    public function findManyForIndexing(int $skip = 0, int $take = 100): array
     {
         $query = $this->newQuery();
 
@@ -472,7 +486,7 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @return
      */
-    protected function modifyQueryForIndexing(BuilderEx & $query) {}
+    protected function modifyQueryForIndexing(BuilderEx $query) {}
 
     /**
      * Serializes a given model for indexing.
@@ -573,6 +587,9 @@ class Repository extends \Razorpay\Spine\Repository
 
         // If dirtied fields in case of update doesn't include any of the indexed
         // field lists, return.
+        //
+        // TODO: getDirty() doesn't handle related models update. Currently there
+        // is no such use case but will come very soon. Handle the same then.
         if (($action === EsRepository::UPSERT) and
             (empty(array_intersect(array_keys($dirty), $esFields)) === true))
         {
@@ -588,7 +605,7 @@ class Repository extends \Razorpay\Spine\Repository
                         $action,
                         $entity->getEntity(),
                         $entity->getId()
-                    ))->delay(3);
+                    ))->delay(self::ES_JOB_DELAY);
 
             $mock = Config::get('queue.mock');
 

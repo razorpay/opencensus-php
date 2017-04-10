@@ -4,7 +4,7 @@ namespace RZP\Models\Base\Traits\Es;
 
 /**
  * Trait used in Es/Repository class for forming es queries.
- * New methods(or overriding existing onces) can be done in the corresponding
+ * New methods(or overriding existing one's) can be done in the corresponding
  * entities' EsRepository class.
  *
  */
@@ -14,6 +14,11 @@ trait QueryBuilder
      * Default query construct for given field and value. We use term query with
      * a boost of 2. We give boost 2 for all term queries as it'll be exact match.
      *
+     * @param array  $query
+     * @param string $field
+     * @param string $value
+     *
+     * @return
      */
     public function buildQueryForFieldDefaultImpl(array & $query, string $field, string $value)
     {
@@ -29,14 +34,21 @@ trait QueryBuilder
         $this->addMust($query, $clause);
     }
 
+    /**
+     * Builds query for 'q' param. Ref Base\Es\Repository class.
+     *
+     * @param string $query
+     * @param string $value
+     *
+     * @return
+     */
     public function buildQueryForQ(array & $query, string $value)
     {
-        // - Boos given for 'q' is 1 to lower it's contribution when there are more
+        // - Boost given for 'q' is 1 to lower it's contribution when there are more
         //   exact matches when used in combination with other term queries.
         // - It's a multi match query as given query is run against a set of fields
         //   (defined in $queryFields). Also we use type 'best_fields' (default).
-        //   Ref: https://www.elastic.co/guide/en/elasticsearch/reference/
-        //          current/query-dsl-multi-match-query.html
+        //   Ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
 
         $clause = [
             'multi_match' => [

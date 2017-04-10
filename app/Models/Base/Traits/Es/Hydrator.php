@@ -58,7 +58,7 @@ trait Hydrator
      */
     protected function jsonEncodeNotesForHydration(array & $item)
     {
-        if (array_key_exists('notes', $item))
+        if (array_key_exists('notes', $item) === true)
         {
             $item['notes'] = json_encode($item['notes'], JSON_FORCE_OBJECT);
         }

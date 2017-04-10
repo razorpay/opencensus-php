@@ -18,8 +18,7 @@ class Mapping
         'type' => 'keyword',
     ];
 
-    // Ref: https://www.elastic.co/guide/en/elasticsearch/reference/
-    //          current/analysis-edgengram-tokenizer.html
+    // Ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-edgengram-tokenizer.html
     public static $textFieldMapping = [
         'type'            => 'text',
         'analyzer'        => 'edge_ngram_analyzer',

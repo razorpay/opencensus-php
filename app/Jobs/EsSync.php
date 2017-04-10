@@ -43,19 +43,20 @@ class EsSync extends Job implements ShouldQueue
 
     public function handle()
     {
+        // Trace payload should include all necessary info for debugging.
+        $tracePayload = [
+            'job_attempts' => $this->attempts(),
+            'mode'         => $this->mode,
+            'action'       => $this->action,
+            'entity'       => $this->entity,
+            'id'           => $this->id,
+        ];
+
         try
         {
             $this->init();
 
-            $tracePayload = [
-                'job_attempts' => $this->attempts(),
-                'mode'         => $this->mode,
-                'action'       => $this->action,
-                'entity'       => $this->entity,
-                'id'           => $this->id,
-            ];
-
-            $this->trace->debug(TraceCode::ES_SAVE_REQUEST, $tracePayload);
+            $this->trace->debug(TraceCode::ES_SYNC_REQUEST, $tracePayload);
 
             // We do this to ensure index with proper settings is created already.
             $this->esRepo->createIndexIfNotExists();
@@ -67,7 +68,7 @@ class EsSync extends Job implements ShouldQueue
         catch(\Exception $e)
         {
             $this->trace->traceException(
-                $e, Trace::ERROR, TraceCode::ES_SAVE_FAILED, $tracePayload);
+                $e, Trace::ERROR, TraceCode::ES_SYNC_FAILED, $tracePayload);
 
             // If it's logical error or maximum number of retries has happened
             // just delete the job, else retry the job after a wait.

@@ -8,22 +8,45 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Mode;
 
 class Repository extends \Razorpay\Spine\Repository
 {
     use Base\Traits\Es\QueryBuilder;
 
+    /**
+     * Maximum number of attempts for a given ES sync queue job.
+     */
     const MAX_JOB_ATTEMPTS = 10;
+
+    /**
+     * Wait for 120 s before re-queuing the failed job.
+     */
     const JOB_RELEASE_WAIT = 120;
-    // Different actions on es document
+
+    // Different actions on ES document
     const UPSERT           = 'upsert';
     const DELETE           = 'delete';
-    // Some common query params which searching for es
+
+    // Some common query params while searching in ES
+    const SKIP             = 'skip';
+    const COUNT            = 'count';
+
+    /**
+     * A fetch param which holds the query string which gets searched in ES.
+     */
     const QUERY            = 'q';
+
+    /**
+     * A param which specifies whether only ES payload can be returned
+     * (auto-complete use case) or full model serialization by MySQL db call is required.
+     */
     const SEARCH_HITS      = 'search_hits';
 
-    // @deprecated - Will not be required later and will be removed.
+    /**
+     * @deprecated - Will not be required later and will be removed.
+     *
+     * @var string
+     */
     protected static $table;
 
     protected $esDao;
@@ -102,7 +125,7 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $entities = new Base\PublicCollection;
 
-        if (isset($params['notes']))
+        if (isset($params['notes']) === true)
         {
             $entities = $this->fetchNotes(static::$table, $params, $merchantId);
         }
@@ -122,7 +145,7 @@ class Repository extends \Razorpay\Spine\Repository
        if (empty($entityIds) === false)
         {
             // Get the entity data from MySQL.
-            $entities = $this->newQuery()->findOrFailPublic($entityIds, array('*'));
+            $entities = $this->newQuery()->findOrFailPublic($entityIds);
 
             // MySQL should contain all entities present in ES.
             if ($entities->count() !== count($entityIds))
@@ -213,14 +236,12 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @param array       $params
      * @param string|null $merchantId
-     * @param array       $groups
      *
      * @return array
      */
     public function buildQueryAndSearch(
         array $params,
-        string $merchantId = null,
-        array $groups = []): array
+        string $merchantId = null): array
     {
         $this->addMerchantIdInEsParamsIfSet($params, $merchantId);
 
@@ -264,13 +285,13 @@ class Repository extends \Razorpay\Spine\Repository
     public function buildQueryAndGetEsRequestParams(array $params): array
     {
         // Extracts from, size and source value from params and unset them.
-        $from   = ($params['skip']) ?? 0;
-        $size   = ($params['count']) ?? 10;
-        $source = boolval(($params['search_hits']) ?? false);
+        $from   = ($params[self::SKIP]) ?? 0;
+        $size   = ($params[self::COUNT]) ?? 10;
+        $source = boolval(($params[self::SEARCH_HITS]) ?? false);
 
-        unset($params['skip']);
-        unset($params['count']);
-        unset($params['search_hits']);
+        unset($params[self::SKIP]);
+        unset($params[self::COUNT]);
+        unset($params[self::SEARCH_HITS]);
 
         // Initializes query to empty array, which follows formation of the same
         // using methods defined in QueryBuilder.
