@@ -7,7 +7,7 @@ const KEY_ROLL = 'KEY_ROLL'
 
 export const fetchKeys = (params) => {
   return (dispatch) => {
-    let key = new Key();
+    let key = new Key()
     return dispatch({
       type: KEYS_FETCH,
       payload: key.fetchAll(params)
@@ -53,7 +53,7 @@ export default function (state = initialState, action) {
       })
     case `${KEY_ROLL}::SUCCESS`:
       let tmpState = set(state, `loading`, false)
-      let oldKey = action.payload.old;
+      let oldKey = action.payload.old
       if (action.payload.removeOld) {
         tmpState = set(tmpState, 'keys', remove(tmpState.keys,
           (key) => key.id === oldKey.id)
@@ -68,7 +68,7 @@ export default function (state = initialState, action) {
       tmpState = set(tmpState, 'keys',
         unshift(tmpState.keys,action.payload.new))
 
-      return tmpState;
+      return tmpState
     default:
       return state
   }

@@ -5,8 +5,8 @@ import Key from 'merchant/models/Key'
 
 const KeysListItem = (props) => {
   let mode = props.mode
-  let {id, created_at, expired_at } = props.apiKey
-  let key = new Key({id});
+  let { id, created_at, expired_at } = props.apiKey
+  let key = new Key({id})
   return (
     <tr>
       <td>
@@ -27,7 +27,7 @@ const KeysListItem = (props) => {
           expired_at ? 'None' :
           <div class='row-action'>
             <button class='btn btn-xs btn-primary' onClick={() => {
-              props.showRollKeyModal(key);
+              props.showRollKeyModal(key)
             }}>
               <i class='fa fa-refresh'></i>
               <span>Regenerate {mode} Key</span>
@@ -40,9 +40,14 @@ const KeysListItem = (props) => {
 }
 
 export default (props) => {
-  let { keys, isLoading, mode, merchantId,
+  let {
+    mode,
+    keys,
+    isLoading,
+    merchantId,
     showRollKeyModal = () => {},
-    generateKey = () => {} } = props
+    generateKey = () => {}
+  } = props
   let key = new Key()
   key.merchantId = merchantId
 
@@ -81,7 +86,7 @@ export default (props) => {
         !(keys.length || isLoading) ?
         <footer class='panel-footer text-center'>
           <button class='btn btn-primary' onClick={() =>{
-              generateKey(key);
+              generateKey(key)
             }
           }>
             Generate {mode} Key

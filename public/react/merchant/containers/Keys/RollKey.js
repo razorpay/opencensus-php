@@ -54,7 +54,7 @@ export default class RollKey extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <form class='form-horizontal payment-link-form' onSubmit={handleSubmit(this.save)}>
+        <form class='form-horizontal' onSubmit={handleSubmit(this.save)}>
           <div class='modal-body'>
             <Alert
               type='error'
@@ -98,7 +98,6 @@ export default class RollKey extends Component {
               type='submit'
               class='btn btn-primary btn-rounded'
               text='OK'
-              pendingText='Saving...'
               onClick={handleSubmit(this.save)}
             />
           </div>

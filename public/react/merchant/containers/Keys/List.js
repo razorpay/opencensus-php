@@ -29,7 +29,7 @@ export default class KeysListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchKeys({
       id: this.props.session.user.id
-    });
+    })
   }
 
   showRollKeyModal = (key = null) => {
@@ -51,14 +51,11 @@ export default class KeysListContainer extends ListContainer {
   }
 
   generateKey = (key) => {
-    const self = this;
-    return this.props.generateKey(key).then(function(response){
-      var key = response
-      if (key.new) {
-        key = key.new
-      }
-      self.props.closeModal();
-      self.showNewKeyModal(key)
+    return this.props.generateKey(key).then((response) => {
+      var key = response.new || response
+
+      this.props.closeModal()
+      this.showNewKeyModal(key)
     })
   }
 
@@ -69,8 +66,7 @@ export default class KeysListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <Header title='API Keys'>
-        </Header>
+        <Header title='API Keys' />
         <div class='content-wrapper'>
           <div class='panel panel-default'>
             <div class='panel-heading'>

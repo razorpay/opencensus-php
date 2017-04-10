@@ -1,7 +1,6 @@
 import { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
-import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
@@ -54,7 +53,7 @@ export default class NewKey extends Component {
 
   render() {
     const { handleSubmit, apiKey } = this.props
-    const key = apiKey;
+    const key = apiKey
 
     return (
       <div>
@@ -77,7 +76,7 @@ export default class NewKey extends Component {
               <div class='col-md-8'>
                 <Field
                   name='keyId'
-                  component={InputField}
+                  component='input'
                   class='form-control'
                   readOnly='readonly'
                 />
@@ -90,7 +89,7 @@ export default class NewKey extends Component {
               <div class='col-md-8'>
                 <Field
                   name='keySecret'
-                  component={InputField}
+                  component='input'
                   class='form-control'
                   readOnly='readonly'
                 />
@@ -106,13 +105,13 @@ export default class NewKey extends Component {
           </div>
 
           <div class='modal-footer'>
-            <AsyncButton
+            <button
               type='submit'
               class='btn btn-primary btn-rounded'
-              text='OK'
-              pendingText='Saving...'
               onClick={handleSubmit(this.save)}
-            />
+            >
+              OK
+            </button>
           </div>
         </form>
       </div>

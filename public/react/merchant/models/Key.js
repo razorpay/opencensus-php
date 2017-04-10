@@ -73,7 +73,7 @@ export default class Key extends GenericEntity {
   }
 
   getResourceMethod() {
-    return this.isNew ? 'post' : 'put';
+    return this.isNew ? 'post' : 'put'
   }
 
   resourceFields() {

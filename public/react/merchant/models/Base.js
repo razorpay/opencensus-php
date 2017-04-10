@@ -54,7 +54,7 @@ export default class BaseModel {
     }
 
     if (this.getResourceMethod() === 'put') {
-      return serializedModel;
+      return serializedModel
     }
 
     return objectDiff(this.__stashed__, serializedModel)
