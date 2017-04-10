@@ -126,6 +126,10 @@ const concatJs = lazypipe()
       'public/react/dist/merchant_react.js'
     ],
 
+    'js/generated/admin_react.js': [
+      'public/react/dist/admin_react.js'
+    ],
+
     'js/generated/admin.js': [
       'public/js/admin/**/*.js',
       'public/js/*.js',
@@ -249,6 +253,7 @@ gulp.task('watch:full', ['dev:webpack'], () => {
     'public/js/admin/**/*.js',
     'public/js/merchant/**/*.js',
     'public/react/merchant/**/*',
+    'public/react/admin/**/*',
     'public/react/rzp/**/*'
   ], ['dev:webpack']);
 });

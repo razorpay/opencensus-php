@@ -529,6 +529,28 @@ app.controller('AuthCtrl', [
       });
     };
 
+    $scope.resendVerificationEmail = function () {
+      var payload = {
+        method: 'post',
+        url: '/user/resend',
+        transformRequest: transformRequestAsFormPost,
+        data: $scope.login.data
+      };
+
+      var request = $http(payload);
+      $scope.alerts.resetAlerts();
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Verification email resent.');
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      })
+    }
+
     $scope.forgotPwdSubmit = function ($valid) {
       if (!$valid) {
         $scope.alerts.addAlert('danger', 'Please fill all the fields', true);

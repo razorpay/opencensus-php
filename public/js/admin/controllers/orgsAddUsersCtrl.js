@@ -133,7 +133,12 @@ app.controller('OrgsAddUsersCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'User updated', true);
+          if (data.data.workflow_id) {
+            $state.go('app.workflows.actions.detail', {action_id: data.data.id});
+          }
+          else {
+            $scope.alerts.addAlert('success', 'User updated', true);
+          }
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
