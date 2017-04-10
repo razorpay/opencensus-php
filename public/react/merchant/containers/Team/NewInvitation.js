@@ -52,10 +52,10 @@ export default class NewInvitation extends Component {
     } = this.props
 
     return (
-      <form class='text-center' onSubmit={handleSubmit(this.save)} style={{marginBottom: '35px'}}>
-        <div class='form-group'>
-          <div class='row'>
-            <div class='col-md-7'>
+      <form onSubmit={handleSubmit(this.save)} style={{marginBottom: '35px'}}>
+        <div class='row'>
+          <div class='col-md-5'>
+            <div class='form-group'>
               <Field
                 name='email'
                 component={InputField}
@@ -68,8 +68,10 @@ export default class NewInvitation extends Component {
                 ]}
               />
             </div>
+          </div>
 
-            <div class='col-md-5'>
+          <div class='col-md-4'>
+            <div class='form-group'>
               <Field
                 name='role'
                 component='select'
@@ -81,24 +83,28 @@ export default class NewInvitation extends Component {
               </Field>
             </div>
           </div>
+
+          <div class='col-md-3'>
+            <div class='form-group'>
+              <AsyncButton
+                class='btn btn-primary'
+                text='Send Invitation'
+                pendingText='Sending Invitation...'
+                disabled={invalid}
+                onClick={handleSubmit(this.save)}
+              />
+            </div>
+          </div>
         </div>
 
         <div class='form-group'>
           {
             roles[selectedRole] && roles[selectedRole].desc ?
-              <div class='alert alert-info'>
+              <div class='alert alert-info text-center'>
                 {roles[selectedRole].desc}
               </div> : null
           }
         </div>
-
-        <AsyncButton
-          class='btn btn-primary'
-          text='Send Invitation'
-          pendingText='Sending Invitation...'
-          disabled={invalid}
-          onClick={handleSubmit(this.save)}
-        />
       </form>
     )
   }
