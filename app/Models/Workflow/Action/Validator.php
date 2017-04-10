@@ -67,4 +67,21 @@ class Validator extends Base\Validator
                 $data);
         }
     }
+
+    public function validateCloseAction($admin)
+    {
+        $action = $this->entity;
+
+        if ($action->getAdminId() !== $admin->getId())
+        {
+            $data = [
+                'action_admin_id' => $action->getAdminId(),
+                'auth_admin_id'   => $admin->getId(),
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED,
+                $data);
+        }
+    }
 }

@@ -31,6 +31,28 @@ return [
         'terminal_id'       => '100NbFdrlTrmnl',
     ],
 
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'FDRL',
+                'account_number' => '04030403040304',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testPaymentNetbankingEntity' => [
         'bank_payment_id' => '99999999',
         'received'        => true,
@@ -42,7 +64,14 @@ return [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'FDRL',
-        'status'          => 'S'
+        'status'          => 'Y'
+    ],
+
+    'testAuthFailedVerifySuccessEntity' => [
+        'bank_payment_id' => '99999999',
+        'received'        => false,
+        'bank'            => 'FDRL',
+        'status'          => 'Y'
     ],
 
     'testPaymentFailedNetbankingEntity' => [
@@ -52,8 +81,14 @@ return [
         'status'          => null
     ],
 
-    'testVerifyFailedNetbankingEntity' => [
+    'testAuthSuccessVerifyFailedNetbankingEntity' => [
         'received'        => true,
+        'bank'            => 'FDRL',
+        'status'          => 'Y'
+    ],
+
+    'testAuthFailedVerifyFailedEntity' => [
+        'received'        => false,
         'bank'            => 'FDRL',
         'status'          => 'N'
     ],

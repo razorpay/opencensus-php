@@ -9,7 +9,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
-use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Core extends Base\Core
 {
@@ -25,9 +24,9 @@ class Core extends Base\Core
         $merchant->schedule()->associate($schedule);
 
         $input = [
-            ScheduleTask\Entity::METHOD      => null,
-            ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
-            ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
+            Entity::METHOD      => null,
+            Entity::TYPE        => Type::SETTLEMENT,
+            Entity::SCHEDULE_ID => $schedule->getId()
         ];
 
         $this->createOrUpdate($merchant, $merchant, $input);
@@ -72,6 +71,8 @@ class Core extends Base\Core
 
         if ($currentSchedule !== null)
         {
+            $entity->setNextRunAt($currentSchedule->getNextRunAt());
+
             $this->repo->deleteOrFail($currentSchedule);
         }
 
@@ -83,13 +84,13 @@ class Core extends Base\Core
      */
     public function create(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
-        $scheduleTask = (new ScheduleTask\Entity)->build($input);
+        $scheduleTask = (new Entity)->build($input);
 
         $scheduleTask->merchant()->associate($merchant);
 
         $scheduleTask->entity()->associate($entity);
 
-        $scheduleId = $input[ScheduleTask\Entity::SCHEDULE_ID];
+        $scheduleId = $input[Entity::SCHEDULE_ID];
 
         $merchantId = Merchant\Account::SHARED_ACCOUNT;
 
@@ -142,7 +143,12 @@ class Core extends Base\Core
 
     protected function traceAndNotifyScheduleAssignment($scheduleTask)
     {
-        $data = $scheduleTask->toArrayPublic();
+        $data = [
+            Entity::MERCHANT_ID => $scheduleTask->getMerchantId(),
+            Entity::SCHEDULE_ID => $scheduleTask->getScheduleId(),
+            Entity::TYPE        => $scheduleTask->getType(),
+            Entity::METHOD      => $scheduleTask->getMethod()
+        ];
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
 

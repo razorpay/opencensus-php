@@ -102,4 +102,20 @@ class Service extends Base\Service
 
         return $states;
     }
+
+    public function closeAction(string $id)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $action = $this->repo->workflow_action->findOrFailPublic($id);
+
+        $this->core()->close($action, $admin);
+
+        // fetch again from db to get updated values
+        $action = $this->repo->workflow_action->findOrFailPublic($id);
+
+        return $action->toArrayPublic();
+    }
 }
