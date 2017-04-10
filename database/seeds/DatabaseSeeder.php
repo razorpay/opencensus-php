@@ -59,6 +59,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'       => $currentTime,
                     'updated_at'       => $currentTime,
                     'cross_org_access' => true,
+                    'custom_code'      => 'rzp',
                 ]
             );
 

@@ -284,7 +284,7 @@ return [
         ],
 
         PermissionCategory::WORKFLOW => [
-            Permission::WORKFLOW_ADMIN  => 'Create Workflow Admin',
+            Permission::VIEW_WORKFLOW  => 'View Worfklows',
         ],
     ],
 
