@@ -282,6 +282,10 @@ return [
             Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
             Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
         ],
+
+        PermissionCategory::WORKFLOW => [
+            Permission::WORKFLOW_ADMIN  => 'Create Workflow Admin',
+        ],
     ],
 
     'workflows' => [

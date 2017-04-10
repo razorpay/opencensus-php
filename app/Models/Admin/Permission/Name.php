@@ -127,4 +127,5 @@ class Name
     const CREATE_MERCHANT_INVITE          = 'create_merchant_invite';
     const EDIT_MERCHANT_INVITE            = 'edit_merchant_invite';
     const VIEW_MERCHANT_INVITE            = 'view_merchant_invite';
+    const WORKFLOW_ADMIN                  = 'workflow_admin';
 }
