@@ -28,7 +28,7 @@ export default class KeysListContainer extends ListContainer {
 
   fetchEntityList(params) {
     return this.props.fetchKeys({
-      'id': this.props.session.user.id
+      id: this.props.session.user.id
     });
   }
 
@@ -37,7 +37,6 @@ export default class KeysListContainer extends ListContainer {
       component: <RollKey
         currentKey={key}
         merchantId={this.props.session.user.id}
-        closeModal={this.props.closeModal}
         generateKey={this.generateKey}
       />
     })
@@ -47,9 +46,6 @@ export default class KeysListContainer extends ListContainer {
     this.props.openModal({
       component: <NewKey
         currentKey={key}
-        onSave={(key) => {
-        }}
-        closeModal={this.props.closeModal}
       />
     })
   }
