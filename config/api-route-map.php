@@ -69,6 +69,7 @@ return [
         'action_comment_create'             => 'w-actions/{id}/comments',
         'action_comment_fetch'              => 'w-actions/{id}/comments',
         'workflow_action_details'           => 'w-actions/{id}/details',
+        'workflow_action_update'            => 'w-actions/{id}',
         'workflow_get_actions_by_maker'     => 'w-manager/get-actions-by-maker',
         'workflow_get_actions_for_checker'  => 'w-manager/get-actions-for-checker',
         'action_checker_create'             => 'w-actions/{id}/checkers',
@@ -275,6 +276,16 @@ return [
         'pricing_create_plan'               => 'pricing',
         'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
         'pricing_supported_networks'        => 'pricing/networks',
+
+        // Actions
+        // EMI
+        'emi_plan_add'                      => 'emi',
+
+        // IIN
+        'iin_add'                           => 'iins',
+
+        // Verify Payment
+        'payment_verify'                    => 'payments/{id}/verify',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',

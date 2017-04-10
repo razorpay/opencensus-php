@@ -159,11 +159,16 @@ app.controller('PaymentDetailCtrl', [
       });
     };
     $scope.verifyPayment = function () {
-      var request = $http({
-        method: 'get',
-        url: '/admin/'  + $scope.mode + '/payment/' + $scope.entity.id + '/verify'
+      var data = {
+        route_name: 'payment_verify',
+        url_params: {
+          '{id}' : $scope.entity.id
+        },
+        mode: $scope.mode
+      };
+      var request = $http.get('/admin/generic', {
+        params: data
       });
-
       request.success(function (data) {
         if (data.success) {
           var payment = JSON.stringify(data.data.payment);

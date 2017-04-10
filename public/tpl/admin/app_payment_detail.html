@@ -10,7 +10,7 @@
       <div class="panel-heading m-t m-b">
         Payment Id: <strong>{{entity.id}}</strong>
       </div>
-    <div class="text-center m-t">
+    <div class="text-center m-t b-w">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
       <div class="row wrapper">

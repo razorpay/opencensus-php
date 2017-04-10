@@ -24,10 +24,49 @@
             <span class="label pending-bg-color pull-right action-state">{{ action_details.state }}</span>
           </div>
           <div class="wrapper clearfix">
-            <div class="h3 m-b">{{ action_details.title }}</div>
+            <div class="heading-container h3 m-b">
+              <div class="title-text wrapper-sm" ng-click="setTitleActive();alerts.resetAlerts();" ng-show="!titleActive">
+                <div class="bg-white"></div>
+                <span class="heading-text">
+                  {{ action_details.title || "Click to add a title" }}
+                </span>
+                <span class="desc-edit-icon"><i class="fa fa-pencil"></i></span>
+                <div class="clearfix"></div>
+              </div>
+              <div class="row title-highlight-container " ng-class="{'title-active': titleActive}">
+                <div class="col-xs-12" style="padding: 0 7px;">
+                  <div class="input-group input-group-lg">
+                    <input type="text" class="form-control " id="title-input" aria-describedby="sizing-addon1" ng-model="action_details.title"> <!-- placeholder="Add a title" -->
+                    <span class="input-group-btn " >
+                      <button 
+                        class="btn btn-info " 
+                        id="title-input-button" 
+                        type="button"
+                        ng-click="saveTitle()"
+                      >{{titleActive ? (titleStatus === "saving" ? "Saving" : "Save") : "Click to edit"}}</button>
+                    </span>
+                  </div>
+                  <div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
             <div class="border-bottom m-b"></div>
-            <div class="description">
-              {{ action_details.description }}
+            <div class="description" ng-class="{'desc-active': descActive}">
+              <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>  
+              <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea"></textarea>
+              <div class="desc-text wrapper-sm" ng-click="setDescActive();alerts.resetAlerts();" >
+                <!-- <div class="bg-white"></div> -->
+                <span class="description-text">
+                  {{ action_details.description || "Click to add a description" }}
+                </span>
+                <span class="desc-edit-icon"><i class="fa fa-pencil"></i></span>
+                <div class="clearfix"></div>
+              </div>
+              <button class="pull-right btn btn-info save-desc-btn" type="submit" ng-click="saveDesc()">{{descActive ? (descStatus === "saving" ? "Saving" : "Save") : "Click to edit"}}</button>
+              <!-- <div class="description-text">
+                {{ action_details.description || "Click to add a description" }}
+              </div> -->
+              <div class="clearfix"></div>  
             </div>
             <div class="assignment-container ">
               <div class="strong assignee-heading m-t"><strong>Assigned to:</strong></div>
@@ -75,9 +114,9 @@
         <!-- Cards End -->
 
         <div class="panel panel-default">
-          <form class="panel-heading clearfix wrapper">
+          <form class="panel-heading clearfix wrapper-sm">
             <textarea class="form-control wrapper-xs" rows="4" id="comment" ng-model="new_comment"></textarea>
-            <button class="pull-right btn btn-info m-t" type="submit" ng-click="saveComment()">Comment</button>
+            <button id="comment-btn" class="pull-right btn btn-info " type="submit" ng-click="saveComment()">Comment</button>
           </form>
         </div>
       </div>

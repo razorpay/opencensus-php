@@ -32,11 +32,14 @@ app.controller('ActionsCtrl', [
       $scope.addIIN = function (iin) {
         iin.emi = iin.emi ? 1 : 0;
 
+        var data = {
+          route_name: 'iin_add',
+          body: iin
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/iin/add',
-          transformRequest: transformRequestAsFormPost,
-          data: iin
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -52,11 +55,14 @@ app.controller('ActionsCtrl', [
         });
       };
       $scope.addEMI = function (emi) {
+        var data = {
+          route_name: 'emi_plan_add',
+          body: emi
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/emi',
-          transformRequest: transformRequestAsFormPost,
-          data: emi
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -221,9 +227,14 @@ app.controller('ActionsCtrl', [
       };
 
       $scope.verifyPayment = function (payment_id) {
-        var request = $http({
-          method: 'get',
-          url: '/admin/payment/' + payment_id + '/verify'
+        var data = {
+          route_name: 'payment_verify',
+          url_params: {
+            '{id}' : payment_id
+          }
+        };
+        var request = $http.get('/admin/generic', {
+          params: data
         });
         request.success(function (data) {
           if (data.success) {
