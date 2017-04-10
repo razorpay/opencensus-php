@@ -302,7 +302,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
         Route::get('admin/get_current');
 
-        Route::get('/admin/mailgunlogs', 'AdminController@getMailgunLogs')->name('mailgun_logs_get');
+        Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
     });
 });
 

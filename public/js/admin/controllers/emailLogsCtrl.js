@@ -1,7 +1,7 @@
 "use strict";
 
 //Merchant List controller
-app.controller('MailgunLogsCtrl', [
+app.controller('EmailLogsCtrl', [
   '$scope',
   '$http',
   'alertsFactory',
@@ -9,9 +9,9 @@ app.controller('MailgunLogsCtrl', [
   'utils',
   function ($scope, $http, alertsFactory, $modal, utils) {
     $scope.alerts = alertsFactory.getHandler();
-    $scope.mailgunLogs = [];
+    $scope.emailLogs = [];
 
-    $scope.fetchMailgunLogs = function () {
+    $scope.fetchEmailLogs = function () {
       var query = { ascending : "no" };
       if($scope.event){
         query.event = $scope.event;
@@ -22,11 +22,11 @@ app.controller('MailgunLogsCtrl', [
       if($scope.tags) {
         query.tags = $scope.tags;
       }
-      var request = $http.get('/admin/mailgunlogs', { params: query });
+      var request = $http.get('/admin/emaillogs', { params: query });
 
       request.success(function (data) {
         if (data.success) {
-          $scope.mailgunLogs = data.data.items;
+          $scope.emailLogs = data.data.items;
         }
         else {
           angular.forEach(data.errors, function (value) {
@@ -38,6 +38,6 @@ app.controller('MailgunLogsCtrl', [
       });
     }
 
-    $scope.fetchMailgunLogs();
+    $scope.fetchEmailLogs();
   }
 ]);

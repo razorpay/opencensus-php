@@ -219,12 +219,12 @@ var app = angular.module('app', [
     }).state('app.invitations.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_invitations_list.html'
-    }).state('app.mailgunlogs', {
-      url: '/mailgunlogs',
+    }).state('app.emaillogs', {
+      url: '/emaillogs',
       template: '<div ui-view class="fade-in-down smooth"></div>'
-    }).state('app.mailgunlogs.list', {
+    }).state('app.emaillogs.list', {
       url: '/list',
-      templateUrl: 'tpl/admin/app_mailgun_logs_list.html'
+      templateUrl: 'tpl/admin/app_email_logs_list.html'
     }).state('app.workflows', {
       url: '/workflows',
       template: '<div ui-view class=""></div>'

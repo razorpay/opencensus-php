@@ -1,7 +1,7 @@
-<div ng-controller="MailgunLogsCtrl">
+<div ng-controller="EmailLogsCtrl">
   <div class="bg-light lter b-b wrapper-md">
     <h1 class="m-n font-thin h3">
-      Mailgun Logs
+      Email Logs
       <spinner class="inline"></spinner>
     </h1>
   </div>
@@ -30,7 +30,7 @@
               <option value="rejected">Rejected</option>
             </select>
         </div>
-          <button class="btn btn-default btn-md" style="margin-top: 20px" type="button" ng-click="fetchMailgunLogs()" busy="...">Search</button>
+          <button class="btn btn-default btn-md" style="margin-top: 20px" type="button" ng-click="fetchEmailLogs()" busy="...">Search</button>
       </div>
       <div>
         <table ui-jq="footable" data-page="false" class="table-responsive table b-t b-light">
@@ -42,13 +42,13 @@
               <th data-type="numeric">Timestamp</th>
           </thead>
           <tbody>
-            <tr ng-repeat="row in mailgunLogs" ng-class="{ 'danger' : row.event == 'failed' }">
+            <tr ng-repeat="row in emailLogs" ng-class="{ 'danger' : row.event == 'failed' }">
               <td>{{row.recipient}}</td>
               <td>{{row.event == 'failed' ? row['delivery-status'].message : row.message.headers.subject}}</td>
               <td><span ng-repeat="tag in row.tags">{{tag}}{{$last ? '' : ', '}}</span></td>
               <td>{{row.timestamp*1000 | date: 'medium'}}</td>
             </tr>
-            <tr ng-show="mailgunLogs.length == 0">
+            <tr ng-show="emailLogs.length == 0">
               <td colspan="6">No Logs</td>
             </tr>
           </tbody>
