@@ -30,6 +30,13 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function closeWorkflowAction(string $id)
+    {
+        $data = (new Action\Service)->closeAction($id);
+
+        return ApiResponse::json($result);
+    }
+
     // Not being used
     public function postActionDiff(string $id)
     {
@@ -246,12 +253,6 @@ class WorkflowController extends Controller
         return ApiResponse::json($result);
     }
 
-    public function deleteWorkflowAction(string $id)
-    {
-        $data = (new Action\Service)->delete($id);
-
-        return ApiResponse::json($result);
-    }
 
     // Workflow Manager API
     public function getActionsForChecker()

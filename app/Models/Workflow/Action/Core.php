@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Exception;
+use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
@@ -217,6 +218,30 @@ class Core extends Base\Core
         $this->repo->saveOrFail($action);
 
         return $action;
+    }
+
+    public function close(Entity $action, Admin\Entity $admin)
+    {
+        $action->getValidator()->validateCloseAction($admin);
+
+        $this->repo->transactionOnLiveAndTest(function () use($action, $admin){
+
+            $state = State\Entity::CLOSED;
+
+            $stateData = [
+                State\Entity::ACTION_ID => $action->getId(),
+                State\Entity::ADMIN_ID  => $admin->getId(),
+                State\Entity::NAME      => $state,
+            ];
+
+
+            $this->updateState($action, $state);
+
+            (new State\Core)->create($stateData);
+
+            (new Differ\Core)->updateStateInEs(
+                $action->getId(), $stateData[State\Entity::NAME]);
+        });
     }
 
     public function updateState(Entity $action, string $state)

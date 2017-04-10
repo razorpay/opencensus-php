@@ -103,12 +103,16 @@ class Service extends Base\Service
         return $states;
     }
 
-    public function delete(string $id)
+    public function closeAction(string $id)
     {
-        $action = $this->repo->workflow_action->findByPublicId($id);
+        Entity::verifyIdAndStripSign($id);
 
-        $this->repo->deleteOrFail($action);
+        $admin = $this->app['basicauth']->getAdmin();
 
-        return $action->toArrayDeleted();
+        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
+
+        $this->core()->close($action, $admin);
+
+        return ['success' => true];
     }
 }
