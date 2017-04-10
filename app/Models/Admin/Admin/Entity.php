@@ -58,7 +58,8 @@ class Entity extends Base\Entity
         self::OLD_PASSWORDS
     ];
 
-    protected $skipDiffFields = [
+    // TODO make it protected later
+    const SKIP_DIFF_FIELDS = [
         self::ROLES,
         self::GROUPS,
         self::MERCHANTS,

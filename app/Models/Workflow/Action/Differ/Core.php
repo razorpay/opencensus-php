@@ -230,13 +230,13 @@ class Core extends Base\Core
         return $esResponse;
     }
 
-    public function getDiffFieldsForEntity($entity)
+    protected function getDiffFieldsForEntity($entity)
     {
-        if (empty($entity::skipDiffFields) === true)
+        if (empty($entity::SKIP_DIFF_FIELDS) === true)
         {
-            return self::skipDiffFields;
+            return self::SKIP_DIFF_FIELDS;
         }
 
-        return array_unique(array_merge($entity::skipDiffFields, self::skipDiffFields));
+        return array_unique(array_merge($entity::SKIP_DIFF_FIELDS, self::SKIP_DIFF_FIELDS));
     }
 }
