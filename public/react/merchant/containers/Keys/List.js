@@ -22,10 +22,6 @@ import NewKey from './NewKey'
 
 
 export default class KeysListContainer extends ListContainer {
-  constructor() {
-    super(...arguments)
-  }
-
   fetchEntityList(params) {
     return this.props.fetchKeys({
       id: this.props.session.user.id

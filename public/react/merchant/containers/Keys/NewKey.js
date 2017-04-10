@@ -45,7 +45,6 @@ export default class NewKey extends Component {
         message: 'Are you sure you have saved the key details? ' +
           'This is the last time we will show you the key secret.',
         affirmativeLabel: 'OK',
-        affirmativePendingLabel: 'OK',
         action: () => this.props.closeModal()
       })
   }

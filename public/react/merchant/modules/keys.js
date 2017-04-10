@@ -55,7 +55,7 @@ export default function (state = initialState, action) {
     case `${KEY_ROLL}::SUCCESS`:
       let tmpState = set(state, `loading`, false)
       let oldKey = action.payload.old
-      if (action.payload.removeOld) {
+      if (!action.payload.delayRoll) {
         tmpState = set(tmpState, 'keys', remove(tmpState.keys,
           (key) => key.id === oldKey.id)
         )

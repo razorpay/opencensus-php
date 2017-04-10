@@ -31,7 +31,6 @@ export default class Key extends GenericEntity {
 
   save() {
     const Klass = this.constructor
-    let self = this
     let params = this.serialize()
     let url = this.resourceUrl
     let method = this.getResourceMethod()
@@ -55,13 +54,13 @@ export default class Key extends GenericEntity {
       method,
       data,
     }).then((response) => {
-      if (self.isNew) {
+      if (this.isNew) {
         return new Klass().deserialize(response.data)
       } else {
         return {
-          'new': new Klass().deserialize(response.data.new),
-          'old': new Klass().deserialize(response.data.old),
-          'removeOld':  1 - params.delay_roll
+          new: new Klass().deserialize(response.data.new),
+          old: new Klass().deserialize(response.data.old),
+          delayRoll: + params.delay_roll
         }
       }
     })
