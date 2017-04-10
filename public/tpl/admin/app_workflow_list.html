@@ -19,7 +19,7 @@
           <input id="filter" type="text"
             class="form-control input-sm w-sm inline m-r">
         </div>
-        <div class="col-md-6" ng-show="admin.permissions && admin.permissions.indexOf('create_workflow') === -1">
+        <div class="col-md-6" ng-show="admin.permissions && admin.permissions.indexOf('create_workflow') !== -1">
           <a class='btn btn-default pull-right'
             ui-sref='app.workflows.new'>
             Add New Workflow
