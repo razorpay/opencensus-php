@@ -25,4 +25,5 @@ class RequestFields
     const QUERY_PAYMENT_TRANSACTION = 'queryPaymentTransaction';
     const COM_TRANSACTION_ID        = 'mcomPgTransID';
     const PMT_TRANSACTION_REFERENCE = 'paymentTransRefNo';
+    const COMMAND_ID                = 'CMDID';
 }

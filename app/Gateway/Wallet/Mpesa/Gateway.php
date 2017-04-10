@@ -77,35 +77,16 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getActionData();
 
-        $data = str_replace('queryPaymentTransaction', 'pay:queryPaymentTransaction', $data);
+        $soapRoot = "<pay:queryPaymentTransaction />";
 
-        $content = $this->getSoapRequestContent($data);
+        $response = $this->sendSoapRequest($data, $soapRoot)['Response'];
 
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = $this->getRequestHeaders();
-
-        sd($request);
-
-        $response = $this->sendGatewayRequest($request);
-
-        sd($response->body);
-    }
-
-    protected function getRequestHeaders()
-    {
-        $headers = [
-            'Content-Type' => 'application/xml',
-            'userId'       => 'aJtlkG0NQTRBaLgVt4YC4A==',
-            'password'     => '7p/MAUl80KP+FdRERRyvlQ==',
-        ];
-
-        return $headers;
+        // sd($response);
     }
 
     public function otpGenerate($input)
     {
-        sd('1');
+        // sd('1');
     }
 
     protected function getAuthorizeRequestData()
@@ -129,9 +110,7 @@ class Gateway extends Base\Gateway
                 break;
 
             case Base\Action::VERIFY:
-                $array = $this->getQueryData();
-                $soapRoot = "<pay:queryPaymentTransaction />";
-                $data = $this->getSoapData($array, $soapRoot);
+                $data = $this->getQueryData();
                 break;
         }
 
@@ -169,7 +148,8 @@ class Gateway extends Base\Gateway
             RequestFields::COM_TRANSACTION_ID        => $gatewayPaymentId ?? "",
             RequestFields::QUERY_TRANSACTION_REF     => $paymentId,
             RequestFields::PMT_TRANSACTION_REFERENCE => strtoupper($paymentId),
-            RequestFields::AMOUNT                    => $this->input['payment']['amount'] / 100
+            RequestFields::AMOUNT                    => $this->input['payment']['amount'] / 100,
+            RequestFields::COMMAND_ID                => Constants::COMMAND_ID
         ];
 
         return $queryData;
@@ -195,7 +175,7 @@ class Gateway extends Base\Gateway
         return $actionParamXml;
     }
 
-    protected function getSoapData($array, $soapRoot)
+    protected function sendSoapRequest($data, $soapRoot)
     {
         $client = new SoapClient($this->getUrl());
 
@@ -204,9 +184,9 @@ class Gateway extends Base\Gateway
         $client->__setSoapHeaders($headers);
 
         $response = $client->__soapCall(RequestFields::QUERY_PAYMENT_TRANSACTION,
-                                        [$soapRoot => $array]);
+                                        [$soapRoot => $data]);
 
-        sd($response);
+        return json_decode(json_encode($response), true);
     }
 
     protected function getSoapHeaders()
