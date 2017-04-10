@@ -149,3 +149,6 @@ UPDATE terminals SET international = 1 WHERE gateway = 'axis_migs' AND merchant_
 UPDATE terminals SET international = 1 WHERE gateway = 'first_data' AND merchant_id IN ('6JumzrI88XDf0f', '6H7N6hlcv29OMG');
 # Only in test db
 UPDATE terminals SET international = 1 WHERE gateway = 'sharp';
+
+UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7chy3i1qAAG9iW';
+UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7d3DLq0w58xHmc';
