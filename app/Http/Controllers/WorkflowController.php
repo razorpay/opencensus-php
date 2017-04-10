@@ -246,6 +246,13 @@ class WorkflowController extends Controller
         return ApiResponse::json($result);
     }
 
+    public function deleteWorkflowAction(string $id)
+    {
+        $data = (new Action\Service)->delete($id);
+
+        return ApiResponse::json($result);
+    }
+
     // Workflow Manager API
     public function getActionsForChecker()
     {

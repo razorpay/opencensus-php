@@ -102,4 +102,13 @@ class Service extends Base\Service
 
         return $states;
     }
+
+    public function delete(string $id)
+    {
+        $action = $this->repo->workflow_action->findByPublicId($id);
+
+        $this->repo->deleteOrFail($action);
+
+        return $action->toArrayDeleted();
+    }
 }
