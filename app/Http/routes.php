@@ -194,7 +194,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // EMI Routes
         Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
-        Route::post('/admin/emi', 'AdminController@postAddEMIPlan');
 
         // Admin merchant actions
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
@@ -226,14 +225,12 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
 
         // IIN Routes
-        Route::post('/admin/iin/add', 'AdminController@postAddIIN');
         Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
         Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
         // EMI Plan Routes
         Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
 
         // Admin Payment Actions
-        Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
         Route::get('/admin/{mode}/payments/{id}/analytics', 'AdminController@getPaymentAnalytics');
         Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
         Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
