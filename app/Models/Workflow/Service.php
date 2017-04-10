@@ -79,7 +79,7 @@ class Service extends Base\Service
     {
         $permissionIds = $this->repo
                               ->permission
-                              ->retrieveIdsByNames($routePermissions, $orgId)
+                              ->retrieveIdsByNamesAndOrg($routePermissions, $orgId)
                               ->map(function ($permission){
                                     return $permission->getId();
                                 })
