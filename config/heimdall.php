@@ -137,6 +137,11 @@ return [
             Permission::DELETE_ORG    => 'Delete organization',
         ],
 
+        // Workflow
+        PermissionCategory::WORKFLOW => [
+            Permission::VIEW_WORKFLOW  => 'View Worfklows',
+        ],
+
         // Roles
         PermissionCategory::ROLE => [
             Permission::VIEW_ALL_ROLE => 'View all roles',
@@ -281,6 +286,10 @@ return [
             Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
             Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
             Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
+        ],
+
+        PermissionCategory::WORKFLOW => [
+            Permission::VIEW_WORKFLOW  => 'View Worfklows',
         ],
     ],
 
