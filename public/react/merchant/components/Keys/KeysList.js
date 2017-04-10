@@ -68,7 +68,18 @@ export default (props) => {
             isLoading={isLoading}
             colSpan={4}
             rows={keys}
-            emptyTableMsg='No Keys found!'
+            emptyTableRow={
+              <tr>
+                <td class='text-center empty-table' colSpan={4}>
+                  <button class='btn btn-primary' onClick={() =>{
+                      generateKey(params)
+                    }
+                  }>
+                    Generate {mode} Key
+                  </button>
+                </td>
+              </tr>
+            }
           >
             {
               keys.map((key) =>
@@ -83,17 +94,6 @@ export default (props) => {
           </TableBody>
         </table>
       </div>
-      {
-        !(keys.length || isLoading) ?
-        <footer class='panel-footer text-center'>
-          <button class='btn btn-primary' onClick={() =>{
-              generateKey(params)
-            }
-          }>
-            Generate {mode} Key
-          </button>
-        </footer> : null
-      }
     </div>
   )
 }
