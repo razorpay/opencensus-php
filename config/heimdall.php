@@ -137,6 +137,11 @@ return [
             Permission::DELETE_ORG    => 'Delete organization',
         ],
 
+        // Workflow
+        PermissionCategory::WORKFLOW => [
+            Permission::VIEW_WORKFLOW  => 'View Worfklows',
+        ],
+
         // Roles
         PermissionCategory::ROLE => [
             Permission::VIEW_ALL_ROLE => 'View all roles',
