@@ -152,6 +152,21 @@ class NetbankingFederalGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifySuccessEntity');
     }
 
+    public function testAuthFailedVerifyFailed()
+    {
+        $this->testAuthorizeFailed();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockFailedVerifyResponse();
+
+        $this->verifyPayment($payment['id']);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyFailedEntity');
+    }
+
     /**
      * When the payment is incorrectly marked as authorized
      * and verify points out that it is not

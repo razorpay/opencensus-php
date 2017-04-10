@@ -87,6 +87,12 @@ return [
         'status'          => 'Y'
     ],
 
+    'testAuthFailedVerifyFailedEntity' => [
+        'received'        => false,
+        'bank'            => 'FDRL',
+        'status'          => 'N'
+    ],
+
     'testTamperedPayment' => [
         'response' => [
             'content'     => [
