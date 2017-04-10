@@ -21,10 +21,6 @@ import { closeModal } from 'merchant/modules/modals'
   }
 })
 export default class RollKey extends Component {
-  static contextTypes = {
-    session: PropTypes.object
-  }
-
   constructor() {
     super(...arguments)
     this.state = {

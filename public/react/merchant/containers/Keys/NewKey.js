@@ -20,7 +20,6 @@ import { closeModal } from 'merchant/modules/modals'
 })
 export default class NewKey extends Component {
   static contextTypes = {
-    session: PropTypes.object,
     confirm: PropTypes.func
   }
 
