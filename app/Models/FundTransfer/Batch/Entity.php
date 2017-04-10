@@ -15,25 +15,6 @@ use Carbon\Carbon;
  */
 class Entity extends Base\PublicEntity
 {
-<<<<<<< c4ab6df5d0a6c7fe24b5973a70ceafc766b50ea2
-    const ID                = 'id';
-    const DATE              = 'date';
-    const TYPE              = 'type';
-    const CHANNEL           = 'channel';
-    const AMOUNT            = 'amount';
-    const FEES              = 'fees';
-    const API_FEE           = 'api_fee';
-    const GATEWAY_FEE       = 'gateway_fee';
-    const TOTAL_COUNT       = 'total_count';
-    const TRANSACTION_COUNT = 'transaction_count';
-    const SERVICE_TAX       = 'service_tax';
-    const URLS              = 'urls';
-    const INITIATED_AT      = 'initiated_at';
-    const TXT_FILE_ID       = 'txt_file_id';
-    const EXCEL_FILE_ID     = 'excel_file_id';
-    const RECONCILED_AT     = 'reconciled_at';
-    const RETURNED_AT       = 'returned_at';
-=======
     const ID                    = 'id';
     const DATE                  = 'date';
     const TYPE                  = 'type';
@@ -51,7 +32,6 @@ class Entity extends Base\PublicEntity
     const INITIATED_AT          = 'initiated_at';
     const RECONCILED_AT         = 'reconciled_at';
     const RETURNED_AT           = 'returned_at';
->>>>>>> [Settlement] Added failure stats in batch_fund_transfer
 
     protected $entity = 'batch_fund_transfer';
 
