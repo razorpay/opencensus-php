@@ -59,6 +59,12 @@ class Gateway extends Base\Gateway
             ]
         );
 
+        // If the payment requires TPV
+        if (strlen($content[ResponseFields::PAYMENT_ID]) > 14)
+        {
+            $content[ResponseFields::PAYMENT_ID] = explode('.', $content[ResponseFields::PAYMENT_ID])[0];
+        }
+
         $this->assertPaymentId(
             $input['payment']['id'],
             $content[ResponseFields::PAYMENT_ID]
@@ -221,6 +227,11 @@ class Gateway extends Base\Gateway
             RequestFields::CONFIRMATION => Status::YES,
             RequestFields::RETURN_URL   => $input['callbackUrl']
         ];
+
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[RequestFields::PAYMENT_ID] .= '.' . $input['order']['account_number'];
+        }
 
         return $data;
     }
