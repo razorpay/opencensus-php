@@ -150,6 +150,18 @@ var app = angular.module('app', [
     }).state('app.orgs.edit', {
       url: '/:id/edit',
       templateUrl: 'tpl/admin/app_add_org.html'
+    }).state('app.orgs.fieldmaps', {
+      url: '/:id/fieldmaps',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.orgs.fieldmaps.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_org_fieldmaps_list.html'
+    }).state('app.orgs.fieldmaps.new', {
+      url: '/new',
+      templateUrl: 'tpl/admin/app_org_add_fieldmap.html'
+    }).state('app.orgs.fieldmaps.edit', {
+      url: '/:fieldMapId/edit',
+      templateUrl: 'tpl/admin/app_org_add_fieldmap.html'
     }).state('app.users', {
       url: '/users',
       template: '<div ui-view class="fade-in-down"></div>'
@@ -207,6 +219,27 @@ var app = angular.module('app', [
     }).state('app.invitations.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_invitations_list.html'
+    }).state('app.workflows', {
+      url: '/workflows',
+      template: '<div ui-view class=""></div>'
+    }).state('app.workflows.actions', {
+      url: '/actions',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.workflows.actions.list', {
+      url: '/list/:type',
+      templateUrl: 'tpl/admin/app_workflow_feed_list.html'
+    }).state('app.workflows.actions.detail', {
+      url: '/:action_id',
+      templateUrl: 'tpl/admin/app_workflow_feed.html'
+    }).state('app.workflows.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_workflow_list.html'
+    }).state('app.workflows.new', {
+      url: '/new',
+      templateUrl: 'tpl/admin/app_workflow_new.html'
+    }).state('app.workflows.edit', {
+      url: '/:id/edit',
+      templateUrl: 'tpl/admin/app_workflow_new.html'
     })
 
     //Guest Routes
@@ -267,3 +300,38 @@ var app = angular.module('app', [
     $keepaliveProvider.interval(15);
   }
 ]);
+
+var injectScript = (function () {
+  return function (src, callback) {
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = src;
+    if (callback) {
+      script.onload = function() {
+        callback.call();
+      };
+    }
+    document.getElementsByTagName('head')[0].appendChild(script);
+  };
+})();
+
+var reactTemplateProvider = function(template) {
+  var calledOnce = false
+  var deferred = null
+  return ['$q', '$stateParams', function ($q) {
+    deferred = deferred || $q.defer();
+    if (!window.React) {
+      if (!calledOnce) {
+        calledOnce = true
+        var url = "<% asset('js/generated/admin_react.js') %>";
+        url = (url.indexOf('-') !== -1) ? url : 'js/generated/admin_react.js';
+        injectScript(url, function() {
+          deferred.resolve(template);
+        });
+      }
+    } else {
+      deferred.resolve(template);
+    }
+    return deferred.promise;
+  }];
+};

@@ -18,7 +18,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::options('/contact', 'MerchantController@optionsContact');
     Route::post('/contact', 'MerchantController@postContact');
 
-    Route::get('/invitation/{token}', 'MerchantController@getInvitationDetails');
+    Route::get('/invitation', 'MerchantController@getInvitationDetails');
 
     // Org
     Route::group(['prefix' => 'admin'], function () {
@@ -149,7 +149,7 @@ Route::group(['middleware' => ['web']], function () {
 
     });
 
-    Route::group(['middleware'  =>  'admin'], function()
+    Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
         Route::any('/admin/generic', 'GenericController@handle');
 
@@ -165,13 +165,13 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('/admin/features/{entityId}', 'AdminController@getEntityFeatures');
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
-        Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature');
+        Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature')
+                ->name('admin_delete_features');
 
         // This is the merchant's bank account
         Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
         Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin')
-               ->name('admin_merchant_login')
-               ->middleware('admin_access');
+               ->name('admin_merchant_login');
         Route::get('/admin/activity', 'AdminController@getAdminActivity');
         Route::delete('/admin/activity', 'AdminController@deleteOtherAdminActivity');
         Route::delete('/admin/activity/{id}', 'AdminController@deleteAdminActivity');
@@ -244,8 +244,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture')
-                ->name('admin_payment_capture')
-                ->middleware('admin_access');
+                ->name('admin_payment_capture');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Admin Main Actions, mostly initiated from the Actions screen
@@ -274,7 +273,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('admin/merchant/{id}/schedules', 'AdminController@postMerchantSchedule');
         Route::post('admin/schedules', 'AdminController@createSchedule');
 
-        Route::group(['middleware'  =>  ['admin', 'superadmin']], function()
+        Route::group(['middleware'  =>  ['admin', 'superadmin', 'admin_access']], function()
         {
             // This is the RAW API route which processes api calls
             Route::post('/api/{path?}', 'AdminController@passThrough')
@@ -290,22 +289,16 @@ Route::group(['middleware' => ['web']], function () {
         Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
 
         Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities')
-                ->name('admin_fetch_entity')
-                ->middleware('admin_access');
+                ->name('admin_fetch_entity');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')
-                ->name('admin_fetch_entity')
-                ->middleware('admin_access');
+                ->name('admin_fetch_entity');
         // This is a very generic route and needs to be defined below
         Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById')
-                ->name('admin_fetch_entity')
-                ->middleware('admin_access');
+                ->name('admin_fetch_entity');
 
         // Upload logos for orgs
         Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
-
-        Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
-        Route::get('/admin/invitations', 'AdminController@getMerchantInvitations');
 
         Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
         Route::get('admin/get_current');

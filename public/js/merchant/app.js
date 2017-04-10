@@ -136,9 +136,6 @@ var app = angular.module('app', [
     }).state('app.generatereport', {
       url: '/generatereport',
       templateUrl: 'tpl/app_generate_report.html'
-    }).state('app.keys', {
-      url: '/keys',
-      templateUrl: 'tpl/app_keys.html'
     }).state('app.activation', {
       url: '/activation',
       templateUrl: 'tpl/app_activation.html'
@@ -218,6 +215,9 @@ var app = angular.module('app', [
     }).state('app.webhooks', {
       url: '/webhooks',
       templateProvider: reactTemplateProvider('<webhooks-list />')
+    }).state('app.keys', {
+      url: '/keys',
+      templateProvider: reactTemplateProvider('<keys-list />')
     }).state('app.credits', {
       url: '/credits',
       templateProvider: reactTemplateProvider('<credits-new/>'),

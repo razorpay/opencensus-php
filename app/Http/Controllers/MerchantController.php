@@ -9,6 +9,7 @@ use App\Mailers\ContactFormMailer;
 use App\Api;
 use Input;
 use Auth;
+use App;
 
 class MerchantController extends Controller
 {
@@ -367,11 +368,17 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function getInvitationDetails($token)
+    /*
+        This piece of code is weird cuz api-route-map is not
+        auth aware. We need to make that happen before we can
+        remove this. This route is accessible without any session
+        guard.
+    */
+    public function getInvitationDetails()
     {
-        list($error, $response) = (new Merchant\Service)->getInvitationDetails($token);
+        $genericController = App::make(GenericController::class);
 
-        return AppResponse::jsonResponse($error, $response);
+        return App::call([$genericController, 'handle']);
     }
 
     public function postSignup()

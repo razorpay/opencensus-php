@@ -14,6 +14,7 @@ import orderReducer from 'merchant/modules/orders/details'
 import settlementsReducer from 'merchant/modules/settlements/list'
 import settlementReducer from 'merchant/modules/settlements/details'
 import webhooksReducer from 'merchant/modules/webhooks'
+import keysReducer from 'merchant/modules/keys'
 import creditsReducer from 'merchant/modules/credits'
 import teamReducer from 'merchant/modules/team'
 
@@ -33,6 +34,7 @@ export default combineReducers({
   settlements: settlementsReducer,
   settlement: settlementReducer,
   webhooks: webhooksReducer,
+  keys: keysReducer,
   credits: creditsReducer,
   team: teamReducer,
 })

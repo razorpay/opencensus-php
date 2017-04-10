@@ -12,9 +12,9 @@ use App\Merchant;
 use App\User;
 use App\Invitation;
 use App\MerchantDetails;
+use App\Mailers\UserMailer;
 use App\Admin;
 use App\Exceptions\EntityNotFoundException;
-use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 
@@ -322,7 +322,7 @@ class Service extends Base\Service
         $merchant->save();
     }
 
-    public function createMerchantOnApi($merchantId)
+    public function createMerchantOnApi($merchantId, $adminId = null)
     {
         $merchant = Merchant\Entity::findOrFail($merchantId);
 
@@ -347,13 +347,9 @@ class Service extends Base\Service
     {
         $merchantApiData = $merchant->generateApiData();
 
-        // Once the merchant is created we also have to tag him
-        // with the admin if he was invited by one.
-        $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
-
-        if ($lead)
+        if (! empty($adminId))
         {
-            $merchantApiData['admin_id'] = $lead->admin_id;
+            $merchantApiData['admin_id'] = $adminId;
         }
 
         // Fetch org by hostname and set the orgId in the input
@@ -388,7 +384,7 @@ class Service extends Base\Service
 
             if ($user->once($credentials))
             {
-                $user = Auth::user()->get();
+                $user = Auth::user();
 
                 if ($user->getConfirmToken() === null)
                 {
@@ -396,6 +392,7 @@ class Service extends Base\Service
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
                 }
 
+                $user->token = $user->getConfirmToken();
                 (new UserMailer($user))->accountVerification()->queueAndDeliver();
 
                 return array(array(),array());
@@ -770,20 +767,6 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
-    }
-
-    public function getInvitationDetails($token)
-    {
-        $error = $data = null;
-
-        $lead = \DB::table('admin_leads')->where('token', '=', $token)->first();
-
-        if (empty($lead))
-        {
-            $error = true;
-        }
-
-        return [$error, $lead];
     }
 
     public function savePreSignupDetails($merchantId, $input)
