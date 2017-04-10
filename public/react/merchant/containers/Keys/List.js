@@ -7,6 +7,7 @@ import KeysList from 'merchant/components/Keys/KeysList'
 import ListContainer from 'merchant/containers/ListContainer'
 import * as KeyActions from 'merchant/modules/keys'
 import * as ModalActions from 'merchant/modules/modals'
+import * as NotificationsActions from 'merchant/modules/notifications'
 import RollKey from './RollKey'
 import NewKey from './NewKey'
 
@@ -17,7 +18,7 @@ import NewKey from './NewKey'
       session: state.session
     }
   },
-  { ...KeyActions, ...ModalActions }
+  { ...KeyActions, ...ModalActions, ...NotificationsActions }
 )
 
 
@@ -50,6 +51,11 @@ export default class KeysListContainer extends ListContainer {
     return this.props.generateKey(params).then((response) => {
       var key = response.new || response
 
+      this.props.showNotification({
+        type: 'success',
+        message: 'New Key Generated',
+        closeTimeout: 15000
+      })
       this.props.closeModal()
       this.showNewKeyModal(key)
     })
