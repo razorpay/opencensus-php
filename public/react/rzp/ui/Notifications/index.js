@@ -35,6 +35,7 @@ export default class Notifications extends Component {
               message={notification.message}
               showClose={notification.showClose}
               onClose={() => this.closeNotification(notification)}
+              closeTimeout={notification.closeTimeout}
             />
           ))
         }

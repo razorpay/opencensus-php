@@ -53,6 +53,10 @@ export default class BaseModel {
       serializedModel[prop] = this.serializeProperty(prop)
     }
 
+    if (this.getResourceMethod() === 'put') {
+      return serializedModel
+    }
+
     return objectDiff(this.__stashed__, serializedModel)
   }
 
