@@ -25,13 +25,12 @@ export default class RollKey extends Component {
 
   constructor() {
     super(...arguments)
-    this.save = ::this.save
     this.state = {
       errors: null
     }
   }
 
-  save(props) {
+  save = (props) => {
     var key = this.props.currentKey
     key.delay_roll = props.delay_roll
     key.merchantId = this.props.merchantId

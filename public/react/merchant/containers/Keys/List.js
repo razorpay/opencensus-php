@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
-import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
 import Header from 'rzp/ui/Header/Header'
 // import Role from 'merchant/components/Role'
@@ -23,13 +22,8 @@ import NewKey from './NewKey'
 
 
 export default class KeysListContainer extends ListContainer {
-  static MODAL_CLOSE_TIMEOUT = 300
-
   constructor() {
     super(...arguments)
-    this.generateKey = ::this.generateKey
-    this.showRollKeyModal = ::this.showRollKeyModal
-    this.showNewKeyModal = ::this.showNewKeyModal
   }
 
   fetchEntityList(params) {
@@ -38,7 +32,7 @@ export default class KeysListContainer extends ListContainer {
     });
   }
 
-  showRollKeyModal(key = null) {
+  showRollKeyModal = (key = null) => {
     this.props.openModal({
       component: <RollKey
         currentKey={key}
@@ -49,7 +43,7 @@ export default class KeysListContainer extends ListContainer {
     })
   }
 
-  showNewKeyModal(key) {
+  showNewKeyModal = (key) => {
     this.props.openModal({
       component: <NewKey
         currentKey={key}
@@ -60,7 +54,7 @@ export default class KeysListContainer extends ListContainer {
     })
   }
 
-  generateKey(key) {
+  generateKey = (key) => {
     const self = this;
     return this.props.generateKey(key).then(function(response){
       var key = response
@@ -99,13 +93,6 @@ export default class KeysListContainer extends ListContainer {
               generateKey={this.generateKey}
               showRollKeyModal={this.showRollKeyModal}
               merchantId={this.props.session.user.id}
-            />
-
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={keys.length}
-              onClick={this.fetchAll}
             />
           </div>
         </div>

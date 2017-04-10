@@ -24,7 +24,6 @@ export default class NewKey extends Component {
 
   constructor() {
     super(...arguments)
-    this.save = ::this.save
     this.state = {
       errors: null
     }
@@ -40,7 +39,7 @@ export default class NewKey extends Component {
     }
   }
 
-  save(props) {
+  save = (props) => {
     this.context.confirm({
         message: 'Are you sure you have saved the key details? ' +
           'This is the last time we will show you the key secret.',
