@@ -75,8 +75,18 @@ class Core extends Base\Core
         return $actionState;
     }
 
+    /**
+     * Fetch workflows mapped to the permissions for this organisation.
+     * This checks for if the permission is present for the organisation
+     * and if a workflow is mapped gainst the permission.
+     *
+     * @param array $permissions
+     * @param string $orgId
+     * @return array
+     **/
     public function getWorkflowsForPermissions(array $permissions, string $orgId)
     {
+        // Implicit check for permission existance in the organisation.
         $permissionIds = $this->repo
                               ->permission
                               ->retrieveIdsByNamesAndOrg($permissions, $orgId)
@@ -85,6 +95,7 @@ class Core extends Base\Core
                                 })
                               ->toArray();
 
+        // Implicit check for workflow in the organisation against permission ids.
         $workflows = $this->repo
                           ->workflow
                           ->fetchWorkflowsByPermissionsAndOrgId($permissionIds, $orgId);
