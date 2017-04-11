@@ -983,4 +983,13 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
+
+    public function getEmailLogs()
+    {
+        $input = Input::all();
+
+        list($error, $response) = (new Admin\Mailgun)->getMailgunLogs($input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
 }

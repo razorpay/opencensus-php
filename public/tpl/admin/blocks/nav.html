@@ -38,6 +38,12 @@
       <span>Actions</span>
     </a>
   </li>
+  <li>
+    <a id="emailLogsNav" ui-sref="app.emaillogs.list" ng-show="admin.permissions && admin.permissions.indexOf('view_email_logs') !== -1">
+      <i class="fa fa-envelope icon text-warning-lter"></i>
+      <span>Email Logs</span>
+    </a>
+  </li>
 
   <li class="line dk"></li>
 

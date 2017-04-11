@@ -219,6 +219,12 @@ var app = angular.module('app', [
     }).state('app.invitations.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_invitations_list.html'
+    }).state('app.emaillogs', {
+      url: '/emaillogs',
+      template: '<div ui-view class="fade-in-down smooth"></div>'
+    }).state('app.emaillogs.list', {
+      url: '/list',
+      templateUrl: 'tpl/admin/app_email_logs_list.html'
     }).state('app.workflows', {
       url: '/workflows',
       template: '<div ui-view class=""></div>'
