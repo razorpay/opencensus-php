@@ -1,4 +1,4 @@
-import './CustButton.styl'
+import './FileUploaderBtn.styl'
 
 export default (props) => (
   <div class="custom-btn">

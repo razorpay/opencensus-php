@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { refreshConfig, uploadLogo } from 'merchant/modules/config'
 import * as NotificationActions from 'merchant/modules/notifications'
 
-import CustButton from 'rzp/ui/CustButton'
+import FileUploaderBtn from 'rzp/ui/FileUploaderBtn'
 
 @connect(
   (state) => {
@@ -138,7 +138,7 @@ export default class CheckoutTheme extends Component {
                 ) : null
               }
               <div class="pull-left col-sm-4 file-upload-container m-l-neg">
-                <CustButton handleClick={(evnt)=> this.onFileUpload(evnt, 'logo')}/>
+                <FileUploaderBtn handleClick={(evnt)=> this.onFileUpload(evnt, 'logo')}/>
                 <i class="m-t">Max file size: 1MB</i>
               </div>
               <div class="clearfix"></div>
