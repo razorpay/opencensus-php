@@ -20,11 +20,9 @@ class Core extends Base\Core
             $input
         );
 
-        $report = new Entity;
+        $report = (new Entity)->build($input);
 
         $report->merchant()->associate($merchant);
-
-        $report->build($input);
 
         $this->repo->saveOrFail($report);
 

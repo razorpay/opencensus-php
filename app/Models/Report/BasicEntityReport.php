@@ -296,12 +296,13 @@ class BasicEntityReport extends Base
         $creator = new FileStore\Creator;
 
         $s3File = $creator->extension(FileStore\Format::ZIP)
-                            ->localFile($file)
-                            ->name($fileName)
-                            ->store(FileStore\Store::S3)
-                            ->type(FileStore\Type::REPORT)
-                            ->save()
-                            ->getSignedUrl();
+                          ->localFile($file)
+                          ->name($fileName)
+                          ->store(FileStore\Store::S3)
+                          ->type(FileStore\Type::REPORT)
+                          ->merchant($this->merchant)
+                          ->save()
+                          ->getSignedUrl();
 
         return $s3File;
     }
@@ -319,7 +320,7 @@ class BasicEntityReport extends Base
         $report = $this->repo->report->fetchReportEntity(
                                         $from, $to, $this->entity, $merchant->getId());
 
-        if (is_null($report) === true)
+        if ($report === null)
         {
             $params = [
                 Entity::START_TIME  => $from,
