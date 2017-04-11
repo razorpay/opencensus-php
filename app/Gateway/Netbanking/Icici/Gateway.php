@@ -187,7 +187,8 @@ class Gateway extends Base\Gateway
 
         $data = $this->createDefaultRequestData($input);
 
-        $paymentDate = Carbon::createFromTimestamp($payment['created_at'])
+        $paymentDate = Carbon::createFromTimestamp($payment['created_at'],
+                                                   'Asia/Kolkata')
                                                    ->format('Y-m-d');
 
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;

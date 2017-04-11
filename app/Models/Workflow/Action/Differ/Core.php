@@ -147,7 +147,9 @@ class Core extends Base\Core
             // Run validator
             $newEntity = $newEntity->edit($differ->getPayload(), $validator);
 
-            $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
+            $diff = $this->createDiff(
+                $oldEntity->toArray(),
+                $newEntity->toArray());
 
             $differ->setDiff($diff);
         }
@@ -191,8 +193,22 @@ class Core extends Base\Core
             Entity::ENTITY_ID   => $entityId,
         ];
 
-        $esResponse = $this->esDao->searchDifferByParams(
-            strtolower($this->baseIndex), self::ES_TYPE, $matchParams, $openStates);
+        $esResponse = null;
+
+        try
+        {
+            $mock = $this->config->get('database.es_workflow_action_mock');
+
+            if ($mock === false)
+            {
+                $esResponse = $this->esDao->searchDifferByParams(
+                    strtolower($this->baseIndex), self::ES_TYPE, $matchParams, $openStates);
+            }
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->warning(TraceCode::HEIMDALL_ACTION_LOG_FAIL, ['msg' => $e]);
+        }
 
         return $esResponse;
     }

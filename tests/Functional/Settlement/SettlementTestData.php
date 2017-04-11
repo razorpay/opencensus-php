@@ -10,6 +10,7 @@ return [
         'fees'              => 115000,
         'service_tax'       => 15000,
         'failure_reason'    => null,
+        'attempts'     => 1,
     ],
 
     'fetchAndMatchBatchDataSettlement' => [
