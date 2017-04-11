@@ -15,7 +15,9 @@ export const fetchRefund = (id) => {
 
 let initialState = {
   loading: true,
-  refund: {},
+  refund: {
+    notes: {}
+  },
   error: null,
 }
 

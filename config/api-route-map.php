@@ -89,16 +89,6 @@ return [
             'routeName' => 'post_refund'
         ],
 
-        // Refunds
-        'refund_fetch_multiple'             => [
-            'url'       => 'refunds',
-            'routeName' => 'refunds_fetch_multiple'
-        ],
-        'refund_fetch_by_id'                => [
-            'url'       => 'refunds/{id}',
-            'routeName' => 'refunds_fetch_single'
-        ],
-
         // Orders
         'order_fetch'                       => [
             'url'       => 'orders',

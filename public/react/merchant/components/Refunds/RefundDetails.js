@@ -1,10 +1,8 @@
-import AsyncButton from 'react-async-button'
 import Amount from 'rzp/ui/Amount'
 import Time from 'rzp/ui/Time'
 import Spinner from 'rzp/ui/Spinner'
 import Alert from 'rzp/ui/Forms/Alert'
 import ListGroupToggler from 'rzp/ui/ListGroupToggler'
-import { OrderStatusLabel, PaymentStatusLabel } from 'merchant/components/StatusLabel'
 import TableBody from 'merchant/components/TableBody'
 import DetailRow from 'merchant/components/DetailRow'
 
@@ -45,6 +43,28 @@ export default (props) => {
                   label='Created At'
                   value={ () => <Time value={refund.created_at} format='DD MMM YYYY, hh:mm:ss a' /> }
                 />
+
+                {
+                  Object.keys(refund.notes).length ?
+                  <div>
+                    <DetailRow
+                      label='Notes'
+                    />
+                    <div class='panel-body'>
+                      <div class='list-group'>
+                        {
+                          Object.keys(refund.notes).map((key) =>
+                            <DetailRow
+                              key={key}
+                              label={key}
+                              value={refund.notes[key]}
+                            />
+                          )
+                        }
+                      </div>
+                    </div>
+                  </div> : ''
+                }
               </div>
             </div>
           </div>
