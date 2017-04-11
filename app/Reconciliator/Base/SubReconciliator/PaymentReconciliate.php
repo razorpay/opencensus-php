@@ -1036,6 +1036,24 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
+        // TODO: Remove this check later
+        // This check is needed because the capture payment would fail
+        // for the payments which got authorized by old code, and got captured by new one
+        $existingFeesSplit = $this->repo->fee_breakup->fetchByTransactionId($txn->getId());
+
+        if ($existingFeesSplit->count() !== 0)
+        {
+            $this->trace->info(
+                TraceCode::FEES_BREAKUP_ALREADY_EXISTS,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $txn->getEntityId(),
+                    'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
+
+            return;
+        }
+
         foreach ($feesSplit as $feeSplit)
         {
             $feeSplit->transaction()->associate($txn);

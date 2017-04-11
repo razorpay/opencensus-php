@@ -436,10 +436,10 @@ trait Capture
             // This could be actually misleading.
             // We are creating a transaction even if the payment
             // is in refunded state.
-
             list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
 
             $this->repo->saveOrFail($txn);
+
             $this->repo->saveOrFail($payment);
 
             $this->saveFeeDetails($txn, $feesSplit);
@@ -566,6 +566,7 @@ trait Capture
         }
 
         $this->repo->saveOrFail($txn);
+
         $this->repo->saveOrFail($payment);
 
         $this->saveFeeDetails($txn, $feesSplit);
