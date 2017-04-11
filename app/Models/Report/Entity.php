@@ -19,19 +19,18 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::START_TIME,
-        self::END_TIME,
-        self::FILE_ID,
         self::ENTITY,
+        self::START_TIME,
+        self::END_TIME
     ];
 
     protected $visible = [
         self::ID,
+        self::MERCHANT_ID,
+        self::ENTITY,
         self::START_TIME,
         self::END_TIME,
         self::FILE_ID,
-        self::ENTITY,
-        self::MERCHANT_ID,
         self::GENERATED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -39,11 +38,11 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::START_TIME,
-        self::END_TIME,
-        self::FILE_ID,
         self::ENTITY,
-        self::MERCHANT_ID,
+        self::GENERATED_AT,
+    ];
+
+    protected $dates = [
         self::GENERATED_AT,
     ];
 

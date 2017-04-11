@@ -300,9 +300,10 @@ class BasicEntityReport extends Base
                             ->name('reports/' . $fileName)
                             ->store(FileStore\Store::S3)
                             ->type(FileStore\Type::REPORT)
+                            ->merchant($this->merchant)
                             ->save()
                             ->getSignedUrl();
-        sd($s3File);
+
         return $s3File;
     }
 
@@ -319,7 +320,7 @@ class BasicEntityReport extends Base
         $report = $this->repo->report->fetchReportEntity(
                                         $from, $to, $this->entity, $merchant->getId());
 
-        if (is_null($report) === true)
+        if ($report === null)
         {
             $params = [
                 Entity::START_TIME  => $from,

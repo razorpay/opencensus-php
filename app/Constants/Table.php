@@ -20,6 +20,7 @@ class Table
     const DEVICE                = 'devices';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
+    const REPORT                = 'reports';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';
@@ -108,8 +109,6 @@ class Table
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
-
-    const REPORT                = 'reports';
 
     protected static $entityToTableMap = array(
         Entity::AXIS_MIGS           => self::MIGS,
