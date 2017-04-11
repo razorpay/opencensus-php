@@ -9,4 +9,5 @@ class SoapMethod
     const VALIDATE_CUSTOMER         = 'validateCustomer';
     const SEND_OTP                  = 'pgSendOTP';
     const REFUND_PAYMENT            = 'refundPaymentTransaction';
+    const OTP_SUBMIT                = 'pgMrchntPymt';
 }

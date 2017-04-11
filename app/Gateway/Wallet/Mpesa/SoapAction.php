@@ -8,4 +8,5 @@ class SoapAction
     const CUSTOMER_API              = "<pay:validateCustomer />";
     const OTP_GENERATE_API          = "<pay:pgSendOTP />";
     const REFUND_API                = "<pay:refundPaymentTransaction />";
+    const OTP_SUBMIT_API            = "<pay:pgMrchntPymt />";
 }

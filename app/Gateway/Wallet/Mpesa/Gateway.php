@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Mpesa;
 
-use SoapVar;
 use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
@@ -102,12 +101,51 @@ class Gateway extends Base\Gateway
                 $content[ResponseFields::DESCRIPTION]);
         }
 
+        // Create Gateway Payment Entity
+        $contentToSave = $this->getOtpGenerateContentToSave($response['McomOtpResponse']);
+
+        $this->createGatewayPaymentEntity($contentToSave);
+
         return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)
     {
-        sd('1');
+        $this->action($input, Action::OTP_SUBMIT);
+
+        $this->verifyOtpAttempts($input['payment']);
+
+        $data = $this->getActionData();
+
+        $response = $this->sendSoapRequest($data,
+                                           SoapAction::OTP_SUBMIT_API,
+                                           SoapMethod::OTP_SUBMIT);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response,
+                'payment_id' => $input['payment']['id']
+            ]);
+
+        $content = $response['Response'];
+
+        $status = $content[ResponseFields::S2S_STATUS_CODE];
+
+        // Otp submission fails, throw exception
+        if (StatusCode::checkIfSuccessStatus($status) === false)
+        {
+            // TODO: Map statuses to error codes
+            $errorCode = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                $content[ResponseFields::DESCRIPTION]);
+        }
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)
@@ -279,6 +317,19 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getOtpGenerateContentToSave(array $content)
+    {
+        $response = $content['response'];
+
+        $attributes = [
+            Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::OTP_REF_NUMBER],
+            Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER],
+            Entity::AMOUNT              => $this->input['payment']['amount'] / 100
+        ];
+
+        return $attributes;
+    }
+
     protected function getCheckSum()
     {
         $xml = $this->getActionData();
@@ -306,6 +357,10 @@ class Gateway extends Base\Gateway
 
             case Action::OTP_GENERATE:
                 $data = $this->getOtpGenerateData();
+                break;
+
+            case Action::OTP_SUBMIT:
+                $data = $this->getOtpSubmitData();
                 break;
 
             case Action::REFUND:
@@ -377,6 +432,31 @@ class Gateway extends Base\Gateway
             RequestFields::COMMON_SERVICE_DATA => $data,
             RequestFields::MERCHANT_ID         => $this->getMerchantId()
         ];
+    }
+
+    protected function getOtpSubmitData()
+    {
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $this->input['payment']['id'], Action::OTP_GENERATE);
+
+        $gatewayPaymentId2 = $wallet->getGatewayPaymentId2();
+
+        $data = [
+            RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
+            RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
+            RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
+            RequestFields::TRANSACTION_TYPE      => PaymentMethod::WALLET,
+            RequestFields::AMOUNT                => $this->input['payment']['amount'] / 100,
+            RequestFields::MOBILE_NUMBER         => $this->getFormattedPhoneNo(),
+            RequestFields::FROM_ENTITY_TYPE      => Constants::ENTITY_TYPE_ID,
+            RequestFields::TO_ENTITY_TYPE        => Constants::TO_ENTITY_TYPE,
+            RequestFields::COMMAND_ID            => Constants::COMMAND_ID,
+            RequestFields::OTP                   => $this->input['gateway']['otp'],
+            RequestFields::OTP_REF_NUMBER        => $gatewayPaymentId2,
+            RequestFields::CHANNEL_ID            => Constants::CHANNEL_ID,
+        ];
+
+        return [RequestFields::MCOM_PAYMENT_REQ => $data];
     }
 
     protected function getRefundData()
@@ -491,9 +571,13 @@ class Gateway extends Base\Gateway
 
         $contentToSave = [
             Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
-            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],
             Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER]
         ];
+
+        if (isset($content[ResponseFields::REASON]) === true)
+        {
+            $contentToSave[Entity::RESPONSE_DESCRIPTION] = $content[ResponseFields::REASON];
+        }
 
         if (empty($wallet[Entity::GATEWAY_PAYMENT_ID]) === true)
         {
@@ -501,6 +585,14 @@ class Gateway extends Base\Gateway
         }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
+    }
+
+    protected function getMappedAttributes($attributes)
+    {
+        if ($this->action === Action::OTP_GENERATE)
+        {
+            return $attributes;
+        }
     }
 
     protected function getFormattedDate()

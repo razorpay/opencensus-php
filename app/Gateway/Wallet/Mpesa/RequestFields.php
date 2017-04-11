@@ -31,9 +31,15 @@ class RequestFields
     const REQUEST_ID                = 'requestId';
     const MOBILE_NUMBER             = 'MSISDN';
 
-    // Otp Generate params
+    // Otp params
     const ENTITY_TYPE_ID            = 'entityTypeId';
     const MERCHANT_ID               = 'MrchntId';
+    const OTP                       = 'OTP';
+    const MCOM_PAYMENT_REQ          = 'McomMrchntPymtReq';
+    const FROM_ENTITY_TYPE          = 'fromEnttyType';
+    const TO_ENTITY_TYPE            = 'toEnttyType';
+    const COMMAND_ID                = 'cmdId';
+    const OTP_REF_NUMBER            = 'OTPREFNUM';
 
     // Refund params
     const S2S_AMOUNT                = 'amt';

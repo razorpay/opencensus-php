@@ -17,4 +17,8 @@ class ResponseFields
     const S2S_STATUS_CODE     = 'statusCode';
     const S2S_TRANS_ID        = 'mcomPgTransID';
     const DESCRIPTION         = 'description';
+    const OTP_REF_NUMBER      = 'transRefNum';
+
+    // otp fields
+    const OTP_MOBILE_NUMBER   = 'msisdn';
 }

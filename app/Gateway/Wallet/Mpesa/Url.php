@@ -11,5 +11,6 @@ class Url
     const VERIFY            = '/mcommerce.webservices/pgService?wsdl';
     const VALIDATE_CUSTOMER = '/mcommerce.webservices/pgService?wsdl';
     const OTP_GENERATE      = '/mcommerce.webservices/pgService?wsdl';
+    const OTP_SUBMIT        = '/mcommerce.webservices/pgService?wsdl';
     const REFUND            = '/mcommerce.webservices/pgService?wsdl';
 }
