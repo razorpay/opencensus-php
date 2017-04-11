@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\Workflow\Base;
+use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Action\State;
 use RZP\Constants\Table;
 
@@ -81,7 +82,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getClosedActionsByAdmin($admin)
+    public function getClosedActionsByAdmin($adminId)
     {
         /*
          * SELECT `workflow_actions`.*
@@ -109,7 +110,7 @@ class Repository extends Base\Repository
                     ->select($attrs)
                     ->join($acsTable, $aId, '=', $acsActionId)
                     ->where($acsState, '=', State\Entity::CLOSED)
-                    ->where($acsAdminId, '=', $admin->getId())
+                    ->where($acsAdminId, '=', $adminId)
                     ->get();
     }
 

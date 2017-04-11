@@ -69,7 +69,7 @@ class Manager
         $this->validateSuperAdminAccess();
 
         $actions = $this->repo->workflow_action->findByOrgId(
-            $admin->getOrgId());
+            $orgId);
 
         return $actions;
     }

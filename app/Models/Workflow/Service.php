@@ -90,6 +90,7 @@ class Service extends Base\Service
 
             case 'open':
                 $actions = (new Manager)->getOpenActionsByOrg($orgId);
+                break;
 
             case 'maker':
             default:
