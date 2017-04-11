@@ -10,4 +10,7 @@ return [
     'admin_fetch_entity'    => ['view_all_entity'],
     'admin_payment_capture' => ['edit_payment_capture'],
     'admin_delete_features' => ['delete_merchant_features'],
+  
+    // Email logs
+    'email_logs_get'        => ['view_email_logs'],
 ];
