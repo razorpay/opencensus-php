@@ -76,7 +76,7 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::SHARP,
-        self::WALLET_MPESA,
+        // self::WALLET_MPESA,
     );
 
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [

@@ -11,9 +11,10 @@ class ResponseFields
     const REASON                 = 'reason';
     const TRANSACTION_AMOUNT     = 'txnAmt';
 
-    // Verify fields
-    const VERIFY_TRANSACTION_REF = 'transRefNo';
-    const MOBILE_NUMBER          = 'MSISDN';
-    const VERIFY_STATUS_CODE     = 'statusCode';
-    const VERIFY_TRANS_ID        = 'mcomPgTransID';
+    // S2S fields
+    const S2S_TRANSACTION_REF = 'transRefNo';
+    const MOBILE_NUMBER       = 'MSISDN';
+    const S2S_STATUS_CODE     = 'statusCode';
+    const S2S_TRANS_ID        = 'mcomPgTransID';
+    const DESCRIPTION         = 'description';
 }

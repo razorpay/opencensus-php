@@ -70,6 +70,8 @@ class Gateway extends Base\Gateway
         $this->validateCustomer($input);
 
         $this->action($input, Action::OTP_GENERATE);
+
+        sd('1');
     }
 
     public function verify(array $input)
@@ -146,7 +148,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $status = $content[ResponseFields::VERIFY_STATUS_CODE];
+        $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // content will contain status 100 or 101
         if (StatusCode::checkIfSuccessStatus($status) === true)
@@ -175,7 +177,17 @@ class Gateway extends Base\Gateway
                                            SoapAction::CUSTOMER_API,
                                            SoapMethod::VALIDATE_CUSTOMER);
 
-        sd($response);
+        $content = $response['MCOMResponseStatus'];
+
+        $status = $content[ResponseFields::S2S_STATUS_CODE];
+
+        // response will contain status 100 or 101
+        if (StatusCode::checkIfSuccessStatus($status) === false)
+        {
+            throw new Exception\LogicException($content[ResponseFields::DESCRIPTION],
+                                               $content[ResponseFields::S2S_STATUS_CODE],
+                                               $response);
+        }
     }
 
     protected function getCheckSum()
@@ -347,14 +359,14 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $contentToSave = [
-            Entity::STATUS_CODE          => $content[ResponseFields::VERIFY_STATUS_CODE],
+            Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
             Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],
             Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER]
         ];
 
         if (empty($wallet[Entity::GATEWAY_PAYMENT_ID]) === true)
         {
-            $contentToSave[Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::VERIFY_TRANS_ID];
+            $contentToSave[Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::S2S_TRANS_ID];
         }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
