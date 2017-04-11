@@ -75,7 +75,7 @@ return [
         'action_checker_create'             => 'w-actions/{id}/checkers',
         'action_request_execute'            => 'w-actions/{id}/execute',
 
-        // Actions
+        // Admin Actions
         // Create Schedule
         'schedule_create'                   => 'schedules',
     ],
@@ -281,25 +281,19 @@ return [
         'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
         'pricing_supported_networks'        => 'pricing/networks',
 
-        // Actions
-        // EMI
+        // Admin Actions
+        // Add EMI Plan
         'emi_plan_add'                      => 'emi',
-
-        // IIN
+        // Add IIN Rule
         'iin_add'                           => 'iins',
-
         // Verify Payment
         'payment_verify'                    => 'payments/{id}/verify',
-
         // Authorize Failed Payment
         'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
-
         // Generate Refunds Excel (Netbanking)
         'refund_netbanking_generate_excel'  => 'refunds/netbanking/excel',
-
         // Generate Beneficiary File
         'merchant_beneficiary_file'         => 'merchants/beneficiary/file',
-
         // Initiate Settlement
         'setl_initiate'                     => 'settlements/initiate/{channel?}',
 
