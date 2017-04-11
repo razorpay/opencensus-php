@@ -71,6 +71,41 @@ class Gateway extends Base\Gateway
 
         $this->action($input, Action::OTP_GENERATE);
 
+        $data = $this->getActionData();
+
+        $response = $this->sendSoapRequest($data,
+                                           SoapAction::OTP_GENERATE_API,
+                                           SoapMethod::SEND_OTP);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response,
+                'payment_id' => $input['payment']['id']
+            ]);
+
+        $content = $response['McomOtpResponse']['response'];
+
+        $status = $content[ResponseFields::S2S_STATUS_CODE];
+
+        // Otp generation fails, throw exception
+        if (StatusCode::checkIfSuccessStatus($status) === false)
+        {
+            // TODO: Map statuses to error codes
+            $errorCode = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                $content[ResponseFields::DESCRIPTION]);
+        }
+
+        return $this->getOtpSubmitRequest($input);
+    }
+
+    public function callbackOtpSubmit(array $input)
+    {
         sd('1');
     }
 
@@ -184,9 +219,13 @@ class Gateway extends Base\Gateway
         // response will contain status 100 or 101
         if (StatusCode::checkIfSuccessStatus($status) === false)
         {
-            throw new Exception\LogicException($content[ResponseFields::DESCRIPTION],
-                                               $content[ResponseFields::S2S_STATUS_CODE],
-                                               $response);
+            // TODO: Map statuses to error codes
+            $errorCode = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                $content[ResponseFields::DESCRIPTION]);
         }
     }
 
@@ -213,6 +252,10 @@ class Gateway extends Base\Gateway
 
             case Action::VALIDATE_CUSTOMER:
                 $data = $this->getValidateCustomerData();
+                break;
+
+            case Action::OTP_GENERATE:
+                $data = $this->getOtpGenerateData();
                 break;
         }
 
@@ -265,6 +308,21 @@ class Gateway extends Base\Gateway
         ];
 
         return [RequestFields::COMMON_SERVICE_DATA => $data];
+    }
+
+    protected function getOtpGenerateData()
+    {
+        $data = [
+            RequestFields::REQUEST_ID     => uniqid(),
+            RequestFields::CHANNEL_ID     => Constants::CHANNEL_ID,
+            RequestFields::ENTITY_TYPE_ID => Constants::ENTITY_TYPE_ID,
+            RequestFields::MOBILE_NUMBER  => $this->getFormattedPhoneNo()
+        ];
+
+        return [
+            RequestFields::COMMON_SERVICE_DATA => $data,
+            RequestFields::MERCHANT_ID         => $this->getMerchantId()
+        ];
     }
 
     protected function getFormattedPhoneNo()

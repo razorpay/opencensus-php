@@ -10,4 +10,5 @@ class Url
     const AUTHORIZE         = '/mcommPg/paymentGateway/mrchntProcessor';
     const VERIFY            = '/mcommerce.webservices/pgService?wsdl';
     const VALIDATE_CUSTOMER = '/mcommerce.webservices/pgService?wsdl';
+    const OTP_GENERATE      = '/mcommerce.webservices/pgService?wsdl';
 }

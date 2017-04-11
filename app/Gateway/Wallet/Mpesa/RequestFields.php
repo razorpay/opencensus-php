@@ -25,9 +25,13 @@ class RequestFields
     const COM_TRANSACTION_ID        = 'mcomPgTransID';
     const PMT_TRANSACTION_REFERENCE = 'paymentTransRefNo';
 
-    // Customer Validate data
+    // Customer Validate params
     const COMMON_SERVICE_DATA       = 'commonServiceData';
     const CHANNEL_ID                = 'channelID';
     const REQUEST_ID                = 'requestId';
     const MOBILE_NUMBER             = 'MSISDN';
+
+    // Otp Generate params
+    const ENTITY_TYPE_ID            = 'entityTypeId';
+    const MERCHANT_ID               = 'MrchntId';
 }

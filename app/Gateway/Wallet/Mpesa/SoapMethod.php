@@ -7,4 +7,5 @@ class SoapMethod
     // Soap Methods
     const QUERY_PAYMENT_TRANSACTION = 'queryPaymentTransaction';
     const VALIDATE_CUSTOMER         = 'validateCustomer';
+    const SEND_OTP                  = 'pgSendOTP';
 }
