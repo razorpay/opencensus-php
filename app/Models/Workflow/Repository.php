@@ -25,7 +25,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
                     ->with($relations)
-                    ->where(Entity\ORG_ID, '=', $orgId)
+                    ->where(Entity::ORG_ID, '=', $orgId)
                     ->whereIn('workflow_permissions.permission_id', $permissionIds)
                     ->get();
     }

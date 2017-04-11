@@ -75,17 +75,9 @@ class Service extends Base\Service
         return $actions->toArrayPublic();
     }
 
-    public function permissionHasWorkflow($routePermissions, $orgId)
+    public function permissionHasWorkflow(array $routePermissions, string $orgId)
     {
-        $permissionIds = $this->repo
-                              ->permission
-                              ->retrieveIdsByNamesAndOrg($routePermissions, $orgId)
-                              ->map(function ($permission){
-                                    return $permission->getId();
-                                })
-                              ->toArray();
-
-        $workflows = $this->repo->workflow->fetchWorkflowsByPermissionsAndOrgId($permissionIds, $orgId);
+        $workflows = $this->core()->getWorkflowsForPermissions($routePermissions, $orgId);
 
         return ($workflows->isEmpty() === false);
     }
