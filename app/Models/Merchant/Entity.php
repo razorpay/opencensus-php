@@ -14,8 +14,6 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
-  
-  
 {
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
