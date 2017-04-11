@@ -57,7 +57,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchUnsettledTransactions($timestamp)
+    public function fetchUnsettledTransactions($timestamp, $channel)
     {
         $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
@@ -71,58 +71,13 @@ class Repository extends Base\Repository
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::ON_HOLD, 0)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
+                    ->where(Entity::CHANNEL, '=', $channel)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
                     ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
                     ->orderBy($transactionId)
                     ->get();
-
-        $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
-                    $txns,
-                    'source',
-                    [
-                        E::PAYMENT => [],
-                        E::REFUND => [E::PAYMENT]
-                    ]);
-
-        return $txns;
-    }
-
-    public function fetchUnsettledTxnsForDueSchedules($timestamp)
-    {
-        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
-        $merchantScheduleId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::SETTLEMENT_SCHEDULE_ID);
-
-        $scheduleId = $this->manager->schedule->getAttributeWithTableName(Schedule\Entity::ID);
-
-        $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
-        $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
-        $transactionType = $this->getAttributeWithTableName(Transaction\Entity::TYPE);
-        $transactionData = $this->getAttributeWithTableName('*');
-
-        $txns = $this->newQuery()
-                    ->select($transactionData)
-                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->join(Table::SCHEDULE, $scheduleId, '=', $merchantScheduleId)
-                    ->where(Entity::ON_HOLD, 0)
-                    ->where(Entity::SETTLED_AT, '<', $timestamp)
-                    ->where(Entity::SETTLED, '=', 0)
-                    ->where($transactionType, '!=', Type::SETTLEMENT)
-                    ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->where(Schedule\Entity::NEXT_RUN, '<', $timestamp)
-                    ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
-                    ->orderBy($transactionMerchantId)
-                    ->orderBy($transactionId)
-                    ->get();
-
-        // $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
-        //             $txns,
-        //             'source',
-        //             [
-        //                 E::PAYMENT => [],
-        //                 E::REFUND => [E::PAYMENT]
-        //             ]);
 
         return $txns;
     }

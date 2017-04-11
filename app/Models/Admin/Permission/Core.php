@@ -11,18 +11,13 @@ class Core extends Base\Core
     {
         $permission = (new Entity)->build($input);
 
+        $permission->generateId();
+
         $permission->setAuditAction(Action::CREATE_PERMISSION);
 
         $this->repo->saveOrFail($permission);
 
         return $permission;
-    }
-
-    public function getMultiplePermissionIdsByNames(array $names)
-    {
-        $permissions = $this->repo->permission->retrieveIdsByNames($names);
-
-        return $permissions;
     }
 
     public function edit(Entity $permission, array $input)

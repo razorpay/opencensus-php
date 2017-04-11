@@ -100,4 +100,11 @@ return array(
         'accountId' => env('DRIP_ACCOUNT_ID'),
         'token'     => env('DRIP_TOKEN')
     ],
+
+    'gateway_downtime' => [
+        'statuscake' => [
+            'username' => env('STATUSCAKE_USERNAME'),
+            'api_key'  => env('STATUSCAKE_API_KEY')
+        ]
+    ]
 );

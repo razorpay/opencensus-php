@@ -59,10 +59,10 @@ add_cron "30 0 * * 1-6"    "beneficiary_gen_live"      POST "$BASE_URL/merchants
 add_cron "0 3 * * *"       "emi_excel_generate"        POST "$BASE_URL/emi/generate/excel"               ""                              $LIVE_AUTH
 add_cron "0 6 * * *"       "scorecard_prod"            POST "$BASE_URL/scorecard"                        ""                              $LIVE_AUTH
 add_cron "0 * * * *"       "prod_international_curren" POST "$BASE_URL/international/USD/rates"          ""                              $LIVE_AUTH
+add_cron "*/30 * * * *"    "payment_update_on_hold"    POST "$BASE_URL/payments/on_hold/update"          ""                              $LIVE_AUTH
 
 # Settlement
-add_cron "30 3 * * 1-6"    "settlement_prod_live"      POST "$BASE_URL/settlements/initiate/kotak"       ""                              $LIVE_AUTH
-add_cron "1 5-18 * * 1-6"  "settlement_schedule_prod"  POST "$BASE_URL/settlements/initiate2/kotak"      ""                              $LIVE_AUTH
+add_cron "1 5-18 * * 1-6"  "settlement_prod_live"      POST "$BASE_URL/settlements/initiate/kotak"       ""                              $LIVE_AUTH
 
 # Verify
 add_cron "* * * * *"       "payment_verify_prod_live"  POST "$BASE_URL/payments/verify/payments_failed"  ""                              $LIVE_AUTH
@@ -94,7 +94,10 @@ add_cron "7 10,22 * * *"    "gateway_create_refund_rec"      POST "$BASE_URL/ref
 add_cron "7 10,22 * * *"    "freecharge_create_refund_rec"   POST "$BASE_URL/refunds/wallet_freecharge/create_record"    ""                              $LIVE_AUTH
 add_cron "7 * * * *"        "freecharge_validate_refund_rec" POST "$BASE_URL/refunds/wallet_freecharge/validate"         ""                              $LIVE_AUTH
 add_cron "30 * * * *"       "refund_gateway_refunded_txns"   POST "$BASE_URL/refunds/gateway_refunded/transaction"       ""                              $LIVE_AUTH
-add_cron "*/15 * * * *"     "invoice_expire_bulk"            POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
+
+# Invoice
+add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH
+add_cron "*/10 * * * *"     "invoice_expire_bulk_live"       POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
 
 # Install the generated crontab
 crontab $TMP_CRONTAB

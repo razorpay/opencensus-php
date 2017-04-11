@@ -323,13 +323,45 @@ class Creator extends Base\Core
      *
      * @return array
      */
-    public function get()
+    public function get(): array
     {
         $data = $this->file->toArrayPublic();
 
         $data['local_file_path'] = $this->getFullFilePath();
 
         return $data;
+    }
+
+    /**
+     * Returns signed url and id of File Entity
+     *
+     * @return array
+     */
+    public function getSignedUrl()
+    {
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(),
+            $this->env);
+
+        $url = $this->storageHandler->getSignedUrl($bucketConfig, $this->file->getLocation());
+
+        return [
+            'id'  => $this->file->getId(),
+            'url' => $url,
+        ];
+    }
+
+    /**
+     * Returns unsigned url
+     *
+     * @return string
+     */
+    public function getUrl(): string
+    {
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(), $this->env);
+
+        return $this->storageHandler->getUrl($bucketConfig, $this->file->location);
     }
 
     /**

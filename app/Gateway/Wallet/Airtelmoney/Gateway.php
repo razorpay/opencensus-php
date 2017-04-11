@@ -223,6 +223,18 @@ class Gateway extends Base\Gateway
 
         if (isset($content['nestedParams']) === false)
         {
+            if (isset($content[ResponseFields::STATUS]) === false)
+            {
+                $data = [
+                    'response'   => $verify->verifyResponseBody,
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $input['payment']['id'],
+                ];
+
+                $this->trace->info(
+                    TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT,
+                    $data);
+            }
             // Single transaction is present under razorpay_payment_id, Check
             // if it was successful on airtel's end.
             if ($content[ResponseFields::STATUS] !== Status::SUCCESS)

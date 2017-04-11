@@ -17,6 +17,7 @@ use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
+use RZP\Models\Gateway\Downtime;
 
 class Checkout
 {
@@ -266,6 +267,13 @@ class Checkout
         $data['fee_bearer'] = $merchant->isFeeBearerCustomer();
 
         $data['version'] = 1;
+
+        $optionalInputConfig = $merchant->getOptionalInputConfig();
+
+        if (empty($optionalInputConfig) === false)
+        {
+            $data['optional'] = $optionalInputConfig;
+        }
 
         return $data;
     }

@@ -14,14 +14,14 @@ use RZP\Trace\TraceCode;
 
 trait SettlementTrait
 {
-    protected function filterTransactionsForSettlement($txns, $channel)
+    protected function filterTransactionsForSettlement($txns)
     {
         $filteredTxns = new Base\PublicCollection;
 
         foreach ($txns as $txn)
         {
             // skip if txn not to be settled
-            if ($this->shouldSettle($txn, $channel, $txn->merchant) === false)
+            if ($this->shouldSettle($txn->merchant) === false)
             {
                 continue;
             }
@@ -179,17 +179,16 @@ trait SettlementTrait
     }
 
     /**
-     * Settlement is done only if funds are not on hold and bank account change
-     * is not recent as we need some time till beneficiary is updated in kotak
+     * Settlement is done only bank account change is not recent as we need some
+     * time till beneficiary is updated in kotak
      */
-    protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant): bool
+    protected function shouldSettle($merchant): bool
     {
+        $shouldSettle = true;
+
         $today = Carbon::today('Asia/Kolkata');
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
-
-        $shouldSettle = (($txn->getChannel() === $channel) and
-                         ($merchant->holdFunds() === false));
 
         if ($merchant->bankAccount === null)
         {
@@ -206,6 +205,19 @@ trait SettlementTrait
         }
 
         return $shouldSettle;
+    }
+
+    protected function traceSetlInitiating($channel)
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_INITIATING,
+            [
+                'channel'   => $channel,
+                'timestamp' => $this->setlTime,
+                'time'      => $time,
+            ]);
     }
 
     protected function successNotification($data, $settlements, $traceCode)
@@ -231,6 +243,23 @@ trait SettlementTrait
     protected function failureNotification($exception)
     {
         (new SlackNotification)->failure('setl_initiate', $exception);
+    }
+
+    /**
+     * Returns the list of all channels for which settlments needs to be done
+     */
+    protected function getArrayedChannels($channel = null)
+    {
+        if ($channel === null)
+        {
+            $channels = Channel::getChannels();
+        }
+        else
+        {
+            $channels = [$channel];
+        }
+
+        return $channels;
     }
 
     protected function increaseAllowedSystemLimits()

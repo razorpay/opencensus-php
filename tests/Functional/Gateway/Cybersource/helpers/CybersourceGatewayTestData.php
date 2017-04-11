@@ -319,6 +319,22 @@ return [
         ],
     ],
 
+    'testStatusAfterFailedAutoCapturePayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        ]
+    ],
+
     'cybersourceRecurringEntity' => [
         'action' => 'authorize',
         'received' => true,

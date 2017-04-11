@@ -84,8 +84,13 @@ class PdfGenerator extends Base\Core
     protected function getPdfContent(string $html)
     {
         $options = [
-            'ignoreWarnings' => false,
-            'encoding'       => 'UTF-8'
+            'print-media-type',
+            'footer-font-size'  => '9',
+            'footer-center'     => 'Page [page] of [topage]',
+            'dpi'               => 290,
+            'zoom'              => 1.28,
+            'ignoreWarnings'    => false,
+            'encoding'          => 'UTF-8',
         ];
 
         $pdf = (new Pdf($options))->addPage($html);
@@ -113,8 +118,6 @@ class PdfGenerator extends Base\Core
             <!DOCTYPE html>
             <html>
             <head>
-                <link href='https://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
-                </link>
                 <style>
                     $css
                 </style>

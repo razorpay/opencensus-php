@@ -15,6 +15,7 @@ class Authorization
     protected $key = null;
     protected $secret = null;
     protected $account = null;
+    protected $adminHeaders = null;
 
     protected $defaultKey = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret = 'TheKeySecretForTests';
@@ -215,7 +216,7 @@ class Authorization
     /**
      * Adds account auth to a request
      */
-    public function addAccountAuth($accountId = null, $user = null, $pwd = null)
+    public function addAccountAuth($accountId = null)
     {
         if ($accountId === null)
         {
@@ -223,8 +224,14 @@ class Authorization
         }
 
         $this->account = $accountId;
+    }
 
-        $this->privateAuth($user, $pwd);
+    /**
+     * Adds admin auth headers to a request
+     */
+    public function addAdminAuthHeaders(string $orgId)
+    {
+        $this->adminHeaders = ['X-Org-Id' => $orgId];
     }
 
     /**
@@ -260,6 +267,11 @@ class Authorization
         return (empty($this->getAccountHeader()) === false);
     }
 
+    public function isAdminAuth()
+    {
+        return ($this->type === 'admin');
+    }
+
     public function getAccountHeader()
     {
         $headers = [];
@@ -272,6 +284,11 @@ class Authorization
         }
 
         return $headers;
+    }
+
+    public function getAdminHeaders()
+    {
+        return $this->adminHeaders;
     }
 
     public function getKey()

@@ -10,10 +10,12 @@ use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Trace;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Jobs\EsRepository;
 
 class Repository extends \Razorpay\Spine\Repository
 {
-    use RepositoryFetch;
+    use RepositoryFetch, DispatchesJobs;
 
     protected $app;
 
@@ -22,8 +24,6 @@ class Repository extends \Razorpay\Spine\Repository
     protected $auth;
 
     protected $trace;
-
-    protected $queue;
 
     protected $manager;
 
@@ -36,8 +36,6 @@ class Repository extends \Razorpay\Spine\Repository
         $this->trace = $this->app['trace'];
 
         $this->auth = $this->app['basicauth'];
-
-        $this->queue = $this->app['queue'];
 
         //
         // Currently, using $this->manager because
@@ -85,6 +83,21 @@ class Repository extends \Razorpay\Spine\Repository
         return $query->findOrFailPublic($id, $columns);
     }
 
+    public function findWithRelations(
+        string $id,
+        array $relations = [],
+        array $columns = array('*'))
+    {
+        $query = $this->newQuery();
+
+        if (empty($relations) === false)
+        {
+            $query->with($relations);
+        }
+
+        return $query->find($id, $columns);
+    }
+
     public function findMany($ids, $columns = array('*'))
     {
         return $this->newQuery()->findMany($ids, $columns);
@@ -126,6 +139,13 @@ class Repository extends \Razorpay\Spine\Repository
     public function sync($entity, $relation, $ids = [])
     {
         $entity->$relation()->sync($ids);
+
+        return $this;
+    }
+
+    public function detach($entity, $relation, $ids = [])
+    {
+        $entity->$relation()->detach($ids);
 
         return $this;
     }
@@ -341,10 +361,11 @@ class Repository extends \Razorpay\Spine\Repository
                     // decodes and encodes it with assoc array flag set to true.
                     'entity'            => $entity->toArray(),
                     'mode'              => $this->app['rzp.mode'],
+                    'es_repo_path'      => $esRepoClassPath,
                 ];
 
                 // Saving the entity in ES.
-                $this->queue->push($esRepoClassPath.'@fireStoreEntity', $queueData);
+                $this->dispatch(new EsRepository($queueData));
             }
         }
         catch (\Exception $ex)

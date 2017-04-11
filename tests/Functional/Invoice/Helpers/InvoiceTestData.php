@@ -540,7 +540,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in draft status.',
+                    'description' => 'Operation not allowed for Invoice in draft status.',
                 ],
             ],
             'status_code' => 400,
@@ -978,7 +978,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expire_by should be at least 1 day after the time of issue.',
+                    'description' => 'expire_by should be at least 15 minutes after the time of issue.',
                 ],
             ],
             'status_code' => 400,
@@ -1227,7 +1227,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'amount cannot be updated if payment link has line_items',
+                    'description' => 'amount cannot be updated if Payment Link has line_items',
                 ],
             ],
             'status_code' => 400,
@@ -1502,7 +1502,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in paid status.',
+                    'description' => 'Operation not allowed for Invoice in paid status.',
                 ],
             ],
             'status_code' => 400,
@@ -1923,7 +1923,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in issued status.',
+                    'description' => 'Operation not allowed for Invoice in issued status.',
                 ],
             ],
             'status_code' => 400,
@@ -1959,7 +1959,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in issued status.',
+                    'description' => 'Operation not allowed for Invoice in issued status.',
                 ],
             ],
             'status_code' => 400,
@@ -1982,7 +1982,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in issued status.',
+                    'description' => 'Operation not allowed for Invoice in issued status.',
                 ],
             ],
             'status_code' => 400,
@@ -2003,7 +2003,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in issued status.',
+                    'description' => 'Operation not allowed for Invoice in issued status.',
                 ],
             ],
             'status_code' => 400,
@@ -2029,7 +2029,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in issued status.',
+                    'description' => 'Operation not allowed for Invoice in issued status.',
                 ],
             ],
             'status_code' => 400,
@@ -2076,7 +2076,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in draft status.',
+                    'description' => 'Operation not allowed for Invoice in draft status.',
                 ],
             ],
             'status_code' => 400,
@@ -2329,7 +2329,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'invoice is not payable in expired status.',
+                    'description' => 'Invoice is not payable in expired status.',
                 ],
             ],
             'status_code' => 400,
@@ -2345,7 +2345,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'invoice is not payable as it is deleted.',
+                    'description' => 'Invoice is not payable as it is deleted.',
                 ],
             ],
             'status_code' => 400,
@@ -2356,9 +2356,9 @@ return [
         ],
    ],
 
-    'testExpireInvoice' => [
+    'testCancelInvoice' => [
         'request' => [
-            'url'     => '/invoices/inv_1000000invoice/expire',
+            'url'     => '/invoices/inv_1000000invoice/cancel',
             'method'  => 'post',
             'content' => [],
         ],
@@ -2381,7 +2381,7 @@ return [
                 'customer_id'  => 'cust_100000customer',
                 'short_url'    => 'http://bitly.dev/2eZ11Vn',
                 'notes'        => [],
-                'status'       => 'expired',
+                'status'       => 'cancelled',
                 'sms_status'   => 'sent',
                 'email_status' => 'sent',
                 'view_less'    => true,
@@ -2389,9 +2389,9 @@ return [
         ],
     ],
 
-    'testExpirePaymentInProgressInvoice' => [
+    'testCancelPaymentInProgressInvoice' => [
         'request' => [
-            'url' => '/invoices/inv_1000000invoice/expire',
+            'url' => '/invoices/inv_1000000invoice/cancel',
             'method' => 'post',
             'content' => [],
         ],
@@ -2399,28 +2399,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invoice expiry failed as payment exists or is in progress for this invoice.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_EXPIRE_FAILED,
-        ],
-    ],
-
-    'testExpirePaidInvocie' => [
-        'request' => [
-            'url' => '/invoices/inv_1000000invoice/expire',
-            'method' => 'post',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in paid status.',
+                    'description' => 'Invoice cannot be cancelled as payment for it has happened',
                 ],
             ],
             'status_code' => 400,
@@ -2431,9 +2410,30 @@ return [
         ],
     ],
 
-    'testExpireInvoiceWithFailedPayment' => [
+    'testCancelPaidInvocie' => [
         'request' => [
-            'url'     => '/invoices/inv_1000000invoice/expire',
+            'url' => '/invoices/inv_1000000invoice/cancel',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation not allowed for Invoice in paid status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCancelInvoiceWithFailedPayment' => [
+        'request' => [
+            'url'     => '/invoices/inv_1000000invoice/cancel',
             'method'  => 'post',
             'content' => [],
         ],
@@ -2448,7 +2448,7 @@ return [
                 'customer_id'  => 'cust_100000customer',
                 'short_url'    => 'http://bitly.dev/2eZ11Vn',
                 'notes'        => [],
-                'status'       => 'expired',
+                'status'       => 'cancelled',
                 'sms_status'   => 'sent',
                 'email_status' => 'sent',
                 'view_less'    => true,
@@ -2464,8 +2464,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'total_invoices_count' => 1,
-                'failed_invoice_ids'   => [],
+                'total_invoices_count' => 2,
+                'failed_invoice_ids'   => [
+                    '1000005invoice',
+                ],
             ],
         ],
     ],

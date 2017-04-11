@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore\Entity as FileStore;
 use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
 
 class CreateFileStore extends Migration
 {
@@ -75,6 +76,25 @@ class CreateFileStore extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::BATCH_FUND_TRANSFER, function($table)
+        {
+            $table->char(BatchFundTransfer::TXT_FILE_ID, FileStore::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(BatchFundTransfer::EXCEL_FILE_ID, FileStore::ID_LENGTH)
+                  ->nullable();
+
+            $table->foreign(BatchFundTransfer::TXT_FILE_ID)
+                  ->references(FileStore::ID)
+                  ->on(Table::FILE_STORE)
+                  ->on_delete('restrict');
+
+            $table->foreign(BatchFundTransfer::EXCEL_FILE_ID)
+                  ->references(FileStore::ID)
+                  ->on(Table::FILE_STORE)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -84,6 +104,15 @@ class CreateFileStore extends Migration
      */
     public function down()
     {
+        Schema::table(Table::BATCH_FUND_TRANSFER, function($table)
+        {
+            $table->dropForeign(
+                  Table::BATCH_FUND_TRANSFER.'_'.BatchFundTransfer::EXCEL_FILE_ID.'_foreign');
+
+            $table->dropForeign(
+                  Table::BATCH_FUND_TRANSFER.'_'.BatchFundTransfer::TXT_FILE_ID.'_foreign');
+        });
+
         Schema::table(Table::FILE_STORE, function($table)
         {
             $table->dropForeign(

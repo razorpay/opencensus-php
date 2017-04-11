@@ -238,6 +238,7 @@ class Entity extends Base\PublicEntity
     protected $appends = [self::PUBLIC_ID, self::CAPTURED];
 
     protected static $modifiers = [
+        self::EMAIL,
         self::CONTACT,
         self::BANK,
         'method_based_input',
@@ -317,17 +318,39 @@ class Entity extends Base\PublicEntity
     // window in secs, used to fetch payments with same checkout id
     const PAYMENT_WINDOW                = 1800;
 
+    const DUMMY_EMAIL = 'void@razorpay.com';
+
+    const DUMMY_PHONE = '+919999999999';
+
 // --------------------- Generators --------------------------------------------
 
 // --------------------- Generators Ends ---------------------------------------
 
 // --------------------- Modifiers ---------------------------------------------
 
+    protected function modifyEmail(& $input)
+    {
+        if (empty($input['email']) === true)
+        {
+            $isEmailOptional = $this->merchant->isEmailOptional();
+
+            if ($isEmailOptional === true)
+            {
+                $input['email'] = self::DUMMY_EMAIL;
+            }
+        }
+    }
+
     protected function modifyContact(& $input)
     {
-        if (isset($input['contact']) === false)
+        if (empty($input['contact']) === true)
         {
-            return;
+            $isPhoneOptional = $this->merchant->isPhoneOptional();
+
+            if ($isPhoneOptional === true)
+            {
+                $input['contact'] = self::DUMMY_PHONE;
+            }
         }
 
         $contact = & $input['contact'];
@@ -548,7 +571,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SIGNED, $signed);
     }
 
-    public function setOnHold($onHold)
+    public function setOnHold(bool $onHold)
     {
         $this->setAttribute(self::ON_HOLD, $onHold);
     }
@@ -845,6 +868,11 @@ class Entity extends Base\PublicEntity
     public function hasInvoice()
     {
         return ($this->isAttributeNotNull(self::INVOICE_ID));
+    }
+
+    public function hasTransfer()
+    {
+        return ($this->isAttributeNotNull(self::TRANSFER_ID));
     }
 
     public function hasMetadata($key = null)

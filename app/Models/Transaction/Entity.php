@@ -435,6 +435,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED_AT, $settledAt);
     }
 
+    public function setOnHold(bool $onHold)
+    {
+        $this->setAttribute(self::ON_HOLD, $onHold);
+    }
+
     public function setEscrowBalance($balance)
     {
         assert ($balance >= 0);

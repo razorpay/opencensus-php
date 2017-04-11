@@ -95,7 +95,11 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            ['gateway_response' => $response->body]);
+            [
+                'response_body' => $response->body,
+                'payment_id'    => $verify->input['payment']['id'],
+                'status_code'   => $response->status_code
+            ]);
 
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
     }
@@ -117,7 +121,7 @@ class Gateway extends Base\Gateway
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
-            $status = $this->returnVerifyStatusOrThrowException($verify);
+            $status = VerifyResult::STATUS_MISMATCH;
         }
 
         $verify->status = $status;
@@ -145,26 +149,10 @@ class Gateway extends Base\Gateway
         $verify->gatewaySuccess = false;
 
         if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
-            ($response[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
+            ($response[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
-    }
-
-    protected function returnVerifyStatusOrThrowException(Verify $verify)
-    {
-        //
-        // In this case, there's a bug in the code
-        // The payment was incorrectly marked as authorized.
-        //
-        if (($verify->apiSuccess === true) and
-            ($verify->gatewaySuccess === false))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FALSE_AUTHORIZE);
-        }
-
-        return VerifyResult::STATUS_MISMATCH;
     }
 
     protected function getPaymentVerifyData(Verify $verify)
@@ -202,7 +190,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID          => $this->getMerchantId(),
             RequestFields::MODE_OF_OPERATION => Constants::PAY,
             RequestFields::CURRENCY_CODE     => Currency::INR,
-            RequestFields::CONFIRMATION      => Constants::YES,
+            RequestFields::CONFIRMATION      => Status::YES,
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
 
@@ -287,7 +275,7 @@ class Gateway extends Base\Gateway
     protected function checkResponseStatus(array $attrs, array $content)
     {
         if ((isset($attrs['status']) === false) or
-            ($attrs['status'] !== Constants::YES))
+            ($attrs['status'] !== Status::YES))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -313,7 +301,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        if ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS)
+        if ((isset($content[ResponseFields::PAYMENT_STATUS])) and
+            ($content[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
         {
             $attributes = $this->getVerifyAttributes($verify, $gatewayPayment);
 
@@ -331,26 +320,37 @@ class Gateway extends Base\Gateway
 
         $bankPaymentId = $gatewayPayment->getBankPaymentId();
 
-        $attributes = [
-            Base\Entity::RECEIVED => true,
-            Base\Entity::STATUS   => Constants::YES,
-        ];
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            // We're saving the response only if status is a success
+            $attributes[Base\Entity::STATUS] = Status::YES;
+        }
 
         if (empty($bankPaymentId) === true)
         {
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REFERENCE_ID];
         }
 
-        return $attributes;
+        return $attributes ?? [];
     }
 
     protected function parseResponseXml(string $response)
     {
-        $responseArray = (array) simplexml_load_string($response);
+        if (empty($response) === false)
+        {
+            $responseArray = (array) simplexml_load_string($response);
 
-        // Lets assume we verify only one payment at a time
-        // So the response will contain just 1 table at a time
-        return (array) $responseArray['Table1'];
+            // Lets assume we verify only one payment at a time
+            // So the response will contain just 1 table at a time
+            return (array) $responseArray['Table1'];
+        }
+
+        return $response;
+    }
+
+    protected function getAuthSuccessStatus()
+    {
+        return Status::getAuthSuccessStatus();
     }
 
     /*

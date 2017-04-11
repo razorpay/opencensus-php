@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Axis\Mock;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Netbanking\Axis\Status;
 use RZP\Gateway\Netbanking\Axis\AESCrypto;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
@@ -72,13 +73,13 @@ class Server extends Base\Mock\Server
     protected function createResponse($data)
     {
         $response =  [
-            ResponseFields::STATUS             => Constants::YES,
+            ResponseFields::STATUS             => Status::YES,
             ResponseFields::MERCHANT_REFERENCE => $data[RequestFields::MERCHANT_REFERENCE],
             ResponseFields::BANK_REFERENCE_ID  => 9999999999,
             ResponseFields::ITEM_CODE          => $data[RequestFields::ITEM_CODE],
             ResponseFields::AMOUNT             => $data[RequestFields::AMOUNT],
             ResponseFields::CURRENCY_CODE      => Currency::INR,
-            ResponseFields::FLAG               => Constants::SUCCESS,
+            ResponseFields::FLAG               => Status::SUCCESS,
         ];
 
         // for test cases
@@ -108,11 +109,17 @@ class Server extends Base\Mock\Server
             ResponseFields::VERIFY_RESPONSE_AMT => (string) $input[RequestFields::VERIFY_AMT],
             ResponseFields::DATE                => $input[RequestFields::VERIFY_DATE],
             ResponseFields::BANK_REFERENCE_ID   => '',
-            ResponseFields::PAYMENT_STATUS      => Constants::SUCCESS,
+            ResponseFields::PAYMENT_STATUS      => Status::SUCCESS,
         ];
 
         // for test cases
         $this->content($response);
+
+        // For null verify response
+        if ($response === "")
+        {
+            return $response;
+        }
 
         $response = array_flip($response);
 
