@@ -32,9 +32,7 @@ class Service extends Base\Service
             'message'        => null,
         ];
 
-        if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
-            (substr($input['payee_account'], 0, 6) !== 'RAZORP') or
-            ($this->mode === Mode::LIVE))
+        if ($this->isValidAccountNumber($input) === false)
         {
             $data = [
                 'valid'          => false,
@@ -63,6 +61,29 @@ class Service extends Base\Service
             'message'        => null,
             'transaction_id' => $input['transaction_id'],
         ];
+    }
+
+    protected function isValidAccountNumber(array $input)
+    {
+        if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
+            (substr($input['payee_account'], 0, 6) !== 'RAZORP'))
+        {
+            return false;
+        }
+
+        // In test mode, all account numbers with the right prefix are valid
+        if ($this->mode === Mode::TEST)
+        {
+            return true;
+        }
+
+        // Live test with Yesbank requires us to hardcode one success case
+        if ($input['payee_account'] === 'RAZORP00000000000001')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function uniqueUtrCheck(array $input, array & $data)
