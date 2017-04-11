@@ -9,6 +9,10 @@ class EntityValidator
         'admin_edit'          => 'edit',
     ];
 
+    const RELATIONS = [
+        'admin_edit'          => ['roles', 'groups'],
+    ];
+
     public static function getValidator($route)
     {
         $validator = null;
@@ -19,5 +23,17 @@ class EntityValidator
         }
 
         return $validator;
+    }
+
+    public static function getRelations($route)
+    {
+        $relations = null;
+
+        if (array_key_exists($route, self::RELATIONS))
+        {
+            $relations = self::RELATIONS[$route];
+        }
+
+        return $relations;
     }
 }

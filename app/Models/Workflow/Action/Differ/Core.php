@@ -137,22 +137,53 @@ class Core extends Base\Core
 
         $oldEntity = $this->repo->$entity->findByPublicId($entityId);
 
-        $newEntity = clone $oldEntity;
+        $diff = [];
 
-        // Get the appropriate validator
         $validator = EntityValidator::getValidator($differ->getRoute());
 
         if ($validator !== null)
         {
+            $newEntity = clone $oldEntity;
+
             // Run validator
             $newEntity = $newEntity->edit($differ->getPayload(), $validator);
 
-            $diff = $this->createDiff(
-                $oldEntity->toArray(),
-                $newEntity->toArray());
-
-            $differ->setDiff($diff);
+            $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
         }
+
+        $relations = EntityValidator::getRelations($differ->getRoute());
+
+        if ($relations !== null)
+        {
+            foreach ($relations as $relation)
+            {
+                if (isset($differ->getPayload()[$relation]) === true)
+                {
+                    $oldRelatedEntity = $oldEntity->$relation;
+
+                    if (count($oldRelatedEntity) === 0)
+                    {
+                        //TODO: Need to figure out a way to get the entity name
+                    }
+                    else
+                    {
+                        $relatedEntityName = $oldRelatedEntity[0]->getEntityName();
+
+                        $newRelatedEntity = $this->repo
+                                                 ->$relatedEntityName
+                                                 ->findManyByPublicIds($differ->getPayload()[$relation]);
+
+                        $relationDiff = $this->createDiff($oldRelatedEntity->toArray(), $newRelatedEntity->toArray());
+
+                        $diff['old'][$relation] = $relationDiff['old'];
+
+                        $diff['new'][$relation] = $relationDiff['new'];
+                    }
+                }
+            }
+        }
+
+        $differ->setDiff($diff);
 
         // Calls `saveToEs` above
         event(new DifferEvent($differ->toArray()));
@@ -182,9 +213,7 @@ class Core extends Base\Core
         return $diff;
     }
 
-    public function fetchByEntityAndEntityId(
-        string $entity,
-        string $entityId)
+    public function fetchByEntityAndEntityId(string $entity, string $entityId)
     {
         $openStates = State\Entity::OPEN_STATES;
 
@@ -213,11 +242,8 @@ class Core extends Base\Core
         return $esResponse;
     }
 
-    public function updateStateInEs(
-        string $actionId,
-        string $state)
+    public function updateStateInEs(string $actionId, string $state)
     {
-
         $searchTerms = [
             'action_id' => $actionId
         ];

@@ -142,7 +142,7 @@ return [
             Permission::VIEW_WORKFLOW      => 'View Workflows',
             Permission::EDIT_WORKFLOW      => 'Edit Workflows',
             Permission::DELETE_WORKFLOW    => 'Delete Workflows',
-            Permission::VIEW_ALL_WORKFLOWS => 'View all workflows',
+            Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
             Permission::CREATE_WORKFLOW    => 'Create a workflow',
         ],
 
@@ -296,7 +296,7 @@ return [
             Permission::VIEW_WORKFLOW      => 'View Workflows',
             Permission::EDIT_WORKFLOW      => 'Edit Workflows',
             Permission::DELETE_WORKFLOW    => 'Delete Workflows',
-            Permission::VIEW_ALL_WORKFLOWS => 'View all workflows',
+            Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
             Permission::CREATE_WORKFLOW    => 'Create a workflow',
         ],
     ],

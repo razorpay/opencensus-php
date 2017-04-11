@@ -58,13 +58,6 @@ class Entity extends Base\Entity
         self::OLD_PASSWORDS
     ];
 
-    // TODO make it protected later
-    const SKIP_DIFF_FIELDS = [
-        self::ROLES,
-        self::GROUPS,
-        self::MERCHANTS,
-    ];
-
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
