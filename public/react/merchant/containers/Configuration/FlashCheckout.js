@@ -1,5 +1,19 @@
 import React, { Component, PropTypes } from 'react'
+import { connect } from 'react-redux'
 
+import { updateFeatures } from 'merchant/modules/config'
+import * as NotificationActions from 'merchant/modules/notifications'
+
+@connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      features: state.config.features,
+      error: state.config.error
+    }
+  },
+  { updateFeatures, ...NotificationActions }
+)
 export default class FlashCheckout extends Component {
   constructor() {
     super(...arguments)
@@ -11,31 +25,25 @@ export default class FlashCheckout extends Component {
   }
 
   componentDidMount() {
-    this.fetchFeatures();
+    if (this.props.features.length) {
+      this.parseAndSetFeatures(this.props.features);
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!this.props.features.length && nextProps.features.length) {
+      this.parseAndSetFeatures(nextProps.features);
+    }
   }
 
   parseAndSetFeatures(features) {
-    var noFlashCheckout = features.filter(function (feature) {
+    var noFlashCheckout = features.find(function (feature) {
       return feature.feature === 'noflashcheckout';
     });
-    if (noFlashCheckout.length > 0) {
-      noFlashCheckout = noFlashCheckout.shift().value;
+    if(noFlashCheckout) {
+      noFlashCheckout = noFlashCheckout.value;
     }
     this.setState({fcEnabled: !noFlashCheckout});
-  }
-
-  fetchFeatures() {
-    this.props.fetchFeatures(this.props.user.current).then((res)=>{
-      if (res.success) {
-        var features = res.data.features;
-        this.parseAndSetFeatures(features);
-      }
-    }).catch((err)=>{
-      this.props.showNotification({
-        type: 'danger',
-        message: err.errors
-      }, true)
-  });
   }
 
   updateFeatures(fcEnabled) {
@@ -47,16 +55,13 @@ export default class FlashCheckout extends Component {
     };
 
     this.props.updateFeatures(featureData, this.props.user.current).then((res)=>{
-      if (res.success) {
-        this.setState({
-          features: res.data.features
-        });
-        this.props.showNotification({
-          type: 'success',
-          message: 'Your preference was saved'
-        }, true)
-
-      }
+      this.setState({
+        features: res.data.features
+      });
+      this.props.showNotification({
+        type: 'success',
+        message: 'Your preference was saved'
+      }, true)
     }).catch((err)=>{
       this.props.showNotification({
         type: 'danger',

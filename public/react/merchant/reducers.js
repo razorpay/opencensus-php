@@ -17,6 +17,7 @@ import webhooksReducer from 'merchant/modules/webhooks'
 import keysReducer from 'merchant/modules/keys'
 import creditsReducer from 'merchant/modules/credits'
 import teamReducer from 'merchant/modules/team'
+import configReducer from 'merchant/modules/config'
 
 export default combineReducers({
   form: formReducer,
@@ -37,4 +38,5 @@ export default combineReducers({
   keys: keysReducer,
   credits: creditsReducer,
   team: teamReducer,
+  config: configReducer
 })
