@@ -22,8 +22,12 @@ class RequestFields
     // Verify params
     const QUERY_TRANSACTION_DATE    = 'txnDate';
     const QUERY_TRANSACTION_REF     = 'transRefNo';
-    const QUERY_PAYMENT_TRANSACTION = 'queryPaymentTransaction';
     const COM_TRANSACTION_ID        = 'mcomPgTransID';
     const PMT_TRANSACTION_REFERENCE = 'paymentTransRefNo';
-    const COMMAND_ID                = 'CMDID';
+
+    // Customer Validate data
+    const COMMON_SERVICE_DATA       = 'commonServiceData';
+    const CHANNEL_ID                = 'channelID';
+    const REQUEST_ID                = 'requestId';
+    const MOBILE_NUMBER             = 'MSISDN';
 }

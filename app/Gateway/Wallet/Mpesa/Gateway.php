@@ -55,13 +55,21 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway']['transrefno']);
+        $this->assertPaymentId($input['payment']['id'],
+                               $input['gateway'][ResponseFields::TRANSACTION_REFERENCE]);
 
         $this->saveCallbackResponse($input['gateway']);
 
         $this->checkCallbackStatus($input['gateway']);
 
         return $this->getCallbackResponseData($input);
+    }
+
+    public function otpGenerate(array $input)
+    {
+        $this->validateCustomer($input);
+
+        $this->action($input, Action::OTP_GENERATE);
     }
 
     public function verify(array $input)
@@ -77,16 +85,74 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getActionData();
 
-        $soapRoot = "<pay:queryPaymentTransaction />";
+        $verify->response = $this->sendSoapRequest($data,
+                                                   SoapAction::QUERY_API,
+                                                   SoapMethod::QUERY_PAYMENT_TRANSACTION);
 
-        $response = $this->sendSoapRequest($data, $soapRoot)['Response'];
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'    => $verify->response,
+                'payment_id' => $verify->input['payment']['id'],
+            ]);
 
-        // sd($response);
+        $verify->verifyResponseContent = $verify->response['Response'];
     }
 
-    public function otpGenerate($input)
+    protected function verifyPayment(Verify $verify)
     {
-        // sd('1');
+        $content = $verify->verifyResponseContent;
+
+        $status = $this->getVerifyMatchStatus($verify);
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveVerifyContentIfNeeded($verify);
+    }
+
+    protected function getVerifyMatchStatus(Verify $verify)
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    protected function checkApiSuccess(Verify $verify)
+    {
+        $verify->apiSuccess = true;
+
+        if (($verify->input['payment']['status'] === 'created') or
+            ($verify->input['payment']['status'] === 'failed'))
+        {
+            $verify->apiSuccess = false;
+        }
+    }
+
+    protected function checkGatewaySuccess(Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        $status = $content[ResponseFields::VERIFY_STATUS_CODE];
+
+        // content will contain status 100 or 101
+        if (StatusCode::checkIfSuccessStatus($status) === true)
+        {
+            $verify->gatewaySuccess = true;
+        }
     }
 
     protected function getAuthorizeRequestData()
@@ -99,18 +165,42 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    protected function validateCustomer(array $input)
+    {
+        $this->action($input, Action::VALIDATE_CUSTOMER);
+
+        $data = $this->getActionData();
+
+        $response = $this->sendSoapRequest($data,
+                                           SoapAction::CUSTOMER_API,
+                                           SoapMethod::VALIDATE_CUSTOMER);
+
+        sd($response);
+    }
+
+    protected function getCheckSum()
+    {
+        $xml = $this->getActionData();
+
+        return hash_hmac('sha256', $xml, $this->getSecret());
+    }
+
     protected function getActionData()
     {
         switch ($this->action)
         {
-            case Base\Action::AUTHORIZE:
+            case Action::AUTHORIZE:
                 $array = $this->getGatewayParamArray();
                 $xmlRoot = "<PaymentGatewayRequest />";
                 $data = $this->getXmlData($array, $xmlRoot);
                 break;
 
-            case Base\Action::VERIFY:
+            case Action::VERIFY:
                 $data = $this->getQueryData();
+                break;
+
+            case Action::VALIDATE_CUSTOMER:
+                $data = $this->getValidateCustomerData();
                 break;
         }
 
@@ -136,7 +226,7 @@ class Gateway extends Base\Gateway
     protected function getQueryData()
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'], Base\Action::AUTHORIZE);
+            $this->input['payment']['id'], Action::AUTHORIZE);
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId();
 
@@ -147,19 +237,29 @@ class Gateway extends Base\Gateway
             RequestFields::QUERY_TRANSACTION_DATE    => $this->getFormattedDate(),
             RequestFields::COM_TRANSACTION_ID        => $gatewayPaymentId ?? "",
             RequestFields::QUERY_TRANSACTION_REF     => $paymentId,
-            RequestFields::PMT_TRANSACTION_REFERENCE => strtoupper($paymentId),
+            RequestFields::PMT_TRANSACTION_REFERENCE => $paymentId,
             RequestFields::AMOUNT                    => $this->input['payment']['amount'] / 100,
-            RequestFields::COMMAND_ID                => Constants::COMMAND_ID
         ];
 
         return $queryData;
     }
 
-    protected function getCheckSum()
+    protected function getValidateCustomerData()
     {
-        $xml = $this->getActionData();
+        $data = [
+            RequestFields::CHANNEL_ID    => Constants::CHANNEL_ID,
+            RequestFields::REQUEST_ID    => uniqid(),
+            RequestFields::MOBILE_NUMBER => $this->getFormattedPhoneNo(),
+        ];
 
-        return hash_hmac('sha256', $xml, $this->getSecret());
+        return [RequestFields::COMMON_SERVICE_DATA => $data];
+    }
+
+    protected function getFormattedPhoneNo()
+    {
+        $contact = $this->input['payment']['contact'];
+
+        return explode('+91', $contact)[1];
     }
 
     protected function getXmlData(array $array, string $xmlRoot)
@@ -175,16 +275,26 @@ class Gateway extends Base\Gateway
         return $actionParamXml;
     }
 
-    protected function sendSoapRequest($data, $soapRoot)
+    protected function sendSoapRequest($data, $soapRoot, $method)
     {
+        $this->trace->info(
+            TraceCode::GATEWAY_SOAP_REQUEST,
+            [
+                'payment_id'  => $this->input['payment']['id'],
+                'gateway'     => $this->gateway,
+                'soap_method' => $method,
+                'request'     => [
+                    $soapRoot => $data
+                ],
+            ]);
+
         $client = new SoapClient($this->getUrl());
 
         $headers = $this->getSoapHeaders();
 
         $client->__setSoapHeaders($headers);
 
-        $response = $client->__soapCall(RequestFields::QUERY_PAYMENT_TRANSACTION,
-                                        [$soapRoot => $data]);
+        $response = $client->__soapCall($method, [$soapRoot => $data]);
 
         return json_decode(json_encode($response), true);
     }
@@ -218,13 +328,34 @@ class Gateway extends Base\Gateway
     protected function saveCallbackResponse(array $content)
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'], Base\Action::AUTHORIZE);
+            $this->input['payment']['id'], Action::AUTHORIZE);
 
         $contentToSave = [
             Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::COM_TRANSACTION_ID],
             Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
             Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],
         ];
+
+        $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
+    }
+
+    protected function saveVerifyContentIfNeeded(Verify $verify)
+    {
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $this->input['payment']['id'], Action::AUTHORIZE);
+
+        $content = $verify->verifyResponseContent;
+
+        $contentToSave = [
+            Entity::STATUS_CODE          => $content[ResponseFields::VERIFY_STATUS_CODE],
+            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],
+            Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER]
+        ];
+
+        if (empty($wallet[Entity::GATEWAY_PAYMENT_ID]) === true)
+        {
+            $contentToSave[Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::VERIFY_TRANS_ID];
+        }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
     }
