@@ -892,6 +892,16 @@ angular.module('app.services', [])
       }
 
       return frags.join(' ');
+    },
+    mergeUnique: function(arr, isCaseSensitive = false) {
+      var a = arr.concat();
+      for(var i=0; i<a.length; ++i) {
+        for(var j=i+1; j<a.length; ++j) {
+          if((isCaseSensitive && a[i].toLowerCase() === a[j].toLowerCase())|| a[i] === a[j])
+            a.splice(j--, 1);
+        }
+      }
+      return a;
     }
 
   };
