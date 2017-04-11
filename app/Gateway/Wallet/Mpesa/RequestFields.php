@@ -19,7 +19,7 @@ class RequestFields
     const RETURN_URL                = 'RETURNURL';
     const SURCHARGE                 = 'SURCHARGE';
 
-    // Verify params
+    // S2S params
     const QUERY_TRANSACTION_DATE    = 'txnDate';
     const QUERY_TRANSACTION_REF     = 'transRefNo';
     const COM_TRANSACTION_ID        = 'mcomPgTransID';
@@ -34,4 +34,9 @@ class RequestFields
     // Otp Generate params
     const ENTITY_TYPE_ID            = 'entityTypeId';
     const MERCHANT_ID               = 'MrchntId';
+
+    // Refund params
+    const S2S_AMOUNT                = 'amt';
+    const REVERSAL_TYPE             = 'reversalType';
+    const REFUND_NARRATION          = 'narration';
 }

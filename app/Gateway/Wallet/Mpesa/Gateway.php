@@ -16,6 +16,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Entity as Payment;
 
 class Gateway extends Base\Gateway
@@ -27,9 +28,9 @@ class Gateway extends Base\Gateway
     const DATE_FORMAT = 'dmY';
 
     protected $map = [
-        RequestFields::MERCHANT_CODE    => Base\Entity::GATEWAY_MERCHANT_ID,
-        RequestFields::AMOUNT           => Base\Entity::AMOUNT,
-        RequestFields::TRANSACTION_DATE => Base\Entity::DATE,
+        RequestFields::MERCHANT_CODE    => Entity::GATEWAY_MERCHANT_ID,
+        RequestFields::AMOUNT           => Entity::AMOUNT,
+        RequestFields::TRANSACTION_DATE => Entity::DATE,
     ];
 
     public function authorize(array $input)
@@ -116,6 +117,55 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $data = $this->getActionData();
+
+        $response = $this->sendSoapRequest($data,
+                                           SoapAction::REFUND_API,
+                                           SoapMethod::REFUND_PAYMENT);
+
+        $content = $response['Response'];
+
+        $status = $content[ResponseFields::S2S_STATUS_CODE];
+
+        $attributes = $this->getRefundAttributes($content);
+
+        $this->createGatewayRefundEntity($attributes);
+
+        // response will contain status 100 or 101
+        if (StatusCode::checkIfSuccessStatus($status) === false)
+        {
+            // TODO: Map statuses to error codes
+            $errorCode = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                $content[ResponseFields::REASON]);
+        }
+    }
+
+    protected function getRefundAttributes(array $content)
+    {
+        $input = $this->input;
+
+        $attributes = [
+            Entity::RECEIVED             => true,
+            Entity::PAYMENT_ID           => $input['payment']['id'],
+            Entity::WALLET               => Wallet::MPESA,
+            Entity::AMOUNT               => $input['refund']['amount'] / 100,
+            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID],
+            Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
+            Entity::REFUND_ID            => $input['refund']['id'],
+            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
+        ];
+
+        return $attributes;
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -257,6 +307,10 @@ class Gateway extends Base\Gateway
             case Action::OTP_GENERATE:
                 $data = $this->getOtpGenerateData();
                 break;
+
+            case Action::REFUND:
+                $data = $this->getRefundData();
+                break;
         }
 
         return $data;
@@ -323,6 +377,25 @@ class Gateway extends Base\Gateway
             RequestFields::COMMON_SERVICE_DATA => $data,
             RequestFields::MERCHANT_ID         => $this->getMerchantId()
         ];
+    }
+
+    protected function getRefundData()
+    {
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $this->input['payment']['id'], Action::AUTHORIZE);
+
+        $gatewayPaymentId = $wallet->getGatewayPaymentId();
+
+        $data = [
+            RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
+            RequestFields::COM_TRANSACTION_ID    => $gatewayPaymentId ?? "",
+            RequestFields::QUERY_TRANSACTION_REF => $this->input['payment']['id'],
+            RequestFields::S2S_AMOUNT            => $this->input['payment']['amount'] / 100,
+            RequestFields::REFUND_NARRATION      => Constants::REFUND_NARRATION,
+            RequestFields::REVERSAL_TYPE         => Constants::REVERSAL_TYPE
+        ];
+
+        return $data;
     }
 
     protected function getFormattedPhoneNo()
