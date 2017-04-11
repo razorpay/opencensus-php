@@ -8,4 +8,9 @@ class Status
     const NO  = 'N';
 
     const SUCCESS = 'S';
+
+    public static function getAuthSuccessStatus()
+    {
+        return self::YES;
+    }
 }

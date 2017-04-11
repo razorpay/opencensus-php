@@ -4,6 +4,7 @@ namespace RZP\Models\Schedule;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -45,17 +46,17 @@ class Core extends Base\Core
     {
         $schedule = $this->repo->schedule->getDailySettlementScheduleByDelay($delay);
 
-        if (is_null($schedule) === true)
+        if ($schedule === null)
         {
             $input = [
-                Schedule\Entity::NAME     => "Basic T$requiredDelay",
-                Schedule\Entity::TYPE     => Schedule\Type::SETTLEMENT,
-                Schedule\Entity::PERIOD   => Schedule\Period::DAILY,
-                Schedule\Entity::INTERVAL => 1,
-                Schedule\Entity::DELAY    => $delay,
+                Entity::NAME     => "Basic T$delay",
+                Entity::TYPE     => Type::SETTLEMENT,
+                Entity::PERIOD   => Period::DAILY,
+                Entity::INTERVAL => 1,
+                Entity::DELAY    => $delay,
             ];
 
-            $schedule = (new Schedule\Core)->createSchedule($input);
+            $schedule = $this->createSchedule($input);
 
             $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
         }

@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Workflow\Action;
 
 class Service extends Base\Service
 {
@@ -75,17 +76,9 @@ class Service extends Base\Service
         return $actions->toArrayPublic();
     }
 
-    public function permissionHasWorkflow($routePermissions, $orgId)
+    public function permissionHasWorkflow(array $routePermissions, string $orgId)
     {
-        $permissionIds = $this->repo
-                              ->permission
-                              ->retrieveIdsByNames($routePermissions, $orgId)
-                              ->map(function ($permission){
-                                    return $permission->getId();
-                                })
-                              ->toArray();
-
-        $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($permissionIds);
+        $workflows = (new Action\Core)->getWorkflowsForPermissions($routePermissions, $orgId);
 
         return ($workflows->isEmpty() === false);
     }

@@ -86,7 +86,7 @@ class CreatePayments extends Migration
 
             $table->char(Payment::CARD_ID, Payment::ID_LENGTH)
                   ->nullable();
-            
+
             $table->char(Payment::SUBSCRIPTION_ID, Payment::ID_LENGTH)
                   ->nullable();
 
@@ -229,6 +229,8 @@ class CreatePayments extends Migration
             $table->index(Payment::AMOUNT);
             $table->index(Payment::LATE_AUTHORIZED);
             $table->index(Payment::SUBSCRIPTION_ID);
+            $table->index(Payment::ON_HOLD);
+            $table->index(Payment::ON_HOLD_UNTIL);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
