@@ -43,6 +43,15 @@ class CreateReportTable extends Migration
             $table->integer(Report::END_TIME)
                   ->unsigned();
 
+            $table->integer(Report::DAY)
+                  ->unsigned();
+
+            $table->integer(Report::MONTH)
+                  ->unsigned();
+
+            $table->integer(Report::YEAR)
+                  ->unsigned();
+
             $table->integer(Report::CREATED_AT);
 
             $table->integer(Report::UPDATED_AT);

@@ -106,7 +106,7 @@ class BasicEntityReport extends Base
         $append = false;
 
         // get or create report entity
-        $report = $this->getReportEntity($from, $to);
+        $report = (new Core)->getReportEntity($from, $to, $this->entity, $input);
 
         // set generatedAt value for report
         // this is set as `now` because
@@ -305,33 +305,5 @@ class BasicEntityReport extends Base
                             ->getSignedUrl();
 
         return $s3File;
-    }
-
-    /**
-     * Checks if a report entity exists for give parameters
-     * @param $from integer
-     * @param $to   integer
-     * @return $report Report\Entity
-     */
-    protected function getReportEntity($from, $to)
-    {
-        $merchant = $this->merchant;
-
-        $report = $this->repo->report->fetchReportEntity(
-                                        $from, $to, $this->entity, $merchant->getId());
-
-        if ($report === null)
-        {
-            $params = [
-                Entity::START_TIME      => $from,
-                Entity::END_TIME        => $to,
-                Entity::TYPE            => $this->entity,
-                Entity::GENERATED_BY    => $this->getInternalUsernameOrEmail(),
-            ];
-
-            $report = (new Core)->create($params, $merchant);
-        }
-
-        return $report;
     }
 }

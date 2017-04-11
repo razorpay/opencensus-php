@@ -28,4 +28,37 @@ class Core extends Base\Core
 
         return $report;
     }
+
+    /**
+     * Checks if a report entity exists for give parameters
+     * @param $from integer
+     * @param $to   integer
+     * @param $entity string
+     * @param $input array containing day, month, year
+     * @return $report Report\Entity
+     */
+    public function getReportEntity($from, $to, $entity, array $input)
+    {
+        $merchant = $this->merchant;
+
+        $report = $this->repo->report->fetchReportEntity(
+                                        $from, $to, $entity, $merchant->getId());
+
+        if ($report === null)
+        {
+            $params = [
+                Entity::DAY             => $input['day'],
+                Entity::MONTH           => $input['month'],
+                Entity::YEAR            => $input['year'],
+                Entity::START_TIME      => $from,
+                Entity::END_TIME        => $to,
+                Entity::TYPE            => $entity,
+                Entity::GENERATED_BY    => $this->getInternalUsernameOrEmail(),
+            ];
+
+            $report = $this->create($params, $merchant);
+        }
+
+        return $report;
+    }
 }
