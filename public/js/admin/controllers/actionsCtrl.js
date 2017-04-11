@@ -272,7 +272,7 @@ app.controller('ActionsCtrl', [
         var request = $http({
           method: 'post',
           url: '/admin/generic',
-          data: data,
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -548,9 +548,10 @@ app.controller('ActionsCtrl', [
       }, $.noop);
     };
     $scope.generateBeneficiaryFile = function () {
-      var request = $http({
-        method: 'post',
-        url: '/admin/beneficiary'
+      var request = $http.get('/admin/generic', {
+        params: {
+          route_name: 'merchant_beneficiary_file'
+        }
       });
       request.success(function (data) {
         if (data.success) {

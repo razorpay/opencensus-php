@@ -109,9 +109,17 @@ app.controller('PaymentDetailCtrl', [
       });
     };
     $scope.authorizeFailedPayment = function () {
+      var data = {
+        route_name: 'payment_authorize_failed',
+        url_params: {
+          '{id}' : $scope.entity.id
+        },
+        mode: $scope.mode
+      };
       var request = $http({
         method: 'post',
-        url: '/admin/' + $scope.mode + '/payments/' + $scope.entity.id + '/authorize_failed'
+        url: '/admin/generic',
+        data: data
       });
       request.success(function (data) {
         if (data.success) {
