@@ -83,7 +83,8 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        $txn = $this->updateTransactionOnCapture($payment);
+        list($txn, $feesSplit) = $this->updateTransactionOnCapture($payment);
+
         $txn->saveOrFail();
 
         $payment->setStatus('captured');
@@ -101,7 +102,8 @@ class Payment extends Base
         $payment['authorized_at'] = $payment['created_at'];
         $payment['captured_at'] = $payment['created_at'] + 10;
 
-        $txn = $this->updateTransactionOnCapture($payment);
+        list($txn, $feesSplit) = $this->updateTransactionOnCapture($payment);
+
         $txn->saveOrFail();
 
         $payment->setStatus('captured');
