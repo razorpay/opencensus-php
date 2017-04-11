@@ -68,7 +68,7 @@ trait Transfer
             Payment\Entity::EMAIL           => $input['email'] ?? null,
             Payment\Entity::CURRENCY        => $input['currency'],
             Payment\Entity::ON_HOLD         => $input['on_hold'] ?? 0,
-            // Payment\Entity::ON_HOLD_UNTIL   => $input['on_hold_until'] ?? null,
+            Payment\Entity::ON_HOLD_UNTIL   => $input['on_hold_until'] ?? null,
             Payment\Entity::METHOD          => Payment\Method::TRANSFER,
         ];
 

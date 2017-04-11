@@ -73,12 +73,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getGatewayPayment($paymentId)
     {
         //
-        // Successfully authorized payments are indicated by Y - Constants::YES
-        // Successfully verified payments are indicated by S - Constants::SUCCESS
+        // Successfully authorized payments are indicated by Y - Status::YES
+        // Successfully verified payments are indicated by S - Status::SUCCESS
         // Currently even verified payments are marked as Y, but the older ones are
         // marked by S, so we are keeping both over here
         //
-        $statuses = [Axis\Constants::YES, Axis\Constants::SUCCESS];
+        $statuses = [Axis\Status::YES, Axis\Status::SUCCESS];
 
         return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
                                                                      Action::AUTHORIZE,

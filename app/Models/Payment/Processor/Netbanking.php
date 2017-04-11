@@ -28,6 +28,7 @@ class Netbanking
 
     const ACCOUNT_NUMBER_LENGTHS = [
         IFSC::UTIB => 15,
+        IFSC::FDRL => 14,
     ];
 
     protected static $self = [
@@ -44,6 +45,7 @@ class Netbanking
         IFSC::HDFC,
         IFSC::KKBK,
         IFSC::UTIB,
+        IFSC::FDRL,
     ];
 
     protected static $paytm = array(
@@ -215,19 +217,20 @@ class Netbanking
         IFSC::YESB,
         Netbanking::LAVB_R,
         Netbanking::PUNB_R,
-        /*
+
+        IFSC::UTIB,
         IFSC::BKID,
         IFSC::CIUB,
-        IFSC::DEUT,
-        IFSC::HDFC,
         IFSC::ICIC,
+
+        /*
         IFSC::SBBJ,
         IFSC::SBHY,
         IFSC::SBIN,
         IFSC::SBMY,
         IFSC::STBP,
         IFSC::SBTR,
-        IFSC::UTIB,
+        IFSC::HDFC,
         */
     );
 
@@ -259,7 +262,8 @@ class Netbanking
 
     public static function getDisabledBanksForCategory(string $category2)
     {
-        return isset(Category::DISABLED[Method::NETBANKING][$category2]) ?  Category::DISABLED[Method::NETBANKING][$category2] : [];
+        return isset(Category::DISABLED[Method::NETBANKING][$category2]) ?
+                Category::DISABLED[Method::NETBANKING][$category2] : [];
     }
 
     public static function getEnabledBanks()

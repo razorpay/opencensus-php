@@ -99,13 +99,22 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMerchantsWithSettlementScheduleIdNull()
+    public function getFewMerchantsWithNoCorrespondingScheduleTasks()
     {
+        $mercIds = $this->db->select(
+            'SELECT DISTINCT id
+             FROM merchants
+                WHERE merchants.id NOT IN
+                    (SELECT DISTINCT merchant_id
+                     FROM schedule_tasks)
+                LIMIT 1000');
+
+        $mercIds2 = array_column($mercIds, 'id');
+
         return $this->newQuery()
-                    ->whereNull(Entity::SETTLEMENT_SCHEDULE_ID)
+                    ->whereIn(Entity::ID, $mercIds2)
                     ->get();
     }
-
     public function getCountOfMerchantsActivatedBetween($from, $to)
     {
         return $this->newQuery()

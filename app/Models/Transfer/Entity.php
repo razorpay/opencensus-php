@@ -47,6 +47,10 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::TO_TYPE,
+        self::TO_ID,
+        self::SOURCE_TYPE,
+        self::SOURCE_ID,
         self::SOURCE,
         self::RECIPIENT,
         self::MERCHANT_ID,
@@ -55,7 +59,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::NOTES,
         self::ON_HOLD,
-        // self::ON_HOLD_UNTIL,
+        self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -71,7 +75,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REVERSED,
         self::NOTES,
         self::ON_HOLD,
-        // self::ON_HOLD_UNTIL,
+        self::ON_HOLD_UNTIL,
         self::CREATED_AT,
     ];
 

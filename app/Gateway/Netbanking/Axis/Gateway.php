@@ -149,7 +149,7 @@ class Gateway extends Base\Gateway
         $verify->gatewaySuccess = false;
 
         if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
-            ($response[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
+            ($response[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -190,7 +190,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID          => $this->getMerchantId(),
             RequestFields::MODE_OF_OPERATION => Constants::PAY,
             RequestFields::CURRENCY_CODE     => Currency::INR,
-            RequestFields::CONFIRMATION      => Constants::YES,
+            RequestFields::CONFIRMATION      => Status::YES,
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
 
@@ -275,7 +275,7 @@ class Gateway extends Base\Gateway
     protected function checkResponseStatus(array $attrs, array $content)
     {
         if ((isset($attrs['status']) === false) or
-            ($attrs['status'] !== Constants::YES))
+            ($attrs['status'] !== Status::YES))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -302,7 +302,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $verify->payment;
 
         if ((isset($content[ResponseFields::PAYMENT_STATUS])) and
-            ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
+            ($content[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
         {
             $attributes = $this->getVerifyAttributes($verify, $gatewayPayment);
 
@@ -320,17 +320,18 @@ class Gateway extends Base\Gateway
 
         $bankPaymentId = $gatewayPayment->getBankPaymentId();
 
-        $attributes = [
-            Base\Entity::RECEIVED => true,
-            Base\Entity::STATUS   => Constants::YES,
-        ];
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            // We're saving the response only if status is a success
+            $attributes[Base\Entity::STATUS] = Status::YES;
+        }
 
         if (empty($bankPaymentId) === true)
         {
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REFERENCE_ID];
         }
 
-        return $attributes;
+        return $attributes ?? [];
     }
 
     protected function parseResponseXml(string $response)
@@ -345,6 +346,11 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+
+    protected function getAuthSuccessStatus()
+    {
+        return Status::getAuthSuccessStatus();
     }
 
     /*
