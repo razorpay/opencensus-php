@@ -26,21 +26,16 @@ class Core extends Base\Core
 
         $adminPermissions = $admin->getPermissionsList();
 
+        $orgId = $admin->getOrgId();
+
         $routePermissions = $input[Differ\Entity::PERMISSIONS];
 
         // Not all route permissions could be present in admin.
         $commonPermissions = array_intersect($routePermissions, $adminPermissions);
 
-        $permissionIds = $this->repo
-                              ->permission
-                              ->retrieveIdsByNamesAndOrg($commonPermissions, $admin->getOrgId())
-                              ->map(function ($permission){
-                                    return $permission->getId();
-                                })
-                              ->toArray();
+        $workflows = $this->getWorkflowsForPermissions($commonPermissions, $orgId);
 
-        $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($permissionIds);
-
+        // More than one workflow could be found.
         $workflow = $workflows->first();
 
         $params[Entity::WORKFLOW_ID] = $workflow->getId();
@@ -78,6 +73,34 @@ class Core extends Base\Core
         $actionState = (new State\Core)->create($input);
 
         return $actionState;
+    }
+
+    /**
+     * Fetch workflows mapped to the permissions for this organisation.
+     * This checks for if the permission is present for the organisation
+     * and if a workflow is mapped gainst the permission.
+     *
+     * @param array $permissions
+     * @param string $orgId
+     * @return array
+     **/
+    public function getWorkflowsForPermissions(array $permissions, string $orgId)
+    {
+        // Implicit check for permission existance in the organisation.
+        $permissionIds = $this->repo
+                              ->permission
+                              ->retrieveIdsByNamesAndOrg($permissions, $orgId)
+                              ->map(function ($permission){
+                                    return $permission->getId();
+                                })
+                              ->toArray();
+
+        // Implicit check for workflow in the organisation against permission ids.
+        $workflows = $this->repo
+                          ->workflow
+                          ->fetchWorkflowsByPermissionsAndOrgId($permissionIds, $orgId);
+
+        return $workflows;
     }
 
     public function checkAndMarkActionApproved(Entity $action)
