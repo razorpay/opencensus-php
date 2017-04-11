@@ -152,3 +152,27 @@ UPDATE terminals SET international = 1 WHERE gateway = 'sharp';
 
 UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7chy3i1qAAG9iW';
 UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7d3DLq0w58xHmc';
+
+UPDATE settlements
+SET attempts = (
+    SELECT COUNT(id) FROM fund_transfer_attempts
+    WHERE fund_transfer_attempts.source_id = settlements.id
+    AND fund_transfer_attempts.source_type = 'settlement'
+    GROUP BY fund_transfer_attempts.source_id
+);
+
+UPDATE settlements s1 JOIN
+(
+    SELECT t1.id, t1.source_id, t1.remarks
+    FROM fund_transfer_attempts AS t1 JOIN
+    (
+        SELECT MAX(created_at) as latest, source_id
+        FROM fund_transfer_attempts
+        GROUP BY source_id
+    ) AS t2
+    ON t1.source_id = t2.source_id AND t1.created_at = t2.latest
+) AS t3
+ON s1.id = t3.source_id
+SET s1.remarks = t3.remarks
+WHERE t3.remarks IS NOT NULL
+AND s1.remarks IS NULL;
