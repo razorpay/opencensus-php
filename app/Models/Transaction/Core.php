@@ -961,37 +961,4 @@ class Core extends Base\Core
             $this->updateFeeCredits($txn);
         }
     }
-
-    public function createTransactionForNonAuthAndCapture(Payment\Entity $payment)
-    {
-        $txn = new Transaction\Entity;
-
-        $amount = $payment->getBaseAmount();
-
-        $values = [
-            Transaction\Entity::DEBIT               => 0,
-            Transaction\Entity::CREDIT              => 0,
-            Transaction\Entity::FEE                 => 0,
-            Transaction\Entity::SERVICE_TAX         => 0,
-            Transaction\Entity::AMOUNT              => $amount,
-            Transaction\Entity::CURRENCY            => Currency\Currency::INR,
-            Transaction\Entity::TYPE                => Transaction\Type::PAYMENT,
-            Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
-        ];
-
-        $txn->fillAndGenerateId($values);
-
-        $txn->sourceAssociate($payment);
-
-        $txn->merchant()->associate($payment->merchant);
-
-        $this->repo->saveOrFail($txn);
-
-        $this->trace->info(
-            TraceCode::TRANSACTION_CREATED_FOR_NON_AUTH_CAPTURE,
-            [
-                'payment_id'     => $payment->getId(),
-                'transaction_id' => $txn->getId(),
-            ]);
-    }
 }
