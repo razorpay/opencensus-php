@@ -35,6 +35,8 @@ class CreateReportTable extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->char(Report::GENERATED_BY);
+
             $table->integer(Report::START_TIME)
                   ->unsigned();
 

@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const TYPE          = 'type';
     const MERCHANT_ID   = 'merchant_id';
     const GENERATED_AT  = 'generated_at';
+    const GENERATED_BY  = 'generated_by';
 
     protected $entity = 'report';
 
@@ -21,7 +22,8 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::TYPE,
         self::START_TIME,
-        self::END_TIME
+        self::END_TIME,
+        self::GENERATED_BY
     ];
 
     protected $visible = [
@@ -32,6 +34,7 @@ class Entity extends Base\PublicEntity
         self::END_TIME,
         self::FILE_ID,
         self::GENERATED_AT,
+        self::GENERATED_BY,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -40,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::TYPE,
         self::GENERATED_AT,
+        self::GENERATED_BY
     ];
 
     protected $dates = [
