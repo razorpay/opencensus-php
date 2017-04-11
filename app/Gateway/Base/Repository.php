@@ -32,6 +32,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByPaymentIdAndActions($paymentId, $actions)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->whereIn('action', $actions)
+                    ->first();
+    }
+
     public function fetchByPaymentIdsAndAction($paymentIds, $action)
     {
         return $this->newQuery()

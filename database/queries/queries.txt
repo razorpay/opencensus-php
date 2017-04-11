@@ -1441,6 +1441,10 @@ ALTER TABLE merchant_banks
     ADD COLUMN jiomoney TINYINT(1) DEFAULT 0 AFTER freecharge,
     ADD INDEX merchant_banks_jiomoney_index (jiomoney);
 
+# Query to add mpesa method
+ALTER TABLE merchant_banks
+    ADD COLUMN mpesa TINYINT(1) DEFAULT 1 AFTER jiomoney,
+
 ALTER TABLE payments
     MODIFY contact VARCHAR(20);
 

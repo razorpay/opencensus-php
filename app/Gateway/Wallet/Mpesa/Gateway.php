@@ -389,8 +389,9 @@ class Gateway extends Base\Gateway
 
     protected function getQueryData()
     {
-        $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'], Action::AUTHORIZE);
+        $wallet = $this->repo->findByPaymentIdAndActions(
+            $this->input['payment']['id'],
+            [Action::AUTHORIZE, Action::OTP_GENERATE]);
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId();
 
@@ -461,8 +462,9 @@ class Gateway extends Base\Gateway
 
     protected function getRefundData()
     {
-        $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'], Action::AUTHORIZE);
+        $wallet = $this->repo->findByPaymentIdAndActions(
+            $this->input['payment']['id'],
+            [Action::AUTHORIZE, Action::OTP_GENERATE]);
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId();
 
@@ -564,8 +566,9 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContentIfNeeded(Verify $verify)
     {
-        $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'], Action::AUTHORIZE);
+        $wallet = $this->repo->findByPaymentIdAndActions(
+            $this->input['payment']['id'],
+            [Action::AUTHORIZE, Action::OTP_GENERATE]);
 
         $content = $verify->verifyResponseContent;
 
@@ -579,7 +582,8 @@ class Gateway extends Base\Gateway
             $contentToSave[Entity::RESPONSE_DESCRIPTION] = $content[ResponseFields::REASON];
         }
 
-        if (empty($wallet[Entity::GATEWAY_PAYMENT_ID]) === true)
+        if ((empty($wallet[Entity::GATEWAY_PAYMENT_ID]) === true) and
+            (isset($content[ResponseFields::S2S_TRANS_ID]) === true))
         {
             $contentToSave[Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::S2S_TRANS_ID];
         }
