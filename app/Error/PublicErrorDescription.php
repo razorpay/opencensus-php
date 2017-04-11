@@ -402,4 +402,7 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS                                = 'This combination of workflow permission and level already exists.';
     const BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS                       = 'Other actions on the entity are in progress.';
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                 = 'Workflow action is not in any open state';
+
+    const BAD_REQUEST_GATEWAY_LOAD_RULE_EXISTS                                  = 'Gateway load rule already exists for the given criteria';
+    const BAD_REQUEST_MAX_GATEWAY_LOAD_EXCEEDED                                 = 'Load across all gateway rules must be less than 100 percent';
 }

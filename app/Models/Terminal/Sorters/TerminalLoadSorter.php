@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
+use RZP\Models\Gateway\LoadRule;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -62,7 +64,27 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     public function gatewaySorter($terminals, array $input, $options)
     {
-        $sortedTerminals = $terminals;
+        // $sortedTerminals = $terminals;
+
+        $merchantId = $input['merchant']->getId();
+
+        $allRules = (new LoadRule\Core)->fetchApplicableRules($terminals, $input);
+
+        if ($allRules->isEmpty() === true)
+        {
+            return $terminals;
+        }
+
+        $merchantSpecificRules = $this->getMerchantSpecificRules($applicableRules, $merchantId);
+
+        $sharedRules = $this->getSharedRules($applicableRules);
+
+        $applicableRules = $merchantSpecificRules;
+
+        if ($applicableRules->isEmpty())
+        {
+            $applicableRules = $sharedRules;
+        }
 
         if (is_null($options) === false)
         {
@@ -95,6 +117,23 @@ class TerminalLoadSorter extends Terminal\Sorter
         }
 
         return $sortedTerminals;
+    }
+
+    protected function getMerchantSpecificRules(Base\PublicCollection $applicableRules, string $merchantId)
+    {
+        $merchantSpecificRules = $applicableRules->filter(function ($rule) use ($merchantId)
+        {
+            return $rule->getMerchantId() === $merchantId;
+        });
+
+        return $merchantSpecificRules;
+    }
+
+    protected function getSharedRules(Base\PublicCollection $applicableRules)
+    {
+        $merchantId = Account::SHARED_ACCOUNT;
+
+        return $this->getMerchantSpecificRules($applicableRules, $merchantId);
     }
 
     protected function getBoostedTerminalIds(array $terminals, $chancePercent)

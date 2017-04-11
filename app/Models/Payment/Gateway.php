@@ -86,6 +86,12 @@ class Gateway
         self::WALLET_JIOMONEY
     ];
 
+    const GATEWAY_ACQUIRERS = [
+        self::ACQUIRER_AXIS,
+        self::ACQUIRER_HDFC,
+        self::ACQUIRER_ICIC,
+    ];
+
     public static $channels = [
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
@@ -449,6 +455,11 @@ class Gateway
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
+    }
+
+    public static function isValidGatewayAcquirer(string $gatewayAcquirer)
+    {
+        return in_array($gatewayAcquirer, self::GATEWAY_ACQUIRERS, true);
     }
 
     public static function getGatewayForWallet($wallet)

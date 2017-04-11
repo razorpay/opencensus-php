@@ -522,4 +522,7 @@ class ErrorCode
 
     // File store
     const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
+
+    const BAD_REQUEST_GATEWAY_LOAD_RULE_EXISTS                                      = 'BAD_REQUEST_GATEWAY_LOAD_RULE_EXISTS';
+    const BAD_REQUEST_MAX_GATEWAY_LOAD_EXCEEDED                                     = 'BAD_REQUEST_MAX_GATEWAY_LOAD_EXCEEDED';
 }

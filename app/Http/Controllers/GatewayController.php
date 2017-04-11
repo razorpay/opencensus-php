@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Downtime;
+use RZP\Models\Gateway\LoadRule;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 
@@ -363,6 +364,38 @@ class GatewayController extends Controller
         $input = Request::all();
 
         $data = (new GatewayPriority\Service)->removePriorityForMethod($method, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createGatewayLoadRule(LoadRule\Service $service)
+    {
+        $input = Request::all();
+
+        $data = $service->create($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchGatewayLoadRules(LoadRule\Service $service)
+    {
+        $input = Request::all();
+
+        $data = $service->fetchMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function findGatewayLoadRule(LoadRule\Service $service, string $id)
+    {
+        $data = $service->find($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteGatewayLoadRule(LoadRule\Service $service, string $id)
+    {
+        $data = $service->delete($id);
 
         return ApiResponse::json($data);
     }
