@@ -131,6 +131,7 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
+            self::REPORT
         ],
 
         self::BATCH_BUCKET_CONFIG => [

@@ -295,14 +295,14 @@ class BasicEntityReport extends Base
 
         $creator = new FileStore\Creator;
 
-        $s3File = $creator->extension(FileStore\Format::ZIP)
+        $s3File = $creator->extension(FileStore\Format::CSV)
                             ->localFile($file)
-                            ->name($fileName)
+                            ->name('reports/' . $fileName)
                             ->store(FileStore\Store::S3)
                             ->type(FileStore\Type::REPORT)
                             ->save()
                             ->getSignedUrl();
-
+        sd($s3File);
         return $s3File;
     }
 

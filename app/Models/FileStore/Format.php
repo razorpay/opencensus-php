@@ -43,7 +43,7 @@ class Format
         self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
         self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
                         'application/vnd.ms-office'],
-        self::ZIP   => ['application/zip', 'text/plain'],
+        self::ZIP   => ['application/zip'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [
