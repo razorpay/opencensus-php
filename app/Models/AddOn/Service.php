@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Plan;
+namespace RZP\Models\AddOn;
 
 use RZP\Models\Base;
 
@@ -13,12 +13,5 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Core;
-    }
-
-    public function create(array $input) : array
-    {
-        $plan = $this->core->create($input, $this->merchant);
-
-        return $plan->toArrayPublic();
     }
 }

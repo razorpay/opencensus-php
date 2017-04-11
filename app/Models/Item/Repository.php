@@ -46,4 +46,21 @@ class Repository extends Base\Repository
 
         return $item;
     }
+
+    public function findByPublicIdAndMerchantForType(string $id, Merchant\Entity $merchant, string $type)
+    {
+        $item = $this->findByPublicIdAndMerchant($id, $merchant);
+        
+        if ($item->getType !== $type)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE,
+                null,
+                [
+                    'item_id' => $id,
+                    'merchant_id' => $merchant->getId(),
+                    'item_type' => $item->getType(),
+                ]);
+        }
+    }
 }

@@ -20,6 +20,7 @@ class Table
     const TOKEN                 = 'tokens';
     const COUPON                = 'coupons';
     const DEVICE                = 'devices';
+    const ADD_ON                = 'add_ons';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';

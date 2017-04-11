@@ -3,13 +3,14 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\LineItem\Entity;
-use RZP\Models\Invoice;
-use RZP\Models\Merchant;
 use RZP\Models\Item;
+use RZP\Models\Merchant;
+use RZP\Models\AddOn\Entity;
+use RZP\Models\Invoice;
 use RZP\Constants\Table;
+use RZP\Models\Plan\Subscription;
 
-class CreateLineItems extends Migration
+class CreateAddOns extends Migration
 {
     /**
      * Run the migrations.
@@ -18,7 +19,7 @@ class CreateLineItems extends Migration
      */
     public function up()
     {
-        Schema::create(Table::LINE_ITEM, function(Blueprint $table)
+        Schema::create(Table::ADD_ON, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -27,26 +28,13 @@ class CreateLineItems extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
+            $table->char(Entity::SUBSCRIPTION_ID, Entity::ID_LENGTH);
+
             $table->char(Entity::ITEM_ID, Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Entity::ADD_ON_ID, Entity::ID_LENGTH)
+            $table->char(Entity::INVOICE_ID, Entity::ID_LENGTH)
                   ->nullable();
-
-            $table->string(Entity::NAME, 512);
-
-            $table->string(Entity::DESCRIPTION, 2048)
-                  ->nullable();
-
-            $table->integer(Entity::AMOUNT);
-
-            $table->char(Entity::CURRENCY, 3);
-
-            $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
-
-            $table->string(Entity::ENTITY_TYPE, 32);
-
-            $table->integer(Entity::QUANTITY);
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
@@ -56,18 +44,26 @@ class CreateLineItems extends Migration
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::DELETED_AT);
-            $table->index(Entity::ENTITY_ID);
-            $table->index(Entity::ENTITY_TYPE);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
-                  ->on(Table::MERCHANT);
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
 
             $table->foreign(Entity::ITEM_ID)
                   ->references(Item\Entity::ID)
                   ->on(Table::ITEM)
                   ->on_delete('restrict');
 
+            $table->foreign(Entity::SUBSCRIPTION_ID)
+                  ->references(Subscription\Entity::ID)
+                  ->on(Table::SUBSCRIPTION)
+                  ->on_delete('restrict');
+
+            $table->foreign(Entity::INVOICE_ID)
+                  ->references(Invoice\Entity::ID)
+                  ->on(Table::INVOICE)
+                  ->on_delete('restrict');
         });
     }
 
@@ -78,19 +74,29 @@ class CreateLineItems extends Migration
      */
     public function down()
     {
-        Schema::table(Table::LINE_ITEM, function($table)
+        Schema::table(Table::ADD_ON, function($table)
         {
             $table->dropForeign
             (
-                Table::LINE_ITEM . '_' . Entity::MERCHANT_ID . '_foreign'
+                Table::ADD_ON . '_' . Entity::MERCHANT_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::LINE_ITEM . '_' . Entity::ITEM_ID . '_foreign'
+                Table::ADD_ON . '_' . Entity::ITEM_ID . '_foreign'
+            );
+
+            $table->dropForeign
+            (
+                Table::ADD_ON . '_' . Entity::SUBSCRIPTION_ID . '_foreign'
+            );
+
+            $table->dropForeign
+            (
+                Table::ADD_ON . '_' . Entity::INVOICE_ID . '_foreign'
             );
         });
 
-        Schema::drop(Table::LINE_ITEM);
+        Schema::drop(Table::ADD_ON);
     }
 }

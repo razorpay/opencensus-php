@@ -51,6 +51,11 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT
     ];
 
+    // Used for reporting
+    protected $amounts = [
+        self::AMOUNT,
+    ];
+
     protected $casts = [
         self::AMOUNT            => 'int',
         self::INTERVAL          => 'int',

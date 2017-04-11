@@ -33,6 +33,7 @@ class Entity
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
     const REFUND                = 'refund';
+    const ADD_ON                = 'add_on';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
@@ -71,7 +72,7 @@ class Entity
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
 
-    // heimdal
+    // heimdall
     const ORG                   = 'org';
     const ORG_HOSTNAME          = 'org_hostname';
     const ROLE                  = 'role';

@@ -36,10 +36,13 @@ class Entity extends Base\PublicEntity
     // For example, if the subscription is for 3 months, upfront amount can
     // be 1000rs and if subscription is for 1yr, upfront amount can be 500rs.
     //
-    const UPFRONT_AMOUNT    = 'upfront_amount';
+    // const UPFRONT_AMOUNT    = 'upfront_amount';
     const FAILED_AT         = 'failed_at';
     const AUTHENTICATED_AT  = 'authenticated_at';
     const CANCELLED_AT      = 'cancelled_at';
+
+    // Input Keys
+    const ADD_ONS = 'add_ons';
 
     protected static $sign = 'sub';
 
@@ -56,7 +59,7 @@ class Entity extends Base\PublicEntity
         self::STATUS            => Status::CREATED,
         self::PAID_COUNT        => 0,
         self::AUTH_ATTEMPTS     => 0,
-        self::UPFRONT_AMOUNT    => null,
+        // self::UPFRONT_AMOUNT    => null,
         self::ERROR_STATUS      => null,
         self::ACTIVATED_AT      => null,
         self::FAILED_AT         => null,
@@ -74,7 +77,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::QUANTITY,
         self::NOTES,
-        self::UPFRONT_AMOUNT,
+        // self::UPFRONT_AMOUNT,
         self::START_AT,
         self::TOTAL_COUNT,
         self::END_AT,
@@ -94,7 +97,7 @@ class Entity extends Base\PublicEntity
         self::CHARGE_AT,
         self::START_AT,
         self::END_AT,
-        self::UPFRONT_AMOUNT,
+        // self::UPFRONT_AMOUNT,
         self::TOTAL_COUNT,
         self::PAID_COUNT,
     ];
@@ -107,11 +110,11 @@ class Entity extends Base\PublicEntity
         self::CURRENT_END       => 'int',
         self::TOTAL_COUNT       => 'int',
         self::PAID_COUNT        => 'int',
-        self::UPFRONT_AMOUNT    => 'int',
+        // self::UPFRONT_AMOUNT    => 'int',
     ];
 
     protected $amounts = [
-        self::UPFRONT_AMOUNT,
+        // self::UPFRONT_AMOUNT,
     ];
 
     protected $publicSetters = [
@@ -128,13 +131,18 @@ class Entity extends Base\PublicEntity
 
     public function getChargeableAmount()
     {
-        $quantity = $this->getAttribute(self::QUANTITY);
+        $quantity = $this->getQuantity();
 
         $planAmount = $this->plan->getAmount();
 
         $chargeableAmount = $quantity * $planAmount;
 
         return $chargeableAmount;
+    }
+
+    public function getQuantity()
+    {
+        return $this->getAttribute(self::QUANTITY);
     }
 
     public function getChargeAt()
@@ -207,10 +215,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
-    public function getUpfrontAmount()
-    {
-        return $this->getAttribute(self::UPFRONT_AMOUNT);
-    }
+    // public function getUpfrontAmount()
+    // {
+    //     return $this->getAttribute(self::UPFRONT_AMOUNT);
+    // }
 
     public function hasBeenAuthenticated()
     {

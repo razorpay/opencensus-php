@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Item;
+use RZP\Models\AddOn;
 
 class Entity extends Base\PublicEntity
 {
@@ -16,6 +17,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE      = 'entity_type';
     const MERCHANT_ID      = 'merchant_id';
     const ITEM_ID          = 'item_id';
+    const ADD_ON_ID        = 'add_on_id';
     const NAME             = 'name';
     const DESCRIPTION      = 'description';
     const AMOUNT           = 'amount';
@@ -48,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::QUANTITY,
         self::ITEM_ID,
+        self::ADD_ON_ID,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -61,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         // Uncomment later when required
         // self::ITEM_ID,
+        // self::ADD_ON_ID,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -85,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ITEM_ID,
+        self::ADD_ON_ID,
     ];
 
     //
@@ -124,6 +129,11 @@ class Entity extends Base\PublicEntity
         $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
     }
 
+    protected function setPublicAddOnIdAttribute(array & $array)
+    {
+        $array[self::ADD_ON_ID] = AddOn\Entity::getSignedId($this->getAttribute(self::ADD_ON_ID));
+    }
+
     // -------------------------- Public Setters Ends --------------------------
 
     // -------------------- Relations ---------------------------
@@ -136,6 +146,11 @@ class Entity extends Base\PublicEntity
     public function item()
     {
         return $this->belongsTo('RZP\Models\Item\Entity');
+    }
+
+    public function addOn()
+    {
+        return $this->belongsTo('RZP\Models\AddOn\Entity');
     }
 
     public function merchant()

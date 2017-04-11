@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
@@ -20,8 +21,16 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function create(array $input, string $planId)
+    public function create(array $input, string $planId) : array
     {
+        if (empty($input[Entity::CUSTOMER_ID]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'customer_id should be sent in the request to create a subscription.',
+                'customer_id'
+            );
+        }
+
         $customerId = $input[Entity::CUSTOMER_ID];
 
         $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);

@@ -8,7 +8,7 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::AMOUNT          => 'required|integer|min:1',
+        Entity::AMOUNT          => 'required|integer|min:100',
         Entity::CURRENCY        => 'required|string|size:3|in:INR',
         Entity::INTERVAL        => 'required|integer|min:1|max:365',
         Entity::PERIOD          => 'required|string|custom',

@@ -80,7 +80,7 @@ class Cycle
         //
         // (int) will always floor the value.
         //
-        $totalCycles = (int) (($diffInPeriod/$interval) + 1);
+        $totalCycles = (int) (($diffInPeriod / $interval) + 1);
 
         return $totalCycles;
     }

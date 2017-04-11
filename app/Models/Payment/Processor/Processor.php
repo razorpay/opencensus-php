@@ -692,6 +692,10 @@ class Processor
      * This is required when the first charge is done via auth transaction.
      * We need to use the invoice which was created during subscription
      * creation.
+     * For the subsequent charges, this is handled since we send order_id as
+     * part of the payment create request itself. Since, the payment is created internally.
+     * The first charge (payment) is created by the merchant and hence not feasible to ask
+     * them to send an order_id along with the subscription_id.
      *
      * @param array          $input
      * @param Payment\Entity $payment
@@ -714,23 +718,37 @@ class Processor
             return;
         }
 
-        if ($subscription->getStartAt() !== null)
-        {
-            return;
-        }
-
+        //
+        // Invoice would have been created if:
+        // - First charge needs to be done as part of authentication with or without add_ons
+        // - Only add_ons need to be added, and no first charge needs to be done as part of authentication.
+        //
         $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
-        if ($subscriptionInvoices->count() !== 1)
+        //
+        // Since the subscription is in created state at this point,
+        // the only add_ons that will be present will be of `upfront_amount`.
+        //
+        $addOns = $this->repo->add_on->getAllAddOnsOfSubscription($subscription);
+
+        if ($subscriptionInvoices->count() === 0)
         {
-            throw new Exception\LogicException(
-                'There should have been one invoice created for a newly created subscription',
-                ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
-                [
-                    'invoices_count'    => $subscriptionInvoices->count(),
-                    'subscription_id'   => $subscriptionId,
-                    'payment_id'        => $payment->getId(),
-                ]);
+            if ($addOns->count() === 0)
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'There should have been one invoice created for a newly created subscription',
+                    ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
+                    [
+                        'invoices_count'    => $subscriptionInvoices->count(),
+                        'subscription_id'   => $subscriptionId,
+                        'payment_id'        => $payment->getId(),
+                        'add_ons_count'     => $addOns->count(),
+                    ]);
+            }
         }
 
         $subscriptionInvoice = $subscriptionInvoices->first();
@@ -1104,19 +1122,35 @@ class Processor
         //
         // $this->repo->reload($subscription);
 
-        $startAt = $subscription->getStartAt();
-        $upfrontAmount = $subscription->getUpfrontAmount();
+        //
+        // This function can be used here since this flow is processed
+        // only for a new subscription.
+        //
+        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
         //
         // We auto capture a subscription only if start_at is absent,
         // which means that the first transaction is being used as the
         // first charge also.
-        // OR we auto capture if upfront_amount is present.
+        // OR we auto capture if upfront_amount (add_on) is present.
         //
-        if (($startAt !== null) and
-            ($upfrontAmount === null))
+        // We create an invoice if any of the above two conditions are satisfied.
+        //
+        if ($subscriptionInvoices->count() === 0)
         {
             return false;
+        }
+
+        if ($subscriptionInvoices->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'There should have been one invoice created for a newly created subscription',
+                ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
+                [
+                    'invoices_count'    => $subscriptionInvoices->count(),
+                    'subscription_id'   => $subscription->getId(),
+                    'payment_id'        => $payment->getId(),
+                ]);
         }
 
         // For now, we are not going to auto capture any late authorized payments.
@@ -1126,10 +1160,8 @@ class Processor
             $this->trace->error(
                 TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
                 [
-                    'payment_id' => $payment->getId(),
+                    'payment_id'      => $payment->getId(),
                     'subscription_id' => $subscription->getId(),
-                    'start_at' => $startAt,
-                    'upfront_amount' => $upfrontAmount,
                     'late_authorized' => $payment->isLateAuthorized(),
                 ]);
 

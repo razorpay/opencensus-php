@@ -16,17 +16,23 @@ class Validator extends Base\Validator
      */
     const MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION = 1;
 
+    /**
+     * Maximum number of add_ons that we allow
+     * as part of the subscription creations
+     */
+    const MAX_ALLOWED_ADD_ONS = 5;
+
     const SECONDS_IN_ONE_YEAR = 31536000;
 
     protected static $createRules = [
-        Entity::CUSTOMER_ID     => 'required|string|size:19',
+        Entity::CUSTOMER_ID     => 'required|string|size:19|public_id',
         // Entity::TOKEN_ID     => 'required|string|size:20',
-        Entity::QUANTITY        => 'required|integer|max:500',
+        Entity::QUANTITY        => 'required|integer|min:1|max:500',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::TOTAL_COUNT     => 'required_without:end_at|integer|max:365',
+        Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1|max:365',
         Entity::START_AT        => 'sometimes|integer|custom',
-        Entity::END_AT          => 'required_without:total_count|integer',
-        Entity::UPFRONT_AMOUNT  => 'sometimes|integer|max:50000000',
+        Entity::END_AT          => 'required_without:total_count|epoch',
+        Entity::ADD_ONS         => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_ADD_ONS,
     ];
 
     protected static $createValidators = [
@@ -63,9 +69,9 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_CURRENT_TIME_PAST_START_TIME,
                 null,
                 [
-                    'start_at' => $startAt,
-                    'current_time' => $currentTime,
-                    'subscription_id' => $subscription->getId(),
+                    'start_at'          => $startAt,
+                    'current_time'      => $currentTime,
+                    'subscription_id'   => $subscription->getId(),
                 ]);
         }
     }

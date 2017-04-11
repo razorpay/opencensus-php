@@ -1655,36 +1655,34 @@ trait Authorize
 
     protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)
     {
-        $startAt = $subscription->getStartAt();
-        $upfrontAmount = $subscription->getUpfrontAmount();
-
         if ($payment->isCaptured() === true)
         {
             return;
         }
 
+        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+
         //
-        // If upfront amount is present or start_at is null (first charge in auth txn itself),
+        // If add_ons are present or start_at is null (first charge in auth txn itself),
         // the payment should have been captured before it reaches this stage.
         //
         if (($payment->isCaptured() === false) and
-            (($startAt === null) or ($upfrontAmount !== null)))
+            ($subscriptionInvoices->count() !== 0))
         {
             throw new Exception\LogicException(
                 'The subscription should have been captured by now.',
                 null,
                 [
-                    'start_at' => $startAt,
-                    'upfront_amount' => $upfrontAmount,
                     'subscription_id' => $subscription->getId(),
                     'payment_id' => $payment->getId(),
                     'payment_status' => $payment->getStatus(),
+                    'invoice_id' => $subscriptionInvoices->first()->getId(),
                 ]);
         }
 
         //
         // This would mean that this was a 5rs auth transaction.
-        // There was no upfront amount or this is not being used as first charge.
+        // There was no add_on (upfront_amount) or this is not being used as first charge.
         //
         $this->refundAuthorizedPayment($payment);
     }

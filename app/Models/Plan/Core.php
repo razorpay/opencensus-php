@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Plan;
 
-use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;

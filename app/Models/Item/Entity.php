@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION           = 'description';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
+    const TYPE                  = 'type';
     const DELETED_AT            = 'deleted_at';
 
     protected static $sign      = 'item';
@@ -26,8 +27,9 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::ACTIVE            => 1,
-        self::DESCRIPTION       => null,
+        self::ACTIVE        => 1,
+        self::DESCRIPTION   => null,
+        self::TYPE          => Type::INVOICE,
     ];
 
     protected $visible = [
@@ -39,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -51,6 +54,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::TYPE,
     ];
 
     protected $fillable = [
@@ -59,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::TYPE,
     ];
 
     protected $casts = [
@@ -86,6 +91,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
     }
 
     public function isActive()

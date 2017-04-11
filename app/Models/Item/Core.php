@@ -10,6 +10,12 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
     public function create(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(

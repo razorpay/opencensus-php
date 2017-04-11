@@ -14,7 +14,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function createSchedule(array $input, Merchant\Entity $merchant = null)
+    public function createSchedule(array $input, $merchant = null)
     {
         $schedule = (new Entity)->build($input);
 

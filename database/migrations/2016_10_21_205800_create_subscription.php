@@ -48,8 +48,8 @@ class CreateSubscription extends Migration
             $table->integer(Entity::PAID_COUNT)
                   ->default(0);
 
-            $table->integer(Entity::UPFRONT_AMOUNT)
-                  ->nullable();
+            // $table->integer(Entity::UPFRONT_AMOUNT)
+            //       ->nullable();
 
             $table->integer(Entity::AUTH_ATTEMPTS)
                   ->default(0);

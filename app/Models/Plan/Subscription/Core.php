@@ -14,6 +14,8 @@ use RZP\Models\Schedule\Run;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
+use RZP\Models\Item;
+use RZP\Models\AddOn;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -47,9 +49,12 @@ class Core extends Base\Core
 
                 //
                 // This needs to be done after saving the subscription
-                // because invoice is created and saved in the following step,
-                // with the subscription_id.
+                // because invoice/add_on is created and saved in the
+                // following step, with the subscription_id.
                 //
+
+                $this->createAddOnsIfApplicable($subscription, $input);
+
                 $this->createInvoiceIfApplicable($subscription);
             });
 
@@ -98,8 +103,6 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($subscription)
             {
-                $merchant = $subscription->merchant;
-
                 //
                 // If first charge, we set the status to active.
                 // If not, the status would already be active or
@@ -110,17 +113,9 @@ class Core extends Base\Core
                     $this->activateSubscription($subscription);
                 }
 
-                $invoiceInput = $this->getInvoiceInput($subscription);
+                $addOns = $this->repo->add_on->getUnusedAddOnsForSubscription($subscription);
 
-                $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
-
-                $this->trace->info(
-                    TraceCode::SUBSCRIPTION_INVOICE_CREATED,
-                    [
-                        'invoice_id'      => $invoice->getId(),
-                        'subscription_id' => $subscription->getId(),
-                        'invoice_details' => $invoice->toArray(),
-                    ]);
+                $this->createInvoiceForSubscription($subscription, $addOns);
             });
     }
 
@@ -142,97 +137,6 @@ class Core extends Base\Core
         $subscription->setStatus(Status::EXPIRED);
 
         $this->repo->saveOrFail($subscription);
-    }
-
-    protected function activateSubscription(Entity $subscription)
-    {
-        if ($subscription->getStatus() !== Status::AUTHENTICATED)
-        {
-            throw new LogicException(
-                'The status should have been authenticated since the subscription has not been paid even once.',
-                null,
-                [
-                    'status'          => $subscription->getStatus(),
-                    'subscription_id' => $subscription->getId()
-                ]);
-        }
-
-        // TODO: Fire a webhook in sync for activate subscription -- otherwise charge webhook might go before this.
-
-        $subscription->setStatus(Status::ACTIVE);
-        $this->repo->saveOrFail($subscription);
-    }
-
-    /**
-     * We create an invoice only if the auth transaction includes the
-     * first charge also. This invoice will be used when the payment
-     * for the auth txn (first charge) is made.
-     *
-     * If the auth txn also includes the upfront_amount, the invoice
-     * will be made for plan_amount + upfront_amount.
-     *
-     * But, if the auth txn only includes the upfront_amount,
-     * we do not create any invoice at all.
-     *
-     * @param Entity $subscription
-     */
-    protected function createInvoiceIfApplicable(Entity $subscription)
-    {
-        //
-        // If start_at is not null, it means that the auth transactions
-        // does not include the first charge.
-        //
-        if ($subscription->getStartAt() !== null)
-        {
-            return;
-        }
-
-        $merchant = $subscription->merchant;
-
-        $invoiceInput = $this->getInvoiceInput($subscription);
-
-        $lineItemAmount = & $invoiceInput[Invoice\Entity::LINE_ITEMS][0][LineItem\Entity::AMOUNT];
-
-        // TODO: Create a separate line_item for upfront amount
-        // instead of adding to the line_item itself.
-        if ($subscription->getUpfrontAmount() !== null)
-        {
-            $lineItemAmount += $subscription->getUpfrontAmount();
-        }
-
-        $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
-
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_INVOICE_CREATED,
-            [
-                'invoice_id'        => $invoice->getId(),
-                'subscription_id'   => $subscription->getId(),
-                'invoice_details'   => $invoice->toArray(),
-            ]);
-    }
-
-    protected function getInvoiceInput(Entity $subscription)
-    {
-        $plan = $subscription->plan;
-        $customer = $subscription->customer;
-
-        // TODO: The amount here may differ in cases of prorate.
-        $lineItems = [
-            [
-                LineItem\Entity::NAME   => $plan->getName(),
-                LineItem\Entity::AMOUNT => $plan->getAmount()
-            ]
-        ];
-
-        $invoiceInput = [
-            Invoice\Entity::CUSTOMER_ID     => $customer->getPublicId(),
-            Invoice\Entity::LINE_ITEMS      => $lineItems,
-            Invoice\Entity::CURRENCY        => $plan->getCurrency(),
-            Invoice\Entity::SMS_NOTIFY      => '0',
-            Invoice\Entity::EMAIL_NOTIFY    => '0',
-        ];
-
-        return $invoiceInput;
     }
 
     public function charge(Entity $subscription, Invoice\Entity $invoice)
@@ -342,40 +246,166 @@ class Core extends Base\Core
      * @param Entity $subscription
      *
      * @return int
+     * @throws LogicException
      */
     public function getAuthTransactionAmount(Entity $subscription)
     {
-        $plan = $subscription->plan;
+        $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
-        $upfrontAmount = $subscription->getUpfrontAmount();
-        $planAmount = $plan->getAmount();
-        $startAt = $subscription->getStartAt();
-        $defaultAuthAmount = Entity::DEFAULT_AUTH_AMOUNT;
-
-        if (empty($upfrontAmount) === true)
+        if ($invoices->count() === 0)
         {
-            if (empty($startAt) === true)
-            {
-                $authAmount = $planAmount;
-            }
-            else
-            {
-                $authAmount = $defaultAuthAmount;
-            }
+            $authAmount = Entity::DEFAULT_AUTH_AMOUNT;
+        }
+        else if ($invoices->count() === 1)
+        {
+            $authAmount = $invoices->first()->getAmount();
         }
         else
         {
-            if (empty($startAt) === true)
-            {
-                $authAmount = $upfrontAmount + $planAmount;
-            }
-            else
-            {
-                $authAmount = $upfrontAmount;
-            }
+            throw new LogicException(
+                'Number of invoices found for subscription does not match 1',
+                ErrorCode::SERVER_ERROR_INVOICE_COUNT_MISMATCH,
+                [
+                    'count'             => $invoices->count(),
+                    'subscription_id'   => $subscription->getId(),
+                ]);
         }
 
         return $authAmount;
+    }
+
+    protected function createInvoiceForSubscription(Entity $subscription, $addOns)
+    {
+        $merchant = $subscription->merchant;
+
+        $invoiceInput = $this->getInvoiceInput($subscription, $addOns);
+
+        $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+
+        $this->associateInvoiceToAddOns($invoice, $addOns);
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_INVOICE_CREATED,
+            [
+                'invoice_id'      => $invoice->getId(),
+                'subscription_id' => $subscription->getId(),
+                'invoice_details' => $invoice->toArray(),
+            ]);
+    }
+
+    protected function associateInvoiceToAddOns(Invoice\Entity $invoice, $addOns)
+    {
+        foreach ($addOns as $addOn)
+        {
+            $addOn->invoice()->associate($invoice);
+            $this->repo->saveOrFail($addOn);
+        }
+    }
+
+    protected function activateSubscription(Entity $subscription)
+    {
+        if ($subscription->getStatus() !== Status::AUTHENTICATED)
+        {
+            throw new LogicException(
+                'The status should have been authenticated since the subscription has not been paid even once.',
+                null,
+                [
+                    'status'          => $subscription->getStatus(),
+                    'subscription_id' => $subscription->getId()
+                ]);
+        }
+
+        // TODO: Fire a webhook in sync for activate subscription -- otherwise charge webhook might go before this.
+
+        $subscription->setStatus(Status::ACTIVE);
+        $this->repo->saveOrFail($subscription);
+    }
+
+    protected function createAddOnsIfApplicable(Entity $subscription, array $input)
+    {
+        if (empty($input[Entity::ADD_ONS]) === true)
+        {
+            return;
+        }
+
+        $addOnsInput = $input[Entity::ADD_ONS];
+
+        foreach ($addOnsInput as $addOnInput)
+        {
+            (new AddOn\Core)->create($addOnInput, $subscription);
+        }
+    }
+
+    /**
+     * We create an invoice only if the auth transaction includes the
+     * first charge also. This invoice will be used when the payment
+     * for the auth txn (first charge) is made.
+     *
+     * If the auth txn also includes the upfront_amount, the invoice
+     * will be made for plan_amount + upfront_amount.
+     *
+     * But, if the auth txn only includes the upfront_amount,
+     * we do not create any invoice at all.
+     *
+     * @param Entity $subscription
+     */
+    protected function createInvoiceIfApplicable(Entity $subscription)
+    {
+        $addOns = $this->repo->add_on->getUnusedAddOnsForSubscription($subscription);
+
+        if (empty($addOns) === true)
+        {
+            return;
+        }
+
+        $this->createInvoiceForSubscription($subscription, $addOns);
+    }
+
+    protected function getInvoiceInput(Entity $subscription, $addOns)
+    {
+        $plan = $subscription->plan;
+        $customer = $subscription->customer;
+
+        $lineItems = $this->getLineItemsForInvoiceInput($subscription, $addOns);
+
+        $invoiceInput = [
+            Invoice\Entity::CUSTOMER_ID     => $customer->getPublicId(),
+            Invoice\Entity::LINE_ITEMS      => $lineItems,
+            Invoice\Entity::CURRENCY        => $plan->getCurrency(),
+            Invoice\Entity::SMS_NOTIFY      => '0',
+            Invoice\Entity::EMAIL_NOTIFY    => '0',
+        ];
+
+        return $invoiceInput;
+    }
+
+    protected function getLineItemsForInvoiceInput(Entity $subscription, $addOns)
+    {
+        $plan = $subscription->plan;
+
+        $lineItems = [];
+
+        // TODO: The amount may differ in the case of pro-rate.
+        $mainLineItem = [
+            LineItem\Entity::NAME       => $plan->getName(),
+            LineItem\Entity::AMOUNT     => $plan->getAmount(),
+            LineItem\Entity::CURRENCY   => $plan->getCurrency(),
+            LineItem\Entity::QUANTITY   => $subscription->getQuantity(),
+        ];
+
+        $lineItems[] = $mainLineItem;
+
+        foreach ($addOns as $addOn)
+        {
+            $addOnLineItem = [
+                LineItem\Entity::ITEM_ID => $addOn->item->getId(),
+                LineItem\Entity::ADD_ON_ID => $addOn->getId(),
+            ];
+
+            $lineItems[] = $addOnLineItem;
+        }
+
+        return $lineItems;
     }
 
     protected function createRun(Entity $subscription, Plan\Entity $plan, array $input)
@@ -400,7 +430,12 @@ class Core extends Base\Core
 
     protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice)
     {
-        $subscriptionAmount = $subscription->getChargeableAmount();
+        //
+        // Ensure that invoice amount is taken always because
+        // that would take care of add_ons and stuff.
+        //
+        $subscriptionAmount = $invoice->getAmount();
+
         $customer = $subscription->customer;
         $tokenId = $subscription->token->getPublicId();
         $order = $invoice->order;

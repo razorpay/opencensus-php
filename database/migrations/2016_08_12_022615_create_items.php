@@ -37,12 +37,15 @@ class CreateItems extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
+            $table->char(Entity::TYPE, 16);
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
 
             $table->index(Entity::ACTIVE);
+            $table->index(Entity::TYPE);
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::DELETED_AT);
