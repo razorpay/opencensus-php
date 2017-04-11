@@ -10,7 +10,7 @@ class Entity extends Base\PublicEntity
     const START_TIME    = 'start_time';
     const END_TIME      = 'end_time';
     const FILE_ID       = 'file_id';
-    const ENTITY        = 'entity';
+    const TYPE          = 'type';
     const MERCHANT_ID   = 'merchant_id';
     const GENERATED_AT  = 'generated_at';
 
@@ -19,7 +19,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::ENTITY,
+        self::TYPE,
         self::START_TIME,
         self::END_TIME
     ];
@@ -27,7 +27,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
-        self::ENTITY,
+        self::TYPE,
         self::START_TIME,
         self::END_TIME,
         self::FILE_ID,
@@ -38,7 +38,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::ENTITY,
+        self::TYPE,
         self::GENERATED_AT,
     ];
 
@@ -76,9 +76,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FILE_ID);
     }
 
-    public function getEntity()
+    public function getType()
     {
-        return $this->getAttribute(self::ENTITY);
+        return $this->getAttribute(self::TYPE);
     }
 
     // ----------------------------------- GETTERS END --------------------------------

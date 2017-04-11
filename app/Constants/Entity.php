@@ -202,7 +202,6 @@ class Entity
         self::ADMIN_LEAD            => \RZP\Models\Admin\AdminLead::class,
         self::PERMISSION            => \RZP\Models\Admin\Permission::class,
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
-        self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
         self::ORG_FIELD_MAP         => \RZP\Models\Admin\Org\FieldMap::class,
 

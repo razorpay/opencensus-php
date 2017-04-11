@@ -29,7 +29,7 @@ class CreateReportTable extends Migration
             $table->char(Report::FILE_ID)
                   ->nullable();
 
-            $table->char(Report::ENTITY);
+            $table->char(Report::TYPE);
 
             $table->integer(Report::GENERATED_AT)
                   ->unsigned()
@@ -53,7 +53,7 @@ class CreateReportTable extends Migration
 
             $table->index(Report::CREATED_AT);
 
-            $table->index(Report::MERCHANT_ID);
+            $table->index(Report::TYPE);
         });
     }
 

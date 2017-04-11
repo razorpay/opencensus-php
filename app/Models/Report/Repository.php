@@ -10,21 +10,21 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID     => 'required|alpha_dash',
-        Entity::ENTITY          => 'sometimes|string'
+        Entity::TYPE            => 'sometimes|string'
     ];
 
     /**
      * @param   $start
      * @param   $end
-     * @param   $entity
+     * @param   $type
      * @return  Report\Entity
      */
-    public function fetchReportEntity($start, $end, $entity, $merchantId)
+    public function fetchReportEntity($start, $end, $type, $merchantId)
     {
         return $this->newQuery()
                     ->where(Entity::START_TIME, '=', $start)
                     ->where(Entity::END_TIME, '=', $end)
-                    ->where(Entity::ENTITY, '=', $entity)
+                    ->where(Entity::TYPE, '=', $type)
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->first();
     }

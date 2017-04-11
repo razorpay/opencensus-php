@@ -325,7 +325,7 @@ class BasicEntityReport extends Base
             $params = [
                 Entity::START_TIME  => $from,
                 Entity::END_TIME    => $to,
-                Entity::ENTITY      => $this->entity,
+                Entity::TYPE        => $this->entity,
             ];
 
             $report = (new Core)->create($params, $merchant);
