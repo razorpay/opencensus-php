@@ -24,6 +24,7 @@ class RequestFields
     const QUERY_TRANSACTION_REF     = 'transRefNo';
     const COM_TRANSACTION_ID        = 'mcomPgTransID';
     const PMT_TRANSACTION_REFERENCE = 'paymentTransRefNo';
+    const CMDID                     = 'CMDID';
 
     // Customer Validate params
     const COMMON_SERVICE_DATA       = 'commonServiceData';

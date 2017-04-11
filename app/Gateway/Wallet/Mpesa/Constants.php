@@ -12,4 +12,5 @@ class Constants
     const TO_ENTITY_TYPE   = 85;
     const REVERSAL_TYPE    = 'F';
     const COMMAND_ID       = 'O';
+    const CMDID            = 111;
 }

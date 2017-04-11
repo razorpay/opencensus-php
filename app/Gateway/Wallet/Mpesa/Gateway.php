@@ -10,6 +10,7 @@ use SimpleXMLElement;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -145,6 +146,8 @@ class Gateway extends Base\Gateway
                 $content[ResponseFields::DESCRIPTION]);
         }
 
+        $this->saveOtpCallbackContent($content);
+
         return $this->getCallbackResponseData($input);
     }
 
@@ -197,7 +200,7 @@ class Gateway extends Base\Gateway
             Entity::PAYMENT_ID           => $input['payment']['id'],
             Entity::WALLET               => Wallet::MPESA,
             Entity::AMOUNT               => $input['refund']['amount'] / 100,
-            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID],
+            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID] ?? null,
             Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
             Entity::REFUND_ID            => $input['refund']['id'],
             Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
@@ -330,11 +333,24 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
+    protected function saveOtpCallbackContent(array $content)
+    {
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $this->input['payment']['id'], Action::OTP_GENERATE);
+
+        $attributes = [
+            Entity::RECEIVED           => true,
+            Entity::GATEWAY_PAYMENT_ID => $content[ResponseFields::S2S_TRANS_ID] ?? null
+        ];
+
+        $this->updateGatewayPaymentEntity($wallet, $attributes, false);
+    }
+
     protected function getCheckSum()
     {
         $xml = $this->getActionData();
 
-        return hash_hmac('sha256', $xml, $this->getSecret());
+        return hash_hmac(HashAlgo::SHA256, $xml, $this->getSecret());
     }
 
     protected function getActionData()
@@ -406,6 +422,11 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT                    => $this->input['payment']['amount'] / 100,
         ];
 
+        if ($wallet->getAction() === Action::OTP_GENERATE)
+        {
+            $queryData[RequestFields::CMDID] = Constants::CMDID;
+        }
+
         return $queryData;
     }
 
@@ -476,6 +497,12 @@ class Gateway extends Base\Gateway
             RequestFields::REFUND_NARRATION      => Constants::REFUND_NARRATION,
             RequestFields::REVERSAL_TYPE         => Constants::REVERSAL_TYPE
         ];
+
+        // TODO: Ensure this is correct logic
+        if ($wallet->getAction() === Action::OTP_GENERATE)
+        {
+            $data[RequestFields::CMDID] = Constants::CMDID;
+        }
 
         return $data;
     }

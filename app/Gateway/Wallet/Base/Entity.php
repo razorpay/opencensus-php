@@ -91,6 +91,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getAction()
+    {
+        return $this->getAttribute(self::ACTION);
+    }
+
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
