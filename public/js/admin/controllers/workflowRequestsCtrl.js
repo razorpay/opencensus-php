@@ -13,11 +13,14 @@ app.controller('WorkflowRequestsCtrl', [
     $scope.workflow_request_type = $stateParams.type;
 
     // Get requests made by maker
-    $scope.getActionsByMaker = function () {
+    $scope.getActionsByMakerAndType = function (type) {
 
       var request = $http.get('/admin/generic', {
         params: {
           route_name: 'workflow_get_actions_by_maker',
+          query_params: {
+            type: type
+          }
         }
       });
 
@@ -50,12 +53,11 @@ app.controller('WorkflowRequestsCtrl', [
     $scope.regenerateList = function () {
       var type = $scope.workflow_request_type;
 
-      if (type === 'checker') {
-        $scope.getCheckerActions();
-      }
-      else {
-        // maker actions
-        $scope.getActionsByMaker();
+      switch (type) {
+        case 'checker': $scope.getCheckerActions(); break;
+        case 'closer': $scope.getActionsByMakerAndType('closed'); break;
+        case 'open': $scope.getActionsByMakerAndType('open'); break;
+        default: $scope.getActionsByMakerAndType('all');
       }
     };
 
@@ -65,5 +67,8 @@ app.controller('WorkflowRequestsCtrl', [
       $state.go('app.workflows.actions.list', { type: $scope.workflow_request_type });
     };
 
+    $scope.ifAuthorized = function() {
+      return $scope.roles && $scope.roles.some(function(element){return element.toLowerCase().match('superadmin')});
+    }
   }
 ]);
