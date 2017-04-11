@@ -8,6 +8,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Trace;
@@ -618,6 +619,12 @@ class Entity extends Base\PublicEntity
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
+    }
+
+    public function getBrandColorElseDefault()
+    {
+        return $this->getAttribute(self::BRAND_COLOR) ??
+            Merchant\Checkout::CHECKOUT_DEFAULT_THEME_COLOR;
     }
 
     protected function getBrandColorAttribute()
