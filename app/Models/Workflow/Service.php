@@ -85,7 +85,7 @@ class Service extends Base\Service
                                 })
                               ->toArray();
 
-        $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($permissionIds);
+        $workflows = $this->repo->workflow->fetchWorkflowsByPermissionsAndOrgId($permissionIds, $orgId);
 
         return ($workflows->isEmpty() === false);
     }

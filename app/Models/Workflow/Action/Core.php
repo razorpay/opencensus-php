@@ -26,6 +26,8 @@ class Core extends Base\Core
 
         $adminPermissions = $admin->getPermissionsList();
 
+        $orgId = $admin->getOrgId();
+
         $routePermissions = $input[Differ\Entity::PERMISSIONS];
 
         // Not all route permissions could be present in admin.
@@ -39,7 +41,7 @@ class Core extends Base\Core
                                 })
                               ->toArray();
 
-        $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($permissionIds);
+        $workflows = $this->repo->workflow->fetchWorkflowsByPermissionsAndOrgId($permissionIds, $orgId);
 
         $workflow = $workflows->first();
 
