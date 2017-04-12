@@ -260,7 +260,7 @@ class Core extends Base\Core
         return $esResponse;
     }
 
-    public function createDiffForRelations($entity, $relation, $input)
+    protected function createDiffForRelations($entity, $relation, $input)
     {
         $model = $entity->$relation()->getModel();
 

@@ -172,7 +172,7 @@ class PublicEntity extends UniqueIdEntity
         return $publicArray;
     }
 
-    public function arrangeDiffAttributes(array $attributes)
+    protected function arrangeDiffAttributes(array $attributes)
     {
         $diffArray = [];
 
@@ -361,8 +361,6 @@ class PublicEntity extends UniqueIdEntity
         }, $ids);
 
         $ids = $newIds;
-
-        return $newIds;
     }
 
     /**
