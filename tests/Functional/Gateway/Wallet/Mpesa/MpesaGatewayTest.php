@@ -109,6 +109,25 @@ class MpesaGatewayTest extends TestCase
         $this->assertNotEmpty($verify['gateway']['verifyResponseContent']['MSISDN']);
     }
 
+    public function testOtpPaymentSuccessVerifyFailed()
+    {
+        $data = $this->testData['testVerifyFailed'];
+
+        $this->testOtpPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockVerifyFailure();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            }
+        );
+    }
+
     protected function mockCustomerValidationFailure()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
@@ -141,6 +160,18 @@ class MpesaGatewayTest extends TestCase
             {
                 $content['statusCode'] = '104';
                 $content['description'] = 'Mobile number not found';
+            }
+        });
+    }
+
+    protected function mockVerifyFailure()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === SoapAction::QUERY_API)
+            {
+                $content['statusCode'] = '104';
+                $content['reason'] = 'Mobile number not found';
             }
         });
     }

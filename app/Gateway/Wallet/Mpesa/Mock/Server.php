@@ -102,6 +102,8 @@ class Server extends Base\Mock\Server
             ResponseFields::MOBILE_NUMBER   => $mobileNumber
         ];
 
+        $this->content($response, SoapAction::QUERY_API);
+
         return [ResponseFields::UCF_RESPONSE => $response];
     }
 
