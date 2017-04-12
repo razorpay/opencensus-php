@@ -59,6 +59,19 @@ class PublicEntity extends UniqueIdEntity
         return $array;
     }
 
+    /**
+     * When we are fetching diff for other entities while showing relations,
+     * this will help us to fetch data that is relevant to be shown in diff
+     */
+    public function toArrayDiff()
+    {
+        $attributes = $this->attributesToArray();
+
+        $this->setPublicAttributes($attributes);
+
+        return $this->arrangeDiffAttributes($attributes);
+    }
+
     public function toArrayReport()
     {
         $array = $this->toArrayPublic();
@@ -157,6 +170,21 @@ class PublicEntity extends UniqueIdEntity
         }
 
         return $publicArray;
+    }
+
+    public function arrangeDiffAttributes(array $attributes)
+    {
+        $diffArray = [];
+
+        foreach ($this->diff as $attr)
+        {
+            if (array_key_exists($attr, $attributes))
+            {
+                $diffArray[$attr] = $attributes[$attr];
+            }
+        }
+
+        return $diffArray;
     }
 
     public function getPublicId()
@@ -323,6 +351,18 @@ class PublicEntity extends UniqueIdEntity
     public static function getSignedId($id)
     {
         return static::getIdPrefix() . $id;
+    }
+
+    public static function getSignedIdMultiple(array & $ids)
+    {
+        $newIds = array_map(function(& $id)
+        {
+            return static::getSignedId($id);
+        }, $ids);
+
+        $ids = $newIds;
+
+        return $newIds;
     }
 
     /**

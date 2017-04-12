@@ -278,12 +278,23 @@ class Core extends Base\Core
 
         $relatedEntityName = $model->getEntityName();
 
-        $oldRelatedEntities = $entity->$relation()->get()->toArray();
+        $oldIds = $entity->$relation()->getRelatedIds()->toArray();
+
+        $model::getSignedIdMultiple($oldIds);
+
+        $removedEntities = array_diff($oldIds, $input);
+
+        $addedEntities = array_diff($input, $oldIds);
 
         $newRelatedEntities = $this->repo
                                    ->$relatedEntityName
-                                   ->findManyByPublicIds($input)
-                                   ->toArray();
+                                   ->findManyByPublicIds($addedEntities)
+                                   ->toArrayDiff();
+
+        $oldRelatedEntities = $this->repo
+                                   ->$relatedEntityName
+                                   ->findManyByPublicIds($removedEntities)
+                                   ->toArrayDiff();
 
         $diff = [
             'old' => $oldRelatedEntities,
