@@ -475,6 +475,19 @@ class Entity extends Base\Entity
             self::GROUPS
         ];
 
+        $app = App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getAdminOrgId();
+
+        $org = (new Org\Repository)->findOrFailPublic($orgId);
+
+        if ($org->getAuthType() === Org\AuthType::PASSWORD)
+        {
+            $extra = array_merge(
+                $extra,
+                [self::PASSWORD, self::PASSWORD_CONFIRMATION]);
+        }
+
         return array_merge($this->fillable, $extra);
     }
 }

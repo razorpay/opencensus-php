@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Workflow\Action;
 
 class Service extends Base\Service
 {
@@ -63,29 +64,47 @@ class Service extends Base\Service
 
     public function getActionsForChecker()
     {
-        $data = (new Manager)->getActionsForChecker();
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $data = (new Manager)->getActionsForChecker($admin);
 
         return $data;
     }
 
-    public function getActionsByMaker()
+    public function getActionsByMakerAndType(array $input)
     {
-        $actions = (new Manager)->getActionsByMaker();
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $orgId = $admin->getOrgId();
+
+        $type = $input['type'] ?? 'maker';
+
+        switch ($type)
+        {
+            case 'all':
+                $actions = (new Manager)->getAllActionsByOrg($orgId);
+                break;
+
+            case 'closed':
+                $actions = (new Manager)->getClosedActionsByMaker($admin);
+                break;
+
+            case 'open':
+                $actions = (new Manager)->getOpenActionsByOrg($orgId);
+                break;
+
+            case 'maker':
+            default:
+                $actions = (new Manager)->getActionsByMaker($admin);
+                break;
+        }
 
         return $actions->toArrayPublic();
     }
 
-    public function permissionHasWorkflow($routePermissions, $orgId)
+    public function permissionHasWorkflow(array $routePermissions, string $orgId)
     {
-        $permissionIds = $this->repo
-                              ->permission
-                              ->retrieveIdsByNames($routePermissions, $orgId)
-                              ->map(function ($permission){
-                                    return $permission->getId();
-                                })
-                              ->toArray();
-
-        $workflows = $this->repo->workflow->fetchWorkflowsByPermissions($permissionIds);
+        $workflows = (new Action\Core)->getWorkflowsForPermissions($routePermissions, $orgId);
 
         return ($workflows->isEmpty() === false);
     }
