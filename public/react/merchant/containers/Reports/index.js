@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { titleCase } from 'rzp/utils/rzp-utils'
 import AsyncButton from 'react-async-button'
 import Header from 'rzp/ui/Header'
 import moment from 'moment'
@@ -58,9 +59,9 @@ export default class ReportsContainer extends Component {
       <div class='react-root'>
         <Header title='Download Reports' />
         <div class='content-wrapper'>
-          <div class="panel panel-default panel-form col-sm-6 col-sm-offset-3">
+          <div class="panel panel-default panel-form col-sm-8 col-sm-offset-2">
             <div class="panel-heading m-t m-b">
-              Download Report - {mode} Mode
+              Download Report - {titleCase(mode)} Mode
             </div>
             <div class="text-center m-t m-b">
               <div class="row">
@@ -101,7 +102,7 @@ export default class ReportsContainer extends Component {
                   </select>
                 </div>
 
-                <div class="m-b col-sm-2">
+                <div class="m-b col-sm-3">
                   <select name="month" class="form-control" value={month} onChange={this.onChange}>
                     {moment.months().map((name, index)=> {
                       return <option value={index+1} key={index}>{name}</option>
@@ -120,7 +121,13 @@ export default class ReportsContainer extends Component {
                 )}
 
               </div>
-              <button class="btn btn-primary btn-rounded" onClick={this.generateReport}>Download Report</button>
+              <AsyncButton
+                class="btn btn-primary btn-rounded"
+                onClick={this.generateReport}
+                text="Download Report"
+                pendingText="Generating..."
+              >
+              </AsyncButton>
             </div>
             <footer class="panel-footer">
               <div class="text-center m-t m-b">
@@ -153,7 +160,9 @@ export default class ReportsContainer extends Component {
     }
 
     if (entity === 'invoice') {
-      return window.open(`/${this.props.mode}/reports/invoice?year=${year}&month=${month}`, '_blank');
+      return Promise.resolve(
+        window.open(`/${this.props.mode}/reports/invoice?year=${year}&month=${month}`, '_blank')
+      )
     }
 
     if (entity === 'daily') {
@@ -174,7 +183,7 @@ export default class ReportsContainer extends Component {
       }
     }
 
-    var request = ajax(ajaxParams)
+    return ajax(ajaxParams)
       .then((data)=> {
         this.props.showNotification({
           type: 'success',
