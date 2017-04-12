@@ -236,9 +236,10 @@ class MerchantFilter extends Terminal\Filter
      * network is Visa or Master
      *
      * @param Terminal\Entity $terminal
-     * @param Array $input Combined input
-     * @return bool Whether a terminal is to be chosen or
-     * */
+     * @param array           $input Combined input
+     *
+     * @return bool Whether a terminal is to be chosen or not
+     */
     public function pharmaFilter(Terminal\Entity $terminal, array $input) : bool
     {
         $category2 = $input['merchant']->getCategory2();
