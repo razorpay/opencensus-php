@@ -954,7 +954,7 @@ final class Route
         'workflow_get_actions_by_maker',
     ];
 
-    public static $adminPermission = [
+    public static $routePermission = [
         'group_create'                     => [Permission::CREATE_GROUP],
         'admin_create'                     => [Permission::CREATE_ADMIN],
         'group_get'                        => [Permission::VIEW_GROUP],
