@@ -31,6 +31,7 @@ class Core extends Base\Core
 
     /**
      * Checks if a report entity exists for give parameters
+     *
      * @param $from integer
      * @param $to   integer
      * @param $entity string
@@ -47,7 +48,7 @@ class Core extends Base\Core
         if ($report === null)
         {
             $params = [
-                Entity::DAY             => $input['day'],
+                Entity::DAY             => $input['day'] ?? null,
                 Entity::MONTH           => $input['month'],
                 Entity::YEAR            => $input['year'],
                 Entity::START_TIME      => $from,

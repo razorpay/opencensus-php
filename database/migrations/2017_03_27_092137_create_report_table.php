@@ -44,7 +44,8 @@ class CreateReportTable extends Migration
                   ->unsigned();
 
             $table->integer(Report::DAY)
-                  ->unsigned();
+                  ->unsigned()
+                  ->nullable();
 
             $table->integer(Report::MONTH)
                   ->unsigned();
