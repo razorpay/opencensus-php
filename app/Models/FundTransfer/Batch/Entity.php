@@ -30,6 +30,8 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX           = 'service_tax';
     const URLS                  = 'urls';
     const INITIATED_AT          = 'initiated_at';
+    const TXT_FILE_ID           = 'txt_file_id';
+    const EXCEL_FILE_ID         = 'excel_file_id';
     const RECONCILED_AT         = 'reconciled_at';
     const RETURNED_AT           = 'returned_at';
 
@@ -108,7 +110,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_FEE           => 'int',
         self::INITIATED_AT          => 'int',
         self::TOTAL_COUNT           => 'int',
-        self:: TOTAL_FAILED_COUNT  => 'int',
+        self::TOTAL_FAILED_COUNT    => 'int',
         self::TRANSACTION_COUNT     => 'int',
     ];
 
