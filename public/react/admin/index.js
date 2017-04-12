@@ -7,7 +7,6 @@ import NgRouterProvider from 'rzp/Providers/NgRouterProvider'
 import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider'
 import ModalDialog from 'rzp/ui/ModalDialog'
 import Notifications from 'rzp/ui/Notifications'
-import SessionProvider from 'merchant/SessionProvider'
 import store from './store'
 
 // import './mocks/faker'
@@ -47,18 +46,14 @@ function contextProvider({ component, ngRouter, store, user, modeFactory }) {
         NgRouterProvider,
         { ngRouter },
         React.createElement(
-          SessionProvider,
-          { user, modeFactory },
+          ConfirmModalProvider,
+          null,
           React.createElement(
-            ConfirmModalProvider,
+            'div',
             null,
-            React.createElement(
-              'div',
-              null,
-              React.createElement(component, props),
-              React.createElement(ModalDialog),
-              React.createElement(Notifications)
-            )
+            React.createElement(component, props),
+            React.createElement(ModalDialog),
+            React.createElement(Notifications)
           )
         )
       )
