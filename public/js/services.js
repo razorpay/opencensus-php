@@ -904,7 +904,8 @@ angular.module('app.services', [])
 
       return frags.join(' ');
     },
-    mergeUnique: function(arr, isCaseSensitive = false) {
+    mergeUnique: function(arr, isCaseSensitive) {
+      isCaseSensitive = isCaseSensitive || false;
       var auxArr = arr.concat();
 
       for (var i = 0; i < auxArr.length; i++) {
