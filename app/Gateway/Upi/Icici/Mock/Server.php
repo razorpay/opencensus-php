@@ -85,8 +85,6 @@ class Server extends Base\Mock\Server
     {
         $vpa = $input['payeeVA'];
 
-        // TODO: use VPA or something else to switch to failure responses
-
         return [
             // Conditional Fields
             Fields::MERCHANT_ID           => $input['merchantId'],
