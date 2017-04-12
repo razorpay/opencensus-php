@@ -38,9 +38,9 @@
                   <div class="input-group input-group-lg">
                     <input type="text" class="form-control " id="title-input" aria-describedby="sizing-addon1" ng-model="action_details.title"> <!-- placeholder="Add a title" -->
                     <span class="input-group-btn " >
-                      <button 
-                        class="btn btn-info " 
-                        id="title-input-button" 
+                      <button
+                        class="btn btn-info "
+                        id="title-input-button"
                         type="button"
                         ng-click="saveTitle()"
                       >{{titleActive ? (titleStatus === "saving" ? "Saving" : "Save") : "Click to edit"}}</button>
@@ -52,7 +52,7 @@
             </div>
             <div class="border-bottom m-b"></div>
             <div class="description" ng-class="{'desc-active': descActive}">
-              <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>  
+              <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>
               <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea"></textarea>
               <div class="desc-text wrapper-sm" ng-click="setDescActive();alerts.resetAlerts();" >
                 <!-- <div class="bg-white"></div> -->
@@ -66,7 +66,7 @@
               <!-- <div class="description-text">
                 {{ action_details.description || "Click to add a description" }}
               </div> -->
-              <div class="clearfix"></div>  
+              <div class="clearfix"></div>
             </div>
             <div class="assignment-container ">
               <div class="strong assignee-heading m-t"><strong>Assigned to:</strong></div>
@@ -120,18 +120,26 @@
           </form>
         </div>
       </div>
-      <div class="col-xs-3" ng-show="['open', 'approved'].indexOf(action_details.state) !== -1">
+      <div class="col-xs-3" ng-if="['open', 'approved'].indexOf(action_details.state) !== -1 && action_details.state">
         <div class="right-label m-b">Actions</div>
         <div class="row btn-group-vertical btn-block m-b" role="group" aria-label="...">
-          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('approve')" ng-hide="['rejected', 'executed', 'failed', 'approved'].indexOf(action_details.state) !== -1">
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('approve')" ng-if="['approved'].indexOf(action_details.state) === -1"
+                  ng-confirm-click="Are you sure you want to Approve this request?">
             <i class="fa fa-check-circle approved-color"></i>
             Approve
           </button>
-          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('reject')" ng-hide="['approved'].indexOf(action_details.state) !== -1">
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('reject')" ng-if="['approved'].indexOf(action_details.state) === -1"
+                  ng-confirm-click="Are you sure you want to Reject this request?">
             <i class="fa fa-times-circle rejected-color"></i>
             Reject
           </button>
-          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('execute')" ng-show="['approved'].indexOf(action_details.state) !== -1">
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('close')" ng-if="['approved'].indexOf(action_details.state) === -1"
+                  ng-confirm-click="Are you sure you want to Close this request?">
+            <i class="fa fa-times-circle pending-color"></i>
+            Close
+          </button>
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('execute')" ng-if="['approved'].indexOf(action_details.state) !== -1"
+                  ng-confirm-click="Are you sure you want to Execute this request?">
             <i class="fa fa-arrow-circle-up approved-color"></i>
             Execute
           </button>

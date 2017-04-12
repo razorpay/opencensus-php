@@ -122,38 +122,20 @@
       </tbody>
     </table>
 
-    <h4 ng-show="data.entity.change">Change</h4>
-
-    <p ng-show="data.entity.change.old"><em>Old Data:</em></p>
-
-    <table ng-show="data.entity.change" class="table table-striped b-t b-light">
+    <h4 ng-if="dataKeys.length">Change</h4>
+    <table ng-if="dataKeys.length" class="table table-striped b-t b-light">
       <thead>
         <tr>
           <th>Property</th>
-          <th>Value</th>
+          <th>Old Value</th>
+          <th>New Value</th>
         </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="(key, value) in data.entity.change.old">
+        <tr ng-repeat="key in dataKeys">
           <td>{{ key }}</td>
-          <td>{{ value }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p ng-show="data.entity.change.new"><em>New Data:</em></p>
-
-    <table ng-show="data.entity.change" class="table table-striped b-t b-light">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat="(key, value) in data.entity.change.new">
-          <td>{{ key }}</td>
-          <td>{{ value }}</td>
+          <td>{{ data.entity.change.old[key] ? data.entity.change.old[key] : '' }}</td>
+          <td>{{ data.entity.change.new[key] ?  data.entity.change.new[key] : ''}}</td>
         </tr>
       </tbody>
     </table>
