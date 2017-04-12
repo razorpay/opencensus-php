@@ -310,6 +310,17 @@ angular.module('app.services', [])
         _identity = identity;
         _authenticated = identity !== null;
       },
+      isSuperAdmin: function() {
+        var roles = _identity.roles;
+
+        var isPresent = roles.some(function(element) {
+          return element.toLowerCase().match('superadmin')
+        });
+
+        if (roles && isPresent) {
+          return true;
+        }
+      },
       identity: function (force) {
         var deferred = $q.defer();
         if (force === true)
@@ -894,15 +905,17 @@ angular.module('app.services', [])
       return frags.join(' ');
     },
     mergeUnique: function(arr, isCaseSensitive = false) {
-      var a = arr.concat();
-      for(var i=0; i<a.length; ++i) {
-        for(var j=i+1; j<a.length; ++j) {
-          if((isCaseSensitive && a[i].toLowerCase() === a[j].toLowerCase())|| a[i] === a[j])
-            a.splice(j--, 1);
+      var auxArr = arr.concat();
+
+      for (var i = 0; i < auxArr.length; i++) {
+        for ( var j = i + 1; j < auxArr.length; j++ ) {
+          if ( (isCaseSensitive && auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) || auxArr[i] === auxArr[j] ) {
+            auxArr.splice(j--, 1);
+          }
         }
       }
-      return a;
-    }
 
+      return auxArr;
+    }
   };
 });

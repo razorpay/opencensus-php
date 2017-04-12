@@ -122,10 +122,11 @@ app.controller('AuditlogsCtrl', [
 
     $scope.data = audit_log_cache[audit_log_id];
 
-    function mergeKeys(oldData, newData) {
-      $scope.dataKeys = [];
-      $scope.dataKeys = utils.mergeUnique(Object.keys(oldData).concat(Object.keys(newData)));
+    $scope.dataKeys = [];
+    if ($scope.data.entity && $scope.data.entity.change) {
+      var oldData = $scope.data.entity.change.old ? $scope.data.entity.change.old : [];
+      var newData = $scope.data.entity.change.new ? $scope.data.entity.change.new : [];
+      $scope.dataKeys  = utils.mergeUnique(Object.keys(oldData).concat(Object.keys(newData)));
     }
-    mergeKeys($scope.data.entity.change.old, $scope.data.entity.change.new);
   }
 ]);

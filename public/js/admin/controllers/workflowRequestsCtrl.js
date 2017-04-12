@@ -11,9 +11,6 @@ app.controller('WorkflowRequestsCtrl', [
   function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
 
     $scope.workflow_request_type = $stateParams.type;
-    admin.identity().then((data)=>{
-      $scope.roles = data.roles;
-    });
 
     // Get requests made by maker
     $scope.getActionsByMakerAndType = function (type) {
@@ -60,7 +57,7 @@ app.controller('WorkflowRequestsCtrl', [
         case 'checker': $scope.getCheckerActions(); break;
         case 'closer': $scope.getActionsByMakerAndType('closed'); break;
         case 'open': $scope.getActionsByMakerAndType('open'); break;
-        case 'all': $scope.getActionsByMakerAndType('all'); break;
+        case 'all':
         default: $scope.getActionsByMakerAndType('all');
       }
     };
@@ -70,9 +67,6 @@ app.controller('WorkflowRequestsCtrl', [
     $scope.changeWorkflowRequestUrlType = function () {
       $state.go('app.workflows.actions.list', { type: $scope.workflow_request_type });
     };
-
-    $scope.ifAuthorized = function() {
-      return $scope.roles && $scope.roles.some(function(element){return element.toLowerCase().match('superadmin')});
-    }
+    $scope.isSuperAdmin = admin.isSuperAdmin();
   }
 ]);

@@ -26,7 +26,7 @@
               <option value="open">Made by You</option>
               <option value="checker">Awaiting your Approval</option>
               <option value="closer">Closed by You</option>
-              <option value="all" ng-if="ifAuthorized()">View all Org action</option>
+              <option value="all" ng-if="isSuperAdmin">View all Org action</option>
             </select>
             <span class="input-group-btn">
               <button class="btn btn-sm btn-default merchant_go" type="button" ng-click="changeWorkflowRequestUrlType()" busy="...">Go!</button>
