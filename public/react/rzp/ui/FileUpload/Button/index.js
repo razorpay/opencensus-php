@@ -87,6 +87,7 @@ export default class FileUploadButton extends Component {
         <span>{ buttonText }</span>
 
         <input
+          {...attributes}
           type='file'
           onChange={(event) => {
             if (event.target.files.length) {
