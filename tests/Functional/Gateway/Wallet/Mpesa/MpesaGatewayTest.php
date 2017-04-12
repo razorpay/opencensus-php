@@ -113,6 +113,8 @@ class MpesaGatewayTest extends TestCase
     {
         $data = $this->testData['testVerifyFailed'];
 
+        $expectedWallet = $this->testData['verifyFailedWalletEntity'];
+
         $this->testOtpPayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -126,6 +128,13 @@ class MpesaGatewayTest extends TestCase
                 $this->verifyPayment($payment['id']);
             }
         );
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertArraySelectiveEquals($expectedWallet, $wallet);
+
+        $this->assertNotEmpty($wallet['contact']);
+        $this->assertNotEmpty($wallet['gateway_payment_id']);
     }
 
     protected function mockCustomerValidationFailure()

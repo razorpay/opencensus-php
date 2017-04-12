@@ -74,4 +74,9 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
+
+    'verifyFailedWalletEntity' => [
+        'status_code' => '104',
+        'response_description' => 'Mobile number not found',
+    ],
 ];
