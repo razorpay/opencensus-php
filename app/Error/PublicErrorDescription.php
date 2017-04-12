@@ -403,4 +403,6 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS                                = 'This combination of workflow permission and level already exists.';
     const BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS                       = 'Other actions on the entity are in progress.';
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                 = 'Workflow action is not in any open state';
+
+    const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 }
