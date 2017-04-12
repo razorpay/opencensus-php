@@ -36,7 +36,7 @@ class Alert extends Component {
     return (
       <div
         class={cx(
-          'alert alert-dismissable text-center',
+          'alert alert-dismissable',
           props.type === 'error' ? 'alert-danger' : 'alert-success'
         )}
         style={{ borderRadius: 0 }}
@@ -45,8 +45,8 @@ class Alert extends Component {
           <span>×</span>
         </button>
 
-        <ul class="list-unstyled">
-          {msgs.map((msg, index) => <li key={index}>{JSON.stringify(msg)}</li>)}
+        <ul class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}>
+          {msgs.map((msg, index) => <li key={index}>{msg}</li>)}
         </ul>
       </div>
     );

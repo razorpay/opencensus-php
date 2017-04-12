@@ -1,5 +1,9 @@
 import { Component } from 'react'
+import { connect } from 'react-redux'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
+import Header from 'rzp/ui/Header'
+import Spinner from 'rzp/ui/Spinner'
+import { fetchActivationDetails } from 'merchant/modules/activation'
 
 import ContactDetailsForm from './ContactDetailsForm'
 import BusinessDetailsForm from './BusinessDetailsForm'
@@ -8,12 +12,27 @@ import BankAccountDetailsForm from './BankAccountDetailsForm'
 import DocumentUploadForm from './DocumentUploadForm'
 import SubmitForm from './SubmitForm'
 
+
+@connect(
+  (state) => state.activation,
+  { fetchActivationDetails }
+)
 export default class ActivationWizard extends Component {
   constructor() {
     super(...arguments)
     this.state = {
       selectedTabIndex: 0
     }
+  }
+
+  componentWillMount() {
+    this.props.fetchActivationDetails()
+  }
+
+  gotoTab = (index) => {
+    this.setState({
+      selectedTabIndex: index - 1
+    })
   }
 
   renderNavAnchor(stepNumber, title) {
@@ -28,43 +47,56 @@ export default class ActivationWizard extends Component {
   }
 
   render() {
+    let { loading, data } = this.props
+
     return (
       <div class='react-root'>
+        <Header title='Activation Form' showMode={false} />
+
         <div class='content-wrapper'>
-          <Tabs selectedIndex={this.state.selectedTabIndex}>
-            <TabList class='nav nav-tabs' activeTabClassName='active' disabledTabClassName='disabled'>
-              <Tab>{this.renderNavAnchor(1, 'Contact Details')}</Tab>
-              <Tab>{this.renderNavAnchor(2, 'Business Details')}</Tab>
-              <Tab>{this.renderNavAnchor(3, 'Website Details')}</Tab>
-              <Tab>{this.renderNavAnchor(4, 'Bank Account Details')}</Tab>
-              <Tab>{this.renderNavAnchor(5, 'Documents Upload')}</Tab>
-              <Tab>{this.renderNavAnchor(6, 'Submit Form')}</Tab>
-            </TabList>
+          {
+            loading ?
+              <div class='page-spinner-container'>
+                <Spinner />
+              </div> :
+              <Tabs class='activation-wizard' selectedIndex={this.state.selectedTabIndex}>
+                <TabList class='nav nav-tabs' activeTabClassName='active' disabledTabClassName='disabled'>
+                  <Tab>{this.renderNavAnchor(1, 'Contact Details')}</Tab>
+                  <Tab>{this.renderNavAnchor(2, 'Business Details')}</Tab>
+                  <Tab>{this.renderNavAnchor(3, 'Website Details')}</Tab>
+                  <Tab>{this.renderNavAnchor(4, 'Bank Account Details')}</Tab>
+                  <Tab>{this.renderNavAnchor(5, 'Documents Upload')}</Tab>
+                  <Tab>{this.renderNavAnchor(6, 'Submit Form')}</Tab>
+                </TabList>
 
-            <TabPanel>
-              <ContactDetailsForm />
-            </TabPanel>
+                <TabPanel>
+                  <ContactDetailsForm
+                    form='activationContactDetails'
+                    gotoTab={this.gotoTab}
+                  />
+                </TabPanel>
 
-            <TabPanel>
-              <BusinessDetailsForm />
-            </TabPanel>
+                <TabPanel>
+                  <BusinessDetailsForm gotoTab={this.gotoTab} />
+                </TabPanel>
 
-            <TabPanel>
-              <WebsiteDetailsForm />
-            </TabPanel>
+                <TabPanel>
+                  <WebsiteDetailsForm gotoTab={this.gotoTab} />
+                </TabPanel>
 
-            <TabPanel>
-              <BankAccountDetailsForm />
-            </TabPanel>
+                <TabPanel>
+                  <BankAccountDetailsForm gotoTab={this.gotoTab} />
+                </TabPanel>
 
-            <TabPanel>
-              <DocumentUploadForm />
-            </TabPanel>
+                <TabPanel>
+                  <DocumentUploadForm gotoTab={this.gotoTab} />
+                </TabPanel>
 
-            <TabPanel>
-              <SubmitForm />
-            </TabPanel>
-          </Tabs>
+                <TabPanel>
+                  <SubmitForm gotoTab={this.gotoTab} />
+                </TabPanel>
+              </Tabs>
+          }
         </div>
       </div>
     )

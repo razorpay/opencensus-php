@@ -6,6 +6,7 @@
 @import 'react-power-select/dist/react-power-select.css';
 @import 'react-simple-dropdown/styles/Dropdown.css';
 @import './invoice'
+@import './activation'
 
 .react-root {
   ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
@@ -28,6 +29,14 @@
   h3 {
     font-weight: bold;
     font-size: 20px;
+  }
+
+  .alert {
+    border-radius: 0;
+
+    > ul > li {
+      line-height: 2;
+    }
   }
 
   input[type='color'] {
