@@ -154,7 +154,21 @@ class MpesaGatewayTest extends TestCase
 
     public function testRefundFailed()
     {
-        $this->markTestSkipped();
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testOtpPayment();
+
+        $this->mockRefundFailure();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->refundPayment($payment['id']);
+            }
+        );
     }
 
     protected function testRefunds($amount, $key)
@@ -213,6 +227,18 @@ class MpesaGatewayTest extends TestCase
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
             if ($action === SoapAction::QUERY_API)
+            {
+                $content['statusCode'] = '104';
+                $content['reason'] = 'Mobile number not found';
+            }
+        });
+    }
+
+    protected function mockRefundFailure()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === SoapAction::REFUND_API)
             {
                 $content['statusCode'] = '104';
                 $content['reason'] = 'Mobile number not found';
