@@ -144,37 +144,32 @@ class MpesaGatewayTest extends TestCase
 
     public function testRefundPayment()
     {
-        $data = $this->testData[__FUNCTION__];
-
-        $this->testOtpPayment();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->refundPayment($payment['id']);
-
-        $refund = $this->getLastEntity('refund', true);
-
-        $this->assertArraySelectiveEquals($data, $refund);
+        $this->testRefunds(50000, __FUNCTION__);
     }
 
     public function testPartialRefund()
     {
-        $data = $this->testData[__FUNCTION__];
-
-        $this->testOtpPayment();
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->refundPayment($payment['id'], 10000);
-
-        $refund = $this->getLastEntity('refund', true);
-
-        $this->assertArraySelectiveEquals($data, $refund);
+        $this->testRefunds(10000, __FUNCTION__);
     }
 
     public function testRefundFailed()
     {
         $this->markTestSkipped();
+    }
+
+    protected function testRefunds($amount, $key)
+    {
+        $data = $this->testData[$key];
+
+        $this->testOtpPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->refundPayment($payment['id'], $amount);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertArraySelectiveEquals($data, $refund);
     }
 
     protected function mockCustomerValidationFailure()
