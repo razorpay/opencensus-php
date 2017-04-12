@@ -12,9 +12,16 @@ app.controller('ActionsCtrl', [
       $scope.response = null;
       $scope.alerts = alertsFactory.getHandler();
       $scope.initiateSetl = function (channel) {
+        var data = {
+          route_name: 'setl_initiate',
+          url_params: {
+            '{channel?}' : channel
+          }
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/settlement/initiate/' + channel
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -77,30 +84,16 @@ app.controller('ActionsCtrl', [
           $scope.alerts.addAlert('danger', null, true);
         });
       };
-      $scope.verifyAllPayments = function () {
-        var request = $http({
-          method: 'POST',
-          url: '/admin/payments/verify'
-        });
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Payments Verified successfully ' + JSON.stringify(data.data), true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
       $scope.generateNetBankingRefunds = function (params) {
-        var url = 'admin/' + params.mode + '/refunds/netbanking';
+        var data = {
+          route_name: 'refund_netbanking_generate_excel',
+          body: params,
+          mode: params.mode
+        };
         var request = $http({
-          method: 'POST',
-          url: url,
-          data: params
+          method: 'post',
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -225,35 +218,18 @@ app.controller('ActionsCtrl', [
         });
 
       };
-
-      $scope.verifyPayment = function (payment_id) {
+      $scope.authorizeFailedPayment = function (payment_id, mode) {
         var data = {
-          route_name: 'payment_verify',
+          route_name: 'payment_authorize_failed',
           url_params: {
             '{id}' : payment_id
-          }
+          },
+          mode: mode
         };
-        var request = $http.get('/admin/generic', {
-          params: data
-        });
-        request.success(function (data) {
-          if (data.success) {
-            var payment = JSON.stringify(data.data.payment);
-            $scope.alerts.addAlert('success', 'Payment Verified successfully: ' + payment, true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
-      $scope.authorizeFailedPayment = function (payment_id, mode) {
         var request = $http({
           method: 'post',
-          url: '/admin/' + mode + '/payments/' + payment_id + '/authorize_failed'
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -325,30 +301,6 @@ app.controller('ActionsCtrl', [
         });
         modalInstance.result.then($scope.addEMI, $.noop);
       };
-      $scope.openVerifyPayment = function () {
-        var modalInstance = $modal.open({
-          templateUrl: 'verifyPaymentModalContent.html',
-          controller: 'verifyPaymentModalCtrl'
-        });
-        modalInstance.result.then($scope.verifyPayment, $.noop);
-      };
-
-      $scope.archiveMerchant = function (id) {
-        var request = $http.get('/admin/merchant/' + id + '/archive');
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Merchant archived successfully', true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
-
       $scope.confirmUser = function (email) {
         var request = $http({
           method: 'post',
@@ -370,15 +322,6 @@ app.controller('ActionsCtrl', [
           $scope.alerts.addAlert('danger', null, true);
         });
       };
-
-      $scope.openArchiveMerchant = function () {
-        var modalInstance = $modal.open({
-          templateUrl: 'archiveMerchantModal.html',
-          controller: 'archiveMerchantModalCtrl'
-        });
-        modalInstance.result.then($scope.archiveMerchant, $.noop);
-      };
-
       $scope.openConfirmUser = function () {
         var modalInstance = $modal.open({
           templateUrl: 'confirmUserModal.html',
@@ -444,9 +387,10 @@ app.controller('ActionsCtrl', [
         }, $.noop);
       };
       $scope.generateBeneficiaryFile = function () {
-        var request = $http({
-          method: 'post',
-          url: '/admin/beneficiary'
+        var request = $http.get('/admin/generic', {
+          params: {
+            route_name: 'merchant_beneficiary_file'
+          }
         });
         request.success(function (data) {
           if (data.success) {
@@ -528,9 +472,10 @@ app.controller('ActionsCtrl', [
       }, $.noop);
     };
     $scope.generateBeneficiaryFile = function () {
-      var request = $http({
-        method: 'post',
-        url: '/admin/beneficiary'
+      var request = $http.get('/admin/generic', {
+        params: {
+          route_name: 'merchant_beneficiary_file'
+        }
       });
       request.success(function (data) {
         if (data.success) {
@@ -553,13 +498,15 @@ app.controller('ActionsCtrl', [
       modalInstance.result.then($scope.addSchedule, $.noop);
     };
     $scope.addSchedule = function (schedule) {
+      var data = {
+        route_name: 'schedule_create',
+        body: schedule
+      };
       var request = $http({
         method: 'post',
-        url: 'admin/schedules',
-        transformRequest: transformRequestAsFormPost,
-        data: schedule
+        url: '/admin/generic',
+        data: data,
       });
-
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Schedule added successfully', true);
