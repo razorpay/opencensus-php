@@ -12,12 +12,12 @@ class StatusCode
     const FAILURE           = '106';
 
     protected static $errorCodeMessageMap = [
-        self::SUCCESS           = 'Success',
-        self::AUTH_FAILURE      = 'Authentication Failed',
-        self::INVALID_PARAMS    = 'Invalid mandatory parameters passed',
-        self::INVALID_MOBILE_NO = 'Invalid MSISDN',
-        self::PARAMS_MISSING    = 'All Mandatory parameters not passed',
-        self::FAILURE           = 'Failure',
+        self::SUCCESS           => 'Success',
+        self::AUTH_FAILURE      => 'Authentication Failed',
+        self::INVALID_PARAMS    => 'Invalid mandatory parameters passed',
+        self::INVALID_MOBILE_NO => 'Invalid MSISDN',
+        self::PARAMS_MISSING    => 'All Mandatory parameters not passed',
+        self::FAILURE           => 'Failure',
     ];
 
     public static function checkIfSuccessStatus($status)

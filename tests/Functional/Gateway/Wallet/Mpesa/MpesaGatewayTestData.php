@@ -25,25 +25,7 @@ return [
         'amount'   => 500
     ],
 
-    'testOtpCustomerValidationFailure' => [
-        'response' => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            'gateway_error_code'  => '104',
-            'gateway_error_desc'  => 'Mobile number not found'
-        ],
-    ],
-
-    'testOtpGenerationFailure' => [
+    'testAuthFailure' => [
         'response' => [
             'content'     => [
                 'error' => [

@@ -50,7 +50,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpCustomerValidationFailure()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testAuthFailure'];
 
         $this->mockCustomerValidationFailure();
 
@@ -65,9 +65,24 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpGenerationFailure()
     {
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testAuthFailure'];
 
         $this->mockOtpGenerationFailure();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            }
+        );
+    }
+
+    public function testCallbackOtpSubmitFailure()
+    {
+        $data = $this->testData['testAuthFailure'];
+
+        $this->mockCallbackOtpSubmitFailure();
 
         $this->runRequestResponseFlow(
             $data,
@@ -95,6 +110,18 @@ class MpesaGatewayTest extends TestCase
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
             if ($action === SoapAction::OTP_GENERATE_API)
+            {
+                $content['statusCode'] = '104';
+                $content['description'] = 'Mobile number not found';
+            }
+        });
+    }
+
+    protected function mockCallbackOtpSubmitFailure()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === SoapAction::OTP_SUBMIT_API)
             {
                 $content['statusCode'] = '104';
                 $content['description'] = 'Mobile number not found';

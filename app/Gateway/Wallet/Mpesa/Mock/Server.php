@@ -84,6 +84,8 @@ class Server extends Base\Mock\Server
             ResponseFields::MOBILE_NUMBER       => $request[RequestFields::MOBILE_NUMBER]
         ];
 
+        $this->content($response, SoapAction::OTP_SUBMIT_API);
+
         return [ResponseFields::UCF_RESPONSE => $response];
     }
 
