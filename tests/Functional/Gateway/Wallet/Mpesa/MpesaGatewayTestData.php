@@ -10,7 +10,7 @@ return [
         'amount'          => 50000,
         'currency'        => 'INR',
         'base_amount'     => 50000,
-        'status'          => 'authorized',
+        'status'          => 'captured',
         'two_factor_auth' => 'passed',
         'method'          => 'wallet',
         'wallet'          => 'mpesa',
@@ -78,5 +78,21 @@ return [
     'verifyFailedWalletEntity' => [
         'status_code' => '104',
         'response_description' => 'Mobile number not found',
+    ],
+
+    'testRefundPayment' => [
+        'entity' => 'refund',
+        'amount' => 50000,
+        'currency' => 'INR',
+        'base_amount' => 50000,
+        'gateway_refunded' => true,
+    ],
+
+    'testPartialRefund' => [
+        'entity' => 'refund',
+        'amount' => 10000,
+        'currency' => 'INR',
+        'base_amount' => 10000,
+        'gateway_refunded' => true,
     ],
 ];
