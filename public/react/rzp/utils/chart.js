@@ -38,9 +38,11 @@ export const timeScale = {
       type: 'time',
       time: {
         displayFormats: {
-          day: 'D MMM'
+          hour: 'HH'
         },
-        unit: 'day'
+        unit: 'day',
+        parser: utcMoment=> utcMoment.utcOffset('+0000'),
+        tooltipFormat: 'ddd DD MMM YYYY'
       }
     }]
   }
