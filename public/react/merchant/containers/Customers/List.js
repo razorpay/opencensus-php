@@ -7,8 +7,8 @@ import CustomersList from 'merchant/components/Customers/CustomersList'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import ListContainer from 'merchant/containers/ListContainer'
 import * as CustomerActions from 'merchant/modules/customers'
-import * as ModalActions from 'merchant/modules/modals'
-import * as NotificationActions from 'merchant/modules/notifications'
+import * as ModalActions from 'rzp/modules/modals'
+import * as NotificationActions from 'rzp/modules/notifications'
 
 @connect(
   (state) => state.customers,

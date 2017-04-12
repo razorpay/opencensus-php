@@ -7,8 +7,8 @@ import Alert from 'rzp/ui/Forms/Alert'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import { required } from 'rzp/utils/validators'
 import { saveWebhook } from 'merchant/modules/webhooks'
-import * as ModalActions from 'merchant/modules/modals'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import * as ModalActions from 'rzp/modules/modals'
+import * as NotificationsActions from 'rzp/modules/notifications'
 
 @connect(
   null,
