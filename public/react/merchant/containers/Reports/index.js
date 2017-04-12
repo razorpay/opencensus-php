@@ -71,21 +71,21 @@ export default class ReportsContainer extends Component {
                     <option value="refund">Refund</option>
                     <option value="order">Order</option>
                     <option value="settlement">Settlement</option>
-                    {user.tags.indexOf('Marketplace') === -1 || (
-                      <optgroup>
-                        <option value="transfer">Transfer</option>
-                        <option value="reversal">Reversal</option>
-                      </optgroup>
-                    )}
                     <option value="transaction">Combined</option>
                     {user.tags.indexOf('Broking_Report') === -1 || (
                       <option value="broking">Broking Report</option>
                     )}
                     <option value="invoice">Monthly Invoice</option>
+                    {user.tags.indexOf('Marketplace') === -1 || (
+                      <optgroup label='Marketplace'>
+                        <option value="transfer">Transfer</option>
+                        <option value="reversal">Reversal</option>
+                      </optgroup>
+                    )}
                   </select>
                 </div>
 
-                {type === 'invoice' || (
+                {entity === 'invoice' || (
                   <div class="m-b col-sm-2">
                     <select name="type" class="form-control" value={type} onChange={this.onChange}>
                       <option value="daily">Daily</option>
