@@ -443,11 +443,18 @@ class BasicAuth
             // which can potentially cause a security issue and
             // hence needs to be actively checked against.
 
+            $response = $this->setAdminAuthIfApplicable();
+
+            if ($response !== null)
+            {
+                return $response;
+            }
+
             $this->checkForDashboardMerchantHeader();
 
             $this->setDashboardHeaders();
 
-            return $this->checkAndSetAccountScope();
+            return $this->merchant ?: $this->checkAndSetAccountScope();
         }
 
         // Say invalid route for whenever
@@ -472,12 +479,43 @@ class BasicAuth
         // and allowed to do ops on merchant's behalf
         if ($this->verifyInternalAppAsProxy() === true)
         {
+            $response = $this->setAdminAuthIfApplicable();
+
+            if ($response !== null)
+            {
+                return $response;
+            }
+
             $this->setDashboardHeaders();
 
             return;
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    protected function setAdminAuthIfApplicable()
+    {
+        $adminToken = $this->request->header('X-Admin-Token');
+
+        if ($adminToken !== null)
+        {
+            $token = $this->fetchAdminToken($adminToken);
+
+            if ($token->getAdminId() !== null)
+            {
+                $this->setAdminTrue();
+                $this->setType(Type::ADMIN_AUTH);
+
+                $this->admin = $token->admin;
+
+                $this->adminOrgId = $this->admin->getOrgId();
+
+                return $this->checkAndSetAccountScope();
+            }
+
+            return $this->invalidApiKey();
+        }
     }
 
     public function deviceAuth()
