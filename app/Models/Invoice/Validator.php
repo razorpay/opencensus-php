@@ -233,14 +233,17 @@ class Validator extends Base\Validator
     {
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
-        $amount = $input['amount'];
+        $amount = $input[Entity::AMOUNT];
 
         if ($amount > $maxAmountAllowed)
         {
             throw new BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount',
-                ['amount' => $amount]);
+                [
+                    'amount'             => $amount,
+                    'max_amount_allowed' => $maxAmountAllowed,
+                ]);
         }
     }
 

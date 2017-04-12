@@ -186,8 +186,12 @@ class Generator extends Base\Core
         $invoice = new Entity;
 
         // Merchant should get associated before calling build() as Invoice's
-        // validator usage merchant entity.
+        // validator uses merchant entity.
         $invoice->merchant()->associate($this->merchant);
+
+        $invoice->build($input);
+
+        (new Validator)->validateInput(camel_case($operation), $input);
 
         //
         // This is being done because dashboard can create an invoice
@@ -196,10 +200,6 @@ class Generator extends Base\Core
         //
 
         $invoice->getValidator()->validateMerchantSpecificData();
-
-        $invoice->build($input);
-
-        (new Validator)->validateInput(camel_case($operation), $input);
 
         //
         // This is being done so that we can do associations
