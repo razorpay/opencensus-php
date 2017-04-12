@@ -97,6 +97,11 @@ class InvoiceTest extends TestCase
         //
     }
 
+    public function testCreateLinkWithTooLargeAmount()
+    {
+        $this->startTest();
+    }
+
     public function testCreateLinkAndPayAndCheckCustomerDetailsInInvoice()
     {
         $order = $this->createOrder();

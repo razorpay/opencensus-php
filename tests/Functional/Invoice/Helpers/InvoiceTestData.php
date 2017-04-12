@@ -215,6 +215,32 @@ return [
         'response' => [],
     ],
 
+    'testCreateLinkWithTooLargeAmount' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                // Max allowed amount for test merchant is 50000000.
+                'amount'      => 60000000,
+                'description' => 'Sample Description',
+                'type'        => 'link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Amount exceeds maximum amount allowed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateInvoiceWithMultipleLineItems' => [
         'request' => [
             'url' => '/invoices',

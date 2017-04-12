@@ -59,7 +59,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
@@ -94,7 +94,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
@@ -116,7 +116,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
@@ -132,15 +132,11 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
-        Entity::VIEW_LESS           => 'sometimes|in:1',
-        Entity::SOURCE              => 'sometimes|string|max:32|custom',
-        Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::EXPIRE_BY           => 'sometimes|epoch',
         Entity::DRAFT               => 'sometimes|boolean',
     ];
@@ -178,16 +174,30 @@ class Validator extends Base\Validator
 
     public function validateAmount(array $input)
     {
-        //
-        // Amount should only be sent, if type is not invoice as invoice must
-        // have line items and amount gets calculated from there.
-        //
-
         if (isset($input[Entity::AMOUNT]) === false)
         {
             return;
         }
 
+        $this->checkIfAmountIsExpectedInInput($input);
+
+        $this->checkForMaxAllowedAmount($input);
+    }
+
+    /**
+     * Checks if amount is expected in input key.
+     * Rules:
+     * - Amount should only be sent in input for ecod or link types.
+     * - Amount should not be sent if line_items are being sent with above types.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     *
+     * @return
+     */
+    private function checkIfAmountIsExpectedInInput(array $input)
+    {
         $type = $input[Entity::TYPE] ?? $this->entity->getType();
 
         if ($type === null)
@@ -202,13 +212,35 @@ class Validator extends Base\Validator
             );
         }
 
-        // If amount is set, input should not contain line_items.
-
         if (isset($input[Entity::LINE_ITEMS]) === true)
         {
             throw new BadRequestValidationFailureException(
                 'amount should not be sent if line_items are being sent in the input.'
             );
+        }
+    }
+
+    /**
+     * Checks if amount is lesser than max payment amount allowed for merchant.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     *
+     * @return
+     */
+    private function checkForMaxAllowedAmount(array $input)
+    {
+        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
+
+        $amount = $input['amount'];
+
+        if ($amount > $maxAmountAllowed)
+        {
+            throw new BadRequestValidationFailureException(
+                'Amount exceeds maximum amount allowed.',
+                'amount',
+                ['amount' => $amount]);
         }
     }
 
