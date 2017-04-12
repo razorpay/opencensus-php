@@ -51,8 +51,8 @@ class Server extends Base\Mock\Server
         $content = [
             Fields::RESPONSE         => $this->getAuthorizeResponseCode(),
             Fields::MERCHANT_ID      => $input['merchantId'],
-            Fields::SUBMERCHANT_ID   => isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
-            Fields::TERMINAL_ID      => isset($input['terminalId']) ? $input['terminalId'] : null,
+            Fields::SUBMERCHANT_ID   => $input['subMerchantId'] ?? null,
+            Fields::TERMINAL_ID      => $input['terminalId'] ?? null,
             Fields::SUCCESS          => 'true',
             Fields::MESSAGE          => 'Transaction initiated',
             Fields::MERCHANT_TRAN_ID => $input['merchantTranId'],
@@ -89,17 +89,17 @@ class Server extends Base\Mock\Server
 
         return [
             // Conditional Fields
-            Fields::MERCHANT_ID           =>  $input['merchantId'],
-            Fields::SUBMERCHANT_ID        =>  $input['subMerchantId'],
-            Fields::TERMINAL_ID           =>  $input['terminalId'],
-            Fields::ORIGINAL_BANK_RRN_REQ =>  (string) random_int(1111111111, 9999999999),
+            Fields::MERCHANT_ID           => $input['merchantId'],
+            Fields::SUBMERCHANT_ID        => $input['subMerchantId'],
+            Fields::TERMINAL_ID           => $input['terminalId'],
+            Fields::ORIGINAL_BANK_RRN_REQ => (string) random_int(1111111111, 9999999999),
 
             // Mandatory fields
-            Fields::MERCHANT_TRAN_ID      =>  $input['merchantTranId'],
-            Fields::STATUS                =>  "SUCCESS",
-            Fields::RESPONSE              =>  "0",
-            Fields::SUCCESS               =>  "true",
-            Fields::MESSAGE               => "Transaction Successful",
+            Fields::MERCHANT_TRAN_ID      => $input['merchantTranId'],
+            Fields::STATUS                => 'SUCCESS',
+            Fields::RESPONSE              => '0',
+            Fields::SUCCESS               => 'true',
+            Fields::MESSAGE               => 'Transaction Successful',
         ];
     }
 
