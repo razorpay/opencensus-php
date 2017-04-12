@@ -175,9 +175,6 @@ export default class ReportsContainer extends Component {
     }
 
     if (entity === 'broking') {
-      ajaxParams.xhrFields = {
-        responseType: 'arraybuffer'
-      }
       ajaxParams.headers = {
         Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       }
@@ -189,6 +186,14 @@ export default class ReportsContainer extends Component {
           type: 'success',
           message: 'Your report will download shortly'
         })
+
+        if (entity === 'broking') {
+          var blob = new Blob([data], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          })
+          return saveAs(blob, 'broking_report.xlsx');
+        }
+
         location.href = data.data.url;
       })
       .catch((e)=> {
