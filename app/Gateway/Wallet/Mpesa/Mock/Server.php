@@ -37,6 +37,8 @@ class Server extends Base\Mock\Server
             ResponseFields::RESPONSE_ID     => uniqid()
         ];
 
+        $this->content($response, SoapAction::CUSTOMER_API);
+
         return [ResponseFields::VALIDATE_CUSTOMER => $response];
     }
 

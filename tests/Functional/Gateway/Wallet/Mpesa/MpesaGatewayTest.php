@@ -26,7 +26,7 @@ class MpesaGatewayTest extends TestCase
         $this->payment = $this->getDefaultWalletPaymentArray(self::WALLET);
     }
 
-    public function testPayment()
+    public function testOtpPayment()
     {
         $testData = $this->testData[__FUNCTION__];
 
@@ -38,11 +38,40 @@ class MpesaGatewayTest extends TestCase
 
         $wallet = $this->getLastEntity('wallet', true);
 
-        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+        $this->assertTestResponse($wallet, 'testOtpPaymentWalletEntity');
 
         $this->assertNotEmpty($wallet['gateway_payment_id']);
 
-        $this->assertNotEmpty($wallet['gateway_payment_id']);
+        $this->assertNotEmpty($wallet['gateway_payment_id_2']);
+
+        $this->assertNotEmpty($wallet['contact']);
+    }
+
+    public function testOtpCustomerValidationFailure()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockCustomerValidationFailure();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            }
+        );
+    }
+
+    protected function mockCustomerValidationFailure()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === '<pay:validateCustomer />')
+            {
+                $content['statusCode'] = '101';
+                $content['description'] = 'Mobile number not found';
+            }
+        });
     }
 
     protected function runPaymentCallbackFlowWalletMpesa($response, &$callback = null)
