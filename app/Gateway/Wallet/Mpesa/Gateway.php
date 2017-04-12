@@ -664,11 +664,13 @@ class Gateway extends Base\Gateway
 
     protected function getSoapUserId()
     {
+        // TODO: Add live user id
         return $this->config['test_user_id'];
     }
 
     protected function getSoapPassword()
     {
+        // TODO: Add live password
         return $this->config['test_password'];
     }
 }

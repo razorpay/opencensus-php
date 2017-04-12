@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Wallet\Mpesa\Mock;
 
 use RZP\Gateway\Base;
+use RZP\Constants\HashAlgo;
+use RZP\Exception\ServerErrorException;
 use RZP\Gateway\Wallet\Mpesa\Constants;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
 use RZP\Gateway\Wallet\Mpesa\StatusCode;
@@ -13,12 +15,17 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        $this->validateChecksum($input);
 
-    }
+        $request = $this->parseRequestXml($input);
 
-    public function callback($input)
-    {
+        $response = $this->getAuthResponse($request);
 
+        $url = $request[RequestFields::RETURN_URL];
+
+        $url .= '?' . http_build_query($response);
+
+        return \Redirect::to($url);
     }
 
     public function validateCustomer(array $input)
@@ -107,5 +114,43 @@ class Server extends Base\Mock\Server
         ];
 
         return [ResponseFields::UCF_RESPONSE => $response];
+    }
+
+    protected function getAuthResponse(array $request)
+    {
+        $transId = mt_rand(11111111111, 99999999999);
+
+        $response = [
+            ResponseFields::COM_TRANSACTION_ID    => $transId,
+            ResponseFields::TRANSACTION_REFERENCE => $request[RequestFields::TRANSACTION_REFERENCE],
+            ResponseFields::STATUS_CODE           => StatusCode::SUCCESS,
+            ResponseFields::REASON                => Constants::SUCCESS,
+            ResponseFields::TRANSACTION_AMOUNT    => $request[RequestFields::AMOUNT]
+        ];
+
+        return $response;
+    }
+
+    protected function parseRequestXml(array $input)
+    {
+        $xml = $input[RequestFields::GATEWAY_PARAM];
+
+        return (array) simplexml_load_string($xml);
+    }
+
+    protected function validateChecksum(array $input)
+    {
+        $xml = $input[RequestFields::GATEWAY_PARAM];
+
+        $checksum = $input[RequestFields::CHECKSUM];
+
+        $secret = $this->getGatewayInstance()->getSecret();
+
+        $generatedChecksum = hash_hmac(HashAlgo::SHA256, $xml, $secret);
+
+        if (hash_equals($checksum, $generatedChecksum) === false)
+        {
+            throw new Exception\ServerErrorException('Checksum Validation Failed');
+        }
     }
 }
