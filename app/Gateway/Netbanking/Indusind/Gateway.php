@@ -186,11 +186,11 @@ class Gateway extends Base\Gateway
 
         $queryString = $this->createQueryString($data);
 
-        $masterKey = $this->getSecret();
+        $masterKey = $this->getBinarySecret();
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $secret);
 
-        return base64_encode($aes->encryptString($queryString));
+        return strtoupper(bin2hex($aes->encryptString($queryString)));
     }
 
     protected function getAuthorizeRequestData(array $input)
@@ -244,13 +244,11 @@ class Gateway extends Base\Gateway
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
-        $masterKey = $this->getSecret();
+        $masterKey = $this->getBinarySecret();
 
         $crypto = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
-        $encryptedString = str_replace(' ', '+', $encryptedString);
-
-        $decryptedString = $crypto->decryptString(base64_decode($encryptedString));
+        $decryptedString = $crypto->decryptString(hex2bin($encryptedString));
 
         parse_str($decryptedString, $response);
 
@@ -361,6 +359,13 @@ class Gateway extends Base\Gateway
         assert ($this->mode === Mode::LIVE);
 
         return $this->config['live_hash_secret'];
+    }
+
+    protected function getBinarySecret()
+    {
+        $secret = $this->getSecret();
+
+        return pack('H*', $secret);
     }
 }
 

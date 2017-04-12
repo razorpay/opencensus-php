@@ -240,7 +240,7 @@ class TransactionFilter extends Terminal\Filter
             }
         }
 
-        return ($terminal->isNonRecurring() === true);
+        return ($terminal->isNonRecurring() === false);
     }
 
     protected function isValidEmiTerminal($terminal, $input)

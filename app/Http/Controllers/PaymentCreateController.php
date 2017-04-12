@@ -310,6 +310,7 @@ class PaymentCreateController extends Controller
         //
         // Check for call from API
         //
+        s($data);
         if (isset($data['request']))
         {
             if ($data['type'] === 'first')
