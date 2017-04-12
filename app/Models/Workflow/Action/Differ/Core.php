@@ -119,7 +119,9 @@ class Core extends Base\Core
         }
         catch(\Exception $e)
         {
-            $this->trace->warning(TraceCode::HEIMDALL_ACTION_LOG_FAIL, ['msg' => $e]);
+            $this->trace->warning(
+                TraceCode::HEIMDALL_ACTION_LOG_FAIL,
+                ['msg' => $e]);
         }
     }
 
@@ -141,44 +143,43 @@ class Core extends Base\Core
 
         $validator = EntityValidator::getValidator($differ->getRoute());
 
-        if ($validator !== null)
+        if (empty($validator) === false)
         {
             $newEntity = clone $oldEntity;
 
             // Run validator
             $newEntity = $newEntity->edit($differ->getPayload(), $validator);
 
-            $diff = $this->createDiff($oldEntity->toArray(), $newEntity->toArray());
+            $diff = $this->createDiff(
+                $oldEntity->toArray(), $newEntity->toArray(),
+                $newEntity->getPublicAttributes());
         }
 
         $relations = EntityValidator::getRelations($differ->getRoute());
 
-        if ($relations !== null)
+        if (empty($relations) === false)
         {
             foreach ($relations as $relation)
             {
+                // Sanity check that we do not create diff if the relation does
+                // not exist in entity
+                if ($oldEntity->hasRelation($relation) === true)
+                {
+                    return;
+                }
+
+                // We want to show empty values for relation as it means we
+                // want to reset the m2m fields.
                 if (isset($differ->getPayload()[$relation]) === true)
                 {
-                    $oldRelatedEntity = $oldEntity->$relation;
+                    $relationDiff = $this->createDiffForRelations(
+                        $oldEntity,
+                        $relation,
+                        $differ->getPayload()[$relation]);
 
-                    if (count($oldRelatedEntity) === 0)
-                    {
-                        //TODO: Need to figure out a way to get the entity name
-                    }
-                    else
-                    {
-                        $relatedEntityName = $oldRelatedEntity[0]->getEntityName();
+                    $diff['old'][$relation] = $relationDiff['old'];
 
-                        $newRelatedEntity = $this->repo
-                                                 ->$relatedEntityName
-                                                 ->findManyByPublicIds($differ->getPayload()[$relation]);
-
-                        $relationDiff = $this->createDiff($oldRelatedEntity->toArray(), $newRelatedEntity->toArray());
-
-                        $diff['old'][$relation] = $relationDiff['old'];
-
-                        $diff['new'][$relation] = $relationDiff['new'];
-                    }
+                    $diff['new'][$relation] = $relationDiff['new'];
                 }
             }
         }
@@ -192,16 +193,27 @@ class Core extends Base\Core
     }
 
     // TODO: Recursion
-    protected function createDiff(array $oldEntity, array $newEntity)
+    protected function createDiff(array $oldEntity, array $newEntity, $keys = null)
     {
         $diff = [];
 
-        $keys = array_keys($oldEntity);
+        $keys = $keys ?? array_keys($oldEntity);
 
         $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
 
         foreach ($diffKeys as $key)
         {
+            // If the key is not being updated, do not show the diff for it
+            if (isset($newEntity[$key]) === false)
+            {
+                continue;
+            }
+
+            if (isset($oldEntity[$key]) === false)
+            {
+                $oldEntity[$key] = "Not Available in Pre-Diff";
+            }
+
             if ($oldEntity[$key] !== $newEntity[$key])
             {
                 $diff['old'][$key] = $oldEntity[$key];
@@ -265,5 +277,26 @@ class Core extends Base\Core
             strtolower($this->baseIndex), self::ES_TYPE, $documentId, $state);
 
         return $esResponse;
+    }
+
+    public function createDiffForRelations($entity, $relation, $input)
+    {
+        $model = $entity->$relation()->getModel();
+
+        $relatedEntityName = $model->getEntityName();
+
+        $oldRelatedEntities = $entity->$relation()->get()->toArray();
+
+        $newRelatedEntities = $this->repo
+                                   ->$relatedEntityName
+                                   ->findManyByPublicIds($input)
+                                   ->toArray();
+
+        $diff = [
+            'old' => $oldRelatedEntities,
+            'new' => $newRelatedEntities,
+        ];
+
+        return $diff;
     }
 }

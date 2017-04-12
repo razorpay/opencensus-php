@@ -375,4 +375,13 @@ class PublicEntity extends UniqueIdEntity
     {
         return [static::ID => $this->getPublicId(), 'deleted' => true];
     }
+
+    public function getPublicAttributes() : array
+    {
+        if (isset($this->public) === false)
+        {
+            return [];
+        }
+        return array_keys(array_flip($this->public));
+    }
 }
