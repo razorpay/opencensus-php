@@ -37,21 +37,9 @@
           ng-show="admin.permissions.indexOf('create_emi_plan') !== -1">
           Add EMI Plan
         </a>
-        <a href class="list-group-item" ng-click="openVerifyPayment()"
-          ng-show="admin.permissions.indexOf('edit_verify_payments') !== -1">
-          Verify Payment
-        </a>
-        <a href class="list-group-item" ng-click="openArchiveMerchant()"
-          ng-show="admin.permissions.indexOf('edit_merchant_archive') !== -1">
-          Archive Merchant
-        </a>
         <a href class="list-group-item" ng-click="openConfirmUser()"
           ng-show="admin.permissions.indexOf('edit_merchant_confirm') !== -1">
           Confirm User
-        </a>
-        <a href class="list-group-item" ng-click="verifyAllPayments()"
-          ng-show="admin.permissions.indexOf('edit_verify_payments') !== -1">
-          Verify All Payments
         </a>
         <a href class="list-group-item" ng-click="openGenerateRefund()"
           ng-show="admin.permissions.indexOf('create_netbanking_refund') !== -1">
@@ -68,10 +56,11 @@
         <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()"
           ng-show="admin.permissions.indexOf('edit_authorized_failed_payment') !== -1">
           Authorize Failed Payment
-        <a href class="list-group-item" ng-click="openEditNewsletter()"
+        </a>
+        <!-- <a href class="list-group-item" ng-click="openEditNewsletter()"
           ng-show="admin.permissions.indexOf('send_newsletter') !== -1">
           Send Merchant Newsletter
-        </a>
+        </a> -->
         <a href class="list-group-item" ng-click="openAddSchedule()" ng-show="admin.permissions.indexOf('schedule_create') !== -1">
           Create Schedule
         </a>
@@ -715,7 +704,7 @@
           <select class="form-control m-b" name="period" ng-model="schedule.period" required>
             <option value="hourly">Hourly</option>
             <option value="daily">Daily</option>
-            <option value="Weekly">Weekly</option>
+            <option value="weekly">Weekly</option>
             <option value="monthly-date">Monthly-Date</option>
             <option value="monthly-week">Monthly-Week</option>
           </select>

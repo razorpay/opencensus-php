@@ -483,13 +483,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postInitiateSetl($channel)
-    {
-        list($error, $data) = (new Admin\Service)->postInitiateSetl($channel);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getPaymentRefunds($mode, $paymentId)
     {
         list($error, $data) = (new Admin\Service)->getPaymentRefunds($mode, $paymentId);
@@ -502,13 +495,6 @@ class AdminController extends Controller
         $this->checkMode($mode);
 
         list($error, $data) = (new Admin\Service)->getPaymentAnalytics($mode, $id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postAuthorizeFailedPayment($mode, $id)
-    {
-        list($error, $data) = (new Admin\Service)->authorizeFailedPayment($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -627,12 +613,6 @@ class AdminController extends Controller
         return Redirect::to($url);
     }
 
-    public function generateBeneficiaryFile()
-    {
-        $error = (new Admin\Service)->generateBeneficiaryFile();
-        return AppResponse::jsonResponse($error);
-    }
-
     public function postSendTestNewsletter()
     {
         $input = Input::all();
@@ -712,22 +692,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->toggleTerminal($mode, $terminalId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function verifyAllPayments()
-    {
-        list($error, $data) = (new Admin\Service)->verifyAllPayments();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function generateNetBankingRefunds()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->generateNetBankingRefunds($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -971,15 +935,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $response) = (new Admin\Service)->assignMerchantSchedule($id, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function createSchedule()
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->createSchedule($input);
 
         return AppResponse::jsonResponse($error, $response);
     }
