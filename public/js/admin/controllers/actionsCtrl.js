@@ -218,31 +218,6 @@ app.controller('ActionsCtrl', [
         });
 
       };
-
-      $scope.verifyPayment = function (payment_id) {
-        var data = {
-          route_name: 'payment_verify',
-          url_params: {
-            '{id}' : payment_id
-          }
-        };
-        var request = $http.get('/admin/generic', {
-          params: data
-        });
-        request.success(function (data) {
-          if (data.success) {
-            var payment = JSON.stringify(data.data.payment);
-            $scope.alerts.addAlert('success', 'Payment Verified successfully: ' + payment, true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
       $scope.authorizeFailedPayment = function (payment_id, mode) {
         var data = {
           route_name: 'payment_authorize_failed',
@@ -326,30 +301,6 @@ app.controller('ActionsCtrl', [
         });
         modalInstance.result.then($scope.addEMI, $.noop);
       };
-      $scope.openVerifyPayment = function () {
-        var modalInstance = $modal.open({
-          templateUrl: 'verifyPaymentModalContent.html',
-          controller: 'verifyPaymentModalCtrl'
-        });
-        modalInstance.result.then($scope.verifyPayment, $.noop);
-      };
-
-      $scope.archiveMerchant = function (id) {
-        var request = $http.get('/admin/merchant/' + id + '/archive');
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Merchant archived successfully', true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
-
       $scope.confirmUser = function (email) {
         var request = $http({
           method: 'post',
@@ -371,15 +322,6 @@ app.controller('ActionsCtrl', [
           $scope.alerts.addAlert('danger', null, true);
         });
       };
-
-      $scope.openArchiveMerchant = function () {
-        var modalInstance = $modal.open({
-          templateUrl: 'archiveMerchantModal.html',
-          controller: 'archiveMerchantModalCtrl'
-        });
-        modalInstance.result.then($scope.archiveMerchant, $.noop);
-      };
-
       $scope.openConfirmUser = function () {
         var modalInstance = $modal.open({
           templateUrl: 'confirmUserModal.html',
