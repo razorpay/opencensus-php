@@ -3,9 +3,9 @@ import { Field } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import { required } from 'rzp/utils/validators'
-import ActivationBaseHOC from './ActivationBase'
+import ActivationWizardHOC from './ActivationWizardHOC'
 
-@ActivationBaseHOC
+@ActivationWizardHOC
 export default class WebsiteDetailsForm extends Component {
   render() {
     let {

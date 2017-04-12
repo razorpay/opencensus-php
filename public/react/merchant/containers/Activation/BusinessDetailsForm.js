@@ -2,9 +2,9 @@ import { Component } from 'react'
 import { Field } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
-import ActivationBaseHOC from './ActivationBase'
+import ActivationWizardHOC from './ActivationWizardHOC'
 
-@ActivationBaseHOC
+@ActivationWizardHOC
 export default class BusinessDetailsForm extends Component {
   render() {
     let {

@@ -1,9 +1,9 @@
 import { Component } from 'react'
 import { Field } from 'redux-form'
 import AsyncButton from 'react-async-button'
-import ActivationBaseHOC from './ActivationBase'
+import ActivationWizardHOC from './ActivationWizardHOC'
 
-@ActivationBaseHOC
+@ActivationWizardHOC
 export default class SubmitForm extends Component {
   render() {
     let {

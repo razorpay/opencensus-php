@@ -8,7 +8,7 @@ import Alert from 'rzp/ui/Forms/Alert'
 // Uses HOC (Higher Order Component) to leverage Inheritance Inversion pattern & Props proxying
 // https://medium.com/@franleplant/react-higher-order-components-in-depth-cf9032ee6c3e#5247
 
-export default function ActivationBaseHOC(WizardComponent) {
+export default function ActivationWizardHOC(WizardComponent) {
   @connect(
     (state) => state.activation,
     { ...ActivationActions, showNotification }
@@ -37,10 +37,11 @@ export default function ActivationBaseHOC(WizardComponent) {
           type: 'success',
           message: 'Step saved successfully'
         })
-      }).catch(({ errors }) => {
+      }).catch((err) => {
         this.setState({
-          errors
+          errors: err.errors
         })
+        throw err
       })
     }
 
@@ -72,7 +73,7 @@ export default function ActivationBaseHOC(WizardComponent) {
           <div class='panel-body'>
             <div class='row'>
               <div class='col-md-offset-2 col-md-10'>
-                <h4 class='wizard-header'>{this.props.title}</h4>
+                <h4 class='wizard-header'>{this.props.pageTitle}</h4>
               </div>
             </div>
 
