@@ -10,7 +10,7 @@ class EntityValidator
     ];
 
     const RELATIONS = [
-        'admin_edit'          => ['roles', 'groups'],
+        'admin_edit'          => \RZP\Models\Admin\Admin::class,
     ];
 
     public static function getValidator($route)
@@ -27,13 +27,13 @@ class EntityValidator
 
     public static function getRelations($route)
     {
-        $relations = null;
-
-        if (array_key_exists($route, self::RELATIONS))
+        if (array_key_exists($route, self::RELATIONS) === false)
         {
-            $relations = self::RELATIONS[$route];
+            return [];
         }
 
-        return $relations;
+        $entityClass = self::RELATIONS[$route] . '\Entity';
+
+        return (new $entityClass)->getRelationsForDiffer();
     }
 }

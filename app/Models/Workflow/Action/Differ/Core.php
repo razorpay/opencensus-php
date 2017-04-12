@@ -161,13 +161,6 @@ class Core extends Base\Core
         {
             foreach ($relations as $relation)
             {
-                // Sanity check that we do not create diff if the relation does
-                // not exist in entity
-                if ($oldEntity->hasRelation($relation) === true)
-                {
-                    return;
-                }
-
                 // We want to show empty values for relation as it means we
                 // want to reset the m2m fields.
                 if (isset($differ->getPayload()[$relation]) === true)
@@ -211,7 +204,7 @@ class Core extends Base\Core
 
             if (isset($oldEntity[$key]) === false)
             {
-                $oldEntity[$key] = "Not Available in Pre-Diff";
+                $oldEntity[$key] = null;
             }
 
             if ($oldEntity[$key] !== $newEntity[$key])
