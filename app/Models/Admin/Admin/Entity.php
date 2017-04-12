@@ -276,6 +276,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::NAME);
     }
 
+    public function getUsername() : string
+    {
+        return $this->getAttribute(self::USERNAME);
+    }
+
     public function getFirstName()
     {
         return explode(' ', $this->getName())[0];
@@ -469,6 +474,19 @@ class Entity extends Base\Entity
             self::ROLES,
             self::GROUPS
         ];
+
+        $app = App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getAdminOrgId();
+
+        $org = (new Org\Repository)->findOrFailPublic($orgId);
+
+        if ($org->getAuthType() === Org\AuthType::PASSWORD)
+        {
+            $extra = array_merge(
+                $extra,
+                [self::PASSWORD, self::PASSWORD_CONFIRMATION]);
+        }
 
         return array_merge($this->fillable, $extra);
     }

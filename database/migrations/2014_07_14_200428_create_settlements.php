@@ -49,6 +49,9 @@ class CreateSettlements extends Migration
 
             $table->string(Settlement::CHANNEL, 8);
 
+            $table->integer(Settlement::ATTEMPTS)
+                  ->default(1);
+
             $table->string(Settlement::UTR)
                   ->nullable()
                   ->unique();

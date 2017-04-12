@@ -7,8 +7,9 @@ use DB;
 
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -17,6 +18,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
+    use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
 
@@ -1038,6 +1040,27 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testScheduleTaskMigration()
+    {
+        $this->ba->appAuth();
+
+        $merchant = $this->createMerchant();
+
+        $this->startTest();
+
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+
+        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
+        $this->assertEquals(NULL , $scheduleTask['method']);
+
+        $this->ba->appAuthLive();
+
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+
+        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
+        $this->assertEquals(NULL , $scheduleTask['method']);
+    }
+
     public function testCreateMerchantWithAdmin()
     {
         $adminId = 'admin_' . Org::SUPER_ADMIN;
@@ -1067,5 +1090,4 @@ class MerchantTest extends TestCase
 
         $this->assertNotNull($row);
     }
-
 }

@@ -44,6 +44,7 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
+    const SCHEDULE_TASK         = 'schedule_tasks';
     const MERCHANT_USERS        = 'merchant_users';
     const MERCHANT_OFFER        = 'merchant_offer';
     const MERCHANT_DETAIL       = 'merchant_details';
@@ -69,6 +70,15 @@ class Table
     const LOGIN_ATTEMPT         = 'login_attempts';
     const ADMIN_LEAD            = 'admin_leads';
     const ORG_FIELD_MAP         = 'org_field_map';
+
+    // Workflows
+    const WORKFLOW              = 'workflows';
+    const WORKFLOW_STEP         = 'workflow_steps';
+    const WORKFLOW_ACTION       = 'workflow_actions';
+    const ACTION_COMMENT        = 'action_comments';
+    const ACTION_STATE          = 'action_state';
+    const ACTION_CHECKER        = 'action_checker';
+    const WORKFLOW_PERMISSION   = 'workflow_permissions';
 
     // Gateway related
     const EBS                   = 'ebs';

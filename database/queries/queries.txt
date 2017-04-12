@@ -1857,6 +1857,14 @@ UPDATE tokens
 # Adds cancelled_at column to invoices table
 ALTER TABLE invoices ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER paid_at;
 
+ALTER TABLE daily_settlements
+    ADD COLUMN txt_file_id CHAR(14) AFTER urls,
+    ADD CONSTRAINT daily_settlements_txt_file_id_foreign
+        FOREIGN KEY(txt_file_id) REFERENCES files(id) ON DELETE RESTRICT,
+    ADD COLUMN excel_file_id CHAR(14) AFTER txt_file_id,
+    ADD CONSTRAINT daily_settlements_excel_file_id_foreign
+        FOREIGN KEY(excel_file_id) REFERENCES files(id) ON DELETE RESTRICT;
+
 # Query to add international flag to terminal entity
 ALTER TABLE terminals
     ADD COLUMN international TINYINT(1) DEFAULT 0 NOT NULL AFTER recurring;
@@ -1876,6 +1884,15 @@ ALTER TABLE `admins` MODIFY COLUMN `location_code` VARCHAR(255) DEFAULT NULL;
 # Query to add custom error message attribute to offer
 ALTER TABLE offers
     ADD COLUMN error_message VARCHAR(255) NULL AFTER display_text;
+
+# Add indices for fetch by cron
+ALTER TABLE payments
+    ADD INDEX `payments_on_hold_index` (`on_hold`),
+    ADD INDEX `payments_on_hold_until_index` (`on_hold_until`);
+
+# Add attempts to settlements
+ALTER TABLE settlements
+    ADD COLUMN attempts INTEGER NOT NULL DEFAULT 1 AFTER channel;
 
 ALTER TABLE upi
     ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,

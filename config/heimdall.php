@@ -119,9 +119,7 @@ return [
             Permission::SCHEDULE_MIGRATION => '',
             Permission::VIEW_ACTIONS => '',
             Permission::VIEW_MERCHANT_STATS => '',
-            Permission::CREATE_MERCHANT_INVITE => '',
-            Permission::EDIT_MERCHANT_INVITE   => '',
-            Permission::VIEW_MERCHANT_INVITE => '',
+            Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
         ],
 
         PermissionCategory::ENTITY => [
@@ -137,6 +135,15 @@ return [
             Permission::CREATE_ORG    => 'Create organization',
             Permission::EDIT_ORG      => 'Edit organization',
             Permission::DELETE_ORG    => 'Delete organization',
+        ],
+
+        // Workflow
+        PermissionCategory::WORKFLOW => [
+            Permission::VIEW_WORKFLOW      => 'View Workflows',
+            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
+            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
+            Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
+            Permission::CREATE_WORKFLOW    => 'Create a workflow',
         ],
 
         // Roles
@@ -180,6 +187,13 @@ return [
             Permission::VIEW_AUDITLOG     => 'View auditlog for activities',
         ],
 
+        // Invitations
+        PermissionCategory::INVITATION => [
+            Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
+            Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
+            Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
+        ],
+
     ],
 
     // trimmed down assignable permissions which an HDFC manager would have
@@ -196,6 +210,7 @@ return [
             Permission::VIEW_MERCHANT_BANK_ACCOUNTS => '',
 
             Permission::VIEW_MERCHANT_SCREENSHOT => '',
+            Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
 
             Permission::CREATE_PRICING_PLAN => '',
             Permission::SET_PRICING_RULES => '',
@@ -269,6 +284,24 @@ return [
         PermissionCategory::AUDIT_LOG => [
             Permission::VIEW_AUDITLOG   => 'View auditlog for activities',
         ],
+
+        // Invitations
+        PermissionCategory::INVITATION => [
+            Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
+            Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
+            Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
+        ],
+
+        PermissionCategory::WORKFLOW => [
+            Permission::VIEW_WORKFLOW      => 'View Workflows',
+            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
+            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
+            Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
+            Permission::CREATE_WORKFLOW    => 'Create a workflow',
+        ],
     ],
 
+    'workflows' => [
+        'mock'  => env('HEIMDALL_WORKFLOWS_MOCK', false),
+    ],
 ];

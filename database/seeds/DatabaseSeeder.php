@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
         $this->call('IinsTableSeeder');
         $this->call('PermissionSeeder');
         $this->call('GroupMapSeeder');
+        $this->call('WorkflowSeeder');
     }
 
     private function seed()
@@ -58,6 +59,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'       => $currentTime,
                     'updated_at'       => $currentTime,
                     'cross_org_access' => true,
+                    'custom_code'      => 'rzp',
                 ]
             );
 
@@ -74,6 +76,7 @@ class DatabaseSeeder extends Seeder
                     'main_logo_url'     => null,
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
+                    'custom_code'      => 'hdfc',
                 ]
             );
 
@@ -519,14 +522,39 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                 ],
-                // [
-                //     'id'            => '6dLbNSpv5XbC5G',
-                //     'name'          => 'Admin',
-                //     'description'   => 'Administrator',
-                //     'org_id'        => '6dLbNSpv5XbCOG',
-                //     'created_at'    => $currentTime,
-                //     'updated_at'    => $currentTime,
-                // ]
+                [
+                    'id'            => '7bdvjyhVRgcfCe',
+                    'name'          => 'Checker One',
+                    'description'   => 'Checker One',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '7bdvYPtRHEw3zB',
+                    'name'          => 'Checker Two',
+                    'description'   => 'Checker Two',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '7bdyCqxHR23Y9u',
+                    'name'          => 'Checker Three',
+                    'description'   => 'Checker Three',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '7bdxOwCk3Eyu0R',
+                    'name'          => 'Maker One',
+                    'description'   => 'Maker One',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+
             ]);
 
             DB::table(Table::ROLE_MAP)->insert([
@@ -1222,7 +1250,6 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_federal',
-                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_federal_terminal_pass'),
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),

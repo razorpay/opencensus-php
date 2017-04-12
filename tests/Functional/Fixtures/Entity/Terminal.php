@@ -789,7 +789,7 @@ class Terminal extends Base
             'network_category'  => 'securities',
         ];
 
-        $this->createSharedNetbankingAxisTerminal($attributes);
+        return $this->createSharedNetbankingAxisTerminal($attributes);
     }
 
     public function createSharedNetbankingFederalTerminal(array $attributes = [])
@@ -808,6 +808,16 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingFederalTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::NETBANKING_FEDERAL_TPV_TERMINAL,
+            'network_category' => 'securities'
+        ];
+
+        return $this->createSharedNetbankingFederalTerminal($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])
