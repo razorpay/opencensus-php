@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Mpesa;
 
-use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -86,7 +85,7 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id']
             ]);
 
-        $content = $response['McomOtpResponse']['response'];
+        $content = $response[ResponseFields::OTP_GENERATE][ResponseFields::LC_RESPONSE];
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
@@ -99,11 +98,12 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
-                $content[ResponseFields::DESCRIPTION]);
+                $content[ResponseFields::DESCRIPTION]
+            );
         }
 
         // Create Gateway Payment Entity
-        $contentToSave = $this->getOtpGenerateContentToSave($response['McomOtpResponse']);
+        $contentToSave = $this->getOtpGenerateContentToSave($response[ResponseFields::OTP_GENERATE]);
 
         $this->createGatewayPaymentEntity($contentToSave);
 
@@ -130,7 +130,7 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id']
             ]);
 
-        $content = $response['Response'];
+        $content = $response[ResponseFields::UCF_RESPONSE];
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
@@ -143,7 +143,8 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
-                $content[ResponseFields::DESCRIPTION]);
+                $content[ResponseFields::DESCRIPTION]
+            );
         }
 
         $this->saveOtpCallbackContent($content);
@@ -170,7 +171,7 @@ class Gateway extends Base\Gateway
                                            SoapAction::REFUND_API,
                                            SoapMethod::REFUND_PAYMENT);
 
-        $content = $response['Response'];
+        $content = $response[ResponseFields::UCF_RESPONSE];
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
@@ -187,26 +188,9 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
-                $content[ResponseFields::REASON]);
+                $content[ResponseFields::REASON]
+            );
         }
-    }
-
-    protected function getRefundAttributes(array $content)
-    {
-        $input = $this->input;
-
-        $attributes = [
-            Entity::RECEIVED             => true,
-            Entity::PAYMENT_ID           => $input['payment']['id'],
-            Entity::WALLET               => Wallet::MPESA,
-            Entity::AMOUNT               => $input['refund']['amount'] / 100,
-            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID] ?? null,
-            Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
-            Entity::REFUND_ID            => $input['refund']['id'],
-            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
-        ];
-
-        return $attributes;
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -221,11 +205,11 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'gateway'    => $this->gateway,
-                'response'    => $verify->response,
+                'response'   => $verify->response,
                 'payment_id' => $verify->input['payment']['id'],
             ]);
 
-        $verify->verifyResponseContent = $verify->response['Response'];
+        $verify->verifyResponseContent = $verify->response[ResponseFields::UCF_RESPONSE];
     }
 
     protected function verifyPayment(Verify $verify)
@@ -303,7 +287,7 @@ class Gateway extends Base\Gateway
                                            SoapAction::CUSTOMER_API,
                                            SoapMethod::VALIDATE_CUSTOMER);
 
-        $content = $response['MCOMResponseStatus'];
+        $content = $response[ResponseFields::VALIDATE_CUSTOMER];
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
@@ -316,7 +300,8 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $status,
-                $content[ResponseFields::DESCRIPTION]);
+                $content[ResponseFields::DESCRIPTION]
+            );
         }
     }
 
@@ -325,7 +310,7 @@ class Gateway extends Base\Gateway
         $response = $content['response'];
 
         $attributes = [
-            Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::OTP_REF_NUMBER],
+            Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER],
             Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER],
             Entity::AMOUNT              => $this->input['payment']['amount'] / 100
         ];
@@ -495,16 +480,50 @@ class Gateway extends Base\Gateway
             RequestFields::QUERY_TRANSACTION_REF => $this->input['payment']['id'],
             RequestFields::S2S_AMOUNT            => $this->input['payment']['amount'] / 100,
             RequestFields::REFUND_NARRATION      => Constants::REFUND_NARRATION,
-            RequestFields::REVERSAL_TYPE         => Constants::REVERSAL_TYPE
+            RequestFields::REVERSAL_TYPE         => $this->getReversalType()
         ];
 
-        // TODO: Ensure this is correct logic
-        if ($wallet->getAction() === Action::OTP_GENERATE)
+        return $data;
+    }
+
+    protected function getRefundAttributes(array $content)
+    {
+        $input = $this->input;
+
+        $attributes = [
+            Entity::RECEIVED             => true,
+            Entity::PAYMENT_ID           => $input['payment']['id'],
+            Entity::WALLET               => Wallet::MPESA,
+            Entity::AMOUNT               => $input['refund']['amount'] / 100,
+            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID] ?? null,
+            Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
+            Entity::REFUND_ID            => $input['refund']['id'],
+            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
+        ];
+
+        return $attributes;
+    }
+
+    /**
+     * If refund amount is less than payment amount, it is a partial refund
+     * @return string $reversalType
+     */
+    protected function getReversalType()
+    {
+        $refund = $this->input['payment']['amount'] - $this->input['refund']['amount'];
+
+        switch ($refund)
         {
-            $data[RequestFields::CMDID] = Constants::CMDID;
+            case 0:
+                $reversalType = Constants::FULL_REVERSAL;
+                break;
+
+            default:
+                $reversalType = Constants::PARTIAL_REVERSAL;
+                break;
         }
 
-        return $data;
+        return $reversalType;
     }
 
     protected function getFormattedPhoneNo()
@@ -624,6 +643,8 @@ class Gateway extends Base\Gateway
         {
             return $attributes;
         }
+
+        return parent::getMappedAttributes($attributes);
     }
 
     protected function getFormattedDate()
