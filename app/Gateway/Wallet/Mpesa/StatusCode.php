@@ -10,6 +10,7 @@ class StatusCode
     const INVALID_MOBILE_NO = '104';
     const PARAMS_MISSING    = '105';
     const FAILURE           = '106';
+    const TIMEOUT           = '107';
 
     protected static $errorCodeMessageMap = [
         self::SUCCESS           => 'Success',
@@ -18,6 +19,7 @@ class StatusCode
         self::INVALID_MOBILE_NO => 'Invalid MSISDN',
         self::PARAMS_MISSING    => 'All Mandatory parameters not passed',
         self::FAILURE           => 'Failure',
+        self::TIMEOUT           => 'CBS Timeout',
     ];
 
     public static function checkIfSuccessStatus($status)

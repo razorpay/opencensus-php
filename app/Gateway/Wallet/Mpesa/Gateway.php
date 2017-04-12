@@ -134,6 +134,8 @@ class Gateway extends Base\Gateway
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
+        $this->saveOtpCallbackContent($content);
+
         // Otp submission fails, throw exception
         if (StatusCode::checkIfSuccessStatus($status) === false)
         {
@@ -146,8 +148,6 @@ class Gateway extends Base\Gateway
                 $content[ResponseFields::DESCRIPTION]
             );
         }
-
-        $this->saveOtpCallbackContent($content);
 
         return $this->getCallbackResponseData($input);
     }

@@ -48,6 +48,11 @@ class MpesaGatewayTest extends TestCase
         $this->assertNotEmpty($wallet['contact']);
     }
 
+    public function testTopupPayment()
+    {
+        $this->markTestSkipped();
+    }
+
     public function testOtpCustomerValidationFailure()
     {
         $data = $this->testData['testAuthFailure'];
@@ -111,7 +116,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpPaymentSuccessVerifyFailed()
     {
-        $data = $this->testData['testVerifyFailed'];
+        $data = $this->testData['testVerifyMismatch'];
 
         $expectedWallet = $this->testData['verifyFailedWalletEntity'];
 
@@ -139,7 +144,27 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpPaymentFailedVerifySuccess()
     {
-        $this->markTestSkipped();
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->testCallbackOtpSubmitFailure();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $data = $this->testData['verifySuccessWalletEntity'];
+
+        $this->assertArraySelectiveEquals($data, $wallet);
+
+        $this->assertNotEmpty($wallet['gateway_payment_id']);
+        $this->assertNotEmpty($wallet['gateway_payment_id_2']);
     }
 
     public function testRefundPayment()

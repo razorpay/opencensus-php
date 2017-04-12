@@ -59,7 +59,7 @@ return [
         ],
     ],
 
-    'testVerifyFailed' => [
+    'testVerifyMismatch' => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -78,6 +78,15 @@ return [
     'verifyFailedWalletEntity' => [
         'status_code' => '104',
         'response_description' => 'Mobile number not found',
+    ],
+
+    'verifySuccessWalletEntity' => [
+        'status_code'          => '100',
+        'wallet'               => 'mpesa',
+        'action'               => 'otp_generate',
+        'received'             => true,
+        'response_description' => 'SUCCESS',
+        'entity'               => 'wallet'
     ],
 
     'testRefundPayment' => [
