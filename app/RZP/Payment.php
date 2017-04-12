@@ -11,13 +11,6 @@ class Payment extends \Razorpay\Api\Payment
         return $this->request('GET', $relativeUrl);
     }
 
-    public function verifyAll()
-    {
-        $relativeUrl = $this->getEntityUrl() . 'verify/all';
-
-        return $this->request('GET', $relativeUrl);
-    }
-
     public function refundAuthorized()
     {
         $relativeUrl = $this->getEntityUrl() . $this->id . '/authorize_refund';

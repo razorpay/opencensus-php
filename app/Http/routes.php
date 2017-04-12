@@ -232,7 +232,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // Admin Payment Actions
         Route::get('/admin/{mode}/payments/{id}/analytics', 'AdminController@getPaymentAnalytics');
-        Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
         Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
 
         // More admin payment actions

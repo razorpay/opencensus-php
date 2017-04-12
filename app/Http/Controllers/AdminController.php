@@ -696,13 +696,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function verifyAllPayments()
-    {
-        list($error, $data) = (new Admin\Service)->verifyAllPayments();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function passThrough($path = '')
     {
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);

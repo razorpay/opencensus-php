@@ -1934,20 +1934,6 @@ class Service extends Base\Service
         }
     }
 
-    public function verifyAllPayments()
-    {
-        $this->setApiCredentials(null, 'live');
-        try
-        {
-            $response = $this->api->payment->verifyAll();
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [[$e->getMessage()], null];
-        }
-    }
-
     public function editCredits($merchantId, $input)
     {
         $this->setApiCredentials(null, 'live');
