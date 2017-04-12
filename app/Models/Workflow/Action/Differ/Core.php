@@ -151,8 +151,7 @@ class Core extends Base\Core
             $newEntity = $newEntity->edit($differ->getPayload(), $validator);
 
             $diff = $this->createDiff(
-                $oldEntity->toArray(), $newEntity->toArray(),
-                $newEntity->getPublicAttributes());
+                $oldEntity->toArray(), $newEntity->toArray());
         }
 
         $relations = EntityValidator::getRelations($differ->getRoute());
@@ -186,27 +185,16 @@ class Core extends Base\Core
     }
 
     // TODO: Recursion
-    protected function createDiff(array $oldEntity, array $newEntity, $keys = null)
+    protected function createDiff(array $oldEntity, array $newEntity)
     {
         $diff = [];
 
-        $keys = $keys ?? array_keys($oldEntity);
+        $keys = array_keys($oldEntity);
 
         $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
 
         foreach ($diffKeys as $key)
         {
-            // If the key is not being updated, do not show the diff for it
-            if (isset($newEntity[$key]) === false)
-            {
-                continue;
-            }
-
-            if (isset($oldEntity[$key]) === false)
-            {
-                $oldEntity[$key] = null;
-            }
-
             if ($oldEntity[$key] !== $newEntity[$key])
             {
                 $diff['old'][$key] = $oldEntity[$key];
