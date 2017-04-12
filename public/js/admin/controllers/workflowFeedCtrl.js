@@ -223,6 +223,7 @@ app.controller('WorkflowFeedCtrl', [
         request.success(function (data) {
           if (data.success) {
             $scope.alerts.addAlert('success', 'Action performed successfully!', true);
+            $scope.action_details.state = data.data.state; // Change state of request
           }
           else {
             angular.forEach(data.errors, function (value, key) {
