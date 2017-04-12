@@ -42,4 +42,20 @@ return [
             'gateway_error_desc'  => 'Mobile number not found'
         ],
     ],
+
+    'testOtpPaymentVerify' => [
+        'payment'                   => [
+            'verified'              => 1
+        ],
+        'gateway'                   => [
+            'apiSuccess'            => true,
+            'gatewaySuccess'        => true,
+            'status'                => 'status_match',
+            'gateway'               => 'wallet_mpesa',
+            'verifyResponseContent' => [
+                'statusCode'        => '100',
+                'reason'            => 'SUCCESS',
+            ],
+        ],
+    ],
 ];

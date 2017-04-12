@@ -93,6 +93,22 @@ class MpesaGatewayTest extends TestCase
         );
     }
 
+    public function testOtpPaymentVerify()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testOtpPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertArraySelectiveEquals($data, $verify);
+
+        $this->assertNotEmpty($verify['gateway']['verifyResponseContent']['transRefNum']);
+        $this->assertNotEmpty($verify['gateway']['verifyResponseContent']['MSISDN']);
+    }
+
     protected function mockCustomerValidationFailure()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
