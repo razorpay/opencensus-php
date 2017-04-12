@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea'
 import ItemCreation from 'merchant/containers/Items/New'
-import * as ModalActions from 'merchant/modules/modals'
+import * as ModalActions from 'rzp/modules/modals'
 import { findBy } from 'rzp/utils/rzp-utils'
 
 const selector = formValueSelector('newInvoice')

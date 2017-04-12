@@ -4,7 +4,7 @@ import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Clipboard from 'rzp/ui/Clipboard'
-import * as ModalActions from 'merchant/modules/modals'
+import * as ModalActions from 'rzp/modules/modals'
 
 const selector = formValueSelector('issueInvoice')
 @connect(
