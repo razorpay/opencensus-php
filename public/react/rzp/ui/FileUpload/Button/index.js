@@ -1,6 +1,8 @@
 import { Component } from 'react'
 import './FileUploadButton.styl'
 
+// Duplicated AsyncButton logic here.
+// TODO: Should make `react-async-button` quite composable in the upstream
 export default class FileUploadButton extends Component {
   constructor() {
     super(...arguments)
