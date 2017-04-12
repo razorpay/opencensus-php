@@ -182,12 +182,24 @@ class Reconciler
     protected function reconcileEntity($row)
     {
         // reconciliation version
-        $version = $row[Headings::VERSION] ?: FundTransferAttempt\Version::V1;
+        $version = FundTransferAttempt\Version::V1;
+
+        if (($row[Headings::PAYMENT_DETAILS_3] !== null) and
+                 ($row[Headings::PAYMENT_DETAILS_3] === FundTransferAttempt\Version::V3))
+        {
+            $version = FundTransferAttempt\Version::V3;
+        }
+        else if (($row[Headings::ENRICHMENT_2] !== null) and
+            ($row[Headings::ENRICHMENT_2] === FundTransferAttempt\Version::V2))
+        {
+            $version = FundTransferAttempt\Version::V2;
+        }
 
         // validate version
         FundTransferAttempt\Version::validateVersion($version);
 
         $loadEntityAndRelationsMethod = 'loadEntityAndRelations' . $version;
+
         $data = $this->$loadEntityAndRelationsMethod($row);
 
         $entity = $data['entity'];
@@ -244,6 +256,11 @@ class Reconciler
     }
 
     protected function processEntityStatusV2($entity, $row)
+    {
+        return $this->processEntityStatusV3($entity, $row);
+    }
+
+    protected function processEntityStatusV3($entity, $row)
     {
         $parsedData = $this->parseDataFromRow($entity, $row);
 
@@ -392,6 +409,11 @@ class Reconciler
     }
 
     protected function loadEntityAndRelationsV2($row)
+    {
+        return $this->loadEntityAndRelationsV3($row);
+    }
+
+    protected function loadEntityAndRelationsV3($row)
     {
         $entityId = $row[Headings::PAYMENT_REF_NO];
 

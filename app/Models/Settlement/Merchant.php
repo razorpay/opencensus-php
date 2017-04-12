@@ -352,7 +352,7 @@ class Merchant
 
         $values = [
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
-            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V2,
+            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
         ];
 
