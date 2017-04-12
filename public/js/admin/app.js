@@ -17,7 +17,8 @@ var app = angular.module('app', [
   'ngIdle',
   'ngBusy',
   'angulartics',
-  'angulartics.segment.io'
+  'angulartics.segment.io',
+  'react'
 ]).run([
   '$rootScope',
   '$state',
