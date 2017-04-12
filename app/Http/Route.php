@@ -1105,6 +1105,11 @@ final class Route
             'ecollect_pay',
         ),
 
+        'yesbank' => array(
+            'ecollect_validate',
+            'ecollect_pay',
+        ),
+
         'mailgun' => array(
             'reconciliate'
         ),
