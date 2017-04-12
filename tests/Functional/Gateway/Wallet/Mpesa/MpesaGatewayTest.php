@@ -84,7 +84,7 @@ class MpesaGatewayTest extends TestCase
         {
             if ($action === SoapAction::CUSTOMER_API)
             {
-                $content['statusCode'] = '101';
+                $content['statusCode'] = '104';
                 $content['description'] = 'Mobile number not found';
             }
         });
@@ -96,7 +96,7 @@ class MpesaGatewayTest extends TestCase
         {
             if ($action === SoapAction::OTP_GENERATE_API)
             {
-                $content['statusCode'] = '101';
+                $content['statusCode'] = '104';
                 $content['description'] = 'Mobile number not found';
             }
         });

@@ -38,7 +38,7 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            'gateway_error_code'  => '101',
+            'gateway_error_code'  => '104',
             'gateway_error_desc'  => 'Mobile number not found'
         ],
     ],
@@ -56,7 +56,7 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            'gateway_error_code'  => '101',
+            'gateway_error_code'  => '104',
             'gateway_error_desc'  => 'Mobile number not found'
         ],
     ],

@@ -87,6 +87,11 @@ class Gateway extends Base\Gateway
 
         $content = $response[ResponseFields::OTP_GENERATE][ResponseFields::LC_RESPONSE];
 
+        // Create Gateway Payment Entity
+        $contentToSave = $this->getOtpGenerateContentToSave($response[ResponseFields::OTP_GENERATE]);
+
+        $this->createGatewayPaymentEntity($contentToSave);
+
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // Otp generation fails, throw exception
@@ -101,11 +106,6 @@ class Gateway extends Base\Gateway
                 $content[ResponseFields::DESCRIPTION]
             );
         }
-
-        // Create Gateway Payment Entity
-        $contentToSave = $this->getOtpGenerateContentToSave($response[ResponseFields::OTP_GENERATE]);
-
-        $this->createGatewayPaymentEntity($contentToSave);
 
         return $this->getOtpSubmitRequest($input);
     }
@@ -310,8 +310,8 @@ class Gateway extends Base\Gateway
         $response = $content['response'];
 
         $attributes = [
-            Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER],
-            Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER],
+            Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER] ?? null,
+            Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER] ?? null,
             Entity::AMOUNT              => $this->input['payment']['amount'] / 100
         ];
 
