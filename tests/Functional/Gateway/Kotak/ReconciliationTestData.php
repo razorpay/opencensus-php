@@ -58,6 +58,7 @@ return [
         'failure_reason'    => 'Reconciliation',
         'status'            => 'failed',
         'attempts'          => 1,
+        'remarks'           => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
     ],
 
     // status is not matched as we keep it created till 10pm
