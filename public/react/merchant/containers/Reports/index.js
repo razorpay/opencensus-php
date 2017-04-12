@@ -21,7 +21,8 @@ function numberOfDays(month, year) {
       mode: state.session.mode,
       user: state.session.user
     }
-  }
+  },
+  {...NotificationsActions}
 )
 export default class ReportsContainer extends Component {
 
@@ -164,8 +165,10 @@ export default class ReportsContainer extends Component {
       data: data,
     }
 
-    if (entity === 'broking'){
-      ajaxParams.responseType = 'arraybuffer';
+    if (entity === 'broking') {
+      ajaxParams.xhrFields = {
+        responseType: 'arraybuffer'
+      }
       ajaxParams.headers = {
         Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       }
@@ -173,9 +176,17 @@ export default class ReportsContainer extends Component {
 
     var request = ajax(ajaxParams)
       .then((data)=> {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Your report will download shortly'
+        })
         location.href = data.data.url;
       })
       .catch((e)=> {
+        this.props.showNotification({
+          type: 'danger',
+          message: 'No data found for given time range'
+        })
       })
   }
 }
