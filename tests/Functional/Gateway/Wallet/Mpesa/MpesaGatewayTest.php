@@ -2,8 +2,9 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Mpesa;
 
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Wallet\Mpesa\SoapAction;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class MpesaGatewayTest extends TestCase
 {
@@ -62,11 +63,38 @@ class MpesaGatewayTest extends TestCase
         );
     }
 
+    public function testOtpGenerationFailure()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockOtpGenerationFailure();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            }
+        );
+    }
+
     protected function mockCustomerValidationFailure()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            if ($action === '<pay:validateCustomer />')
+            if ($action === SoapAction::CUSTOMER_API)
+            {
+                $content['statusCode'] = '101';
+                $content['description'] = 'Mobile number not found';
+            }
+        });
+    }
+
+    protected function mockOtpGenerationFailure()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === SoapAction::OTP_GENERATE_API)
             {
                 $content['statusCode'] = '101';
                 $content['description'] = 'Mobile number not found';

@@ -57,6 +57,8 @@ class Server extends Base\Mock\Server
             ResponseFields::RESPONSE_ID => uniqid()
         ];
 
+        $this->content($data, SoapAction::OTP_GENERATE_API);
+
         $response = [
             ResponseFields::OTP_GENERATE    => [
                 ResponseFields::S2S_REF_NUMBER    => 'mcomOTP' . $randInt,
