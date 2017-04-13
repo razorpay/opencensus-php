@@ -608,6 +608,11 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
+        if ($input['payment']['merchant_id'] != '7ERr8hsHZOCZoe')
+        {
+            return;
+        }
+
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $refund = $this->createGatewayRefundEntity($attributes);
