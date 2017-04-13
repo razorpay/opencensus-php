@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Wallet\Mpesa\Mock;
 
 use RZP\Base;
-use RZP\Gateway\Wallet\Mpesa\SoapAction;
 use RZP\Gateway\Wallet\Mpesa\RequestFields;
 
 class Validator extends Base\Validator
@@ -24,7 +23,9 @@ class Validator extends Base\Validator
         RequestFields::SURCHARGE             => 'required|string|in:0.0',
     ];
 
-    // protected static $validateCustomerRules = [
-    //     SoapAction::CUSTOMER_API => 'required|array|size:1'
-    // ];
+    protected static $validateCustomerRules = [
+        RequestFields::CHANNEL_ID    => 'required|numeric|in:11',
+        RequestFields::REQUEST_ID    => 'required|string|size:13',
+        RequestFields::MOBILE_NUMBER => 'required|string|size:10'
+    ];
 }

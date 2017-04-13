@@ -44,7 +44,9 @@ class Server extends Base\Mock\Server
 
     public function validateCustomer(array $input)
     {
-        // $this->validateActionInput($input, SoapMethod::VALIDATE_CUSTOMER);
+        $request = $input[SoapAction::CUSTOMER_API][RequestFields::COMMON_SERVICE_DATA];
+
+        $this->validateActionInput($request, SoapMethod::VALIDATE_CUSTOMER);
 
         $response = [
             ResponseFields::LC_STATUS       => Constants::SUCCESS,
