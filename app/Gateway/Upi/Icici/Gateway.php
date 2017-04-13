@@ -608,7 +608,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        if ($input['payment']['merchant_id'] != '7ERr8hsHZOCZoe')
+        if ($input['payment']['merchant_id'] != '10000000000000')
         {
             return;
         }
@@ -680,6 +680,45 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+
+    public function generateRefunds($input)
+    {
+        $paymentIds = array_map(function($row)
+        {
+            return $row['payment']['id'];
+        }, $input['data']);
+
+        $payments = $this->repo->fetchByPaymentIdsAndAction(
+            $paymentIds, Action::AUTHORIZE);
+
+        $refunds = $this->repo->fetchByPaymentIdsAndAction(
+            $paymentIds, Action::REFUND);
+
+        $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);
+
+        $refunds = $refunds->getDictionaryByAttribute(Entity::REFUND_ID);
+
+        $input['data'] = array_map(function($row) use ($payments, $refunds)
+        {
+            $paymentId = $row['payment']['id'];
+            $refundId = $row['refund']['id'];
+
+            if ((isset($refunds[$refundId]) === false) and
+                (isset($payments[$paymentId]) === true))
+            {
+                $row['gateway'] = $payments[$paymentId]->toArray();
+            }
+
+            return $row;
+        }, $input['data']);
+
+        $ns = $this->getGatewayNamespace();
+
+        $class = $ns . '\\' . 'RefundFile';
+
+        return (new $class)->generate($input);
     }
 
 }
