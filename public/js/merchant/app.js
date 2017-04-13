@@ -227,7 +227,21 @@ var app = angular.module('app', [
     }).state('app.teammanagement', {
       url: '/team',
       templateProvider: reactTemplateProvider('<manage-team />')
+    }).state('app.x', {
+      url: '/x',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.x.list', {
+      url: '/list',
+      templateProvider: reactTemplateProvider('<payments-list />')
+    }).state('app.x.details', {
+      url: '/:id',
+      controller: ['$scope', '$stateParams', function($scope, $stateParams) {
+        $scope.id = $stateParams.id;
+      }],
+      templateProvider: reactTemplateProvider('<payment-details id="id"/>')
     })
+
+    /* TODO: change route names*/
 
       //Guest Routes
     .state('access', {

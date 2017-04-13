@@ -11,6 +11,8 @@ import customersReducer from 'merchant/modules/customers'
 import itemsReducer from 'merchant/modules/items'
 import ordersReducer from 'merchant/modules/orders/list'
 import orderReducer from 'merchant/modules/orders/details'
+import paymentsReducer from 'merchant/modules/payments/list'
+import paymentReducer from 'merchant/modules/payments/details'
 import settlementsReducer from 'merchant/modules/settlements/list'
 import settlementReducer from 'merchant/modules/settlements/details'
 import webhooksReducer from 'merchant/modules/webhooks'
@@ -31,6 +33,8 @@ export default combineReducers({
   items: itemsReducer,
   orders: ordersReducer,
   order: orderReducer,
+  payments: paymentsReducer,
+  payment: paymentReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
   webhooks: webhooksReducer,

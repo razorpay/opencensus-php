@@ -9,11 +9,16 @@ export default class ShowWhen extends Component {
   render() {
     let {
       notMyRole,
+      myRole,
       children,
       featureEnabled,
     } = this.props
 
-    let roles = notMyRole.split(' ')
+    if (myRole && notMyRole) {
+      throw new Error('myRole and notMyRole can\'t coexist for component ShowWhen')
+    }
+
+    let roles = myRole ? myRole.split(' ') : notMyRole.split(' ')
     let user = this.props.user
     let tags = (user && user.tags) || []
     let userRole
@@ -22,8 +27,14 @@ export default class ShowWhen extends Component {
       userRole = user.merchants[user.id].pivot.role
     }
 
-    if(roles.indexOf(userRole) > -1) {
-      return null
+    if (myRole) {
+      if (roles.indexOf(userRole) < 0) {
+        return null;
+      }
+    } else {
+      if(roles.indexOf(userRole) > -1) {
+        return null
+      }
     }
 
     if (featureEnabled && tags.indexOf(featureEnabled) === -1) {
