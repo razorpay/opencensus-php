@@ -57,6 +57,18 @@ class Entity extends Base\Entity
         self::ASSIGNABLE => 'bool',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Detach the permission from all roles and orgs
+        static::deleting(function ($permission)
+        {
+            $permission->roles()->detach();
+            $permission->orgs()->detach();
+        });
+    }
+
     /**
      * Returns all roles with permission in organisation
      *
@@ -69,7 +81,7 @@ class Entity extends Base\Entity
     /**
      * Returns organisation for permission
      **/
-    public function org()
+    public function orgs()
     {
         return $this->morphedByMany(Org\Entity::class, 'entity', Table::PERMISSION_MAP);
     }

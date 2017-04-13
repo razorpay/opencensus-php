@@ -66,7 +66,23 @@ class PermissionTest extends TestCase
     public function testDeletePermission()
     {
         $perm = $this->fixtures->create(
-            'permission');
+            'permission', ['name' => 'test perm']);
+
+        $perm->orgs()->attach($this->org);
+
+        $role = $this->fixtures->create(
+            'role',
+            ['org_id' => $this->org->getId(), 'name' => 'test name']);
+
+        $perm->roles()->attach($role);
+
+        $orgPerms = $this->org->permissions()->getRelatedIds()->toArray();
+
+        $this->assertContains($perm->getId(), $orgPerms);
+
+        $rolePerms = $role->permissions()->getRelatedIds()->toArray();
+
+        $this->assertCount(1, $rolePerms);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -75,6 +91,15 @@ class PermissionTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $orgPerms = $this->org->permissions()->getRelatedIds()->toArray();
+
+        $this->assertNotContains($perm->getId(), $orgPerms);
+
+        $rolePerms = $role->permissions()->getRelatedIds()->toArray();
+
+        $this->assertCount(0, $rolePerms);
+
     }
 
     public function testGetMultipleForRazorpayOrg()
@@ -112,7 +137,7 @@ class PermissionTest extends TestCase
     {
         $role = $this->fixtures->create(
             'role',
-            ['org_id' => $this->org->getId(), 'name' => 'asd']);
+            ['org_id' => $this->org->getId(), 'name' => 'test name']);
 
         $perms = ['edit_admin'];
 

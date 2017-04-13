@@ -11,13 +11,14 @@ class Service extends Base\Service
     public function createPermission(array $input)
     {
         $permission = $this->repo->transactionOnLiveAndTest(function() use($input){
+
             $permission = $this->core()->create($input);
 
             if (empty($input[Entity::ORGS]) === false)
             {
                 Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
 
-                $permission->org()->sync($input[Entity::ORGS]);
+                $this->repo->sync($permission, 'orgs', $input[Entity::ORGS]);
             }
 
             return $permission;
