@@ -257,7 +257,7 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $server = $this->mockServerContentFunction(function (&$content)
+        $server = $this->mockServerContentFunction(function (& $content)
         {
             $content['TxnStatus'] = 'REJECT';
         });
@@ -320,7 +320,7 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['success'] = 'false';
             $content['response'] = 5013;
@@ -341,7 +341,7 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['success'] = 'false';
             $content['response'] = 5009;
@@ -362,7 +362,7 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['success'] = 'false';
             $content['response'] = 5011;
@@ -383,7 +383,7 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['success'] = 'false';
             $content['response'] = 5014;
@@ -404,7 +404,7 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['success'] = 'false';
             $content['response'] = 8000;
@@ -425,7 +425,7 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function(& $content)
         {
             $content['success'] = 'false';
             $content['response'] = 8009;
