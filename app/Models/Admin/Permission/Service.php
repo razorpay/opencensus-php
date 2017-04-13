@@ -36,9 +36,12 @@ class Service extends Base\Service
 
     public function getPermission(string $permissionId)
     {
-        Entity::verifyIdAndStripSign($permissionId);
+        $relations = ['orgs'];
 
-        $permission = $this->repo->permission->findOrFailPublic($permissionId);
+        $permission = $this->repo
+                           ->permission
+                           ->findByPublicIdWithRelations(
+                               $permissionId, $relations);
 
         return $permission->toArrayPublic();
     }

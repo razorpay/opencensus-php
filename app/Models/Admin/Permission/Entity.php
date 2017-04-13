@@ -43,6 +43,7 @@ class Entity extends Base\Entity
         self::DESCRIPTION,
         self::CATEGORY,
         self::ASSIGNABLE,
+        self::ORGS,
     ];
 
     protected $visible = [

@@ -40,7 +40,9 @@ class PermissionTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->startTest();
+        $result = $this->startTest();
+
+        $this->assertArrayHasKey('orgs', $result);
     }
 
     public function testCreatePermission()
