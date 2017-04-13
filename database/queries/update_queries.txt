@@ -159,8 +159,8 @@ UPDATE transactions
     ON transactions.entity_id = payments.id
     SET transactions.fee = 0,
         transactions.service_tax = 0
-    WHERE payments.status = 'authorized' AND
-          transactions.fee > 0
+    WHERE payments.captured_at is null AND
+          transactions.fee > 0;
 
 DELETE FROM fees_breakup
     WHERE transaction_id IN (
@@ -168,6 +168,6 @@ DELETE FROM fees_breakup
             FROM transactions
             JOIN payments
             ON transactions.entity_id = payments.id
-            WHERE payments.status = 'authorized' AND
+            WHERE payments.captured_at is null AND
                   transactions.fee > 0
-        )
+        );
