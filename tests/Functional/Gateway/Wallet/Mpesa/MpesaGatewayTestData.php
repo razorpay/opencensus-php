@@ -22,7 +22,7 @@ return [
         'action'   => 'otp_generate',
         'received' => true,
         'wallet'   => 'mpesa',
-        'amount'   => 500
+        'amount'   => 50000
     ],
 
     'testAuthPayment' => [

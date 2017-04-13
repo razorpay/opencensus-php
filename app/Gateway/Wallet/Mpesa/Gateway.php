@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Mpesa;
 
+use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -13,7 +14,6 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Entity as Payment;
@@ -27,9 +27,9 @@ class Gateway extends Base\Gateway
     const DATE_FORMAT = 'dmY';
 
     protected $map = [
-        RequestFields::MERCHANT_CODE    => Entity::GATEWAY_MERCHANT_ID,
-        RequestFields::AMOUNT           => Entity::AMOUNT,
-        RequestFields::TRANSACTION_DATE => Entity::DATE,
+        RequestFields::MERCHANT_CODE    => Base\Entity::GATEWAY_MERCHANT_ID,
+        RequestFields::AMOUNT           => Base\Entity::AMOUNT,
+        RequestFields::TRANSACTION_DATE => Base\Entity::DATE,
     ];
 
     public function authorize(array $input)
@@ -64,7 +64,7 @@ class Gateway extends Base\Gateway
 
         $this->saveCallbackResponse($content);
 
-        $this->checkActionStatus($content[ResponseFields::STATUS_CODE]);
+        $this->checkGatewayResponseStatus($content[ResponseFields::STATUS_CODE]);
 
         return $this->getCallbackResponseData($input);
     }
@@ -99,7 +99,7 @@ class Gateway extends Base\Gateway
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // Otp generation fails, throw exception
-        $this->checkActionStatus($status);
+        $this->checkGatewayResponseStatus($status);
 
         return $this->getOtpSubmitRequest($input);
     }
@@ -131,7 +131,7 @@ class Gateway extends Base\Gateway
         $this->saveOtpCallbackContent($content);
 
         // Otp submission fails, throw exception
-        $this->checkActionStatus($status);
+        $this->checkGatewayResponseStatus($status);
 
         return $this->getCallbackResponseData($input);
     }
@@ -164,7 +164,7 @@ class Gateway extends Base\Gateway
         $this->createGatewayRefundEntity($attributes);
 
         // response will contain status 100 or 101
-        $this->checkActionStatus($status);
+        $this->checkGatewayResponseStatus($status);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -266,7 +266,7 @@ class Gateway extends Base\Gateway
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // response will contain status 100 or 101
-        $this->checkActionStatus($status);
+        $this->checkGatewayResponseStatus($status);
     }
 
     protected function getOtpGenerateContentToSave(array $content)
@@ -274,9 +274,9 @@ class Gateway extends Base\Gateway
         $response = $content['response'];
 
         $attributes = [
-            Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER] ?? null,
-            Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER] ?? null,
-            Entity::AMOUNT              => $this->input['payment']['amount'] / 100
+            Base\Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER] ?? null,
+            Base\Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER] ?? null,
+            Base\Entity::AMOUNT              => $this->input['payment']['amount']
         ];
 
         return $attributes;
@@ -288,8 +288,8 @@ class Gateway extends Base\Gateway
             $this->input['payment']['id'], Action::OTP_GENERATE);
 
         $attributes = [
-            Entity::RECEIVED           => true,
-            Entity::GATEWAY_PAYMENT_ID => $content[ResponseFields::S2S_TRANS_ID] ?? null
+            Base\Entity::RECEIVED           => true,
+            Base\Entity::GATEWAY_PAYMENT_ID => $content[ResponseFields::S2S_TRANS_ID] ?? null
         ];
 
         $this->updateGatewayPaymentEntity($wallet, $attributes, false);
@@ -383,7 +383,7 @@ class Gateway extends Base\Gateway
     {
         $data = [
             RequestFields::CHANNEL_ID    => Constants::CHANNEL_ID,
-            RequestFields::REQUEST_ID    => uniqid(),
+            RequestFields::REQUEST_ID    => gen_uuid(),
             RequestFields::MOBILE_NUMBER => $this->getFormattedPhoneNo(),
         ];
 
@@ -393,7 +393,7 @@ class Gateway extends Base\Gateway
     protected function getOtpGenerateData()
     {
         $data = [
-            RequestFields::REQUEST_ID     => uniqid(),
+            RequestFields::REQUEST_ID     => gen_uuid(),
             RequestFields::CHANNEL_ID     => Constants::CHANNEL_ID,
             RequestFields::ENTITY_TYPE_ID => Constants::ENTITY_TYPE_ID,
             RequestFields::MOBILE_NUMBER  => $this->getFormattedPhoneNo()
@@ -455,14 +455,14 @@ class Gateway extends Base\Gateway
         $input = $this->input;
 
         $attributes = [
-            Entity::RECEIVED             => true,
-            Entity::PAYMENT_ID           => $input['payment']['id'],
-            Entity::WALLET               => Wallet::MPESA,
-            Entity::AMOUNT               => $input['refund']['amount'] / 100,
-            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID] ?? null,
-            Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
-            Entity::REFUND_ID            => $input['refund']['id'],
-            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
+            Base\Entity::RECEIVED             => true,
+            Base\Entity::PAYMENT_ID           => $input['payment']['id'],
+            Base\Entity::WALLET               => Wallet::MPESA,
+            Base\Entity::AMOUNT               => $input['refund']['amount'] / 100,
+            Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID] ?? null,
+            Base\Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
+            Base\Entity::REFUND_ID            => $input['refund']['id'],
+            Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
         ];
 
         return $attributes;
@@ -499,10 +499,19 @@ class Gateway extends Base\Gateway
 
     protected function getXmlData(array $array, string $xmlRoot)
     {
+        //
+        // Simple XML Element takes the values of the associate array
+        // as the XML elements. Therefore, we need to flip the array
+        // to ensure that the keys are selected instead.
+        //
         $actionParam = array_flip($array);
 
         $actionParamXml = new SimpleXMLElement($xmlRoot);
 
+        //
+        // Recursively walks through the array and adds each entry in $actionParam
+        // into $actionParamXml as an XML child of the origin XML root.
+        //
         array_walk_recursive($actionParam, [$actionParamXml, 'addChild']);
 
         $actionParamXml = trim(explode('?>', $actionParamXml->asXML())[1]);
@@ -544,7 +553,7 @@ class Gateway extends Base\Gateway
         return $headers;
     }
 
-    protected function checkActionStatus(string $status)
+    protected function checkGatewayResponseStatus(string $status)
     {
         if (StatusCode::checkIfSuccessStatus($status) === false)
         {
@@ -562,10 +571,10 @@ class Gateway extends Base\Gateway
             $this->input['payment']['id'], Action::AUTHORIZE);
 
         $contentToSave = [
-            Entity::RECEIVED             => true,
-            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::COM_TRANSACTION_ID],
-            Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
-            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],
+            Base\Entity::RECEIVED             => true,
+            Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::COM_TRANSACTION_ID],
+            Base\Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
+            Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],
         ];
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
@@ -582,14 +591,14 @@ class Gateway extends Base\Gateway
         $errorMessage = StatusCode::getErrorMessage($content[ResponseFields::S2S_STATUS_CODE]);
 
         $contentToSave = [
-            Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
-            Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER],
-            Entity::RESPONSE_DESCRIPTION => $errorMessage
+            Base\Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
+            Base\Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER],
+            Base\Entity::RESPONSE_DESCRIPTION => $errorMessage
         ];
 
-        if (empty($wallet[Entity::GATEWAY_PAYMENT_ID]) === true)
+        if (empty($wallet[Base\Entity::GATEWAY_PAYMENT_ID]) === true)
         {
-            $contentToSave[Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::S2S_TRANS_ID] ?? null;
+            $contentToSave[Base\Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::S2S_TRANS_ID] ?? null;
         }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);

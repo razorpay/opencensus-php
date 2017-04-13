@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Mpesa\Mock;
 
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Wallet\Mpesa;
 
 class Gateway extends Mpesa\Gateway
@@ -18,5 +19,32 @@ class Gateway extends Mpesa\Gateway
                             ]);
 
         return $request;
+    }
+
+    protected function sendSoapRequest($data, $soapRoot, $method)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_SOAP_REQUEST,
+            [
+                'payment_id'  => $this->input['payment']['id'],
+                'gateway'     => $this->gateway,
+                'soap_method' => $method,
+                'request'     => [
+                    $soapRoot => $data
+                ],
+            ]);
+
+        return $this->callGatewayRequestInternally($method, [$soapRoot => $data]);
+    }
+
+    protected function callGatewayRequestInternally($method, $arguments)
+    {
+        $server = $this->app['gateway']->server($this->gateway);
+
+        $server->setInput($arguments);
+
+        $response = $server->$method($arguments);
+
+        return $response;
     }
 }
