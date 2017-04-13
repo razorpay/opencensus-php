@@ -55,9 +55,7 @@ class Core extends Base\Core
 
     public function update(Entity $workflow, array $input)
     {
-        $openWorkflows = (new Action\Core)->fetchOpenWorkflows($workflow->getId());
-
-        if (count($openWorkflows) > 0)
+        if ($this->isWorkflowEditable($workflow) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
@@ -87,9 +85,7 @@ class Core extends Base\Core
 
     public function delete(Entity $workflow)
     {
-        $openWorkflows = (new Action\Core)->fetchOpenWorkflows($workflow->getId());
-
-        if (count($openWorkflows) > 0)
+        if ($this->isWorkflowEditable($workflow) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
@@ -102,12 +98,18 @@ class Core extends Base\Core
 
     protected function getPermissionIds(Entity $workflow, array $permissions = [])
     {
-        $permissionIds = $workflow->permissions
-                                  ->map(function($permission) {
-                                        return $permission->getId();
-                                    })
-                                  ->toArray();
+        $permissionIds = $workflow->permissions->getRelatedIds()->toArray();
 
         return array_unique(array_merge($permissionIds, $permissions));
+    }
+
+    public function isWorkflowEditable(Entity $workflow)
+    {
+        $actions = $this->repo
+                        ->workflow_action
+                        ->fetchOpenActionsByWorkflowId($workflow->getId())
+                        ->toArray();
+
+        return (empty($actions) === true);
     }
 }

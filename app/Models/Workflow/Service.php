@@ -26,7 +26,11 @@ class Service extends Base\Service
                                ->findByPublicIdAndOrgIdWithRelations(
                                    $id, $orgId, ['steps', 'permissions']);
 
-        return $workflow->toArrayPublic();
+        $data = $workflow->toArrayPublic();
+
+        $data['isEditable'] = $this->core()->isWorkflowEditable($workflow);
+
+        return $data;
     }
 
     public function fetchMultiple(string $orgId, array $input)
