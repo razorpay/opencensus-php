@@ -242,6 +242,17 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Creates invoice with few line items such that the total invoice amount
+     * exceeds the allowed payment amount for merchant.
+     *
+     * @return
+     */
+    public function testCreateDraftInvoiceWithLineItemsAndMaxAllowedAmount()
+    {
+        $this->startTest();
+    }
+
     public function testInvoiceViewWithExpiredInvoice()
     {
         $skipReason = 'View endpoint will now not throw exception.
@@ -406,8 +417,6 @@ class InvoiceTest extends TestCase
     {
         $this->createDraftInvoice();
 
-        $invoice = $this->getLastEntity('invoice');
-
         $this->fixtures->create('item');
         $this->fixtures->create('line_item');
 
@@ -431,6 +440,13 @@ class InvoiceTest extends TestCase
         $this->assertNotContains('1000000003item', $lineItemIds);
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceWithLineItemsTooLargeAmount()
+    {
+        $this->testAddManyLineItemsToInvoice();
+
+        $this->startTest();
     }
 
     public function testUpdateDraftInvoiceAmountWhenLineItemsExists()

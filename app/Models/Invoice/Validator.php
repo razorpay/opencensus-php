@@ -181,7 +181,7 @@ class Validator extends Base\Validator
 
         $this->checkIfAmountIsExpectedInInput($input);
 
-        $this->checkForMaxAllowedAmount($input);
+        $this->validateMaxAllowedAmount($input[Entity::AMOUNT]);
     }
 
     /**
@@ -222,23 +222,23 @@ class Validator extends Base\Validator
 
     /**
      * Checks if amount is lesser than max payment amount allowed for merchant.
+     * This method also gets called from other flow when line_items are getting
+     * added/updated/removed. At that time too we need to check for the following.
      *
-     * @param array $input
+     * @param int $amount
      *
      * @throws BadRequestValidationFailureException
      *
      * @return
      */
-    private function checkForMaxAllowedAmount(array $input)
+    public function validateMaxAllowedAmount(int $amount)
     {
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
-
-        $amount = $input[Entity::AMOUNT];
 
         if ($amount > $maxAmountAllowed)
         {
             throw new BadRequestValidationFailureException(
-                'Amount exceeds maximum amount allowed.',
+                'Invoice amount exceeds maximum payment amount allowed.',
                 'amount',
                 [
                     'amount'             => $amount,
