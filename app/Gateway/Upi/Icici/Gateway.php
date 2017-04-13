@@ -608,7 +608,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        if ($input['payment']['merchant_id'] != '10000000000000')
+        if ($input['payment']['merchant_id'] !== '10000000000000')
         {
             return;
         }
@@ -638,7 +638,7 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 $errorCode,
                 $content[Fields::STATUS],
-                ResponseCode::getResponseMessage($content[Fields::RESPONSE]));
+                ResponseCode::getResponseMessage($code));
         }
 
         $this->updateGatewayPaymentResponse($refund, $content);
@@ -676,7 +676,7 @@ class Gateway extends Base\Gateway
             [
                 'request' => $request,
                 'decrypted_content' => $data,
-                'gateway' => 'upi_icici',
+                'gateway' => $this->gateway,
             ]);
 
         return $request;
