@@ -13,6 +13,8 @@ class MpesaGatewayTest extends TestCase
 
     const WALLET = 'mpesa';
 
+    const OTP = '1234';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/MpesaGatewayTestData.php';
@@ -26,6 +28,8 @@ class MpesaGatewayTest extends TestCase
         $this->fixtures->merchant->enableWallet('10000000000000', self::WALLET);
 
         $this->payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->setOtp(self::OTP);
     }
 
     public function testOtpPayment()

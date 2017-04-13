@@ -6,10 +6,11 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
+use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Exception\ServerErrorException;
 use RZP\Gateway\Wallet\Mpesa\Constants;
-use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
+use RZP\Gateway\Wallet\Mpesa\SoapMethod;
 use RZP\Gateway\Wallet\Mpesa\StatusCode;
 use RZP\Gateway\Wallet\Mpesa\RequestFields;
 use RZP\Gateway\Wallet\Mpesa\ResponseFields;
@@ -18,11 +19,17 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        unset($input['paymentId']);
+
         $this->content($input, Action::AUTH_REQUEST);
 
         $this->validateChecksum($input);
 
+        $this->validateAuthorizeInput($input);
+
         $request = $this->parseRequestXml($input);
+
+        $this->validateActionInput($request, RequestFields::GATEWAY_PARAM);
 
         $response = $this->getAuthResponse($request);
 
@@ -37,6 +44,8 @@ class Server extends Base\Mock\Server
 
     public function validateCustomer(array $input)
     {
+        // $this->validateActionInput($input, SoapMethod::VALIDATE_CUSTOMER);
+
         $response = [
             ResponseFields::LC_STATUS       => Constants::SUCCESS,
             ResponseFields::S2S_STATUS_CODE => StatusCode::SUCCESS,
