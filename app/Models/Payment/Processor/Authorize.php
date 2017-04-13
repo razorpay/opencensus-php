@@ -2203,12 +2203,12 @@ trait Authorize
     protected function isOtpOrAuthFlow(array $input): bool
     {
         if ((isset($input['_']['isOtp']) === true) and
-            ($input['_']['isOtp'] === true))
+            ($input['_']['isOtp'] === false))
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     protected function runOtpPaymentFlow(array $gatewayInput, Payment\Entity $payment)

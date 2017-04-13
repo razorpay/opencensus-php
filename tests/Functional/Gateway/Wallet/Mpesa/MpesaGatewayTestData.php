@@ -16,7 +16,6 @@ return [
         'wallet'          => 'mpesa',
         'gateway'         => 'wallet_mpesa',
         'terminal_id'     => '100VodaMpesaTl',
-        'otp_count'       => 1,
     ],
 
     'testOtpPaymentWalletEntity' => [
