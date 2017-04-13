@@ -53,14 +53,17 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+        $content = $input['gateway'];
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $content);
 
         $this->assertPaymentId($input['payment']['id'],
-                               $input['gateway'][ResponseFields::TRANSACTION_REFERENCE]);
+                               $content[ResponseFields::TRANSACTION_REFERENCE]);
 
-        $this->saveCallbackResponse($input['gateway']);
+        $this->saveCallbackResponse($content);
 
-        $this->checkCallbackStatus($input['gateway']);
+        $this->checkActionStatus($content[ResponseFields::STATUS_CODE],
+                                 $content[ResponseFields::REASON]);
 
         return $this->getCallbackResponseData($input);
     }
@@ -95,17 +98,7 @@ class Gateway extends Base\Gateway
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // Otp generation fails, throw exception
-        if (StatusCode::checkIfSuccessStatus($status) === false)
-        {
-            // TODO: Map statuses to error codes
-            $errorCode = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
-
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $status,
-                $content[ResponseFields::DESCRIPTION]
-            );
-        }
+        $this->checkActionStatus($status, $content[ResponseFields::DESCRIPTION]);
 
         return $this->getOtpSubmitRequest($input);
     }
@@ -137,17 +130,7 @@ class Gateway extends Base\Gateway
         $this->saveOtpCallbackContent($content);
 
         // Otp submission fails, throw exception
-        if (StatusCode::checkIfSuccessStatus($status) === false)
-        {
-            // TODO: Map statuses to error codes
-            $errorCode = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
-
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $status,
-                $content[ResponseFields::DESCRIPTION]
-            );
-        }
+        $this->checkActionStatus($status, $content[ResponseFields::LC_STATUS]);
 
         return $this->getCallbackResponseData($input);
     }
@@ -180,17 +163,7 @@ class Gateway extends Base\Gateway
         $this->createGatewayRefundEntity($attributes);
 
         // response will contain status 100 or 101
-        if (StatusCode::checkIfSuccessStatus($status) === false)
-        {
-            // TODO: Map statuses to error codes
-            $errorCode = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
-
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $status,
-                $content[ResponseFields::REASON]
-            );
-        }
+        $this->checkActionStatus($status, $content[ResponseFields::REASON]);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -292,17 +265,7 @@ class Gateway extends Base\Gateway
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // response will contain status 100 or 101
-        if (StatusCode::checkIfSuccessStatus($status) === false)
-        {
-            // TODO: Map statuses to error codes
-            $errorCode = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
-
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $status,
-                $content[ResponseFields::DESCRIPTION]
-            );
-        }
+        $this->checkActionStatus($status, $content[ResponseFields::DESCRIPTION]);
     }
 
     protected function getOtpGenerateContentToSave(array $content)
@@ -572,26 +535,22 @@ class Gateway extends Base\Gateway
 
     protected function getSoapHeaders()
     {
-        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
-
         $headers = [
-            new SoapHeader($wsseNs, 'userId', $this->getSoapUserId()),
-            new SoapHeader($wsseNs, 'password', $this->getSoapPassword())
+            new SoapHeader(Url::WSDL, Constants::USER_ID, $this->getSoapUserId()),
+            new SoapHeader(Url::WSDL, Constants::PASSWORD, $this->getSoapPassword())
         ];
 
         return $headers;
     }
 
-    protected function checkCallbackStatus(array $content)
+    protected function checkActionStatus(string $status, string $description)
     {
-        $status = $content[ResponseFields::STATUS_CODE];
-
         if (StatusCode::checkIfSuccessStatus($status) === false)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $content[ResponseFields::STATUS_CODE],
-                $content[ResponseFields::REASON]
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                $status,
+                $description
             );
         }
     }

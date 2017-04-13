@@ -18,4 +18,8 @@ class Constants
 
     // Response Constants
     const SUCCESS          = 'SUCCESS';
+
+    // Soap constants
+    const USER_ID          = 'userId';
+    const PASSWORD         = 'password';
 }

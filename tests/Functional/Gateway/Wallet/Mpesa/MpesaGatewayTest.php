@@ -77,7 +77,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testAuthPaymentFailure()
     {
-        $testData = $this->testData[__FUNCTION__];
+        $data = $this->testData[__FUNCTION__];
 
         //
         // Manually setting the payment to auth flow
@@ -88,7 +88,12 @@ class MpesaGatewayTest extends TestCase
 
         $this->mockAuthCallbackFailure();
 
-        $this->doAuthPayment($payment);
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
     }
 
     public function testOtpCustomerValidationFailure()
@@ -255,7 +260,7 @@ class MpesaGatewayTest extends TestCase
         {
             if ($action === Action::AUTHORIZE)
             {
-                $content['statusCode'] = '101';
+                $content['statuscode'] = '101';
                 $content['reason'] = 'Failure';
             }
         });
@@ -292,7 +297,7 @@ class MpesaGatewayTest extends TestCase
             if ($action === SoapAction::OTP_SUBMIT_API)
             {
                 $content['statusCode'] = '104';
-                $content['description'] = 'Mobile number not found';
+                $content['status'] = 'Mobile number not found';
             }
         });
     }
