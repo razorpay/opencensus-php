@@ -2184,7 +2184,31 @@ trait Authorize
             }
         }
 
+        if (Payment\Gateway::isAuthAndPowerWallet($wallet) === true)
+        {
+            return $this->isOtpOrAuthFlow($input);
+        }
+
         return true;
+    }
+
+    /**
+     * For gateways that support both auth and otp flow,
+     * determine whether the payment is in auth or otp mode.
+     * This is mainly used for the test cases
+     *
+     * @param array $input
+     * @return bool
+     */
+    protected function isOtpOrAuthFlow(array $input): bool
+    {
+        if ((isset($input['_']['isOtp']) === true) and
+            ($input['_']['isOtp'] === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function runOtpPaymentFlow(array $gatewayInput, Payment\Entity $payment)

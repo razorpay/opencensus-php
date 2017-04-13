@@ -602,6 +602,7 @@ class Gateway extends Base\Gateway
             $this->input['payment']['id'], Action::AUTHORIZE);
 
         $contentToSave = [
+            Entity::RECEIVED             => true,
             Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::COM_TRANSACTION_ID],
             Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
             Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON],

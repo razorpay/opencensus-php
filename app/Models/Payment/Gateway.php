@@ -70,6 +70,10 @@ class Gateway
         Wallet::MPESA,
     );
 
+    const AUTH_AND_POWER_WALLETS = [
+        Wallet::MPESA,
+    ];
+
     const TOPUP_GATEWAYS = array(
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
@@ -649,6 +653,11 @@ class Gateway
     public static function isPowerWallet($wallet)
     {
         return (in_array($wallet, self::POWER_WALLETS));
+    }
+
+    public static function isAuthAndPowerWallet($wallet)
+    {
+        return (in_array($wallet, self::AUTH_AND_POWER_WALLETS));
     }
 
     public static function canGatewayTopup($gateway)

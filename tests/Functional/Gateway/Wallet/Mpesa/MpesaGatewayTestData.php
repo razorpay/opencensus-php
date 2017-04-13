@@ -16,6 +16,7 @@ return [
         'wallet'          => 'mpesa',
         'gateway'         => 'wallet_mpesa',
         'terminal_id'     => '100VodaMpesaTl',
+        'otp_count'       => 1,
     ],
 
     'testOtpPaymentWalletEntity' => [
@@ -23,6 +24,28 @@ return [
         'received' => true,
         'wallet'   => 'mpesa',
         'amount'   => 500
+    ],
+
+    'testAuthPayment' => [
+        'merchant_id'     => '10000000000000',
+        'amount'          => 50000,
+        'currency'        => 'INR',
+        'base_amount'     => 50000,
+        'status'          => 'authorized',
+        'two_factor_auth' => 'passed',
+        'method'          => 'wallet',
+        'wallet'          => 'mpesa',
+        'gateway'         => 'wallet_mpesa',
+        'terminal_id'     => '100VodaMpesaTl',
+    ],
+
+    'testAuthPaymentWalletEntity' => [
+        'action'               => 'authorize',
+        'received'             => true,
+        'wallet'               => 'mpesa',
+        'amount'               => 500,
+        'status_code'          => '100',
+        'response_description' => 'SUCCESS'
     ],
 
     'testAuthFailure' => [

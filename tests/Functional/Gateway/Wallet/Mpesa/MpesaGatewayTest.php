@@ -48,9 +48,30 @@ class MpesaGatewayTest extends TestCase
         $this->assertNotEmpty($wallet['contact']);
     }
 
-    public function testTopupPayment()
+    public function testAuthPayment()
     {
-        $this->markTestSkipped();
+        $testData = $this->testData[__FUNCTION__];
+
+        //
+        // Manually setting the payment to auth flow
+        // instead of otp flow to execute the test case correctly
+        //
+        $payment = $this->payment;
+        $payment['_']['isOtp'] = false;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertArraySelectiveEquals($testData, $payment);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testAuthPaymentWalletEntity');
+
+        $this->assertNotEmpty($wallet['gateway_payment_id']);
+
+        $this->assertEmpty($wallet['gateway_payment_id_2']);
     }
 
     public function testOtpCustomerValidationFailure()
