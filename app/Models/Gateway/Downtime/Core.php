@@ -67,6 +67,8 @@ class Core extends Base\Core
 
         $downtimes = $this->repo->gateway_downtime->fetch($input);
 
+        $serializer = new ViewDataSerializer($downtimes, $merchant);
+
         $formatted = [];
 
         foreach ($downtimes as $downtime)

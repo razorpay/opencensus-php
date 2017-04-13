@@ -221,46 +221,46 @@ class Gateway
      *
      * @var array
      */
-    public static $cardNetworkMap = array(
-        self::HDFC => array(
+    public static $cardNetworkMap = [
+        self::HDFC => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN),
-        self::AXIS_MIGS => array(
+            Network::UNKNOWN],
+        self::AXIS_MIGS => [
             Network::MC,
-            Network::VISA),
-        self::AXIS_GENIUS => array(
+            Network::VISA],
+        self::AXIS_GENIUS => [
             Network::MC,
-            Network::VISA),
-        self::ATOM => array(
+            Network::VISA],
+        self::ATOM => [
             Network::MC,
-            Network::VISA),
-        self::AMEX => array(
-            Network::AMEX),
-        self::PAYTM => array(
+            Network::VISA],
+        self::AMEX => [
+            Network::AMEX],
+        self::PAYTM => [
             Network::MC,
-            Network::VISA),
-        self::SHARP => array(
+            Network::VISA],
+        self::SHARP => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::AMEX,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN),
-        self::CYBERSOURCE => array(
+            Network::UNKNOWN],
+        self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA),
-        self::FIRST_DATA => array(
+            Network::VISA],
+        self::FIRST_DATA => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::RUPAY,
-        ),
-    );
+        ],
+    ];
 
     public static $walletToGatewayMap = array(
         Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
@@ -565,6 +565,22 @@ class Gateway
     {
         return ((array_key_exists($gateway, self::$cardNetworkMap)) and
                 (in_array($network, self::$cardNetworkMap[$gateway])));
+    }
+
+    public static function getExclusiveNetworksForGateway(string $gateway)
+    {
+        $supportedNetworks = self::$cardNetworkMap[$gateway];
+
+        $otherGatewayNetowrks = [];
+
+        foreach (self::$cardNetworkMap as $gateway => $networks)
+        {
+            $otherGatewayNetowrks = array_merge($otherGatewayNetowrks, $networks);
+        }
+
+        $otherGatewayNetowrks = array_values(array_unique($otherGatewayNetowrks));
+
+
     }
 
     public static function getGatewaysForNetbankingBank($bank, $isTPV = false)
