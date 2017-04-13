@@ -500,6 +500,8 @@ class BasicAuth
 
         if ($adminToken !== null)
         {
+            $this->request->headers->remove('X-Admin-Token');
+
             $token = $this->fetchAdminToken($adminToken);
 
             if ($token->getAdminId() !== null)
