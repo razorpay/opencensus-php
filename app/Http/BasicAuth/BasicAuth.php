@@ -518,6 +518,13 @@ class BasicAuth
 
             return $this->invalidApiKey();
         }
+
+        $currentRoute = $this->router->currentRouteName();
+
+        if (in_array($currentRoute, Route::$admin, true) === true)
+        {
+            return $this->invalidApiKey();
+        }
     }
 
     public function deviceAuth()
