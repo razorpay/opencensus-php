@@ -28,4 +28,26 @@ class Validator extends Base\Validator
         RequestFields::REQUEST_ID    => 'required|string|size:13',
         RequestFields::MOBILE_NUMBER => 'required|string|size:10'
     ];
+
+    protected static $pgSendOTPRules = [
+        RequestFields::REQUEST_ID     => 'required|string|size:13',
+        RequestFields::CHANNEL_ID     => 'required|numeric|in:11',
+        RequestFields::ENTITY_TYPE_ID => 'required|numeric|in:80',
+        RequestFields::MOBILE_NUMBER  => 'required|string|size:10'
+    ];
+
+    protected static $pgMrchntPymtRules = [
+        RequestFields::MERCHANT_CODE         => 'required|string',
+        RequestFields::TRANSACTION_DATE      => 'required|string|date_format:dmY',
+        RequestFields::TRANSACTION_REFERENCE => 'required|string|size:14',
+        RequestFields::TRANSACTION_TYPE      => 'required|string|in:W',
+        RequestFields::AMOUNT                => 'required|numeric',
+        RequestFields::MOBILE_NUMBER         => 'required|string|size:10',
+        RequestFields::FROM_ENTITY_TYPE      => 'required|numeric|in:80',
+        RequestFields::TO_ENTITY_TYPE        => 'required|numeric|in:85',
+        RequestFields::COMMAND_ID            => 'required|string|in:O',
+        RequestFields::OTP                   => 'required|string|size:4',
+        RequestFields::OTP_REF_NUMBER        => 'required|string|size:21',
+        RequestFields::CHANNEL_ID            => 'required|numeric|in:11',
+    ];
 }

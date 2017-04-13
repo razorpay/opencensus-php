@@ -64,15 +64,17 @@ class Server extends Base\Mock\Server
     {
         $randInt = mt_rand(11111111111111, 99999999999999);
 
-        $mobileNumber = $input[SoapAction::OTP_GENERATE_API]
-                              [RequestFields::COMMON_SERVICE_DATA]
-                              [RequestFields::MOBILE_NUMBER];
+        $request = $input[SoapAction::OTP_GENERATE_API][RequestFields::COMMON_SERVICE_DATA];
+
+        $this->validateActionInput($request, SoapMethod::SEND_OTP);
+
+        $mobileNumber = $request[RequestFields::MOBILE_NUMBER];
 
         $data = [
-            ResponseFields::LC_STATUS => Constants::SUCCESS,
+            ResponseFields::LC_STATUS       => Constants::SUCCESS,
             ResponseFields::S2S_STATUS_CODE => StatusCode::SUCCESS,
-            ResponseFields::DESCRIPTION => 'Otp Sent Successfully',
-            ResponseFields::RESPONSE_ID => uniqid()
+            ResponseFields::DESCRIPTION     => 'Otp Sent Successfully',
+            ResponseFields::RESPONSE_ID     => uniqid()
         ];
 
         $this->content($data, SoapAction::OTP_GENERATE_API);
@@ -91,6 +93,8 @@ class Server extends Base\Mock\Server
     public function pgMrchntPymt(array $input)
     {
         $request = $input[SoapAction::OTP_SUBMIT_API][RequestFields::MCOM_PAYMENT_REQ];
+
+        $this->validateActionInput($request, SoapMethod::OTP_SUBMIT);
 
         $transId = mt_rand(11111111111, 99999999999);
 
