@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Field, reduxForm, formValueSelector } from 'redux-form'
 import { titleCase } from 'rzp/utils/rzp-utils'
 import AsyncButton from 'react-async-button'
 import Header from 'rzp/ui/Header'
 import moment from 'moment'
 import ajax from 'merchant/utils/ajax'
+import { generateReport } from 'merchant/modules/reports'
 import * as NotificationsActions from 'rzp/modules/notifications'
 
 let now = moment();
@@ -16,143 +18,41 @@ function numberOfDays(month, year) {
   return moment(year + ' ' + month, 'YYYY M').daysInMonth();
 }
 
+const selector = formValueSelector('generateReports');
+
 @connect(
   (state) => {
     return {
       mode: state.session.mode,
-      user: state.session.user
+      user: state.session.user,
+      entity: selector(state, 'entity'),
+      type: selector(state, 'type'),
+      month: selector(state, 'month'),
+      year: selector(state, 'year')
     }
   },
-  {...NotificationsActions}
+  {generateReport, ...NotificationsActions}
 )
-export default class ReportsContainer extends Component {
-
-  state = {
+@reduxForm({
+  form: 'generateReports',
+  initialValues: {
     entity: 'payment',
     type: 'monthly',
     month: currentMonth,
     year: currentYear,
     day: currentDate
   }
+})
+export default class ReportsContainer extends Component {
 
-  onChange = (r)=> {
-    this.setState({
-      [r.target.name]: r.target.value
-    })
-  }
-
-  render() {
-    let {
-      mode,
-      user
-    } = this.props;
-
+  prepareGenerateReport = (values)=> {
     let {
       entity,
       type,
       month,
       year,
       day
-    } = this.state;
-
-    return (
-      <div class='react-root'>
-        <Header title='Download Reports' />
-        <div class='content-wrapper'>
-          <div class="panel panel-default panel-form col-sm-8 col-sm-offset-2">
-            <div class="panel-heading m-t m-b">
-              Download Report - {titleCase(mode)} Mode
-            </div>
-            <div class="text-center m-t m-b">
-              <div class="row">
-                <div class="m-b col-sm-3">
-                  <select name="entity" class="form-control" value={entity} onChange={this.onChange}>
-                    <option value="payment">Payment</option>
-                    <option value="refund">Refund</option>
-                    <option value="order">Order</option>
-                    <option value="settlement">Settlement</option>
-                    <option value="transaction">Combined</option>
-                    {user.tags.indexOf('Broking_Report') === -1 || (
-                      <option value="broking">Broking Report</option>
-                    )}
-                    <option value="invoice">Monthly Invoice</option>
-                    {user.tags.indexOf('Marketplace') === -1 || (
-                      <optgroup label='Marketplace'>
-                        <option value="transfer">Transfer</option>
-                        <option value="reversal">Reversal</option>
-                      </optgroup>
-                    )}
-                  </select>
-                </div>
-
-                {entity === 'invoice' || (
-                  <div class="m-b col-sm-2">
-                    <select name="type" class="form-control" value={type} onChange={this.onChange}>
-                      <option value="daily">Daily</option>
-                      <option value="monthly">Monthly</option>
-                    </select>
-                  </div>
-                )}
-
-                <div class="m-b col-sm-2">
-                  <select name="year" class="form-control" value={year} onChange={this.onChange}>
-                    <option value="2017">2017</option>
-                    <option value="2016">2016</option>
-                    <option value="2015">2015</option>
-                  </select>
-                </div>
-
-                <div class="m-b col-sm-3">
-                  <select name="month" class="form-control" value={month} onChange={this.onChange}>
-                    {moment.months().map((name, index)=> {
-                      return <option value={index+1} key={index}>{name}</option>
-                    })}
-                  </select>
-                </div>
-
-                {type === 'daily' && (
-                  <div class="m-b col-sm-2">
-                    <select name="day" class="form-control" value={day} onChange={this.onChange}>
-                      {Array.from(Array(numberOfDays(month, year)), ((undef, index)=> {
-                        return <option value={index+1} key={index}>{index+1}</option>
-                      }))}
-                    </select>
-                  </div>
-                )}
-
-              </div>
-              <AsyncButton
-                class="btn btn-primary btn-rounded"
-                onClick={this.generateReport}
-                text="Download Report"
-                pendingText="Generating..."
-              >
-              </AsyncButton>
-            </div>
-            <footer class="panel-footer">
-              <div class="text-center m-t m-b">
-                <div class="row">
-                  <div class="col-sm-12 text-center">
-                    Combined reports will include transactions on the given date, as well as payments
-                    settled on that given date.
-                  </div>
-                </div>
-              </div>
-            </footer>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  generateReport = ()=> {
-    let {
-      entity,
-      type,
-      month,
-      year,
-      day
-    } = this.state;
+    } = values;
 
     let data = {
       month,
@@ -180,7 +80,7 @@ export default class ReportsContainer extends Component {
       }
     }
 
-    return ajax(ajaxParams)
+    return this.props.generateReport(ajaxParams)
       .then((data)=> {
         this.props.showNotification({
           type: 'success',
@@ -198,9 +98,110 @@ export default class ReportsContainer extends Component {
       })
       .catch((e)=> {
         this.props.showNotification({
-          type: 'danger',
+          type: 'error',
           message: 'No data found for given time range'
         })
       })
+  }
+
+  render() {
+    let {
+      entity,
+      type,
+      mode,
+      month,
+      year,
+      user,
+      handleSubmit
+    } = this.props;
+
+    return (
+      <div class='react-root'>
+        <Header title='Download Reports' />
+        <div class='content-wrapper'>
+          <div class="panel panel-default panel-form col-sm-8 col-sm-offset-2">
+            <div class="panel-heading">
+              Download Report - {titleCase(mode)} Mode
+            </div>
+            <div class="text-center">
+              <div class="row">
+                <div class="col-sm-3">
+                  <Field name="entity" component="select" class="form-control">
+                    <option value="payment">Payment</option>
+                    <option value="refund">Refund</option>
+                    <option value="order">Order</option>
+                    <option value="settlement">Settlement</option>
+                    <option value="transaction">Combined</option>
+                    {user.tags.indexOf('Broking_Report') === -1 || (
+                      <option value="broking">Broking Report</option>
+                    )}
+                    <option value="invoice">Monthly Invoice</option>
+                    {user.tags.indexOf('Marketplace') === -1 || (
+                      <optgroup label='Marketplace'>
+                        <option value="transfer">Transfer</option>
+                        <option value="reversal">Reversal</option>
+                      </optgroup>
+                    )}
+                  </Field>
+                </div>
+
+                {entity === 'invoice' || (
+                  <div class="col-sm-2">
+                    <Field name="type" class="form-control" component="select">
+                      <option value="daily">Daily</option>
+                      <option value="monthly">Monthly</option>
+                    </Field>
+                  </div>
+                )}
+
+                <div class="col-sm-2">
+                  <Field name="year" class="form-control" component="select">
+                    <option value="2017">2017</option>
+                    <option value="2016">2016</option>
+                    <option value="2015">2015</option>
+                  </Field>
+                </div>
+
+                <div class="col-sm-3">
+                  <Field name="month" class="form-control" component="select">
+                    {moment.months().map((name, index)=> {
+                      return <option value={index+1} key={index}>{name}</option>
+                    })}
+                  </Field>
+                </div>
+
+                {type === 'daily' && (
+                  <div class="col-sm-2">
+                    <Field name="day" class="form-control" component="select">
+                      {Array.from(Array(numberOfDays(month, year)), ((undef, index)=> {
+                        return <option value={index+1} key={index}>{index+1}</option>
+                      }))}
+                    </Field>
+                  </div>
+                )}
+
+              </div>
+              <AsyncButton
+                class="btn btn-primary btn-rounded"
+                onClick={handleSubmit(this.prepareGenerateReport)}
+                text="Download Report"
+                pendingText="Generating..."
+              >
+              </AsyncButton>
+            </div>
+            <footer class="panel-footer">
+              <div class="text-center">
+                <div class="row">
+                  <div class="col-sm-12 text-center">
+                    Combined reports will include transactions on the given date, as well as payments
+                    settled on that given date.
+                  </div>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
+      </div>
+    )
   }
 }
