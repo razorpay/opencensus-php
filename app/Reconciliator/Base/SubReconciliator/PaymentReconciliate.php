@@ -1019,10 +1019,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->app['trace']->info(
             TraceCode::RECON_INFO_ALERT,
             [
-                'info_code'                         => 'PAYMENT_TRANSACTION_CREATE',
-                'message'                           => 'Attempting to create payment transaction in recon',
-                'payment_id'                        => $this->payment->getId(),
-                'gateway'                           => get_called_class()
+                'info_code'     => 'PAYMENT_TRANSACTION_CREATE',
+                'message'       => 'Attempting to create payment transaction in recon',
+                'payment_id'    => $this->payment->getId(),
+                'gateway'       => get_called_class()
             ]);
 
         list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);

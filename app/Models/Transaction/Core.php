@@ -167,7 +167,7 @@ class Core extends Base\Core
         $txn = new Transaction\Entity;
 
         // Case 1: Non AuthCapture flow, a txn already exists with min data.
-        // Case 2: Authcapture flow, we create a txn and associate merchant, payment with it.
+        // Case 2: Auth-capture flow, we create a txn and associate merchant, payment with it.
         if ($payment->hasTransaction() === true)
         {
             $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
