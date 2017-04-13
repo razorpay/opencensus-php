@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Workflow;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
 
@@ -18,4 +20,23 @@ class Validator extends Base\Validator
         Entity::NAME        => 'sometimes|string|max:150',
         Entity::PERMISSIONS => 'sometimes|array',
     ];
+
+    public function validatePermissionHasOneWorkflow(array $perms)
+    {
+        $workflow = $this->entity;
+
+        $workflowIds = (new Repository)->getWorkflowIdsForPermissions($perms);
+
+        if (empty($workflowIds) === false)
+        {
+            $data = [
+                'workflow_ids'   => $workflowIds,
+                'permission_ids' => $perms,
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS,
+                $data);
+        }
+    }
 }

@@ -16,6 +16,9 @@ class Core extends Base\Core
     {
         $workflow = (new Entity)->generateId();
 
+        $workflow->getValidator()->validatePermissionHasOneWorkflow(
+            $input[Entity::PERMISSIONS]);
+
         $workflow->build($input);
 
         // $minLevel = $this->getMinLevelFromSteps($input[Entity::STEPS]);

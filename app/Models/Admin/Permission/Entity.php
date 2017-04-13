@@ -70,4 +70,9 @@ class Entity extends Base\Entity
     {
         return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSION_MAP);
     }
+
+    public function workflows()
+    {
+        return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSIONS);
+    }
 }
