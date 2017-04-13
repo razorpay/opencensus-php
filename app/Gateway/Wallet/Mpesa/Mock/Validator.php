@@ -60,4 +60,13 @@ class Validator extends Base\Validator
         RequestFields::AMOUNT                    => 'required|numeric',
         RequestFields::CMDID                     => 'required|numeric|in:111'
     ];
+
+    protected static $refundPaymentTransactionRules = [
+        RequestFields::MERCHANT_CODE         => 'required|string',
+        RequestFields::COM_TRANSACTION_ID    => 'required|string|date_format:dmY',
+        RequestFields::QUERY_TRANSACTION_REF => 'required|string|size:11',
+        RequestFields::S2S_AMOUNT            => 'required|numeric',
+        RequestFields::REFUND_NARRATION      => 'required|string|refund',
+        RequestFields::REVERSAL_TYPE         => 'required|string|in:F,P'
+    ];
 }
