@@ -2,15 +2,26 @@
 
 namespace RZP\Models\Admin\Permission;
 
-use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 
 class Service extends Base\Service
 {
     public function createPermission(array $input)
     {
-        $permission = $this->core()->create($input);
+        $permission = $this->repo->transactionOnLiveAndTest(function() use($input){
+            $permission = $this->core()->create($input);
+
+            if (empty($input[Entity::ORGS]) === false)
+            {
+                Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
+
+                $permission->org()->sync($input[Entity::ORGS]);
+            }
+
+            return $permission;
+        });
 
         return $permission->toArrayPublic();
     }
@@ -48,7 +59,7 @@ class Service extends Base\Service
 
     public function getMultiplePermissions(string $orgId)
     {
-        Org::verifyIdAndStripSign($orgId);
+        Org\Entity::verifyIdAndStripSign($orgId);
 
         $perms = $this->repo->permission->fetchAllByOrg($orgId);
 

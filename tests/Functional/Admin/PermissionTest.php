@@ -48,6 +48,21 @@ class PermissionTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePermissionWithOrg()
+    {
+        $orgs = [$this->org->getPublicId()];
+
+        $this->testData[__FUNCTION__]['request']['content']['orgs'] = $orgs;
+
+        $result = $this->startTest();
+
+        $permId = Permission\Entity::verifyIdAndStripSign($result['id']);
+
+        $permIds = $this->org->permissions()->getRelatedIds()->toArray();
+
+        $this->assertContains($permId, $permIds);
+    }
+
     public function testDeletePermission()
     {
         $perm = $this->fixtures->create(
