@@ -79,5 +79,16 @@ return [
             ],
             'status_code' => 200,
         ],
+    ],
+
+    'testGetRolesForPermission' => [
+        'request' => [
+            'url'    => '/permissions/%s/roles',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
     ]
 ];

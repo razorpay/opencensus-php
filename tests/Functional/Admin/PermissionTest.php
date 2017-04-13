@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Admin;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Admin\Permission;
 
 class PermissionTest extends TestCase
 {
@@ -20,6 +21,8 @@ class PermissionTest extends TestCase
             'email'         => 'random@rzp.com',
             'email_domains' => 'rzp.com',
         ]);
+
+        $this->addAssignablePermissionsToOrg($this->org);
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
@@ -88,5 +91,30 @@ class PermissionTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testGetRolesForPermission()
+    {
+        $role = $this->fixtures->create(
+            'role',
+            ['org_id' => $this->org->getId(), 'name' => 'asd']);
+
+        $perms = ['edit_admin'];
+
+        $perm = (new Permission\Repository)->retrieveIdsByNames($perms)[0];
+
+        $role->permissions()->attach($perm);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $perm->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->addAdminAuthHeaders($this->org->getPublicId());
+
+        $result = $this->startTest();
+
+        $this->assertContains($role->getPublicId(), $result);
     }
 }

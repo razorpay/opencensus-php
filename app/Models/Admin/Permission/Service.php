@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Permission;
 
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Base;
+use RZP\Models\Admin\Role;
 
 class Service extends Base\Service
 {
@@ -66,5 +67,16 @@ class Service extends Base\Service
         $perms = $this->repo->permission->fetchAll();
 
         return $perms->toArrayPublic();
+    }
+
+    public function getRolesForPermission(string $id)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $roles = $this->repo->permission->getRolesForPermission($id);
+
+        Role\Entity::getSignedIdMultiple($roles);
+
+        return $roles;
     }
 }
