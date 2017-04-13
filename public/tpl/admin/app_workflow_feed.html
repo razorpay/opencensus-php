@@ -17,9 +17,9 @@
       <div class="col-xs-9">
         <div class="action-desc-panel panel panel-default">
           <div class="panel-heading">
-            <strong>{{ action_details.admin.name }}</strong>
-            performed this action
-            <span title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
+            <strong ng-if="action_details.admin.name">{{ action_details.admin.name }}</strong>
+            <span ng-style="!action_details.admin.name && {'visibility':'collapse'}">performed this action</span>
+            <span ng-if="action_details.created_at" title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
 
             <span class="label pending-bg-color pull-right action-state">{{ action_details.state }}</span>
           </div>
