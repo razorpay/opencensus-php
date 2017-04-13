@@ -16,7 +16,7 @@ export default class ContactDetailsForm extends Component {
 
     return (
       <form class='form-horizontal' onSubmit={handleSubmit(saveAndNext)}>
-        <fieldset>
+        <fieldset disabled={this.props.data.locked}>
           <div class='form-group'>
             <label class='col-md-3 control-label label-required'>Contact Name</label>
             <div class='col-md-9'>

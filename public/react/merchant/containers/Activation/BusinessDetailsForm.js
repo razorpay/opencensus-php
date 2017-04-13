@@ -1,11 +1,40 @@
 import { Component } from 'react'
-import { Field } from 'redux-form'
+import { connect } from 'react-redux'
+import { Field, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
+import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
+import { required } from 'rzp/utils/validators'
 import ActivationWizardHOC from './ActivationWizardHOC'
 
+const selector = formValueSelector('activationBusinessDetails')
+@connect(
+  (state) => {
+    return {
+      business_type: selector(state, 'business_type'),
+      or_same: selector(state, 'or_same'),
+      business_registered_address: selector(state, 'business_registered_address'),
+      business_registered_state: selector(state, 'business_registered_state'),
+      business_registered_city: selector(state, 'business_registered_city'),
+      business_registered_pin: selector(state, 'business_registered_pin'),
+    }
+  },
+  null,
+)
 @ActivationWizardHOC
 export default class BusinessDetailsForm extends Component {
+  updateOperationalAddress = (event, newValue) => {
+    setTimeout(() => { // Allow the redux-form to update the store
+      let props = this.props
+      if (props.or_same) {
+        this.props.change('business_operation_address', props.business_registered_address)
+        this.props.change('business_operation_state', props.business_registered_state)
+        this.props.change('business_operation_city', props.business_registered_city)
+        this.props.change('business_operation_pin', props.business_registered_pin)
+      }
+    })
+  }
+
   render() {
     let {
       handleSubmit,
@@ -20,11 +49,22 @@ export default class BusinessDetailsForm extends Component {
           <div class='form-group'>
             <label class='col-md-3 control-label label-required'>Organisation Type</label>
             <div class='col-md-9'>
+              {
+                this.props.business_type === '2' &&
+                  <div class='alert alert-warning'>
+                    We may not be able to support individuals as of now. Get in touch with <a href='mailto:support@razorpay.com'>support@razorpay.com</a> for more details
+                  </div>
+              }
+
               <Field
                 name='business_type'
-                component='select'
+                component={InputField}
+                tagName='select'
                 class='form-control'
                 autoFocus={true}
+                validate={[
+                  required()
+                ]}
               >
                 <option></option>
                 <option value='1'>Proprietorship</option>
@@ -46,9 +86,12 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='business_name'
-                component='input'
+                component={InputField}
                 class='form-control'
                 placeholder='Acme Private Limited'
+                validate={[
+                  required()
+                ]}
               />
             </div>
           </div>
@@ -58,9 +101,12 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='business_dba'
-                component='input'
+                component={InputField}
                 class='form-control'
                 placeholder='Acme Watches'
+                validate={[
+                  required()
+                ]}
               />
               <small class='help-block'>This is the brand name that the customers are familiar with.</small>
             </div>
@@ -86,8 +132,12 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='business_paymentdetails'
-                component='select'
+                component={InputField}
+                tagName='select'
                 class='form-control'
+                validate={[
+                  required()
+                ]}
               >
                 <option></option>
                 <option value='B2B'>Business to Business (B2B)</option>
@@ -102,10 +152,14 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='business_model'
-                component='textarea'
+                component={InputField}
+                tagName='textarea'
                 class='form-control'
                 placeholder='Business Model'
                 maxLength={255}
+                validate={[
+                  required()
+                ]}
               />
               <small class='help-block'>Please give a brief explanation of your business model and future plans (Essential for startups)</small>
             </div>
@@ -116,9 +170,14 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='business_registered_address'
-                component='textarea'
+                component={InputField}
+                tagName='textarea'
                 class='form-control'
                 placeholder='Registered Address'
+                onChange={this.updateOperationalAddress}
+                validate={[
+                  required()
+                ]}
               />
             </div>
           </div>
@@ -128,9 +187,13 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='business_registered_state'
-                component='input'
+                component={InputField}
                 class='form-control'
                 placeholder='Registered Address State'
+                onChange={this.updateOperationalAddress}
+                validate={[
+                  required()
+                ]}
               />
             </div>
           </div>
@@ -140,9 +203,13 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='business_registered_city'
-                component='input'
+                component={InputField}
                 class='form-control'
                 placeholder='Registered Address City'
+                onChange={this.updateOperationalAddress}
+                validate={[
+                  required()
+                ]}
               />
             </div>
           </div>
@@ -152,9 +219,13 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='business_registered_pin'
-                component='input'
+                component={InputField}
                 class='form-control'
                 placeholder='Registered Address Pincode'
+                onChange={this.updateOperationalAddress}
+                validate={[
+                  required()
+                ]}
               />
             </div>
           </div>
@@ -167,6 +238,7 @@ export default class BusinessDetailsForm extends Component {
                   name='or_same'
                   component='input'
                   type='checkbox'
+                  onChange={this.updateOperationalAddress}
                 />
                 <i></i>
               </label>
@@ -174,53 +246,55 @@ export default class BusinessDetailsForm extends Component {
             </div>
           </div>
 
-          <div class='form-group'>
-            <label class='col-md-3 control-label label-required'>Operational Address</label>
-            <div class='col-md-9'>
-              <Field
-                name='business_operation_address'
-                component='textarea'
-                class='form-control'
-                placeholder='Operational Address'
-              />
+          <fieldset disabled={this.props.or_same}>
+            <div class='form-group'>
+              <label class='col-md-3 control-label label-required'>Operational Address</label>
+              <div class='col-md-9'>
+                <Field
+                  name='business_operation_address'
+                  component='textarea'
+                  class='form-control'
+                  placeholder='Operational Address'
+                />
+              </div>
             </div>
-          </div>
 
-          <div class='form-group'>
-            <label class='col-md-3 control-label label-required'>Operational Address State</label>
-            <div class='col-md-9'>
-              <Field
-                name='business_operation_state'
-                component='input'
-                class='form-control'
-                placeholder='Operational Address State'
-              />
+            <div class='form-group'>
+              <label class='col-md-3 control-label label-required'>Operational Address State</label>
+              <div class='col-md-9'>
+                <Field
+                  name='business_operation_state'
+                  component='input'
+                  class='form-control'
+                  placeholder='Operational Address State'
+                />
+              </div>
             </div>
-          </div>
 
-          <div class='form-group'>
-            <label class='col-md-3 control-label label-required'>Operational Address City</label>
-            <div class='col-md-9'>
-              <Field
-                name='business_operation_city'
-                component='input'
-                class='form-control'
-                placeholder='Operational Address City'
-              />
+            <div class='form-group'>
+              <label class='col-md-3 control-label label-required'>Operational Address City</label>
+              <div class='col-md-9'>
+                <Field
+                  name='business_operation_city'
+                  component='input'
+                  class='form-control'
+                  placeholder='Operational Address City'
+                />
+              </div>
             </div>
-          </div>
 
-          <div class='form-group'>
-            <label class='col-md-3 control-label label-required'>Operational Address Pincode</label>
-            <div class='col-md-9'>
-              <Field
-                name='business_operation_pin'
-                component='input'
-                class='form-control'
-                placeholder='Operational Address Pincode'
-              />
+            <div class='form-group'>
+              <label class='col-md-3 control-label label-required'>Operational Address Pincode</label>
+              <div class='col-md-9'>
+                <Field
+                  name='business_operation_pin'
+                  component='input'
+                  class='form-control'
+                  placeholder='Operational Address Pincode'
+                />
+              </div>
             </div>
-          </div>
+          </fieldset>
 
           <div class='form-group'>
             <label class='col-md-3 control-label label-required'>Date of Establishment</label>

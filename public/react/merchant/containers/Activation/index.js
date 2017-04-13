@@ -36,12 +36,12 @@ export default class ActivationWizard extends Component {
   }
 
   renderNavAnchor(stepNumber, title) {
-    let isStepCompleted = (this.props.steps_finished || []).indexOf(stepNumber) !== -1
-    let icon = isStepCompleted ? <i className='fa fa-check'></i> : ''
+    let isStepCompleted = (this.props.data.steps_finished || []).indexOf(stepNumber) !== -1
+    let icon = isStepCompleted ? <i class='fa fa-check'></i> : ''
     return (
       <a class={ isStepCompleted ? 'text-success' : '' }>
         {icon}
-        {title}
+        <span>{title}</span>
       </a>
     );
   }
