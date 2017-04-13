@@ -526,4 +526,6 @@ class ErrorCode
 
     // File store
     const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
+
+    const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                            = 'BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED';
 }

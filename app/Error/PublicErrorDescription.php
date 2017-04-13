@@ -384,6 +384,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_FILE_NOT_FOUND                                            = 'There was error while retrieving the file';
 
+    const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                        = 'The input action is not supported for the merchant user';
     const BAD_REQUEST_ACCESS_DENIED                                             = 'Access Denied';
 
     // Workflow Related Errors
