@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Wallet\Mpesa\Mock;
 
+use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
 use RZP\Exception\ServerErrorException;
 use RZP\Gateway\Wallet\Mpesa\Constants;
@@ -16,6 +18,8 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        $this->content($input, Action::AUTH_REQUEST);
+
         $this->validateChecksum($input);
 
         $request = $this->parseRequestXml($input);
@@ -163,7 +167,9 @@ class Server extends Base\Mock\Server
 
         if (hash_equals($checksum, $generatedChecksum) === false)
         {
-            throw new Exception\ServerErrorException('Checksum Validation Failed');
+            throw new Exception\ServerErrorException(
+                'Checksum Validation Failed',
+                ErrorCode::SERVER_ERROR_CHECKSUM_MATCH_FAILED);
         }
     }
 }

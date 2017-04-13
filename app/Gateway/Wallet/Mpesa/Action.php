@@ -7,4 +7,5 @@ use RZP\Gateway\Wallet\Base;
 class Action extends Base\Action
 {
     const VALIDATE_CUSTOMER = 'validate_customer';
+    const AUTH_REQUEST      = 'auth_request';
 }

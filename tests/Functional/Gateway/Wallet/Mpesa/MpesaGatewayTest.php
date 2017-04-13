@@ -96,6 +96,27 @@ class MpesaGatewayTest extends TestCase
             });
     }
 
+    public function testAuthPaymentChecksumFailure()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        //
+        // Manually setting the payment to auth flow
+        // instead of otp flow to execute the test case correctly
+        //
+        $payment = $this->payment;
+        $payment['_']['isOtp'] = false;
+
+        $this->mockAuthChecksumFailure();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
     public function testOtpCustomerValidationFailure()
     {
         $data = $this->testData['testOtpAuthFailure'];
@@ -262,6 +283,17 @@ class MpesaGatewayTest extends TestCase
             {
                 $content['statuscode'] = '101';
                 $content['reason'] = 'Failure';
+            }
+        });
+    }
+
+    protected function mockAuthChecksumFailure()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === Action::AUTH_REQUEST)
+            {
+                $content['checksum'] = 'this_is_a_fake_checksum';
             }
         });
     }
