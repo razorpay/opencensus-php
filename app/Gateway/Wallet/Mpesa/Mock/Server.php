@@ -115,6 +115,8 @@ class Server extends Base\Mock\Server
     {
         $request = $input[SoapAction::QUERY_API];
 
+        $this->validateActionInput($request, SoapMethod::QUERY_PAYMENT_TRANSACTION);
+
         $mobileNumber = mt_rand(7000000000, 9999999999);
 
         $response = [
