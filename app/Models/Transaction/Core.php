@@ -50,7 +50,8 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
+        //TODO: Pass false as argument to remove backward compatbiity.
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         return [$txn, $feesSplit];
     }
@@ -88,7 +89,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromPaymentCaptured(Payment\Entity $payment)
+    public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
