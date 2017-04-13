@@ -13,6 +13,7 @@ use Hash;
 use App\Merchant;
 use App\Generic;
 use App\Admin;
+use App\User;
 
 class PasswordController extends Controller
 {
@@ -74,6 +75,8 @@ class PasswordController extends Controller
             {
                 $user->password = Hash::make($password);
                 $user->save();
+
+                (new User\Service)->updatePasswordOnApi($user);
             });
         });
 

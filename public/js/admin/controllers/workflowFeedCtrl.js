@@ -175,6 +175,7 @@ app.controller('WorkflowFeedCtrl', [
     $scope.actionStateChange = function (state) {
       var body = {};
       var route_name;
+      var method = 'POST';
 
       if (state === 'approve') {
         body = {
@@ -192,6 +193,11 @@ app.controller('WorkflowFeedCtrl', [
         route_name = 'action_checker_create';
       }
 
+      if (state === 'close') {
+        route_name = 'workflow_action_close';
+        method = 'PUT';
+      }
+
       if (state === 'execute') {
         route_name = 'action_request_execute';
       }
@@ -199,7 +205,7 @@ app.controller('WorkflowFeedCtrl', [
       if (typeof route_name !== 'undefined') {
         var request = $http({
           url: '/admin/generic',
-          method: 'POST',
+          method: method,
 
           params: {
             route_name: route_name,
@@ -217,6 +223,7 @@ app.controller('WorkflowFeedCtrl', [
         request.success(function (data) {
           if (data.success) {
             $scope.alerts.addAlert('success', 'Action performed successfully!', true);
+            $scope.action_details.state = data.data.state; // Change state of request
           }
           else {
             angular.forEach(data.errors, function (value, key) {

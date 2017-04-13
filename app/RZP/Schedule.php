@@ -14,15 +14,6 @@ class Schedule extends Entity
         return $this->request('GET', $relativeUrl)->toArray();
     }
 
-    public function createSchedule($input)
-    {
-        $relativeUrl = $this->getEntityUrl();
-
-        $res = $this->request('POST', $relativeUrl, $input)->toArray();
-
-        return $res;
-    }
-
     public function fetch($id)
     {
         return parent::fetch($id);
