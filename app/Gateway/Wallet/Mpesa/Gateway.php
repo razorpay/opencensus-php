@@ -62,8 +62,7 @@ class Gateway extends Base\Gateway
 
         $this->saveCallbackResponse($content);
 
-        $this->checkActionStatus($content[ResponseFields::STATUS_CODE],
-                                 $content[ResponseFields::REASON]);
+        $this->checkActionStatus($content[ResponseFields::STATUS_CODE]);
 
         return $this->getCallbackResponseData($input);
     }
@@ -98,7 +97,7 @@ class Gateway extends Base\Gateway
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // Otp generation fails, throw exception
-        $this->checkActionStatus($status, $content[ResponseFields::DESCRIPTION]);
+        $this->checkActionStatus($status);
 
         return $this->getOtpSubmitRequest($input);
     }
@@ -130,7 +129,7 @@ class Gateway extends Base\Gateway
         $this->saveOtpCallbackContent($content);
 
         // Otp submission fails, throw exception
-        $this->checkActionStatus($status, $content[ResponseFields::LC_STATUS]);
+        $this->checkActionStatus($status);
 
         return $this->getCallbackResponseData($input);
     }
@@ -163,7 +162,7 @@ class Gateway extends Base\Gateway
         $this->createGatewayRefundEntity($attributes);
 
         // response will contain status 100 or 101
-        $this->checkActionStatus($status, $content[ResponseFields::REASON]);
+        $this->checkActionStatus($status);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -265,7 +264,7 @@ class Gateway extends Base\Gateway
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // response will contain status 100 or 101
-        $this->checkActionStatus($status, $content[ResponseFields::DESCRIPTION]);
+        $this->checkActionStatus($status);
     }
 
     protected function getOtpGenerateContentToSave(array $content)
@@ -543,14 +542,14 @@ class Gateway extends Base\Gateway
         return $headers;
     }
 
-    protected function checkActionStatus(string $status, string $description)
+    protected function checkActionStatus(string $status)
     {
         if (StatusCode::checkIfSuccessStatus($status) === false)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 $status,
-                $description
+                StatusCode::getErrorMessage($status)
             );
         }
     }
@@ -578,20 +577,17 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
+        $errorMessage = StatusCode::getErrorMessage($content[ResponseFields::S2S_STATUS_CODE]);
+
         $contentToSave = [
             Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
-            Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER]
+            Entity::CONTACT              => $content[ResponseFields::MOBILE_NUMBER],
+            Entity::RESPONSE_DESCRIPTION => $errorMessage
         ];
 
-        if (isset($content[ResponseFields::REASON]) === true)
+        if (empty($wallet[Entity::GATEWAY_PAYMENT_ID]) === true)
         {
-            $contentToSave[Entity::RESPONSE_DESCRIPTION] = $content[ResponseFields::REASON];
-        }
-
-        if ((empty($wallet[Entity::GATEWAY_PAYMENT_ID]) === true) and
-            (isset($content[ResponseFields::S2S_TRANS_ID]) === true))
-        {
-            $contentToSave[Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::S2S_TRANS_ID];
+            $contentToSave[Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::S2S_TRANS_ID] ?? null;
         }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);

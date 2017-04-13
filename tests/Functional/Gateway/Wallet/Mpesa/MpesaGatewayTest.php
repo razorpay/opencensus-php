@@ -281,8 +281,7 @@ class MpesaGatewayTest extends TestCase
         {
             if ($action === Action::AUTHORIZE)
             {
-                $content['statuscode'] = '101';
-                $content['reason'] = 'Failure';
+                $content['statuscode'] = '106';
             }
         });
     }
@@ -305,7 +304,6 @@ class MpesaGatewayTest extends TestCase
             if ($action === SoapAction::CUSTOMER_API)
             {
                 $content['statusCode'] = '104';
-                $content['description'] = 'Mobile number not found';
             }
         });
     }
@@ -317,7 +315,6 @@ class MpesaGatewayTest extends TestCase
             if ($action === SoapAction::OTP_GENERATE_API)
             {
                 $content['statusCode'] = '104';
-                $content['description'] = 'Mobile number not found';
             }
         });
     }
@@ -329,7 +326,6 @@ class MpesaGatewayTest extends TestCase
             if ($action === SoapAction::OTP_SUBMIT_API)
             {
                 $content['statusCode'] = '104';
-                $content['status'] = 'Mobile number not found';
             }
         });
     }
@@ -341,7 +337,6 @@ class MpesaGatewayTest extends TestCase
             if ($action === SoapAction::QUERY_API)
             {
                 $content['statusCode'] = '104';
-                $content['reason'] = 'Mobile number not found';
             }
         });
     }
@@ -353,7 +348,6 @@ class MpesaGatewayTest extends TestCase
             if ($action === SoapAction::REFUND_API)
             {
                 $content['statusCode'] = '104';
-                $content['reason'] = 'Mobile number not found';
             }
         });
     }

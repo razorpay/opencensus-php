@@ -60,7 +60,7 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-            'gateway_error_code'  => '101',
+            'gateway_error_code'  => '106',
             'gateway_error_desc'  => 'Failure'
         ],
     ],
@@ -95,7 +95,7 @@ return [
             'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
             'gateway_error_code'  => '104',
-            'gateway_error_desc'  => 'Mobile number not found'
+            'gateway_error_desc'  => 'Invalid MSISDN'
         ],
     ],
 
@@ -133,7 +133,7 @@ return [
 
     'verifyFailedWalletEntity' => [
         'status_code' => '104',
-        'response_description' => 'Mobile number not found',
+        'response_description' => 'Invalid MSISDN',
     ],
 
     'verifySuccessWalletEntity' => [
@@ -141,7 +141,7 @@ return [
         'wallet'               => 'mpesa',
         'action'               => 'otp_generate',
         'received'             => true,
-        'response_description' => 'SUCCESS',
+        'response_description' => 'Success',
         'entity'               => 'wallet'
     ],
 
@@ -173,7 +173,7 @@ return [
             'class'               => 'RZP\Exception\GatewayErrorException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
             'gateway_error_code'  => '104',
-            'gateway_error_desc'  => 'Mobile number not found'
+            'gateway_error_desc'  => 'Invalid MSISDN'
         ],
     ],
 ];
