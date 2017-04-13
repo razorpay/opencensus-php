@@ -6,6 +6,7 @@ use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
 use RZP\Exception\ServerErrorException;
 use RZP\Gateway\Wallet\Mpesa\Constants;
+use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
 use RZP\Gateway\Wallet\Mpesa\StatusCode;
 use RZP\Gateway\Wallet\Mpesa\RequestFields;
@@ -20,6 +21,8 @@ class Server extends Base\Mock\Server
         $request = $this->parseRequestXml($input);
 
         $response = $this->getAuthResponse($request);
+
+        $this->content($response, Action::AUTHORIZE);
 
         $url = $request[RequestFields::RETURN_URL];
 

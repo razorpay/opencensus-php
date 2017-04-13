@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Wallet\Mpesa;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -74,9 +75,25 @@ class MpesaGatewayTest extends TestCase
         $this->assertEmpty($wallet['gateway_payment_id_2']);
     }
 
+    public function testAuthPaymentFailure()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        //
+        // Manually setting the payment to auth flow
+        // instead of otp flow to execute the test case correctly
+        //
+        $payment = $this->payment;
+        $payment['_']['isOtp'] = false;
+
+        $this->mockAuthCallbackFailure();
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testOtpCustomerValidationFailure()
     {
-        $data = $this->testData['testAuthFailure'];
+        $data = $this->testData['testOtpAuthFailure'];
 
         $this->mockCustomerValidationFailure();
 
@@ -91,7 +108,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpGenerationFailure()
     {
-        $data = $this->testData['testAuthFailure'];
+        $data = $this->testData['testOtpAuthFailure'];
 
         $this->mockOtpGenerationFailure();
 
@@ -106,7 +123,7 @@ class MpesaGatewayTest extends TestCase
 
     public function testCallbackOtpSubmitFailure()
     {
-        $data = $this->testData['testAuthFailure'];
+        $data = $this->testData['testOtpAuthFailure'];
 
         $this->mockCallbackOtpSubmitFailure();
 
@@ -230,6 +247,18 @@ class MpesaGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertArraySelectiveEquals($data, $refund);
+    }
+
+    protected function mockAuthCallbackFailure()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === Action::AUTHORIZE)
+            {
+                $content['statusCode'] = '101';
+                $content['reason'] = 'Failure';
+            }
+        });
     }
 
     protected function mockCustomerValidationFailure()
