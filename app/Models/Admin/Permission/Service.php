@@ -24,7 +24,14 @@ class Service extends Base\Service
             return $permission;
         });
 
-        return $permission->toArrayPublic();
+        $response = $permission->toArrayPublic();
+
+        if (empty($input[Entity::ORGS]) === false)
+        {
+            $response[Entity::ORGS] = $input[Entity::ORGS];
+        }
+
+        return $response;
     }
 
     public function getPermission(string $permissionId)
