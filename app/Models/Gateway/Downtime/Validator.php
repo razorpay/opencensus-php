@@ -206,10 +206,36 @@ class Validator extends Base\Validator
 
                 break;
 
+            case Method::UPI:
+
+                $this->validateUPIIssuer($method, $issuer);
+
+                break;
+
             default:
                 throw new Exception\BadRequestValidationFailureException(
                     'Method ' . $method . ' is not supported');
         }
+    }
+
+    protected function validateUPIIssuer(string $method, string $issuer = null)
+    {
+        if (empty($issuer) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Issuer cannot be empty for method ' . $method);
+        }
+
+        if ((in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true))
+        {
+            return;
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Unknown Issuer:'. $issuer.' for method:' . $method);
+        }
+
     }
 
     protected function validateCardIssuer(string $method, string $issuer = null)
@@ -296,6 +322,7 @@ class Validator extends Base\Validator
     public function validateNetwork(array $input)
     {
         $network = $input[Entity::NETWORK] ?? $this->entity->getNetwork();
+
         $network = strtoupper($network);
 
         $method = $input[Entity::METHOD] ?? $this->entity->getMethod();

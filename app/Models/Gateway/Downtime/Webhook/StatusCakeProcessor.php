@@ -221,8 +221,7 @@ class StatusCakeProcessor implements ProcessorInterface
                 break;
 
             case Method::WALLET:
-                // wallets begin he gateway name with WALLET_. So, check if the gateway name actually
-                // contains WALLET_. Else, append it here so validation can succeed.
+            case Method::UPI:
 
                 if (isset($options['gateway']) === false)
                 {

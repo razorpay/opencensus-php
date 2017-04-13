@@ -605,6 +605,15 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
+    public function testStatusCakeWebHookUPI()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
     public function testStatusCakeInvalidNB()
     {
         $this->ba->directAuth();
@@ -624,6 +633,15 @@ class GatewayDowntimeTest extends TestCase
     }
 
     public function testStatusCakeInvalidWallet()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeInvalidUPI()
     {
         $this->ba->directAuth();
 
