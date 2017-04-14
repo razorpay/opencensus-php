@@ -72,23 +72,29 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertNull($invoice);
     }
 
-    public function testSubscriptionAuthTxnAutoCaptureUpfrontAmount()
+    // TODO: Test subscription charges with multiple quantity.
+    // It should get the amount correctly.
+
+    public function testSubscriptionAuthTxnAutoCaptureAddOn()
     {
         $plan = $this->fixtures->create(
             'plan',
             [
                 'interval' => 3,
-                'period' => 'monthly'
+                'period' => 'monthly',
+                'amount' => 123456,
             ]);
 
         $subscription = $this->fixtures->create(
             'subscription',
             [
                 'plan_id' => $plan->getId(),
-                'upfront_amount' => 1000,
                 'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
                 'total_count' => 3,
+                'charge_at' => 1579631400,
             ]);
+
+        $this->createFixturesForAddOn($subscription, $plan, 1000, 1000);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['amount'] = 1000;
@@ -99,15 +105,43 @@ class SubscriptionAuthTransactionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $token = $this->getLastEntity('token', true);
         $invoice = $this->getLastEntity('invoice', true);
+        $order = $this->getLastEntity('order', true);
 
         $this->assertEquals('authenticated', $subscription['status']);
         $this->assertEquals($token['id'], $subscription['token_id']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertNotNull($subscription['charge_at']);
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(null, $payment['amount_refunded']);
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
+        $this->assertEquals(1000, $payment['amount']);
+        $this->assertEquals($order['id'], $payment['order_id']);
+        $this->assertTrue($payment['auto_captured']);
 
-        $this->assertNull($invoice);
+        $this->assertEquals('paid', $invoice['status']);
+        $this->assertEquals(1000, $invoice['amount']);
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
+        $this->assertEquals($order['id'], $invoice['order_id']);
+        $this->assertNull($invoice['sub_status']);
+        $this->assertNotNull($invoice['issued_at']);
+        $this->assertContains('http://bitly', $invoice['short_url']);
+        $this->assertEquals($payment['id'], $invoice['payment_id']);
+        // Since the invoice is only for add_ons,
+        // billing_start and billing_end should be null.
+        $this->assertNull($invoice['billing_start']);
+        $this->assertNull($invoice['billing_end']);
+        // TODO: expire_by should be null for subscriptions.
+        // Since this hasn't been implemented yet in invoices,
+        // commenting it out. UNCOMMENT LATER.
+        // $this->assertNull($invoice['expire_by']);
+
+        $this->assertEquals('paid', $order['status']);
+        $this->assertEquals(1000, $order['amount']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $plan = $this->getLastEntity('plan', true);
     }
 
     public function testSubscriptionAuthTxnAutoCaptureFirstCharge()
@@ -172,7 +206,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals('paid', $order['status']);
     }
 
-    public function testSubscriptionAuthTxnAutoCaptureFirstChargeAndUpfrontAmount()
+    public function testSubscriptionAuthTxnAutoCaptureFirstChargeAndAddOn()
     {
         $plan = $this->fixtures->create('plan');
 
@@ -180,28 +214,53 @@ class SubscriptionAuthTransactionTest extends TestCase
             'subscription',
             [
                 'plan_id' => $plan->getId(),
-                'upfront_amount' => 1000,
-                'start_at' => null, // 1-22-2020, 12:00:00 AM
+                'start_at' => null,
                 'total_count' => 3,
             ]);
 
+        $this->createFixturesForAddOn($subscription, $plan, $plan->getAmount() + 1000, 1000, true);
+
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['amount'] = 1000 + $plan->getAmount();
-
-        $this->createFixturesForInvoice($subscription, $plan, ($plan->getAmount() + $subscription->getUpfrontAmount()));
 
         $recurringPayment = $this->doAuthPayment($paymentRequest);
 
         $subscription = $this->getLastEntity('subscription', true);
         $payment = $this->getLastEntity('payment', true);
         $token = $this->getLastEntity('token', true);
+        $invoice = $this->getLastEntity('invoice', true);
+        $order = $this->getLastEntity('order', true);
 
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals($token['id'], $subscription['token_id']);
+        $this->assertEquals(1, $subscription['paid_count']);
+        $this->assertNotNull($subscription['charge_at']);
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(null, $payment['amount_refunded']);
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
+        $this->assertEquals($plan->getAmount() + 1000, $payment['amount']);
+        $this->assertEquals($order['id'], $payment['order_id']);
+        $this->assertTrue($payment['auto_captured']);
+
+        $this->assertEquals('paid', $invoice['status']);
+        $this->assertEquals($plan->getAmount() + 1000, $invoice['amount']);
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
+        $this->assertEquals($order['id'], $invoice['order_id']);
+        $this->assertNull($invoice['sub_status']);
+        $this->assertNotNull($invoice['issued_at']);
+        $this->assertContains('http://bitly', $invoice['short_url']);
+        $this->assertEquals($payment['id'], $invoice['payment_id']);
+        $this->assertNotNull($invoice['billing_start']);
+        $this->assertNotNull($invoice['billing_end']);
+        // TODO: expire_by should be null for subscriptions.
+        // Since this hasn't been implemented yet in invoices,
+        // commenting it out. UNCOMMENT LATER.
+        // $this->assertNull($invoice['expire_by']);
+
+        $this->assertEquals('paid', $order['status']);
+        $this->assertEquals($plan->getAmount() + 1000, $order['amount']);
     }
 
     public function testSubscriptionAuthTxnWithRecurringFalse()
@@ -241,10 +300,12 @@ class SubscriptionAuthTransactionTest extends TestCase
             'subscription',
             [
                 'plan_id' => $plan->getId(),
-                'upfront_amount' => 1000,
+                //'upfront_amount' => 1000,
                 'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
                 'total_count' => 3,
             ]);
+
+        $this->createFixturesForAddOn($subscription, $plan, 1000, 1000);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
@@ -254,8 +315,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('The amount does not match with the expected amount ' .
-                'for the first transaction. It might have been tampered.', $ex->getMessage());
+            $this->assertEquals('Payment amount provided does not match with the amount in order', $ex->getMessage());
 
             return;
         }
@@ -381,12 +441,71 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertTrue(false);
     }
 
-    protected function createFixturesForInvoice($subscription, $plan, $amount = null)
+    protected function createFixturesForAddOn($subscription, $plan, $totalAmount, $addOnAmount, $first = false)
     {
-        if ($amount === null)
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'amount' => $totalAmount,
+                'payment_capture' => 1,
+            ]);
+
+        $invoice = $this->fixtures->create(
+            'invoice',
+            [
+                'sms_status' => null,
+                'email_status' => null,
+                'subscription_id' => $subscription->getId(),
+                'order_id' => $order->getId(),
+                'amount' => $totalAmount,
+                'issued_at' => time(),
+            ]);
+
+        $item = $this->fixtures->create(
+            'item',
+            [
+                'name' => 'Sample Upfront Amount',
+                'amount' => $addOnAmount,
+                'type' => 'add_on',
+            ]);
+
+        $this->fixtures->create(
+            'add_on',
+            [
+                'subscription_id' => $subscription->getId(),
+                'invoice_id' => $invoice->getId(),
+                'item_id' => $item->getId(),
+            ]);
+
+        $this->fixtures->create(
+            'line_item',
+            [
+                'name' => $item->getName(),
+                'amount' => $item->getAmount(),
+                'entity_id' => $invoice->getId(),
+                'item_id' => $item->getId(),
+            ]);
+
+        if ($first === true)
         {
-            $amount = $plan->getAmount();
+            $this->fixtures->create(
+                'line_item',
+                [
+                    'id' => '200000lineitem',
+                    'name' => $plan->getName(),
+                    'amount' => $plan->getAmount(),
+                    'entity_id' => $invoice->getId(),
+                    'item_id' => null,
+                ]);
         }
+    }
+
+    protected function createFixturesForInvoice($subscription, $plan, $amount = null)
+     {
+         if ($amount === null)
+         {
+             $amount = $plan->getAmount();
+         }
 
         $order = $this->fixtures->create(
             'order',
@@ -402,6 +521,7 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'email_status' => null,
                 'subscription_id' => $subscription->getId(),
                 'order_id' => $order->getId(),
+                'amount' => $plan->getAmount(),
             ]);
 
         $this->fixtures->create(

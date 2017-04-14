@@ -274,11 +274,11 @@ class Core extends Base\Core
         return $authAmount;
     }
 
-    protected function createInvoiceForSubscription(Entity $subscription, $addOns)
+    protected function createInvoiceForSubscription(Entity $subscription, $addOns, bool $first = false)
     {
         $merchant = $subscription->merchant;
 
-        $invoiceInput = $this->getInvoiceInput($subscription, $addOns);
+        $invoiceInput = $this->getInvoiceInput($subscription, $addOns, $first);
 
         $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
 
@@ -344,29 +344,27 @@ class Core extends Base\Core
      * If the auth txn also includes the upfront_amount, the invoice
      * will be made for plan_amount + upfront_amount.
      *
-     * But, if the auth txn only includes the upfront_amount,
-     * we do not create any invoice at all.
-     *
      * @param Entity $subscription
      */
     protected function createInvoiceIfApplicable(Entity $subscription)
     {
         $addOns = $this->repo->add_on->getUnusedAddOnsForSubscription($subscription);
 
-        if (empty($addOns) === true)
+        if (($addOns->count() === 0) and
+            ($subscription->getStartAt() !== null))
         {
             return;
         }
 
-        $this->createInvoiceForSubscription($subscription, $addOns);
+        $this->createInvoiceForSubscription($subscription, $addOns, true);
     }
 
-    protected function getInvoiceInput(Entity $subscription, $addOns)
+    protected function getInvoiceInput(Entity $subscription, $addOns, bool $first)
     {
         $plan = $subscription->plan;
         $customer = $subscription->customer;
 
-        $lineItems = $this->getLineItemsForInvoiceInput($subscription, $addOns);
+        $lineItems = $this->getLineItemsForInvoiceInput($subscription, $addOns, $first);
 
         $invoiceInput = [
             Invoice\Entity::CUSTOMER_ID     => $customer->getPublicId(),
@@ -379,27 +377,38 @@ class Core extends Base\Core
         return $invoiceInput;
     }
 
-    protected function getLineItemsForInvoiceInput(Entity $subscription, $addOns)
+    protected function getLineItemsForInvoiceInput(Entity $subscription, $addOns, bool $first)
     {
         $plan = $subscription->plan;
 
         $lineItems = [];
 
-        // TODO: The amount may differ in the case of pro-rate.
-        $mainLineItem = [
-            LineItem\Entity::NAME       => $plan->getName(),
-            LineItem\Entity::AMOUNT     => $plan->getAmount(),
-            LineItem\Entity::CURRENCY   => $plan->getCurrency(),
-            LineItem\Entity::QUANTITY   => $subscription->getQuantity(),
-        ];
+        //
+        // If it's not the first charge, we always have to create an invoice
+        // line item with the plan amount and all. The main line item, basically.
+        // If it's the first charge, we should ONLY create IF the auth txn also
+        // includes the first charge.
+        //
+        if (($first === false) or
+            (($first === true) and ($subscription->getStartAt() === null)))
+        {
+            // TODO: The amount may differ in the case of pro-rate.
 
-        $lineItems[] = $mainLineItem;
+            $mainLineItem = [
+                LineItem\Entity::NAME     => $plan->getName(),
+                LineItem\Entity::AMOUNT   => $plan->getAmount(),
+                LineItem\Entity::CURRENCY => $plan->getCurrency(),
+                LineItem\Entity::QUANTITY => $subscription->getQuantity(),
+            ];
+
+            $lineItems[] = $mainLineItem;
+        }
 
         foreach ($addOns as $addOn)
         {
             $addOnLineItem = [
-                LineItem\Entity::ITEM_ID => $addOn->item->getId(),
-                LineItem\Entity::ADD_ON_ID => $addOn->getId(),
+                LineItem\Entity::ITEM_ID => $addOn->item->getPublicId(),
+                LineItem\Entity::ADD_ON_ID => $addOn->getPublicId(),
             ];
 
             $lineItems[] = $addOnLineItem;

@@ -58,33 +58,98 @@ class SubscriptionCreateTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
+        $addOn = $this->getLastEntity('add_on', true);
+        $lineItems = $this->getEntities('line_item', [], true);
+
+        $this->assertNull($addOn);
+
+        $this->assertEquals(1, $lineItems['count']);
+        $this->assertNull($lineItems['items'][0]['add_on_id']);
+        $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][0]['entity_id']);
+
         $this->assertEquals($response['id'], $invoice['subscription_id']);
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals(2000, $invoice['amount']);
     }
 
-    public function testCreateSubscriptionWithNoStartAtAndWithUpfrontAmount()
+    public function testCreateSubscriptionWithNoStartAtAndWithAddOn()
     {
         $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
 
         $response = $this->startTest($requestContent);
 
+        $subscription = $this->getLastEntity('subscription', true);
         $invoice = $this->getLastEntity('invoice', true);
+        $items = $this->getEntities('item', [], true);
+        $addOn = $this->getLastEntity('add_on', true);
+        $lineItems = $this->getEntities('line_item', [], true);
 
-        $this->assertEquals($response['id'], $invoice['subscription_id']);
+        $this->assertEquals(1, $items['count']);
+        $item = $items['items'][0];
+        $this->assertEquals('add_on', $item['type']);
+        $this->assertEquals('Sample Upfront Amount', $item['name']);
+        $this->assertEquals(300, $item['amount']);
+
+        $this->assertEquals($subscription['id'], $addOn['subscription_id']);
+        $this->assertEquals($item['id'], $addOn['item_id']);
+        $this->assertEquals($invoice['id'], $addOn['invoice_id']);
+
+        $this->assertEquals(2, $lineItems['count']);
+
+        $addOnLi = $lineItems['items'][0];
+        $this->assertEquals(300, $addOnLi['amount']);
+        $this->assertEquals('Sample Upfront Amount', $addOnLi['name']);
+        $this->assertEquals($addOn['id'], $addOnLi['add_on_id']);
+        $this->assertEquals($item['id'], $addOnLi['item_id']);
+        // This is not visible to the public. Hence, unsigned. Also, polymorphic.
+        $this->assertEquals($invoice['id'], 'inv_' . $addOnLi['entity_id']);
+
+        $mainLi = $lineItems['items'][1];
+        $this->assertNull($mainLi['item_id']);
+        $this->assertNull($mainLi['add_on_id']);
+        $this->assertEquals($invoice['id'], 'inv_' . $mainLi['entity_id']);
+        $this->assertEquals(2000, $mainLi['amount']);
+
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals(2300, $invoice['amount']);
     }
 
-    public function testCreateSubscriptionWithStartAtAndUpfrontAmount()
+    public function testCreateSubscriptionWithStartAtAndAddOn()
     {
         $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
 
         $this->startTest($requestContent);
 
+        $subscription = $this->getLastEntity('subscription', true);
         $invoice = $this->getLastEntity('invoice', true);
+        $items = $this->getEntities('item', [], true);
+        $addOn = $this->getLastEntity('add_on', true);
+        $lineItems = $this->getEntities('line_item', [], true);
 
-        $this->assertNull($invoice);
+        $this->assertEquals(1, $items['count']);
+        $item = $items['items'][0];
+        $this->assertEquals('add_on', $item['type']);
+        $this->assertEquals('Sample Upfront Amount', $item['name']);
+        $this->assertEquals(300, $item['amount']);
+
+        $this->assertEquals($subscription['id'], $addOn['subscription_id']);
+        $this->assertEquals($item['id'], $addOn['item_id']);
+        $this->assertEquals($invoice['id'], $addOn['invoice_id']);
+
+        $this->assertEquals(1, $lineItems['count']);
+
+        $addOnLi = $lineItems['items'][0];
+        $this->assertEquals(300, $addOnLi['amount']);
+        $this->assertEquals('Sample Upfront Amount', $addOnLi['name']);
+        $this->assertEquals($addOn['id'], $addOnLi['add_on_id']);
+        $this->assertEquals($item['id'], $addOnLi['item_id']);
+        // This is not visible to the public. Hence, unsigned. Also, polymorphic.
+        $this->assertEquals($invoice['id'], 'inv_' . $addOnLi['entity_id']);
+
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
+        $this->assertEquals('issued', $invoice['status']);
+        $this->assertEquals(300, $invoice['amount']);
     }
 
     public function testCreateSubscriptionWithOneYearLateStartAt()

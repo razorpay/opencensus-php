@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Item;
+use RZP\Models\Invoice;
+use RZP\Models\Plan\Subscription;
 
 class Entity extends Base\PublicEntity
 {
@@ -34,16 +36,28 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::SUBSCRIPTION_ID,
         self::ITEM_ID,
+        self::MERCHANT_ID,
         self::INVOICE_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
     ];
 
+    //
+    // This array should not ideally be required. But, if we don't define
+    // this array (with at least one attribute), `fill`
+    // takes all attributes as fillable by default.
+    //
+    protected $fillable = [
+        self::ID,
+    ];
+
     protected $public = [
         self::ID,
         self::ITEM_ID,
         self::CREATED_AT,
+        self::SUBSCRIPTION_ID,
+        self::INVOICE_ID,
     ];
 
     protected $defaults = [
@@ -55,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::ITEM_ID,
         self::INVOICE_ID,
+        self::SUBSCRIPTION_ID,
     ];
 
     // -------------------------- Setters --------------------------
@@ -65,7 +80,17 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicItemIdAttribute(array & $array)
     {
-        $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
+        $array[self::ITEM_ID] = Item\Entity::getSignedIdOrNull($this->getAttribute(self::ITEM_ID));
+    }
+
+    protected function setPublicInvoiceIdAttribute(array & $array)
+    {
+        $array[self::INVOICE_ID] = Invoice\Entity::getSignedIdOrNull($this->getAttribute(self::INVOICE_ID));
+    }
+
+    protected function setPublicSubscriptionIdAttribute(array & $array)
+    {
+        $array[self::SUBSCRIPTION_ID] = Subscription\Entity::getSignedIdOrNull($this->getAttribute(self::SUBSCRIPTION_ID));
     }
 
     // -------------------------- Public Setters Ends --------------------------

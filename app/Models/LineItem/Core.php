@@ -40,6 +40,8 @@ class Core extends Base\Core
 
         $this->setItemAssociationAndUpdateInput($lineItem, $input, $merchant);
 
+        $this->setAddOnAssociationIfApplicable($input, $lineItem, $merchant);
+
         $lineItem->build($input);
 
         $lineItem->getValidator()->validateCurrency($morphEntity->getCurrency());
@@ -243,6 +245,29 @@ class Core extends Base\Core
                     $this->delete($existingLineItem, $morphEntity);
                 }
             });
+    }
+
+    protected function setAddOnAssociationIfApplicable(
+        array $input,
+        Entity $lineItem,
+        Merchant\Entity $merchant)
+    {
+        if (empty($input[Entity::ADD_ON_ID]) === true)
+        {
+            return;
+        }
+
+        $addOnId = $input[Entity::ADD_ON_ID];
+
+        //
+        // Ideally, we would have wanted to search with the invoice_id also,
+        // but at this point (while creating an invoice), the add_on has not
+        // been associated with the invoice yet, because the invoice has not
+        // been created yet.
+        //
+        $addOn = $this->repo->add_on->findByPublicIdAndMerchant($addOnId, $merchant);
+
+        $lineItem->addOn()->associate($addOn);
     }
 
     /**

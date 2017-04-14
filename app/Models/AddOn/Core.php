@@ -41,8 +41,8 @@ class Core extends Base\Core
         if (empty($input[Entity::ITEM_ID]) === false)
         {
             $item = $this->repo->item->findByPublicIdAndMerchantForType(
-                                                            $input[Entity::ITEM_ID], 
-                                                            $merchant, 
+                                                            $input[Entity::ITEM_ID],
+                                                            $merchant,
                                                             Item\Type::ADD_ON);
         }
         else

@@ -126,12 +126,12 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicItemIdAttribute(array & $array)
     {
-        $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
+        $array[self::ITEM_ID] = Item\Entity::getSignedIdOrNull($this->getAttribute(self::ITEM_ID));
     }
 
     protected function setPublicAddOnIdAttribute(array & $array)
     {
-        $array[self::ADD_ON_ID] = AddOn\Entity::getSignedId($this->getAttribute(self::ADD_ON_ID));
+        $array[self::ADD_ON_ID] = AddOn\Entity::getSignedIdOrNull($this->getAttribute(self::ADD_ON_ID));
     }
 
     // -------------------------- Public Setters Ends --------------------------
