@@ -113,7 +113,7 @@ export default class InvoiceLineItem extends Component {
             class='form-control text-right input-xs'
             type='number'
             rightAlign={true}
-            disabled={true}
+            disabled={disabled}
           />
         </td>
 
