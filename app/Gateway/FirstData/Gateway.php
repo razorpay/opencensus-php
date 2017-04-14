@@ -893,7 +893,7 @@ class Gateway extends Base\Gateway
 
     // This is a SHA hash of the following fields :
     // storename + txndatetime + chargetotal + currency + sharedsecret.
-    protected function getRequestHash(string $txnDateTime, int $chargeTotal, string $currencyCode)
+    protected function getRequestHash(string $txnDateTime, float $chargeTotal, string $currencyCode)
     {
         $storeId = $this->getStoreId();
 

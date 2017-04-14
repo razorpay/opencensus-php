@@ -472,7 +472,7 @@ class Entity extends Base\Entity
     {
         $extra = [
             self::ROLES,
-            self::GROUPS
+            self::GROUPS,
         ];
 
         $app = App::getFacadeRoot();
@@ -489,5 +489,17 @@ class Entity extends Base\Entity
         }
 
         return array_merge($this->fillable, $extra);
+    }
+
+    /**
+     * Get all relations to the array
+     *
+     */
+    public function getRelationsForDiffer() : array
+    {
+        return [
+            self::ROLES,
+            self::GROUPS,
+        ];
     }
 }

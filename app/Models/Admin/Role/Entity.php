@@ -51,6 +51,10 @@ class Entity extends Base\Entity
         self::PERMISSIONS,
     ];
 
+    protected $diff = [
+        self::NAME,
+    ];
+
     protected $visible = [
         self::ID,
         self::NAME,

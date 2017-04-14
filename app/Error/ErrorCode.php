@@ -496,6 +496,8 @@ class ErrorCode
     const BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED                        = 'BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED';
     const BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS                                    = 'BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS';
 
+    const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                    = 'BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED';
+
     const BAD_REQUEST_CASHBACK_CRITERIA_MISSING                                     = 'BAD_REQUEST_CASHBACK_CRITERIA_MISSING';
     const BAD_REQUEST_INVALID_OFFER_DURATION                                        = 'BAD_REQUEST_INVALID_OFFER_DURATION';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                          = 'BAD_REQUEST_OFFER_ALREADY_EXISTS';
@@ -537,4 +539,6 @@ class ErrorCode
 
     // File store
     const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
+
+    const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                            = 'BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED';
 }

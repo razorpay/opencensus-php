@@ -3,6 +3,8 @@
 namespace RZP\Models\User;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -38,4 +40,24 @@ class Validator extends Base\Validator
         Entity::NAME            => 'sometimes|string|max:200',
         Entity::CONTACT_MOBILE  => 'sometimes|max:15',
     ];
+
+    protected static $actionRules = [
+        Entity::ACTION            => 'required|custom',
+        Entity::MERCHANT_ID       => 'required|max:14',
+        Entity::ROLE              => 'sometimes|string',
+    ];
+
+    protected static $validActions = [
+        'attach',
+        'detach',
+        'update'
+    ];
+
+    protected function validateAction(string $attribute, string $action)
+    {
+        if (in_array($action, self::$validActions, true) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED);
+        }
+    }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\Workflow\Base;
+use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Action\State;
 use RZP\Constants\Table;
 
@@ -19,7 +20,7 @@ class Repository extends Base\Repository
     public function findByOrgId(string $orgId)
     {
         return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->orgId($orgId)
                     ->get();
     }
 
@@ -78,6 +79,38 @@ class Repository extends Base\Repository
                     })
                     ->where('workflow_actions.state', '=', State\Entity::OPEN)
                     ->whereIn('workflow_steps.role_id', $roleIds)
+                    ->get();
+    }
+
+    public function getClosedActionsByAdmin($adminId)
+    {
+        /*
+         * SELECT `workflow_actions`.*
+         * FROM `workflow_actions` wa
+         * JOIN `action_states` acs ON acs.action_id = wa.id
+         *      AND `actions_states`.name = 'closed';
+         *
+         */
+
+        $acsDao = $this->manager->action_state;
+
+        $acsTable = $acsDao->getTableName();
+
+        $attrs = $this->getAttributeWithTableName('*');
+        $aId = $this->getAttributeWithTableName(Entity::ID);
+        $acsActionId = $acsDao->getAttributeWithTableName(State\Entity::ACTION_ID);
+
+        $acsState = $acsDao->getAttributeWithTableName(State\Entity::NAME);
+
+        // CLOSED is the absolute last state, We can expect unique entries.
+        $acsAdminId = $acsDao->getAttributeWithTableName(State\Entity::ADMIN_ID);
+
+
+        return $this->newQuery()
+                    ->select($attrs)
+                    ->join($acsTable, $aId, '=', $acsActionId)
+                    ->where($acsState, '=', State\Entity::CLOSED)
+                    ->where($acsAdminId, '=', $adminId)
                     ->get();
     }
 
