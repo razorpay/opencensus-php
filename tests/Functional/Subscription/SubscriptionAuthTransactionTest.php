@@ -461,6 +461,9 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'issued_at' => time(),
             ]);
 
+        // TODO: create an add on item with wrong type.
+        // Test case should fail.
+
         $item = $this->fixtures->create(
             'item',
             [
