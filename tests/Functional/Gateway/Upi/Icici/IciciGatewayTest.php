@@ -305,7 +305,21 @@ EOT;
 
         $this->capturePayment($payment['id'], 50000);
 
-        $this->refundPayment($payment['id'], 30000);
+        $refundAmount = 30000;
+
+        $this->mockServerContentFunction(function(& $content, $action) use ($refundAmount)
+        {
+            if ($action === 'validateRefund')
+            {
+                $actualRefundAmount = (int) ($content['refundAmount'] * 100);
+
+                $assertion = ($actualRefundAmount === $refundAmount);
+
+                $this->assertTrue($assertion, 'Actual refund amount different than expected amount');
+            }
+        });
+
+        $this->refundPayment($payment['id'], $refundAmount);
 
         $upiEntity = $this->getLastEntity('upi', true);
 

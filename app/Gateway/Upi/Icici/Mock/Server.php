@@ -74,9 +74,11 @@ class Server extends Base\Mock\Server
 
         $this->validateRefundInput($input);
 
+        $this->content($input, 'validateRefund');
+
         $content = $this->getRefundResponseContent($input);
 
-        $this->content($content);
+        $this->content($content, 'refund');
 
         return $this->makeResponse($content);
     }
