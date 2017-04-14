@@ -608,7 +608,8 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        if ($input['payment']['merchant_id'] !== '10000000000000')
+        if (($input['payment']['merchant_id'] !== '10000000000000') and
+            ($input['payment']['merchant_id'] !== '2aTeFCKTYWwfrF'))
         {
             return;
         }
