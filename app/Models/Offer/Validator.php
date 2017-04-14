@@ -38,6 +38,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
         Entity::PROCESSING_TIME           => 'sometimes|integer',
         Entity::TYPE                      => 'sometimes|in:instant,deferred',
+        Entity::CHECKOUT_DISPLAY          => 'sometimes|boolean',
         Entity::STARTS_AT                 => 'sometimes|epoch',
         Entity::ENDS_AT                   => 'required|epoch',
         Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',

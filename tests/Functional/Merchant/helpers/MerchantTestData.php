@@ -908,6 +908,48 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithNonOrderRelatedOffer' => [
+        'request' => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'wallet',
+                        'payment_network' => 'olamoney',
+                        'display_text'    => 'Some display text',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithOrderRelatedOffer' => [
+        'request' => [
+            'url'    => null,
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card'   => true
+                ],
+                'offers' => [
+                    [
+                        'name'            => 'Test Offer',
+                        'payment_method'  => 'card',
+                        'payment_network' => 'VISA',
+                        'display_text'    => 'Some display text',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testPutPaytmMethod' => [
         'request' => [
             'url' => '/merchants/10000000000000/methods',
