@@ -714,6 +714,28 @@ return [
         ]
     ],
 
+    'testStatusCakeWebHookUPI' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => '{"method": "upi", "gateway": "upi_icici"}'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/status_cake/webhook'
+        ],
+        'response' => [
+            'content' => [
+                'method' => 'upi',
+                'reason_code' => 'ISSUER_DOWN',
+                'gateway' => 'upi_icici'
+            ]
+        ]
+    ],
+
     'testStatusCakeInvalidNB' => [
         'request' => [
             'content' => [
@@ -777,6 +799,33 @@ return [
                 'StatusCode' => 400,
                 'Status' => 'Down',
                 'Tags' => '{"method": "wallet", "issuer": "xyz"}'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes/status_cake/webhook'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testStatusCakeInvalidUPI' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => '{"method": "upi", "issuer": "xyz"}'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/status_cake/webhook'
