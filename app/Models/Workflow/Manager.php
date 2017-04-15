@@ -4,6 +4,10 @@ namespace RZP\Models\Workflow;
 
 use App;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Admin;
+
 /****
  * Workflow Manager manages all workflows and activities relating to it.
  *
@@ -35,18 +39,13 @@ class Manager
         $this->repo = $this->app['repo'];
     }
 
-    public function getActionsForChecker($admin = null)
+    public function getActionsForChecker(Admin\Entity $admin)
     {
         //
         // Get all the actions in the admin's org
         // Based on current level, get the steps/roles in the workflow
         // if the admin has the role, give the checker the action_id, step_id
         //
-
-        if ($admin === null)
-        {
-            $admin = $this->app['basicauth']->getAdmin();
-        }
 
         $adminRoleIds = $admin->roles()->getRelatedIds()->toArray();
 
@@ -55,19 +54,55 @@ class Manager
         return $actions->toArrayPublic();
     }
 
-    public function getActionsByMaker($admin = null)
+    public function getActionsByMaker(Admin\Entity $admin)
     {
-        // if admin is not passed, accept admin as authAdmin
-        if ($admin === null)
-        {
-            $admin = $this->app['basicauth']->getAdmin();
-        }
-
         $relations = ['workflow'];
 
         $actions = $this->repo->workflow_action->findByAdminIdAndOrgIdWithRelations(
             $admin->getId(), $admin->getOrgId(), $relations);
 
         return $actions;
+    }
+
+    public function getAllActionsByOrg(string $orgId)
+    {
+        $this->validateSuperAdminAccess();
+
+        $actions = $this->repo->workflow_action->findByOrgId(
+            $orgId);
+
+        return $actions;
+    }
+
+    public function getClosedActionsByMaker(Admin\Entity $admin)
+    {
+        $actions = $this->repo->workflow_action
+                              ->getClosedActionsByAdmin($admin->getId());
+
+        return $actions;
+    }
+
+    public function getOpenActionsByOrg(string $orgId)
+    {
+        $this->validateSuperAdminAccess();
+
+        $actions = $this->repo->workflow_action
+                               ->findOpenActionsByOrgId($orgId);
+
+        return $actions;
+    }
+
+    protected function validateSuperAdminAccess()
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        if ($admin->isSuperAdmin() === false)
+        {
+            $data = ['admin_id' => $admin->getId()];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED,
+                $data);
+        }
     }
 }

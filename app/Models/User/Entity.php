@@ -21,6 +21,10 @@ class Entity extends Base\PublicEntity
     const MERCHANT_USERS        = 'merchant_users';
     const USER_ID               = 'user_id';
 
+    const ACTION                = 'action';
+    const MERCHANT_ID           = 'merchant_id';
+    const ROLE                  = 'role';
+
     protected $entity = 'user';
 
     protected $fillable = [
@@ -90,6 +94,16 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Get the column name for the "remember me" token.
+     *
+     * @return string
+     */
+    public function getRememberTokenName()
+    {
+        return self::REMEMBER_TOKEN;
+    }
+
+    /**
      * Get the e-mail address where password reminders are sent.
      *
      * @return string
@@ -102,6 +116,11 @@ class Entity extends Base\PublicEntity
     public function setConfirmTokenNull()
     {
         $this->setAttribute(self::CONFIRM_TOKEN, null);
+    }
+
+    public function setPassword(string $password)
+    {
+        $this->setAttribute(self::PASSWORD, $password);
     }
 
     /**
