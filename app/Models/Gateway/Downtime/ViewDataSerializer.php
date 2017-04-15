@@ -26,26 +26,62 @@ class ViewDataSerializer extends Core
     {
         $formattedData = [];
 
-        $this->downtimes->each(function ($downtime) use ($formattedData)
+        foreach ($this->downtimes as $downtime)
         {
             $method = $downtime->getMethod();
+
+            $terminalId = $downtime->getTerminalId();
+
+            $downtimeData = null;
+
+            // If downtime has a terminal, then only show it for the particular merchant and no one else
+            if ($downtime->hasTerminal() === true)
+            {
+                $terminal = $downtime->terminal;
+
+                if ($terminal->getMerchantId() !== $merchant->getId())
+                {
+                    continue;
+                }
+            }
 
             switch ($method)
             {
                 case Method::CARD:
-                    $downtimeData = $this->getFormattedDowntimeDataForCard($downtime);
+
+                     $downtimeData = $this->getFormattedDowntimeDataForCard($downtime);
+
+                    break;
+
+                case Method::NETBANKING:
+
+                    $downtimeData = $this->getFormattedDowntimeDataForNetbanking($downtime);
+
+                    break;
+
+                case Method::WALLET:
+
+                    $downtimeData = $downtime->getDataForView();
+
                     break;
 
                 default:
                     # code...
                     break;
             }
-        });
+
+            if ($downtimeData !== null)
+            {
+                $formattedData[$method][] = $downtimeData;
+            }
+        }
+
+        return $formattedData;
     }
 
     protected function getFormattedCheckoutDataForCard(Entity $downtime)
     {
-        $data = $downtime->toArrayCheckout();
+        $data = $downtime->getDataForView();
 
         $gateway = $downtime->getGateway();
 
@@ -54,7 +90,7 @@ class ViewDataSerializer extends Core
         $issuer = $downtime->getIssuer();
 
         // If network or issuer is unknown / not available we don't display the data
-        if (($this->isUnknownOrNA($network) === true) or ($this->isUnknownOrNA($network) === true))
+        if (($this->isUnknownOrNA($network) === true) or ($this->isUnknownOrNA($issuer) === true))
         {
             return null;
         }
@@ -68,10 +104,78 @@ class ViewDataSerializer extends Core
             return $data;
         }
 
+        //
+        // For card downtimes if gateway is not ALL and a specific issuer is given
+        // don't show it, as we can always retry via another card
+        //
+        if ($issuer !== Entity::ALL)
+        {
+            return null;
+        }
+
+        //
+        // If all networks of a gateway are affected only show networks which are exclusive
+        // to the gateway
+        //
         if ($network === Entity::ALL)
         {
             $exclusiveNetworks = Payment\Gateway::getExclusiveNetworksForGateway($gateway);
+
+            $data[Entity::NETWORK] = $exclusiveNetworks;
+
+            return $data;
         }
+
+        if (Payment\Gateway::isNetworkExclusiveToGateway($network, $gateway) === true)
+        {
+            return $data;
+        }
+    }
+
+    protected function getFormattedDowntimeDataForNetbanking(Entity $downtime)
+    {
+        $data = $downtime->getDataForView();
+
+        $gateway = $downtime->getGateway();
+
+        $issuer = $downtime->getIssuer();
+
+        // Forn netbanking if gateway if ALL, we display the data
+        if ($gateway === Entity::ALL)
+        {
+            return $data;
+        }
+
+        // If issuer is unknown or NA, we don't display the data
+        if ($this->isUnknownOrNA($issuer) === true)
+        {
+            return null;
+        }
+
+        if (in_array($gateway, Payment\Gateway::$netbankingGateways, true) === true)
+        {
+            // If issuer is set as ALL, return all issuers exclusive to gateway
+            // E.g for billdesk return all banks exclusive to billdesk
+            if ($issuer === Entity::ALL)
+            {
+                $exclusiveIssuers = Netbanking::getExclusiveIssuersForGateway($gateway);
+
+                $data[Entity::ISSUER] = $exclusiveIssuers;
+
+                return $data;
+            }
+
+            // If particular issuer is present and it is exclusive to the gateway then
+            // display the data
+            if (Netbanking::isIssuerExclusiveToGateway($issuer, $gateway) === true)
+            {
+                return $data;
+            }
+        }
+
+        // For directly supporteed gateways we always dsiplay the data
+
+        return $data;
     }
 
     protected function isUnknownOrNA(string $value)

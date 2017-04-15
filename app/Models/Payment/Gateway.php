@@ -580,7 +580,16 @@ class Gateway
 
         $otherGatewayNetowrks = array_values(array_unique($otherGatewayNetowrks));
 
+        $exclusiveNetworks = array_diff($supportedNetworks, $otherGatewayNetowrks);
 
+        return $exclusiveNetworks;
+    }
+
+    public static function isNetworkExclusiveToGateway(string $network, string $gateway)
+    {
+        $exclusiveNetworks = self::getExclusiveNetworksForGateway($gateway);
+
+        return in_array($network, $exclusiveNetworks, true);
     }
 
     public static function getGatewaysForNetbankingBank($bank, $isTPV = false)

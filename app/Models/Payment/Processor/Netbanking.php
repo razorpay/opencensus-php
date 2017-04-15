@@ -386,4 +386,22 @@ class Netbanking
     {
         return self::ACCOUNT_NUMBER_LENGTHS;
     }
+
+    public static function getExclusiveIssuersForGateway(string $gateway)
+    {
+        $allSupportedBanks = self::getSupportedBanksInLiveMode();
+
+        $gatewaySupportedBanks = self::$$gateway;
+
+        $gatewayExclusiveBanks = array_diff($gatewaySupportedBanks);
+
+        return $gatewayExclusiveBanks;
+    }
+
+    public static function isIssuerExclusiveToGateway(string $issuer, string $gateway)
+    {
+        $gatewayExclusiveBanks = self::getExclusiveIssuersForGateway($gateway);
+
+        return in_array($issuer, $gatewayExclusiveBanks, true);
+    }
 }

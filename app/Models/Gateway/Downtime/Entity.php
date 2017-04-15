@@ -351,7 +351,7 @@ class Entity extends Base\PublicEntity
         return $query->where(self::PUBLIC, '=', 0);
     }
 
-    public function toArrayCheckout()
+    public function getDataForView()
     {
         $data = [
             Entity::ISSUER      => $this->getIssuer(),
