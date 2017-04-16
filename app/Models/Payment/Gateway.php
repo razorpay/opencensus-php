@@ -169,6 +169,19 @@ class Gateway
         ],
     ];
 
+    const CARD_GATEWAYS_LIVE = [
+        self::HDFC,
+        self::AXIS_MIGS,
+        self::AMEX,
+        self::CYBERSOURCE,
+        self::FIRST_DATA,
+    ];
+
+    const SHARED_NETBANKING_GATEWAYS_LIVE = [
+        self::BILLDESK,
+        self::EBS
+    ];
+
     /**
      * Card gateways which support auth and capture mechanism for at
      * least one card network.
@@ -436,6 +449,20 @@ class Gateway
         return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
+    public static function isDirectNetbankingGateway(string $gateway)
+    {
+        $directNetbankingGateways = array_values(self::$netbankingToGatewayMap);
+
+        return in_array($gateway, $directNetbankingGateways, true);
+    }
+
+    public static function getBankForDirectNetbankingGateway(string $gateway)
+    {
+        $gatewayToBankMap = array_flip(self::$netbankingToGatewayMap);
+
+        return $gatewayToBankMap[$gateway];
+    }
+
     public static function isRecurringGateway($gateway)
     {
         return in_array($gateway, self::$recurringGateways, true);
@@ -573,14 +600,27 @@ class Gateway
 
         $otherGatewayNetowrks = [];
 
-        foreach (self::$cardNetworkMap as $gateway => $networks)
+        foreach (self::CARD_GATEWAYS_LIVE as $cardGateway)
         {
-            $otherGatewayNetowrks = array_merge($otherGatewayNetowrks, $networks);
+            if ($gateway !== $cardGateway)
+            {
+                $networks = self::$cardNetworkMap[$cardGateway];
+
+                $otherGatewayNetowrks = array_merge($otherGatewayNetowrks, $networks);
+            }
         }
 
         $otherGatewayNetowrks = array_values(array_unique($otherGatewayNetowrks));
 
         $exclusiveNetworks = array_diff($supportedNetworks, $otherGatewayNetowrks);
+
+        // Filter out the UNKNOWN network if present
+        $exclusiveNetworks = array_filter($exclusiveNetworks, function ($network)
+        {
+            return $network !== Network::UNKNOWN;
+        });
+
+        $exclusiveNetworks = array_values($exclusiveNetworks);
 
         return $exclusiveNetworks;
     }

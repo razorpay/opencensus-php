@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Bank\Name;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal\Category;
 
@@ -389,11 +390,21 @@ class Netbanking
 
     public static function getExclusiveIssuersForGateway(string $gateway)
     {
-        $allSupportedBanks = self::getSupportedBanksInLiveMode();
-
         $gatewaySupportedBanks = self::$$gateway;
 
-        $gatewayExclusiveBanks = array_diff($gatewaySupportedBanks);
+        $otherGatewaySupportedBanks = self::$self;
+
+        foreach (Gateway::SHARED_NETBANKING_GATEWAYS_LIVE as $netbankingGateway)
+        {
+            if ($gateway !== $netbankingGateway)
+            {
+                $otherGatewaySupportedBanks = array_merge($otherGatewaySupportedBanks, self::$$netbankingGateway);
+            }
+        }
+
+        $otherGatewaySupportedBanks = array_values(array_unique($otherGatewaySupportedBanks));
+
+        $gatewayExclusiveBanks = array_values(array_diff($gatewaySupportedBanks, $otherGatewaySupportedBanks));
 
         return $gatewayExclusiveBanks;
     }

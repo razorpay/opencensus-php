@@ -48,6 +48,8 @@ class Checkout
 
         $this->checkAndFillOfferDetails($merchant, $input, $data);
 
+        $this->checkAndFillGatewayDowntime($merchant, $data);
+
         $this->tracePreferencesResponse($merchant, $data);
 
         return $data;
@@ -311,6 +313,16 @@ class Checkout
         if ($directOffer !== null)
         {
             $data['offers'] = $directOffer->toArrayCheckout();
+        }
+    }
+
+    public function checkAndFillGatewayDowntime(Merchant\Entity $merchant, array & $data)
+    {
+        $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+
+        if (empty($downtimeData) === false)
+        {
+            $data['downtime'] = $downtimeData;
         }
     }
 }

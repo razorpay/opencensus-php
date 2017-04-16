@@ -603,5 +603,11 @@ final class FactoryData
             'schedule_id'       => 'factory:RZP\Models\Schedule\Entity',
             'next_run_at'       => 1451604600,
         ]);
+
+        $factory(\RZP\Models\Gateway\Downtime\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
+        ]);
     }
 }

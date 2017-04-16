@@ -28,7 +28,6 @@ class Validator extends Base\Validator
         Entity::COMMENT         => 'sometimes|string|max:500',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
-        Entity::PUBLIC          => 'sometimes|bool',
     ];
 
     protected static $editRules = [
@@ -42,7 +41,6 @@ class Validator extends Base\Validator
         Entity::COMMENT         => 'sometimes|string|max:500',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
-        Entity::PUBLIC          => 'sometimes|bool',
     ];
 
     protected static $editDuplicateRules = [
@@ -59,7 +57,6 @@ class Validator extends Base\Validator
         Entity::COMMENT         => 'sometimes|string|max:500',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
-        Entity::PUBLIC          => 'sometimes|bool',
     ];
 
     protected static $createValidators = [
@@ -230,11 +227,9 @@ class Validator extends Base\Validator
         {
             return;
         }
-        else
-        {
-            throw new Exception\BadRequestValidationFailureException(
+
+         throw new Exception\BadRequestValidationFailureException(
                 'Unknown Issuer:'. $issuer.' for method:' . $method);
-        }
 
     }
 
@@ -260,8 +255,6 @@ class Validator extends Base\Validator
 
     protected function validateNetbankingIssuer(string $gateway, string $method, string $issuer = null)
     {
-        $issuer = strtoupper($issuer);
-
         if (empty($issuer) === true)
         {
             throw new Exception\BadRequestValidationFailureException(

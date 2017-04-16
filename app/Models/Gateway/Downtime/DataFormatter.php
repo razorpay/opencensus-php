@@ -4,12 +4,15 @@ namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Processor\Netbanking;
 
 /**
 * Defines logic for formatting and displaying relevant data for a downtime via
 * any public facing api such as checkout preferences
 */
-class ViewDataSerializer extends Core
+class DataFormatter extends Core
 {
     protected $downtimes;
 
@@ -39,7 +42,7 @@ class ViewDataSerializer extends Core
             {
                 $terminal = $downtime->terminal;
 
-                if ($terminal->getMerchantId() !== $merchant->getId())
+                if ($terminal->getMerchantId() !== $this->merchant->getId())
                 {
                     continue;
                 }
@@ -60,13 +63,21 @@ class ViewDataSerializer extends Core
                     break;
 
                 case Method::WALLET:
+                case Method::UPI:
 
                     $downtimeData = $downtime->getDataForView();
+
+                    $issuer = $downtime->getIssuer();
+
+                    // For wallet and UPI if issuer is unknown ot NA don't display the data
+                    if ($this->isUnknownOrNA($issuer) === true)
+                    {
+                        $downtimeData = null;
+                    }
 
                     break;
 
                 default:
-                    # code...
                     break;
             }
 
@@ -79,7 +90,7 @@ class ViewDataSerializer extends Core
         return $formattedData;
     }
 
-    protected function getFormattedCheckoutDataForCard(Entity $downtime)
+    protected function getFormattedDowntimeDataForCard(Entity $downtime)
     {
         $data = $downtime->getDataForView();
 
@@ -121,6 +132,11 @@ class ViewDataSerializer extends Core
         {
             $exclusiveNetworks = Payment\Gateway::getExclusiveNetworksForGateway($gateway);
 
+            if (empty($exclusiveNetworks) === true)
+            {
+                return null;
+            }
+
             $data[Entity::NETWORK] = $exclusiveNetworks;
 
             return $data;
@@ -152,13 +168,18 @@ class ViewDataSerializer extends Core
             return null;
         }
 
-        if (in_array($gateway, Payment\Gateway::$netbankingGateways, true) === true)
+        if (in_array($gateway, Payment\Gateway::SHARED_NETBANKING_GATEWAYS_LIVE, true) === true)
         {
             // If issuer is set as ALL, return all issuers exclusive to gateway
             // E.g for billdesk return all banks exclusive to billdesk
             if ($issuer === Entity::ALL)
             {
                 $exclusiveIssuers = Netbanking::getExclusiveIssuersForGateway($gateway);
+
+                if (empty($exclusiveIssuers) === true)
+                {
+                    return null;
+                }
 
                 $data[Entity::ISSUER] = $exclusiveIssuers;
 
@@ -174,6 +195,13 @@ class ViewDataSerializer extends Core
         }
 
         // For directly supporteed gateways we always dsiplay the data
+
+        if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
+        {
+            $data[Entity::ISSUER] = [
+                Payment\Gateway::getBankForDirectNetbankingGateway($gateway)
+            ];
+        }
 
         return $data;
     }

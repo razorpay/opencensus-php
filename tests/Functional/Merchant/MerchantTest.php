@@ -651,6 +651,125 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
+    public function testGetCheckoutPreferencesWithAllCardGeatewayDowntime()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'first_data',
+            'issuer'  => 'UNKNOWN',
+            'network' => 'UNKNOWN']);
+
+        $content = $this->startTest();
+
+        $this->assertArrayNotHasKey('downtime', $content);
+    }
+
+    public function testGetCheckoutRouteWithCardDowntimeWithSpecificGatewayDown()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'hdfc',
+            'issuer'  => 'ALL',
+            'network' => 'ALL']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCardDowntimeWithGatewayExclusiveNetworkDown()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'hdfc',
+            'issuer'  => 'ALL',
+            'network' => 'DICL']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingDowntimeWithAllGateway()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'ALL',
+            'issuer'  => 'HDFC',]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingDowntimeWithSharedNetbankingGateway()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'billdesk',
+            'issuer'  => 'ALL',]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingWithIssuerExclusiveTogateway()
+    {
+        $this->ba->publicAuth();
+
+         $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'billdesk',
+            'issuer'  => 'ALLA',]);
+
+         $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithDirectNetbankingDowntime()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway'     => 'netbanking_hdfc',
+            'issuer'      => 'ALL',]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingDowntimeWithDirectTerminal()
+    {
+        $this->ba->publicAuth();
+
+        $terminal = $this->fixtures->create('terminal:direct_billdesk_terminal');
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway'     => 'billdesk',
+            'issuer'      => 'ALL',
+            'terminal_id' => $terminal->getId()]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithWalletDowntime()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:wallet', [
+            'gateway' => 'wallet_olamoney',
+            'issuer'  => 'olamoney']);
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithOffer()
     {
         $this->markTestSkipped('Skipping till new offers changes are merged');
@@ -663,7 +782,7 @@ class MerchantTest extends TestCase
 
         $countCardOffers = count($content['offers']['card']['items']);
 
-        $countWalletOffers = count($content['offers']['wallet']['items']);
+        $countWalletOffers = count($content['offepuvdfgrs']['wallet']['items']);
 
         $this->assertEquals(1, $countCardOffers);
 

@@ -908,6 +908,265 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithAllCardGeatewayDowntime' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'card' => [
+                        [
+                            'issuer' => ['ALL'],
+                            'scheduled' => true,
+                            'reason_code' => 'OTHER',
+                            'card_type' => 'credit',
+                            'network' => ['VISA'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutRouteWithCardDowntimeWithSpecificGatewayDown' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'card' => [
+                        [
+                            'issuer'      => ['ALL'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                            'card_type'   => 'credit',
+                            'network'     => ['DICL'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithCardDowntimeWithGatewayExclusiveNetworkDown' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'card' => [
+                        [
+                            'issuer'      => ['ALL'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                            'card_type'   => 'credit',
+                            'network'     => ['DICL'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNetbankingDowntimeWithAllGateway' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer'      => ['HDFC'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNetbankingDowntimeWithSharedNetbankingGateway' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer'      => [
+                                                "ALLA",
+                                                "BBKM",
+                                                "BKDN",
+                                                "COSB",
+                                                "DCBL",
+                                                "DCBL",
+                                                "DEUT",
+                                                "DBSS",
+                                                "IDFB",
+                                                "IBKL",
+                                                "JSBP",
+                                                "KVBL",
+                                                "NKGS",
+                                                "PMCB",
+                                                "RATN",
+                                                "SBBJ",
+                                                "SBHY",
+                                                "SBIN",
+                                                "SBMY",
+                                                "STBP",
+                                                "SBTR",
+                                                "SCBL",
+                                                "SIBL",
+                                                "SVCB",
+                                                "SYNB",
+                                                "TMBL",
+                                                "TNSC",
+                                                "BARB_C",
+                                                "BARB_R",
+                                                "PUNB_C",
+                                                "LAVB_C"],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNetbankingWithIssuerExclusiveTogateway' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer'      => ['ALLA'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithDirectNetbankingDowntime' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer'      => ['HDFC'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithWalletDowntime' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'wallet' => [
+                        [
+                            'issuer'      => ['olamoney'],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNetbankingDowntimeWithDirectTerminal' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'downtime' => [
+                    'netbanking' => [
+                        [
+                            'issuer'      => [
+                                                "ALLA",
+                                                "BBKM",
+                                                "BKDN",
+                                                "COSB",
+                                                "DCBL",
+                                                "DCBL",
+                                                "DEUT",
+                                                "DBSS",
+                                                "IDFB",
+                                                "IBKL",
+                                                "JSBP",
+                                                "KVBL",
+                                                "NKGS",
+                                                "PMCB",
+                                                "RATN",
+                                                "SBBJ",
+                                                "SBHY",
+                                                "SBIN",
+                                                "SBMY",
+                                                "STBP",
+                                                "SBTR",
+                                                "SCBL",
+                                                "SIBL",
+                                                "SVCB",
+                                                "SYNB",
+                                                "TMBL",
+                                                "TNSC",
+                                                "BARB_C",
+                                                "BARB_R",
+                                                "PUNB_C",
+                                                "LAVB_C"],
+                            'scheduled'   => true,
+                            'reason_code' => 'OTHER',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testPutPaytmMethod' => [
         'request' => [
             'url' => '/merchants/10000000000000/methods',
