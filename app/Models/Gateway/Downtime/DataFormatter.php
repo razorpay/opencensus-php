@@ -195,7 +195,6 @@ class DataFormatter extends Core
         }
 
         // For directly supporteed gateways we always dsiplay the data
-
         if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
         {
             $data[Entity::ISSUER] = [

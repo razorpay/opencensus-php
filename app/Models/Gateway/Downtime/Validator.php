@@ -228,8 +228,8 @@ class Validator extends Base\Validator
             return;
         }
 
-         throw new Exception\BadRequestValidationFailureException(
-                'Unknown Issuer:'. $issuer.' for method:' . $method);
+        throw new Exception\BadRequestValidationFailureException(
+            'Unknown Issuer:'. $issuer.' for method:' . $method);
 
     }
 
@@ -315,7 +315,6 @@ class Validator extends Base\Validator
     public function validateNetwork(array $input)
     {
         $network = $input[Entity::NETWORK] ?? $this->entity->getNetwork();
-
         $network = strtoupper($network);
 
         $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
