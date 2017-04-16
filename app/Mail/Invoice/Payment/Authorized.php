@@ -26,17 +26,6 @@ class Authorized extends Base
         $this->invoice = $invoice;
     }
 
-    protected function addSender()
-    {
-        $email = Constants::MAIL_ADDRESSES[Constants::CARE];
-
-        $header = Constants::HEADERS[Constants::CARE];
-
-        $this->from($email, $header);
-
-        return $this;
-    }
-
     protected function getAction()
     {
         $typeLabel = $this->invoice->getTypeLabel();

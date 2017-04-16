@@ -164,6 +164,7 @@ class Activation extends Mailable
             if ($rule[Pricing\Entity::AMOUNT_RANGE_ACTIVE] === true)
             {
                 $amountRangeMin = $rule[Pricing\Entity::AMOUNT_RANGE_MIN] / 100;
+
                 $amountRangeMax = $rule[Pricing\Entity::AMOUNT_RANGE_MAX] / 100;
 
                 if ($amountRangeMin === 0)

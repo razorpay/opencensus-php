@@ -7,15 +7,6 @@ use RZP\Mail\Base\Constants;
 
 class CardSaved extends Base
 {
-    protected function addSender()
-    {
-        $email = Constants::MAIL_ADDRESSES[Constants::CARE];
-
-        $this->from($email);
-
-        return $this;
-    }
-
     protected function addSubject()
     {
         $subject = "Card successfully saved with Razorpay";

@@ -29,8 +29,6 @@ class Notifier extends Base\Core
     protected $raven;
     protected $slack;
     protected $slackTechLogsChannel;
-    protected $mailSubjectTemplates;
-    protected $dashboardUrl;
 
     public function __construct($invoice = null, string $issuedPdfPath = null)
     {

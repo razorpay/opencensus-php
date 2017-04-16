@@ -7,22 +7,6 @@ use RZP\Mail\Base\Constants;
 
 class FailedToAuthorized extends Base
 {
-    protected function addSender()
-    {
-        if ($this->isMerchantEmail === false)
-        {
-            $email = Constants::MAIL_ADDRESSES[Constants::CARE];
-
-            $header = Constants::HEADERS[Constants::CARE];
-
-            $this->from($email);
-
-            return $this;
-        }
-
-        return parent::addSender();
-    }
-
     protected function addHtmlView()
     {
         if ($this->isMerchantEmail === true)
