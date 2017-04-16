@@ -105,113 +105,17 @@ export default class ReportsContainer extends Component {
     let { entity, type, mode, month, year, user, handleSubmit } = this.props;
 
     return (
-      <tabbed-container>
-        <header>
-          <NavLink to="/reports">Download Reports</NavLink>
-        </header>
-        <content>
-          <div class="content-wrapper content-sm text-center">
-            <div class="row">
-              <div class="col-sm-3">
-                <div class="form-group">
-                  <Field name="entity" component="select" class="form-control">
-                    <option value="payment">Payment</option>
-                    <option value="refund">Refund</option>
-                    <option value="order">Order</option>
-                    {/*Api must give this flag. Currently hard coded for uber*/}
-                    {['82LK42BGTN2bOe', '7SVOQZGZuwHr4I'].indexOf(
-                      user.current
-                    ) > -1 &&
-                      <option value="payment_link">Payment Link</option>}
-                    <option value="settlement">Settlement</option>
-                    <option value="transaction">Combined</option>
-                    {user.tags.indexOf('Broking_Report') === -1 ||
-                      <option value="broking">Broking Report</option>}
-                    // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
-                    {user.tags.indexOf('Dsp_Report') === -1 ||
-                      <option value="dsp_report">
-                        DSP Transaction Report
-                      </option>}
-                    <option value="invoice">Monthly Invoice</option>
-                    {user.tags.indexOf('Marketplace') === -1 ||
-                      <optgroup label="Route">
-                        <option value="transfer">Transfer</option>
-                        <option value="reversal">Reversal</option>
-                      </optgroup>}
-                  </Field>
-                </div>
-              </div>
-
-              {entity === 'invoice' ||
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <Field name="type" class="form-control" component="select">
-                      <option value="daily">Daily</option>
-                      <option value="monthly">Monthly</option>
-                    </Field>
-                  </div>
-                </div>}
-
-              <div class="col-sm-2">
-                <div class="form-group">
-                  <Field name="year" class="form-control" component="select">
-                    <option value="2017">2017</option>
-                    <option value="2016">2016</option>
-                    <option value="2015">2015</option>
-                  </Field>
-                </div>
-              </div>
-
-              <div class="col-sm-3">
-                <div class="form-group">
-                  <Field name="month" class="form-control" component="select">
-                    {moment.months().map((name, index) => {
-                      return (
-                        <option value={index + 1} key={index}>
-                          {name}
-                        </option>
-                      );
-                    })}
-                  </Field>
-                </div>
-              </div>
-
-              {type === 'daily' &&
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <Field name="day" class="form-control" component="select">
-                      {Array.from(
-                        Array(numberOfDays(month, year)),
-                        (undef, index) => {
-                          return (
-                            <option value={index + 1} key={index}>
-                              {index + 1}
-                            </option>
-                          );
-                        }
-                      )}
-                    </Field>
-                  </div>
-                </div>}
-
-            </div>
-
-            <hr />
-
-            <AsyncButton
-              class="btn btn-primary"
-              onClick={handleSubmit(this.prepareGenerateReport)}
-              text="Download Report"
-              pendingText="Generating..."
-            />
-
-            <footer>
-              Combined reports will include transactions on the given date, as well as payments
-              settled on that given date.
-            </footer>
-          </div>
-        </content>
-      </tabbed-container>
+      <div class="row report-wrapper">
+        <div class="col-md-4 report-list-panel">
+          <span class="title">SELECT REPORT TYPE</span>
+          <Field name="entity" component="radio" class="form-control">
+            <input type="radio" name="asd"/> <label for="asd" />
+          </Field>
+        </div>
+        <div class="col-md-8 report-generate-panel">
+          <span class="title">SELECT ACCOUNT</span>
+        </div>
+      </div>
     );
   }
 }
