@@ -6,6 +6,10 @@ import { required } from 'rzp/utils/validators'
 import { states } from 'rzp/utils/constants'
 import ActivationWizardHOC from './ActivationWizardHOC'
 
+function verifyAccountNumber(value, allValues, props) {
+  return value !== allValues.bank_account_number ? 'Bank Number doesn\'t match' : undefined
+}
+
 @ActivationWizardHOC
 export default class BankDetailsForm extends Component {
   render() {
@@ -44,6 +48,7 @@ export default class BankDetailsForm extends Component {
                 class='form-control'
                 placeholder='Bank Account Number'
                 type='password'
+                autoComplete='off'
                 validate={[
                   required()
                 ]}
@@ -60,7 +65,8 @@ export default class BankDetailsForm extends Component {
                 class='form-control'
                 placeholder='Re-enter your Bank Account Number'
                 validate={[
-                  required()
+                  required(),
+                  verifyAccountNumber,
                 ]}
               />
             </div>
@@ -93,6 +99,7 @@ export default class BankDetailsForm extends Component {
                   required()
                 ]}
               />
+              <small class='help-block'>Should be same as business/individual name</small>
             </div>
           </div>
 
@@ -139,6 +146,21 @@ export default class BankDetailsForm extends Component {
           </div>
 
           <div class='form-group'>
+            <label class='col-md-3 control-label label-required'>Beneficiary Address City</label>
+            <div class='col-md-9'>
+              <Field
+                name='bank_beneficiary_city'
+                component={InputField}
+                class='form-control'
+                placeholder='Beneficiary Address City'
+                validate={[
+                  required()
+                ]}
+              />
+            </div>
+          </div>
+
+          <div class='form-group'>
             <label class='col-md-3 control-label label-required'>Beneficiary Address State</label>
             <div class='col-md-9'>
               <Field
@@ -158,6 +180,21 @@ export default class BankDetailsForm extends Component {
                   ))
                 }
               </Field>
+            </div>
+          </div>
+
+          <div class='form-group'>
+            <label class='col-md-3 control-label label-required'>Beneficiary Address Pincode</label>
+            <div class='col-md-9'>
+              <Field
+                name='bank_beneficiary_pin'
+                component={InputField}
+                class='form-control'
+                placeholder='Beneficiary Address Pincode'
+                validate={[
+                  required()
+                ]}
+              />
             </div>
           </div>
 

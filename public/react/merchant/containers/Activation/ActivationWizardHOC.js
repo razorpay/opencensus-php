@@ -4,6 +4,7 @@ import * as ActivationActions from 'merchant/modules/activation'
 import { showNotification } from 'merchant/modules/notifications'
 import { Field, reduxForm } from 'redux-form'
 import Alert from 'rzp/ui/Forms/Alert'
+import { without } from 'rzp/utils/rzp-utils'
 
 // Uses HOC (Higher Order Component) to leverage Inheritance Inversion pattern & Props proxying
 // https://medium.com/@franleplant/react-higher-order-components-in-depth-cf9032ee6c3e#5247
@@ -32,7 +33,12 @@ export default function ActivationWizardHOC(WizardComponent) {
 
     save = (props) => {
       let step = this.props.step
-      return this.props.saveStep(step, props).then((response) => {
+      let filteredProps = without(props, [
+        'or_same',
+        'bank_account_number_confirmation',
+      ])
+
+      return this.props.saveStep(step, filteredProps).then((response) => {
         this.props.showNotification({
           type: 'success',
           message: 'Step saved successfully'
@@ -72,14 +78,13 @@ export default function ActivationWizardHOC(WizardComponent) {
         <div class='panel'>
           <div class='panel-body'>
             <div class='row'>
-              <div class='col-md-offset-2 col-md-10'>
-                <h4 class='wizard-header'>{this.props.pageTitle}</h4>
-              </div>
-            </div>
-
-            <div class='row'>
-              <div class='col-lg-8 col-md-10 col-sm-12'>
-                <Alert type='error' message={this.state.errors} />
+              <div class='col-lg-10 col-md-12 col-sm-12'>
+                <div class='row'>
+                  <div class='col-md-offset-3 col-md-9'>
+                    <h4 class='wizard-header'>{this.props.pageTitle}</h4>
+                    <Alert type='error' message={this.state.errors} />
+                  </div>
+                </div>
 
                 <WizardComponent
                   {...this.props}

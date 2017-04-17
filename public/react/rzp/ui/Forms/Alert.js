@@ -45,7 +45,10 @@ class Alert extends Component {
           <span>×</span>
         </button>
 
-        <ul class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}>
+        <ul
+          class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
+          style={{ paddingLeft: '15px' }}
+        >
           {msgs.map((msg, index) => <li key={index}>{msg}</li>)}
         </ul>
       </div>

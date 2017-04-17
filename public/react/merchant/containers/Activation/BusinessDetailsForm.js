@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { Field, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
+import CheckboxField from 'rzp/ui/Forms/CheckboxField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import { required } from 'rzp/utils/validators'
 import ActivationWizardHOC from './ActivationWizardHOC'
@@ -118,8 +119,7 @@ export default class BusinessDetailsForm extends Component {
               <label class='i-switch'>
                 <Field
                   name='business_international'
-                  component='input'
-                  type='checkbox'
+                  component={CheckboxField}
                 />
                 <i></i>
               </label>
@@ -128,7 +128,7 @@ export default class BusinessDetailsForm extends Component {
           </div>
 
           <div class='form-group'>
-            <label class='col-md-3 control-label'>Payments Accepted for:</label>
+            <label class='col-md-3 control-label label-required'>Payments Accepted for:</label>
             <div class='col-md-9'>
               <Field
                 name='business_paymentdetails'
@@ -252,9 +252,13 @@ export default class BusinessDetailsForm extends Component {
               <div class='col-md-9'>
                 <Field
                   name='business_operation_address'
-                  component='textarea'
+                  component={InputField}
+                  tagName='textarea'
                   class='form-control'
                   placeholder='Operational Address'
+                  validate={[
+                    required()
+                  ]}
                 />
               </div>
             </div>
@@ -264,9 +268,12 @@ export default class BusinessDetailsForm extends Component {
               <div class='col-md-9'>
                 <Field
                   name='business_operation_state'
-                  component='input'
+                  component={InputField}
                   class='form-control'
                   placeholder='Operational Address State'
+                  validate={[
+                    required()
+                  ]}
                 />
               </div>
             </div>
@@ -276,9 +283,12 @@ export default class BusinessDetailsForm extends Component {
               <div class='col-md-9'>
                 <Field
                   name='business_operation_city'
-                  component='input'
+                  component={InputField}
                   class='form-control'
                   placeholder='Operational Address City'
+                  validate={[
+                    required()
+                  ]}
                 />
               </div>
             </div>
@@ -288,9 +298,12 @@ export default class BusinessDetailsForm extends Component {
               <div class='col-md-9'>
                 <Field
                   name='business_operation_pin'
-                  component='input'
+                  component={InputField}
                   class='form-control'
                   placeholder='Operational Address Pincode'
+                  validate={[
+                    required()
+                  ]}
                 />
               </div>
             </div>
@@ -303,12 +316,16 @@ export default class BusinessDetailsForm extends Component {
                 name='business_doe'
                 component={DatePickerField}
                 class='form-control'
+                outputDateFormat='YYYY-MM-DD'
+                isOutsideRange={(day) => {
+                  return day.isAfter(moment())
+                }}
               />
             </div>
           </div>
 
           <div class='form-group'>
-            <label class='col-md-3 control-label label-required'>Company CIN</label>
+            <label class='col-md-3 control-label'>Company CIN</label>
             <div class='col-md-9'>
               <Field
                 name='company_cin'
@@ -321,7 +338,7 @@ export default class BusinessDetailsForm extends Component {
           </div>
 
           <div class='form-group'>
-            <label class='col-md-3 control-label label-required'>Company PAN</label>
+            <label class='col-md-3 control-label'>Company PAN</label>
             <div class='col-md-9'>
               <Field
                 name='company_pan'
@@ -334,7 +351,7 @@ export default class BusinessDetailsForm extends Component {
           </div>
 
           <div class='form-group'>
-            <label class='col-md-3 control-label label-required'>Name on PAN Card</label>
+            <label class='col-md-3 control-label'>Name on PAN Card</label>
             <div class='col-md-9'>
               <Field
                 name='company_pan_name'
@@ -351,8 +368,12 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='transaction_volume'
-                component='select'
+                component={InputField}
+                tagName='select'
                 class='form-control'
+                validate={[
+                  required()
+                ]}
               >
                 <option></option>
                 <option value='1'>&lt; 1 Lakh</option>
@@ -380,9 +401,12 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='promoter_pan'
-                component='input'
+                component={InputField}
                 class='form-control'
                 placeholder='PAN Number of Promoter'
+                validate={[
+                  required()
+                ]}
               />
             </div>
           </div>
@@ -392,9 +416,12 @@ export default class BusinessDetailsForm extends Component {
             <div class='col-md-9'>
               <Field
                 name='promoter_pan_name'
-                component='input'
+                component={InputField}
                 class='form-control'
                 placeholder='Name on PAN Card'
+                validate={[
+                  required()
+                ]}
               />
             </div>
           </div>
