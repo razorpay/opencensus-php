@@ -325,13 +325,6 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateDowntimeNBEmptyIssuer()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
     public function testCreateDowntimeNBInvalidIssuer()
     {
         $this->fillDefaultsForTests(__FUNCTION__);

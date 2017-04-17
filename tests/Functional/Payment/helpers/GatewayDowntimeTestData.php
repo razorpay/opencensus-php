@@ -87,30 +87,7 @@ return [
             ]
         ]
     ],
-    'testCreateDowntimeNBEmptyIssuer' => [
-        'request' => [
-            'content' => [
-                'gateway'     => 'netbanking_hdfc',
-                'reason_code' => 'LOW_SUCCESS_RATE',
-                'method'      => 'netbanking',
-                'source'      => 'other'
-            ],
-            'method' => 'POST',
-            'url' => '/gateway/downtimes'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                ]
-            ],
-            'status_code'   => 400,
-        ],
-        'exception' => [
-            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ]
-    ],
+
     'testCreateDowntimeInvalidGateway' => [
         'request' => [
             'content' => [
