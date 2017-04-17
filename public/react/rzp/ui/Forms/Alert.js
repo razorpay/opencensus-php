@@ -16,6 +16,7 @@ class Alert extends Component {
       this.setState({
         close: false,
       });
+      window.scrollTo(0, 0)
     }
   }
 
@@ -23,12 +24,6 @@ class Alert extends Component {
     this.setState({
       close: true,
     });
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (!prevState.close && prevProps.message) {
-      window.scrollTo(0, 0)
-    }
   }
 
   render() {
@@ -55,7 +50,7 @@ class Alert extends Component {
           class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
           style={{ paddingLeft: '15px' }}
         >
-          {msgs.map((msg, index) => <li key={index}>{msg}</li>)}
+          {msgs.map((msg, index) => <li key={index}>{JSON.stringify(msg)}</li>)}
         </ul>
       </div>
     );

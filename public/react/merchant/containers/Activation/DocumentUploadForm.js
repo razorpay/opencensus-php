@@ -8,7 +8,7 @@ import ActivationWizardHOC from './ActivationWizardHOC'
 export default class DocumentsUploadForm extends Component {
   render() {
     let { saveFile, gotoTab } = this.props
-    let files = this.props.data.files || []
+    let files = this.props.uploadedFiles
 
     return (
       <form class='form-horizontal'>
@@ -26,7 +26,7 @@ export default class DocumentsUploadForm extends Component {
               </span>
               <FileUploadInputButton
                 accept='image/jpeg,image/png,application/pdf,application/x-pdf'
-                fileUploaded={ files.indexOf('business_proof') !== -1 }
+                uploadedFileName={files.business_proof}
                 onChange={(event) => {
                   return saveFile(event, 'business_proof')
                 }}
@@ -40,7 +40,7 @@ export default class DocumentsUploadForm extends Component {
               <span class='help-block'>Company/Partnership/LLP PAN Card (Sole Proprietor can use personal PAN)</span>
               <FileUploadInputButton
                 accept='image/jpeg,image/png,application/pdf,application/x-pdf'
-                fileUploaded={ files.indexOf('business_pan_proof') !== -1 }
+                uploadedFileName={files.business_pan_proof}
                 onChange={(event) => {
                   return saveFile(event, 'business_pan_proof')
                 }}
@@ -60,7 +60,7 @@ export default class DocumentsUploadForm extends Component {
 
               <FileUploadInputButton
                 accept='image/jpeg,image/png,application/pdf,application/x-pdf'
-                fileUploaded={ files.indexOf('address_proof') !== -1 }
+                uploadedFileName={files.address_proof}
                 onChange={(event) => {
                   return saveFile(event, 'address_proof')
                 }}
@@ -77,7 +77,7 @@ export default class DocumentsUploadForm extends Component {
               </span>
               <FileUploadInputButton
                 accept='image/jpeg,image/png,application/pdf,application/x-pdf'
-                fileUploaded={ files.indexOf('promoter_address_proof') !== -1 }
+                uploadedFileName={files.promoter_address_proof}
                 onChange={(event) => {
                   return saveFile(event, 'promoter_address_proof')
                 }}

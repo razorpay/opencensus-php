@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import { connect } from 'react-redux'
 import * as ActivationActions from 'merchant/modules/activation'
-import { showNotification } from 'merchant/modules/notifications'
+import { showNotification } from 'rzp/modules/notifications'
 import { Field, reduxForm } from 'redux-form'
 import Alert from 'rzp/ui/Forms/Alert'
 import { without } from 'rzp/utils/rzp-utils'
@@ -15,14 +15,13 @@ export default function ActivationWizardHOC(WizardComponent) {
     { ...ActivationActions, showNotification }
   )
   @reduxForm({
+    form: 'activation',
     destroyOnUnmount: false,
+    forceUnregisterOnUnmount: true,
   })
   class ActivationBase extends WizardComponent {
-    constructor() {
-      super(...arguments)
-      this.state = {
-        errors: null
-      }
+    state = {
+      errors: null
     }
 
     componentWillMount() {
@@ -43,13 +42,16 @@ export default function ActivationWizardHOC(WizardComponent) {
       } else {
         return this.props.saveStep(step, filteredProps)
       }
-
     }
 
     save = (props) => {
       return this._save(props).then((response) => {
         let step = this.props.step
         let message = step === 6 ? 'Form submitted Successfully!' : 'Step saved successfully'
+
+        this.setState({
+          errors: null
+        })
 
         this.props.showNotification({
           type: 'success',

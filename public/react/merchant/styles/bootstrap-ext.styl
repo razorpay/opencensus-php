@@ -40,11 +40,13 @@
   padding-left: 0;
 }
 
-a {
-  color: #337ab7;
-}
+.nav-tabs > li.active,
+.nav-tabs > li {
+  > a.text-success {
+    color: #23ad44;
+  }
 
-.nav-tabs > li.active > a.text-success,
-.nav-tabs > li > a.text-success {
-  color: #23ad44;
+  > a.text-danger {
+    color: #f05050;
+  }
 }

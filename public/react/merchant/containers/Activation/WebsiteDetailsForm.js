@@ -184,7 +184,7 @@ export default class WebsiteDetailsForm extends Component {
                   type='button'
                   class='btn btn-default pull-left'
                   text='Back'
-                  onClick={() => gotoTab(3)}
+                  onClick={() => gotoTab(2)}
                 />
 
                 <AsyncButton

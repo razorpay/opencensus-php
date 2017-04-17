@@ -9,6 +9,11 @@
     />
 */
 
+const BOOLS = {
+  true: 1,
+  false: 0,
+}
+
 export default (props) => {
   let {
     input,
@@ -16,6 +21,10 @@ export default (props) => {
     onChange,
     ...otherProps
   } = props
+
+  if (BOOLS[input.value] !== undefined) {
+    input.onChange(BOOLS[input.value])
+  }
 
   return (
     <input

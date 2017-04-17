@@ -30,7 +30,7 @@ export default class DatePickerField extends Component {
     } = this.props;
 
     let dateFormatFn = outputDateFormat ? moment : moment.unix
-    let date = (input.value && dateFormatFn(input.value, this.props.displayFormat)) || null
+    let date = (input.value && dateFormatFn(input.value)) || null
 
     return (
       <div
@@ -40,6 +40,7 @@ export default class DatePickerField extends Component {
           id={input.name}
           date={date}
           focused={focused}
+          initialVisibleMonth={ () => date ? moment(date, 'MM YYYY') : moment() }
           isOutsideRange={isOutsideRange}
           onDateChange={date => {
             input.onChange(outputDateFormat ? date.format(outputDateFormat) : date.unix())
