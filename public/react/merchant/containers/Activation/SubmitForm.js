@@ -2,6 +2,7 @@ import { Component } from 'react'
 import { Field } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import ActivationWizardHOC from './ActivationWizardHOC'
+import { required } from 'rzp/utils/validators'
 
 @ActivationWizardHOC
 export default class SubmitForm extends Component {
@@ -10,6 +11,7 @@ export default class SubmitForm extends Component {
       handleSubmit,
       save,
       gotoTab,
+      invalid,
     } = this.props
 
     return (
@@ -23,6 +25,9 @@ export default class SubmitForm extends Component {
                     name='agree_terms'
                     component='input'
                     type='checkbox'
+                    validate={[
+                      required()
+                    ]}
                   />
                   <i></i>
                   <div class='submit-label'>
@@ -49,6 +54,7 @@ export default class SubmitForm extends Component {
                   class='btn btn-primary'
                   text='Click here to Submit'
                   pendingText='Submitting...'
+                  disabled={invalid}
                   onClick={handleSubmit(save)}
                 />
               </div>

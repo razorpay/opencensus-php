@@ -25,6 +25,12 @@ class Alert extends Component {
     });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevState.close && prevProps.message) {
+      window.scrollTo(0, 0)
+    }
+  }
+
   render() {
     let props = this.props;
     let msgs = makeArray(props.message);

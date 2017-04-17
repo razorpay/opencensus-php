@@ -3,6 +3,7 @@ import { set, merge } from 'rzp/utils/immutable'
 
 export const ACTIVATION_FETCH = 'ACTIVATION_FETCH'
 export const ACTIVATION_SAVE_STEP = 'ACTIVATION_SAVE_STEP'
+export const ACTIVATION_FORM_SUBMIT = 'ACTIVATION_FORM_SUBMIT'
 
 export const fetchActivationDetails = () => {
   return (dispatch) => {
@@ -42,6 +43,20 @@ export const saveFile = (file, fieldName) => {
       processData: false,
       contentType: false,
       appendModeInURL: false,
+    })
+  }
+}
+
+export const submitForm = (data) => {
+  return (dispatch) => {
+    return dispatch({
+      type: ACTIVATION_FORM_SUBMIT,
+      payload: ajax({
+        url: '/activation',
+        method: 'post',
+        appendModeInURL: false,
+        data,
+      })
     })
   }
 }

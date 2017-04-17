@@ -31,17 +31,29 @@ export default function ActivationWizardHOC(WizardComponent) {
       }
     }
 
-    save = (props) => {
+    _save = (props) => {
       let step = this.props.step
       let filteredProps = without(props, [
         'or_same',
         'bank_account_number_confirmation',
       ])
 
-      return this.props.saveStep(step, filteredProps).then((response) => {
+      if (step === 6) {
+        return this.props.submitForm(filteredProps)
+      } else {
+        return this.props.saveStep(step, filteredProps)
+      }
+
+    }
+
+    save = (props) => {
+      return this._save(props).then((response) => {
+        let step = this.props.step
+        let message = step === 6 ? 'Form submitted Successfully!' : 'Step saved successfully'
+
         this.props.showNotification({
           type: 'success',
-          message: 'Step saved successfully'
+          message,
         })
       }).catch((err) => {
         this.setState({
