@@ -105,15 +105,25 @@ export default class ReportsContainer extends Component {
     let { entity, type, mode, month, year, user, handleSubmit } = this.props;
 
     return (
-      <div class="row report-wrapper">
-        <div class="col-md-4 report-list-panel">
-          <span class="title">SELECT REPORT TYPE</span>
-          <Field name="entity" component="radio" class="form-control">
-            <input type="radio" name="asd"/> <label for="asd" />
-          </Field>
-        </div>
-        <div class="col-md-8 report-generate-panel">
-          <span class="title">SELECT ACCOUNT</span>
+      <div class='react-root'>
+        <Header title='Download Reports' />
+        <div class='content-wrapper'>
+          <div class="panel panel-default panel-form col-sm-8 col-sm-offset-2">
+            <div class="row report-wrapper">
+                <div class="col-md-4 report-list-panel">
+                    <div class="title">SELECT REPORT TYPE</div>
+                    <Field id="combined" name="entity" value="combined" component="input" type="radio" class="report-type form-control" />
+                    <label for="combined">Combined Report</label>
+                    <Field id="payment" name="entity" value="payment" component="input" type="radio" class="report-type form-control" />
+                    <label for="payment">Payment</label>
+                    <Field id="refund" name="entity" value="refund" component="input" type="radio" class="report-type form-control" />
+                    <label for="refund">Refund</label>
+                </div>
+                <div class="col-md-8 report-generate-panel">
+                    <div class="title">SELECT ACCOUNT</div>
+                </div>
+            </div>
+          </div>
         </div>
       </div>
     );
