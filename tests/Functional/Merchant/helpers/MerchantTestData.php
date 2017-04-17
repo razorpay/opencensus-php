@@ -941,7 +941,7 @@ return [
         ],
     ],
 
-    'testGetCheckoutRouteWithCardDowntimeWithSpecificGatewayDown' => [
+    'testGetCheckoutPreferencesWithCardDowntimeWithSpecificGatewayDown' => [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',

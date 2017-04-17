@@ -80,13 +80,13 @@ class GatewayDowntimeTest extends TestCase
     {
         $request = [
             'content' => [
-                'gateway' => 'netbanking_hdfc',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'method' => 'netbanking',
-                'issuer' => 'HDFC',
-                'comment' => 'Test Reason',
-                'source' => 'statuscake',
-                'begin' => Carbon::now()->subMinutes(60)->timestamp,
+                'gateway'     => 'netbanking_hdfc',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'netbanking',
+                'issuer'      => 'HDFC',
+                'comment'     => 'Test Reason',
+                'source'      => 'statuscake',
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -122,15 +122,15 @@ class GatewayDowntimeTest extends TestCase
     {
         $request = [
             'content' => [
-                'gateway' => 'netbanking_hdfc',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'method' => 'netbanking',
-                'issuer' => 'HDFC',
-                'comment' => 'Test Reason',
-                'source' => 'statuscake',
-                'scheduled' => true,
-                'begin' => Carbon::now()->subMinutes(60)->timestamp,
-                'end'  => Carbon::now()->addMinutes(60)->timestamp
+                'gateway'     => 'netbanking_hdfc',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'netbanking',
+                'issuer'      => 'HDFC',
+                'comment'     => 'Test Reason',
+                'source'      => 'statuscake',
+                'scheduled'   => true,
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'end'         => Carbon::now()->addMinutes(60)->timestamp
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -163,11 +163,11 @@ class GatewayDowntimeTest extends TestCase
     {
         $request = [
             'content' => [
-                'begin' => Carbon::now()->subMinutes(60)->timestamp,
-                'gateway' => 'axis_migs',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'method' => 'card',
-                'source' => 'other'
+                'begin'       => Carbon::now()->subMinutes(60)->timestamp,
+                'gateway'     => 'axis_migs',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'method'      => 'card',
+                'source'      => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -175,7 +175,7 @@ class GatewayDowntimeTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $request['content']['network'] = 'visa';
+        $request['content']['network'] = 'VISA';
 
         $request['content']['card_type'] = 'debit';
 
@@ -189,7 +189,7 @@ class GatewayDowntimeTest extends TestCase
 
         $this->assertEquals('OTHER', $response2['reason_code']);
 
-        $this->assertEquals('visa', $response2['network']);
+        $this->assertEquals('VISA', $response2['network']);
 
     }
 
@@ -272,13 +272,13 @@ class GatewayDowntimeTest extends TestCase
 
         $request = [
             'content' => [
-                'gateway' => 'netbanking_hdfc',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'begin'  => time(),
-                'method' => 'netbanking',
+                'gateway'     => 'netbanking_hdfc',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'begin'       => time(),
+                'method'      => 'netbanking',
                 'terminal_id' => $tid,
-                'issuer' => 'HDFC',
-                'source' => 'other'
+                'issuer'      => 'HDFC',
+                'source'      => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'
@@ -295,13 +295,13 @@ class GatewayDowntimeTest extends TestCase
 
         $request = [
             'content' => [
-                'gateway' => 'netbanking_hdfc',
-                'reason_code'  => 'LOW_SUCCESS_RATE',
-                'begin'  => time(),
-                'method' => 'netbanking',
+                'gateway'     => 'netbanking_hdfc',
+                'reason_code' => 'LOW_SUCCESS_RATE',
+                'begin'       => time(),
+                'method'      => 'netbanking',
                 'terminal_id' => $tid,
-                'issuer' => 'HDFC',
-                'source' => 'other'
+                'issuer'      => 'HDFC',
+                'source'      => 'other'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes'

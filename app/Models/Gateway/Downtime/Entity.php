@@ -139,6 +139,11 @@ class Entity extends Base\PublicEntity
         return parent::edit($input, $operation);
     }
 
+    public function newCollection(array $models = array())
+    {
+        return new Collection($models);
+    }
+
     // --------------------- Modifiers ------------------------
     protected function modifyNetwork(&$input)
     {
@@ -209,12 +214,6 @@ class Entity extends Base\PublicEntity
                     break;
             }
         }
-
-        // For all payment methods apart from wallet we convert issuer to uppercase
-        if ($method !== Payment\Method::WALLET)
-        {
-            $input[Entity::ISSUER] = strtoupper($input[Entity::ISSUER]);
-        }
     }
 
     // -------------------- MUTATORS -------------
@@ -233,7 +232,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        $this->attributes[Entity::NETWORK] = $network;
+        $this->attributes[Entity::NETWORK] = strtoupper($network);
     }
 
     protected function setCardTypeAttribute($cardType)
@@ -346,7 +345,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::END, time());
     }
 
-    public function getDataForView()
+    public function toArrayExternal()
     {
         $data = [
             Entity::ISSUER      => [$this->getIssuer()],

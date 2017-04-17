@@ -172,12 +172,6 @@ class StatusCakeProcessor implements ProcessorInterface
             Entity::CARD_TYPE => $tags[Entity::CARD_TYPE] ?? Entity::UNKNOWN,
         ];
 
-        // Lower case all the values of option
-        foreach ($options as $key => $value)
-        {
-            $options[$key] = strtolower($value);
-        }
-
         // this check has to happen here since
         // GATEWAY=> ALL needs to be in upper case
         if ($options[Entity::GATEWAY] === strtolower(Entity::ALL))
