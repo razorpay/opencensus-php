@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use Config;
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -22,14 +23,14 @@ class DispatchRouter extends Base\Core
         $this->mock = Config::get('queue.mock');
     }
 
-    protected function dispatchOn(Job $job, array $configArray)
+    public function dispatchOn(Job $job, array $configArray)
     {
         $this->setQueueConnectionAndName($job, $configArray);
 
         $this->dispatch($job);
     }
 
-    protected function setQueueConnectionAndName(Job $job, array $configArray)
+    public function setQueueConnectionAndName(Job $job, array $configArray)
     {
         //TODO : Remove it after tested on prod
         if ($this->mode !== Mode::TEST)
@@ -53,7 +54,7 @@ class DispatchRouter extends Base\Core
         if ($queueConnection === null)
         {
             $this->trace->critical(
-                TraceCode::GATEWAY_REFUND_ABSENT,
+                TraceCode::QUEUE_INVALID_CONFIG,
                 [
                     'queue_connection_config' => $queueConnectionConfig,
                     'queue_name_config'       => $queueNameConfig,

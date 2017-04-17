@@ -181,12 +181,14 @@ class Dashboard
                 'type'     => $type
             ]);
 
+            $dispatcher = new DispatchRouter();
+
             $queueConfig = [
-                'class' => Constants\Jobs::DASHBOARD,
+                'class' => $dispatcher::DASHBOARD,
                 'mode'  => $mode
             ];
 
-            (new DispatchRouter)->dispatchOn($job, $queueConfig);
+            $dispatcher->dispatchOn($job, $queueConfig);
         }
     }
 }
