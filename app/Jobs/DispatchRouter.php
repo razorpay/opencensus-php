@@ -35,7 +35,21 @@ class DispatchRouter extends Base\Core
         //TODO : Add a usage link, making it more implicit to be used by other services
         $this->setQueueConnectionAndName($job, $configClass, $configArray);
 
-        $this->dispatch($job);
+        try
+        {
+            $this->dispatch($job);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                null,
+                [
+                    'config_class' => $configClass,
+                    'config_array' => $configArray,
+                ]);
+        }
     }
 
     protected function setQueueConnectionAndName(Job $job, string $configClass, array $configArray)
@@ -74,20 +88,6 @@ class DispatchRouter extends Base\Core
                 ]);
         }
 
-        try
-        {
-            $job->onConnection($queueConnection)->onQueue($queueName);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                null,
-                [
-                    'queue_connection_config' => $queueConnectionConfig,
-                    'queue_name_config'       => $queueNameConfig,
-                ]);
-        }
+        $job->onConnection($queueConnection)->onQueue($queueName);
     }
 }
