@@ -1084,6 +1084,9 @@ class Gateway extends Base\Gateway
     /**
      * Calls gateway to verify if a refund has
      * been successfully performed or not.
+     *
+     * true  if refunded
+     * false if not refunded
      * @param array $input
      * @return bool
      */

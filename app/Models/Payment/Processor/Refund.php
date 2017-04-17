@@ -691,7 +691,7 @@ trait Refund
      * - no need to update payment - marked as refunded
      *
      **/
-    protected function processRefundRetry(Payment\Refund\Entity $refund)
+    public function processRefundRetry(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
@@ -723,10 +723,6 @@ trait Refund
                     // Unless we wish to record the refund transaction on
                     // refund call it self.
                     $this->recordTransactionForRefund();
-
-                    // update the payment entity for refund
-                    // on a refund retry, should this be run ?
-                    $this->updatePaymentRefunded();
 
                     // refund/reverse on gateway
                     if ($payment->getTransactionId() !== null)
