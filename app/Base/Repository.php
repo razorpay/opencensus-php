@@ -373,8 +373,8 @@ class Repository extends \Razorpay\Spine\Repository
                 $dispatcher = new DispatchRouter();
 
                 $queueConfig = [
-                    'class' => $dispatcher::ES,
-                    'mode'  => $mode
+                    'config_class' => $dispatcher::ES,
+                    'mode'         => $mode
                 ];
 
                 $dispatcher->dispatchOn($job, $queueConfig);

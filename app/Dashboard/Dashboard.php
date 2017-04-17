@@ -184,8 +184,8 @@ class Dashboard
             $dispatcher = new DispatchRouter();
 
             $queueConfig = [
-                'class' => $dispatcher::DASHBOARD,
-                'mode'  => $mode
+                'config_class' => $dispatcher::DASHBOARD,
+                'mode'         => $mode
             ];
 
             $dispatcher->dispatchOn($job, $queueConfig);

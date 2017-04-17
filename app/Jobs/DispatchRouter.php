@@ -12,6 +12,10 @@ class DispatchRouter extends Base\Core
 {
     use DispatchesJobs;
 
+    /**
+     * These responds to the config class name that should be used,
+     * to fetch the config from config/queue.php
+     */
     const ES        = 'es';
     const DASHBOARD = 'dashboard';
     const WEBHOOK   = 'webhook';
@@ -23,8 +27,10 @@ class DispatchRouter extends Base\Core
         $this->mock = Config::get('queue.mock');
     }
 
+
     public function dispatchOn(Job $job, array $configArray)
     {
+        //TODO : Add a usage link, making it more implict to be used by other services
         $this->setQueueConnectionAndName($job, $configArray);
 
         $this->dispatch($job);
@@ -40,7 +46,7 @@ class DispatchRouter extends Base\Core
 
         $queueNameConfig = 'queue.' . implode($configArray, '.');
 
-        $queueConnectionConfig = 'queue.' . $configArray['class'] . '.connection';
+        $queueConnectionConfig = 'queue.' . $configArray['config_class'] . '.connection';
 
         if ($this->mock === true)
         {
