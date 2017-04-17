@@ -94,6 +94,11 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL          => 'int',
     ];
 
+    protected $amounts = [
+        self::AMOUNT,
+        self::AMOUNT_REVERSED,
+    ];
+
     protected $defaults = [
         self::AMOUNT_REVERSED   => 0,
         self::NOTES             => [],

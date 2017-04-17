@@ -12,12 +12,13 @@ use Requests;
 use Trace;
 use RZP\Trace\TraceCode;
 use App;
-use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Constants;
+use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Dashboard as DashboardJob;
 
 class Dashboard
 {
-    use DispatchesJobs;
+    use DispatchRouter;
 
     /**
      * Resource specifier
@@ -182,7 +183,9 @@ class Dashboard
                 'type'     => $type
             ]);
 
-            $this->dispatch($job);
+            $queueConfig = [Constants\Jobs::DASHBOARD, $mode];
+
+            $this->dispatchOn($job, $queueConfig);
         }
     }
 }
