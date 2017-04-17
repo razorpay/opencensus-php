@@ -181,7 +181,7 @@ class Dashboard
                 'type'     => $type
             ]);
 
-            (new DispatchRouter())->dispatchOn($job, DispatchRouter::DASHBOARD);
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::DASHBOARD);
         }
     }
 }

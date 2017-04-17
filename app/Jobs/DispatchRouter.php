@@ -74,6 +74,20 @@ class DispatchRouter extends Base\Core
                 ]);
         }
 
-        $job->onConnection($queueConnection)->onQueue($queueName);
+        try
+        {
+            $job->onConnection($queueConnection)->onQueue($queueName);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                null,
+                [
+                    'queue_connection_config' => $queueConnectionConfig,
+                    'queue_name_config'       => $queueNameConfig,
+                ]);
+        }
     }
 }
