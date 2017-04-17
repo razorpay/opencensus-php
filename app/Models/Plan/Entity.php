@@ -19,6 +19,10 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID       = 'merchant_id';
     const SCHEDULE_ID       = 'schedule_id';
 
+    // Input Keys
+
+    const SCHEDULE          = 'schedule';
+
     protected static $sign = 'plan';
 
     protected $entity = 'plan';

@@ -16,6 +16,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
 use RZP\Models\Item;
 use RZP\Models\AddOn;
+use RZP\Models\Schedule\Task;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -43,7 +44,7 @@ class Core extends Base\Core
 
                 $this->associateEntitiesToSubscription($subscription, $plan, $customer);
 
-                $this->createRun($subscription, $plan, $input);
+                $this->createTask($subscription, $plan);
 
                 $this->repo->saveOrFail($subscription);
 
@@ -417,22 +418,18 @@ class Core extends Base\Core
         return $lineItems;
     }
 
-    protected function createRun(Entity $subscription, Plan\Entity $plan, array $input)
+    protected function createTask(Entity $subscription, Plan\Entity $plan)
     {
         $schedule = $plan->schedule;
 
-        // TODO: Remove this once we start using schedules properly.
-        if ($schedule === null)
-        {
-            return null;
-        }
-
-        // TODO: Will need fixes later. This may also be null in some cases.
-        $runInput = [
-            Run\Entity::NEXT_RUN_AT => $subscription->getStartAt(),
+        $taskInput = [
+            Task\Entity::METHOD         => null,
+            Task\Entity::TYPE           => Task\Type::PLAN,
+            Task\Entity::SCHEDULE_ID    => $schedule->getId(),
+            Task\Entity::NEXT_RUN_AT    => $subscription->getStartAt(),
         ];
 
-        $run = (new Run\Core)->createRun($schedule, $subscription, $runInput);
+        $run = (new Task\Core)->create($plan->merchant, $subscription, $taskInput);
 
         return $run;
     }

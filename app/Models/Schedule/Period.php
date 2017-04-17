@@ -31,4 +31,9 @@ class Period
         self::MONTHLY_DATE,
         self::MONTHLY_WEEK,
     ];
+
+    public static function isPeriodValid(string $period)
+    {
+        return (in_array($period, self::PERIOD_LIST, true));
+    }
 }

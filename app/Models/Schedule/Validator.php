@@ -44,10 +44,13 @@ class Validator extends Base\Validator
     {
         $period = $input[Entity::PERIOD];
 
-        if (in_array($period, Period::PERIOD_LIST, true) === false)
+        if (Period::isPeriodValid($period) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_PERIOD);
+                ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_PERIOD,
+                [
+                    'period' => $period,
+                ]);
         }
     }
 

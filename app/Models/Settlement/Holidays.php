@@ -134,8 +134,10 @@ class Holidays
      *
      * This includes checks for bank holidays, non working saturday, sundays
      *
-     * @param Carbon\Carbon $date input date
-     * @return Carbon\Carbon $date Next working date
+     * @param Carbon $date input date
+     * @param bool   $ignoreBankHolidays
+     *
+     * @return Carbon $date Next working date
      */
     public static function getNextWorkingDay($date, $ignoreBankHolidays = false)
     {

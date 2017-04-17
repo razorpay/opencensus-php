@@ -19,6 +19,10 @@ class Repository extends Base\Repository
     /**
      * Returns merchant schedule if it matches the one passed in the argument.
      * Method and merchant_id has to be same for it to be duplicate
+     *
+     * @param Entity $scheduleTask
+     *
+     * @return Entity
      */
     public function fetchExistingScheduleTask(ScheduleTask\Entity $scheduleTask)
     {

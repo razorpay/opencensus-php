@@ -14,6 +14,8 @@ class Core extends Base\Core
 {
     /**
      * create a default settlement schedule for merchant
+     *
+     * @param $merchant
      */
     public function createDefaultSettlementSchedule($merchant)
     {
@@ -34,6 +36,13 @@ class Core extends Base\Core
 
     /**
      * Create a merchant schedule task entity and deletes the existing entity if any
+     *
+     * @param Merchant\Entity $merchant
+     * @param Base\Entity     $entity
+     * @param                 $input
+     *
+     * @return $this
+     * @throws \Exception
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
@@ -54,6 +63,53 @@ class Core extends Base\Core
         });
 
         $this->traceAndNotifyScheduleAssignment($scheduleTask);
+
+        return $scheduleTask;
+    }
+
+    /**
+     * Creates merchant schedule entity
+     *
+     * @param Merchant\Entity $merchant
+     * @param Base\Entity     $entity
+     * @param                 $input
+     *
+     * @return $this
+     */
+    public function create(Merchant\Entity $merchant, Base\Entity $entity, $input)
+    {
+        $scheduleTask = (new Entity)->build($input);
+
+        $scheduleTask->merchant()->associate($merchant);
+
+        $scheduleTask->entity()->associate($entity);
+
+        $scheduleId = $input[Entity::SCHEDULE_ID];
+
+        // $merchantId = Merchant\Account::SHARED_ACCOUNT;
+
+        $schedule = $this->repo->schedule->findByIdAndMerchant($scheduleId, $merchant);
+
+        $scheduleTask->schedule()->associate($schedule);
+
+        return $scheduleTask;
+    }
+
+    /**
+     * Get All Settlement schedules assigned to merchant for payment method
+     *
+     * @param Merchant\Entity $merchant
+     * @param                 $method
+     *
+     * @return null|Entity
+     */
+    public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
+    {
+        $scheduleTasks = $this->repo->schedule_task
+                                  ->fetchByMerchant($merchant, Type::SETTLEMENT);
+
+        $scheduleTask = $this->filterAndGetScheduleByMethodOrDefault(
+                                    $scheduleTasks, $method);
 
         return $scheduleTask;
     }
@@ -80,43 +136,12 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates merchant schedule entity
-     */
-    public function create(Merchant\Entity $merchant, Base\Entity $entity, $input)
-    {
-        $scheduleTask = (new Entity)->build($input);
-
-        $scheduleTask->merchant()->associate($merchant);
-
-        $scheduleTask->entity()->associate($entity);
-
-        $scheduleId = $input[Entity::SCHEDULE_ID];
-
-        $merchantId = Merchant\Account::SHARED_ACCOUNT;
-
-        $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
-
-        $scheduleTask->schedule()->associate($schedule);
-
-        return $scheduleTask;
-    }
-
-    /**
-     * Get All Settlement schedules assigned to merchant for payment method
-     */
-    public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
-    {
-        $scheduleTasks = $this->repo->schedule_task
-                                  ->fetchByMerchant($merchant, Type::SETTLEMENT);
-
-        $scheduleTask = $this->filterAndGetScheduleByMethodOrDefault(
-                                    $scheduleTasks, $method);
-
-        return $scheduleTask;
-    }
-
-    /**
      * Filter a schedule by method or default
+     *
+     * @param $scheduleTasks
+     * @param $method
+     *
+     * @return null|Entity
      */
     protected function filterAndGetScheduleByMethodOrDefault(
         $scheduleTasks,
@@ -161,7 +186,6 @@ class Core extends Base\Core
                     'channel'  => Config::get('slack.channels.operations_log'),
                     'username' => 'Jordan Belfort',
                     'icon'     => ':boom:',
-                ]
-            );
+                ]);
     }
 }

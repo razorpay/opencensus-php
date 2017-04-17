@@ -38,13 +38,13 @@ class Core extends Base\Core
     {
         // TODO: Decide on the name for the schedule.
 
-        $scheduleInput = [
+        $extraInput = [
             Schedule\Entity::NAME       => $input[Entity::NAME],
-            Schedule\Entity::PERIOD     => $input[Entity::PERIOD],
-            Schedule\Entity::INTERVAL   => $input[Entity::INTERVAL],
             Schedule\Entity::DELAY      => 0,
             Schedule\Entity::TYPE       => Schedule\Type::PLAN,
         ];
+
+        $scheduleInput = array_merge($input[Entity::SCHEDULE], $extraInput);
 
         $schedule = (new Schedule\Core)->createSchedule($scheduleInput, $plan->merchant);
 

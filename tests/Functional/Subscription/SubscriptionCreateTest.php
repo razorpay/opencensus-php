@@ -37,6 +37,8 @@ class SubscriptionCreateTest extends TestCase
         $plan = $this->getLastEntity('plan', true);
         $schedule = $this->getLastEntity('schedule', true);
 
+        sd($schedule);
+
         $this->assertEquals($schedule['id'], $plan['schedule_id']);
     }
 

@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const METHOD            = 'method';
     const SCHEDULE_ID       = 'schedule_id';
     const NEXT_RUN_AT       = 'next_run_at';
+    const LAST_RUN_AT       = 'last_run_at';
 
     protected $entity = 'schedule_task';
 
@@ -52,8 +53,10 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::METHOD      => null,
-        self::TYPE        => Type::SETTLEMENT,
+        self::METHOD        => null,
+        self::TYPE          => Type::SETTLEMENT,
+        self::NEXT_RUN_AT   => null,
+        self::LAST_RUN_AT   => null,
     ];
 
     protected static $modifiers = array(
@@ -132,7 +135,7 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::NEXT_RUN_AT, $timestamp);
     }
 
-    // ------------------------- Helper mehtods --------------------------------
+    // ------------------------- Helper methods --------------------------------
 
     public function updateNextRun()
     {
