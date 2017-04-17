@@ -624,7 +624,7 @@ class Gateway extends Base\Gateway
             'response'   => $content
         ]);
 
-        if ($content[Fields::SUCCESS] !== 'true')
+        if ($content[Fields::STATUS] !== Status::SUCCESS)
         {
             $code = $content[Fields::RESPONSE];
 
