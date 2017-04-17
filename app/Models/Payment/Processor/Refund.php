@@ -633,7 +633,7 @@ trait Refund
             // capture has been successful on the gateway end.
             //
             if (($payment->getTransactionId() !== null) or
-                ($payment->getGatewayCaptured() === true))
+                ($payment->isGatewayCaptured() === true))
             {
                 $this->refundOnGateway($data);
 
