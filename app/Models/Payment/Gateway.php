@@ -45,9 +45,18 @@ class Gateway
     const ACQUIRER_HDFC      = 'hdfc';
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
+    const ACQUIRER_AMEX      = 'amex';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
+
+    const GATEWAY_ACQUIRERS = [
+        self::AXIS_MIGS   => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::HDFC        => [self::ACQUIRER_HDFC],
+        self::CYBERSOURCE => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::FIRST_DATA  => [self::ACQUIRER_ICIC],
+        self::AMEX        => [self::ACQUIRER_AMEX],
+    ];
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
