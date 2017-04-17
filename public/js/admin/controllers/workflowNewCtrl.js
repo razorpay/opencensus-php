@@ -82,7 +82,7 @@ app.controller('WorkflowNewCtrl', [
     fetchPermissions()
 
     var $permSelect = $('.workflow-select2').select2({
-      theme: 'classic',  
+      theme: 'classic',
       placeholder: 'Select an action',
     });
     $permSelect.on("select2:select", function (e) {
@@ -92,7 +92,7 @@ app.controller('WorkflowNewCtrl', [
       }
       $permSelect.val(null).trigger("change");
     });
-    
+
     $scope.deselectPermission = function (id) {
       var permIndex = $scope.permissionsSelected.indexOf(id);
       if (permIndex === -1) {
@@ -148,12 +148,12 @@ app.controller('WorkflowNewCtrl', [
     }
 
     $scope.incReviewerCount = function (roleIndex, stepIndex) {
-      if ($scope.steps[stepIndex][roleIndex].reviewer_count >= 99) return; 
+      if ($scope.steps[stepIndex][roleIndex].reviewer_count >= 99) return;
       $scope.steps[stepIndex][roleIndex].reviewer_count++;
     }
 
     $scope.decReviewerCount = function (roleIndex, stepIndex) {
-      if ($scope.steps[stepIndex][roleIndex].reviewer_count <= 1) return; 
+      if ($scope.steps[stepIndex][roleIndex].reviewer_count <= 1) return;
       $scope.steps[stepIndex][roleIndex].reviewer_count--;
     }
 
@@ -197,7 +197,7 @@ app.controller('WorkflowNewCtrl', [
         }
       }
       if (!valid) return;
-      
+
       var request = $http({
         url: '/admin/generic',
         method: 'POST',
@@ -214,7 +214,7 @@ app.controller('WorkflowNewCtrl', [
           $scope.alerts.addAlert('success', $scope.workflowName + ' - Workflow created successfully')
           $state.transitionTo('app.workflows.edit', {id: data.data.id}, {notify: false})
           $scope.editLayout = true;
-        } 
+        }
       })
     }
 
@@ -252,8 +252,22 @@ app.controller('WorkflowNewCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', $scope.workflowName + ' - Workflow updated successfully')
-        } 
+        }
       })
-    }
+    };
+
+    $scope.filterItems = function(stepInd) {
+      return function(role) {
+
+        // Don't show option(role.id) being accessed if already added in the step
+        for (var key in $scope.steps[stepInd]) {
+          if ($scope.steps[stepInd].hasOwnProperty(key) && $scope.steps[stepInd][key].role_id === role.id) {
+            return false;
+          }
+        }
+
+        return true;
+      }
+    };
   }
 ]);
