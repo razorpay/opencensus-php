@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Mail;
 
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Mail\Gateway\RefundFile\Metadata;
+use RZP\Mail\Gateway\RefundFile\Constants;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\MailTags;
@@ -50,7 +50,7 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $refundFileMail = new RefundFileMail($fileData, Metadata::NETBANKING_HDFC);
+        $refundFileMail = new RefundFileMail($fileData, Constants::NETBANKING_HDFC);
 
         Mail::queue($refundFileMail);
     }

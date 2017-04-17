@@ -126,7 +126,7 @@ class DailyFiles
         return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
-    protected function sendMail($amount, $claimsFile, $refundsFile)
+    protected function sendMail(array $amount, string $claimsFile, string $refundsFile)
     {
         $bankName = $this->getBankName();
 
