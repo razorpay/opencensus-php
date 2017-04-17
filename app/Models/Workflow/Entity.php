@@ -17,6 +17,7 @@ class Entity extends Base\Entity
 
     const PERMISSIONS = 'permissions';
     const STEPS       = 'steps';
+    const LEVELS      = 'levels';
 
     protected static $sign = 'workflow';
 

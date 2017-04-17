@@ -31,6 +31,8 @@ class CreateWorkflowSteps extends Migration
             $table->tinyInteger(Step::REVIEWER_COUNT)
                   ->default(0);
 
+            $table->string(Step::OP_TYPE, 15);
+
             $table->tinyInteger(Step::LEVEL)
                   ->default(0);
 
