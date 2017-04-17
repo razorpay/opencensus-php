@@ -148,19 +148,31 @@
             Ignore
           </button> -->
         </div>
-        <!--<div class="right-label m-b m-t">Approved by</div>
-        <div class="assignee-list m-b">
-          <div class="">
-            <span class="assignee-label">Shashank Kumar</span>
+      </div>
+
+      <!-- Approver/Rejector list-->
+      <div class="col-xs-3">
+        <div ng-if="approverList && approverList.length">
+        <div class="right-label m-b m-t">Approved by</div>
+          <div class="assignee-list m-b">
+            <div class="">
+              <div class="assignee-label" ng-repeat="card in approverList">
+                {{card.admin_name}}
+              </div>
+            </div>
           </div>
         </div>
-        <div class="right-label m-b m-t">Rejected by</div>
-        <div class="assignee-list m-b">
-          <div class="">
-            <span class="assignee-label">Shashank Kumar</span>
+
+        <div ng-if="rejectorList && rejectorList .length">
+          <div class="right-label m-b m-t">Rejected by</div>
+          <div class="assignee-list m-b">
+            <div class="">
+              <div class="assignee-label" ng-repeat="card in rejectorList ">
+                {{card.admin_name}}
+              </div>
+            </div>
           </div>
-          <div class=""><span class="assignee-label">Ashmeet Sidhu</span></div>
-        </div>-->
+        </div>
       </div>
     </div>
   </div>

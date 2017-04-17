@@ -162,6 +162,14 @@ app.controller('WorkflowFeedCtrl', [
           });
 
           $scope.cards = $scope.cards.concat(checkers);
+
+          $scope.approverList = $scope.cards.filter(function(card){
+            return card.approved;
+          });
+
+          $scope.rejectorList = $scope.cards.filter(function(card){
+            return !card.approved;
+          });
         }
       });
     };
