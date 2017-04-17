@@ -25,6 +25,7 @@ use Queue;
 
 use Requests;
 use App\Mailers\UserMailer;
+use Illuminate\Hashing\BcryptHasher;
 
 class Service extends Base\Service
 {
@@ -620,37 +621,28 @@ class Service extends Base\Service
             return [['Email or password is invalid.'], null];
         }
 
-        $credentials = array(
+        $credentials = [
             'email'     => $input['email'],
             'password'  => $input['password']
-        );
+        ];
 
-        // Credentials are correct
-        // Parameters passed are [creds], $remember, $login
-        if (Auth::attempt($credentials, false, false))
+        list($error, $userArray) = $this->loginOnApi($credentials);
+
+        if (empty($error) === false)
         {
-            // And user is not confirmed
-            if (Auth::attempt($credentials + ['confirm_token' => null], false, true) === false)
-            {
-                // TODO: Use single error message to avoid info leak
-                // @see https://github.com/razorpay/dashboard/issues/216
-                $error = ['User email not confirmed. Please click on verification link in email to continue.'];
-            }
-            else
-            {
-                // Login the user
-            Auth::attempt($credentials, false, true);
-            }
+            return [['Email or password is invalid.'], null];
         }
-        else
-        {
-            $error = ['Email or password is invalid'];
-        }
+
+        $userArray['password'] = (new BcryptHasher)->make($input['password']);
+
+        $userEntity = new ApiEntity($userArray);
+
+        Auth::login($userEntity, false);
 
         if (empty($error))
         {
             $res = [
-                'id'    =>  Auth::user()->getAuthIdentifier(),
+                'id'    =>  $userArray['id'],
             ];
         }
 
@@ -791,5 +783,23 @@ class Service extends Base\Service
         $response = $this->api->user->changePassword($user->id, ['password' => $user->password]);
 
         return $response;
+    }
+
+    public function loginOnApi(array $input)
+    {
+        $error = $response = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->user->login($input);
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 }

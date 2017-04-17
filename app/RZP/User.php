@@ -50,4 +50,11 @@ class User extends Entity
 
         return $this->request('PUT', $relativeUrl, $params);
     }
+
+    public function login(array $params)
+    {
+        $relativeUrl = $this->getEntityUrl().'login';
+
+        return $this->request('POST', $relativeUrl, $params);
+    }
 }
