@@ -35,10 +35,13 @@ export default function ActivationWizardHOC(WizardComponent) {
       let filteredProps = without(props, [
         'or_same',
         'bank_account_number_confirmation',
+        'steps_finished',
       ])
 
       if (step === 6) {
-        return this.props.submitForm(filteredProps)
+        return this.props.submitForm(filteredProps).then(() => {
+          return this.props.fetchActivationDetails()
+        })
       } else {
         return this.props.saveStep(step, filteredProps)
       }

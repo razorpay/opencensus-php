@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import { Field } from 'redux-form'
 import AsyncButton from 'react-async-button'
+import Fieldset from 'rzp/ui/Forms/Fieldset'
 import ActivationWizardHOC from './ActivationWizardHOC'
 import { required } from 'rzp/utils/validators'
 
@@ -16,7 +17,7 @@ export default class SubmitForm extends Component {
 
     return (
       <form class='form-horizontal' onSubmit={handleSubmit(save)}>
-        <fieldset>
+        <Fieldset disabled={this.props.data.locked}>
           <div class='form-group'>
             <div class='col-md-offset-3 col-md-9'>
               <div class='checkbox submit-form'>
@@ -60,7 +61,7 @@ export default class SubmitForm extends Component {
               </div>
             </div>
           </div>
-        </fieldset>
+        </Fieldset>
       </form>
     )
   }

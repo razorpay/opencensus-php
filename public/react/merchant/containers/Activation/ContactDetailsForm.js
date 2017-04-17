@@ -2,6 +2,7 @@ import { Component } from 'react'
 import { Field } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
+import Fieldset from 'rzp/ui/Forms/Fieldset'
 import { required, email, phone } from 'rzp/utils/validators'
 import ActivationWizardHOC from './ActivationWizardHOC'
 
@@ -16,7 +17,7 @@ export default class ContactDetailsForm extends Component {
 
     return (
       <form class='form-horizontal' onSubmit={handleSubmit(saveAndNext)}>
-        <fieldset disabled={this.props.data.locked}>
+        <Fieldset readOnly={this.props.data.locked}>
           <div class='form-group'>
             <label class='col-md-3 control-label label-required'>Contact Name</label>
             <div class='col-md-9'>
@@ -116,7 +117,7 @@ export default class ContactDetailsForm extends Component {
               </div>
             </div>
           </div>
-        </fieldset>
+        </Fieldset>
       </form>
     )
   }

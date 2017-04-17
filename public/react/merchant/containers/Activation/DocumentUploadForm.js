@@ -2,6 +2,7 @@ import { Component } from 'react'
 import { Field } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton'
+import Fieldset from 'rzp/ui/Forms/Fieldset'
 import ActivationWizardHOC from './ActivationWizardHOC'
 
 @ActivationWizardHOC
@@ -12,7 +13,7 @@ export default class DocumentsUploadForm extends Component {
 
     return (
       <form class='form-horizontal'>
-        <fieldset>
+        <Fieldset disabled={this.props.data.locked}>
           <div class='form-group'>
             <label class='col-md-3 control-label label-required'>Business Registration Proof</label>
             <div class='col-md-9'>
@@ -102,7 +103,7 @@ export default class DocumentsUploadForm extends Component {
               </div>
             </div>
           </div>
-        </fieldset>
+        </Fieldset>
       </form>
     )
   }

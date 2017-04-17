@@ -100,7 +100,7 @@ export default function(state = initialState, action) {
 
     case `${ACTIVATION_FETCH}::SUCCESS`:
       let data = action.payload.data
-      let stepsFinished = JSON.parse(data.steps_finished)
+      let stepsFinished = data.steps_finished
       let steps = Object.keys(initialState.steps).reduce((prev, key) => {
         if (stepsFinished.indexOf(+key) !== -1) {
           prev[key] = 'success'

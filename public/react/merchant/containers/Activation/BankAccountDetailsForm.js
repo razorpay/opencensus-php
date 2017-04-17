@@ -2,6 +2,7 @@ import { Component } from 'react'
 import { Field } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
+import Fieldset from 'rzp/ui/Forms/Fieldset'
 import { required } from 'rzp/utils/validators'
 import { states } from 'rzp/utils/constants'
 import ActivationWizardHOC from './ActivationWizardHOC'
@@ -18,11 +19,12 @@ export default class BankDetailsForm extends Component {
       save,
       saveAndNext,
       gotoTab,
+      data,
     } = this.props
 
     return (
       <form class='form-horizontal' onSubmit={handleSubmit(save)}>
-        <fieldset>
+        <Fieldset readOnly={data.locked} disabled={data.activated}>
           <div class='form-group'>
             <label class='col-md-3 control-label label-required'>Branch IFSC Code</label>
             <div class='col-md-9'>
@@ -224,7 +226,7 @@ export default class BankDetailsForm extends Component {
               </div>
             </div>
           </div>
-        </fieldset>
+        </Fieldset>
       </form>
     )
   }
