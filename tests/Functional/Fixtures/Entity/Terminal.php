@@ -174,6 +174,7 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'axis_migs',
+            'gateway_acquirer'          => 'axis',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay axis_migs',
             'gateway_terminal_id'       => 'nodal account axis_migs',
@@ -193,6 +194,7 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
             'card'                      => 1,
             'shared'                    => 1,
             'gateway_merchant_id'       => 'random',
@@ -410,6 +412,7 @@ class Terminal extends Base
             'id'                        => 'FrstDtRcrgTrml',
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
             'card'                      => 1,
             'shared'                    => 1,
             'recurring'                 => 6,
@@ -599,7 +602,7 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
-            'emi'                       => 1
+            'emi'                       => 1,
         ];
 
         return parent::create($attributes);
@@ -620,7 +623,7 @@ class Terminal extends Base
             'card'                      => 1,
             'emi'                       => 1,
             'emi_duration'              => 9,
-            'shared'                    => 1
+            'shared'                    => 1,
         ];
 
         return parent::create($attributes);
@@ -790,7 +793,7 @@ class Terminal extends Base
             'network_category'  => 'securities',
         ];
 
-        $this->createSharedNetbankingAxisTerminal($attributes);
+        return $this->createSharedNetbankingAxisTerminal($attributes);
     }
 
 
@@ -830,6 +833,16 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingFederalTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::NETBANKING_FEDERAL_TPV_TERMINAL,
+            'network_category' => 'securities'
+        ];
+
+        return $this->createSharedNetbankingFederalTerminal($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])
@@ -882,7 +895,9 @@ class Terminal extends Base
             'gateway'                   => 'upi_icici',
             'gateway_merchant_id'       => 'razorpay upi',
             'gateway_terminal_id'       => 'nodal account upi icici',
+            'gateway_merchant_id2'      => 'razorpay@eazypay',
             'gateway_terminal_password' => 'razorpay_password',
+            'upi'                       => true,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

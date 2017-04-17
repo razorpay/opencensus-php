@@ -154,11 +154,6 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        self::BRANCH_CODE         => 'default_branch',
-        self::SUPERVISOR_CODE     => 'default_supervisor',
-        self::DEPARTMENT_CODE     => 'default_location',
-        self::LOCATION_CODE       => 'default_department',
-        self::EMPLOYEE_CODE       => 'default_employee',
         self::ALLOW_ALL_MERCHANTS => false,
     ];
 
@@ -281,6 +276,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::NAME);
     }
 
+    public function getUsername() : string
+    {
+        return $this->getAttribute(self::USERNAME);
+    }
+
     public function getFirstName()
     {
         return explode(' ', $this->getName())[0];
@@ -397,7 +397,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::PASSWORD);
     }
 
-    public function getEmail()
+    public function getEmail() : string
     {
         return $this->getAttribute(self::EMAIL);
     }
@@ -466,5 +466,40 @@ class Entity extends Base\Entity
         $orgId = $this->getAttribute(self::ORG_ID);
 
         return Org\Entity::getSignedId($orgId);
+    }
+
+    public function getInputFields() : array
+    {
+        $extra = [
+            self::ROLES,
+            self::GROUPS,
+        ];
+
+        $app = App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getAdminOrgId();
+
+        $org = (new Org\Repository)->findOrFailPublic($orgId);
+
+        if ($org->getAuthType() === Org\AuthType::PASSWORD)
+        {
+            $extra = array_merge(
+                $extra,
+                [self::PASSWORD, self::PASSWORD_CONFIRMATION]);
+        }
+
+        return array_merge($this->fillable, $extra);
+    }
+
+    /**
+     * Get all relations to the array
+     *
+     */
+    public function getRelationsForDiffer() : array
+    {
+        return [
+            self::ROLES,
+            self::GROUPS,
+        ];
     }
 }

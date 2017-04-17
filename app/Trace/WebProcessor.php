@@ -45,20 +45,30 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             throw new Exception\LogicException('Server data for trace logs not present');
         }
 
-        $this->addMerchantId();
+        $this->updateServerDataWithExtraInfo();
 
         $record['request'] = $this->serverData;
 
         return $record;
     }
 
-    protected function addMerchantId()
+    /**
+     * Updates server data with other useful information.
+     * Eg. Values from basicauth - merchant_id and dashboard headers.
+     *
+     * @return
+     */
+    protected function updateServerDataWithExtraInfo()
     {
         $this->serverData['merchant_id'] = $this->app['basicauth']->getMerchantIdOfKey();
+
+        $this->serverData += $this->app['basicauth']->getDashboardHeaders();
     }
 
     public function getServerData()
     {
+        $headers = $this->request->headers;
+
         $serverData = array(
             'request_id'    => $this->request->getId(),
             'uri'           => $this->request->path(),
@@ -69,22 +79,12 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'application'   => $this->request->header('X-Razorpay-App'),
             'client_ip'     => $this->request->getRealClientIp(),
             'server_ip'     => $this->request->server('SERVER_ADDR'),
-            'referer'       => $this->request->headers->get('referer'),
-            'content_type'  => $this->request->headers->get('content-type'),
+            'referer'       => $headers->get('referer'),
+            'content_type'  => $headers->get('content-type'),
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
             'console'       => $this->console,
             'merchant_id'   => null,
         );
-
-        $userData = array(
-            'dashboard'     => $this->request->headers->get('X-Dashboard'),
-            'merchant'      => $this->request->headers->get('X-Dashboard-Merchant'),
-            'admin_user'    => $this->request->headers->get('X-Dashboard-Username'),
-            'user_id'       => $this->request->headers->get('X-Dashboard-User-Id'),
-            'user_role'     => $this->request->headers->get('X-Dashboard-User-Role'),
-        );
-
-        $serverData = array_merge($serverData, $userData);
 
         $this->unsetUrlForSensitiveUrls($serverData);
 

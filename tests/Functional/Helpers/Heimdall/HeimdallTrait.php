@@ -92,6 +92,29 @@ trait HeimdallTrait
         return $content;
     }
 
+    public function storeFieldsForEntity(
+        string $orgId,
+        string $entity,
+        array $fields,
+        string $token = null)
+    {
+        $request = [
+            'url' => '/orgs/' . $orgId . '/field-map',
+            'method' => 'POST',
+            'content' => [
+                'entity_name' => $entity,
+                'org_id' => $orgId,
+                'fields' => $fields
+            ],
+        ];
+
+        $this->ba->adminAuth('test', $token);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     public function getAssignablePermissions()
     {
         $assignablePermissions = Config::get('heimdall.assignablePermissions');
@@ -107,6 +130,23 @@ trait HeimdallTrait
         }
 
         return $permissions;
+    }
+
+    public function getTotalPermissionCount()
+    {
+        $permissionCategories = Config::get('heimdall.permissions');
+
+        $permissionCount = 0;
+
+        foreach ($permissionCategories as $permCategory)
+        {
+            foreach ($permCategory as $permission => $desc)
+            {
+                $permissionCount += 1;
+            }
+        }
+
+        return $permissionCount;
     }
 
     public function getAssignablePermissionsByIds()

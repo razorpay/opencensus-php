@@ -26,6 +26,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         Orchestrator::KOTAK,
         Orchestrator::NETBANKING_AXIS,
         Orchestrator::NETBANKING_ICICI,
+        Orchestrator::NETBANKING_FEDERAL,
         Orchestrator::JIOMONEY
     ];
 
@@ -590,7 +591,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
     {
-        if (isset($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false)
+        if (empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === true)
         {
             return;
         }

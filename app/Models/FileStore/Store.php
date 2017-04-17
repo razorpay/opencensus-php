@@ -18,7 +18,7 @@ class Store
     ];
 
     /**
-     * CHeck if store passed is valid or not
+     * Check if store passed is valid or not
      *
      * @param  string   $store
      * @return void

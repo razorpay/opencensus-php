@@ -12,9 +12,14 @@ use Requests;
 use Trace;
 use RZP\Trace\TraceCode;
 use App;
+use RZP\Constants;
+use RZP\Jobs\DispatchRouter;
+use RZP\Jobs\Dashboard as DashboardJob;
 
 class Dashboard
 {
+    use DispatchRouter;
+
     /**
      * Resource specifier
      * For example, payments, cards, etc.
@@ -172,10 +177,15 @@ class Dashboard
 
             $mode = \BasicAuth::getMode();
 
-            Queue::push('\RZP\Dashboard\\'.ucwords($type).'@postRequest', array(
-                'mode'      => $mode,
-                'message'   => $data
-            ));
+            $job = new DashboardJob([
+                'mode'     => $mode,
+                'message'  => $data,
+                'type'     => $type
+            ]);
+
+            $queueConfig = [Constants\Jobs::DASHBOARD, $mode];
+
+            $this->dispatchOn($job, $queueConfig);
         }
     }
 }

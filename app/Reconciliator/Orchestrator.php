@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
+use RZP\Models\FileStore\Format;
 
 class Orchestrator extends Base\Core
 {
@@ -29,40 +30,42 @@ class Orchestrator extends Base\Core
      * Bank constants
      ******************/
 
-    const HDFC             = 'HDFC';
-    const AXIS             = 'Axis';
-    const KOTAK            = 'Kotak';
-    const BILLDESK         = 'BillDesk';
-    const PAYZAPP          = 'PayZapp';
-    const MOBIKWIK         = 'Mobikwik';
-    const PAYTM            = 'Paytm';
-    const OLAMONEY         = 'Olamoney';
-    const FREECHARGE       = 'Freecharge';
-    const NETBANKING_AXIS  = 'NetbankingAxis';
-    const NETBANKING_ICICI = 'NetbankingIcici';
-    const JIOMONEY         = 'Jiomoney';
-    const ADMIN            = 'admin';
+    const HDFC               = 'HDFC';
+    const AXIS               = 'Axis';
+    const KOTAK              = 'Kotak';
+    const BILLDESK           = 'BillDesk';
+    const PAYZAPP            = 'PayZapp';
+    const MOBIKWIK           = 'Mobikwik';
+    const PAYTM              = 'Paytm';
+    const OLAMONEY           = 'Olamoney';
+    const FREECHARGE         = 'Freecharge';
+    const NETBANKING_AXIS    = 'NetbankingAxis';
+    const NETBANKING_ICICI   = 'NetbankingIcici';
+    const NETBANKING_FEDERAL = 'NetbankingFederal';
+    const JIOMONEY           = 'Jiomoney';
+    const ADMIN              = 'admin';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      * The banks send their MIS files through this sender address
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC             => ['payoutreport@hdfcbank.com'],
-        self::AXIS             => [],
-        self::BILLDESK         => [],
-        self::PAYZAPP          => [],
-        self::MOBIKWIK         => [],
-        self::PAYTM            => [],
-        self::KOTAK            => ['BankAlerts@kotak.com'],
-        self::OLAMONEY         => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE       => ['noreply@freechargemail.in'],
-        self::NETBANKING_AXIS  => ['it.rico@axisbank.com'],
-        self::NETBANKING_ICICI => [],//['ubpshelp@icicibank.com'],
-        self::JIOMONEY         => [],
+        self::HDFC               => ['payoutreport@hdfcbank.com'],
+        self::AXIS               => [],
+        self::BILLDESK           => [],
+        self::PAYZAPP            => [],
+        self::MOBIKWIK           => [],
+        self::PAYTM              => [],
+        self::KOTAK              => ['BankAlerts@kotak.com'],
+        self::OLAMONEY           => ['olamoney-noreply@olacabs.com'],
+        self::FREECHARGE         => ['noreply@freechargemail.in'],
+        self::NETBANKING_AXIS    => ['it.rico@axisbank.com'],
+        self::NETBANKING_ICICI   => ['ubpshelp@icicibank.com'],
+        self::NETBANKING_FEDERAL => ['fednetrm@federalbank.co.in'],
+        self::JIOMONEY           => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN            => ['prashanth.yv@razorpay.com'],
+        self::ADMIN              => ['prashanth.yv@razorpay.com'],
     ];
 
     /**
@@ -74,7 +77,8 @@ class Orchestrator extends Base\Core
         self::OLAMONEY,
         self::FREECHARGE,
         self::NETBANKING_AXIS,
-        self::NETBANKING_ICICI
+        self::NETBANKING_ICICI,
+        self::NETBANKING_FEDERAL
     ];
 
     /**
@@ -756,7 +760,20 @@ class Orchestrator extends Base\Core
         //
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
 
-        $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
+        // this flag enables us to check if spout lib has been used
+        $spoutLib = false;
+
+        if ($fileDetails[FileProcessor::EXTENSION] === Format::XLSX)
+        {
+            $spoutLib = true;
+
+            // getting contents using spout library for xlsx
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames);
+        }
+        else
+        {
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
+        }
 
         foreach ($sheetsContents as $sheetName => $rows)
         {
@@ -770,7 +787,14 @@ class Orchestrator extends Base\Core
 
             foreach ($rows as $cellCollection)
             {
-                $sheetArray[] = $cellCollection->all();
+                if ($spoutLib === true)
+                {
+                    $sheetArray[] = $cellCollection;
+                }
+                else
+                {
+                    $sheetArray[] = $cellCollection->all();
+                }
             }
 
             $fileDetails[FileProcessor::SHEET_NAME] = $sheetName;
@@ -807,7 +831,7 @@ class Orchestrator extends Base\Core
 
         $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip);
+        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $this->gateway);
 
         $this->setExtraDetails($csvArray, $fileDetails);
         $this->allFilesContents[] = $csvArray;
