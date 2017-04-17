@@ -20,9 +20,7 @@ export default function ActivationWizardHOC(WizardComponent) {
     { ...ActivationActions, showNotification }
   )
   @reduxForm({
-    form: 'activation',
     destroyOnUnmount: false,
-    forceUnregisterOnUnmount: true,
   })
   class ActivationBase extends WizardComponent {
     state = {
@@ -30,27 +28,25 @@ export default function ActivationWizardHOC(WizardComponent) {
     }
 
     componentWillMount() {
-      if (!this.props.initialized) {
-        let data = {
-          ...this.props.data
-        }
-
-        // ====
-        // Heimdall specific
-        // ====
-
-        if (this.props.session.org.custom_code === 'org') {
-          if (!data.bank_branch_ifsc) {
-            data.bank_branch_ifsc = 'HDFC'
-          }
-
-          if (!data.bank_account_type) {
-            data.bank_account_type = 'Current'
-          }
-        }
-
-        this.props.initialize(data)
+      let data = {
+        ...this.props.data
       }
+
+      // ====
+      // Heimdall specific
+      // ====
+
+      if (this.props.session.org.custom_code === 'org') {
+        if (!data.bank_branch_ifsc) {
+          data.bank_branch_ifsc = 'HDFC'
+        }
+
+        if (!data.bank_account_type) {
+          data.bank_account_type = 'Current'
+        }
+      }
+
+      this.props.initialize(data)
     }
 
     _save = (props) => {

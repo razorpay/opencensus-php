@@ -30,6 +30,7 @@ export const saveStep = (step, data) => {
       }),
       extraArgs: {
         step,
+        data,
       },
     })
   }
@@ -71,6 +72,7 @@ export const submitForm = (data) => {
       }),
       extraArgs: {
         step: 6,
+        data,
       },
     })
   }
@@ -133,7 +135,10 @@ export default function(state = initialState, action) {
     case `${ACTIVATION_SAVE_STEP}::SUCCESS`:
     case `${ACTIVATION_FORM_SUBMIT}::SUCCESS`:
       updatedSteps = set(state.steps, action.extraArgs.step, 'success')
-      return set(state, 'steps', updatedSteps)
+      return merge(state, {
+        steps: updatedSteps,
+        data: action.extraArgs.data
+      })
 
     case `${ACTIVATION_SAVE_STEP}::ERROR`:
     case `${ACTIVATION_FORM_SUBMIT}::ERROR`:

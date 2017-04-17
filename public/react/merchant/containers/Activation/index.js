@@ -89,6 +89,7 @@ export default class ActivationWizard extends Component {
 
                   <TabPanel>
                     <ContactDetailsForm
+                      form='activationContactDetails'
                       step={1}
                       pageTitle='Contact Details'
                       gotoTab={this.gotoTab}
@@ -97,6 +98,7 @@ export default class ActivationWizard extends Component {
 
                   <TabPanel>
                     <BusinessDetailsForm
+                      form='activationBusinessDetails'
                       step={2}
                       pageTitle='Business Details'
                       gotoTab={this.gotoTab}
@@ -105,6 +107,7 @@ export default class ActivationWizard extends Component {
 
                   <TabPanel>
                     <WebsiteDetailsForm
+                      form='activationWebsiteDetails'
                       step={3}
                       pageTitle='Website Details'
                       gotoTab={this.gotoTab}
@@ -113,6 +116,7 @@ export default class ActivationWizard extends Component {
 
                   <TabPanel>
                     <BankAccountDetailsForm
+                      form='activationBankAccounts'
                       step={4}
                       pageTitle='Bank Account Details'
                       gotoTab={this.gotoTab}
@@ -121,6 +125,7 @@ export default class ActivationWizard extends Component {
 
                   <TabPanel>
                     <DocumentUploadForm
+                      form='activationDocumentUpload'
                       step={5}
                       pageTitle='Document Upload'
                       gotoTab={this.gotoTab}
@@ -129,6 +134,7 @@ export default class ActivationWizard extends Component {
 
                   <TabPanel>
                     <SubmitForm
+                      form='activationSubmitForm'
                       step={6}
                       pageTitle='Submit for Activation'
                       gotoTab={this.gotoTab}

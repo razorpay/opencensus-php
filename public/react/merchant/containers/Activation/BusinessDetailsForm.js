@@ -9,7 +9,7 @@ import Fieldset from 'rzp/ui/Forms/Fieldset'
 import { required } from 'rzp/utils/validators'
 import ActivationWizardHOC from './ActivationWizardHOC'
 
-const selector = formValueSelector('activation')
+const selector = formValueSelector('activationBusinessDetails')
 @connect(
   (state) => {
     return {
