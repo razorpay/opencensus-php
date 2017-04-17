@@ -193,8 +193,6 @@ class Validator extends Base\Validator
      * @param array $input
      *
      * @throws BadRequestValidationFailureException
-     *
-     * @return
      */
     private function checkIfAmountIsExpectedInInput(array $input)
     {
@@ -228,8 +226,6 @@ class Validator extends Base\Validator
      * @param int $amount
      *
      * @throws BadRequestValidationFailureException
-     *
-     * @return
      */
     public function validateMaxAllowedAmount(int $amount)
     {

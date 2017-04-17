@@ -616,8 +616,7 @@ class Core extends Base\Core
     {
         $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($invoice);
 
-        // Check getTotalAmountOfLineItems() method on when invoice amount will
-        // be returned as null.
+        // Validate invoice amount after re-computation, only if not null.
         if ($totalAmount !== null)
         {
             $invoice->getValidator()->validateMaxAllowedAmount($totalAmount);

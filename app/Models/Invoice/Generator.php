@@ -183,8 +183,8 @@ class Generator extends Base\Core
 
         $invoice = new Entity;
 
-        // Merchant should get associated before calling build() as Invoice's
-        // validator uses merchant entity.
+        // Merchant should get associated before calling build()
+        // as invoice's validator uses merchant relation.
         $invoice->merchant()->associate($this->merchant);
 
         $invoice->build($input);
@@ -288,8 +288,6 @@ class Generator extends Base\Core
     /**
      * Calculates, validates and sets the invoice amount after creation of
      * its line items.
-     *
-     * @return
      */
     protected function calculateAndSetInvoiceAmount()
     {
