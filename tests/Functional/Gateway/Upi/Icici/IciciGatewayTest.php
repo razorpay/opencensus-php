@@ -8,13 +8,13 @@ use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class UPIGatewayTest extends TestCase
+class IciciGatewayTest extends TestCase
 {
     use PaymentTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/UPIGatewayTestData.php';
+        $this->testDataFilePath = __DIR__.'/IciciGatewayTestData.php';
 
         parent::setUp();
 
@@ -257,7 +257,7 @@ EOT;
 
         $data = $this->testData[__FUNCTION__];
 
-        $server = $this->mockServerContentFunction(function (&$content)
+        $server = $this->mockServerContentFunction(function (& $content)
         {
             $content['TxnStatus'] = 'REJECT';
         });
@@ -286,13 +286,170 @@ EOT;
         $this->assertEquals($expectedStatus, $status);
     }
 
-    public function testPaymentRefund()
+    public function testFullRefund()
     {
         $payment = $this->testPaymentWithS2S();
 
         $this->capturePayment($payment['id'], 50000);
 
         $this->refundPayment($payment['id']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertTestResponse($upiEntity, 'testRefundUpiEntity');
+    }
+
+    public function testPartialRefund()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $refundAmount = 30000;
+
+        $this->mockServerContentFunction(function(& $content, $action) use ($refundAmount)
+        {
+            if ($action === 'validateRefund')
+            {
+                $actualRefundAmount = (int) ($content['refundAmount'] * 100);
+
+                $assertion = ($actualRefundAmount === $refundAmount);
+
+                $this->assertTrue($assertion, 'Actual refund amount different than expected amount');
+            }
+        });
+
+        $this->refundPayment($payment['id'], $refundAmount);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertTestResponse($upiEntity, 'testPartialRefundUpiEntity');
+    }
+
+    public function testRefundInvalidVpa()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockServerContentFunction(function(& $content)
+        {
+            $content['success'] = 'false';
+            $content['response'] = 5013;
+            $content['status'] = 'FAILED';
+        });
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->refundPayment($payment['id']);
+        });
+    }
+
+    public function testRefundRequestTimeout()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockServerContentFunction(function(& $content)
+        {
+            $content['success'] = 'false';
+            $content['response'] = 5009;
+            $content['status'] = 'FAILED';
+        });
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->refundPayment($payment['id']);
+        });
+    }
+
+    public function testRefundDuplicateRequest()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockServerContentFunction(function(& $content)
+        {
+            $content['success'] = 'false';
+            $content['response'] = 5011;
+            $content['status'] = 'FAILED';
+        });
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->refundPayment($payment['id']);
+        });
+    }
+
+    public function testRefundInsufficientBalance()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockServerContentFunction(function(& $content)
+        {
+            $content['success'] = 'false';
+            $content['response'] = 5014;
+            $content['status'] = 'FAILED';
+        });
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->refundPayment($payment['id']);
+        });
+    }
+
+    public function testRefundInvalidEncryptedRequest()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockServerContentFunction(function(& $content)
+        {
+            $content['success'] = 'false';
+            $content['response'] = 8000;
+            $content['status'] = 'FAILED';
+        });
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->refundPayment($payment['id']);
+        });
+    }
+
+    public function testRefundInternalServerError()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockServerContentFunction(function(& $content)
+        {
+            $content['success'] = 'false';
+            $content['response'] = 8009;
+            $content['status'] = 'FAILED';
+        });
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->refundPayment($payment['id']);
+        });
     }
 
     public function testVerifyPayment()

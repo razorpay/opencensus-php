@@ -13,7 +13,7 @@ use RZP\Models\Order;
 use RZP\Models\LineItem;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\InvoiceAction;
 use RZP\Models\FileStore;
@@ -290,12 +290,12 @@ class Core extends Base\Core
         return ['success' => $response];
     }
 
-    public function expireInvoice(Entity $invoice)
+    public function cancelInvoice(Entity $invoice)
     {
         $this->trace->info(
-            TraceCode::EXPIRE_INVOICE,
+            TraceCode::CANCEL_INVOICE,
             [
-                'invoice_id' => $invoice->getId(),
+                'id' => $invoice->getId(),
             ]);
 
         $invoice->getValidator()->validateOperation(__FUNCTION__);
@@ -305,20 +305,18 @@ class Core extends Base\Core
             {
                 $this->repo->invoice->lockForUpdateAndReload($invoice);
 
-                $this->validateIfInvoiceCanBeExpired($invoice);
+                $this->validateIfInvoiceCanBeCancelled($invoice);
 
-                $invoice->setStatus(Status::EXPIRED);
+                $invoice->setStatus(Status::CANCELLED);
 
                 $this->repo->saveOrFail($invoice);
             });
-
-        (new InvoiceAction($this->mode, InvoiceAction::EXPIRED, $invoice->getId()))->handle();
 
         return $this->invoiceWithLoadedRelations($invoice);
     }
 
     /**
-     * Called from cron.
+     * Called from CRON.
      * Expires all invoices which are issued and past expire_by.
      *
      * @return array
@@ -364,6 +362,32 @@ class Core extends Base\Core
         $this->slack->queue($slackMessage, $summary, ['channel' => $this->slackTechLogsChannel]);
 
         return $summary;
+    }
+
+    /**
+     * Expires individual invoice by locking it for update.
+     *
+     * @param Entity $invoice
+     *
+     * @return void
+     */
+    protected function expireInvoice(Entity $invoice)
+    {
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $this->repo->transaction(
+            function () use ($invoice)
+            {
+                $this->repo->invoice->lockForUpdateAndReload($invoice);
+
+                $this->validateIfInvoiceCanBeExpired($invoice);
+
+                $invoice->setStatus(Status::EXPIRED);
+
+                $this->repo->saveOrFail($invoice);
+            });
+
+        $this->dispatchQueueJob($this->mode, InvoiceAction::EXPIRED, $invoice->getId());
     }
 
     public function fetchStatus(Entity $invoice)
@@ -620,18 +644,25 @@ class Core extends Base\Core
         }
     }
 
+    protected function validateIfInvoiceCanBeCancelled(Entity $invoice)
+    {
+        $count = $this->repo->invoice->getNonFailedPaymentsCount($invoice);
+
+        if ($count !== 0)
+        {
+            throw new BadRequestValidationFailureException(
+                $invoice->getTypeLabel() . ' cannot be cancelled as payment for it has happened');
+        }
+    }
+
     protected function validateIfInvoiceCanBeExpired(Entity $invoice)
     {
         $count = $this->repo->invoice->getNonFailedPaymentsCount($invoice);
 
         if ($count !== 0)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_EXPIRE_FAILED,
-                null,
-                [
-                    'invoice_id' => $invoice->getId(),
-                ]);
+            throw new BadRequestValidationFailureException(
+                $invoice->getTypeLabel() . ' cannot be expired as payment for it has happened');
         }
     }
 

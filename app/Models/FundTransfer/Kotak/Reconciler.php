@@ -282,6 +282,7 @@ class Reconciler
         $source->setUtr($utr);
         $source->setFailureReason($failureReason);
         $source->setStatus($status);
+        $source->setRemarks($remarks);
 
         $this->repo->saveOrFail($source);
 

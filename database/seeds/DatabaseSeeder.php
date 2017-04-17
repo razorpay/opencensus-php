@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
         $this->call('IinsTableSeeder');
         $this->call('PermissionSeeder');
         $this->call('GroupMapSeeder');
+        $this->call('WorkflowSeeder');
     }
 
     private function seed()
@@ -58,6 +59,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'       => $currentTime,
                     'updated_at'       => $currentTime,
                     'cross_org_access' => true,
+                    'custom_code'      => 'rzp',
                 ]
             );
 
@@ -74,6 +76,7 @@ class DatabaseSeeder extends Seeder
                     'main_logo_url'     => null,
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
+                    'custom_code'      => 'hdfc',
                 ]
             );
 
@@ -446,6 +449,41 @@ class DatabaseSeeder extends Seeder
                 ],
             ]);
 
+            DB::table(Table::ORG_FIELD_MAP)->insert([
+                [
+                    'id'          => '7NamQFIGFyyNdc',
+                    'org_id'      => '100000razorpay',
+                    'entity_name' => 'admin',
+                    'fields'      => "name,email,allow_all_merchants,disabled,oauth_access_token,oauth_provider_id,roles,groups",
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
+                ],
+                [
+                    'id'          => '7NawjzGBBIX6Ar',
+                    'org_id'      => '6dLbNSpv5XbCOG',
+                    'entity_name' => 'admin',
+                    'fields'      => 'name,username,email,password,password_confirmation,employee_code,department_code,branch_code,location_code,supervisor_code,allow_all_merchants,disabled,roles,groups',
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
+                ],
+                [
+                    'id'          => '7NayAS7Iz2aMyi',
+                    'org_id'      => '6dLbNSpv5XbCOG',
+                    'entity_name' => 'admin_lead',
+                    'fields'      => 'channel_code,crm_next_no,db_token_no,branch_lts_no,branch_code,source_code,promo_code,lg_code,lc_ro_code,mrm_code,merchant_type,mcc_category,mcc_code,merchant_name,contact_name,contact_email,dba_name',
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
+                ],
+                [
+                    'id'          => '7Nb15NvBMGKP2k',
+                    'org_id'      => '100000razorpay',
+                    'entity_name' => 'admin_lead',
+                    'fields'      => 'merchant_name,contact_name,contact_email,dba_name',
+                    'created_at'  => time(),
+                    'updated_at'  => time(),
+                ],
+            ]);
+
             DB::table(Table::ADMIN)->insert([
                 [
                     'id'                  => '6dLbNSpv5Ycccc',
@@ -484,14 +522,39 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                 ],
-                // [
-                //     'id'            => '6dLbNSpv5XbC5G',
-                //     'name'          => 'Admin',
-                //     'description'   => 'Administrator',
-                //     'org_id'        => '6dLbNSpv5XbCOG',
-                //     'created_at'    => $currentTime,
-                //     'updated_at'    => $currentTime,
-                // ]
+                [
+                    'id'            => '7bdvjyhVRgcfCe',
+                    'name'          => 'Checker One',
+                    'description'   => 'Checker One',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '7bdvYPtRHEw3zB',
+                    'name'          => 'Checker Two',
+                    'description'   => 'Checker Two',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '7bdyCqxHR23Y9u',
+                    'name'          => 'Checker Three',
+                    'description'   => 'Checker Three',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '7bdxOwCk3Eyu0R',
+                    'name'          => 'Maker One',
+                    'description'   => 'Maker One',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+
             ]);
 
             DB::table(Table::ROLE_MAP)->insert([
@@ -688,6 +751,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => '1n25f6uN5S1Z5a',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
+                'gateway_acquirer'      => 'hdfc',
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_hdfc',
                 'gateway_terminal_id'   => 'test_terminal_hdfc',
@@ -718,6 +782,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => '1pnP3sEf2tQsm8',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::AXIS_MIGS,
+                'gateway_acquirer'      => 'axis',
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'test_merchant_axis_migs',
                 'gateway_terminal_id'   => 'test_terminal_axis_migs',
@@ -763,6 +828,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => '1VwJebUIU7hIhU',
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
+                'gateway_acquirer'      => 'hdfc',
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_hdfc',
                 'gateway_terminal_id'   => 'demo_terminal_hdfc',
@@ -808,6 +874,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => Gateway::AXIS_MIGS,
+                'gateway_acquirer'      => 'axis',
                 'card'                  => '1',
                 'gateway_merchant_id'   => 'demo_merchant_axis_migs',
                 'gateway_terminal_id'   => 'shared_terminal_axis_migs',
@@ -823,6 +890,7 @@ class DatabaseSeeder extends Seeder
                 'id'                        => Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
                 'gateway'                   => Gateway::FIRST_DATA,
+                'gateway'                   => 'icic',
                 'card'                      => '1',
                 'gateway_merchant_id'       => 'demo_merchant_first_data',
                 'created_at'                => time(),
@@ -865,6 +933,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => 'djfksjfksjfdkj',
                 'merchant_id'           => Account::SHARED_ACCOUNT,
                 'gateway'               => Gateway::HDFC,
+                'gateway_acquirer'      => 'hdfc',
                 'emi'                   => '1',
                 'shared'                => '1',
                 'emi_duration'          => 9,
@@ -959,6 +1028,7 @@ class DatabaseSeeder extends Seeder
             'id'                        => '1VwJebUIU7hIhd',
             'merchant_id'               => Account::TEST_ACCOUNT,
             'gateway'                   => Gateway::CYBERSOURCE,
+            'gateway_acquirer'          => 'hdfc',
             'card'                      => '1',
             'gateway_merchant_id'       => 'test_merchant_cybersource',
             'gateway_terminal_id'       => 'test_terminal_cybersource',
@@ -972,6 +1042,7 @@ class DatabaseSeeder extends Seeder
             'id'                        => Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL,
             'merchant_id'               => Account::DEMO_ACCOUNT,
             'gateway'                   => Gateway::CYBERSOURCE,
+            'gateway_acquirer'          => 'hdfc',
             'card'                      => '1',
             'gateway_merchant_id'       => 'demo_merchant_cybersource',
             'gateway_terminal_id'       => 'demo_terminal_cybersource',
@@ -1187,7 +1258,6 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_federal',
-                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_federal_terminal_pass'),
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
@@ -1202,6 +1272,7 @@ class DatabaseSeeder extends Seeder
                 'id'                    => '2eBIhcdN74TBMd',
                 'merchant_id'           => Account::TEST_ACCOUNT,
                 'gateway'               => Gateway::AMEX,
+                'gateway_acquirer'      => 'amex',
                 'card'                  => '1',
                 'netbanking'            => '0',
                 'gateway_merchant_id'   => 'test_merchant_amex',
@@ -1218,6 +1289,7 @@ class DatabaseSeeder extends Seeder
                 'id'                        => Terminal\Shared::AMEX_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
                 'gateway'                   => Gateway::AMEX,
+                'gateway_acquirer'          => 'amex',
                 'card'                      => '0',
                 'netbanking'                => '0',
                 'gateway_merchant_id'       => 'demo_merchant_amex',

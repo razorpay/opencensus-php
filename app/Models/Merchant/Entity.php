@@ -4,13 +4,13 @@ namespace RZP\Models\Merchant;
 
 use Config;
 
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\Feature;
+use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
-use RZP\Models\Base;
-use RZP\Models\Feature;
-use RZP\Models\Terminal;
-use RZP\Trace;
 
 class Entity extends Base\PublicEntity
 {
@@ -46,6 +46,8 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
+    const MERCHANT_USERS            = 'merchant_users';
+    const USER_ID                   = 'user_id';
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
@@ -428,7 +430,7 @@ class Entity extends Base\PublicEntity
 
     public function merchantDetail()
     {
-        return $this->hasOne('RZP\Models\Merchant\Detail\Entity', 'merchant_id', self::ID);
+        return $this->hasOne(Detail\Entity::class, self::MERCHANT_ID, self::ID);
     }
 
     public function setPricingPlan($planId)
@@ -903,6 +905,11 @@ class Entity extends Base\PublicEntity
         return Terminal\Category::isMerchantCategoryTpv($category2);
     }
 
+    public function isTestAccount()
+    {
+        return Account::isTestAccount($this->getId());
+    }
+
     public function getTPVCategories()
     {
         return Terminal\Category::getTPVCategories();
@@ -956,5 +963,69 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    /**
+     * Determine if the merchant has any users.
+     *
+     * @return bool
+     */
+    public function hasUsers()
+    {
+        return count($this->users) > 0;
+    }
+
+    /**
+     * Get all of the users that belong to the merchant.
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function users()
+    {
+        return $this->belongsToMany(
+            User\Entity::class, self::MERCHANT_USERS, self::MERCHANT_ID, self::USER_ID
+        )->withPivot('role');
+    }
+
+    /**
+     * Get the owners of the merchant.
+     */
+    public function owners()
+    {
+        return $this->users()->where('role', 'owner')->orderBy(self::MERCHANT_USERS.'.updated_at', 'desc')->get();
+    }
+
+    /**
+     * Get the primary owner of the merchant.
+     */
+    public function primaryOwner()
+    {
+        return $this->owners()->first();
+    }
+
+    public function isEmailOptional()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);
+    }
+
+    public function isPhoneOptional()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
+    }
+
+    public function getOptionalInputConfig()
+    {
+        $config = [];
+
+        if ($this->isEmailOptional() === true)
+        {
+            $config[] = 'email';
+        }
+
+        if ($this->isPhoneOptional() === true)
+        {
+            $config[] = 'contact';
+        }
+
+        return $config;
     }
 }

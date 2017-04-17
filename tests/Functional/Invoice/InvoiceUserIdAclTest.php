@@ -124,7 +124,7 @@ class InvoiceUserIdAclTest extends TestCase
         $this->startTest();
     }
 
-    public function testExpireInvoiceWithUserIdHeaderSuccess()
+    public function testCancelInvoiceWithUserIdHeaderSuccess()
     {
         $order = $this->fixtures->create('order');
 
@@ -135,7 +135,7 @@ class InvoiceUserIdAclTest extends TestCase
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
-    public function testExpireInvoiceWithUserIdHeaderForbidden()
+    public function testCancelInvoiceWithUserIdHeaderForbidden()
     {
         $order = $this->fixtures->create('order');
 

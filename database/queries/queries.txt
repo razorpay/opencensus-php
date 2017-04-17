@@ -1853,3 +1853,50 @@ UPDATE tokens
 # Prod test
 UPDATE tokens
     SET terminal_id = '1000SharpTrmnl' WHERE recurring = 1;
+
+# Adds cancelled_at column to invoices table
+ALTER TABLE invoices ADD COLUMN cancelled_at int(11) DEFAULT NULL AFTER paid_at;
+
+ALTER TABLE daily_settlements
+    ADD COLUMN txt_file_id CHAR(14) AFTER urls,
+    ADD CONSTRAINT daily_settlements_txt_file_id_foreign
+        FOREIGN KEY(txt_file_id) REFERENCES files(id) ON DELETE RESTRICT,
+    ADD COLUMN excel_file_id CHAR(14) AFTER txt_file_id,
+    ADD CONSTRAINT daily_settlements_excel_file_id_foreign
+        FOREIGN KEY(excel_file_id) REFERENCES files(id) ON DELETE RESTRICT;
+
+# Query to add international flag to terminal entity
+ALTER TABLE terminals
+    ADD COLUMN international TINYINT(1) DEFAULT 0 NOT NULL AFTER recurring;
+
+INSERT INTO `org_field_map` (`id`, `org_id`, `entity_name`, `fields`, `created_at`, `updated_at`)
+VALUES
+	('7NamQFIGFyyNdc','100000razorpay','admin','name,email,allow_all_merchants,disabled,roles,groups',1488445356,1488445356),
+	('7NawjzGBBIX6Ar','6dLbNSpv5XbCOG','admin','name,username,email,password,password_confirmation,employee_code,department_code,branch_code,location_code,supervisor_code,allow_all_merchants,disabled,roles,groups',1488445942,1488445942),
+	('7NayAS7Iz2aMyi','6dLbNSpv5XbCOG','admin_lead','channel_code,crm_next_no,db_token_no,branch_lts_no,branch_code,source_code,promo_code,lg_code,lc_ro_code,mrm_code,merchant_type,mcc_category,mcc_code,merchant_name,contact_name,contact_email,dba_name',1488446023,1488446023),
+	('7Nb15NvBMGKP2k','100000razorpay','admin_lead','merchant_name,contact_name,contact_email,dba_name',1488446189,1488446189);
+
+ALTER TABLE `admins` MODIFY COLUMN `department_code` VARCHAR(255) DEFAULT NULL;
+ALTER TABLE `admins` MODIFY COLUMN `supervisor_code` VARCHAR(255) DEFAULT NULL;
+ALTER TABLE `admins` MODIFY COLUMN `branch_code` VARCHAR(255) DEFAULT NULL;
+ALTER TABLE `admins` MODIFY COLUMN `location_code` VARCHAR(255) DEFAULT NULL;
+
+# Query to add custom error message attribute to offer
+ALTER TABLE offers
+    ADD COLUMN error_message VARCHAR(255) NULL AFTER display_text;
+
+# Add indices for fetch by cron
+ALTER TABLE payments
+    ADD INDEX `payments_on_hold_index` (`on_hold`),
+    ADD INDEX `payments_on_hold_until_index` (`on_hold_until`);
+
+# Add attempts to settlements
+ALTER TABLE settlements
+    ADD COLUMN attempts INTEGER NOT NULL DEFAULT 1 AFTER channel;
+
+ALTER TABLE payment_analytics
+    ADD CONSTRAINT payment_analytics_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments(id);
+
+ALTER TABLE upi
+    ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,
+    ADD INDEX upi_refund_id_index (refund_id);

@@ -19,7 +19,7 @@ class Type
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
     const AXIS_NETBANKING_CLAIMS            = 'axis_netbanking_claims';
-  
+
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
@@ -28,8 +28,6 @@ class Type
 
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
-    const ICICI_NODAL_TRANSFER              = 'icici_nodal_transfer';
-
     const BATCH_INPUT                       = 'batch_input';
 
     const BATCH_OUTPUT                      = 'batch_output';
@@ -37,6 +35,9 @@ class Type
     const BLANK                             = 'blank';
 
     const INVOICE_PDF                       = 'invoice_pdf';
+
+    const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
+    const FUND_TRANSFER_H2H                 = 'fund_transfer_h2h';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -51,6 +52,7 @@ class Type
     const BATCH_BUCKET_CONFIG                   = 'batch_bucket_config';
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
+    const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
 
     /**
      * Map of types allowed for each entity.
@@ -68,7 +70,6 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
-            self::ICICI_NODAL_TRANSFER,
         ],
 
         Constants\Entity::BATCH => [
@@ -89,6 +90,11 @@ class Type
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
         ],
+
+        Constants\Entity::BATCH_FUND_TRANSFER => [
+            self::FUND_TRANSFER_DEFAULT,
+            self::FUND_TRANSFER_H2H,
+        ],
     ];
 
     /**
@@ -105,7 +111,8 @@ class Type
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
-        self::ICICI_NODAL_TRANSFER,
+        self::FUND_TRANSFER_DEFAULT,
+        self::FUND_TRANSFER_H2H,
     ];
 
     /**
@@ -120,6 +127,7 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
+            self::FUND_TRANSFER_DEFAULT,
         ],
 
         self::BATCH_BUCKET_CONFIG => [
@@ -139,6 +147,10 @@ class Type
             self::MERCHANT_PROMOTER_PROOF_URL,
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
+        ],
+
+        self::H2H_BUCKET_CONFIG => [
+            self::FUND_TRANSFER_H2H,
         ],
     ];
 

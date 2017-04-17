@@ -14,7 +14,11 @@ return [
                 'entity_id'         => '10000000000000'
             ],
             'url' => '/features',
-            'method' => 'POST'
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -40,7 +44,12 @@ return [
                 'entity_id'         => '10000000000000'
             ],
             'url' => '/features',
-            'method' => 'POST'
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -64,7 +73,11 @@ return [
                 'entity_id'         => '10000000000000'
             ],
             'url' => '/features',
-            'method' => 'POST'
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
         ],
         'response' => [
             'content' => [
@@ -82,7 +95,12 @@ return [
                 'entity_type'   => 'merchant'
             ],
             'url' => '/features/assign',
-            'method' => 'POST'
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -112,7 +130,11 @@ return [
                 'entity_ids'    => ["10000000000001", "10000000000002", "10000000000003"]
             ],
             'url' => '/features/remove',
-            'method' => 'POST'
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -140,7 +162,11 @@ return [
             'content' => [
             ],
             'url' => '/features/10000000000000',
-            'method' => 'GET'
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             "content" => [
@@ -177,7 +203,11 @@ return [
             'content' => [
             ],
             'url' => '/features/10000000000000/dummy',
-            'method' => 'DELETE'
+            'method' => 'DELETE',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -193,7 +223,11 @@ return [
             'content' => [
             ],
             'url' => '/dummy',
-            'method' => 'GET'
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -211,7 +245,11 @@ return [
             'content' => [
             ],
             'url' => '/dummy',
-            'method' => 'GET'
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -222,7 +260,11 @@ return [
     'testDeleteNonExistentFeatureFromMerchant' => [
         'request' => [
             'url'       => '/features/10000000000000/xxxxx',
-            'method'    => 'delete'
+            'method'    => 'delete',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [

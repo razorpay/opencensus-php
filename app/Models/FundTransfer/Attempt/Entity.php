@@ -22,6 +22,8 @@ class Entity extends Base\PublicEntity
     const DATE_TIME              = 'date_time';
     const CMS_REF_NO             = 'cms_ref_no';
     const FAILURE_REASON         = 'failure_reason';
+    const TXT_FILE_ID            = 'txt_file_id';
+    const EXCEL_FILE_ID          = 'excel_file_id';
 
     protected $entity = 'fund_transfer_attempt';
 
@@ -45,6 +47,8 @@ class Entity extends Base\PublicEntity
         self::DATE_TIME,
         self::CMS_REF_NO,
         self::FAILURE_REASON,
+        self::TXT_FILE_ID,
+        self::EXCEL_FILE_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
