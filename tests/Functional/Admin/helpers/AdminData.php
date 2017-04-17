@@ -65,14 +65,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ADMIN_EMAIL,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME,
         ],
     ],
 

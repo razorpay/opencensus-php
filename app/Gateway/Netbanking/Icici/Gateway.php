@@ -94,7 +94,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'request' => $request
+                'payment_id' => $verify->input['payment']['id'],
+                'request'    => $request
             ]);
 
         $response = $this->sendGatewayRequest($request);
@@ -104,7 +105,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'response' => $responseBody
+                'payment_id' => $verify->input['payment']['id'],
+                'response'   => $responseBody
             ]);
 
         $verify->verifyResponseContent = $this->getResponseArray($responseBody);
@@ -187,7 +189,8 @@ class Gateway extends Base\Gateway
 
         $data = $this->createDefaultRequestData($input);
 
-        $paymentDate = Carbon::createFromTimestamp($payment['created_at'])
+        $paymentDate = Carbon::createFromTimestamp($payment['created_at'],
+                                                   'Asia/Kolkata')
                                                    ->format('Y-m-d');
 
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;
@@ -326,7 +329,12 @@ class Gateway extends Base\Gateway
 
         $status = self::VERIFY_STATUS_TO_CALLBACK[$content[ResponseFields::STATUS]];
 
-        $attributes = [Base\Entity::STATUS => $status];
+        $attributes = [];
+
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            $attributes = [Base\Entity::STATUS => $status];
+        }
 
         if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true) and
             (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true))
@@ -339,9 +347,19 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
     }
 
+    protected function getAuthSuccessStatus()
+    {
+        return Confirmation::getAuthSuccessStatus();
+    }
+
     protected function getResponseArray($content)
     {
         $xml = (array) simplexml_load_string($content);
+
+        if (isset($xml['@attributes']) === false)
+        {
+            return $xml;
+        }
 
         return $xml['@attributes'];
     }

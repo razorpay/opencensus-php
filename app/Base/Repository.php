@@ -7,15 +7,16 @@ use Illuminate\Support\Facades\App;
 
 use RZP\Models;
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Trace;
-use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\EsRepository;
 
 class Repository extends \Razorpay\Spine\Repository
 {
-    use RepositoryFetch, DispatchesJobs;
+    use RepositoryFetch, DispatchRouter;
 
     protected $app;
 
@@ -139,6 +140,13 @@ class Repository extends \Razorpay\Spine\Repository
     public function sync($entity, $relation, $ids = [])
     {
         $entity->$relation()->sync($ids);
+
+        return $this;
+    }
+
+    public function detach($entity, $relation, $ids = [])
+    {
+        $entity->$relation()->detach($ids);
 
         return $this;
     }
@@ -348,17 +356,23 @@ class Repository extends \Razorpay\Spine\Repository
 
                 $esType = $this->getEsType();
 
+                $mode = $this->app['rzp.mode'];
+
                 $queueData = [
                     'es_type'           => $esType,
                     // This entity object is converted into an array because Queue::push
                     // decodes and encodes it with assoc array flag set to true.
                     'entity'            => $entity->toArray(),
-                    'mode'              => $this->app['rzp.mode'],
+                    'mode'              => $mode,
                     'es_repo_path'      => $esRepoClassPath,
                 ];
 
                 // Saving the entity in ES.
-                $this->dispatch(new EsRepository($queueData));
+                $job = new EsRepository($queueData);
+
+                $queueConfig = [Constants\Jobs::ES, $mode];
+
+                $this->dispatchOn($job, $queueConfig);
             }
         }
         catch (\Exception $ex)

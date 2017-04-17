@@ -236,6 +236,16 @@ trait RequestResponseFlowTrait
             $request['server'] += $this->transformHeadersToServerVars($accountHeader);
         }
 
+        if ($this->ba->isAdminAuth() === true)
+        {
+            $adminHeaders = $this->ba->getAdminHeaders();
+
+            if (empty($adminHeaders) === false)
+            {
+                $request['server'] += $this->transformHeadersToServerVars($adminHeaders);
+            }
+        }
+
         /**
          * This is the function signature
          *

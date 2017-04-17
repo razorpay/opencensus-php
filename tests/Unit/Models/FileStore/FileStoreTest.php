@@ -1,7 +1,9 @@
 <?php
 namespace RZP\Tests\Unit\Models\FileStore;
 
+use Config;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity;
 use RZP\Models\FileStore;
 
 class FileStoreTest extends TestCase
@@ -17,6 +19,7 @@ class FileStoreTest extends TestCase
         $this->fileName = 'test';
         $this->store = FileStore\Store::S3;
         $this->type = FileStore\Type::KOTAK_NETBANKING_REFUND;
+        $this->merchant = $this->fixtures->create('merchant');
     }
 
     function testInvalidStore()
@@ -59,5 +62,86 @@ class FileStoreTest extends TestCase
                 ->store($this->store)
                 ->type($this->type)
                 ->save();
+    }
+
+    function testBucketSelectionOnType()
+    {
+        $bucketConfig = [
+            'bucket_region' => 'region1',
+            'mock'          => true,
+            'settlement_bucket_config' => [
+                'name'   => 'settlement_bucket',
+                'region' => 'region1'
+            ],
+            'invoice_bucket_config' => [
+                'name'   => 'invoice_bucket',
+                'region' => 'region2'
+            ],
+            'activation_bucket_config' => [
+                'name'   => 'activation_bucket',
+                'region' => 'region3'
+            ],
+            'h2h_bucket_config' => [
+                'name'   => 'h2h_bucket',
+                'region' => 'region4'
+            ],
+            'test_bucket_config' => [
+                'name'   => 'test_bucket',
+                'region' => 'region5'
+            ],
+        ];
+
+        Config::set('filestore.aws', $bucketConfig);
+
+        $this->checkBucketAndRegion(
+            $this->type,
+            'settlement_bucket_config',
+            $bucketConfig);
+
+        $this->checkBucketAndRegion(
+            'invoice_pdf',
+            'invoice_bucket_config',
+            $bucketConfig,
+            $this->merchant);
+
+        $this->checkBucketAndRegion(
+            'business_proof_url',
+            'activation_bucket_config',
+            $bucketConfig);
+
+        $this->checkBucketAndRegion(
+            'fund_transfer_default',
+            'settlement_bucket_config',
+            $bucketConfig);
+
+        $this->checkBucketAndRegion(
+            'fund_transfer_h2h',
+            'h2h_bucket_config',
+            $bucketConfig);
+    }
+
+    public function checkBucketAndRegion($type, $configName, $bucketConfig, $merchant = null)
+    {
+
+        $file = $this->creator->extension($this->extension)
+                         ->content($this->content)
+                         ->name($this->fileName)
+                         ->store($this->store)
+                         ->type($type);
+
+        if ($merchant !== null)
+        {
+            $file->merchant($this->merchant);
+        }
+
+        $fileData = $file->save()->get();
+
+        $this->assertEquals(
+            $fileData['bucket'],
+            $bucketConfig[$configName]['name']);
+
+        $this->assertEquals(
+            $fileData['region'],
+            $bucketConfig[$configName]['region']);
     }
 }

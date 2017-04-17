@@ -23,7 +23,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        if (isset($row[self::COLUMN_PAYMENT_REF_NO]) === true)
+        if (empty($row[self::COLUMN_PAYMENT_REF_NO]) === false)
         {
             return $row[self::COLUMN_PAYMENT_REF_NO];
         }
@@ -33,7 +33,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     // protected function getReferenceNumber($row)
     // {
-    //     if (isset($row[self::COLUMN_BANK_PAYMENT_ID]) === true)
+    //     if (empty($row[self::COLUMN_BANK_PAYMENT_ID]) === false)
     //     {
     //         return $row[self::COLUMN_BANK_PAYMENT_ID];
     //     }
@@ -43,11 +43,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        $statuses = [Federal\Status::YES, Federal\Status::SUCCESS];
+        $status = [Federal\Status::getAuthSuccessStatus()];
 
         return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
                                                                      Action::AUTHORIZE,
-                                                                     $statuses);
+                                                                     $status);
     }
 }
 

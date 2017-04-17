@@ -3,15 +3,24 @@
 namespace RZP\Gateway\Netbanking\Federal\Mock;
 
 use RZP\Gateway\Base;
+use RZP\Models\Bank\IFSC;
 use RZP\Gateway\Netbanking\Federal\Status;
 use RZP\Gateway\Netbanking\Federal\RequestFields;
 use RZP\Gateway\Netbanking\Federal\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
+    protected $bank = IFSC::FDRL;
+
     public function authorize($input)
     {
         parent::authorize($input);
+
+        if (isset($input['Action_ShoppingMall_Login_Init']) === true)
+        {
+            $input[RequestFields::ACTION] = 'Y';
+            unset($input['Action_ShoppingMall_Login_Init']);
+        }
 
         $this->validateAuthorizeInput($input);
 
@@ -43,7 +52,7 @@ class Server extends Base\Mock\Server
 
     protected function getCallbackResponseData(array $input)
     {
-        return [
+        $data = [
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
             ResponseFields::BANK_PAYMENT_ID => 99999999,
             ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
@@ -52,6 +61,15 @@ class Server extends Base\Mock\Server
             ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
             ResponseFields::PAID            => Status::YES,
         ];
+
+        if (strpos($input[RequestFields::PAYMENT_ID], '.') !== false)
+        {
+            $accountNumber = explode('.', $input[RequestFields::PAYMENT_ID])[1];
+
+            $this->assertAccountNumberLength($accountNumber);
+        }
+
+        return $data;
     }
 
     protected function getVerifyResponseData(array $input)

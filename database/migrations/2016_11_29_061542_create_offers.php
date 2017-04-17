@@ -76,6 +76,9 @@ class CreateOffers extends Migration
             $table->string(Offer::DISPLAY_TEXT)
                   ->nullable();
 
+            $table->string(Offer::ERROR_MESSAGE)
+                  ->nullable();
+
             $table->text(Offer::TERMS);
 
             $table->integer(Offer::CREATED_AT);

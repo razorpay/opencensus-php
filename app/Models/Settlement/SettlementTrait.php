@@ -258,6 +258,7 @@ trait SettlementTrait
         {
             $channels = [$channel];
         }
+
         return $channels;
     }
 

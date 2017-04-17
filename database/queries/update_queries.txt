@@ -92,6 +92,8 @@ UPDATE payments SET transaction_id = '59TRu4jEt06jxw' WHERE id = '59TOmc805gVS7i
 DELETE FROM fees_breakup WHERE id in ('6eiYxS2iRdjiiX', '6eiYxSHKXXuhSw', '6eiYxSVOCEEbXF') AND transaction_id = '59TRvHDeSgNyiX';
 DELETE FROM transactions WHERE id = '59TRvHDeSgNyiX';
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 UPDATE billdesk SET RefundId = 'IICI51854029631' WHERE id = 1075644;
 UPDATE billdesk SET RefundId = 'IYBK51905388691' WHERE id = 1087859;
 UPDATE billdesk SET RefundId = 'IICI51813818221' WHERE id = 1083918;
@@ -130,6 +132,12 @@ update settlements set status="failed", failure_reason="Reconciliation", remarks
 update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7HX5An3eDrXUaz";
 update settlements set status = "failed", remarks="NEFT-RETURN BENEFICIARY NAME DIFFER", failure_reason="Reconciliation" where id = "7KhM07UJp7rsiZ";
 
+INSERT INTO wallet(payment_id, action, amount, wallet, received, email,
+contact, gateway_merchant_id, response_description, status_code, refund_id,
+created_at, updated_at) values('6wbhijioS7aZRF', 'refund', 19724,
+'airtelmoney', true, 'shivam_fzd@rediffmail.com', '9760099259', '34978327',
+'refunded manually by airtel', 'SUC', '7Umo8Rl6m52bTp', 1490016572, 1490016572);
+
 # update axis refund gateway record because they sent a value `Pending` for refund, which we are not currently
 # handling. We got this in the MIS file, which means, it was actually successful. The vpc_TxnResponseCode was `P`.
 UPDATE axis SET vpc_Message = "Approved", vpc_TxnResponseCode = "0" WHERE id = 1172941;
@@ -143,3 +151,127 @@ UPDATE terminals SET international = 1 WHERE gateway = 'axis_migs' AND merchant_
 UPDATE terminals SET international = 1 WHERE gateway = 'first_data' AND merchant_id IN ('6JumzrI88XDf0f', '6H7N6hlcv29OMG');
 # Only in test db
 UPDATE terminals SET international = 1 WHERE gateway = 'sharp';
+
+UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7chy3i1qAAG9iW';
+UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7d3DLq0w58xHmc';
+
+UPDATE settlements
+SET attempts = (
+    SELECT COUNT(id) FROM fund_transfer_attempts
+    WHERE fund_transfer_attempts.source_id = settlements.id
+    AND fund_transfer_attempts.source_type = 'settlement'
+    GROUP BY fund_transfer_attempts.source_id
+);
+
+UPDATE settlements s1 JOIN
+(
+    SELECT t1.id, t1.source_id, t1.remarks
+    FROM fund_transfer_attempts AS t1 JOIN
+    (
+        SELECT MAX(created_at) as latest, source_id
+        FROM fund_transfer_attempts
+        GROUP BY source_id
+    ) AS t2
+    ON t1.source_id = t2.source_id AND t1.created_at = t2.latest
+) AS t3
+ON s1.id = t3.source_id
+SET s1.remarks = t3.remarks
+WHERE t3.remarks IS NOT NULL
+AND s1.remarks IS NULL;
+
+UPDATE billdesk SET RefundId = 'HUBI51422263431' WHERE id = 1177651;
+
+# query to correct date format stored in wallet entity for some jiomoney payments
+UPDATE wallet
+SET date = (CASE id WHEN 395660 THEN "20170213210920"
+                    WHEN 397342 THEN "20170214023856"
+                    WHEN 406882 THEN "20170216095313"
+                    WHEN 408098 THEN "20170216193606"
+                    WHEN 408125 THEN "20170216194336"
+                    WHEN 408183 THEN "20170216195644"
+                    WHEN 420107 THEN "20170221180324"
+                    WHEN 420132 THEN "20170221180820"
+                    WHEN 420361 THEN "20170221201832"
+                    WHEN 421033 THEN "20170222023458"
+                    WHEN 421066 THEN "20170222025114"
+                    WHEN 421176 THEN "20170222034732"
+                    WHEN 422020 THEN "20170222195229"
+                    WHEN 422885 THEN "20170223041803"
+                    WHEN 423328 THEN "20170223154252"
+                    WHEN 423370 THEN "20170223160712"
+                    WHEN 423449 THEN "20170223165843"
+                    WHEN 423533 THEN "20170223174635"
+                    WHEN 424073 THEN "20170223234513"
+                    WHEN 424254 THEN "20170224012844"
+                    WHEN 424982 THEN "20170224144334"
+                    WHEN 424984 THEN "20170224144458"
+                    WHEN 425643 THEN "20170224205305"
+                    WHEN 425860 THEN "20170224225252"
+                    WHEN 426497 THEN "20170225042312"
+                    WHEN 426806 THEN "20170225141645"
+                    WHEN 427087 THEN "20170225170859"
+                    WHEN 427264 THEN "20170225132403"
+                    WHEN 428151 THEN "20170226015634"
+                    WHEN 428396 THEN "20170226041341"
+                    WHEN 428439 THEN "20170226044913"
+                    WHEN 428658 THEN "20170226133618"
+                    WHEN 428970 THEN "20170226171133"
+                    WHEN 429003 THEN "20170226172845"
+                    WHEN 429327 THEN "20170226204104"
+                    WHEN 429481 THEN "20170226220741"
+                    WHEN 429859 THEN "20170227020001"
+                    WHEN 429864 THEN "20170227015856"
+                    WHEN 429936 THEN "20170227023912"
+                    WHEN 430053 THEN "20170227035047"
+                    WHEN 430991 THEN "20170227210819"
+                    WHEN 430993 THEN "20170227210914"
+                    WHEN 430995 THEN "20170227211058"
+                    WHEN 430997 THEN "20170227211206"
+                    WHEN 431000 THEN "20170227211243"
+                    WHEN 431082 THEN "20170227220015"
+                    WHEN 431130 THEN "20170227222655"
+                    WHEN 431133 THEN "20170227222749"
+                    WHEN 431428 THEN "20170228010028"
+                    WHEN 432289 THEN "20170228162411"
+                    WHEN 432323 THEN "20170228165427"
+                    WHEN 432474 THEN "20170228181345"
+                    WHEN 432659 THEN "20170228200050"
+                    WHEN 433135 THEN "20170301001620"
+                    WHEN 433705 THEN "20170301040539"
+                    WHEN 433750 THEN "20170301042012"
+                    WHEN 434411 THEN "20170301164828"
+                    WHEN 436100 THEN "20170302121638"
+                    WHEN 436289 THEN "20170302153404"
+                    WHEN 437170 THEN "20170302235219"
+                    WHEN 437388 THEN "20170303013648"
+                    WHEN 437648 THEN "20170303033835"
+                    WHEN 438196 THEN "20170303152759"
+                    WHEN 438460 THEN "20170303181023"
+                    WHEN 438496 THEN "20170303183449"
+                    WHEN 438574 THEN "20170303191900"
+                    WHEN 438592 THEN "20170303193559"
+                    WHEN 438996 THEN "20170303234650"
+                    WHEN 439631 THEN "20170304053503"
+                    WHEN 440006 THEN "20170304160919"
+                    WHEN 440032 THEN "20170304162119"
+                    WHEN 440041 THEN "20170304162645"
+                    WHEN 440335 THEN "20170304183458"
+                    WHEN 440755 THEN "20170304224217"
+                    WHEN 441147 THEN "20170305023548"
+                    WHEN 441171 THEN "20170305024814"
+                    WHEN 442359 THEN "20170305210640"
+                    WHEN 442714 THEN "20170306004729"
+                    WHEN 442771 THEN "20170306012420"
+                    WHEN 443081 THEN "20170306042118"
+                    WHEN 443123 THEN "20170306045033"
+                    WHEN 443420 THEN "20170306144556"
+                    WHEN 443946 THEN "20170306214759"
+                    WHEN 444111 THEN "20170306233656"
+                    WHEN 444610 THEN "20170307043331"
+                    WHEN 444944 THEN "20170307150314"
+                    WHEN 445756 THEN "20170307184553"
+                    WHEN 445837 THEN "20170307193537"
+                    WHEN 445977 THEN "20170307211605"
+                    WHEN 446413 THEN "20170308090014"
+               END)
+WHERE id IN (395660, 397342, 406882, 408098, 408125, 408183, 420107, 420132, 420361, 421033, 421066, 421176, 422020, 422885, 423328, 423370, 423449, 423533, 424073, 424254, 424982, 424984, 425643, 425860, 426497, 426806, 427087, 427264, 428151, 428396, 428439, 428658, 428970, 429003, 429327, 429481, 429859, 429864, 429936, 430053, 430991, 430993, 430995, 430997, 431000, 431082, 431130, 431133, 431428, 432289, 432323, 432474, 432659, 433135, 433705, 433750, 434411, 436100, 436289, 437170, 437388, 437648, 438196, 438460, 438496, 438574, 438592, 438996, 439631, 440006, 440032, 440041, 440335, 440755, 441147, 441171, 442359, 442714, 442771, 443081, 443123, 443420, 443946, 444111, 444610, 444944, 445756, 445837, 445977, 44641);
