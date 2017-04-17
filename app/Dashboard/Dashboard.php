@@ -18,8 +18,6 @@ use RZP\Jobs\Dashboard as DashboardJob;
 
 class Dashboard
 {
-    use DispatchRouter;
-
     /**
      * Resource specifier
      * For example, payments, cards, etc.
@@ -185,7 +183,7 @@ class Dashboard
 
             $queueConfig = [Constants\Jobs::DASHBOARD, $mode];
 
-            $this->dispatchOn($job, $queueConfig);
+            (new DispatchRouter)->dispatchOn($job, $queueConfig);
         }
     }
 }

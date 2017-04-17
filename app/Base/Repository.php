@@ -16,7 +16,7 @@ use RZP\Jobs\EsRepository;
 
 class Repository extends \Razorpay\Spine\Repository
 {
-    use RepositoryFetch, DispatchRouter;
+    use RepositoryFetch;
 
     protected $app;
 
@@ -372,7 +372,7 @@ class Repository extends \Razorpay\Spine\Repository
 
                 $queueConfig = [Constants\Jobs::ES, $mode];
 
-                $this->dispatchOn($job, $queueConfig);
+                (new DispatchRouter)->dispatchOn($job, $queueConfig);
             }
         }
         catch (\Exception $ex)
