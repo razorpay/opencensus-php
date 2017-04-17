@@ -494,12 +494,21 @@ class BasicAuth
         return ApiResponse::routeNotFound();
     }
 
+    /**
+     * The return values will be those of:
+     * - invalidApiKey() - [error] if the admin token is invalid
+     * - checkAndSetAccountScope() - [null] if the account ID is valid or
+     * [error] if invalid
+     */
     protected function setAdminAuthIfApplicable()
     {
         $adminToken = $this->request->header('X-Admin-Token');
 
         if ($adminToken !== null)
         {
+            // Remove the token so that subsequent code has no
+            // access to it (prevents logging, etc.)
+
             $this->request->headers->remove('X-Admin-Token');
 
             $token = $this->fetchAdminToken($adminToken);
@@ -518,6 +527,10 @@ class BasicAuth
 
             return $this->invalidApiKey();
         }
+
+        // `Route::$admin` contains routes that should strictly
+        // be on admin auth and cannot be accessed over others
+        // (proxy, internal, etc.)
 
         $currentRoute = $this->router->currentRouteName();
 
