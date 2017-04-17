@@ -39,7 +39,7 @@ class DispatchRouter extends Base\Core
 
         $queueNameConfig = 'queue.' . implode($configArray, '.');
 
-        $queueConnectionConfig = 'queue.' . $configArray[0] . '.connection';
+        $queueConnectionConfig = 'queue.' . $configArray['class'] . '.connection';
 
         if ($this->mock === true)
         {

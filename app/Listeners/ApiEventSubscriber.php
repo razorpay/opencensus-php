@@ -260,7 +260,11 @@ class ApiEventSubscriber extends Base\Core
 
         $job = new Webhook($data);
 
-        $queueConfig = [Constants\Jobs::WEBHOOK, $this->getMode(), $this->event];
+        $queueConfig = [
+            'class' => Constants\Jobs::WEBHOOK,
+            'mode'  => $this->getMode(),
+            'event' => $this->event
+        ];
 
         (new DispatchRouter)->dispatchOn($job, $queueConfig);
     }
