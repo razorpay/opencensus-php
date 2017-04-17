@@ -59,6 +59,19 @@ class PublicEntity extends UniqueIdEntity
         return $array;
     }
 
+    /**
+     * When we are fetching diff for other entities while showing relations,
+     * this will help us to fetch data that is relevant to be shown in diff
+     */
+    public function toArrayDiff()
+    {
+        $attributes = $this->attributesToArray();
+
+        $this->setPublicAttributes($attributes);
+
+        return $this->arrangeDiffAttributes($attributes);
+    }
+
     public function toArrayReport()
     {
         $array = $this->toArrayPublic();
@@ -157,6 +170,21 @@ class PublicEntity extends UniqueIdEntity
         }
 
         return $publicArray;
+    }
+
+    protected function arrangeDiffAttributes(array $attributes)
+    {
+        $diffArray = [];
+
+        foreach ($this->diff as $attr)
+        {
+            if (array_key_exists($attr, $attributes))
+            {
+                $diffArray[$attr] = $attributes[$attr];
+            }
+        }
+
+        return $diffArray;
     }
 
     public function getPublicId()
@@ -325,6 +353,16 @@ class PublicEntity extends UniqueIdEntity
         return static::getIdPrefix() . $id;
     }
 
+    public static function getSignedIdMultiple(array & $ids)
+    {
+        $newIds = array_map(function(& $id)
+        {
+            return static::getSignedId($id);
+        }, $ids);
+
+        $ids = $newIds;
+    }
+
     /**
      * Returns id with the sign prefix attached.
      * However, if the value is null, then simply return null.
@@ -374,5 +412,14 @@ class PublicEntity extends UniqueIdEntity
     public function toArrayDeleted()
     {
         return [static::ID => $this->getPublicId(), 'deleted' => true];
+    }
+
+    public function getPublicAttributes() : array
+    {
+        if (isset($this->public) === false)
+        {
+            return [];
+        }
+        return array_keys(array_flip($this->public));
     }
 }

@@ -67,6 +67,10 @@ return array(
         'secret'    => env('KOTAK_SECRET'),
     ),
 
+    'yesbank' => array(
+        'secret'    => env('YESBANK_SECRET'),
+    ),
+
     'lumberjack' => array(
         'url'           => env('LUMBERJACK_URL'),
         'secret'        => env('LUMBERJACK_SECRET'),

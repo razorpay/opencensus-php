@@ -35,6 +35,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         foreach(self::COLUMN_SERVICE_TAX as $cst)
         {
+            //
+            // This should be isset only and not empty
+            // because service tax can be 0 also.
+            //
             if (isset($row[$cst]) === true)
             {
                 $columnServiceTax = $cst;
@@ -99,7 +103,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         // If the card type (debit/credit) is not present, we don't want
         // to store any of the other card details.
-        if (isset($row[self::COLUMN_CARD_TYPE]) === false)
+        if (empty($row[self::COLUMN_CARD_TYPE]) === true)
         {
             return null;
         }

@@ -24,16 +24,13 @@ class Validator extends Base\Validator
         Entity::STATE       => 'sometimes|string|max:25',
     ];
 
-    public function validateLiveActionsOnEntity(
-        string $entity,
-        string $entityId)
+    public function validateLiveActionsOnEntity(string $entity, string $entityId)
     {
         $app = App::getFacadeRoot();
 
         $orgId = $app['basicauth']->getAdminOrgId();
 
-        $actions = (new Differ\Core)->fetchByEntityAndEntityId(
-            $entity, $entityId);
+        $actions = (new Differ\Core)->fetchByEntityAndEntityId($entity, $entityId);
 
         // If there are any action in progress
         if (empty($actions) === false)
