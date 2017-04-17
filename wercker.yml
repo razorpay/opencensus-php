@@ -117,5 +117,5 @@ deploy:
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
       - script:
          name: python post_deploy_notifier
-         code: python post_deploy_notifier.py
+         code: python scripts/post_deploy_notifier.py
       
