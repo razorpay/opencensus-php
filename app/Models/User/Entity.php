@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const ACTION                = 'action';
     const MERCHANT_ID           = 'merchant_id';
     const ROLE                  = 'role';
+    const OWNER                 = 'owner';
 
     protected $entity = 'user';
 
@@ -67,7 +68,7 @@ class Entity extends Base\PublicEntity
                             self::MERCHANT_USERS,
                             self::USER_ID,
                             self::MERCHANT_ID)
-                      ->withPivot('role');
+                      ->withPivot(self::ROLE);
 
         return $query->orderBy(self::NAME, 'asc');
     }
@@ -100,7 +101,7 @@ class Entity extends Base\PublicEntity
      */
     public function getRememberTokenName()
     {
-        return self::REMEMBER_TOKEN;
+        return $this->getAttribute(self::REMEMBER_TOKEN);
     }
 
     /**
@@ -123,6 +124,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PASSWORD, $password);
     }
 
+    public function getPassword()
+    {
+        return $this->getAttribute(self::PASSWORD);
+    }
+
     /**
      * Determine if the given merchant is owned by the user.
      *
@@ -132,8 +138,8 @@ class Entity extends Base\PublicEntity
     public function ownsMerchant($merchant)
     {
         $merchant = $this->merchants()
-                         ->where('merchant_id', $merchant['id'])
-                         ->where('role','owner')
+                         ->where(self::MERCHANT_ID, $merchant['id'])
+                         ->where(self::ROLE, self::OWNER)
                          ->first();
 
         return !is_null($merchant);
@@ -161,6 +167,7 @@ class Entity extends Base\PublicEntity
     protected function generateOneTimeUseToken($length)
     {
         $bytes = random_bytes($length/2);
+
         $token = bin2hex($bytes);
 
         return $token;

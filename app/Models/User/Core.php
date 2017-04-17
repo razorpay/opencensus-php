@@ -2,9 +2,11 @@
 
 namespace RZP\Models\User;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Admin\Action;
+use Illuminate\Hashing\BcryptHasher;
 
 class Core extends Base\Core
 {
@@ -17,13 +19,6 @@ class Core extends Base\Core
         return $user;
     }
 
-    /**
-     * Edit user entity
-     *
-     * @param \RZP\Models\User\Entity $user
-     * @param array $input
-     * @return \RZP\Models\User\Entity
-     */
     public function edit(Entity $user, array $input)
     {
         $user->edit($input);
@@ -54,6 +49,21 @@ class Core extends Base\Core
         $user->setPassword($password);
 
         $this->repo->saveOrFail($user);
+
+        return $user;
+    }
+
+    public function login(array $input)
+    {
+        $user = $this->repo->user->getByEmail($input[Entity::EMAIL]);
+
+        $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $user->getPassword());
+
+        if ($isPasswordEqual === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
+        }
 
         return $user;
     }

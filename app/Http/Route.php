@@ -493,6 +493,7 @@ final class Route
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
         'user_create'                             => ['post',     'users',                                          'UserController@postUser'                                           ],
+        'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_edit'                               => ['put',      'users/{id}',                                     'UserController@putUser'                                            ],
         // The order of the following routes is important. The one with action should be last
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
@@ -819,6 +820,7 @@ final class Route
         'user_create',
         'user_edit',
         'user_confirm',
+        'user_login',
         'user_change_password',
         'user_merchant_mapping_action',
         'merchant_admin_lead_put',

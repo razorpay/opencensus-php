@@ -4,16 +4,9 @@ namespace RZP\Models\User;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
-    /**
-     * Creates a user and saves in database
-     *
-     * @param  array            $input
-     * @return User\Entity
-     */
     public function create(array $input): array
     {
         $user = (new Core)->create($input);
@@ -46,12 +39,12 @@ class Service extends Base\Service
         $currentTimestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
 
         $mappingParams = [
-             'role' => $input['role'],
+             'role'       => $input[Entity::ROLE],
              'created_at' => $currentTimestamp,
              'updated_at' => $currentTimestamp
         ];
 
-        $merchantId = $input['merchant_id'];
+        $merchantId = $input[Entity::MERCHANT_ID];
 
         $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams]);
 
@@ -60,7 +53,7 @@ class Service extends Base\Service
 
     public function detach(Entity $user, array $input): array
     {
-        $this->repo->detach($user, 'merchants', $input['merchant_id']);
+        $this->repo->detach($user, 'merchants', $input[Entity::MERCHANT_ID]);
 
         return $user->toArrayPublic();
     }
@@ -70,11 +63,11 @@ class Service extends Base\Service
         $currentTimestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
 
         $mappingParams = [
-            'role' => $input['role'],
+            'role'       => $input[Entity::ROLE],
             'updated_at' => $currentTimestamp
         ];
 
-        $merchantId = $input['merchant_id'];
+        $merchantId = $input[Entity::MERCHANT_ID];
 
         $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams]);
 
@@ -94,7 +87,16 @@ class Service extends Base\Service
     {
         $user = $this->repo->user->findOrFailPublic($id);
 
-        $user = (new Core)->changePassword($user, $input['password']);
+        $user = (new Core)->changePassword($user, $input[Entity::PASSWORD]);
+
+        return $user->toArrayPublic();
+    }
+
+    public function login(array $input): array
+    {
+        (new Entity)->getValidator()->validateInput('login', $input);
+
+        $user = (new Core)->login($input);
 
         return $user->toArrayPublic();
     }

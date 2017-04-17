@@ -51,4 +51,13 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function loginUser()
+    {
+        $input = Request::all();
+
+        $data = (new User\Service)->login($input);
+
+        return ApiResponse::json($data);
+    }
 }
