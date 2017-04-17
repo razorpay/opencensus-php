@@ -156,16 +156,16 @@ class DataFormatter extends Core
 
         $issuer = $downtime->getIssuer();
 
-        // Forn netbanking if gateway if ALL, we display the data
-        if ($gateway === Entity::ALL)
-        {
-            return $data;
-        }
-
         // If issuer is unknown or NA, we don't display the data
         if ($this->isUnknownOrNA($issuer) === true)
         {
             return null;
+        }
+
+        // For netbanking if gateway if ALL, we display the data
+        if ($gateway === Entity::ALL)
+        {
+            return $data;
         }
 
         if (in_array($gateway, Payment\Gateway::SHARED_NETBANKING_GATEWAYS_LIVE, true) === true)
