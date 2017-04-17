@@ -11,9 +11,12 @@ class Entity extends Base\Entity
     const LEVEL          = 'level';
     const ROLE_ID        = 'role_id';
     const REVIEWER_COUNT = 'reviewer_count';
-    const OP_TYPE      = 'operation';
+    const OP_TYPE        = 'op_type';
 
     const WORKFLOW       = 'workflow';
+
+    const OP_TYPE_AND    = 'and';
+    const OP_TYPE_OR     = 'or';
 
     protected static $sign = 'w_step';
 
@@ -60,7 +63,8 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        self::LEVEL => 1,
+        self::LEVEL   => 1,
+        self::OP_TYPE => self::OP_TYPE_AND,
     ];
 
     public function workflow()

@@ -189,21 +189,20 @@ class Core extends Base\Core
                                       ->action_checker
                                       ->fetchApprovedCountByActionIdAndStepIds(
                                           $action->getId(), $stepIds);
-
         $stepCheckerMap = [];
 
         foreach ($totalCheckerApprovals as $approval)
         {
-            $stepId = $approval[0];
+            $stepId = $approval[Checker\Entity::STEP_ID];
 
-            $stepCheckerMap[$stepId] = $approval[1];
+            $stepCheckerMap[$stepId] = $approval['total'];
         }
 
         $stepApprovedMap = [];
 
-        foreach ($stepCheckerMap as $stepId => $approvalCount)
+        foreach ($stepReviewCountMap as $stepId => $reviewCount)
         {
-            $reviewCount = $stepReviewCountMap[$stepId];
+            $approvalCount = $stepCheckerMap[$stepId] ?? 0;
 
             $stepApprovedMap[$stepId] = ($approvalCount === $reviewCount);
         }
@@ -219,7 +218,7 @@ class Core extends Base\Core
 
         if ($opType === 'and')
         {
-            $levelApproved = true;
+            $levelApproved = empty($stepApprovedMap) ? false : true;
 
             foreach ($stepApprovedMap as $stepId => $approval)
             {
@@ -249,8 +248,10 @@ class Core extends Base\Core
             return;
         }
 
-        $levelApproved = $this->isCurrentLevelApproved($action);
+        $level = $action->getCurrentLevel();
+        $workflowId = $action->getWorkflowId();
 
+        $levelApproved = $this->isCurrentLevelApproved($action);
 
         // Check if there is any level (or step basically)
         // after workflow_actions.current_level

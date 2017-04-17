@@ -52,7 +52,7 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::STEP_ID, $stepIds)
                     ->where(Entity::APPROVED, '=', 1) // checked
                     ->groupBy(Entity::STEP_ID)
-                    ->pluck(Entity::STEP_ID, 'total');
+                    ->get();
     }
 
     public function findByIdAndActionId($checkerId, $actionId)
