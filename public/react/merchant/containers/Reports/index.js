@@ -1,13 +1,14 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
-import { titleCase } from 'rzp/utils/rzp-utils';
-import AsyncButton from 'react-async-button';
-import moment from 'moment';
-import ajax from 'merchant/utils/ajax';
-import { generateReport } from 'merchant/modules/reports';
-import * as NotificationsActions from 'rzp/modules/notifications';
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { Field, reduxForm, formValueSelector } from 'redux-form'
+import { titleCase } from 'rzp/utils/rzp-utils'
+import AsyncButton from 'react-async-button'
+import Header from 'rzp/ui/Header'
+import moment from 'moment'
+import ajax from 'merchant/utils/ajax'
+import { generateReport } from 'merchant/modules/reports'
+import * as NotificationsActions from 'rzp/modules/notifications'
+import ShowWhen from 'merchant/components/ShowWhen'
 
 let now = moment();
 let currentMonth = now.month();
@@ -120,7 +121,9 @@ export default class ReportsContainer extends Component {
                     <label for="refund">Refund</label>
                 </div>
                 <div class="col-md-8 report-generate-panel">
-                    <div class="title">SELECT ACCOUNT</div>
+                    <ShowWhen featureEnabled="Marketplace">
+                        <div class="title">SELECT ACCOUNT</div>
+                    </ShowWhen>
                 </div>
             </div>
           </div>
