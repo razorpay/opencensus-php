@@ -65,7 +65,7 @@ export default class ReportsContainer extends Component {
       )
     }
 
-    if (entity === 'daily') {
+    if (type === 'daily') {
       data.day = day;
     }
 
