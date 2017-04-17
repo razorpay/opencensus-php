@@ -176,7 +176,7 @@ export default class BankDetailsForm extends Component {
                 <option></option>
                 {
                   Object.keys(states).map((stateCode) => (
-                    <option value={stateCode}>{states[stateCode]}</option>
+                    <option value={stateCode} key={stateCode}>{states[stateCode]}</option>
                   ))
                 }
               </Field>
