@@ -15,7 +15,7 @@ class Validator
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
-                    'application/vnd.ms-office'],
+                    'application/vnd.ms-office', 'application/octet-stream'],
         'xlsb'  => [
             'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
