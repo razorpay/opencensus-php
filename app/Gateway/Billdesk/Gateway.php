@@ -11,7 +11,6 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Symfony\Component\DomCrawler\Crawler;
@@ -1082,12 +1081,14 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    public function refundRetry(array $input)
+    /**
+     * Calls gateway to verify if a refund has
+     * been successfully performed or not.
+     * @param array $input
+     * @return bool
+     */
+    public function verifyRefund2(array $input)
     {
-        // Trace the refund retry attempt and
-        // update if successful/failed
-        $status = $this->refund($input);
-
-        return $status;
+        ;
     }
 }

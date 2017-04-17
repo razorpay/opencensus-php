@@ -886,7 +886,13 @@ class Gateway
         }
     }
 
-    public function refundRetry(array $input)
+    /**
+     * Calls gateway to verify if a refund has
+     * been successfully performed or not.
+     * @param array $input
+     * @return bool
+     */
+    public function verifyRefund2(array $input)
     {
         ;
     }
