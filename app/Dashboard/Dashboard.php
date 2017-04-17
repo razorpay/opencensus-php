@@ -181,14 +181,7 @@ class Dashboard
                 'type'     => $type
             ]);
 
-            $dispatcher = new DispatchRouter();
-
-            $queueConfig = [
-                'config_class' => $dispatcher::DASHBOARD,
-                'mode'         => $mode
-            ];
-
-            $dispatcher->dispatchOn($job, $queueConfig);
+            (new DispatchRouter())->dispatchOn($job, DispatchRouter::DASHBOARD);
         }
     }
 }

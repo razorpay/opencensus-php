@@ -370,14 +370,7 @@ class Repository extends \Razorpay\Spine\Repository
                 // Saving the entity in ES.
                 $job = new EsRepository($queueData);
 
-                $dispatcher = new DispatchRouter();
-
-                $queueConfig = [
-                    'config_class' => $dispatcher::ES,
-                    'mode'         => $mode
-                ];
-
-                $dispatcher->dispatchOn($job, $queueConfig);
+                (new DispatchRouter())->dispatchOn($job, DispatchRouter::ES);
             }
         }
         catch (\Exception $ex)
