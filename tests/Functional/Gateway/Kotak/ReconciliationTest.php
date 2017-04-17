@@ -160,7 +160,7 @@ class ReconciliationTest extends TestCase
 
         //Validate settlement entity
         $settlement = $this->getLastEntity('settlement', true);
-        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconSuccess');
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForRetryReconSuccess');
 
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);

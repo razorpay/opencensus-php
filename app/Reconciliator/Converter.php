@@ -2,8 +2,11 @@
 
 namespace RZP\Reconciliator;
 
+use Str;
 use Excel;
 use Config;
+use Box\Spout\Common\Type;
+use Box\Spout\Reader\ReaderFactory;
 
 use RZP\Exception;
 use RZP\Reconciliator\Base;
@@ -84,6 +87,115 @@ class Converter
         }
 
         return $this->getRowsFromExcelSheetsOptimizedWithSheetIndices($fileDetails);
+    }
+
+    /**
+     * This function uses Spout library to read data from Excel sheets
+     *
+     * @param $fileDetails
+     * @param $sheetNames
+     * @return array excel sheet content of mentioned file
+     */
+    public function getRowsFromExcelSheetsSpout($fileDetails, $sheetNames = [])
+    {
+        $filePath = $fileDetails[FileProcessor::FILE_PATH];
+
+        $reader = ReaderFactory::create(Type::XLSX);
+
+        $reader->open($filePath);
+
+        if (empty($sheetNames) === false)
+        {
+            return $this->getRowsFromExcelSheetsWithSheetNamesSpout($reader, $sheetNames);
+        }
+
+        return $this->getRowsFromExcelSheetsWithIndicesSpout($reader);
+    }
+
+    public function convertExcelSheetToArray($sheet)
+    {
+        $rows = $sheet->toArray();
+
+        return $rows;
+    }
+
+    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip = [], $gateway)
+    {
+        $filePath = $fileDetails[FileProcessor::FILE_PATH];
+
+        $data = [];
+
+        $columnHeadersCount = count($columnHeaders);
+
+        $totalLinesToRead = $this->getTotalLinesToRead($filePath, $linesToSkip);
+        $linesToSkipFromTop = $linesToSkip[FileProcessor::LINES_FROM_TOP] ?? 0;
+        $currentLineNumber = 0;
+
+        $handle = fopen($filePath, 'r');
+
+        if ($handle === false)
+        {
+            throw new Exception\RuntimeException(
+                'Unable to open file . ' . $filePath);
+        }
+
+        //
+        // Setting glue for the csv to array conversion
+        //
+        $glue = self::GATEWAY_FILE_DELIMITER[$gateway] ?? self::DEFAULT_DELIMITER;
+
+        try
+        {
+            while (($row = fgetcsv($handle, 0, $glue)) !== false)
+            {
+                //
+                // Skip the first few ($linesToSkipFromTop) rows
+                // Or jump right over it if it's an empty row.
+                //
+                if (($currentLineNumber < $linesToSkipFromTop) or
+                    (empty(array_filter($row))))
+                {
+                    $currentLineNumber++;
+
+                    continue;
+                }
+
+                // Skip the last few ($totalLinesToRead) rows
+                if (($totalLinesToRead !== null) and
+                    ($currentLineNumber >= $totalLinesToRead))
+                {
+                    break;
+                }
+
+                // If headers are empty, get headers from the first row.
+                if (empty($columnHeaders) === true)
+                {
+                    $columnHeaders = array_map('trim', $row);
+                    $columnHeadersCount = count($columnHeaders);
+                }
+                else
+                {
+                    if ($columnHeadersCount !== count($row))
+                    {
+                        throw new Exception\ReconciliationException(
+                            'The number of columns in the row does not match the column headers count.',
+                            ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
+                        );
+                    }
+
+                    // Combines the columnHeaders(keys) with the row(values).
+                    $data[] = array_combine($columnHeaders, $row);
+                }
+
+                $currentLineNumber++;
+            }
+        }
+        finally
+        {
+            fclose($handle);
+        }
+
+        return $data;
     }
 
     /**
@@ -174,89 +286,60 @@ class Converter
         return $allSheetsContent;
     }
 
-    public function convertExcelSheetToArray($sheet)
+    protected function getRowsFromExcelSheetsWithIndicesSpout($reader)
     {
-        $rows = $sheet->toArray();
-        return $rows;
+        $allSheetsContent = [];
+
+        foreach ($reader->getSheetIterator() as $sheet)
+        {
+            $index = $sheet->getIndex();
+
+            $sheetName = 'sheet' . $index;
+
+            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName);
+        }
+
+        return $allSheetsContent;
     }
 
-    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip = [], $gateway)
+    protected function getRowsFromExcelSheetsWithSheetNamesSpout($reader, array $sheetNames)
     {
-        $filePath = $fileDetails[FileProcessor::FILE_PATH];
+        $allSheetsContent = [];
 
-        $data = [];
-
-        $columnHeadersCount = count($columnHeaders);
-
-        $totalLinesToRead = $this->getTotalLinesToRead($filePath, $linesToSkip);
-        $linesToSkipFromTop = $linesToSkip[FileProcessor::LINES_FROM_TOP] ?? 0;
-        $currentLineNumber = 0;
-
-        $handle = fopen($filePath, 'r');
-
-        if ($handle === false)
+        foreach ($reader->getSheetIterator() as $sheet)
         {
-            throw new Exception\RuntimeException(
-                'Unable to open file . ' . $filePath);
+            $sheetName = $sheet->getName();
+
+            if (in_array($sheetName, $sheetNames, true) === false)
+            {
+                continue;
+            }
+
+            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName);
         }
 
-        //
-        // Setting glue for the csv to array conversion
-        //
-        $glue = self::GATEWAY_FILE_DELIMITER[$gateway] ?? self::DEFAULT_DELIMITER;
+        return $allSheetsContent;
+    }
 
-        try
+    protected function setSheetContentForSpout(array & $allSheetsContent, $sheet, string $sheetName)
+    {
+        $sheetHeaders = [];
+
+        $allSheetsContent[$sheetName] = [];
+
+        $rowIterator = $sheet->getRowIterator();
+
+        foreach ($rowIterator as $row)
         {
-            while (($row = fgetcsv($handle, 0, $glue)) !== false)
+            if ($rowIterator->key() === 1)
             {
-                //
-                // Skip the first few ($linesToSkipFromTop) rows
-                // Or jump right over it if it's an empty row.
-                //
-                if (($currentLineNumber < $linesToSkipFromTop) or
-                    (empty(array_filter($row))))
-                {
-                    $currentLineNumber++;
-
-                    continue;
-                }
-
-                // Skip the last few ($totalLinesToRead) rows
-                if (($totalLinesToRead !== null) and
-                    ($currentLineNumber >= $totalLinesToRead))
-                {
-                    break;
-                }
-
-                // If headers are empty, get headers from the first row.
-                if (empty($columnHeaders) === true)
-                {
-                    $columnHeaders = array_map('trim', $row);
-                    $columnHeadersCount = count($columnHeaders);
-                }
-                else
-                {
-                    if ($columnHeadersCount !== count($row))
-                    {
-                        throw new Exception\ReconciliationException(
-                            'The number of columns in the row does not match the column headers count.',
-                            ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
-                        );
-                    }
-
-                    // Combines the columnHeaders(keys) with the row(values).
-                    $data[] = array_combine($columnHeaders, $row);
-                }
-
-                $currentLineNumber++;
+                $sheetHeaders = $this->normalizeHeaders($row);
+            }
+            else
+            {
+                $allSheetsContent[$sheetName][] = array_combine($sheetHeaders, $row);
             }
         }
-        finally
-        {
-            fclose($handle);
-        }
-
-        return $data;
     }
 
     protected function getTotalLinesToRead(string $filePath, array $linesToSkip)
@@ -275,5 +358,49 @@ class Converter
         }
 
         return $totalLinesToRead;
+    }
+
+    /**
+     * Normalizes the header values of excel
+     * converts ascii to string
+     * converts to snake case
+     * eg : 'Merch @ Rpting Lvl' -> 'merch_at_rpting_level'
+     *      'Card Name' -> 'card_name'
+     * ref : https://github.com/Maatwebsite/Laravel-Excel/blob/2.1/src/Maatwebsite/Excel/Parsers/ExcelParser.php#L284
+     *
+     * @param $headers array
+     * @return array
+     */
+    protected function normalizeHeaders(array $headers)
+    {
+        $normalized = [];
+
+        $separator = '_';
+
+        foreach ($headers as $val)
+        {
+            // check if string has ascii text
+            // convert it into string
+            if (mb_check_encoding($val, 'ASCII') === true)
+            {
+                $val = Str::ascii($val);
+            }
+
+            // Convert all dashes/underscores into separator
+            $flip = $separator === '-' ? '_' : '-';
+            $val = preg_replace('![' . preg_quote($flip) . ']+!u', $separator, $val);
+
+            // Remove all characters that are not the separator,
+            // letters, numbers, or whitespace.
+            $val = preg_replace('![^' . preg_quote($separator) . '\pL\pN\s]+!u', '', mb_strtolower($val));
+
+            // Replace all separator characters and whitespace by a single separator
+            $val = preg_replace('![' . preg_quote($separator) . '\s]+!u', $separator, $val);
+            $val = trim($val, $separator);
+
+            array_push($normalized, $val);
+        }
+
+        return $normalized;
     }
 }

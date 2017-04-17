@@ -472,9 +472,34 @@ class Entity extends Base\Entity
     {
         $extra = [
             self::ROLES,
-            self::GROUPS
+            self::GROUPS,
         ];
 
+        $app = App::getFacadeRoot();
+
+        $orgId = $app['basicauth']->getAdminOrgId();
+
+        $org = (new Org\Repository)->findOrFailPublic($orgId);
+
+        if ($org->getAuthType() === Org\AuthType::PASSWORD)
+        {
+            $extra = array_merge(
+                $extra,
+                [self::PASSWORD, self::PASSWORD_CONFIRMATION]);
+        }
+
         return array_merge($this->fillable, $extra);
+    }
+
+    /**
+     * Get all relations to the array
+     *
+     */
+    public function getRelationsForDiffer() : array
+    {
+        return [
+            self::ROLES,
+            self::GROUPS,
+        ];
     }
 }

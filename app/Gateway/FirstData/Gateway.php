@@ -893,7 +893,7 @@ class Gateway extends Base\Gateway
 
     // This is a SHA hash of the following fields :
     // storename + txndatetime + chargetotal + currency + sharedsecret.
-    protected function getRequestHash(string $txnDateTime, int $chargeTotal, string $currencyCode)
+    protected function getRequestHash(string $txnDateTime, float $chargeTotal, string $currencyCode)
     {
         $storeId = $this->getStoreId();
 
@@ -1133,13 +1133,11 @@ class Gateway extends Base\Gateway
 
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REVERSE;
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::AUTHORIZE);
+        $tdate = $this->getTdateForGatewayPaymentToBeReversed($input);
 
         $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
             ApiRequestFields::V1_ORDER_ID => $input['payment']['id'],
-            ApiRequestFields::V1_TDATE    => $gatewayPayment[Entity::TDATE],
+            ApiRequestFields::V1_TDATE    => $tdate,
         ];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
@@ -1167,6 +1165,31 @@ class Gateway extends Base\Gateway
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
 
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+    }
+
+    /**
+     * Fetches tdate of original gatewayPayment that is to be reversed
+     *
+     * Reverse request needs tdate attribute that exists in the authorize
+     * action entity (or in purchase for second recurring payments)
+     *
+     * @param  array  $input gateway input
+     * @return tdate of gatewayPayment
+     */
+    protected function getTdateForGatewayPaymentToBeReversed(array $input)
+    {
+        $requiredAction = Base\Action::AUTHORIZE;
+
+        if ($this->isSecondRecurringPayment($input) === true)
+        {
+            $requiredAction = Base\Action::PURCHASE;
+        }
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                            $input['payment'][Payment\Entity::ID],
+                                            $requiredAction);
+
+        return $gatewayPayment[Entity::TDATE];
     }
 
     protected function arrayToXml(array $array, string $wrap = null)

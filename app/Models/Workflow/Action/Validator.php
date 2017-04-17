@@ -24,16 +24,13 @@ class Validator extends Base\Validator
         Entity::STATE       => 'sometimes|string|max:25',
     ];
 
-    public function validateLiveActionsOnEntity(
-        string $entity,
-        string $entityId)
+    public function validateLiveActionsOnEntity(string $entity, string $entityId)
     {
         $app = App::getFacadeRoot();
 
         $orgId = $app['basicauth']->getAdminOrgId();
 
-        $actions = (new Differ\Core)->fetchByEntityAndEntityId(
-            $entity, $entityId);
+        $actions = (new Differ\Core)->fetchByEntityAndEntityId($entity, $entityId);
 
         // If there are any action in progress
         if (empty($actions) === false)
@@ -64,6 +61,23 @@ class Validator extends Base\Validator
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND,
+                $data);
+        }
+    }
+
+    public function validateCloseAction($admin)
+    {
+        $action = $this->entity;
+
+        if ($action->getAdminId() !== $admin->getId())
+        {
+            $data = [
+                'action_admin_id' => $action->getAdminId(),
+                'auth_admin_id'   => $admin->getId(),
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED,
                 $data);
         }
     }
