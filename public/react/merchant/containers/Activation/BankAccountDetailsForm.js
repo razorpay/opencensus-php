@@ -101,7 +101,10 @@ export default class BankDetailsForm extends Component {
                   required()
                 ]}
               />
-              <small class='help-block'>Should be same as business/individual name</small>
+              <small class='help-block'>
+                <i class='fa fa-info-circle'></i>
+                <span>Should be same as business/individual name</span>
+              </small>
             </div>
           </div>
 

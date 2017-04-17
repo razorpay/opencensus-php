@@ -110,7 +110,10 @@ export default class BusinessDetailsForm extends Component {
                   required()
                 ]}
               />
-              <small class='help-block'>This is the brand name that the customers are familiar with.</small>
+              <small class='help-block'>
+                <i class='fa fa-info-circle'></i>
+                <span>This is the brand name that the customers are familiar with.</span>
+              </small>
             </div>
           </div>
 
@@ -124,7 +127,10 @@ export default class BusinessDetailsForm extends Component {
                 />
                 <i></i>
               </label>
-              <small class='help-block'>Please note that applications for international transactions take longer time to process.</small>
+              <small class='help-block'>
+                <i class='fa fa-info-circle'></i>
+                <span>Please note that applications for international transactions take longer time to process.</span>
+              </small>
             </div>
           </div>
 
@@ -162,7 +168,10 @@ export default class BusinessDetailsForm extends Component {
                   required()
                 ]}
               />
-              <small class='help-block'>Please give a brief explanation of your business model and future plans (Essential for startups)</small>
+              <small class='help-block'>
+                <i class='fa fa-info-circle'></i>
+                <span>Please give a brief explanation of your business model and future plans (Essential for startups)</span>
+              </small>
             </div>
           </div>
 
@@ -243,7 +252,10 @@ export default class BusinessDetailsForm extends Component {
                 />
                 <i></i>
               </label>
-              <small class='help-block'>Physical Verification might be performed at your operational address.</small>
+              <small class='help-block'>
+                <i class='fa fa-info-circle'></i>
+                <span>Physical Verification might be performed at your operational address.</span>
+              </small>
             </div>
           </div>
 
@@ -334,7 +346,10 @@ export default class BusinessDetailsForm extends Component {
                 class='form-control'
                 placeholder='Company CIN'
               />
-              <small class='help-block'>Mandatory for Companies</small>
+              <small class='help-block'>
+                <i class='fa fa-info-circle'></i>
+                <span>Mandatory for Companies</span>
+              </small>
             </div>
           </div>
 
@@ -347,7 +362,10 @@ export default class BusinessDetailsForm extends Component {
                 class='form-control'
                 placeholder='Company PAN'
               />
-              <small class='help-block'>Mandatory for Companies</small>
+              <small class='help-block'>
+                <i class='fa fa-info-circle'></i>
+                <span>Mandatory for Companies</span>
+              </small>
             </div>
           </div>
 
@@ -360,7 +378,10 @@ export default class BusinessDetailsForm extends Component {
                 class='form-control'
                 placeholder='Name on PAN (provided above)'
               />
-              <small class='help-block'>Mandatory for Companies</small>
+              <small class='help-block'>
+                <i class='fa fa-info-circle'></i>
+                <span>Mandatory for Companies</span>
+              </small>
             </div>
           </div>
 
