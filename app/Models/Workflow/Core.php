@@ -54,8 +54,8 @@ class Core extends Base\Core
         {
             $data = [
                 Step\Entity::WORKFLOW_ID => $workflow->getId(),
-                Step\Entity::LEVEL       => $level['level'],
-                Step\Entity::OP_TYPE     => $level['op'],
+                Step\Entity::LEVEL       => $level[Step\Entity::LEVEL],
+                Step\Entity::OP_TYPE     => $level[Step\Entity::OP_TYPE],
             ];
 
             $step = array_merge($step, $data);
