@@ -39,4 +39,22 @@ class Core extends Base\Core
 
         return $user;
     }
+
+    public function confirm(Entity $user)
+    {
+        $user->setConfirmTokenNull();
+
+        $this->repo->saveOrFail($user);
+
+        return $user;
+    }
+
+    public function changePassword(Entity $user, string $password)
+    {
+        $user->setPassword($password);
+
+        $this->repo->saveOrFail($user);
+
+        return $user;
+    }
 }

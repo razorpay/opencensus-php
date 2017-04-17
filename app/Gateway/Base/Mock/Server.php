@@ -198,6 +198,11 @@ class Server extends Base\Core
         $this->validateActionInput($input, 'auth');
     }
 
+    protected function validateRefundInput($input)
+    {
+        $this->validateActionInput($input, 'refund');
+    }
+
     protected function validateEnrollInput($input)
     {
         $this->validateActionInput($input, 'enroll');

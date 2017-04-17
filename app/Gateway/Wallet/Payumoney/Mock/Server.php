@@ -310,12 +310,12 @@ class Server extends Base\Mock\Server
 
     protected function getPayuTxnId()
     {
-        return mt_rand(1000000000, 2567890123);
+        return random_int(1000000000, 2567890123);
     }
 
     protected function getPayuRefundId()
     {
-        return mt_rand(10000, 35000);
+        return random_int(10000, 35000);
     }
 
     protected function makeResponse($json)

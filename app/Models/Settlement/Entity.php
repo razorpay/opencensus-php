@@ -272,6 +272,15 @@ class Entity extends Base\PublicEntity
         return $fee;
     }
 
+    // ------------------------------- mutators --------------------------------
+
+    protected function setRemarksAttribute($remarks)
+    {
+        $this->attributes[self::REMARKS] = substr($remarks, 0, 255);
+    }
+
+    // ------------------------------- end mutators ----------------------------
+
     // --------------------------------- entity methods -------------------------------
 
     public function isStatusCreated()
