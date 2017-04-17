@@ -186,7 +186,7 @@ class MigrateNotesToEs extends Command
 
         array_push($array, ['skip', null, InputOption::VALUE_REQUIRED, '[Optional] Pagination offset', '0']);
 
-        array_push($array, ['take', null, InputOption::VALUE_REQUIRED, '[Optional] Pagination count', '1000']);
+        array_push($array, ['take', null, InputOption::VALUE_REQUIRED, '[Optional] Pagination count', '5000']);
 
         return $array;
     }
