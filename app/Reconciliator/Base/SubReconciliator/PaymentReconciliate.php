@@ -2,22 +2,19 @@
 
 namespace RZP\Reconciliator\Base;
 
-use RZP\Exception\ReconciliationException;
-use RZP\Models\Base\PublicEntity;
-use RZP\Models\Payment;
-use RZP\Models\Card;
-use RZP\Models\Card\IIN;
-use RZP\Models\Transaction;
-use RZP\Models\Payment\Verify\Result as VerifyResult;
-use RZP\Reconciliator\Messenger;
-
-use RZP\Gateway\AxisMigs;
-
-use Rzp\Trace\TraceCode;
 use App;
-use RZP\Models\Base\PublicCollection;
-
+use RZP\Models\Card;
+use RZP\Models\Payment;
+use Rzp\Trace\TraceCode;
+use RZP\Models\Card\IIN;
+use RZP\Gateway\AxisMigs;
+use RZP\Models\Transaction;
+use RZP\Reconciliator\Messenger;
+use RZP\Models\Base\PublicEntity;
 use RZP\Reconciliator\Orchestrator;
+use RZP\Models\Base\PublicCollection;
+use RZP\Exception\ReconciliationException;
+use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Foundation\SubReconciliate
@@ -1025,7 +1022,16 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'gateway'       => get_called_class()
             ]);
 
-        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+        $paymentStatus = $this->payment->getStatus();
+
+        if ($paymentStatus === Payment\Status::CAPTURED)
+        {
+            list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
+        }
+        elseif ($paymentStatus === Payment\Status::AUTHORIZED)
+        {
+            list($txn, $feesSplit) = (new Transaction\Core)->createOrUpdateFromPaymentCaptured($this->payment);
+        }
 
         $this->repo->saveOrFail($txn);
         // This is required to save the association of the transaction with the payment.
