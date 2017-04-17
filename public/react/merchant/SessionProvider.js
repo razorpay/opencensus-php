@@ -37,6 +37,13 @@ export default class SessionProvider extends Component {
       .catch(err => {
         this.updateSession(null);
       });
+
+    let organization = this.props.organization
+    organization.fetchCurrentOrg().then((org) => {
+      this.props.updateSession({
+        org,
+      })
+    })
   }
 
   componentWillUnmount() {

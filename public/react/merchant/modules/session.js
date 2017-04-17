@@ -14,6 +14,7 @@ export const updateSession = payload => {
 
 let initialState = {
   user: null,
+  org: {},
   mode: 'test',
   modeFormatted: 'Test',
 };

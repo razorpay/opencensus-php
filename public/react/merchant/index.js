@@ -65,7 +65,7 @@ Tabs.setUseDefaultStyles(false)
  *  2. https://facebook.github.io/react/docs/context.html
  */
 
-function contextProvider({ component, ngRouter, store, user, modeFactory }) {
+function contextProvider({ component, ngRouter, store, user, organization, modeFactory }) {
   return props => {
     return React.createElement(
       Provider,
@@ -75,7 +75,7 @@ function contextProvider({ component, ngRouter, store, user, modeFactory }) {
         { ngRouter },
         React.createElement(
           SessionProvider,
-          { user, modeFactory },
+          { user, organization, modeFactory },
           React.createElement(
             ConfirmModalProvider,
             null,
@@ -98,14 +98,16 @@ function createNgDirective(directiveName, component, ...args) {
     'reactDirective',
     '$state',
     'user',
+    'organization',
     'modeFactory',
-    (reactDirective, $state, user, modeFactory) => {
+    (reactDirective, $state, user, organization, modeFactory) => {
       return reactDirective(
         contextProvider({
           component,
           ngRouter: $state,
           store,
           user,
+        organization,
           modeFactory,
         }),
         ...args

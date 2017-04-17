@@ -11,7 +11,12 @@ import { without } from 'rzp/utils/rzp-utils'
 
 export default function ActivationWizardHOC(WizardComponent) {
   @connect(
-    (state) => state.activation,
+    (state) => {
+      return {
+        session: state.session,
+        ...state.activation,
+      }
+    },
     { ...ActivationActions, showNotification }
   )
   @reduxForm({
@@ -26,7 +31,25 @@ export default function ActivationWizardHOC(WizardComponent) {
 
     componentWillMount() {
       if (!this.props.initialized) {
-        this.props.initialize(this.props.data)
+        let data = {
+          ...this.props.data
+        }
+
+        // ====
+        // Heimdall specific
+        // ====
+
+        if (this.props.session.org.custom_code === 'org') {
+          if (!data.bank_branch_ifsc) {
+            data.bank_branch_ifsc = 'HDFC'
+          }
+
+          if (!data.bank_account_type) {
+            data.bank_account_type = 'Current'
+          }
+        }
+
+        this.props.initialize(data)
       }
     }
 
