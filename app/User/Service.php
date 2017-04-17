@@ -785,7 +785,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function loginOnApi(array $input)
+    protected function loginOnApi(array $input)
     {
         $error = $response = [];
 
