@@ -229,7 +229,9 @@ class Validator extends Base\Validator
      */
     public function validateMaxAllowedAmount(int $amount)
     {
-        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
+        $invoice = $this->entity;
+
+        $maxAmountAllowed = $invoice->merchant->getMaxPaymentAmount();
 
         if ($amount > $maxAmountAllowed)
         {
@@ -237,6 +239,7 @@ class Validator extends Base\Validator
                 'Invoice amount exceeds maximum payment amount allowed.',
                 'amount',
                 [
+                    'id'                 => $invoice->getId(),
                     'amount'             => $amount,
                     'max_amount_allowed' => $maxAmountAllowed,
                 ]);
