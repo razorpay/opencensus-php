@@ -118,6 +118,8 @@ class EntityReportTest extends TestCase
      */
     public function testEntityReportTLE()
     {
+        $this->markTestSkipped();
+
         $dt = Carbon::today('Asia/Kolkata');
 
         $input = array(
