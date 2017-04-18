@@ -91,15 +91,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function updateFailureStatsInBatch(array $updateAttributes)
+    public function updateBatch(string $batchId, array $updateAttributes)
     {
-        foreach ($updateAttributes as $batchId => $attrs)
-        {
-            Entity::verifyIdAndSilentlyStripSign($batchId);
+        Entity::verifyIdAndSilentlyStripSign($batchId);
 
-            $this->newQuery()
-                 ->where(Entity::ID, '=', $batchId)
-                 ->update($attrs);
-        }
+        $this->newQuery()
+             ->where(Entity::ID, '=', $batchId)
+             ->update($attrs);
     }
 }

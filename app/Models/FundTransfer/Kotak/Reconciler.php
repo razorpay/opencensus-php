@@ -154,9 +154,10 @@ class Reconciler
                     $failures->push($entity);
                 }
             }
-
-            $this->repo->batch_fund_transfer->updateFailureStatsInBatch(
-                $this->batchFundTransferUpdateAttrs);
+            foreach ($this->batchFundTransferUpdateAttrs as $batchId => $attrs)
+            {
+                $this->repo->batch_fund_transfer->updateBatch($batchId, $attrs);
+            }
 
             $this->repo->commit();
         }
@@ -259,26 +260,13 @@ class Reconciler
         $failureReason = $parsedData['failure_reason'] ?? null;
         $status = $parsedData['status'] ?? null;
 
-        // if already processed
-        if ($entity->isPendingReconciliation() === false)
-        {
-            $oldStatus = $entity->getStatus();
-
-            if ($oldStatus !== $status)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Old and new status not matching. ' .
-                    'Old status: ' . $oldStatus . ' New status: ' . $status .
-                    'Entity Id: ' . $entity->getPublicId());
-            }
-        }
-
         $oldStatus = $entity->getStatus();
 
         $source = $entity->source;
 
         if ($oldStatus !== $status)
         {
+            // if already processed
             if ($entity->isPendingReconciliation() === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
