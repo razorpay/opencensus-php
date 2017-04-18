@@ -25,12 +25,6 @@ class TerminalLoadSorter extends Terminal\Sorter
             ]
         ],
         [
-            'load'          => 5,
-            'attributes'    => [
-                Terminal\Entity::GATEWAY           => Gateway::EBS
-            ]
-        ],
-        [
             'load'          => 45,
             'attributes'    => [
                 Terminal\Entity::GATEWAY            => Gateway::AXIS_MIGS
@@ -48,6 +42,12 @@ class TerminalLoadSorter extends Terminal\Sorter
             'attributes'    => [
                 Terminal\Entity::GATEWAY            => Gateway::CYBERSOURCE,
                 Terminal\Entity::GATEWAY_ACQUIRER   => Gateway::ACQUIRER_AXIS,
+            ]
+        ],
+        [
+            'load'          => 5,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY           => Gateway::EBS
             ]
         ],
     ];
