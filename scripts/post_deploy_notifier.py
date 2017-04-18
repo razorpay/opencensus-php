@@ -60,7 +60,7 @@ class SlackNotifier:
             tmp = {
                 'short': True,
                 'title': 'PR:#%s' % (commit['pr']),
-                'value': '%s' % (commit['title'])
+                'value': '%s\n%s' % (commit['title'], commit['pr_url'])
             }
             fields.append(tmp)
         fields.append(
@@ -92,6 +92,7 @@ class GitProcessor:
     def __init__(self):
         self.github_token = KeyStore.get_github_token()
         self.base_url = 'https://api.github.com/repos/razorpay/api/pulls/'
+        self.base_pr_url = 'https://github.com/razorpay/api/pull/'
 
     def process_pr_details(self, pr):
         url = "%s%s" % (self.base_url, pr)
@@ -116,6 +117,7 @@ class MergeCommitParser:
         self.result = "passed"
         self.status = "finished"
         self.github_processor = GitProcessor()
+        self.base_pr_url = self.github_processor.base_pr_url
 
     def get_pipeline_runs(self):
         wercker_api_token = KeyStore.get_wercker_api_token()
@@ -185,6 +187,7 @@ class MergeCommitParser:
                 pr_details['title'] = title
                 pr_details['details'] = body
                 pr_details['pr'] = p
+                pr_details['pr_url'] = '%s%s' %(self.base_pr_url, p)
             del m['pr_nums']
             m.update(pr_details)
             commits.append(m)
