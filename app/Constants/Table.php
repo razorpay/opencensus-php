@@ -20,6 +20,7 @@ class Table
     const DEVICE                = 'devices';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
+    const REPORT                = 'reports';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';
