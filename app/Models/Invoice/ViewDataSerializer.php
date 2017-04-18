@@ -67,6 +67,7 @@ class ViewDataSerializer extends Base\Core
 
         return [
             'environment'   => $this->app->environment(),
+            'is_test_mode'  => $this->mode === 'test',
             'invoicejs_url' => $invoiceJsUrl,
             'key_id'        => $keyId,
             'merchant'      => $merchantData,
