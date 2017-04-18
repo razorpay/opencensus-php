@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     {
         $workflowIds = (new Repository)->getWorkflowIdsForPermissions($perms);
 
-        if (empty($workflowIds) === false)
+        if (empty($workflowIds->toArray()) === false)
         {
             $data = [
                 'workflow_ids'   => $workflowIds,

@@ -70,10 +70,11 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($workflow);
 
-            $workflow->permissions()->sync($input[Entity::PERMISSIONS]);
+            $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
         });
 
         $id = $workflow->getPublicId();
+
         $orgId = $this->app['basicauth']->getAdminOrgId();
 
         $workflow = $this->repo->workflow

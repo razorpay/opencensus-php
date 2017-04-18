@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Workflow;
 
-use DB;
-
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Step;
 
@@ -86,10 +84,12 @@ class Repository extends Base\Repository
 
     public function getWorkflowIdsForPermissions(array $permissionIds)
     {
-        $workflowIds = DB::table(Table::WORKFLOW_PERMISSION)
-                        ->whereIn('permission_id', $permissionIds)
-                        ->pluck('workflow_id');
+        $pid = 'workflow_permissions.permission_id';
 
-        return $workflowIds;
+        return $this->newQuery()
+                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
+                    ->whereIn($pid, $permissionIds)
+                    ->whereNull(Entity::DELETED_AT)
+                    ->pluck(Entity::ID);
     }
 }
