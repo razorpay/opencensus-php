@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Admin;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\TestCase;
+
+use RZP\Models\Admin\Org\Repository as OrgRepo;
 use RZP\Models\Admin\Permission;
 
 class PermissionTest extends TestCase
@@ -131,6 +133,36 @@ class PermissionTest extends TestCase
         $url = $url . '/' . $perm->getPublicId();
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditPermissionWithOrg()
+    {
+        $perm = $this->fixtures->create(
+            'permission');
+
+        (new Permission\Repository)->attach($perm, 'orgs', [$this->org->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = $url . '/' . $perm->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $result = $this->startTest();
+
+        $permId = Permission\Entity::verifyIdAndStripSign($result['id']);
+
+        $permIds = $this->org->permissions()->getRelatedIds()->toArray();
+
+        $rzpOrg = (new OrgRepo)->findOrFailPublic(Org::RZP_ORG);
+
+        $rzpPerms = $rzpOrg->permissions()->getRelatedIds()->toArray();
+
+        $this->assertNotContains($permId, $permIds);
+
+        $this->assertContains($permId, $rzpPerms);
 
         $this->startTest();
     }

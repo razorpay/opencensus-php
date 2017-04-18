@@ -10,25 +10,20 @@ class Service extends Base\Service
 {
     public function createPermission(array $input)
     {
-        $permission = $this->repo->transactionOnLiveAndTest(function() use($input){
+        if (empty($input[Entity::ORGS]) === false)
+        {
+            $orgs = $input[Entity::ORGS];
 
-            $permission = $this->core()->create($input);
+            Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
+        }
 
-            if (empty($input[Entity::ORGS]) === false)
-            {
-                Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
-
-                $this->repo->sync($permission, 'orgs', $input[Entity::ORGS]);
-            }
-
-            return $permission;
-        });
+        $permission = $this->core()->create($input);
 
         $response = $permission->toArrayPublic();
 
         if (empty($input[Entity::ORGS]) === false)
         {
-            $response[Entity::ORGS] = $input[Entity::ORGS];
+            $response[Entity::ORGS] = $orgs;
         }
 
         return $response;
@@ -60,6 +55,11 @@ class Service extends Base\Service
     public function editPermission(string $id, array $input)
     {
         Entity::verifyIdAndStripSign($id);
+
+        if (empty($input[Entity::ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
+        }
 
         $permission = $this->repo->permission->findOrFail($id);
 
