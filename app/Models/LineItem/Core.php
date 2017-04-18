@@ -142,6 +142,12 @@ class Core extends Base\Core
             $totalAmount += ($lineItem->getQuantity() * $lineItem->getAmount());
         }
 
+        // And invoice's amount cannot be 0, it's either null (ie. not set) or
+        // min of 1.
+        // Case: When invoice was created with few line items in draft state but
+        // later those line items were removed from line item(invoice still in
+        // draft state) then invoice's amount is set to null(ie. not set).
+
         return ($totalAmount === 0) ? null : $totalAmount;
     }
 

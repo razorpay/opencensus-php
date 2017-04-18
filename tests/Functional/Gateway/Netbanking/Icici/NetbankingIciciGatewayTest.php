@@ -172,6 +172,21 @@ class NetbankingIciciGatewayTest extends TestCase
             });
     }
 
+    public function testEmptyVerifyResponse()
+    {
+        $data = $this->testData['testFailedPaymentEmptyVerify'];
+
+        $this->testFailedAuthPayment();
+
+        $this->mockNullVerifyResponse();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertArraySelectiveEquals($data, $verify);
+    }
+
     public function testAuthResponseDecryptionFailure()
     {
         $this->mockAuthDecryptionFailure();
@@ -285,6 +300,14 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content['STATUS'] = 'FAILED';
+        });
+    }
+
+    protected function mockNullVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content = "";
         });
     }
 
