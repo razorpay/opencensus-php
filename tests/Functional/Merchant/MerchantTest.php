@@ -677,7 +677,7 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('downtime', $content);
     }
 
-    public function testGetCheckoutRouteWithCardDowntimeWithSpecificGatewayDown()
+    public function testGetCheckoutPreferencesWithCardDowntimeWithSpecificGatewayDown()
     {
         $this->ba->publicAuth();
 
@@ -741,20 +741,6 @@ class MerchantTest extends TestCase
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
             'issuer'      => 'ALL',]);
-
-        $this->startTest();
-    }
-
-    public function testGetCheckoutPreferencesWithNetbankingDowntimeWithDirectTerminal()
-    {
-        $this->ba->publicAuth();
-
-        $terminal = $this->fixtures->create('terminal:direct_billdesk_terminal');
-
-        $this->fixtures->create('gateway_downtime:netbanking', [
-            'gateway'     => 'billdesk',
-            'issuer'      => 'ALL',
-            'terminal_id' => $terminal->getId()]);
 
         $this->startTest();
     }

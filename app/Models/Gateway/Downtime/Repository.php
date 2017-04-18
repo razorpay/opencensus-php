@@ -92,6 +92,16 @@ class Repository extends Base\Repository
                      ->first();
     }
 
+    public function fetchDowntimesWithoutTerminal(array $input)
+    {
+        $query = $this->newQuery();
+
+        $this->buildFetchQuery($query, $input);
+
+        return $query->whereNull(Entity::TERMINAL_ID)
+                    ->get();
+    }
+
     protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
     {
         foreach ($keyOperatorMap as $key => $operator)

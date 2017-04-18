@@ -63,13 +63,13 @@ class Core extends Base\Core
             Entity::BEGIN => time(),
         ];
 
-        $downtimes = $this->repo->gateway_downtime->fetch($input);
+        // Currently we are fetching only downtimes with null terminal id
+        // as only a particular gateway terminal having a systemic downtime hasn't
+        // been encountered yet. Will need to modify this later when we deal with
+        // such downtimes
+        $downtimes = $this->repo->gateway_downtime->fetchDowntimesWithoutTerminal($input);
 
-        $formatter = new DataFormatter($downtimes, $merchant);
-
-        $formattedData = $formatter->format();
-
-        return $formattedData;
+        return $downtimes->toArrayExternal();
     }
 
     public function fetchMostRecentActive(array $input)

@@ -139,6 +139,11 @@ class Entity extends Base\PublicEntity
         return parent::edit($input, $operation);
     }
 
+    public function newCollection(array $models = array())
+    {
+        return new Collection($models);
+    }
+
     // --------------------- Modifiers ------------------------
     protected function modifyNetwork(&$input)
     {
@@ -189,8 +194,19 @@ class Entity extends Base\PublicEntity
             switch ($method)
             {
                 case Payment\Method::NETBANKING:
-                    // for all netbankings, the issuer is the gateway itself
-                    $input[Entity::ISSUER] = strtolower($input[Entity::GATEWAY]);
+
+                    $gateway = $input[Entity::GATEWAY];
+
+                    // If gateway is a direct netbanking gateway we set the issuer
+                    // for it as the gateway's issuer, else we set it to UNKNOWN
+                    if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
+                    {
+                        $input[Entity::ISSUER] = Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
+                    }
+                    else
+                    {
+                        $input[Entity::ISSUER] = Entity::UNKNOWN;
+                    }
                     break;
 
                 case Payment\Method::WALLET:
@@ -208,12 +224,6 @@ class Entity extends Base\PublicEntity
                     $input[Entity::ISSUER] = Entity::UNKNOWN;
                     break;
             }
-        }
-
-        // For all payment methods apart from wallet we convert issuer to uppercase
-        if ($method !== Payment\Method::WALLET)
-        {
-            $input[Entity::ISSUER] = strtoupper($input[Entity::ISSUER]);
         }
     }
 
@@ -233,7 +243,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        $this->attributes[Entity::NETWORK] = $network;
+        $this->attributes[Entity::NETWORK] = strtoupper($network);
     }
 
     protected function setCardTypeAttribute($cardType)
@@ -303,7 +313,7 @@ class Entity extends Base\PublicEntity
 
     public function getNetwork()
     {
-        return strtoupper($this->getAttribute(self::NETWORK));
+        return $this->getAttribute(self::NETWORK);
     }
 
     public function getMethod()
@@ -346,7 +356,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::END, time());
     }
 
-    public function getDataForView()
+    /**
+     * Formats the downtime entity with relevant data to display on public
+     * facing routes like checkout, merchant dashboard etc
+     *
+     * @return array Formatted downtime data
+     */
+    public function toArrayExternal()
     {
         $data = [
             Entity::ISSUER      => [$this->getIssuer()],

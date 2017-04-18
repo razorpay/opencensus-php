@@ -223,7 +223,7 @@ class Validator extends Base\Validator
                 'Issuer cannot be empty for method ' . $method);
         }
 
-        if ((in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true))
+        if (in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true)
         {
             return;
         }
@@ -269,7 +269,7 @@ class Validator extends Base\Validator
 
         $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
 
-        if ((strtolower($gateway) !== strtolower(Entity::ALL)) and
+        if (($gateway !== Entity::ALL) and
             (in_array($gateway, $gateways, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -315,7 +315,6 @@ class Validator extends Base\Validator
     public function validateNetwork(array $input)
     {
         $network = $input[Entity::NETWORK] ?? $this->entity->getNetwork();
-        $network = strtoupper($network);
 
         $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
 

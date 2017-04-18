@@ -2,57 +2,34 @@
 
 namespace RZP\Models\Gateway\Downtime;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant;
+use  RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Netbanking;
 
-/**
-* Defines logic for formatting and displaying relevant data for a downtime via
-* any public facing api such as checkout preferences
-*/
-class DataFormatter extends Core
+class Collection extends Base\PublicCollection
 {
-    protected $downtimes;
-
-    protected $merchant;
-
-    public function __construct(Base\PublicCollection $downtimes, Merchant\Entity $merchant)
-    {
-        $this->downtimes = $downtimes;
-
-        $this->merchant = $merchant;
-    }
-
-    public function format()
+    /**
+     * Formats collection of downtimes for public facing routes with
+     * rules to format data accourding to various downtime entity attributes
+     *
+     * @return array Formatted data
+     */
+    public function toArrayExternal()
     {
         $formattedData = [];
 
-        foreach ($this->downtimes as $downtime)
+        foreach ($this->items as $downtime)
         {
             $method = $downtime->getMethod();
 
-            $terminalId = $downtime->getTerminalId();
-
             $downtimeData = null;
-
-            // If downtime has a terminal, then only show it for the particular merchant and no one else
-            if ($downtime->hasTerminal() === true)
-            {
-                $terminal = $downtime->terminal;
-
-                if ($terminal->getMerchantId() !== $this->merchant->getId())
-                {
-                    continue;
-                }
-            }
 
             switch ($method)
             {
                 case Method::CARD:
 
-                     $downtimeData = $this->getFormattedDowntimeDataForCard($downtime);
+                    $downtimeData = $this->getFormattedDowntimeDataForCard($downtime);
 
                     break;
 
@@ -65,7 +42,7 @@ class DataFormatter extends Core
                 case Method::WALLET:
                 case Method::UPI:
 
-                    $downtimeData = $downtime->getDataForView();
+                    $downtimeData = $downtime->toArrayExternal();
 
                     $issuer = $downtime->getIssuer();
 
@@ -92,7 +69,7 @@ class DataFormatter extends Core
 
     protected function getFormattedDowntimeDataForCard(Entity $downtime)
     {
-        $data = $downtime->getDataForView();
+        $data = $downtime->toArrayExternal();
 
         $gateway = $downtime->getGateway();
 
@@ -150,7 +127,7 @@ class DataFormatter extends Core
 
     protected function getFormattedDowntimeDataForNetbanking(Entity $downtime)
     {
-        $data = $downtime->getDataForView();
+        $data = $downtime->toArrayExternal();
 
         $gateway = $downtime->getGateway();
 
