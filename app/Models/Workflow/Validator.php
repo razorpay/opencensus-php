@@ -11,7 +11,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME        => 'required|string|max:150',
-        Entity::ORG_ID      => 'required|string|max:14',
+        Entity::ORG_ID      => 'required|string|size:14',
         Entity::PERMISSIONS => 'required|array',
         Entity::STEPS       => 'required|array',
     ];
@@ -19,6 +19,8 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::NAME        => 'sometimes|string|max:150',
         Entity::PERMISSIONS => 'sometimes|array',
+        Entity::STEPS       => 'sometimes|array',
+        Entity::ORG_ID      => 'sometimes|string|size:14',
     ];
 
     public function validatePermissionHasOneWorkflow(array $perms)

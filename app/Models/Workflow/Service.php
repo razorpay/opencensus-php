@@ -46,7 +46,16 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        Permission\Entity::verifyIdAndStripSignMultiple($input[Entity::PERMISSIONS]);
+        if (empty($input[Entity::PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::PERMISSIONS]);
+        }
+
+        if (empty($input[Entity::ORG_ID]) === false)
+        {
+            Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
+        }
 
         $workflow = $this->repo->workflow->findOrFailPublic($id);
 

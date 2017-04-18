@@ -37,7 +37,7 @@ class Core extends Base\Core
             {
                 $step[Step\Entity::WORKFLOW_ID] = $workflow->getId();
 
-                Role\Entity::verifyIdAndStripSign($step[Step\Entity::ROLE_ID]);
+                Role\Entity::verifyIdAndSilentlyStripSign($step[Step\Entity::ROLE_ID]);
 
                 (new Step\Core)->create($step);
             }
@@ -63,14 +63,25 @@ class Core extends Base\Core
 
         $workflow->edit($input);
 
-        // $minLevel = $this->getMinLevelFromSteps($workflow->steps);
-        // $this->validateExistingWorkflows($input[Entity::PERMISSIONS] ,$minLevel);
-
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
 
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
+
+            if (empty($input[Entity::STEPS]) === false)
+            {
+                $workflow->steps()->delete();
+
+                foreach ($input[Entity::STEPS] as $step)
+                {
+                    $step[Step\Entity::WORKFLOW_ID] = $workflow->getId();
+
+                    Role\Entity::verifyIdAndSilentlyStripSign($step[Step\Entity::ROLE_ID]);
+
+                    (new Step\Core)->create($step);
+                }
+            }
         });
 
         $id = $workflow->getPublicId();
