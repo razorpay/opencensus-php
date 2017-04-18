@@ -543,14 +543,13 @@ class Service extends Base\Service
 
         $pricingPlan = $this->fetchMerchantPricing($id);
 
-        $schedule = !empty($details['settlement_schedule_id']) ?
-                    $this->fetchMerchantScheduleById($details['settlement_schedule_id']) : null;
+        $scheduleTasks = $this->fetchMerchantSchedule($id);
 
         $data = array(
                     'details' => $details,
                     'terminals' => $terminal,
                     'pricing_plan' => $pricingPlan,
-                    'schedule' => $schedule);
+                    'schedule_tasks' => $scheduleTasks);
 
         return [$error, $data];
     }
@@ -1134,11 +1133,11 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchMerchantScheduleById($id)
+    public function fetchMerchantSchedule($id)
     {
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, 'live');
 
-        $response = $this->api->schedule->fetch($id)->toArray();
+        $response = $this->api->admin->fetchMultipleEntities('schedule_task')->toArray();
 
         return $response;
     }

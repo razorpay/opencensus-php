@@ -366,18 +366,27 @@
         </div>
         <div class="list-group-item" ng-init="isScheduleCollapsed = false">
           <span class="pull-right">
-            <button class="btn btn-default btn-xs pull-right"  ng-click="isScheduleCollapsed = !isScheduleCollapsed" ng-hide="scheduleKeys.length == 0" >Show/Hide</button>
-            <span ng-show="scheduleKeys.length == 0">
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isScheduleCollapsed = !isScheduleCollapsed" ng-hide="merchant.schedule_tasks.items.length == 0" >Show/Hide</button>
+            <span ng-show="merchant.schedule_tasks.items.length == 0">
                 No Schedule Assigned
             </span>
           </span>
           Settlement Schedule
         </div>
         <div ng-init="isScheduleCollapsed = true" collapse="isScheduleCollapsed" class="panel-body">
-          <div class="list-group-item" ng-repeat="key in scheduleKeys">
-            <span class="pull-right">{{displayValue(key, merchant.schedule[key])}}</span>
-            {{key|titlecase}}
-          </div>
+          <table class="table table-striped b-light horz-scroll">
+            <thead>
+                <th ng-repeat="key in scheduleKeys">{{key|titlecase}}</th>
+            </thead>
+            <tbody>
+              <tr ng-repeat="task in merchant.schedule_tasks.items">
+                <td ng-repeat="key in scheduleKeys">
+                    <a ng-if="key === 'schedule_id'" target="_blank" ui-sref="app.entitiesdetail({type:'schedule', id: task[key], mode: 'live'})">{{displayValue(key, task[key])}}</a>
+                    <span ng-if="key !== 'schedule_id'">{{displayValue(key, task[key])}}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <div class="list-group-item" ng-init="isMethodsCollapsed = false">
           <span class="pull-right">
@@ -669,9 +678,19 @@
   <div class="modal-body schedule-modal">
     <form class="form-horizontal">
       <div class="form-group">
+        <label class="col-lg-2 control-label">Type</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="type" ng-model="type" ng-options="id as name for (name, id) in type_list" ng-init="type='settlement'">
+          </select>
+        </div>
         <label class="col-lg-2 control-label">Schedules</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="schedule_id" ng-model="schedule_id" ng-options="id as name for (id, name) in schedule_list">
+          </select>
+        </div>
+        <label class="col-lg-2 control-label">Method</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="method" ng-model="method" ng-options="method as (method | methodtoname) for method in methods" ng-init="method=null">
           </select>
         </div>
       </div>
@@ -681,7 +700,7 @@
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(schedule_id)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(type, schedule_id, method)">OK</button>
   </div>
 </script>
 
