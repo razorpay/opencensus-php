@@ -40,6 +40,11 @@ class Core extends Base\Core
      */
     public function getReportEntity($from, $to, $entity, array $input)
     {
+        $this->trace->info(
+            TraceCode::REPORT_ENTITY_FETCH_REQUEST,
+            $input
+        );
+
         $merchant = $this->merchant;
 
         $report = $this->repo->report->fetchReportEntity(

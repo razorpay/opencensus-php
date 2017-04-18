@@ -626,6 +626,7 @@ class TraceCode
 // Trace codes for Merchant Reports
 
     const REPORT_CREATE_REQUEST                         = 'REPORT_CREATE_REQUEST';
+    const REPORT_ENTITY_FETCH_REQUEST                   = 'REPORT_ENTITY_FETCH_REQUEST';
 
 // Trace codes for gateway
     const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
