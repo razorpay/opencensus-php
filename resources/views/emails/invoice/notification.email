@@ -80,7 +80,7 @@
                     </div>
                 </td>
 
-                @if (is_test_mode)
+                @if ($is_test_mode)
                     <td class="last"></td>
                 @else
                     <td class="last" style="

@@ -39,7 +39,7 @@
                     </div>
                 </td>
 
-                @if (is_test_mode)
+                @if ($is_test_mode)
                     <td class="last" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%;"></td>
                 @else
                     <td class="last" style="color: {{ $merchant['brand_text_color'] }}; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid #f2f2f2; width: 3%; background-color: {{ $merchant['brand_color'] }};"></td>
@@ -55,7 +55,7 @@
                 @endif
                 <td colspan="2" class="content" style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; width: 92%;">
                     <div style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">
-                        <label style="color: #757575; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">BLING TO</label>
+                        <label style="color: #757575; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">BILLING TO</label>
                         <div style="color: #212121; font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px;">
                             @if ($invoice['customer_details']['customer_name'])
                                 {{$invoice['customer_details']['customer_name']}}
