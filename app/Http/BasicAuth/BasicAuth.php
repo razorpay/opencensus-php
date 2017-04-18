@@ -339,7 +339,7 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->getKey() !== 'admin')
+        if ($this->getKey() === 'admin')
         {
             $this->setAdminTrue();
 
