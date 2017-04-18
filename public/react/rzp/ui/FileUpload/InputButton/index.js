@@ -4,8 +4,8 @@ import './FileUploadInputButton.styl'
 
 export default class FileUploadInputButton extends Component {
   componentDidMount() {
-    if (this.props.fileUploaded) {
-      this.setFileName('File Already Uploaded  ✔')
+    if (this.props.uploadedFileName) {
+      this.setFileName(this.props.uploadedFileName)
     }
   }
 
@@ -17,18 +17,16 @@ export default class FileUploadInputButton extends Component {
     let {
       onChange,
       text,
-      fileUploaded,
+      uploadedFileName,
       ...otherProps
     } = this.props
 
-    if (fileUploaded) {
-      text = 'Change File'
-    }
+    text = uploadedFileName ? 'Change File' : text
 
     return (
       <div class='fileupload-input-group input-group'>
         <input
-          class={`form-control ${fileUploaded ? 'file-uploaded' : ''}`}
+          class={`form-control ${uploadedFileName ? 'file-uploaded' : ''}`}
           ref={(input) => { this.textInput = input }}
           disabled={true}
         />
