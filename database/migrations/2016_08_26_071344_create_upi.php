@@ -25,31 +25,44 @@ class CreateUpi extends Migration
 
             $table->char(Upi::PAYMENT_ID, Payment::ID_LENGTH);
 
+            $table->char(Upi::REFUND_ID, Payment::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Upi::ACTION);
 
             $table->string(Upi::AMOUNT);
 
             $table->string(Upi::ACQUIRER, 20);
 
-            $table->string(Upi::BANK, 5)->nullable();
+            $table->string(Upi::BANK, 5)
+                  ->nullable();
 
-            $table->string(Upi::PROVIDER, 50)->nullable();
+            $table->string(Upi::PROVIDER, 50)
+                  ->nullable();
 
-            $table->string(Upi::CONTACT)->nullable();
+            $table->string(Upi::CONTACT)
+                  ->nullable();
 
-            $table->string(Upi::EMAIL)->nullable();
+            $table->string(Upi::EMAIL)
+                  ->nullable();
 
-            $table->string(Upi::VPA)->nullable();
+            $table->string(Upi::VPA)
+                  ->nullable();
 
-            $table->string(Upi::NAME)->nullable();
+            $table->string(Upi::NAME)
+                  ->nullable();
 
-            $table->tinyInteger(Upi::RECEIVED)->default(0);
+            $table->tinyInteger(Upi::RECEIVED)
+                  ->default(0);
 
-            $table->string(Upi::GATEWAY_MERCHANT_ID)->nullable();
+            $table->string(Upi::GATEWAY_MERCHANT_ID)
+                  ->nullable();
 
-            $table->string(Upi::GATEWAY_PAYMENT_ID)->nullable();
+            $table->string(Upi::GATEWAY_PAYMENT_ID)
+                  ->nullable();
 
-            $table->string(Upi::STATUS_CODE)->nullable();
+            $table->string(Upi::STATUS_CODE)
+                  ->nullable();
 
             $table->integer(Upi::CREATED_AT);
             $table->integer(Upi::UPDATED_AT);
@@ -59,6 +72,7 @@ class CreateUpi extends Migration
                   ->on(Table::PAYMENT)
                   ->on_delete('restrict');
 
+            $table->index(Upi::REFUND_ID);
             $table->index(Upi::RECEIVED);
             $table->index(Upi::GATEWAY_PAYMENT_ID);
             $table->index(Upi::BANK);

@@ -450,6 +450,7 @@ class TraceCode
 
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
     const QUEUE_JOB_LOOPING                         = 'QUEUE_JOB_LOOPING';
+    const QUEUE_INVALID_CONFIG                      = 'QUEUE_INVALID_CONFIG';
 
     const RECOVERABLE_EXCEPTION                     = 'RECOVERABLE_EXCEPTION';
     const ERROR_EXCEPTION                           = 'ERROR_EXCEPTION';
@@ -674,6 +675,8 @@ class TraceCode
         self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
         self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
         self::GATEWAY_REFUND_ABSENT                     => 'Refund not done on the gateway side.',
+
+        self::QUEUE_INVALID_CONFIG                      => 'Invalid Config used for Queue name and connection fetching',
 
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 
