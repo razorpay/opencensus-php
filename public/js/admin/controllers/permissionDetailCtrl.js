@@ -155,6 +155,11 @@ app.controller('PermissionDetailCtrl', [
         if (data.success) {
           $scope.alerts.addAlert('success', 'Permission saved successfully.', true);
           $state.go('app.permissions.edit', {id: data.data.id});
+
+          // Freeze if RZ added in org (required on edit url)
+          if ($scope.localOrgs.hasOwnProperty($scope.RZid) && !$scope.freezeRZ) {
+            $scope.freezeRZ = true;
+          }
         } else {
           $scope.alerts.resetAlerts();
           angular.forEach(data.errors, function (value, key) {
