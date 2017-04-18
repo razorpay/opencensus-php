@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Admin\Permission;
 
+use DB;
+
 use RZP\Models\Admin\Base;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Permission;
@@ -83,5 +85,15 @@ class Repository extends Base\Repository
                     ->where($pmTable . '.entity_type', '=', 'org')
                     ->whereIn(Entity::NAME, $permissionNames)
                     ->get(['id']);
+    }
+
+    public function getRolesForPermission(string $id)
+    {
+        $roleIds = DB::table(Table::PERMISSION_MAP)
+                        ->where('permission_id', '=', $id)
+                        ->where('entity_type', '=', 'role')
+                        ->pluck('entity_id');
+
+        return $roleIds;
     }
 }
