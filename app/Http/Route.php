@@ -990,7 +990,7 @@ final class Route
         'admin_fetch_merchant_ids'         => [Permission::VIEW_ALL_MERCHANTS],
         'admin_fetch_merchants'            => [Permission::VIEW_ALL_MERCHANTS],
         'permission_create'                => [Permission::CREATE_PERMISSION],
-        'permission_edit'                  => [Permission::EDIT_ORG],
+        'permission_edit'                  => [Permission::EDIT_PERMISSION],
         'permission_get'                   => [Permission::GET_PERMISSION],
         'permission_get_multiple'          => [Permission::VIEW_ALL_PERMISSION],
         'permission_get_by_type'           => [Permission::EDIT_ORG],
