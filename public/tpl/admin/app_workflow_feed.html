@@ -17,9 +17,9 @@
       <div class="col-xs-9">
         <div class="action-desc-panel panel panel-default">
           <div class="panel-heading">
-            <strong>{{ action_details.admin.name }}</strong>
-            performed this action
-            <span title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
+            <strong ng-if="action_details.admin.name">{{ action_details.admin.name }}</strong>
+            <span ng-style="!action_details.admin.name && {'visibility':'collapse'}">performed this action</span>
+            <span ng-if="action_details.created_at" title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
 
             <span class="label pending-bg-color pull-right action-state">{{ action_details.state }}</span>
           </div>
@@ -186,42 +186,35 @@
 
   <div class="modal-body new-key-modal" style="overflow: auto;">
 
-    <h4 ng-show="data.data">Change</h4>
 
-    <p ng-show="data.data.old"><em>Old Data:</em></p>
-
-    <table ng-show="data.data.old" class="table table-striped b-t b-light">
+    <h4 ng-if="data.data">Change</h4>
+    <table ng-if="data.data" class="table table-striped b-t b-light">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Value</th>
-        </tr>
+      <tr>
+        <th>Property</th>
+        <th>Old Value</th>
+        <th>New Value</th>
+      </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="(key, value) in data.data.old">
-          <td>{{ key }}</td>
-          <td>{{ value }}</td>
-        </tr>
+      <tr></tr>
+      <tr ng-repeat="type in dataKeys">
+        <td>{{ type }}</td>
+        <td ng-if="data">
+          <ul ng-if="isArray(data.data.old[type])" class="comparison-list">
+            <li ng-repeat="obj in data.data.old[type]" ng-if="obj.name">{{obj.name}}</li>
+          </ul>
+          <span ng-if="!isArray(data.data.old[type])">{{data.data.old[type]}}</span>
+        </td>
+        <td ng-if="data">
+          <ul ng-if="isArray(data.data.new[type])" class="comparison-list">
+            <li ng-repeat="obj in data.data.new[type]"  ng-if="obj.name">{{obj.name}}</li>
+          </ul>
+          <span ng-if="!isArray(data.data.new[type])">{{data.data.new[type]}}</span>
+        </td>
+      </tr>
       </tbody>
     </table>
-
-    <p ng-show="data.data.new"><em>New Data:</em></p>
-
-    <table ng-show="data.data.new" class="table table-striped b-t b-light">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat="(key, value) in data.data.new">
-          <td>{{ key }}</td>
-          <td>{{ value }}</td>
-        </tr>
-      </tbody>
-    </table>
-
   </div>
 
   <div class="modal-footer">
