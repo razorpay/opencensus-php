@@ -2,23 +2,34 @@
 
 namespace RZP\Models\Admin\Permission;
 
-use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Role;
 
 class Service extends Base\Service
 {
     public function createPermission(array $input)
     {
+        if (empty($input[Entity::ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
+        }
+
         $permission = $this->core()->create($input);
 
-        return $permission->toArrayPublic();
+        $response = $permission->toArrayPublic();
+
+        return $response;
     }
 
     public function getPermission(string $permissionId)
     {
-        Entity::verifyIdAndStripSign($permissionId);
+        $relations = ['orgs'];
 
-        $permission = $this->repo->permission->findOrFailPublic($permissionId);
+        $permission = $this->repo
+                           ->permission
+                           ->findByPublicIdWithRelations(
+                               $permissionId, $relations);
 
         return $permission->toArrayPublic();
     }
@@ -38,6 +49,11 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
+        if (empty($input[Entity::ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
+        }
+
         $permission = $this->repo->permission->findOrFail($id);
 
         $permission = $this->core()->edit($permission, $input);
@@ -47,7 +63,7 @@ class Service extends Base\Service
 
     public function getMultiplePermissions(string $orgId)
     {
-        Org::verifyIdAndStripSign($orgId);
+        Org\Entity::verifyIdAndStripSign($orgId);
 
         $perms = $this->repo->permission->fetchAllByOrg($orgId);
 
@@ -66,5 +82,16 @@ class Service extends Base\Service
         $perms = $this->repo->permission->fetchAll();
 
         return $perms->toArrayPublic();
+    }
+
+    public function getRolesForPermission(string $id)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $roles = $this->repo->permission->getRolesForPermission($id);
+
+        Role\Entity::getSignedIdMultiple($roles);
+
+        return $roles;
     }
 }

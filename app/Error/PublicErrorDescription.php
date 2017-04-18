@@ -15,6 +15,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card rejected by bank.';
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';
     const GATEWAY_ERROR_FALSE_AUTHORIZE                                         = 'The payment was wrongly authorized';
+    const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                = 'Duplicate Refund Request';
 
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
@@ -383,6 +384,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_FILE_NOT_FOUND                                            = 'There was error while retrieving the file';
 
+    const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                        = 'The input action is not supported for the merchant user';
     const BAD_REQUEST_ACCESS_DENIED                                             = 'Access Denied';
 
     // Workflow Related Errors
@@ -396,7 +398,7 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED                      = 'Workflow Action can only be closed by maker.';
     const BAD_REQUEST_ACTION_NOT_APPROVED                                       = 'The requested action is not in approved state';
     const BAD_REQUEST_ACTION_ALREADY_EXECUTED                                   = 'The requested action has already been executed';
-    const BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED                               = 'Deleting a workflow is not possible if an action is in still in progress';
+    const BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED                               = 'Deleting/Updating a workflow is not possible if an action is in still in progress';
     const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                              = 'The levels in the steps should be increment of one';
     const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                           = 'The role and level combination should be unique';
     const BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED                    = 'Permissions associated with a workflow cannot be removed';

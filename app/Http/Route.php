@@ -414,6 +414,7 @@ final class Route
         'permission_get_multiple'                 => ['get',      'orgs/{orgId}/permissions',                       'OrganizationController@getMultiplePermissions'                     ],
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
+        'permission_get_roles'                    => ['get',      'permissions/{id}/roles',                         'OrganizationController@getRolesForPermission'                      ],
         'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
 
@@ -494,7 +495,10 @@ final class Route
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
         'user_create'                             => ['post',     'users',                                          'UserController@postUser'                                           ],
         'user_edit'                               => ['put',      'users/{id}',                                     'UserController@putUser'                                            ],
-        'user_attach_merchant'                    => ['put',      'users/{id}/attach',                              'UserController@attachUserToMerchant'                               ],
+        // The order of the following routes is important. The one with action should be last
+        'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
+        'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
+        'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
     );
 
     public static $public = array(
@@ -815,7 +819,9 @@ final class Route
         'internal_dummy_account_test',
         'user_create',
         'user_edit',
-        'user_attach_merchant',
+        'user_confirm',
+        'user_change_password',
+        'user_merchant_mapping_action',
         'merchant_admin_lead_put',
         'payment_update_on_hold',
     );
@@ -920,6 +926,7 @@ final class Route
         'permission_get_multiple',
         'permission_get_by_type',
         'permission_get',
+        'permission_get_roles',
         'permission_create',
         'permission_edit',
         'permission_delete',
@@ -987,6 +994,7 @@ final class Route
         'permission_get'                   => [Permission::GET_PERMISSION],
         'permission_get_multiple'          => [Permission::VIEW_ALL_PERMISSION],
         'permission_get_by_type'           => [Permission::EDIT_ORG],
+        'permission_get_roles'             => [Permission::VIEW_ROLE],
         'permission_delete'                => [Permission::DELETE_PERMISSION],
         'auditlog_search'                  => [Permission::VIEW_AUDITLOG],
         'admin_logout'                     => ['*'],

@@ -9,16 +9,18 @@ return [
     'testAssignTerminal' => [
         'request' => [
             'content' => [
-                'gateway' => 'hdfc',
-                'gateway_merchant_id' => '12345',
-                'gateway_terminal_id' => '12345678',
+                'gateway'                   => 'hdfc',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
                 'gateway_terminal_password' => '12345678',
-                'category'  => '4567'
+                'category'                  => '4567'
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
+                'gateway_acquirer'    => 'hdfc',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
                 'category'            => 4567,
@@ -27,21 +29,50 @@ return [
         ]
     ],
 
-    'testAddEmiTerminal' => [
+    'testAssignTerminalWithInvalidGatewayAcquirer' => [
         'request' => [
             'content' => [
-                'gateway' => 'hdfc',
-                'gateway_merchant_id' => '12345',
-                'gateway_terminal_id' => '12345678',
+                'gateway'                   => 'hdfc',
+                'gateway_acquirer'          => 'icic',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
                 'gateway_terminal_password' => '12345678',
-                'category'  => '4567',
-                'emi'   => '1',
-                'shared'    => '1',
+                'category'                  => '4567'
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'icic is not a valid acquirer for hdfc',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testAddEmiTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hdfc',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'category'                  => '4567',
+                'emi'                       => '1',
+                'shared'                    => '1',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'hdfc',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
                 'category'            => 4567,
@@ -53,9 +84,10 @@ return [
     'testReassignTerminalForSameGateway' => [
         'request' => [
             'content' => [
-                'gateway' => 'hdfc',
-                'gateway_merchant_id' => '12345',
-                'gateway_terminal_id' => '12345678',
+                'gateway'                   => 'hdfc',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
                 'gateway_terminal_password' => '12345678'
             ],
             'url' => '/merchants/10000000000000/terminals',
@@ -152,6 +184,7 @@ return [
         'request' => [
             'content' => [
                 'gateway' => 'hdfc',
+                'gateway_acquirer' => 'hdfc',
                 'gateway_merchant_id' => '12345',
                 'gateway_terminal_id' => '12345678',
                 'gateway_terminal_password' => '12345678',
@@ -159,6 +192,7 @@ return [
                 'card'   => '1',
                 'shared'    => '1',
                 'network_category' => 'education',
+                'gateway_acquirer' => 'hdfc',
             ],
             'method' => 'POST'
         ],
