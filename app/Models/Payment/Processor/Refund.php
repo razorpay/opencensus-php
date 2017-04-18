@@ -193,9 +193,7 @@ trait Refund
 
         $verifyRefund2Result = $this->callGatewayForVerifyRefund2($data);
 
-        return [
-            'result'                => $verifyRefund2Result
-        ];
+        return $verifyRefund2Result;
     }
 
     public function createGatewayRefundRecord(Payment\Refund\Entity $refund)
@@ -653,18 +651,16 @@ trait Refund
                 if ($payment->getTransactionId() !== null)
                 {
                     $refunded = $this->refundOnGateway($data);
-
-                    $this->refund->setGatewayRefunded($refunded);
                 }
                 else if ($this->gatewaySupportsReversal($payment) === true)
                 {
-                    $reversed = $this->reverseOnGateway($data);
-
-                    $this->refund->setGatewayRefunded($reversed);
+                    $refunded = $this->reverseOnGateway($data);
                 }
-
-                $this->repo->saveOrFail($this->refund);
             });
+
+            $this->refund->setGatewayRefunded($refunded);
+
+            $this->repo->saveOrFail($this->refund);
 
             // send notification to merchant/customer, this is outside transaction
             // as we dont want to to reverse the actions if mail sending fails
@@ -708,7 +704,7 @@ trait Refund
 
         // true  if refunded
         // false if not refunded
-        $refundedOnGateway = $this->verifyRefund2($refund)['result'];
+        $refundedOnGateway = $this->verifyRefund2($refund);
 
         if ($refundedOnGateway === false)
         {
@@ -716,30 +712,19 @@ trait Refund
 
             $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
             {
-                $this->repo->transaction(function() use ($data, $payment)
+                // refund/reverse on gateway
+                if ($payment->getTransactionId() !== null)
                 {
-                    // Since record Transaction for Refund can create
-                    // transaction in appropriate scenario, it should be called.
-                    // Unless we wish to record the refund transaction on
-                    // refund call it self.
-                    $this->recordTransactionForRefund();
+                    $refunded = $this->refundOnGateway($data);
+                }
+                else if ($this->gatewaySupportsReversal($payment) === true)
+                {
+                    $refunded = $this->reverseOnGateway($data);
+                }
 
-                    // refund/reverse on gateway
-                    if ($payment->getTransactionId() !== null)
-                    {
-                        $refunded = $this->refundOnGateway($data);
+                $this->refund->setGatewayRefunded($refunded);
 
-                        $this->refund->setGatewayRefunded($refunded);
-                    }
-                    else if ($this->gatewaySupportsReversal($payment) === true)
-                    {
-                        $reversed = $this->reverseOnGateway($data);
-
-                        $this->refund->setGatewayRefunded($reversed);
-                    }
-
-                    $this->repo->saveOrFail($this->refund);
-                });
+                $this->repo->saveOrFail($this->refund);
             });
         }
 

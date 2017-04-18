@@ -222,6 +222,57 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * Calls gateway to verify if a refund has
+     * been successfully performed or not.
+     *
+     * true  if refunded
+     * false if not refunded
+     * @param array $input
+     * @return bool
+     */
+    public function verifyRefund2(array $input)
+    {
+        parent::verifyRefund($input);
+
+        $content = $this->sendRefundVerifyRequest($input);
+
+        list($refundReply, $requestContent) = $this->fetchGatewayReplyFromContent($content);
+
+        if ((isset($refundReply[F::R_FLAG]) === false) or
+            ($refundReply[F::R_FLAG] !== ReplyFlag::SOK))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function sendRefundVerifyRequest($input)
+    {
+        $request = $this->getVerifyRequestContent($input);
+
+        $this->traceGatewayRequest(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            $request,
+            $input);
+
+        $this->setCybersourceCredentials($request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayResponse(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            $response->body,
+            $input);
+
+        $this->response = $response;
+
+        $content = $this->xmlToArray($response->body);
+
+        return $content;
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -244,7 +295,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getPaymentVerifyRequestContent($input);
+        $request = $this->getVerifyRequestContent($input);
 
         $this->traceGatewayRequest(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -273,9 +324,16 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestContent(array $input)
+    protected function getVerifyRequestContent(array $input)
     {
-        $targetDate = Carbon::createFromTimestamp($input['payment']['created_at'], 'UTC')
+        $entity = 'payment';
+
+        if ($action === Action::VERIFY_REFUND)
+        {
+            $entity = 'refund';
+        }
+
+        $targetDate = Carbon::createFromTimestamp($input['refund']['created_at'], 'UTC')
                                 ->format('Ymd');
 
         $content = [
@@ -284,7 +342,7 @@ class Gateway extends Base\Gateway
             F::MERCHANT_ID               => $this->getMerchantID($input['terminal']),
             F::TARGET_DATE               => $targetDate,
             F::VERSION_NUMBER            => '1.90',
-            F::MERCHANT_REFERENCE_NUMBER => $input['payment']['id'],
+            F::MERCHANT_REFERENCE_NUMBER => $input[$entity]['id'],
         ];
 
         $request = $this->getStandardRequestArray($content);
@@ -299,7 +357,7 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        list($authReply, $requestContent) = $this->fetchAuthorizeReplyFromContent($content);
+        list($authReply, $requestContent) = $this->fetchGatewayReplyFromContent($content);
 
         // Payment is failed when ics_auth is not present
         if ((isset($authReply[F::R_FLAG]) === false) or
@@ -364,8 +422,15 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function fetchAuthorizeReplyFromContent($content)
+    protected function fetchGatewayReplyFromContent($content)
     {
+        $type = ['ics_auth'];
+
+        if ($action === Action::VERIFY_REFUND)
+        {
+            $type = ['ics_credit', 'ics_auth_reversal'];
+        }
+
         $requests = $content[F::REQUESTS][F::REQUEST] ?? null;
 
         if ($requests !== null)
@@ -386,7 +451,7 @@ class Gateway extends Base\Gateway
 
                 foreach($applicationReplies as $applicationReply)
                 {
-                    if ($applicationReply['@attributes'][F::NAME] === 'ics_auth')
+                    if (in_array($applicationReply['@attributes'][F::NAME], $type, true))
                     {
                         return [$applicationReply, $request];
                     }
