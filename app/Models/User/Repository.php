@@ -31,7 +31,7 @@ class Repository extends Base\Repository
         return $query->orderBy('name', 'asc');
     }
 
-    public function getByEmail(string $email)
+    public function findByEmail(string $email)
     {
         return $this->newQuery()
                     ->where(Entity::EMAIL, '=', $email)

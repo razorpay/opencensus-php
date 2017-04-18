@@ -55,7 +55,7 @@ class Core extends Base\Core
 
     public function login(array $input)
     {
-        $user = $this->repo->user->getByEmail($input[Entity::EMAIL]);
+        $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
 
         $isPasswordEqual = (new BcryptHasher)->check($input[Entity::PASSWORD], $user->getPassword());
 

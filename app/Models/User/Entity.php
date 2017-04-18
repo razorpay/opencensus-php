@@ -101,7 +101,7 @@ class Entity extends Base\PublicEntity
      */
     public function getRememberTokenName()
     {
-        return $this->getAttribute(self::REMEMBER_TOKEN);
+        return self::REMEMBER_TOKEN;
     }
 
     /**
