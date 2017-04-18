@@ -42,8 +42,13 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::REPORT_ENTITY_FETCH_REQUEST,
-            $input
-        );
+            [
+                'method'        => __METHOD__,
+                'entity'        => $entity,
+                'from'          => $from,
+                'to'            => $to,
+                'input'         => $input,
+            ]);
 
         $merchant = $this->merchant;
 
