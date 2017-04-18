@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Exception;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
@@ -159,7 +160,7 @@ class Core extends Base\Core
         return $action;
     }
 
-    public function isCurrentLevelApproved(Entity $action)
+    protected function isCurrentLevelApproved(Entity $action)
     {
         $level = $action->getCurrentLevel();
 
@@ -216,7 +217,7 @@ class Core extends Base\Core
 
         $levelApproved = false;
 
-        if ($opType === 'and')
+        if ($opType === Step\Entity::OP_TYPE_AND)
         {
             $levelApproved = empty($stepApprovedMap) ? false : true;
 
@@ -225,7 +226,7 @@ class Core extends Base\Core
                 $levelApproved = (bool)($levelApproved && $approval);
             }
         }
-        else if ($opType === 'or')
+        else if ($opType === Step\Entity::OP_TYPE_OR)
         {
             foreach ($stepApprovedMap as $stepId => $approval)
             {

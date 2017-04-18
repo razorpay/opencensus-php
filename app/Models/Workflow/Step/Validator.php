@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         $workflowId = $input[Entity::WORKFLOW_ID];
         $level = $input[Entity::LEVEL];
 
-        $steps= (new Repository)->findByLevelAndWorkflowId(
+        $steps = (new Repository)->findByLevelAndWorkflowId(
             $level, $workflowId);
 
         foreach ($steps as $step)
