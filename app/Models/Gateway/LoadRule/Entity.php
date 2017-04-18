@@ -35,6 +35,12 @@ class Entity extends Base\PublicEntity
         self::CARD_TYPE => 10,
     ];
 
+    const COMPARISON_KEYS = [
+        self::GATEWAY,
+        self::GATEWAY_ACQUIRER,
+        self::INTERNATIONAL
+    ];
+
     protected $entity = 'gateway_load_rule';
 
     protected $generateIdOnCreate = true;
@@ -103,6 +109,16 @@ class Entity extends Base\PublicEntity
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function getCardType()
+    {
+        return $this->getAttribute(self::CARD_TYPE);
+    }
+
+    public function getNetwork()
+    {
+        return $this->getAttribute(self::NETWORK);
     }
 
     // -----------------------Modifiers---------------------

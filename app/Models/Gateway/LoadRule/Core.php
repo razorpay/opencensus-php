@@ -9,6 +9,8 @@ use RZP\Models\Merchant\Account;
 
 class Core extends Base\Core
 {
+    use Matcher;
+
     public function create(array $input)
     {
         $loadRule = (new Entity)->build($input);
@@ -27,13 +29,52 @@ class Core extends Base\Core
         return $loadRule;
     }
 
-    public function fetchApplicableRules(array $terminals , array $input)
+    public function fetchApplicableRules(array $terminals, array $input)
     {
+        $merchantId = $input['merchant']->getId();
+
         $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
 
         $loadRules = $this->repo->gateway_load_rule->fetchApplicableRules($ruleFetchParams);
 
-        return $loadRules;
+        // We check if any merchant specific rules are present. If present we only deal with
+        // those rules as our rule set and discard any other rules
+        $merchantSpecificRules = $this->getMerchantSpecificRules($loadRules, $merchantId);
+
+        if ($merchantSpecificRules->isEmpty() === false)
+        {
+            $loadRules = $merchantSpecificRules;
+        }
+
+        // We now filter rules based on payment criteria to get collection of
+        // applicable rules for the particular payment
+        $applicableRules = (new Filter)->filter($loadRules, $input);
+
+        return $applicableRules;
+    }
+
+    public function matchTerminalToRule(Base\PublicCollection $terminals, Base\PublicCollection $rules)
+    {
+        $terminalLoadMap = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $rule = $this->getMatchingRuleForTerminal($terminal, $rules);
+
+            if ($rule !== null)
+            {
+                $terminalId = $terminal->getId();
+
+                $terminalLoadMap[$terminalId] = $rule->getLoad();
+            }
+        }
+
+        return $terminalLoadMap;
+    }
+
+    protected function getRuleMatchingTerminal(Terminal\Entity $terminal, Base\PublicCollection $rules)
+    {
+
     }
 
     protected function getRuleFetchParams(array $terminals, array $input)

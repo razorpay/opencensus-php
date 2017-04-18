@@ -68,23 +68,22 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         $merchantId = $input['merchant']->getId();
 
-        $allRules = (new LoadRule\Core)->fetchApplicableRules($terminals, $input);
+        $applicableRules = (new LoadRule\Core)->fetchApplicableRules($terminals, $input);
 
-        if ($allRules->isEmpty() === true)
+        // If no rules are present for load sorting we return the terminals list as is
+        if ($applicableRules->isEmpty() === true)
         {
             return $terminals;
         }
 
-        $merchantSpecificRules = $this->getMerchantSpecificRules($applicableRules, $merchantId);
-
-        $sharedRules = $this->getSharedRules($applicableRules);
-
-        $applicableRules = $merchantSpecificRules;
-
-        if ($applicableRules->isEmpty())
-        {
-            $applicableRules = $sharedRules;
-        }
+        //
+        // We match terminals to the eligible rules based on terminal criteria
+        // and generate a map with the structure
+        // [
+        //      <terminal_id> => <load_value>
+        // ]
+        //
+        $terminalToLoadMap = (new LoadRule\Core)->matchTerminalToRule($terminals, $applicableRules);
 
         if (is_null($options) === false)
         {
@@ -116,7 +115,7 @@ class TerminalLoadSorter extends Terminal\Sorter
             }
         }
 
-        return $sortedTerminals;
+        return $terminals;
     }
 
     protected function getMerchantSpecificRules(Base\PublicCollection $applicableRules, string $merchantId)
@@ -127,13 +126,6 @@ class TerminalLoadSorter extends Terminal\Sorter
         });
 
         return $merchantSpecificRules;
-    }
-
-    protected function getSharedRules(Base\PublicCollection $applicableRules)
-    {
-        $merchantId = Account::SHARED_ACCOUNT;
-
-        return $this->getMerchantSpecificRules($applicableRules, $merchantId);
     }
 
     protected function getBoostedTerminalIds(array $terminals, $chancePercent)
