@@ -16,6 +16,7 @@ use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\User;
 use RZP\Models\Merchant;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
@@ -72,8 +73,6 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Core)->create($input);
 
-        $this->assignDefaultSettlementSchedule($merchant);
-
         //
         // Once the merchant is created we must
         // tag him to the admin referral
@@ -101,15 +100,6 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    protected function assignDefaultSettlementSchedule($merchant)
-    {
-        $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
-
-        $schedule = $this->getOrCreateDailySettlementSchedule($defaultDelay);
-
-        $merchant->schedule()->associate($schedule);
-    }
-
     public function createSubMerchant(array $input)
     {
         $merchant = $this->merchant;
@@ -122,8 +112,6 @@ class Service extends Base\Service
         {
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
-
-        $this->assignDefaultSettlementSchedule($subMerchant);
 
         $this->repo->saveOrFail($subMerchant);
 
@@ -145,8 +133,6 @@ class Service extends Base\Service
 
             $input['groups'] = $groupIds;
         }
-
-        $this->setSettlementScheduleIdIfNeeded($merchant, $input);
 
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 
@@ -347,73 +333,21 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
+        // this is a hack until dashboard starts using the route with new values
         if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
         {
             $scheduleId = $input[Entity::SETTLEMENT_SCHEDULE_ID];
 
-            $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, Account::SHARED_ACCOUNT);
-        }
-        else
-        {
-            $schedule = (new Schedule\Core)->createSchedule($input);
-
-            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
+            $input = [
+                ScheduleTask\Entity::METHOD      => null,
+                ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
+                ScheduleTask\Entity::SCHEDULE_ID => $scheduleId
+            ];
         }
 
-        $merchant->schedule()->associate($schedule);
+        $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
-        $this->setSettlementScheduleIfNeeded($merchant, $schedule);
-
-        $this->traceAndNotifyScheduleAssignment($schedule, $merchant);
-
-        $this->repo->saveOrFail($merchant);
-
-        return $merchant->toArrayPublic();
-    }
-
-    protected function setSettlementScheduleIfNeeded($merchant, $schedule)
-    {
-        if (($schedule->getPeriod() === Schedule\Period::DAILY) and
-            ($schedule->getInterval() === 1))
-        {
-            $delay = $schedule->getDelay();
-
-            $merchant->setSettlementSchedule($delay);
-        }
-    }
-
-    protected function setSettlementScheduleIdIfNeeded($merchant, $input)
-    {
-        if (isset($input[Entity::SETTLEMENT_SCHEDULE]) === true)
-        {
-            $requiredDelay = $input[Entity::SETTLEMENT_SCHEDULE];
-
-            $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
-
-            $merchant->schedule()->associate($schedule);
-        }
-    }
-
-    protected function traceAndNotifyScheduleAssignment($schedule, $merchant)
-    {
-        $data = [
-            "schedule"    => $schedule->getName(),
-            "schedule_id" => $schedule->getId(),
-            "merchant"    => $merchant->getBillingLabelElseName(),
-            "merchant_id" => $merchant->getId(),
-        ];
-
-        $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
-
-        $this->slack->queue(
-                "Schedule assigned to Merchant",
-                $data,
-                [
-                    'channel'  => Config::get('slack.channels.operations_log'),
-                    'username' => 'Jordan Belfort',
-                    'icon'     => ':boom:',
-                ]
-            );
+        return $scheduleTask->toArrayPublic();
     }
 
     public function migrateMerchantToSettlementSchedules($input)
@@ -426,7 +360,7 @@ class Service extends Base\Service
         }
         else
         {
-            $merchants = $this->repo->merchant->fetchMerchantsWithSettlementScheduleIdNull();
+            $merchants = $this->repo->merchant->getFewMerchantsWithNoCorrespondingScheduleTasks();
         }
 
         $migrationSummary = [
@@ -436,15 +370,17 @@ class Service extends Base\Service
 
         foreach ($merchants as $merchant)
         {
-            $requiredDelay = $merchant->getSettlementSchedule();
-
             try
             {
-                $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
+                $schedule = $merchant->schedule;
 
-                $merchant->schedule()->associate($schedule);
+                $input = [
+                    ScheduleTask\Entity::METHOD      => null,
+                    ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
+                    ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId()
+                ];
 
-                $this->repo->saveOrFail($merchant);
+                (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
                 $migrationSummary['migrated_ids_count'] += 1;
             }
@@ -452,12 +388,13 @@ class Service extends Base\Service
             {
                 $merchantId = $merchant->getId();
 
-                $this->trace->info(TraceCode::SCHEDULE_MIGRATION_FAILED,
-                                    [
-                                        'merchant_id' => $merchantId,
-                                        'delay'       => $requiredDelay,
-                                        'error'       => $ex->getMessage(),
-                                    ]);
+                $this->trace->info(
+                    TraceCode::SCHEDULE_MIGRATION_FAILED,
+                    [
+                        'merchant_id' => $merchantId,
+                        'schedule_id' => $merchant->getSettlementScheduleId(),
+                        'error'       => $ex->getMessage(),
+                    ]);
 
                 $migrationSummary['failed_ids'][] = $merchantId;
             }
@@ -468,33 +405,6 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_COMPLETE, $migrationSummary);
 
         return $migrationSummary;
-    }
-
-    protected function getOrCreateDailySettlementSchedule($requiredDelay)
-    {
-        $schedule = $this->repo->schedule->getDailySettlementScheduleByDelay($requiredDelay);
-
-        if (is_null($schedule) === true)
-        {
-            $requiredScheduleData = $this->getRequiredScheduleData($requiredDelay);
-
-            $schedule = (new Schedule\Core)->createSchedule($requiredScheduleData);
-
-            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
-        }
-
-        return $schedule;
-    }
-
-    protected function getRequiredScheduleData($requiredDelay)
-    {
-        return [
-            Schedule\Entity::NAME     => "Basic T$requiredDelay",
-            Schedule\Entity::TYPE     => Schedule\Type::SETTLEMENT,
-            Schedule\Entity::PERIOD   => Schedule\Period::DAILY,
-            Schedule\Entity::INTERVAL => 1,
-            Schedule\Entity::DELAY    => $requiredDelay,
-        ];
     }
 
     public function getPricingPlan($id)

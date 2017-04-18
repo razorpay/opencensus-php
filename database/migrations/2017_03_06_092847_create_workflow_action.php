@@ -1,0 +1,88 @@
+<?php
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+use RZP\Constants\Table;
+use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Workflow\Entity as Workflow;
+use RZP\Models\Admin\Admin\Entity as Admin;
+use RZP\Models\Workflow\Action\Entity as Action;
+
+
+class CreateWorkflowAction extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create(Table::WORKFLOW_ACTION, function (BluePrint $table)
+        {
+            $table->engine = 'InnoDB';
+
+            $table->char(Action::ID, Action::ID_LENGTH)
+                  ->primary();
+
+            $table->string(Action::TITLE, 255)
+                  ->nullable();
+
+            $table->text(Action::DESCRIPTION)
+                  ->nullable();
+
+            $table->char(Action::WORKFLOW_ID, Action::ID_LENGTH);
+
+            $table->char(Action::ADMIN_ID, Action::ID_LENGTH);
+
+            $table->char(Action::ORG_ID, Action::ID_LENGTH);
+
+            $table->boolean(Action::APPROVED)
+                  ->default(0);
+
+            $table->tinyInteger(Action::CURRENT_LEVEL)
+                  ->nullable();
+
+            $table->char(Action::STATE, 25);
+
+            $table->foreign(Action::WORKFLOW_ID)
+                  ->references(Workflow::ID)
+                  ->on(Table::WORKFLOW)
+                  ->on_delete('restrict');
+
+            $table->foreign(Action::ADMIN_ID)
+                  ->references(Admin::ID)
+                  ->on(Table::ADMIN)
+                  ->on_delete('restrict');
+
+            $table->foreign(Action::ORG_ID)
+                  ->references(Org::ID)
+                  ->on(Table::ORG)
+                  ->on_delete('restrict');
+
+            $table->integer(Action::CREATED_AT);
+
+            $table->integer(Action::UPDATED_AT);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table(Table::WORKFLOW_ACTION, function($table)
+        {
+            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::WORFLOW_ID . '_foreign');
+
+            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::ADMIN_ID . '_foreign');
+
+            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::ORG_ID . '_foreign');
+        });
+
+        Schema::drop(Table::WORKFLOW_ACTION);
+    }
+}

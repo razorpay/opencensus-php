@@ -84,7 +84,36 @@ trait RepositoryUpdateTestAndLive
             });
     }
 
-    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    public function detach($entity, $relation, $ids = [])
+    {
+        return $this->manager->transactionOnLiveAndTest(
+            function () use ($entity, $relation, $ids)
+            {
+                $changes = [];
+
+                //
+                // The relationship hasn't been synced yet.
+                // Create it's copies for live and test database
+                //
+                list($liveEntity, $testEntity) = $this->cloneEntity($entity);
+
+                // Detach the relationships in both live and test
+                Config::set('database.default', Mode::LIVE);
+                $liveDetachedEntitiesCount = $liveEntity->$relation()->detach($ids);
+
+                Config::set('database.default', Mode::TEST);
+                $testDetachedEntitiesCount = $testEntity->$relation()->detach($ids);
+
+                assert ($liveDetachedEntitiesCount === $testDetachedEntitiesCount);
+
+                return $changes;
+            });
+    }
+
+    public function attach(
+        $entity, $relation,
+        array $ids = [],
+        array $attributes = [], $touch = true)
     {
         return $this->manager->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids, $touch)
@@ -97,10 +126,10 @@ trait RepositoryUpdateTestAndLive
 
                 // Attach the relationship in both live and test databases.
                 Config::set('database.default', Mode::LIVE);
-                $liveEntity->$relation()->attach($id);
+                $liveEntity->$relation()->attach($ids);
 
                 Config::set('database.default', Mode::TEST);
-                $testEntity->$relation()->attach($id);
+                $testEntity->$relation()->attach($ids);
             });
     }
 

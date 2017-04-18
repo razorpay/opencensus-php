@@ -15,6 +15,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
 use RZP\Models\Transaction;
 
 class NodalAccount
@@ -284,8 +285,9 @@ class NodalAccount
                                               ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
                                               ->save();
 
-        // Create txt file
-        if ($h2h === true)
+        // Create txt file in h2h only for live mode and h2h is true
+        if (($this->getMode() === Mode::LIVE) and
+            ($h2h === true))
         {
             $metadata = [
                 'gid'   => '10000',
@@ -301,12 +303,14 @@ class NodalAccount
                                                  ->metadata($metadata)
                                                  ->save();
         }
-
-        $textFile = (new FileStore\Creator())->name(self::getFileToWriteNameWithoutExt())
-                                             ->content($textData)
-                                             ->extension(FileStore\Format::TXT)
-                                             ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
-                                             ->save();
+        else
+        {
+            $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+                                                 ->content($textData)
+                                                 ->extension(FileStore\Format::TXT)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                                                 ->save();
+        }
 
         return [$excelFile, $textFile];
     }
@@ -315,6 +319,11 @@ class NodalAccount
         FileStore\Creator $excelFileEntity,
         FileStore\Creator $textFileEntity)
     {
+        if ($this->getMode() === Mode::TEST)
+        {
+            return;
+        }
+
         $summary = $this->summary;
 
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');

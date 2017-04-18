@@ -27,6 +27,10 @@
 - status_code: Response code from Bank
 - vpa: Filled when customer makes payment, asserted to be same when we get response
 
+## Refund
+
+- Make sure you are on atleast v2.3 of the doc (which has the refunds API)
+
 ## Weirdness
 
 - Payment remains in `created`, not `authorized`, so flow is async
@@ -34,3 +38,14 @@
   is very often "strings", instead of arrays.
 - the authorize method returns true, because we do not have a request to redirect to
 - the icici server only encrypts responses sometimes. (Take a look at mock server)
+- submerchantID is expected to be maxinmum numeric 10 characters, so we always send 1234
+
+
+## Testing
+
+- Download and install the APK from the Google Drive link above
+- You will still need the environment variables to raise the collect request
+- PIN=1234 (For the iMobile App)
+- Issue a collect request via obscure.php to `vishnu@icici`
+- Accept the collect request
+- Verify->Authorize->Capture the payment

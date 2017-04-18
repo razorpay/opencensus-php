@@ -51,6 +51,10 @@ class Entity extends Base\Entity
         self::PERMISSIONS,
     ];
 
+    protected $diff = [
+        self::NAME,
+    ];
+
     protected $visible = [
         self::ID,
         self::NAME,
@@ -98,12 +102,12 @@ class Entity extends Base\Entity
     /**
      * Public getters
      * */
-    public function getOrgId()
+    public function getOrgId() : string
     {
         return $this->getAttribute(self::ORG_ID);
     }
 
-    public function getName()
+    public function getName() : string
     {
         return $this->getAttribute(self::NAME);
     }

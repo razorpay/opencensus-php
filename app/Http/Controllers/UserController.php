@@ -16,7 +16,7 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function putUser($id)
+    public function putUser(string $id)
     {
     	$input = Request::all();
 
@@ -25,11 +25,29 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function attachUserToMerchant($id)
+    public function actionOnUserMerchantMapping(string $id, string $action)
     {
         $input = Request::all();
 
-        $data = (new User\Service)->attach($id, $input);
+        $input['action'] = $action;
+
+        $data = (new User\Service)->mappingAction($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function confirmUser(string $id)
+    {
+        $data = (new User\Service)->confirm($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function changeUserPassword(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new User\Service)->changePassword($id, $input);
 
         return ApiResponse::json($data);
     }

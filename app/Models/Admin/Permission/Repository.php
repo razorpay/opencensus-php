@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Admin\Permission;
 
-use RZP\Base;
+use DB;
+
+use RZP\Models\Admin\Base;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Permission;
 
@@ -69,5 +71,29 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ASSIGNABLE, 1)
                     ->get();
+    }
+
+    public function retrieveIdsByNamesAndOrg(array $permissionNames, string $orgId)
+    {
+        $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
+
+        $pmTable = Table::PERMISSION_MAP;
+
+        return $this->newQuery()
+                    ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
+                    ->where($pmTable . '.entity_id', '=', $orgId)
+                    ->where($pmTable . '.entity_type', '=', 'org')
+                    ->whereIn(Entity::NAME, $permissionNames)
+                    ->get(['id']);
+    }
+
+    public function getRolesForPermission(string $id)
+    {
+        $roleIds = DB::table(Table::PERMISSION_MAP)
+                        ->where('permission_id', '=', $id)
+                        ->where('entity_type', '=', 'role')
+                        ->pluck('entity_id');
+
+        return $roleIds;
     }
 }

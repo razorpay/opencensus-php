@@ -9,7 +9,6 @@ use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\FileStore;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 

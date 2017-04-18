@@ -1001,4 +1001,31 @@ class Entity extends Base\PublicEntity
     {
         return $this->owners()->first();
     }
+
+    public function isEmailOptional()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);
+    }
+
+    public function isPhoneOptional()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
+    }
+
+    public function getOptionalInputConfig()
+    {
+        $config = [];
+
+        if ($this->isEmailOptional() === true)
+        {
+            $config[] = 'email';
+        }
+
+        if ($this->isPhoneOptional() === true)
+        {
+            $config[] = 'contact';
+        }
+
+        return $config;
+    }
 }
