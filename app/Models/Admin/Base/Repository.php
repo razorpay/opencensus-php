@@ -63,4 +63,18 @@ class Repository extends BaseRepository
                     ->with($relations)
                     ->get();
     }
+
+    public function findByPublicIdWithRelations(
+        string $id,
+        array $relations = [])
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSign($id);
+
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $id)
+                    ->with($relations)
+                    ->firstOrFailPublic();
+    }
 }

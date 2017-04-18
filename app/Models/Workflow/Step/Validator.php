@@ -9,11 +9,17 @@ use RZP\Models\Workflow\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ROLE_ID        => 'required|string|max:14',
+        Entity::ROLE_ID        => 'required|string|size:14',
         Entity::LEVEL          => 'required|integer',
         Entity::REVIEWER_COUNT => 'required|integer|min:1',
-        Entity::WORKFLOW_ID    => 'required|string|max:14',
         Entity::OP_TYPE        => 'required|string|in:and,or',
+        Entity::WORKFLOW_ID    => 'required|string|size:14',
+    ];
+
+    protected static $editRules = [
+        Entity::ROLE_ID        => 'sometimes|string|size:14',
+        Entity::LEVEL          => 'sometimes|integer',
+        Entity::REVIEWER_COUNT => 'sometimes|integer|min:1',
     ];
 
     public function validateOpType(array $input)
