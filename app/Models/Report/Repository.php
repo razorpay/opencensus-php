@@ -9,7 +9,7 @@ class Repository extends Base\Repository
     protected $entity = 'report';
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID     => 'required|alpha_dash',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
         Entity::TYPE            => 'sometimes|string'
     ];
 
