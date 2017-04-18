@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Gateway\Downtime;
 
-use  RZP\Models\Base;
+use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Processor\Netbanking;
