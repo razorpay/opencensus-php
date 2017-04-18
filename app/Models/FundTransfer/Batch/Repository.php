@@ -97,6 +97,6 @@ class Repository extends Base\Repository
 
         $this->newQuery()
              ->where(Entity::ID, '=', $batchId)
-             ->update($attrs);
+             ->update($updateAttributes);
     }
 }
