@@ -341,26 +341,28 @@ class BasicAuth
 
         if ($this->getKey() !== 'admin')
         {
-            return $this->invalidApiKey();
+            $this->setAdminTrue();
+
+            $token = $this->getSecret();
+
+            $adminToken = $this->fetchAdminToken($token);
+
+            if ($adminToken->getAdminId() !== null)
+            {
+                $this->checkForDashboardMerchantHeader();
+
+                $this->setDashboardHeaders();
+
+                $this->admin = $adminToken->admin;
+
+                $this->adminOrgId = $this->admin->getOrgId();
+
+                return $this->checkAndSetAccountScope();
+            }
         }
-
-        $this->setAdminTrue();
-
-        $token = $this->getSecret();
-
-        $adminToken = $this->fetchAdminToken($token);
-
-        if ($adminToken->getAdminId() !== null)
+        else if ($this->isKeyBlank())
         {
-            $this->checkForDashboardMerchantHeader();
-
-            $this->setDashboardHeaders();
-
-            $this->admin = $adminToken->admin;
-
-            $this->adminOrgId = $this->admin->getOrgId();
-
-            return $this->checkAndSetAccountScope();
+            return $this->appAuth();
         }
 
         return $this->invalidApiKey();
