@@ -189,6 +189,6 @@ class PermissionTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertCount(3, $result['items']);
+        $this->assertCount(2, $result['items']);
     }
 }
