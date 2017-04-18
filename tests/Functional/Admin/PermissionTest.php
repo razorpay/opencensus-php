@@ -189,6 +189,6 @@ class PermissionTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertContains($role->getPublicId(), $result);
+        $this->assertCount(3, $result['items']);
     }
 }
