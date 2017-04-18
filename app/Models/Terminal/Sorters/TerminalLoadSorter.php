@@ -15,45 +15,6 @@ class TerminalLoadSorter extends Terminal\Sorter
     ];
 
     /**
-     * Rules for selecting a terminal with some probability
-     * Attributes must be one of the terminal entity attribute which is matched
-     * with terminal property
-     */
-    protected static $rules = [
-        [
-            'load'          => 5,
-            'attributes'    => [
-                Terminal\Entity::GATEWAY           => Gateway::FIRST_DATA
-            ]
-        ],
-        [
-            'load'          => 45,
-            'attributes'    => [
-                Terminal\Entity::GATEWAY            => Gateway::AXIS_MIGS
-            ]
-        ],
-        [
-            'load'      => 0,
-            'attributes'    => [
-                Terminal\Entity::GATEWAY            => Gateway::CYBERSOURCE,
-                Terminal\Entity::GATEWAY_ACQUIRER   => Gateway::ACQUIRER_HDFC,
-            ]
-        ],
-        [
-            'load'      => 5,
-            'attributes'    => [
-                Terminal\Entity::GATEWAY            => Gateway::CYBERSOURCE,
-                Terminal\Entity::GATEWAY_ACQUIRER   => Gateway::ACQUIRER_AXIS,
-            ]
-        ],
-    ];
-
-    public function getRules()
-    {
-        return self::$rules;
-    }
-
-    /**
      * Select terminals to be given preference
      * and give them a boost according to the
      * defined rules
@@ -64,7 +25,10 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     public function gatewaySorter($terminals, array $input, $options)
     {
-        // $sortedTerminals = $terminals;
+        if ($options === null)
+        {
+            return $terminals;
+        }
 
         $merchantId = $input['merchant']->getId();
 
@@ -83,81 +47,69 @@ class TerminalLoadSorter extends Terminal\Sorter
         //      <terminal_id> => <load_value>
         // ]
         //
-        $terminalToLoadMap = (new LoadRule\Core)->matchTerminalToRule($terminals, $applicableRules);
+        $terminalLoadMap = (new LoadRule\Core)->matchTerminalToRule($terminals, $applicableRules);
 
-        if (is_null($options) === false)
+        if (empty($terminalLoadMap) === true)
         {
-            $chancePercent = $options->getChance();
+            return $terminals;
+        }
 
-            $boostedTerminalIds = $this->getBoostedTerminalIds($terminals, $chancePercent);
+        // It can happen that the cumulative load across eligible terminaals
+        // exceeds 10000. In that case, we normalize the load values
+        // E.g Rule R1 - Load 7000
+        // Rule R2 - Load 5000
+        // After normalization relative load in probability space of 10000
+        // will be R1 = 5833, R2 = 4166
+        $this->checkAndBalanceLoad($terminalLoadMap);
 
-            if (is_null($boostedTerminalIds) === false)
+        $chancePercent = $options->getChance();
+
+        $boostedTerminals = [];
+
+        $nonBoostedTerminals = [];
+
+        $boostedTerminalIds = $this->getBoostedTerminalIds($terminalLoadMap, $chancePercent);
+
+        if (empty($boostedTerminalIds) === false)
+        {
+            foreach ($terminals as $terminal)
             {
-                $boostedTerminals = [];
-
-                $nonBoostedTerminals = [];
-
-                // As the terminals are from the priority list
-                // append to the terminal
-                foreach ($terminals as $terminal)
+                if (in_array($terminal->getId(), $boostedTerminalIds, true))
                 {
-                    if (in_array($terminal->getId(), $boostedTerminalIds, true))
-                    {
-                        $boostedTerminals[] = $terminal;
-                    }
-                    else
-                    {
-                        $nonBoostedTerminals[] = $terminal;
-                    }
+                    $boostedTerminals[] = $terminal;
                 }
-
-                $sortedTerminals = array_merge($boostedTerminals, $nonBoostedTerminals);
+                else
+                {
+                    $nonBoostedTerminals[] = $terminal;
+                }
             }
+
+            $terminals = array_merge($boostedTerminals, $nonBoostedTerminals);
         }
 
         return $terminals;
     }
 
-    protected function getMerchantSpecificRules(Base\PublicCollection $applicableRules, string $merchantId)
+    protected function getBoostedTerminalIds(array $terminalLoadMap, int $chancePercent)
     {
-        $merchantSpecificRules = $applicableRules->filter(function ($rule) use ($merchantId)
-        {
-            return $rule->getMerchantId() === $merchantId;
-        });
-
-        return $merchantSpecificRules;
-    }
-
-    protected function getBoostedTerminalIds(array $terminals, $chancePercent)
-    {
-        // Not all rules will apply, a terminal may already have
-        // been rejected in the previous sorting/filtering steps.
-        $applicableRules = $this->getApplicableRules($terminals);
+        $boostedTerminalIds = [];
 
         $cumulativeProbabity = 0;
 
-        foreach ($applicableRules as $rule)
+        foreach ($terminalLoadMap as $terminalId => $load)
         {
-            $cumulativeProbabity += $rule['load'];
-
-            $valid = $this->validateRules($cumulativeProbabity, $applicableRules);
-
-            if ($valid === false)
-            {
-                // Rules are invalid. Don't boost any terminal.
-                return null;
-            }
+            $cumulativeProbabity += $load;
 
             // Checking > 100-p, rather than simply <p
             // because in test cases we're always setting
             // p to zero, to avoid unexpected behaviour.
-            if ($chancePercent > (100 - $cumulativeProbabity))
+            if ($chancePercent > (10000 - $cumulativeProbabity))
             {
-                return $rule['ids'];
+                $boostedTerminalIds[] = $terminalId;
             }
         }
 
-        return null;
+        return $boostedTerminalIds;
     }
 
     protected function getApplicableRules($terminals)
