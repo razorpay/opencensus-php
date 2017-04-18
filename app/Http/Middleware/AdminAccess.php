@@ -68,7 +68,7 @@ class AdminAccess
 
     private function getRoutePermissions(string $routeName)
     {
-        $adminAuthRoutes = Route::$adminPermission;
+        $adminAuthRoutes = Route::$routePermission;
 
         if (isset($adminAuthRoutes[$routeName]) === false)
         {

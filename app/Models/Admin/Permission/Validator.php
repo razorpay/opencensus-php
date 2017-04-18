@@ -11,6 +11,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION     => 'sometimes|string|max:255',
         Entity::CATEGORY        => 'required|string|max:255',
         Entity::ASSIGNABLE      => 'sometimes|bool',
+        Entity::ORGS            => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -18,5 +19,6 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION     => 'sometimes|string|max:255',
         Entity::CATEGORY        => 'sometimes|string|max:255',
         Entity::ASSIGNABLE      => 'sometimes|bool',
+        Entity::ORGS            => 'sometimes|array',
     ];
 }

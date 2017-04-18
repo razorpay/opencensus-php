@@ -98,6 +98,43 @@ class Core extends Base\Core
         return $org->toArrayDeleted();
     }
 
+    public function addPermissionToOrg(
+        Permission\Entity $permission,
+        Entity $org)
+    {
+        $this->repo->transactionOnLiveAndTest(function() use($permission, $org)
+        {
+            $permId = $permission->getId();
+
+            $this->repo->attach($org, 'permissions', [$permId]);
+
+            $role = $this->repo->role
+                               ->getSuperAdminRoleByOrgId($org->getId());
+
+            $this->repo->attach($role, 'permissions', [$permId]);
+        });
+    }
+
+    public function deletePermissionFromOrg(
+        Permission\Entity $permission,
+        Entity $org)
+    {
+        $this->repo->transactionOnLiveAndTest(function() use($permission, $org)
+        {
+            $permId = $permission->getId();
+            $orgId = $org->getId();
+
+            $this->repo->detach($org, 'permissions', [$permId]);
+
+            $roles = $this->repo->role->fetchByOrgId($orgId);
+
+            foreach ($roles as $role)
+            {
+                $this->repo->detach($role, 'permissions', [$permId]);
+            }
+        });
+    }
+
     protected function addOrgRelatedEntities(Entity $org, array $input)
     {
         if (isset($input[Entity::PERMISSIONS]) === true)

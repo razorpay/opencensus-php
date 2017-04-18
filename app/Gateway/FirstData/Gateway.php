@@ -210,6 +210,8 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         $this->checkApprovalCode($gatewayPayment);
+
+        return $this->getCallbackResponseData($input);
     }
 
     protected function getCallbackGatewayContent(array $input)
