@@ -16,10 +16,6 @@ class Validator extends Base\Validator
         Entity::OP_TYPE        => 'required|string|in:and,or',
     ];
 
-    protected static $createValidators = [
-        Entity::OP_TYPE,
-    ];
-
     public function validateOpType(array $input)
     {
         $workflowId = $input[Entity::WORKFLOW_ID];

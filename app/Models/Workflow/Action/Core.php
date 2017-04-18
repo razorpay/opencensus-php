@@ -104,6 +104,9 @@ class Core extends Base\Core
         return $workflows;
     }
 
+    /**
+     * This function has to run in a transaction
+     */
     public function checkAndMarkActionApproved(Entity $action)
     {
         if ($action->getApproved() === true)
@@ -115,9 +118,10 @@ class Core extends Base\Core
 
         $workflowId = $action->getWorkflowId();
 
-        $level = $this->repo->workflow_step->getLastLevelOfWorkflow($workflowId);
+        $lastLevel = $this->repo->workflow_step
+                                ->getLastLevelOfWorkflow($workflowId);
 
-        if ($level !== $action->getCurrentLevel())
+        if ($lastLevel !== $action->getCurrentLevel())
         {
             return false;
         }
@@ -219,24 +223,21 @@ class Core extends Base\Core
 
         if ($opType === Step\Entity::OP_TYPE_AND)
         {
-            $levelApproved = empty($stepApprovedMap) ? false : true;
-
-            foreach ($stepApprovedMap as $stepId => $approval)
-            {
-                $levelApproved = (bool)($levelApproved && $approval);
-            }
+            // if any of the check fails, level is not approved.
+            $levelApproved = (in_array(false, $stepApprovedMap, true) === false);
         }
         else if ($opType === Step\Entity::OP_TYPE_OR)
         {
-            foreach ($stepApprovedMap as $stepId => $approval)
-            {
-                $levelApproved = (bool)($levelApproved || $approval);
-            }
+            // if any of the check passed, level is approved.
+            $levelApproved = in_array(true, $stepApprovedMap, true);
         }
 
         return $levelApproved;
     }
 
+    /**
+     * This function has to run in a transaction
+     */
     public function updateCurrentLevelIfNeeded(Entity $action)
     {
         // Get the total reviewer_count required across all
