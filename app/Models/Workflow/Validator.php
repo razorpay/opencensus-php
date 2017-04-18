@@ -23,8 +23,6 @@ class Validator extends Base\Validator
 
     public function validatePermissionHasOneWorkflow(array $perms)
     {
-        $workflow = $this->entity;
-
         $workflowIds = (new Repository)->getWorkflowIdsForPermissions($perms);
 
         if (empty($workflowIds) === false)
