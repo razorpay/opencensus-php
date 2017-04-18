@@ -12,19 +12,12 @@ class Service extends Base\Service
     {
         if (empty($input[Entity::ORGS]) === false)
         {
-            $orgs = $input[Entity::ORGS];
-
             Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
         }
 
         $permission = $this->core()->create($input);
 
         $response = $permission->toArrayPublic();
-
-        if (empty($input[Entity::ORGS]) === false)
-        {
-            $response[Entity::ORGS] = $orgs;
-        }
 
         return $response;
     }
