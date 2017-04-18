@@ -340,10 +340,11 @@ class Service extends Base\Service
 
             $input = [
                 ScheduleTask\Entity::METHOD      => null,
-                ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
                 ScheduleTask\Entity::SCHEDULE_ID => $scheduleId
             ];
         }
+
+        $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 

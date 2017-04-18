@@ -39,16 +39,9 @@ class PlanController extends Controller
         return ApiResponse::json($subscription);
     }
 
-    public function postCreateSubscriptionInvoices()
+    public function postCreateAndChargeSubscriptionInvoices()
     {
-        $summary = $this->subscriptionService->createSubscriptionInvoices();
-
-        return ApiResponse::json($summary);
-    }
-
-    public function postChargeSubscriptions()
-    {
-        $summary = $this->subscriptionService->chargeSubscriptions();
+        $summary = $this->subscriptionService->createAndChargeInvoices();
 
         return ApiResponse::json($summary);
     }

@@ -50,7 +50,6 @@ class Core extends Base\Core
         {
             $input = [
                 Entity::NAME     => "Basic T$delay",
-                Entity::TYPE     => Type::SETTLEMENT,
                 Entity::PERIOD   => Period::DAILY,
                 Entity::INTERVAL => 1,
                 Entity::DELAY    => $delay,

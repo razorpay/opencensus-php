@@ -135,9 +135,14 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::NEXT_RUN_AT, $timestamp);
     }
 
+    public function setLastRunAt($timestamp)
+    {
+        return $this->setAttribute(self::LAST_RUN_AT, $timestamp);
+    }
+
     // ------------------------- Helper methods --------------------------------
 
-    public function updateNextRun()
+    public function updateNextRunAndLastRun()
     {
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), 'Asia/Kolkata');
 
@@ -146,6 +151,7 @@ class Entity extends Base\PublicEntity
         $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun);
 
         $this->setNextRunAt($nextRun->timestamp);
+        $this->setLastRunAt($lastRun->timestamp);
     }
 
     public function isTypeSettlement()

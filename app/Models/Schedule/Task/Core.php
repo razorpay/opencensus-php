@@ -88,7 +88,7 @@ class Core extends Base\Core
 
         // $merchantId = Merchant\Account::SHARED_ACCOUNT;
 
-        $schedule = $this->repo->schedule->findByIdAndMerchant($scheduleId, $merchant);
+        $schedule = $this->repo->schedule->findOrFailPublic($scheduleId);
 
         $scheduleTask->schedule()->associate($schedule);
 

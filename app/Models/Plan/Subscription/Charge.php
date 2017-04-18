@@ -13,6 +13,7 @@ use RZP\Models\Payment;
 use RZP\Models\Plan;
 use RZP\Models\Invoice;
 use RZP\Models\Base;
+use RZP\Models\Schedule\Task;
 
 class Charge extends Base\Core
 {
@@ -51,6 +52,15 @@ class Charge extends Base\Core
 
         $subscription = $this->repo->subscription->findOrFail($data['subscription_id']);
 
+        $invoice = $this->repo->invoice->findOrFail($data['invoice_id']);
+
+        $valid = $this->validateInvoiceStatusBeforeCharging($invoice, $subscription);
+
+        if ($valid === false)
+        {
+            return;
+        }
+
         $this->processor = new Payment\Processor\Processor($subscription->merchant);
 
         //
@@ -84,6 +94,48 @@ class Charge extends Base\Core
         // if an exception gets thrown in handleAuthorizationSuccess.
         //
         $this->handleAuthorizationSuccess($authorizedPayment, $subscription);
+    }
+
+    protected function validateInvoiceStatusBeforeCharging(Invoice\Entity $invoice, Entity $subscription)
+    {
+        $valid = true;
+
+        //
+        // This happens when two crons picked up the same invoice
+        // and queued the charge on them.
+        // If one of the queue picks it up first, it would have marked the
+        // invoice as paid and now this queue gets executed.
+        //
+        if ($invoice->isPaid() === true)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ALREADY_PAID;
+
+            $valid = false;
+        }
+        //
+        // When a different cron picked up the invoice for a charge
+        // and got queued, the status could have gone into
+        // on_hold. If this happened, we should not attempt
+        // to charge the subscription now.
+        //
+        else if ($invoice->getSubStatus() === Invoice\Status::ON_HOLD)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ON_HOLD;
+
+            $valid = false;
+        }
+
+        if ($valid === false)
+        {
+            $this->trace->critical(
+                $traceCode,
+                [
+                    'invoice_id' => $invoice->getId(),
+                    'subscription_id' => $subscription->getId(),
+                ]);
+        }
+
+        return $valid;
     }
 
     protected function authorizePayment(array $recurringPayload)
@@ -198,6 +250,7 @@ class Charge extends Base\Core
     public function handleCaptureSuccess(Entity $subscription, Payment\Entity $capturedPayment, Invoice\Entity $invoice)
     {
         $plan = $subscription->plan;
+        $task = $subscription->task;
 
         $subscription->setStatus(Status::ACTIVE);
 
@@ -214,6 +267,8 @@ class Charge extends Base\Core
 
         $this->setNextChargeAt($subscription, $plan);
 
+        $this->updateScheduleTask($subscription, $task);
+
         $this->incrementPaidCount($subscription);
 
         $this->setEndedAtIfApplicable($subscription);
@@ -221,8 +276,9 @@ class Charge extends Base\Core
         $this->setActivatedAt($subscription, $capturedPayment);
 
         $this->repo->transaction(
-            function() use ($invoice, $subscription)
+            function() use ($task, $invoice, $subscription)
             {
+                $this->repo->saveOrFail($task);
                 $this->repo->saveOrFail($invoice);
                 $this->repo->saveOrFail($subscription);
             });
@@ -380,6 +436,15 @@ class Charge extends Base\Core
         // }
         //
         // $subscription->setChargeAt($nextChargeAt);
+    }
+
+    protected function updateScheduleTask(Entity $subscription, Task\Entity $task)
+    {
+        // $task = $this->repo->task->fetchByEntityAndMerchant($subscription, $subscription->merchant);
+
+        // TODO: This is not DONE! Need to understand and then refactor how
+        // next run is updated.
+        $task->updateNextRun();
     }
 
     /**

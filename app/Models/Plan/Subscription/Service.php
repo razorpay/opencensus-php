@@ -41,7 +41,7 @@ class Service extends Base\Service
         return $subscription->toArrayPublic();
     }
 
-    public function createSubscriptionInvoices()
+    public function createAndChargeInvoices()
     {
         $subscriptionsToCharge = $this->repo->subscription->getSubscriptionsToCharge();
 
@@ -52,7 +52,7 @@ class Service extends Base\Service
         {
             try
             {
-                $this->core->createInvoiceBeforeCharge($subscription);
+                $this->core->createInvoiceAndCharge($subscription);
 
                 $invoicesCreated++;
             }
@@ -122,52 +122,6 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::SUBSCRIPTIONS_EXPIRE_SUMMARY,
-            $summary
-        );
-
-        return $summary;
-    }
-
-    public function chargeSubscriptions()
-    {
-        $invoicesToCharge = $this->repo->invoice->getSubscriptionInvoicesToCharge();
-
-        $queued = $failed = 0;
-        $failures = [];
-
-        foreach ($invoicesToCharge as $invoice)
-        {
-            try
-            {
-                $subscription = $invoice->subscription;
-
-                $this->core->charge($subscription, $invoice);
-                $queued++;
-            }
-            catch (\Exception $ex)
-            {
-                $failed++;
-                $failures[] = $subscription->getId();
-
-                $this->trace->traceException(
-                    $ex,
-                    Trace::ERROR,
-                    TraceCode::SUBSCRIPTION_CHARGE_QUEUE_FAILED,
-                    [
-                        'subscription_id' => $subscription->getId()
-                    ]);
-            }
-        }
-
-        $summary = [
-            'total'    => $invoicesToCharge->count(),
-            'queued'   => $queued,
-            'failed'   => $failed,
-            'failures' => $failures,
-        ];
-
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_CHARGE_QUEUE_SUMMARY,
             $summary
         );
 

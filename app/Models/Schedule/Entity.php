@@ -12,7 +12,6 @@ class Entity extends Base\PublicEntity
 
     const NAME        = 'name';
     const MERCHANT_ID = 'merchant_id';
-    const TYPE        = 'type';
     const PERIOD      = 'period';
     const INTERVAL    = 'interval';
     const ANCHOR      = 'anchor';
@@ -24,31 +23,26 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::NAME,
-        self::TYPE,
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
         self::HOUR,
         self::DELAY,
-        self::NEXT_RUN,
     ];
 
     protected $public = [
         self::ID,
         self::NAME,
         self::MERCHANT_ID,
-        self::TYPE,
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
         self::HOUR,
         self::DELAY,
-        self::NEXT_RUN,
     ];
 
     protected static $modifiers = [
         self::ANCHOR,
-        self::NEXT_RUN,
     ];
 
     protected $casts = [
@@ -56,21 +50,17 @@ class Entity extends Base\PublicEntity
         self::ANCHOR   => 'int',
         self::HOUR     => 'int',
         self::DELAY    => 'int',
-        self::NEXT_RUN => 'int',
+    ];
+
+    protected $defaults = [
+        self::DELAY     => 0,
+        self::HOUR      => 0,
+        self::ANCHOR    => null,
+        self::INTERVAL  => null,
+        self::NAME      => null,
     ];
 
     protected $entity = 'schedule';
-
-    public function updateNextRun()
-    {
-        $lastRun = Carbon::createFromTimestamp($this->getNextRun(), 'Asia/Kolkata');
-
-        $currentTime = Carbon::now('Asia/Kolkata');
-
-        $nextRun = Library::computeFutureRun($this, $currentTime, $lastRun);
-
-        $this->setNextRun($nextRun->timestamp);
-    }
 
     // -------------------------- Checks -----------------------
 
@@ -104,16 +94,6 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function modifyNextRun(& $input)
-    {
-        if (isset($input[self::NEXT_RUN]) === false)
-        {
-            $nextRun = Carbon::today('Asia/Kolkata')->timestamp;
-
-            $input[self::NEXT_RUN] = $nextRun;
-        }
-    }
-
     // ----------------------- Getters -----------------------
 
     public function getName()
@@ -124,11 +104,6 @@ class Entity extends Base\PublicEntity
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
-    }
-
-    public function getType()
-    {
-        return $this->getAttribute(self::TYPE);
     }
 
     public function getPeriod()
@@ -154,17 +129,5 @@ class Entity extends Base\PublicEntity
     public function getDelay()
     {
         return $this->getAttribute(self::DELAY);
-    }
-
-    public function getNextRun()
-    {
-        return $this->getAttribute(self::NEXT_RUN);
-    }
-
-    // ----------------------- Setters -----------------------
-
-    public function setNextRun($nextRun)
-    {
-        return $this->setAttribute(self::NEXT_RUN, $nextRun);
     }
 }

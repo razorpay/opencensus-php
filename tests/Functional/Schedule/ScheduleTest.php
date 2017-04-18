@@ -81,6 +81,8 @@ class ScheduleTest extends TestCase
 
     public function testScheduleInvalidType()
     {
+        $this->markTestSkipped('No type in schedules now');
+
         $input = $this->getDefaultScheduleArray();
 
         $input['type'] = 'not_settlement';

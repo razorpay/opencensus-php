@@ -4,7 +4,6 @@ namespace RZP\Models\Schedule\Task;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Repository extends Base\Repository
 {
@@ -24,21 +23,21 @@ class Repository extends Base\Repository
      *
      * @return Entity
      */
-    public function fetchExistingScheduleTask(ScheduleTask\Entity $scheduleTask)
+    public function fetchExistingScheduleTask(Entity $scheduleTask)
     {
         $query = $this->newQuery()
                       ->merchantId($scheduleTask->getMerchantId())
-                      ->where(ScheduleTask\Entity::TYPE, '=', $scheduleTask->getType());
+                      ->where(Entity::TYPE, '=', $scheduleTask->getType());
 
         $method = $scheduleTask->getMethod();
 
         if ($method === null)
         {
-            $query->whereNull(ScheduleTask\Entity::METHOD);
+            $query->whereNull(Entity::METHOD);
         }
         else
         {
-            $query->where(ScheduleTask\Entity::METHOD, '=', $method);
+            $query->where(Entity::METHOD, '=', $method);
         }
 
         return $query->first();
@@ -51,11 +50,11 @@ class Repository extends Base\Repository
 
         if ($method === null)
         {
-            $query->whereNull(ScheduleTask\Entity::METHOD);
+            $query->whereNull(Entity::METHOD);
         }
         else
         {
-            $query->where(ScheduleTask\Entity::METHOD, '=', $method);
+            $query->where(Entity::METHOD, '=', $method);
         }
 
         return $query->with('schedule')
@@ -66,7 +65,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->merchantId($merchant->getId())
-                    ->where(ScheduleTask\Entity::TYPE, '=', $type)
+                    ->where(Entity::TYPE, '=', $type)
                     ->with('schedule')
                     ->get();
     }
@@ -74,15 +73,23 @@ class Repository extends Base\Repository
     public function fetchScheduleUsageCountById(string $scheduleId)
     {
         return $this->newQuery()
-                    ->where(ScheduleTask\Entity::SCHEDULE_ID, '=', $scheduleId)
+                    ->where(Entity::SCHEDULE_ID, '=', $scheduleId)
                     ->count();
+    }
+
+    public function fetchByEntityAndMerchant(Base\PublicEntity $entity, Merchant\Entity $merchant)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $entity->getId())
+                    ->merchantId($merchant->getId())
+                    ->firstOrFail();
     }
 
     public function fetchDueScheduleTasks($type, $timestamp)
     {
         return $this->newQuery()
-                    ->where(ScheduleTask\Entity::TYPE, '=', $type)
-                    ->where(ScheduleTask\Entity::NEXT_RUN_AT, '<', $timestamp)
+                    ->where(Entity::TYPE, '=', $type)
+                    ->where(Entity::NEXT_RUN_AT, '<', $timestamp)
                     ->get();
     }
 }

@@ -613,12 +613,10 @@ final class FactoryData
             'id'                => $faker->uniqueid,
             'merchant_id'       => '100000Razorpay',
             'name'              => 'Basic T3',
-            'type'              => 'settlement',
             'period'            => 'daily',
             'interval'          => 1,
             'delay'             => 3,
             'hour'              => 5,
-            'next_run'          => 1451586600,
         ]);
 
         $factory(\RZP\Models\Schedule\Task\Entity::class, [

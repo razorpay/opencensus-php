@@ -12,12 +12,10 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         Entity::NAME     => 'sometimes|string|max:50',
         Entity::PERIOD   => 'required|string',
-        Entity::TYPE     => 'required|string|in:settlement,plan',
         Entity::INTERVAL => 'sometimes|integer|max:24',
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
-        Entity::DELAY    => 'required|integer|min:0|max:30',
-        Entity::NEXT_RUN => 'sometimes|integer',
+        Entity::DELAY    => 'sometimes|integer|min:0|max:30',
     );
 
     protected static $editRules = array(
@@ -26,7 +24,6 @@ class Validator extends Base\Validator
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'sometimes|integer|min:0|max:30',
-        Entity::NEXT_RUN => 'sometimes|integer',
     );
 
     protected static $createValidators = array(

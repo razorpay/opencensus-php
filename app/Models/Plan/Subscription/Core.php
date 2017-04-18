@@ -99,25 +99,28 @@ class Core extends Base\Core
         }
     }
 
-    public function createInvoiceBeforeCharge(Entity $subscription)
+    public function createInvoiceAndCharge(Entity $subscription)
     {
-        $this->repo->transaction(
-            function() use ($subscription)
-            {
-                //
-                // If first charge, we set the status to active.
-                // If not, the status would already be active or
-                // would be reset by some other flow (auth/capture).
-                //
-                if ($subscription->getPaidCount() === 0)
-                {
-                    $this->activateSubscription($subscription);
-                }
+        $invoice = $this->createInvoiceBeforeCharge($subscription);
 
-                $addOns = $this->repo->add_on->getUnusedAddOnsForSubscription($subscription);
+        //
+        // We should not charge any invoice which is on_hold status,
+        // since, the subscription would also be in on_hold status here.
+        // We do not charge on_hold subscriptions, we only create an invoice.
+        //
+        if ($invoice->getSubStatus() === Invoice\Status::ON_HOLD)
+        {
+            $this->trace->info(
+                TraceCode::SUBSCRIPTION_INVOICE_ON_HOLD,
+                [
+                    'invoice_id'        => $invoice->getId(),
+                    'subscription_id'   => $subscription->getId(),
+                ]);
 
-                $this->createInvoiceForSubscription($subscription, $addOns);
-            });
+            return;
+        }
+
+        $this->charge($subscription, $invoice);
     }
 
     public function expireSubscription(Entity $subscription)
@@ -138,45 +141,6 @@ class Core extends Base\Core
         $subscription->setStatus(Status::EXPIRED);
 
         $this->repo->saveOrFail($subscription);
-    }
-
-    public function charge(Entity $subscription, Invoice\Entity $invoice)
-    {
-        $this->mutex->acquireAndRelease(
-            $subscription->getId(),
-            function() use($subscription, $invoice)
-            {
-                $recurringPayload = $this->constructRecurringPayload($subscription, $invoice);
-
-                $queuePayload = [
-                    'recurring_payload' => $recurringPayload,
-                    'subscription_id'   => $subscription->getId(),
-                    'invoice_id'        => $invoice->getId(),
-                    // This would almost always be rzp_{mode},since it will be
-                    // run via cron. We actually need the mode here. But basicauth
-                    // functions mostly work on the key. Hence, sending the key
-                    // across rather than the mode.
-                    'key_id'            => $this->app['basicauth']->getPublicKey(),
-                ];
-
-                // If the status is in created state, this means that the token has not
-                // been associated with it yet. An authorized payment for this subscription
-                // has not been done.
-                if ($subscription->getStatus() === Status::CREATED)
-                {
-                    throw new LogicException(
-                        'Should not have reached here. The subscription is not ' .
-                        'chargeable because it is still in created state.',
-                        null,
-                        [
-                            'subscription_id'   => $subscription->getId(),
-                            'status'            => $subscription->getStatus(),
-                        ]);
-                }
-
-                $this->app['queue']->push(Charge::class . '@fireCharge', $queuePayload);
-            }
-        );
     }
 
     public function retry(Entity $subscription)
@@ -275,6 +239,69 @@ class Core extends Base\Core
         return $authAmount;
     }
 
+    protected function createInvoiceBeforeCharge(Entity $subscription)
+    {
+        return $this->repo->transaction(
+            function() use ($subscription)
+            {
+                //
+                // If first charge, we set the status to active.
+                // If not, the status would already be active or
+                // would be reset by some other flow (auth/capture).
+                //
+                if ($subscription->getPaidCount() === 0)
+                {
+                    $this->activateSubscription($subscription);
+                }
+
+                $addOns = $this->repo->add_on->getUnusedAddOnsForSubscription($subscription);
+
+                $invoice = $this->createInvoiceForSubscription($subscription, $addOns);
+
+                return $invoice;
+            });
+
+    }
+
+    protected function charge(Entity $subscription, Invoice\Entity $invoice)
+    {
+        $this->mutex->acquireAndRelease(
+            $subscription->getId(),
+            function() use($subscription, $invoice)
+            {
+                $recurringPayload = $this->constructRecurringPayload($subscription, $invoice);
+
+                $queuePayload = [
+                    'recurring_payload' => $recurringPayload,
+                    'subscription_id'   => $subscription->getId(),
+                    'invoice_id'        => $invoice->getId(),
+                    // This would almost always be rzp_{mode},since it will be
+                    // run via cron. We actually need the mode here. But basicauth
+                    // functions mostly work on the key. Hence, sending the key
+                    // across rather than the mode.
+                    'key_id'            => $this->app['basicauth']->getPublicKey(),
+                ];
+
+                // If the status is in created state, this means that the token has not
+                // been associated with it yet. An authorized payment for this subscription
+                // has not been done.
+                if ($subscription->getStatus() === Status::CREATED)
+                {
+                    throw new LogicException(
+                        'Should not have reached here. The subscription is not ' .
+                        'chargeable because it is still in created state.',
+                        null,
+                        [
+                            'subscription_id'   => $subscription->getId(),
+                            'status'            => $subscription->getStatus(),
+                        ]);
+                }
+
+                $this->app['queue']->push(Charge::class . '@fireCharge', $queuePayload);
+            }
+        );
+    }
+
     protected function createInvoiceForSubscription(Entity $subscription, $addOns, bool $first = false)
     {
         $merchant = $subscription->merchant;
@@ -292,6 +319,8 @@ class Core extends Base\Core
                 'subscription_id' => $subscription->getId(),
                 'invoice_details' => $invoice->toArray(),
             ]);
+
+        return $invoice;
     }
 
     protected function associateInvoiceToAddOns(Invoice\Entity $invoice, $addOns)
@@ -424,14 +453,15 @@ class Core extends Base\Core
 
         $taskInput = [
             Task\Entity::METHOD         => null,
-            Task\Entity::TYPE           => Task\Type::PLAN,
+            Task\Entity::TYPE           => Task\Type::SUBSCRIPTION,
             Task\Entity::SCHEDULE_ID    => $schedule->getId(),
+            // TODO: During first charge auth txn, update the task's next run_at.
             Task\Entity::NEXT_RUN_AT    => $subscription->getStartAt(),
         ];
 
-        $run = (new Task\Core)->create($plan->merchant, $subscription, $taskInput);
+        $task = (new Task\Core)->create($plan->merchant, $subscription, $taskInput);
 
-        return $run;
+        return $task;
     }
 
     protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice)

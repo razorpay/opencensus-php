@@ -389,6 +389,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VIEW_LESS);
     }
 
+    public function getSubStatus()
+    {
+        return $this->getAttribute(self::SUB_STATUS);
+    }
+
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);

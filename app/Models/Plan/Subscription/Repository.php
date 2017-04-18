@@ -11,6 +11,13 @@ class Repository extends Base\Repository
 
     public function getSubscriptionsToCharge()
     {
+        //
+        // We should be getting on_hold subscriptions also
+        // so that we can create the invoice. We will not
+        // charge these invoices.
+        // TODO: Do this later.
+        //
+
         return $this->getBaseSubscriptionsQuery()
                     ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED])
                     ->whereNull(Entity::ENDED_AT)

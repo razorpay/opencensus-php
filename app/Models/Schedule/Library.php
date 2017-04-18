@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 class Library
 {
-    public static function getNextApplicableTime($currentTime, $schedule, $nextRunAt)
+    public static function getNextApplicableTime($currentTime, Entity $schedule, $nextRunAt)
     {
         // Minimum delay before the settlement of any payment. In case of hourly
         // schedules, this is set to zero, but settlement time is pushed forward
@@ -27,14 +27,18 @@ class Library
         return $nextRun->getTimestamp();
     }
 
-    public static function computeFutureRun($schedule, $referenceTime, $nextRun)
+    public static function computeFutureRun(
+        Entity $schedule,
+        Carbon $referenceTime,
+        Carbon $lastRun,
+        bool $considerHolidays = true)
     {
         if ($schedule->getAnchor() !== null)
         {
             // Anchored schedules are those that rely on a certain attribute
             // of its target days. For example, settlements that happen every
             // Thursday, or the last Friday of every month.
-            $futureRun = self::resolveAnchored($referenceTime, $schedule);
+            $futureRun = self::resolveAnchored($schedule, $referenceTime);
         }
         else
         {
@@ -42,14 +46,17 @@ class Library
             // the time between payment and settlement, or after a fixed period
             // of time. For example, settlements that happen N days after their
             // corresponding payments, or settlements that happen every N hours.
-            $futureRun = self::resolveUnAnchored($referenceTime, $schedule, $nextRun);
+            $futureRun = self::resolveUnAnchored($schedule, $referenceTime, $lastRun);
         }
 
-        // If anchor date is a holiday, don't wait till next anchor
-        // date. Settlement on the next working day.
-        if (Holidays::isWorkingDay($futureRun) === false)
+        if ($considerHolidays === true)
         {
-            $futureRun = Holidays::getNextWorkingDay($futureRun);
+            // If anchor date is a holiday, don't wait till next anchor
+            // date. Settlement on the next working day.
+            if (Holidays::isWorkingDay($futureRun) === false)
+            {
+                $futureRun = Holidays::getNextWorkingDay($futureRun);
+            }
         }
 
         if ($schedule->isHourly() === false)
@@ -61,7 +68,7 @@ class Library
         return $futureRun;
     }
 
-    protected static function resolveAnchored($refTime, $schedule)
+    protected static function resolveAnchored(Entity $schedule, Carbon $refTime)
     {
         // Since hourly schedules can't be anchored, time no longer matters.
         $nextRun = $refTime->addDay()->hour(0)->minute(0)->second(0);
@@ -79,7 +86,7 @@ class Library
         return $nextRun;
     }
 
-    protected static function resolveUnAnchored($refTime, $schedule, $nextRun)
+    protected static function resolveUnAnchored(Entity $schedule, Carbon $refTime, Carbon $lastRun)
     {
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
@@ -87,12 +94,12 @@ class Library
         $interval = $schedule->getInterval();
 
         // Increment by interval until we cross minimum delay time.
-        while ($refTime > $nextRun)
+        while ($refTime > $lastRun)
         {
-            $nextRun->$step($interval);
+            $lastRun->$step($interval);
         }
 
-        return $nextRun;
+        return $lastRun;
     }
 
     protected static function checkAnchor($time, $schedule)

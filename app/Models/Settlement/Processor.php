@@ -79,9 +79,6 @@ class Processor extends Base\Core
 
         $this->updateSettlementScheduleTaskNextRun();
 
-        // this is needed temp until we move to pivot
-        // $this->updateSettlementScheduleNextRun();
-
         return $data;
     }
 
@@ -296,7 +293,8 @@ class Processor extends Base\Core
     /**
      *  NEFT can be processed between 8am and 6 pm only, while batch file can be
      *  uploaded anytime.
-     * @return [boolean] [returns if settlement can be proessed now]
+     *
+     * @return bool returns if settlement can be processed now
      */
     protected function isInvalidSettlementTime()
     {
@@ -318,22 +316,11 @@ class Processor extends Base\Core
     protected function updateSettlementScheduleTaskNextRun()
     {
         $scheduleTasks = $this->repo->schedule_task->fetchDueScheduleTasks(
-                        ScheduleTask\Type::SETTLEMENT,
-                        $this->setlTime);
+                                                        ScheduleTask\Type::SETTLEMENT,
+                                                        $this->setlTime);
 
-        $scheduleTasks->callOnEveryItem('updateNextRun');
+        $scheduleTasks->callOnEveryItem('updateNextRunAndLastRun');
 
         $this->repo->saveOrFailCollection($scheduleTasks);
-    }
-
-    protected function updateSettlementScheduleNextRun()
-    {
-        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
-
-        $schedules->callOnEveryItem('updateNextRun');
-
-        $this->repo->saveOrFailCollection($schedules);
-
-        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
     }
 }

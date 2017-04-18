@@ -39,9 +39,7 @@ class Core extends Base\Core
         // TODO: Decide on the name for the schedule.
 
         $extraInput = [
-            Schedule\Entity::NAME       => $input[Entity::NAME],
-            Schedule\Entity::DELAY      => 0,
-            Schedule\Entity::TYPE       => Schedule\Type::PLAN,
+            Schedule\Entity::NAME => $input[Entity::NAME],
         ];
 
         $scheduleInput = array_merge($input[Entity::SCHEDULE], $extraInput);

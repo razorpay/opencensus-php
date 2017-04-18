@@ -354,6 +354,12 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Schedule\Run\Entity', 'entity_id');
     }
 
+    public function task()
+    {
+        // TODO: Might have to change to morphMany. Check if this works.
+        return $this->morphOne('RZP\Models\Task\Entity', 'entity');
+    }
+
     // --------------------- END RELATIONS ---------------------
 
     // --------------------- PUBLIC SETTERS ---------------------

@@ -105,6 +105,8 @@ class Repository extends Base\Repository
     }
 
     /**
+     * @deprecated
+     *
      * Once an invoice is issued for a subscription, it MUST
      * be charged, irrespective of whether the invoice has been expired
      * or the subscription has been cancelled.
