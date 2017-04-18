@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Mail;
+
+use RZP\Mail\Payment\CardSaved as CardSavedMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -345,6 +348,8 @@ class SavedCardsPaymentCreateTest extends TestCase
      */
     public function testPaymentCreateAndSaveCardGlobal()
     {
+        Mail::fake();
+
         // set payment data
         $this->mockSession();
 
@@ -403,6 +408,8 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($token[Token::USED_COUNT], 2);
 
         $this->assertNotEquals($token[Token::USED_AT], null);
+
+        Mail::assertSent(CardSavedMail::class);
     }
 
     /**
@@ -547,7 +554,7 @@ class SavedCardsPaymentCreateTest extends TestCase
         {
             $this->doAuthPayment($this->payment);
         });
-   }
+    }
 
     /**
      * test card multiple payments with save card local, only one card should be saved

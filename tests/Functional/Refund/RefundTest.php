@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Refund;
 use DB;
 use Mockery;
 use Carbon\Carbon;
+use Mail;
+
+use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Batch\Status;
@@ -42,13 +45,15 @@ class RefundTest extends TestCase
 
     public function testRefund()
     {
+        Mail::fake();
+
         $payment = $this->defaultAuthPayment();
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $this->mockDashboardRequest();
 //        $this->mockRefundEmail();
 
-        $refund = $this->startTest($payment['id'], (string)$payment['amount']);
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -57,6 +62,8 @@ class RefundTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals(true, $refund['gateway_refunded']);
+
+        Mail::assertSent(RefundedMail::class);
     }
 
     public function testRefundDirect()
@@ -498,19 +505,20 @@ class RefundTest extends TestCase
                 Mockery::any(),
                 Mockery::on(function ($data)
                     {
-                        $testData = array(
-                            'payment'   =>  [
+                        $testData = [
+                            'payment' => [
                                 'amount'=>  'INR 500.00'
                             ],
-                            'merchant'  =>  [],
-                            'customer'   =>  [
-                                'email' =>  'a@b.com',
+                            'merchant' => [],
+                            'customer' => [
+                                'email' => 'a@b.com',
                                 'phone' => '9918899029'
                             ],
-                            'refund'  =>  [
+                            'refund'  => [
                                 'amount' => 'INR 500.00'
                             ]
-                        );
+                        ];
+
                         $this->assertArraySelectiveEquals($testData, $data);
 
                         return true;

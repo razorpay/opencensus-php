@@ -3,6 +3,9 @@
 namespace RZP\Gateway\Wallet\Airtelmoney;
 
 use Carbon\Carbon;
+use Mail;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\RefundFile\Constants;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\MailTags;
@@ -46,29 +49,9 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $data = [
-            'file' => $fileData['file_path'],
-            'body' => 'Please find attached refunds information for AirtelMoney'
-        ];
+        $refundFileMail = new RefundFileMail($fileData, Constants::WALLET_AIRTELMONEY);
 
-        $this->mail->queue('emails.message', $data, function ($message) use ($data)
-        {
-            $emails = ['settlements@razorpay.com'];
-
-            $message->from('refunds@razorpay.com', 'Wallet Airtelmoney refunds');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('Airtelmoney refunds file for ' . $today);
-
-            $message->to($emails);
-
-            $message->attach($data['file']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::AIRTEL_MONEY_REFUNDS_MAIL);
-        });
+        Mail::queue($refundFileMail);
     }
 
     protected function getRefundData($input)

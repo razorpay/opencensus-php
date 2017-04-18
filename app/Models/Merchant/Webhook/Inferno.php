@@ -6,6 +6,7 @@ use App;
 use Mail;
 use Requests;
 
+use RZP\Mail\Merchant\Webhook as WebhookMail;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
@@ -107,79 +108,16 @@ class Inferno
 
     public function sendEmail($webhook, $type)
     {
-        $mailData = array();
+        $options = [
+            'mode'         => $this->mode,
+            'type'         => $type,
+            'event'        => $this->event,
+            'errorMessage' => $this->errorMessage
+        ];
 
-        $toEmails = $webhook->merchant->getTransactionReportEmail();
+        $webhookMail = new WebhookMail($webhook, $options);
 
-        $mailData['to_emails'] = $toEmails;
-
-        $subjectName = $webhook->merchant->getBillingLabelElseName();
-
-        $webhookId = $webhook->getPublicId();
-
-        $subject = 'Razorpay | ';
-
-        $mailData['url'] = $webhook->getUrl();
-        $mailData['error_message'] = $this->errorMessage;
-
-        if (empty($mailData['error_message']))
-        {
-            $mailData['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
-        }
-
-        $mailData['date'] = date('d-M-Y H:m:s T');
-
-        $eventData = json_decode($this->event, true);
-
-        $mailData['event'] = $eventData['event'];
-
-        $this->setEntityData($mailData, $eventData);
-
-        if ($type === 'failure')
-        {
-            $subject .= 'Webhook failed for ' . $subjectName;
-        }
-        else if ($type === 'deactivate')
-        {
-            $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
-        }
-
-        $mailData['subject'] = $subject;
-        $mailData['mode'] = $this->mode;
-
-        Mail::send('emails.webhook.'.$type, $mailData, function($message) use ($mailData, $webhookId)
-        {
-            $emails = $mailData['to_emails'];
-
-            $message->from('alerts@razorpay.com', 'Razorpay Webhook Support');
-
-            $message->replyTo('support@razorpay.com', 'Razorpay Support');
-
-            $message->subject($mailData['subject']);
-
-            $message->to($emails);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::WEBHOOK);
-
-            $headers->addTextHeader(MailTags::HEADER, $webhookId);
-        });
-    }
-
-    protected function setEntityData(array & $mailData, array $eventData)
-    {
-        $event = $eventData['event'];
-
-        if (isset(Event::$eventsToEntityMap[$event]) === false)
-        {
-            return;
-        }
-
-        $entityType = Event::$eventsToEntityMap[$event];
-
-        $mailData['entity_id'] = $eventData['payload'][$entityType]['entity']['id'];
-        $mailData['field_description'] = (studly_case($entityType) . " " . "Id");
+        Mail::send($webhookMail);
     }
 
     public function getRequestHeaders($hmac)

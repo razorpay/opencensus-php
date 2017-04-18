@@ -3,6 +3,11 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use Mail;
+
+use RZP\Mail\Merchant\Activation as ActivationMail;
+use RZP\Mail\Banking\AccountChange as BankAccountChangeMail;
+use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -319,6 +324,8 @@ class MerchantTest extends TestCase
 
     public function testActivateMerchant()
     {
+        Mail::fake();
+
         $this->ba->appAuthLive();
 
         $ba = $this->fixtures
@@ -344,6 +351,8 @@ class MerchantTest extends TestCase
         $testData['response']['content']['balance'] = 0;
 
         $this->runRequestResponseFlow($testData);
+
+        Mail::assertSent(ActivationMail::class);
 
         // Because rest of the tests require appAuth, reset it back
         $this->ba->appAuthLive();
@@ -477,7 +486,18 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccount()
     {
+        Mail::fake();
+
         $this->startTest();
+
+        Mail::assertSent(BankAccountChangeMail::class, function ($mail)
+        {
+            $testData = $this->testData['testAddBankAccount']['response']['content'];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
     }
 
     public function testAddBankAccountWithInvalidIFSC()
@@ -785,6 +805,8 @@ class MerchantTest extends TestCase
 
     public function testGetMercantBeneficiaryFile()
     {
+        Mail::fake();
+
         $this->ba->appAuth();
 
         $request = array(
@@ -796,6 +818,8 @@ class MerchantTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('url', $content);
+
+        Mail::assertSent(BeneficiaryFileMail::class);
     }
 
     public function testEditCredits()

@@ -3,8 +3,10 @@
 namespace RZP\Gateway\Netbanking\Axis;
 
 use Carbon\Carbon;
+use Mail;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
 class DailyFiles extends Base\DailyFiles
 {
@@ -21,9 +23,9 @@ class DailyFiles extends Base\DailyFiles
 
         $count = [];
 
-        $count['claims'] = empty($claimsFile) ? 0 : count(file($claimsFile))-1;
+        $count['claims'] = empty($claimsFile) ? 0 : count(file($claimsFile)) - 1;
 
-        $count['refunds'] = empty($refundsFile) ? 0 : count(file($refundsFile))-1;
+        $count['refunds'] = empty($refundsFile) ? 0 : count(file($refundsFile)) - 1;
 
         $count['total'] = $count['claims'] + $count['refunds'];
 
@@ -36,16 +38,14 @@ class DailyFiles extends Base\DailyFiles
         return ['refunds' => $refundsFile, 'claims' => $claimsFile];
     }
 
-    protected function sendMail($amount, $claimsFile, $refundsFile, $count=[])
+    protected function sendMail(array $amount, string $claimsFile, string $refundsFile, array $count = [])
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
         $date = Carbon::now('Asia/Kolkata')->format('jS F Y');
 
         $bankName = $this->getBankName();
 
         $data = [
-            'subject'     => $bankName . ' Netbanking claims and refund files for ' . $today,
+            'bankName'    => $bankName,
             'amount'      => $amount,
             'count'       => $count,
             'date'        => $date,
@@ -53,31 +53,8 @@ class DailyFiles extends Base\DailyFiles
             'refundsFile' => $refundsFile
         ];
 
-        $view = 'emails.admin.' . lcfirst($bankName) . '_refunds';
+        $dailyFileMail = new DailyFileMail($data);
 
-        $this->mail->queue($view, $data, function($message) use ($data, $bankName)
-        {
-            $emails = ['axis.netbanking.refunds@razorpay.com'];
-
-            $message->from('refunds@razorpay.com', $bankName . ' Netbanking Refunds');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            if (empty($data['claimsFile']) === false)
-            {
-                $message->attach($data['claimsFile']);
-            }
-
-            if (empty($data['refundsFile']) === false)
-            {
-                $message->attach($data['refundsFile']);
-            }
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::AXIS_NETBANKING_REFUNDS_MAIL);
-        });
+        Mail::queue($dailyFileMail);
     }
 }

@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
-use Mockery;
+use Mail;
+
+use RZP\Mail\Merchant\DailyReport as DailyReportMail;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
@@ -24,6 +26,8 @@ class DailyReportTest extends TestCase
 
     public function testDailyReport()
     {
+        Mail::fake();
+
         $this->ba->publicTestAuth();
 
         $this->startTime = time();
@@ -37,27 +41,21 @@ class DailyReportTest extends TestCase
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
         $this->fixtures->settlement->edit($setl['id'], ['created_at' => $createdAt]);
 
-        \Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $testData = array(
-                            'captured'    => ['count' => '4', 'sum' => '4000000'],
-                            'authorized'  => ['count' => '4', 'sum' => '4000000'],
-                            'refunds'     => ['count' => '2', 'sum' => '200000'],
-                            'settlements' => ['count' => '1', 'sum' => '3708000'],
-                            'email'       => ['test@razorpay.com'],
-                        );
-
-                        $this->assertArraySelectiveEquals($testData, $data);
-
-                        return true;
-                    }),
-                    Mockery::any());
+        $testData = [
+            'captured'    => ['count' => '4', 'sum' => '4000000'],
+            'authorized'  => ['count' => '4', 'sum' => '4000000'],
+            'refunds'     => ['count' => '2', 'sum' => '200000'],
+            'settlements' => ['count' => '1', 'sum' => '3708000'],
+        ];
 
         $this->generateDailyReport();
+
+        Mail::assertSent(DailyReportMail::class, function ($mail)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return $mail->hasRecipient('test@razorpay.com');
+        });
     }
 
     protected function setUpFixture()

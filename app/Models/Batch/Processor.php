@@ -5,8 +5,10 @@ namespace RZP\Models\Batch;
 use Carbon\Carbon;
 use Config;
 use Mail;
+
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
+use RZP\Mail\Batch\RefundFile as BatchRefundFileMail;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
@@ -112,7 +114,8 @@ class Processor extends Base\Core
     }
 
     /**
-     * This method is for post processing. Once the lock have been released we send out merchant mail, and delete temporary files
+     * This method is for post processing. Once the lock have been released we send out merchant mail,
+     * and delete temporary files
      * @return void
      */
     protected function runPostBatchProcessOperations()
@@ -342,7 +345,8 @@ class Processor extends Base\Core
      * We need to process the entries in cases
      *    - If the status is not set (for first time processing)
      *    - If the status is success
-     *    - If the status is failure and the error code are defined (amount_fully_refunded, refund_amount_greater_than_captured)
+     *    - If the status is failure and the error code are defined (amount_fully_refunded,
+     *      refund_amount_greater_than_captured)
      * @param  [type]  $entry [description]
      * @return boolean        [description]
      */
@@ -385,29 +389,8 @@ class Processor extends Base\Core
             return;
         }
 
-        $data = [
-            'refundFile' => $filePath,
-            'body'       => 'Please find attached processed Refunds File',
-            'emails'     => $batch->merchant->getTransactionReportEmail(),
-        ];
+        $batchRefundMail = new BatchRefundFileMail($batch, $filePath);
 
-        Mail::send('emails.message', $data, function($message) use ($data)
-        {
-            $emails = $data['emails'];
-
-            $message->from('refunds@razorpay.com', 'Refunds File');
-
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('Razorpay | Processed Refunds file for  ' . $today);
-
-            $message->to($emails);
-
-            $message->attach($data['refundFile']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::BATCH_REFUNDS_FILE);
-        });
+        Mail::send($batchRefundMail);
     }
 }

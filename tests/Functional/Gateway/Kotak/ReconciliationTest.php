@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Gateway\Kotak;
 use Carbon\Carbon;
 use Config;
 use Mockery;
+use Mail;
+
+use RZP\Mail\Settlement\KotakReconciliation as KotakReconciliationMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -28,6 +31,8 @@ class ReconciliationTest extends TestCase
 
     public function testSettlementReconciliation()
     {
+        Mail::fake();
+
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
@@ -60,6 +65,8 @@ class ReconciliationTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals('settlement', $txn['type']);
         $this->assertNotNull($txn['reconciled_at']);
+
+        Mail::assertSent(KotakReconciliationMail::class);
     }
 
     public function testReconciliationFailure()

@@ -5,7 +5,9 @@ namespace RZP\Tests\Functional\Admin;
 use Cache;
 use Carbon\Carbon;
 use Hash;
+use Mail;
 
+use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Role;
@@ -40,6 +42,8 @@ class AdminTest extends TestCase
 
     public function testCreateAdmin()
     {
+        Mail::fake();
+
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
@@ -59,6 +63,20 @@ class AdminTest extends TestCase
         $this->assertEquals($result['roles'][0]['id'], $superAdminRole);
 
         $this->assertEquals($result['groups'][0]['id'], $group);
+
+        Mail::assertSent(AdminMail\Create::class, function ($mail)
+        {
+            $testData = [
+                'user' => [
+                    'email' => 'xyz@rzp.com',
+                    'password' => 'random!12#'
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return $mail->hasTo('xyz@rzp.com');
+        });
     }
 
     public function testCreateAdminWithWrongEmailDomain()
@@ -506,6 +524,8 @@ class AdminTest extends TestCase
 
     public function testForgotPasswordSuccess()
     {
+        Mail::fake();
+
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
@@ -518,6 +538,11 @@ class AdminTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        Mail::assertSent(AdminMail\ForgotPassword::class, function ($mail)
+        {
+            return $mail->hasTo('abc@razorpay.com');
+        });
     }
 
     public function testForgotPasswordInvalidUser()

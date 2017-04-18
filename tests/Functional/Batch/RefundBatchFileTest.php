@@ -2,9 +2,9 @@
 
 namespace RZP\Tests\Functional\Batch;
 
-use DB;
-use Mockery;
 use Carbon\Carbon;
+use Mail;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Batch\Status;
@@ -78,6 +78,8 @@ class RefundBatchFileTest extends TestCase
 
     public function testProcessRefundFile()
     {
+        Mail::fake();
+
         $entries = $this->getDefaultRefundFileEntries();
 
         $batch = $this->fixtures->create('batch:refund', $entries);
@@ -87,6 +89,8 @@ class RefundBatchFileTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        Mail::assertSent(BatchRefundFileMail::class);
     }
 
     public function testProcessRefundFileWithInvalidFile()

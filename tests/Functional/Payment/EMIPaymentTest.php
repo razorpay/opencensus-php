@@ -6,7 +6,9 @@ use Str;
 use File;
 use ZipArchive;
 use Carbon\Carbon;
+use Mail;
 
+use RZP\Mail\Emi as EmiMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -64,6 +66,8 @@ class EmiPaymentTest extends TestCase
 
     public function testEmiFileGenerate()
     {
+        Mail::fake();
+
         $emiPlan = $this->emiPlan;
 
         //Making transactions hapen yesterday
@@ -105,6 +109,10 @@ class EmiPaymentTest extends TestCase
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['INDB']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['RATN']));
+
+        Mail::assertSent(EmiMail\File::class);
+
+        Mail::assertSent(EmiMail\Password::class);
 
         $this->fixtures->merchant->disableEmi();
 

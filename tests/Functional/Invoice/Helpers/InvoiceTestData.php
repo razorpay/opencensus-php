@@ -585,7 +585,8 @@ return [
                     ]
                 ],
                 'customer'       => [
-                    'name'       => 'Abc Def'
+                    'name'       => 'Abc Def',
+                    'email'      => 'test@rzp.com',
                 ],
                 'draft'          => '0'
             ],
@@ -596,7 +597,7 @@ return [
                 'receipt'              => null,
                 'customer_details'     => [
                     'customer_name'    => 'Abc Def',
-                    'customer_email'   => null,
+                    'customer_email'   => 'test@rzp.com',
                     'customer_contact' => null,
                     'customer_address' => null,
                 ],

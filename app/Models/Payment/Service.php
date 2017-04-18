@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Error;
+use RZP\Mail\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -745,7 +746,10 @@ class Service extends Base\Service
         $authorized = $payments->count();
         $refunded = 0;
 
-        $timedOut = 0; $failed = 0; $error = 0;
+        $timedOut = 0;
+        $failed = 0;
+        $error = 0;
+
         $time = time();
 
         $payments = $payments->shuffle();
@@ -1055,47 +1059,13 @@ class Service extends Base\Service
      */
     protected function sendAuthorizedPaymentsReminderMail($merchantId, $payments, $final)
     {
-        // date format = 6th July 2015
-        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
-        $subject = "Razorpay | Authorized Payments Reminder for $date";
-
-        if ($final)
-        {
-            $subject = "Razorpay | Final Authorized Payments Reminder for $date";
-        }
-
         $merchant = (new Merchant\Entity)->findOrFail($merchantId)->toArray();
 
         $data = compact('merchant', 'payments', 'final');
 
-        $emails = $merchant[Merchant\Entity::TRANSACTION_REPORT_EMAIL];
-        $name = $merchant['name'];
+        $authorizedPaymentsReminderMail = new AuthorizedPaymentsReminderMail($data);
 
-        Mail::send(
-            'emails.merchant.authorized_reminder',
-            $data,
-            function ($message) use ($subject, $emails, $name, $data)
-            {
-
-                foreach ($emails as $email)
-                {
-                    $message->to($email, $name);
-                }
-
-                $message->from('reports@razorpay.com');
-                $message->cc('notifications@razorpay.com');
-                $message->replyTo('support@razorpay.com', 'Razorpay Support');
-
-                $message->subject($subject);
-
-                $headers = $message->getHeaders();
-
-                $headers->addTextHeader(MailTags::HEADER, MailTags::AUTH_REMINDER);
-
-                foreach ($data['payments'] as $payment) {
-                    $headers->addTextHeader(MailTags::HEADER, $payment->getPublicId());
-                }
-            });
+        Mail::queue($authorizedPaymentsReminderMail);
     }
 
     protected function getNewProcessor(Merchant\Entity $merchant = null)

@@ -4,6 +4,9 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Closure;
 use Mockery;
+use Mail;
+
+use RZP\Mail\Merchant\Webhook as WebhookMail;
 use Http\Mock\Client;
 use RZP\Jobs\WebHook;
 use RZP\Tests\Functional\TestCase;
@@ -369,6 +372,8 @@ class WebhookTest extends TestCase
 
     public function testWebhookFailureEmail()
     {
+        Mail::fake();
+
         $webhook = $this->createWebhook();
         $inferno = $this->mockInferno();
 
@@ -376,11 +381,9 @@ class WebhookTest extends TestCase
                 ->once()
                 ->andReturn(false);
 
-        $inferno->shouldReceive('sendEmail')
-                ->with(Mockery::type('object'),'failure')
-                ->once();
-
         $this->doAuthPayment();
+
+        Mail::assertSent(WebhookMail::class);
     }
 
     public function testSecretValueInWebhookEventDataJustBeforeFiring()

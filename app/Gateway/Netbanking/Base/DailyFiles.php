@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Base;
 use App;
 use Mail;
 use Carbon\Carbon;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 
@@ -23,8 +24,6 @@ class DailyFiles
 
     public function __construct($bankCode)
     {
-        $this->mail = Mail::getFacadeRoot();
-
         $this->app = App::getFacadeRoot();
 
         $this->repo = $this->app['repo'];
@@ -127,41 +126,20 @@ class DailyFiles
         return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
-    protected function sendMail($amount, $claimsFile, $refundsFile)
+    protected function sendMail(array $amount, string $claimsFile, string $refundsFile)
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
         $bankName = $this->getBankName();
 
         $data = [
-            'subject'     => $bankName . ' Netbanking claims and refund files for ' . $today,
             'amount'      => $amount,
             'claimsFile'  => $claimsFile,
-            'refundsFile' => $refundsFile
+            'refundsFile' => $refundsFile,
+            'bankName'    => $bankName,
         ];
 
-        $view = 'emails.admin.' . lcfirst($bankName) . '_refunds';
+        $dailyFileMail = new DailyFileMail($data);
 
-        $this->mail->queue($view, $data, function($message) use ($data, $bankName)
-        {
-            $emails = ['settlements@razorpay.com'];
-
-            $message->from('settlement@razorpay.com', $bankName . ' Netbanking Refunds');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            if (empty($data['claimsFile']) === false)
-            {
-                $message->attach($data['claimsFile']);
-            }
-
-            if (empty($data['refundsFile']) === false)
-            {
-                $message->attach($data['refundsFile']);
-            }
-        });
+        Mail::queue($dailyFileMail);
     }
 
     protected function getBankName()

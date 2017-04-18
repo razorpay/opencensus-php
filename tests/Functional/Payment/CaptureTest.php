@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Payment;
 use Redis;
 use Carbon\Carbon;
 use Mockery;
+use Mail;
+
+use RZP\Mail\Payment\Captured as CapturedMail;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Dashboard\Payment;
@@ -50,6 +53,8 @@ class CaptureTest extends TestCase
 
     public function testCapture()
     {
+        Mail::fake();
+
         $this->payment = $this->defaultAuthPayment();
 
         $this->ba->privateAuth();
@@ -61,6 +66,8 @@ class CaptureTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(true, $payment['gateway_captured']);
+
+        Mail::assertSent(CapturedMail::class);
     }
 
     public function testCaptureWithFeeBreakupException()
@@ -865,9 +872,9 @@ class CaptureTest extends TestCase
         $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 
         $pricing = $this->fixtures->base->createEntity('pricing', [
-            'plan_id' => '10ZeroPricingP',
-            'feature' => 'payment',
-            'payment_method' =>'card'
+            'plan_id'        => '10ZeroPricingP',
+            'feature'        => 'payment',
+            'payment_method' => 'card'
         ]);
 
         $payment = $this->fixtures->create('payment:authorized', [

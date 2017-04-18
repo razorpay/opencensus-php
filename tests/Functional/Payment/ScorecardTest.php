@@ -1,10 +1,12 @@
 <?php
 
 namespace RZP\Tests\Functional\Payment;
+use Carbon\Carbon;
+use Mail;
 
+use RZP\Mail\Admin\Scorecard as ScorecardMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use Carbon\Carbon;
 
 class ScorecardTest extends TestCase
 {
@@ -19,6 +21,8 @@ class ScorecardTest extends TestCase
 
     public function testScorecard()
     {
+        Mail::fake();
+
         $this->ba->publicAuth();
 
         $prEntities = $this->createPaymentEntities();
@@ -26,6 +30,8 @@ class ScorecardTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+
+        Mail::assertSent(ScorecardMail::class);
     }
 
     public function createPaymentEntities()

@@ -1,0 +1,50 @@
+<?php
+
+namespace RZP\Mail\Admin\Account;
+
+use RZP\Constants\MailTags;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
+
+class ForgotPassword extends Base
+{
+    const TOKEN = 'token';
+
+    public function __construct(AdminEntity $admin, array $input)
+    {
+        parent::__construct($admin, $input);
+    }
+
+    protected function addSubject()
+    {
+        $subject = 'Reset your password for' . $this->org->getDisplayName() . ' dashboard';
+
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $this->view('emails.auth.admin_password_reset');
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $data = [
+            'firstName' => $this->admin->getFirstName(),
+            'resetUrl'  => $this->input['reset_password_url'] . '/' . $this->input[self::TOKEN],
+            'orgName'   => $this->org->getDisplayName(),
+        ];
+
+        $this->with($data);
+
+        return $this;
+    }
+
+    protected function getMailTag()
+    {
+        return MailTags::FORGOT_PASSWORD;
+    }
+}

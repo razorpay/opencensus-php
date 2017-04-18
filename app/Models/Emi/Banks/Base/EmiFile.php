@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Emi\Banks\Base;
 
-use RZP\Exception;
 use Carbon\Carbon;
+use Mail;
+
+use RZP\Exception;
+use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Card;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Trace\TraceCode;
@@ -19,13 +22,6 @@ class EmiFile extends Base\Core
     protected $emiFilePassword;
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->mail = \Mail::getFacadeRoot();
-    }
 
     public function generate($input)
     {
@@ -115,61 +111,19 @@ class EmiFile extends Base\Core
 
     protected function sendEmiFile($fullPath)
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
         $this->fetchAndSendPassword();
 
         $zipFile = $this->getZippedFile($fullPath);
 
-        $data['file'] = $zipFile;
+        $emiFileMail = new EmiMail\File($this->bankName, $zipFile);
 
-        $data['body'] = 'Please process the attached EMI file';
-
-        $data['from'] = $this->bankName . ' Emi File';
-
-        $data['emails'] = array_merge($this->emailIdsToSendTo, ['settlements@razorpay.com']);
-
-        $data['subject'] = $this->bankName . ' Emi File for ' . $today;
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data)
-        {
-            $message->from('emifiles@razorpay.com', $data['from']);
-
-            $message->subject($data['subject']);
-
-            $message->to($data['emails']);
-
-            $message->attach($data['file']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::EMI_FILE);
-        });
+        Mail::queue($emiFileMail);
     }
 
     protected function sendEmiPassword()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $emiPasswordMail = new EmiMail\Password($this->bankName, $this->emiFilePassword);
 
-        $data['body'] = $this->bankName . ' Emi File Password for ' . $today . " is " . $this->emiFilePassword;
-
-        $data['from'] = $this->bankName . ' Emi File Password';
-
-        $data['emails'] = $this->emailIdsToSendTo;
-
-        $data['subject'] = $this->bankName . ' Emi File Password for ' . $today;
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
-        {
-            $message->from('emifiles@razorpay.com', $data['from']);
-
-            $message->subject($data['subject']);
-
-            $message->to($data['emails']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::EMI_FILE);
-        });
+        Mail::queue($emiPasswordMail);
     }
 }

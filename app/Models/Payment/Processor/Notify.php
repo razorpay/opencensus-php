@@ -8,6 +8,8 @@ use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use Mail;
+use RZP\Mail\Payment as PaymentMail;
+use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Invoice;
@@ -17,14 +19,6 @@ use RZP\Jobs\InvoiceAction;
 class Notify
 {
     use DispatchesJobs;
-
-    const AUTHORIZED                 = 'authorized';
-    const CARD_SAVED                 = 'card_saved';
-    const CAPTURED                   = 'captured';
-    const REFUNDED                   = 'refunded';
-    const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
-    const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
-    const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
 
     /**
      * The minimum amount for a transaction to be considered risky
@@ -41,92 +35,6 @@ class Notify
     const MIN_HIGH_RISK_RATING = 3;
     const HIGH_RISK_RATING     = 4;
     const MAX_HIGH_RISK_RATING = 5;
-
-    /**
-     * When are receipt emails sent to the customer
-     *
-     * @var array
-     */
-    protected static $receiptEmails = [
-        self::AUTHORIZED,
-        self::REFUNDED,
-        self::FAILED_TO_AUTHORIZED
-    ];
-
-    const MAIL_TAG_MAP = [
-        self::AUTHORIZED                 => MailTags::PAYMENT_SUCCESSFUL,
-        self::REFUNDED                   => MailTags::REFUND_SUCCESSFUL,
-        self::INVOICE_PAYMENT_AUTHORIZED => MailTags::INVOICE,
-        self::INVOICE_PAYMENT_CAPTURED   => MailTags::INVOICE,
-        self::FAILED_TO_AUTHORIZED       => MailTags::FAILED_TO_AUTHORIZED,
-        self::CARD_SAVED                 => MailTags::CARD_SAVING,
-    ];
-
-    // TODO: Shift to constants once we update PHP
-    protected $mailViews = [
-        self::AUTHORIZED    => [
-            'customer'  => [
-                'from' => 'care',
-                'view' => [
-                    'html' => 'emails.payment.customer',
-                    'text' => 'emails.payment.customer_text'
-                ]
-            ]
-        ],
-        self::CAPTURED      => [
-            'merchant'  => [
-                'view' => [
-                    'html' => 'emails.payment.merchant',
-                    'text' => 'emails.payment.merchant_text'
-                ]
-            ]
-        ],
-        self::REFUNDED      => [
-            'customer'  => [
-                'from'  => 'care',
-                'view'  => 'emails.refund.common',
-            ],
-            'merchant'  => [
-                'view'  => 'emails.refund.common',
-            ]
-        ],
-        self::FAILED_TO_AUTHORIZED => [
-            'customer'  => [
-                'from'  => 'care',
-                'view' => [
-                    'html'  => 'emails.payment.customer',
-                    'text'  => 'emails.payment.customer_text'
-                ]
-            ],
-            'merchant'  => [
-                'view' => [
-                    'html'  => 'emails.payment.failed_to_authorized',
-                    'text'  => 'emails.payment.failed_to_authorized_text',
-                ],
-            ],
-        ],
-        self::CARD_SAVED    => [
-            'customer'  => [
-                'from' => 'care',
-                'view' => 'emails.payment.cardsaving',
-            ]
-        ],
-        self::INVOICE_PAYMENT_AUTHORIZED => [
-            'customer' => [
-                'from' => 'care',
-                'view' => [
-                    'html' => 'emails.invoice.customer.notification',
-                ],
-            ],
-        ],
-        self::INVOICE_PAYMENT_CAPTURED => [
-            'merchant' => [
-                'view' => [
-                    'html' => 'emails.invoice.merchant.captured',
-                ]
-            ]
-        ],
-    ];
 
     protected $payment;
     protected $refund;
@@ -156,8 +64,6 @@ class Notify
 
         $this->trace = $this->app['trace'];
 
-        $this->domain = $this->app['config']->get('applications.mailgun.url');
-
         $this->refreshTemplate();
     }
 
@@ -183,78 +89,6 @@ class Notify
     }
 
     /**
-     * Sends out a mail given the view, subject and email address
-     * Uses Mail::queue to queue emails
-     *
-     * @param string $view    array or string of mail views to use
-     * @param string $subject Subject of email
-     * @param string $to      Email address to send to
-     * @param string $from
-     *
-     * @return null
-     */
-    protected function sendMail($view, $subject, $label, $to, $from = 'reports')
-    {
-        $from       = $this->getCompleteEmail($from);
-        $replyTo    = $this->getCompleteEmail('support');
-        $domain     = $this->domain;
-        $fromHeader = 'Team Razorpay';
-        $paymentId  = $this->payment->getPublicId();
-
-        Mail::queue(
-            $view,
-            $this->template,
-            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain, $paymentId, $label)
-            {
-                // Bug fix because some from addresses were
-                // not generated properly and are in the queue
-                // Will drop this later
-                if ($from === "@$domain")
-                {
-                    $from = "reports@$domain";
-                }
-
-                $headers = $message->getHeaders();
-
-                $headers->addTextHeader(MailTags::HEADER, $paymentId);
-
-                $headers->addTextHeader(MailTags::HEADER, $label);
-
-                // to might be an array
-                if (is_array($to))
-                {
-                    // For merchant emails
-                    foreach ($to as $email)
-                    {
-                        $message->to($email);
-                    }
-                }
-                else
-                {
-                    // This is for customer emails
-                    $message->to($to);
-                }
-
-                $message->from($from, $fromHeader);
-                $message->subject($subject);
-                $message->replyTo($replyTo);
-            }
-        );
-    }
-
-
-    /**
-     * Returns a complete email address
-     *
-     * @param  string $user (reports)
-     * @return string (reports@razorpay.com)
-     */
-    protected function getCompleteEmail($user)
-    {
-        return "$user@{$this->domain}";
-    }
-
-    /**
      * Sends out mails for a particular event trigger
      *
      * @param  string $event
@@ -262,59 +96,61 @@ class Notify
      */
     protected function notifyViaMail($event)
     {
-        // This sends out mail for all views defined above
-        // type = merchant|customer
-        foreach ($this->mailViews[$event] as $type => $struct)
+
+        $mailableClass = $this->getMailableClass($event);
+
+        if (Payment\Event::isCustomerEvent($event) === true)
         {
-            $isMerchant = ($type === 'merchant');
+            $mailable = new $mailableClass($this->template);
 
-            $subject = $this->getSubject($event, $isMerchant);
-            $to = $this->template[$type]['email'];
-
-            $view = $struct['view'];
-
-            $from = (isset($struct['from'])) ? $struct['from'] : null;
-
-            $label = $this->getLabel($event);
-
-            // This finally sends the mail
-            if ($this->isMailEnabled($event, $isMerchant))
+            if ($this->invoice !== null)
             {
-                if ($from !== null)
-                {
-                    $this->sendMail($view, $subject, $label, $to, $from);
-                }
-                else
-                {
-                    $this->sendMail($view, $subject, $label, $to);
-                }
+                $mailable->setInvoice($this->invoice);
+            }
 
+            if ($this->isCustomerMailEnabled($mailable) === true)
+            {
+                Mail::queue($mailable);
+            }
+        }
+
+        if (Payment\Event::isMerchantEvent($event) === true)
+        {
+            $mailable = new $mailableClass($this->template, true);
+
+            if ($this->invoice !== null)
+            {
+                $mailable->setInvoice($this->invoice);
+            }
+
+            if ($this->isMerchantMailEnabled($mailable) === true)
+            {
+                Mail::queue($mailable);
             }
         }
     }
 
     protected function notifyViaSlack($event)
     {
-        $slackData = $this->getSlackData($event);
-
         // We don't send out a notification on capture
         $slackMessages = [
-            self::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
-            self::AUTHORIZED    => 'Payment Authorized',
-            self::REFUNDED      => 'Payment Refunded'
+            Payment\Event::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
+            Payment\Event::AUTHORIZED           => 'Payment Authorized',
+            Payment\Event::REFUNDED             => 'Payment Refunded'
         ];
 
         $settings = [
-            'channel'   => $this->getSlackChannel(),
-            'color'     => $this->getSlackPostColor(),
+            'channel' => $this->getSlackChannel(),
+            'color'   => $this->getSlackPostColor(),
         ];
 
         // Send out Slack notifications for the event
         // You can control slack posts via SLACK_ENABLE
-
         if ((array_key_exists($event, $slackMessages)) and
             ($this->isSlackEnabled()))
         {
+            $slackData = $this->getSlackData($event);
+
             $this->app['slack']->queue($slackMessages[$event], $slackData, $settings);
         }
     }
@@ -390,7 +226,7 @@ class Notify
      */
     public function trigger($event)
     {
-        if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
+        if ($event === Payment\Event::INVOICE_PAYMENT_AUTHORIZED)
         {
             (new Invoice\Core)->dispatchQueueJob(
                 $this->mode,
@@ -426,70 +262,6 @@ class Notify
 
             $this->trace->traceException($e);
         }
-    }
-
-    protected function getLabel($event)
-    {
-        return self::MAIL_TAG_MAP[$event] ?? MailTags::PAYMENT_SUCCESSFUL;
-    }
-
-    protected function getSubject($event, $merchant = true)
-    {
-        $action = $this->getAction($event);
-
-        /**
-         * The reason we have a fallback to the amount here is because
-         * not every merchant necessarily has a proper billing label (most do)
-         * Since the dba field was moved from the dashboard to the API after a
-         * while. All new merchants have this field for sure, though. We
-         * can do a survey later and remove this check from here and other
-         * places
-         */
-        if (isset($this->template['merchant']['billing_label']))
-        {
-            $subject = "$action successful for {$this->template['merchant']['billing_label']}";
-        }
-        else
-        {
-            $subject = "$action successful for {$this->template['payment']['amount']}";
-        }
-
-        if ($event === self::CARD_SAVED)
-        {
-            $subject = "Card successfully saved with Razorpay";
-        }
-
-        // All mails that we send out to the merchant follow the same pattern:
-        // Razorpay | X action taken for Y
-        // Y is usually the merchant name/billing label
-        // But if that is unavailable, we might use amount
-        //
-        // Direct emails to customers are without the prefix
-        if ($merchant === true)
-        {
-            $subject = "Razorpay | $subject";
-        }
-
-        return $subject;
-    }
-
-    protected function getAction($event)
-    {
-        switch ($event)
-        {
-            case self::REFUNDED:
-                $action = 'Refund';
-                break;
-            case self::INVOICE_PAYMENT_AUTHORIZED:
-            case self::INVOICE_PAYMENT_CAPTURED:
-                $action = ucwords($this->invoice->getTypeLabel()) . '\'s Payment';
-                break;
-            default:
-                $action = 'Payment';
-                break;
-        }
-
-        return $action;
     }
 
     protected function getMerchantForSlack()
@@ -550,24 +322,19 @@ class Notify
         switch ($event)
         {
             // Both cases are the same
-            case self::FAILED_TO_AUTHORIZED:
-            case self::AUTHORIZED:
+            case Payment\Event::FAILED_TO_AUTHORIZED:
+            case Payment\Event::AUTHORIZED:
                 $data = $this->template['payment'];
                 $data['id'] = $this->getPaymentLinkForSlack($data['id']);
                 unset($data['method'], $data['public_id']);
                 break;
 
             // Capture is unused right now
-            case self::CAPTURED:
+            case Payment\Event::CAPTURED:
                 $data = $this->template['payment'];
                 break;
 
-            case self::INVOICE_PAYMENT_AUTHORIZED:
-            case self::INVOICE_PAYMENT_CAPTURED:
-                $data = $this->template['invoice'];
-                break;
-
-            case self::REFUNDED:
+            case Payment\Event::REFUNDED:
                 $data = $this->template['refund'];
                 $data['id'] = $this->getRefundLinkForSlack($data['id']);
                 $data['payment_id'] = $this->getPaymentLinkForSlack($data['payment_id']);
@@ -665,14 +432,6 @@ class Notify
             ];
         }
 
-        if ($this->payment->hasInvoice() === true)
-        {
-            $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
-
-            $data['invoice'] = $payloadForInvoice['invoice'];
-            $data['merchant'] += $payloadForInvoice['merchant'];
-        }
-
         return $data;
     }
 
@@ -755,46 +514,27 @@ class Notify
     }
 
     /**
-     * Whether a given email is meant to be a customer receipt email
-     * A receipt email is defined as a mail sent to the customer
-     * on a succesful payment. This is currently just the following:
-     *   - AUTHORIZED
-     *   - FAILED_TO_AUTHORIZED
+     * Decides if we send a mail to customer for a payment event
      *
-     * @param  string  $event      Event for which the mail is intended
-     * @param  boolean $isMerchant Whether this mail is for the merchant.
+     * @param  Mailable $mailable Mailable object being sent
      * @return boolean
      */
-    protected function isCustomerReceiptEmail($event, $isMerchant)
-    {
-        // If the mail is for a merchant, it can't be a customer receipt email
-        if ($isMerchant)
-        {
-            return false;
-        }
-
-        return in_array($event, self::$receiptEmails);
-    }
-
-    /**
-     * Whether or not we need to trigger the notifications
-     * The order of conditions in this is imporant
-     *
-     * @param  string $event Event triggered
-     * @return boolean
-     */
-    protected function isMailEnabled($event, $isMerchant = false)
+    protected function isCustomerMailEnabled(PaymentMail\Base $mailable)
     {
         // If the merchant has disabled customer emails
-        // And this was a customer receipt email
+        // And this was a customer receipt email don't send a mail
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
-            ($this->isCustomerReceiptEmail($event, $isMerchant)))
+            ($mailable->isCustomerReceiptEmail() === true))
         {
             return false;
         }
 
         return $this->isEnabled();
+    }
 
+    protected function isMerchantMailEnabled(PaymentMail\Base $mailable)
+    {
+        return $this->isEnabled();
     }
 
     /**
@@ -829,5 +569,18 @@ class Notify
     protected function isSlackEnabled()
     {
         return ($this->isEnabled() and $this->slackEnabled);
+    }
+
+    protected function getMailableClass(string $event)
+    {
+        // Invoice payment mails are in \RZP\Mail\Invoice\Payment namespace
+        // hence we return that namespace
+        if (Payment\Event::isInvoiceEvent($event) === true)
+        {
+            $event = Payment\Event::getInvoiceEventName($event);
+
+            return 'RZP\\Mail\\Invoice\\Payment\\' . $event;
+        }
+        return 'RZP\\Mail\\Payment\\' . studly_case($event);
     }
 }

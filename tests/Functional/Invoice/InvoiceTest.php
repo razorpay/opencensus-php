@@ -2,12 +2,18 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Base\UniqueIdEntity;
-
 use Carbon\Carbon;
 use Mockery;
+use Mail;
+
+use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
+use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
+use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+
+use RZP\Models\Base\UniqueIdEntity;
 
 class InvoiceTest extends TestCase
 {
@@ -77,11 +83,27 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceAndPay()
     {
+        Mail::fake();
+
         $order = $this->createOrder();
 
         $invoice = $this->fixtures->create('invoice');
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        Mail::assertSent(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
+        {
+            $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
+
+            return true;
+        });
+
+        Mail::assertSent(InvoiceCapturedMail::class, function ($mail) use ($invoice)
+        {
+            $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
+
+            return true;
+        });
     }
 
     public function testCreateLinkWithSource()
@@ -256,6 +278,8 @@ class InvoiceTest extends TestCase
 
     public function testCreateIssuedInvoice()
     {
+        Mail::fake();
+
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['id']);
@@ -266,6 +290,11 @@ class InvoiceTest extends TestCase
 
         $order = $this->getLastEntity('order', true);
         $this->assertNotNull($order);
+
+        Mail::assertSent(InvoiceIssuedMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@rzp.com');
+        });
     }
 
     public function testCreateIssuedInvoiceAndPay()
@@ -1184,12 +1213,23 @@ class InvoiceTest extends TestCase
 
     public function testExpireInvoice()
     {
+        Mail::fake();
+
         $this->createOrder();
         $this->fixtures->create('invoice');
         $this->fixtures->create('item');
         $this->fixtures->create('line_item');
 
         $this->startTest();
+
+        Mail::assertSent(InvoiceExpiredMail::class, function ($mail)
+        {
+            $testData = $this->testData['testExpireInvoice']['response']['content']['customer_details'];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData['invoice']['customer_details']);
+
+            return $mail->hasTo('test@razorpay.com');
+        });
     }
 
     public function testExpirePaymentInProgressInvoice()

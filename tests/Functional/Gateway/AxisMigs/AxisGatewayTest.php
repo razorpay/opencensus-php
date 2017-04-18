@@ -3,7 +3,10 @@
 namespace RZP\Tests\Functional\Gateway\AxisMigs;
 
 use Mockery;
+use Mail;
 use Carbon\Carbon;
+
+use RZP\Mail\Payment\FailedToAuthorized as FailedToAuthorizedMail;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -183,6 +186,8 @@ class AxisGatewayTest extends TestCase
 
     public function testAuthorizeFailedPayment()
     {
+        Mail::fake();
+
         $this->failAuthorizePayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -193,6 +198,8 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['status'], 'authorized');
+
+        Mail::assertSent(FailedToAuthorizedMail::class);
     }
 
     public function testForceAuthorizePayment()
