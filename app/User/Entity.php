@@ -48,7 +48,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      *
      * @var array
      */
-    protected $fillable = ['name','email','password', 'contact_mobile'];
+    protected $fillable = ['id', 'name','email','password', 'contact_mobile'];
 
     /**
      * The attributes that must be auto-generated.

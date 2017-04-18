@@ -635,7 +635,7 @@ class Service extends Base\Service
 
         $userArray['password'] = (new BcryptHasher)->make($input['password']);
 
-        $userEntity = new ApiEntity($userArray);
+        $userEntity = new Entity($userArray);
 
         Auth::login($userEntity, false);
 
@@ -793,7 +793,7 @@ class Service extends Base\Service
 
         try
         {
-            $response = $this->api->user->login($input);
+            $response = $this->api->user->login($input)->toArray();
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
