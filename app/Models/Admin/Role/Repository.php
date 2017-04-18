@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Admin\Role;
 
+use Config;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
@@ -52,6 +54,16 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $org->getId())
+                    ->where(Entity::NAME, '=', $name)
+                    ->firstOrFailPublic();
+    }
+
+    public function getSuperAdminRoleByOrgId(string $orgId)
+    {
+        $name = Config::get('heimdall.default_role_name');
+
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::NAME, '=', $name)
                     ->firstOrFailPublic();
     }
