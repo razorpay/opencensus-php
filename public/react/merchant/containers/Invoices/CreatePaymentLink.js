@@ -79,7 +79,7 @@ export default class CreatePaymentLink extends Component {
 
   render() {
     const { handleSubmit, invoice } = this.props
-    let isLiveMode = this.props.mode === 'live'
+    let isTestMode = this.props.mode === 'test'
     let isNewForm =  !(invoice && !isBlank(invoice.line_items))
     let isEdit = !!invoice
 
@@ -248,11 +248,12 @@ export default class CreatePaymentLink extends Component {
               </div>
             </div>
             {
-              !isLiveMode &&
+              isTestMode &&
               <div class='row'>
                 <div class='col-md-8 col-md-offset-3'>
-                  <div class='alert-sm alert-warning'>
-                    SMS will not be sent in Test Mode
+                  <div class='alert alert-sm alert-warning'>
+                    You are creating the link in <b>Test Mode</b>. So, only test payments can be made for this link.
+                    Also, SMS will not be sent in test mode
                   </div>
                 </div>
               </div>

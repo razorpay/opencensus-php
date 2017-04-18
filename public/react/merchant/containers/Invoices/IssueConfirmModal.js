@@ -4,6 +4,7 @@ import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Clipboard from 'rzp/ui/Clipboard'
+import { titleCase } from 'rzp/utils/rzp-utils'
 import * as ModalActions from 'rzp/modules/modals'
 
 const selector = formValueSelector('issueInvoice')
@@ -58,16 +59,19 @@ export default class IssueInvoiceConfirmModal extends Component {
       customer,
       sms_notify,
       email_notify,
+      isPaymentLink,
       disableIssueOnEmptySelection,
     } = this.props
 
-    const isLiveMode = this.props.session.mode === 'live'
+    const isTestMode = this.props.session.mode === 'test'
     const paymentLink = this.state.paymentLink
+    let entityName = isPaymentLink ? 'payment link' : 'invoice'
+    let disabled = (disableIssueOnEmptySelection || isPaymentLink) && !(sms_notify || email_notify)
 
     return (
-      <div>
+      <div class='issue-invoice-modal'>
         <ModalHeader
-          title={ paymentLink ? 'Issued' : 'Issue Invoice' }
+          title={ isPaymentLink ? 'Send Link' : paymentLink ? 'Issued' : 'Issue Invoice' }
           onCloseClick={this.props.closeModal}
         />
 
@@ -91,7 +95,7 @@ export default class IssueInvoiceConfirmModal extends Component {
                   </div>
                 </div> :
                 <div>
-                  <p>Send Invoice and payment instructions to...</p>
+                  <p>Send {titleCase(entityName)} and payment instructions to...</p>
                   {
                     customer.contact &&
                     <div class='rzpChecbox'>
@@ -102,12 +106,6 @@ export default class IssueInvoiceConfirmModal extends Component {
                         type='checkbox'
                       />
                       <label for='sms_notify'>{customer.contact}</label>
-                      {/*
-                        !isLiveMode &&
-                        <div class='alert-sm alert-warning' style={{marginLeft: '25px'}}>
-                          SMS will not be sent in Test Mode
-                        </div>
-                      */}
                     </div>
                   }
 
@@ -124,16 +122,26 @@ export default class IssueInvoiceConfirmModal extends Component {
                     </div>
                   }
 
-                  <div>A <b>payment link</b> will also be created.</div>
-                  <div>The invoice can <b>not</b> be edited after issuing.</div>
+                  {
+                    !isPaymentLink && <div>A <b>payment link</b> will also be created.</div>
+                  }
+
+                  <div>The {entityName} can <b>not</b> be edited after issuing.</div>
+
+                  {
+                    isTestMode &&
+                      <div class='alert alert-sm alert-warning'>
+                        The {entityName} is created in <b>Test Mode</b>. So, only test payments can be made for this {entityName}. Also, SMS will not be sent in test mode.
+                      </div>
+                  }
 
                   <div class='Modal__actions'>
                     <AsyncButton
                       type='submit'
                       class='btn btn-primary btn-block btn-lg'
-                      text='Issue Invoice'
-                      pendingText='Issuing...'
-                      disabled={disableIssueOnEmptySelection && !(sms_notify || email_notify)}
+                      text={isPaymentLink ? 'Send Link' : 'Issue Invoice'}
+                      pendingText={isPaymentLink ? 'Sending...' : 'Issuing...'}
+                      disabled={disabled}
                       onClick={handleSubmit(this.onIssueClick)}
                     />
                   </div>
@@ -144,8 +152,4 @@ export default class IssueInvoiceConfirmModal extends Component {
       </div>
     )
   }
-}
-
-IssueInvoiceConfirmModal.defaultProps = {
-  disableIssueOnEmptySelection: true
 }
