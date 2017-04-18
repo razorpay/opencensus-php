@@ -25,6 +25,12 @@ class TerminalLoadSorter extends Terminal\Sorter
             ]
         ],
         [
+            'load'          => 5,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY           => Gateway::EBS
+            ]
+        ],
+        [
             'load'          => 45,
             'attributes'    => [
                 Terminal\Entity::GATEWAY            => Gateway::AXIS_MIGS
