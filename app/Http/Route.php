@@ -498,6 +498,10 @@ final class Route
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
+        'clients_get'                             => ['get',      'clients',                                        'ClientController@getClients'                                       ],
+        'client_post'                             => ['post',     'clients',                                        'ClientController@postCreateClient'                                 ],
+        'client_put'                              => ['put',      'clients/{client_id}',                            'ClientController@editClient'                                       ],
+        'client_delete'                           => ['delete',   'clients/{client_id}',                            'ClientController@deleteClient'                                     ],
     );
 
     public static $public = array(
@@ -823,6 +827,10 @@ final class Route
         'user_merchant_mapping_action',
         'merchant_admin_lead_put',
         'payment_update_on_hold',
+        'clients_get',
+        'client_post',
+        'client_put',
+        'client_delete',
     );
 
     public static $proxy = array(
