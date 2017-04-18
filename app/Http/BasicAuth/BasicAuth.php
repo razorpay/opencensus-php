@@ -444,7 +444,6 @@ class BasicAuth
             // from merchant dashboard and not admin dashboard
             // which can potentially cause a security issue and
             // hence needs to be actively checked against.
-
             $response = $this->setAdminAuthIfApplicable();
 
             if ($response !== null)
@@ -456,7 +455,7 @@ class BasicAuth
 
             $this->setDashboardHeaders();
 
-            return $this->merchant ?: $this->checkAndSetAccountScope();
+            return $this->checkAndSetAccountScope();
         }
 
         // Say invalid route for whenever
@@ -490,7 +489,7 @@ class BasicAuth
 
             $this->setDashboardHeaders();
 
-            return;
+            return $this->checkAndSetAccountScope();
         }
 
         return ApiResponse::routeNotFound();
@@ -522,7 +521,7 @@ class BasicAuth
 
                 $this->adminOrgId = $this->admin->getOrgId();
 
-                return $this->checkAndSetAccountScope();
+                return;
             }
 
             return $this->invalidApiKey();
