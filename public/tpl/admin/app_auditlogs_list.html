@@ -134,8 +134,8 @@
       <tbody>
         <tr ng-repeat="key in dataKeys">
           <td>{{ key }}</td>
-          <td>{{ data.entity.change.old[key] ? data.entity.change.old[key] : '' }}</td>
-          <td>{{ data.entity.change.new[key] ?  data.entity.change.new[key] : ''}}</td>
+          <td>{{ typeof(data.entity.change.old[key]) !== 'undefined' ? data.entity.change.old[key] : '' }}</td>
+          <td>{{ typeof(data.entity.change.new[key]) !== 'undefined' ?  data.entity.change.new[key] : ''}}</td>
         </tr>
       </tbody>
     </table>
