@@ -49,7 +49,7 @@ class MigrateNotesToEs extends Command
 
         $shouldUseSlave = ($this->option('slave') === '1');
 
-        if ($shouldUseSlave)
+        if ($shouldUseSlave === true)
         {
             \Database\DefaultConnection::setSlaveConnection($this->databaseMode);
         }
@@ -67,8 +67,8 @@ class MigrateNotesToEs extends Command
     {
         $this->info("<info>Migrating $this->entityType notes from [$this->databaseMode mode] to ES index - [$this->indexName]...</info>");
 
-        $skip = intval($this->option('skip'));
-        $take = intval($this->option('take'));
+        $skip = (int) $this->option('skip');
+        $take = (int) $this->option('take');
 
         while(true)
         {
