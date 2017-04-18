@@ -917,6 +917,13 @@ angular.module('app.services', [])
       }
 
       return auxArr;
+    },
+    isArray: function(val) {
+      if (!val) {
+        return false;
+      }
+
+      return val instanceof Array;
     }
   };
 });
