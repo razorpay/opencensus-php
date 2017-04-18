@@ -20,14 +20,6 @@ class Notify
 {
     use DispatchesJobs;
 
-    const AUTHORIZED                 = 'authorized';
-    const CARD_SAVED                 = 'card_saved';
-    const CAPTURED                   = 'captured';
-    const REFUNDED                   = 'refunded';
-    const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
-    const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
-    const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
-
     /**
      * The minimum amount for a transaction to be considered risky
      * This is used to decide low and high value transactions and pick
@@ -43,17 +35,6 @@ class Notify
     const MIN_HIGH_RISK_RATING = 3;
     const HIGH_RISK_RATING     = 4;
     const MAX_HIGH_RISK_RATING = 5;
-
-    /**
-     * When are receipt emails sent to the customer
-     *
-     * @var array
-     */
-    protected static $receiptEmails = [
-        self::AUTHORIZED,
-        self::REFUNDED,
-        self::FAILED_TO_AUTHORIZED
-    ];
 
     protected $payment;
     protected $refund;
@@ -118,7 +99,7 @@ class Notify
 
         $mailableClass = $this->getMailableClass($event);
 
-        if (PaymentMail\Event::isCustomerEvent($event) === true)
+        if (Payment\Event::isCustomerEvent($event) === true)
         {
             $mailable = new $mailableClass($this->template);
 
@@ -133,7 +114,7 @@ class Notify
             }
         }
 
-        if (PaymentMail\Event::isMerchantEvent($event) === true)
+        if (Payment\Event::isMerchantEvent($event) === true)
         {
             $mailable = new $mailableClass($this->template, true);
 
@@ -153,14 +134,14 @@ class Notify
     {
         // We don't send out a notification on capture
         $slackMessages = [
-            self::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
-            self::AUTHORIZED    => 'Payment Authorized',
-            self::REFUNDED      => 'Payment Refunded'
+            Payment\Event::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
+            Payment\Event::AUTHORIZED           => 'Payment Authorized',
+            Payment\Event::REFUNDED             => 'Payment Refunded'
         ];
 
         $settings = [
-            'channel'   => $this->getSlackChannel(),
-            'color'     => $this->getSlackPostColor(),
+            'channel' => $this->getSlackChannel(),
+            'color'   => $this->getSlackPostColor(),
         ];
 
         // Send out Slack notifications for the event
@@ -245,7 +226,7 @@ class Notify
      */
     public function trigger($event)
     {
-        if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
+        if ($event === Payment\Event::INVOICE_PAYMENT_AUTHORIZED)
         {
             (new Invoice\Core)->dispatchQueueJob(
                 $this->mode,
@@ -341,19 +322,19 @@ class Notify
         switch ($event)
         {
             // Both cases are the same
-            case self::FAILED_TO_AUTHORIZED:
-            case self::AUTHORIZED:
+            case Payment\Event::FAILED_TO_AUTHORIZED:
+            case Payment\Event::AUTHORIZED:
                 $data = $this->template['payment'];
                 $data['id'] = $this->getPaymentLinkForSlack($data['id']);
                 unset($data['method'], $data['public_id']);
                 break;
 
             // Capture is unused right now
-            case self::CAPTURED:
+            case Payment\Event::CAPTURED:
                 $data = $this->template['payment'];
                 break;
 
-            case self::REFUNDED:
+            case Payment\Event::REFUNDED:
                 $data = $this->template['refund'];
                 $data['id'] = $this->getRefundLinkForSlack($data['id']);
                 $data['payment_id'] = $this->getPaymentLinkForSlack($data['payment_id']);
@@ -592,9 +573,11 @@ class Notify
 
     protected function getMailableClass(string $event)
     {
-        if (PaymentMail\Event::isInvoiceEvent($event) === true)
+        // Invoice payment mails are in \RZP\Mail\Invoice\Payment namespace
+        // hence we return that namespace
+        if (Payment\Event::isInvoiceEvent($event) === true)
         {
-            $event = PaymentMail\Event::getInvoiceEventName($event);
+            $event = Payment\Event::getInvoiceEventName($event);
 
             return 'RZP\\Mail\\Invoice\\Payment\\' . $event;
         }

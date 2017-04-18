@@ -9,7 +9,6 @@ use RZP\Mail\Base\Constants;
 use RZP\Mail\Invoice\InvoiceData;
 use RZP\Mail\Payment\Base;
 use RZP\Models\Invoice;
-use RZP\Models\Invoice\ViewDataSerializer;
 
 /**
  * We are extending Mail\Payment\Base class here instead of Invoice|base

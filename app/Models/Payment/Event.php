@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Mail\Payment;
+namespace RZP\Models\Payment;
 
 use RZP\Constants\MailTags;
 
@@ -64,6 +64,14 @@ class Event
         return (in_array($event, self::INVOICE_EVENTS, true) === true);
     }
 
+    /**
+     * Generates the actual mailable class name from the invoice event name
+     * For eg. event 'invoice_payment_authorized' gives 'Authorized'
+     *
+     * @param  string $event Invoice event
+     *
+     * @return string Invoice class name
+     */
     public static function getInvoiceEventName(string $event)
     {
         $arr = explode('_', $event);

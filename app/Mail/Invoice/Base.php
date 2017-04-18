@@ -10,7 +10,6 @@ use RZP\Mail\Base\Constants;
 use RZP\Exception;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Type;
-use RZP\Models\Invoice\ViewDataSerializer;
 
 class Base extends Mailable
 {

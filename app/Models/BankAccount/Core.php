@@ -164,6 +164,7 @@ class Core extends Base\Core
 
     protected function sendBankAccountChangeEmail($newBankAccount, $merchant)
     {
+        // In deve and testing environments we want to send mail even if Mode is TEST
         if (($this->mode === Mode::TEST) and ($this->app->environment('dev', 'testing') === false))
         {
             return;
