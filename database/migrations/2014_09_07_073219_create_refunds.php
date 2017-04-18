@@ -53,7 +53,8 @@ class CreateRefunds extends Migration
 
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
-            $table->integer(Refund::LAST_ATTEMPTED_AT);
+            $table->integer(Refund::LAST_ATTEMPTED_AT)
+                  ->nullable();
 
             $table->foreign(Refund::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
