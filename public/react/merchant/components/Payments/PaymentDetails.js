@@ -11,20 +11,21 @@ import ShowWhen from 'merchant/components/ShowWhen'
 import TableBody from 'merchant/components/TableBody'
 import DetailRow from 'merchant/components/DetailRow'
 
-const List = ({ item, value }) => {
+const ListItem = ({ item, value }) => {
   return (
     <tr>
       <td>
         {item}
       </td>
-      <td class='text-right'>
+      <td class='tex
+      t-right'>
         {value}
       </td>
     </tr>
   )
 }
 
-const RefundsList = ({ refund }) => {
+const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
@@ -128,9 +129,9 @@ export default (props) => {
                       >
                         {
                           Object.keys(card.details).map((key) =>
-                            <List key={key}
-                                  item={titleCase(key)}
-                                  value={card.details[key]}
+                            <ListItem key={key}
+                                      item={titleCase(key)}
+                                      value={card.details[key]}
                             />
                           )
                         }
@@ -141,7 +142,7 @@ export default (props) => {
 
                 <DetailRow
                   label='Refund Status'
-                  value={titleCase(payment.refund_status || 'None')}
+                  value={titleCase(payment.refund_status)}
                 />
 
                 <DetailRow
@@ -215,9 +216,9 @@ export default (props) => {
                         >
                           {
                             Object.keys(payment.notes).map((note) =>
-                              <List key={note}
-                                    item={note}
-                                    value={payment.notes[note]}
+                              <ListItem key={note}
+                                        item={note}
+                                        value={payment.notes[note]}
                               />
                             )
                           }
@@ -245,8 +246,8 @@ export default (props) => {
                       >
                         {
                           refunds.items.map((refund) =>
-                            <RefundsList key={refund.id}
-                                         refund={refund}
+                            <RefundsListItem key={refund.id}
+                                             refund={refund}
                             />
                           )
                         }

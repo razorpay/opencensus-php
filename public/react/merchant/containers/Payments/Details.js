@@ -3,13 +3,14 @@ import { connect } from 'react-redux'
 import Header from 'rzp/ui/Header'
 import Amount from 'rzp/ui/Amount'
 import PaymentDetails from 'merchant/components/Payments/PaymentDetails'
+import * as NotificationsActions from 'merchant/modules/notifications'
 import * as PaymentActions from 'merchant/modules/payments/details'
 import * as ModalActions from 'merchant/modules/modals'
 import RefundModal from './RefundModal'
 
 @connect(
   (state) => state.payment,
-  { ...ModalActions, ...PaymentActions }
+  { ...ModalActions, ...PaymentActions, ...NotificationsActions }
 )
 export default class PaymentDetailsContainer extends Component {
   static contextTypes = {
@@ -40,7 +41,19 @@ export default class PaymentDetailsContainer extends Component {
       affirmativePendingLabel: 'Capturing...',
       abortLabel: 'No, don\'t!',
       action: () => {
-        this.props.capturePayment(payment);
+        this.props.capturePayment(payment).then(() => {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Payment Captured',
+            closeTimeout: 5000
+          })
+        }).catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+            closeTimeout: 5000
+          })
+        })
       }
     }).catch(()=>{})
   }

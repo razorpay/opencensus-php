@@ -59,9 +59,7 @@ export default class Payment extends GenericEntity {
     })
 
     data.route_name = 'payment_refund'
-    return this.makeGenericAjaxCall({ method, data }).then((response) => {
-      return this.fetch(this.id)
-    })
+    return this.makeGenericAjaxCall({ method, data })
   }
 
   fetchCardDetails () {
@@ -71,8 +69,6 @@ export default class Payment extends GenericEntity {
       '{id}': this.id
     })
     data.route_name = 'payment_fetch_card_details'
-    return this.makeGenericAjaxCall({ data }).then((response) => {
-      return response
-    })
+    return this.makeGenericAjaxCall({ data })
   }
 }

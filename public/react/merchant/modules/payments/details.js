@@ -80,7 +80,6 @@ export default function (state = initialState, action) {
 
     case `${PAYMENT_FETCH}::SUCCESS`:
     case `${PAYMENT_CAPTURE}::SUCCESS`:
-    case `${PAYMENT_REFUND}::SUCCESS`:
       return merge(state, {
         loading: false,
         payment: action.payload,
@@ -88,7 +87,6 @@ export default function (state = initialState, action) {
       })
 
     case `${PAYMENT_FETCH}::ERROR`:
-    case `${PAYMENT_REFUND}::ERROR`:
       return merge(state, {
         loading: false,
         error: action.payload.errors,
@@ -138,6 +136,7 @@ export default function (state = initialState, action) {
       })
 
     case `${PAYMENT_CAPTURE}::ERROR`:
+    case `${PAYMENT_REFUND}::ERROR`:
       return merge(state, {
         loading: false,
         error: action.payload.errors

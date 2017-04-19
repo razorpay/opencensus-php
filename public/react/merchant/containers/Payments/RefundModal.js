@@ -1,14 +1,14 @@
 import { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
+import * as NotificationsActions from 'merchant/modules/notifications'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
 import Amount from 'rzp/ui/Amount'
 import { isBlank } from 'rzp/utils/rzp-utils'
-import { refundPayment } from 'merchant/modules/payments/details'
-import { required, phone, email } from 'rzp/utils/validators'
+import { refundPayment, fetchPayment } from 'merchant/modules/payments/details'
 import { closeModal } from 'merchant/modules/modals'
 
 const amountValidation = (value, allValues, props) => {
@@ -34,21 +34,18 @@ const selector = formValueSelector('refundModal')
 
     return {
       ...state.session,
+      ...state.payment,
       partial,
       payable_amount
     }
   },
-  { closeModal, refundPayment }
+  { closeModal, refundPayment, fetchPayment, ...NotificationsActions }
 )
 
 @reduxForm({
-  form: 'refundModal',
-  initialValues: {
-    comment: '',
-    partial: false,
-    amount: '0'
-  }
+  form: 'refundModal'
 })
+
 export default class RefundModal extends Component {
   static contextTypes = {
     confirm: PropTypes.func
@@ -74,10 +71,7 @@ export default class RefundModal extends Component {
   save = (props) => {
     this.context.confirm({
       header: 'Are you sure you want to refund this payment?',
-      message: () => (
-        <div class='text-semi-muted'>
-        </div>
-      ),
+      message: null,
       affirmativeLabel: 'Yes, Refund',
       affirmativePendingLabel: 'Refunding...',
       abortLabel: 'No, don\'t!',
@@ -94,13 +88,21 @@ export default class RefundModal extends Component {
 
         return this.props.refundPayment(payment, data)
           .then(() => {
+            this.props.showNotification({
+              type: 'success',
+              message: 'Payment refunded',
+              closeTimeout: 5000
+            })
+            this.props.fetchPayment(payment.id)
             this.props.closeModal()
           })
           .catch(({ errors }) => {
-          this.setState({
-            errors
+            this.props.showNotification({
+              type: 'error',
+              message: errors,
+              closeTimeout: 5000
+            })
           })
-        })
       }
     }).catch(()=>{})
   }
@@ -113,11 +115,6 @@ export default class RefundModal extends Component {
         <ModalHeader
           title='Refund Payment'
           onCloseClick={this.props.closeModal}
-        />
-
-        <Alert
-          type='error'
-          message={this.state.errors}
         />
 
         <form class='form-horizontal payment-link-form' onSubmit={handleSubmit(this.save)}>
