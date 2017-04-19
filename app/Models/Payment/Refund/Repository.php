@@ -364,7 +364,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->select($attrs)
                     ->join($pTableName, $rPaymentId, '=', $pId)
-                    ->where($rAttempts, '=', $attempts)
+                    ->where($rAttempts, '<', $attempts)
                     ->where($rStatus, '=', Refund\Status::FAILED)
                     ->where($rCreatedAt, '>=', $from)
                     ->where($rCreatedAt, '<', $to)

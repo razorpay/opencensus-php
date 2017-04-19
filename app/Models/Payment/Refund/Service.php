@@ -469,11 +469,11 @@ class Service extends Base\Service
 
             if ($success === true)
             {
-                $successes += 1;
+                $successes++;
             }
             else
             {
-                $failures += 1;
+                $failures++;
                 $failureRefundIds[] = $refundWithoutTxn->getId();
             }
         }
@@ -498,10 +498,11 @@ class Service extends Base\Service
 
             $this->repo->transaction(
                 function()
-                use($refundWithoutTxn, $payment, $forceRefundTransaction)
+                use ($refundWithoutTxn, $payment, $forceRefundTransaction)
                 {
                     $transaction = $this->getNewProcessor($refundWithoutTxn->merchant)
-                                        ->createTransactionForRefund($refundWithoutTxn, $payment, $forceRefundTransaction);
+                                        ->createTransactionForRefund(
+                                            $refundWithoutTxn, $payment, $forceRefundTransaction);
 
                     if ($transaction === null)
                     {
@@ -554,11 +555,11 @@ class Service extends Base\Service
                 $this->getNewProcessor($merchant)
                      ->createRefundOnApiForCancelledBilldeskRefund($payment, $refundId, $refundAmount);
 
-                $successes += 1;
+                $successes++;
             }
             catch (\Exception $ex)
             {
-                $failures += 1;
+                $failures++;
 
                 $failureRefunds[] = $refundId;
 
@@ -663,7 +664,7 @@ class Service extends Base\Service
 
         $status = [];
 
-        $attempts = $input['attempts'];
+        $attempts = $input['attempts'] ?? 3;
 
         $from = $input['from'];
 
