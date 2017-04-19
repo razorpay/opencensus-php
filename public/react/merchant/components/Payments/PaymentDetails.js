@@ -17,8 +17,7 @@ const ListItem = ({ item, value }) => {
       <td>
         {item}
       </td>
-      <td class='tex
-      t-right'>
+      <td class='text-right'>
         {value}
       </td>
     </tr>
