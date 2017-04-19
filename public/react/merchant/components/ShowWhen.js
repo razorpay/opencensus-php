@@ -29,7 +29,7 @@ export default class ShowWhen extends Component {
 
     if (myRole) {
       if (roles.indexOf(userRole) < 0) {
-        return null;
+        return null
       }
     } else {
       if(roles.indexOf(userRole) > -1) {

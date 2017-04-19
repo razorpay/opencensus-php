@@ -4,6 +4,8 @@ import { set, merge } from 'rzp/utils/immutable'
 const PAYMENT_FETCH = 'PAYMENT_FETCH'
 const PAYMENT_FETCH_CARD_DETAILS = 'PAYMENT_FETCH_CARD_DETAILS'
 const PAYMENT_FETCH_REFUNDS = 'PAYMENT_FETCH_REFUNDS'
+const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE'
+const PAYMENT_REFUND = 'PAYMENT_REFUND'
 
 export const fetchPayment = (id) => {
   return (dispatch) => {
@@ -33,6 +35,24 @@ export const fetchRefunds = (payment) => {
   }
 }
 
+export const capturePayment = (payment) => {
+  return (dispatch) => {
+    return dispatch({
+      type: PAYMENT_CAPTURE,
+      payload: payment.capture()
+    })
+  }
+}
+
+export const refundPayment = (payment, data) => {
+  return (dispatch) => {
+    return dispatch({
+      type: PAYMENT_REFUND,
+      payload: payment.refund(data)
+    })
+  }
+}
+
 let initialState = {
   loading: true,
   payment: {},
@@ -52,9 +72,15 @@ let initialState = {
 export default function (state = initialState, action) {
   switch(action.type) {
     case `${PAYMENT_FETCH}::PENDING`:
-      return set(state, 'loading', true)
+    case `${PAYMENT_CAPTURE}::PENDING`:
+    case `${PAYMENT_REFUND}::PENDING`:
+      return merge(state, {
+        loading: true
+      })
 
     case `${PAYMENT_FETCH}::SUCCESS`:
+    case `${PAYMENT_CAPTURE}::SUCCESS`:
+    case `${PAYMENT_REFUND}::SUCCESS`:
       return merge(state, {
         loading: false,
         payment: action.payload,
@@ -62,6 +88,7 @@ export default function (state = initialState, action) {
       })
 
     case `${PAYMENT_FETCH}::ERROR`:
+    case `${PAYMENT_REFUND}::ERROR`:
       return merge(state, {
         loading: false,
         error: action.payload.errors,
@@ -107,6 +134,12 @@ export default function (state = initialState, action) {
       return set(state, 'refunds', {
         loading: false,
         items: [],
+        error: action.payload.errors
+      })
+
+    case `${PAYMENT_CAPTURE}::ERROR`:
+      return merge(state, {
+        loading: false,
         error: action.payload.errors
       })
 

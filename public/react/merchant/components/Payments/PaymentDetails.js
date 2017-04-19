@@ -7,6 +7,7 @@ import Alert from 'rzp/ui/Forms/Alert'
 import { titleCase } from 'rzp/utils/rzp-utils'
 import ListGroupToggler from 'rzp/ui/ListGroupToggler'
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel'
+import ShowWhen from 'merchant/components/ShowWhen'
 import TableBody from 'merchant/components/TableBody'
 import DetailRow from 'merchant/components/DetailRow'
 
@@ -56,8 +57,6 @@ export default (props) => {
     statusMsg
   } = props
 
-  // payment.notes = {}
-// debugger
   return (
     <div>
       {
@@ -246,7 +245,7 @@ export default (props) => {
                       >
                         {
                           refunds.items.map((refund) =>
-                            <RefundsList key={refund}
+                            <RefundsList key={refund.id}
                                          refund={refund}
                             />
                           )
@@ -257,9 +256,31 @@ export default (props) => {
                   <DetailRow label='Refunds' value='No Refunds' />
                 }
               </div>
-              {
-                // TODO: add Capture payment and Refund button
-              }
+              <ShowWhen myRole='owner manager operations admin'>
+                <div class='text-center'>
+                  {
+                    payment.status === 'authorized' ?
+                    <button
+                      type='submit'
+                      class='btn btn-success'
+                      onClick={()=> {props.confirmCapture(payment)}}
+                    >
+                      Capture Payment
+                    </button> : null
+                  }
+                  {
+                    payment.status === 'captured' &&
+                    payment.refund_status !== 'full' ?
+                    <button
+                      type='submit'
+                      class='btn btn-primary'
+                      onClick={()=> {props.openRefundModal(payment)}}
+                    >
+                      Refund Payment
+                    </button>: null
+                  }
+                </div>
+              </ShowWhen>
             </div>
           </div>
         </div>

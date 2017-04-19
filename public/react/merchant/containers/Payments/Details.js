@@ -1,14 +1,21 @@
-import React, { Component } from 'react'
+import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import Header from 'rzp/ui/Header'
+import Amount from 'rzp/ui/Amount'
 import PaymentDetails from 'merchant/components/Payments/PaymentDetails'
 import * as PaymentActions from 'merchant/modules/payments/details'
+import * as ModalActions from 'merchant/modules/modals'
+import RefundModal from './RefundModal'
 
 @connect(
   (state) => state.payment,
-  PaymentActions
+  { ...ModalActions, ...PaymentActions }
 )
 export default class PaymentDetailsContainer extends Component {
+  static contextTypes = {
+    confirm: PropTypes.func
+  }
+
   componentWillMount() {
     this.props.fetchPayment(this.props.id)
   }
@@ -21,6 +28,31 @@ export default class PaymentDetailsContainer extends Component {
     return this.props.fetchRefunds(payment)
   }
 
+  confirmCapture = (payment) => {
+    this.context.confirm({
+      header: 'Are you sure you want to capture this payment?',
+      message: () => (
+        <div class='text-semi-muted'>
+          <p>The payment amount is <b><Amount value={payment.amount} /></b></p>
+        </div>
+      ),
+      affirmativeLabel: 'Yes, Capture',
+      affirmativePendingLabel: 'Capturing...',
+      abortLabel: 'No, don\'t!',
+      action: () => {
+        this.props.capturePayment(payment);
+      }
+    }).catch(()=>{})
+  }
+
+  openRefundModal = (payment) => {
+    this.props.openModal({
+      component: <RefundModal
+        payment={payment}
+      />
+    })
+  }
+
   render() {
     let {
       loading,
@@ -30,8 +62,6 @@ export default class PaymentDetailsContainer extends Component {
       refunds
     } = this.props
     let statusMsg = {}
-
-    console.log(this.props.payment)
 
     if (error) {
       statusMsg = {
@@ -53,6 +83,8 @@ export default class PaymentDetailsContainer extends Component {
             statusMsg={statusMsg}
             onToggleCardDetails={this.fetchCardDetails}
             onToggleRefundList={this.fetchRefunds}
+            confirmCapture={this.confirmCapture}
+            openRefundModal={this.openRefundModal}
           />
         </div>
       </div>

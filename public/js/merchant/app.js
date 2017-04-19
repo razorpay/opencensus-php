@@ -94,15 +94,6 @@ var app = angular.module('app', [
     }).state('app.dashboard', {
       url: '/dashboard',
       templateUrl: 'tpl/app_dashboard.html'
-    }).state('app.payments', {
-      url: '/payments',
-      template: '<div ui-view class="fade-in-down"></div>'
-    }).state('app.payments.list', {
-      url: '/list',
-      templateUrl: 'tpl/app_payments.html'
-    }).state('app.payments.detail', {
-      url: '/:id',
-      templateUrl: 'tpl/app_payment_detail.html'
     }).state('app.config', {
       url: '/config',
       templateUrl: 'tpl/app_config.html'
@@ -227,13 +218,13 @@ var app = angular.module('app', [
     }).state('app.teammanagement', {
       url: '/team',
       templateProvider: reactTemplateProvider('<manage-team />')
-    }).state('app.x', {
-      url: '/x',
+    }).state('app.payments', {
+      url: '/payments',
       template: '<div ui-view class="fade-in-down"></div>'
-    }).state('app.x.list', {
+    }).state('app.payments.list', {
       url: '/list',
       templateProvider: reactTemplateProvider('<payments-list />')
-    }).state('app.x.details', {
+    }).state('app.payments.details', {
       url: '/:id',
       controller: ['$scope', '$stateParams', function($scope, $stateParams) {
         $scope.id = $stateParams.id;
