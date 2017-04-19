@@ -22,4 +22,6 @@ class Constants
     // Soap constants
     const USER_ID          = 'userId';
     const PASSWORD         = 'password';
+
+    const WALLET           = 'W';
 }

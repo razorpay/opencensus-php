@@ -36,7 +36,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $content = $this->getActionData();
+        $data = $this->getGatewayRequestArray();
 
         $content = $this->getAuthorizeRequestData();
 
@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
 
         $this->action($input, Action::OTP_GENERATE);
 
-        $data = $this->getActionData();
+        $data = $this->getOtpGenerateData();
 
         $response = $this->sendSoapRequest($data,
                                            SoapAction::OTP_GENERATE_API,
@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
 
         $this->verifyOtpAttempts($input['payment']);
 
-        $data = $this->getActionData();
+        $data = $this->getOtpSubmitData();
 
         $response = $this->sendSoapRequest($data,
                                            SoapAction::OTP_SUBMIT_API,
@@ -149,7 +149,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $data = $this->getActionData();
+        $data = $this->getRefundData();
 
         $response = $this->sendSoapRequest($data,
                                            SoapAction::REFUND_API,
@@ -169,7 +169,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $data = $this->getActionData();
+        $data = $this->getQueryData();
 
         $verify->response = $this->sendSoapRequest($data,
                                                    SoapAction::QUERY_API,
@@ -241,21 +241,11 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getAuthorizeRequestData()
-    {
-        $data = [
-            RequestFields::GATEWAY_PARAM => $this->getActionData(),
-            RequestFields::CHECKSUM      => $this->getCheckSum(),
-        ];
-
-        return $data;
-    }
-
     protected function validateCustomer(array $input)
     {
         $this->action($input, Action::VALIDATE_CUSTOMER);
 
-        $data = $this->getActionData();
+        $data = $this->getValidateCustomerData();
 
         $response = $this->sendSoapRequest($data,
                                            SoapAction::CUSTOMER_API,
@@ -269,71 +259,30 @@ class Gateway extends Base\Gateway
         $this->checkGatewayResponseStatus($status);
     }
 
-    protected function getOtpGenerateContentToSave(array $content)
+    protected function getAuthorizeRequestData()
     {
-        $response = $content['response'];
-
-        $attributes = [
-            Base\Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER] ?? null,
-            Base\Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER] ?? null,
-            Base\Entity::AMOUNT              => $this->input['payment']['amount']
+        $data = [
+            RequestFields::GATEWAY_PARAM => $this->getGatewayRequestArray(), 
+            RequestFields::CHECKSUM      => $this->getCheckSum(),
         ];
 
-        return $attributes;
-    }
-
-    protected function saveOtpCallbackContent(array $content)
-    {
-        $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'], Action::OTP_GENERATE);
-
-        $attributes = [
-            Base\Entity::RECEIVED           => true,
-            Base\Entity::GATEWAY_PAYMENT_ID => $content[ResponseFields::S2S_TRANS_ID] ?? null
-        ];
-
-        $this->updateGatewayPaymentEntity($wallet, $attributes, false);
+        return $data;
     }
 
     protected function getCheckSum()
     {
-        $xml = $this->getActionData();
+        $xml = $this->getGatewayRequestArray();
 
         return hash_hmac(HashAlgo::SHA256, $xml, $this->getSecret());
     }
 
-    protected function getActionData()
+    protected function getGatewayRequestArray()
     {
-        switch ($this->action)
-        {
-            case Action::AUTHORIZE:
-                $array = $this->getGatewayParamArray();
-                $xmlRoot = "<PaymentGatewayRequest />";
-                $data = $this->getXmlData($array, $xmlRoot);
-                break;
+        $array = $this->getGatewayParamArray();
 
-            case Action::VERIFY:
-                $data = $this->getQueryData();
-                break;
+        $xmlRoot = "<PaymentGatewayRequest />";
 
-            case Action::VALIDATE_CUSTOMER:
-                $data = $this->getValidateCustomerData();
-                break;
-
-            case Action::OTP_GENERATE:
-                $data = $this->getOtpGenerateData();
-                break;
-
-            case Action::OTP_SUBMIT:
-                $data = $this->getOtpSubmitData();
-                break;
-
-            case Action::REFUND:
-                $data = $this->getRefundData();
-                break;
-        }
-
-        return $data;
+        return $this->getXmlData($array, $xmlRoot);
     }
 
     protected function getGatewayParamArray()
@@ -342,7 +291,7 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
             RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
-            RequestFields::TRANSACTION_TYPE      => PaymentMethod::WALLET,
+            RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
             RequestFields::AMOUNT                => $this->input['payment']['amount'] / 100,
             RequestFields::NARRATION             => Constants::NARRATION,
             RequestFields::RETURN_URL            => $this->input['callbackUrl'],
@@ -416,7 +365,7 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
             RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
-            RequestFields::TRANSACTION_TYPE      => PaymentMethod::WALLET,
+            RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
             RequestFields::AMOUNT                => $this->input['payment']['amount'] / 100,
             RequestFields::MOBILE_NUMBER         => $this->getFormattedPhoneNo(),
             RequestFields::FROM_ENTITY_TYPE      => Constants::ENTITY_TYPE_ID,
@@ -448,6 +397,32 @@ class Gateway extends Base\Gateway
         ];
 
         return $data;
+    }
+
+    protected function getOtpGenerateContentToSave(array $content)
+    {
+        $response = $content['response'];
+
+        $attributes = [
+            Base\Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER] ?? null,
+            Base\Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER] ?? null,
+            Base\Entity::AMOUNT              => $this->input['payment']['amount']
+        ];
+
+        return $attributes;
+    }
+
+    protected function saveOtpCallbackContent(array $content)
+    {
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $this->input['payment']['id'], Action::OTP_GENERATE);
+
+        $attributes = [
+            Base\Entity::RECEIVED           => true,
+            Base\Entity::GATEWAY_PAYMENT_ID => $content[ResponseFields::S2S_TRANS_ID] ?? null
+        ];
+
+        $this->updateGatewayPaymentEntity($wallet, $attributes, false);
     }
 
     protected function getRefundAttributes(array $content)
@@ -490,6 +465,12 @@ class Gateway extends Base\Gateway
         return $reversalType;
     }
 
+    /**
+     * Converts Indian numbers into mpesa acceptable format
+     * Example: +91-1234567899 returns 1234567899
+     * 
+     * @return number
+     */
     protected function getFormattedPhoneNo()
     {
         $contact = $this->input['payment']['contact'];
