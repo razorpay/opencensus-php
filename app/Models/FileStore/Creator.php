@@ -28,6 +28,13 @@ class Creator extends Base\Core
     protected $localFile;
 
     /**
+     * Local file path
+     *
+     * @var string localFilePath
+     */
+    protected $localFilePath;
+
+    /**
      * Delimiter used in file
      *
      * @var string delimiter
