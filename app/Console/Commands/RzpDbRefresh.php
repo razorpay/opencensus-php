@@ -22,16 +22,6 @@ class RzpDbRefresh extends RefreshCommand
     protected $description = 'Refreshes both test and live databases and seeds them';
 
     /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    /**
      * Execute the console command.
      *
      * @return mixed
@@ -48,25 +38,41 @@ class RzpDbRefresh extends RefreshCommand
         {
             $this->info('<info>Installing test database.</info>');
 
-            $this->call('migrate', array('--database' => 'test'));
+            $this->call('migrate', ['--database' => 'test']);
 
             $this->info('<info>Installing live database.</info>');
 
-            $this->call('migrate', array('--database' => 'live'));
+            $this->call('migrate', ['--database' => 'live']);
+
+            //
+            // TODO: Remove this after upgrading to laravel >= 5.3
+            // that supports https://laravel.com/docs/5.3/packages#migrations
+            //
+            $this->info('<info>Running OAuth migrations on live DB</info>');
+
+            $this->call('migrate',
+                        [
+                            '--database' => 'live',
+                            '--path'     => 'vendor/razorpay/oauth/database/migrations',
+                        ]);
         }
         else
         {
             $this->info('<info>Refreshing test database.</info>');
 
-            $this->call('migrate:refresh', array(
-                '--database' => 'test', '--force' => $force
-            ));
+            $this->call('migrate:refresh',
+                        [
+                            '--database' => 'test',
+                            '--force' => $force
+                        ]);
 
             $this->info('<info>Refreshing live database.</info>');
 
-            $this->call('migrate:refresh', array(
-                '--database' => 'live', '--force' => $force
-            ));
+            $this->call('migrate:refresh',
+                        [
+                            '--database' => 'live',
+                            '--force' => $force
+                        ]);
         }
 
         if ($this->needsSeeding())
