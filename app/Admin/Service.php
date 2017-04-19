@@ -1797,27 +1797,6 @@ class Service extends Base\Service
         }
     }
 
-    public function triggerError()
-    {
-        $this->setApiCredentials();
-        try
-        {
-            $errorMsg = $this->api->admin->triggerError();
-            if($errorMsg)
-            {
-                return [null, $errorMsg];
-            }
-            else
-            {
-                return ['Error not triggered', null];
-            }
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
     public function deleteTerminal($mode, $terminalId)
     {
         $this->setApiCredentials(null, $mode);

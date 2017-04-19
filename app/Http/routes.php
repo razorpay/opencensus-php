@@ -242,8 +242,6 @@ Route::group(['middleware' => ['web']], function () {
                 ->name('admin_payment_capture');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
-        // Admin Main Actions, mostly initiated from the Actions screen
-        Route::post('/admin/trigger/error', 'AdminController@triggerError');
         // Newsletter
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
         Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
