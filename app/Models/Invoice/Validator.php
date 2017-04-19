@@ -33,9 +33,9 @@ class Validator extends Base\Validator
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
     //
-    // A minimum of 1 days of gap must exist between invoice issue and expired by
+    // A minimum of 15 minutes of gap must exist between invoice issue and expired by
     //
-    const MIN_EXPIRY_SECS = 86400;
+    const MIN_EXPIRY_SECS = 900;
 
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
@@ -386,6 +386,7 @@ class Validator extends Base\Validator
         switch ($operation)
         {
             case 'update':
+            case 'cancelInvoice':
                 $allowedStatuses = [
                     Status::DRAFT,
                     Status::ISSUED,
@@ -449,6 +450,12 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
+        // If expired_by is not set at all, nothing to validate.
+        if ($invoice->getExpireBy() === null)
+        {
+            return;
+        }
+
         $now = Carbon::now('Asia/Kolkata');
         $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
 
@@ -461,6 +468,12 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Invoice is only payable if it's not deleted and is in ISSUED state.
+     *
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
     public function validateInvoicePayable()
     {
         $invoice = $this->entity;

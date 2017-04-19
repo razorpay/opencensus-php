@@ -25,7 +25,7 @@ class Bucket
 
         foreach ($bucketConfigTypeMap as $bucketConfig => $types)
         {
-            if (array_key_exists($type, $types))
+            if (in_array($type, $types))
             {
                 $bucketConfigName = $bucketConfig;
 
@@ -33,7 +33,7 @@ class Bucket
             }
         }
 
-        if ($env !== 'production')
+        if (($env !== 'production') and ($env !== 'testing'))
         {
             $bucketConfigName = static::TEST_BUCKET_NAME;
         }

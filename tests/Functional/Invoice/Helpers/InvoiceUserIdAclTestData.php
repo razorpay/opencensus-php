@@ -314,9 +314,9 @@ return [
         ],
     ],
 
-    'testExpireInvoiceWithUserIdHeaderSuccess' => [
+    'testCancelInvoiceWithUserIdHeaderSuccess' => [
         'request' => [
-            'url'    => '/invoices/inv_1000000invoice/expire',
+            'url'    => '/invoices/inv_1000000invoice/cancel',
             'method' => 'post',
             'server' => [
                 'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
@@ -327,14 +327,14 @@ return [
         'response' => [
             'content' => [
                 'id'     => 'inv_1000000invoice',
-                'status' => 'expired',
+                'status' => 'cancelled',
             ],
         ],
     ],
 
-    'testExpireInvoiceWithUserIdHeaderForbidden' => [
+    'testCancelInvoiceWithUserIdHeaderForbidden' => [
         'request' => [
-            'url'    => '/invoices/inv_1000000invoice/expire',
+            'url'    => '/invoices/inv_1000000invoice/cancel',
             'method' => 'post',
             'server' => [
                 'HTTP_X-Dashboard-User-Id'   => '10000000UserId',

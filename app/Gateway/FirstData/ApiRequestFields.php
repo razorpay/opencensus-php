@@ -26,6 +26,7 @@ class ApiRequestFields
     const V1_CHARGE_TOTAL        = 'v1:ChargeTotal';
     const V1_CURRENCY            = 'v1:Currency';
     const V1_HOSTED_DATA_ID      = 'v1:HostedDataID';
+    const V1_HOSTED_STORE_ID     = 'v1:HostedDataStoreID';
     const V1_TRANSACTION_DETAILS = 'v1:TransactionDetails';
     const V1_ORDER_ID            = 'v1:OrderId';
     const V1_TRANSACTION         = 'v1:Transaction';

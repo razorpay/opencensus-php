@@ -67,8 +67,19 @@ class FirstDataGatewayTest extends TestCase
         $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
 
         $firstDataEntity = $this->getLastEntity('first_data', true);
-
         $this->assertEquals($paymentId, $firstDataEntity['payment_id']);
+
+        // Another payment to test auto-refund
+        $response = $this->doS2SRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+        $this->refundAuthorizedPayment($paymentId);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'refunded');
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
     }
 
     public function testPaymentAuthAndCapture()

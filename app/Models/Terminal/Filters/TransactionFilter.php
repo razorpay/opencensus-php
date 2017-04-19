@@ -61,7 +61,7 @@ class TransactionFilter extends Terminal\Filter
                 return ($gateway === $terminal->getGateway());
 
             case Method::UPI:
-                return $terminal->isUPITerminal();
+                return $terminal->isUpiEnabled();
 
             default:
                 throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
@@ -106,31 +106,12 @@ class TransactionFilter extends Terminal\Filter
 
         $isPaymentInternational = $input['payment']->isInternational();
 
-        if (($input['mode'] === Mode::TEST) and ($isPaymentInternational))
+        if ($isPaymentInternational === true)
         {
-            // Allow support for cards on atom for international test
-            $testTerminals = array_merge(
-                                [Gateway::ATOM, Gateway::AXIS_GENIUS, Gateway::PAYTM],
-                                Gateway::$internationalCardGateways);
+            return $terminal->isInternational();
+        }
 
-            return in_array($terminal->getGateway(), $testTerminals);
-        }
-        else if ($isPaymentInternational)
-        {
-            return in_array($terminal->getGateway(), Gateway::$internationalCardGateways);
-        }
-        else if ($input['mode'] === Mode::TEST)
-        {
-            $testTerminals = array_merge(
-                                Gateway::$domesticCardGateways,
-                                Gateway::$domesticCardGatewaysInTest);
-
-            return in_array($terminal->getGateway(), $testTerminals);
-        }
-        else
-        {
-            return in_array($terminal->getGateway(), Gateway::$domesticCardGateways);
-        }
+        return $terminal->isDomestic();
     }
 
     public function bankFilter($terminal, $input)

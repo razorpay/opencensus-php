@@ -325,4 +325,22 @@ class PaymentController extends Controller
 
         return ApiResponse::json($transfers);
     }
+
+    /**
+     * CRON route: Fetches all payments with on_hold_until timestamps elapsed
+     * and updates the on_hold flag to false to allow settlements
+     * for the payment txn.
+     *
+     * If payment has a linked transfer, this updates it's on_hold value too.
+     *
+     * @return ApiResponse
+     */
+    public function updateOnHold()
+    {
+        $input = Request::all();
+
+        $data = $this->payment->updateOnHold($input);
+
+        return ApiResponse::json($data);
+    }
 }

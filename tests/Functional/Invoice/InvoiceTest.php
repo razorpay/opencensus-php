@@ -1182,7 +1182,7 @@ class InvoiceTest extends TestCase
         });
     }
 
-    public function testExpireInvoice()
+    public function testCancelInvoice()
     {
         $this->createOrder();
         $this->fixtures->create('invoice');
@@ -1192,7 +1192,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testExpirePaymentInProgressInvoice()
+    public function testCancelPaymentInProgressInvoice()
     {
         $this->createOrder();
 
@@ -1218,7 +1218,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testExpirePaidInvocie()
+    public function testCancelPaidInvocie()
     {
         $this->createOrder();
 
@@ -1231,7 +1231,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testExpireInvoiceWithFailedPayment()
+    public function testCancelInvoiceWithFailedPayment()
     {
         $this->createOrder();
 
@@ -1253,7 +1253,7 @@ class InvoiceTest extends TestCase
         $this->createOrder();
         $this->fixtures->create('invoice');
 
-        // Issued invoice and past expire_by
+        // Picked and expired: Issued invoice and past expire_by
         $this->createOrder(['id' => '100000001order']);
         $this->fixtures->create('invoice',
             [
@@ -1262,20 +1262,45 @@ class InvoiceTest extends TestCase
                 'expire_by'  => 1484519217,
             ]);
 
-        // Draft invoice and past expire_by
-        $this->createDraftInvoice([
-                'id'         => '1000002invoice',
-                'expire_by'  => 1484519217
-            ]);
-
-        // Issued invoice, past expire_by but paid
-        $this->createOrder(['id' => '100000003order']);
+        // Not picked: Cancelled invoice, can be past expire_by if cancelled in between
+        // after issuing.
+        $this->createOrder(['id' => '100000002order']);
         $this->fixtures->create('invoice',
             [
-                'id'         => '1000003invoice',
-                'order_id'   => '100000003order',
+                'id'           => '1000002invoice',
+                'order_id'     => '100000002order',
+                'expire_by'    => 1484519217,
+                'status'       => 'cancelled',
+                'cancelled_at' => 1484519200,
+            ]);
+
+        // Not picked: Draft invoice
+        $this->createDraftInvoice(['id' => '1000003invoice']);
+
+        // Not picked: Issued invoice, past expire_by but paid
+        $this->createOrder(['id' => '100000004order']);
+        $this->fixtures->create('invoice',
+            [
+                'id'         => '1000004invoice',
+                'order_id'   => '100000004order',
                 'expire_by'  => 1484519217,
                 'status'     => 'paid',
+            ]);
+
+        // Fails: Issued invoice with created payments (not captured so invoice still
+        // not paid) and past expire_by.
+        $this->createOrder(['id' => '100000005order']);
+        $this->fixtures->create('invoice',
+            [
+                'id'         => '1000005invoice',
+                'order_id'   => '100000005order',
+                'expire_by'  => 1484519217,
+                'status'     => 'issued',
+            ]);
+        $this->fixtures->payment->createAuthorized(
+            [
+                'order_id' => '100000005order',
+                'invoice_id' => '1000005invoice',
             ]);
 
         $this->ba->appAuth();

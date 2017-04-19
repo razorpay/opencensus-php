@@ -315,7 +315,7 @@ class Notifier extends Base\Core
         $invoiceDashboardPath = $this->invoice->getDashboardPath();
 
         $extraInvoicePayload = [
-            'type_label'    => ucwords($this->invoice->getTypeLabel()),
+            'type_label'    => $this->invoice->getTypeLabel(),
             'pdf_url'       => url("v1/invoices/$id/pdf"),
             'dashboard_url' => $this->dashboardUrl . $invoiceDashboardPath,
         ];
