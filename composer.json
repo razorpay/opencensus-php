@@ -35,7 +35,8 @@
         "razorpay/slack-laravel": "1.2.0",
         "ext-gmp": "*",
         "box/spout": "^2.7",
-        "schuppo/password-strength": "~1.5"
+        "schuppo/password-strength": "~1.5",
+        "razorpay/oauth": "dev-master"
     },
     "repositories": [
         {
@@ -45,6 +46,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/upi-clients.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/oauth.git"
         }
     ],
     "require-dev": {
