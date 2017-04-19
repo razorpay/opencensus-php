@@ -177,7 +177,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/admin/activity/{id}', 'AdminController@deleteAdminActivity');
 
         Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
-        Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
         Route::get('/admin/file/{fileId}', 'AdminController@getUploadedFile');
         Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
