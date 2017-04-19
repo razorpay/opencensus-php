@@ -339,18 +339,16 @@ app.controller('ActionsCtrl', [
         }, $.noop);
       };
       $scope.triggerError = function () {
-        var request = $http({
-          method: 'post',
-          url: '/admin/trigger/error'
+        var request = $http.get('/admin/generic', {
+          params: {
+            route_name: 'dummy_critical_error'
+          }
         });
         request.success(function (data) {
-          if (data.success) {
+          if (!data.success) {
             $scope.alerts.addAlert('success', 'Error triggerred successfully', true);
           } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
+            $scope.alerts.addAlert('danger', 'Error not triggerred successfully', true);
           }
         }).error(function () {
           $scope.alerts.addAlert('danger', null, true);
@@ -422,24 +420,6 @@ app.controller('ActionsCtrl', [
       modalInstance.result.then(function (data) {
         $scope.authorizeFailedPayment(data.id, data.mode);
       }, $.noop);
-    };
-    $scope.triggerError = function () {
-      var request = $http({
-        method: 'post',
-        url: '/admin/trigger/error'
-      });
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Error triggerred successfully', true);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
     };
     $scope.openEditNewsletter = function () {
       var modalInstance = $modal.open({

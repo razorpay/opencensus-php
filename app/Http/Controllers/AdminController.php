@@ -631,13 +631,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function triggerError()
-    {
-        list($error, $data) = (new Admin\Service)->triggerError();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function deleteTerminal($mode, $terminalId)
     {
         list($error, $data) = (new Admin\Service)->deleteTerminal($mode, $terminalId);
