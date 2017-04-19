@@ -41,10 +41,6 @@
           ng-show="admin.permissions.indexOf('create_netbanking_refund') !== -1">
           Generate Refunds Excel (Netbanking)
         </a>
-        <a href class="list-group-item" ng-click="downloadBeneficiaryFile()"
-          ng-show="admin.permissions.indexOf('view_beneficiary_file') !== -1">
-          Download Beneficiary File
-        </a>
         <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()"
           ng-show="admin.permissions.indexOf('edit_authorized_failed_payment') !== -1">
           Authorize Failed Payment
@@ -573,28 +569,6 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(mode, data)">OK</button>
-  </div>
-</script>
-
-<script type="text/ng-template" id="downloadBeneficiaryFile.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Download Beneficiary File</h3>
-  </div>
-  <div class="modal-body terminal-modal">
-    <form class="form-horizontal">
-      <div class="form-group">
-        <label for="date" class="col-lg-2 control-label">Date: </label>
-        <div class="col-lg-10" >
-          <p class="input-group">
-            <input type="date" class="form-control" ng-model="date">
-          </p>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(date)">Download</button>
   </div>
 </script>
 

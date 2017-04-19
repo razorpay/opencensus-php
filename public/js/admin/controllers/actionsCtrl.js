@@ -339,20 +339,6 @@ app.controller('ActionsCtrl', [
           }
         }, $.noop);
       };
-      $scope.downloadBeneficiaryFile = function () {
-        $scope.date = moment().format('yyyy-MM-dd');
-        var modalInstance = $modal.open({
-          templateUrl: 'downloadBeneficiaryFile.html',
-          controller: 'downloadBeneficiaryFileCtrl'
-        });
-        modalInstance.result.then(function (date) {
-          if (date) {
-            window.open('/admin/beneficiary/dl');
-          } else {
-            window.open('/admin/beneficiary/dl?date=' + date);
-          }
-        }, $.noop);
-      };
     });
     $scope.openConfirmUser = function () {
       var modalInstance = $modal.open({
@@ -401,20 +387,6 @@ app.controller('ActionsCtrl', [
           $scope.sendNewsletter(data);
         } else {
           $scope.sendTestEmail(data);
-        }
-      }, $.noop);
-    };
-    $scope.downloadBeneficiaryFile = function () {
-      $scope.date = moment().format('yyyy-MM-dd');
-      var modalInstance = $modal.open({
-        templateUrl: 'downloadBeneficiaryFile.html',
-        controller: 'downloadBeneficiaryFileCtrl'
-      });
-      modalInstance.result.then(function (date) {
-        if (date) {
-          window.open('/admin/beneficiary/dl');
-        } else {
-          window.open('/admin/beneficiary/dl?date=' + date);
         }
       }, $.noop);
     };
@@ -561,18 +533,6 @@ app.controller('ActionsCtrl', [
         msg: msg,
         template: template
       });
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
-  }
-]).controller('downloadBeneficiaryFileCtrl', [
-  '$scope',
-  '$modalInstance',
-  '$http',
-  function ($scope, $modalInstance, $http) {
-    $scope.ok = function (date) {
-      $modalInstance.close(date);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
