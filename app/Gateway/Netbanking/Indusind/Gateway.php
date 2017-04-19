@@ -33,9 +33,9 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $content = $this->getPaymentRequestData($input, Constants::PAY);
+        $content = $this->getAuthorizeRequestData($input);
 
-        $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
+        $entity = $this->getAuthGatewayPaymentAttributes($input);
 
         $this->createGatewayPaymentEntity($entity);
 
@@ -80,6 +80,11 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function getAuthGatewayPaymentAttributes($input)
+    {
+        return [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
     }
 
     public function sendPaymentVerifyRequest(Verify $verify)
@@ -159,67 +164,77 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        $data = $this->getPaymentRequestData($input, Constants::VERIFY);
+        $data = $this->getVerifyRequestData($input);
 
         return $data;
-    }
-
-    protected function getPaymentRequestData(array $input, $mode)
-    {
-        $data = $this->createDefaultRequestData($input, $mode);
-
-        $data[RequestFields::ENCRYPTED_STRING] = $this->getEncryptedString($input, $mode);
-
-        return $data;
-    }
-
-    protected function getEncryptedString(array $input, $mode)
-    {
-        $data = $this->getAuthorizeRequestData($input);
-
-        if ($mode === Constants::VERIFY)
-        {
-            $input[RequestFields::BANK_REFERENCE_ID] = $input['payment']['bank_payment_id'];
-        }
-
-        $this->traceGatewayPaymentRequest($data, $input);
-
-        $queryString = $this->createQueryString($data);
-
-        $masterKey = $this->getBinarySecret();
-
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $secret);
-
-        return strtoupper(bin2hex($aes->encryptString($queryString)));
     }
 
     protected function getAuthorizeRequestData(array $input)
     {
-        return [
+        $data = [
+            RequestFields::MODE       => Constants::PAY,
+            RequestFields::PAYEE_ID   => $this->getPid(),
+            RequestFields::USER_TYPE  => Constants::RETAIL_USER,
+        ];
+
+        $data[RequestFields::ENCRYPTED_STRING] = $this->getAuthorizeEncryptedString($input);
+
+        return $data;
+    }
+
+    protected function getVerifyRequestData(array $input)
+    {
+        $data = [
+            RequestFields::MODE         => Constants::VERIFY,
+            RequestFields::PAYEE_ID     => $this->getPid(),
+            RequestFields::USER_TYPE    => Constants::RETAIL_USER,
+           // RequestFields::PAYMENT_TYPE => Constants::HOT_PAYMENT,
+        ];
+
+        $data[RequestFields::ENCRYPTED_STRING] = $this->getVerifyEncryptedString($input);
+
+        return $data;
+    }
+
+    protected function getVerifyEncryptedString($input)
+    {
+        $data = [
             RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::AMOUNT             => ($input['payment']['amount'] / 100),
-            RequestFields::RETURN_URL         => $input['callbackUrl'],
             RequestFields::CURRENCY_CODE      => Currency::INR,
             RequestFields::CONFIRMATION       => Constants::YES,
+            RequestFields::RETURN_URL         => "dummy",
+            RequestFields::BANK_REFERENCE_ID  => $input['payment']['transaction_id'],
         ];
+
+        $queryString = $this->createQueryString($data);
+
+        $masterKey = $this->getSecret();
+
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+
+        return strtoupper(bin2hex($aes->encryptString($queryString)));
     }
 
-    protected function createDefaultRequestData(array $input, $mode)
+    protected function getAuthorizeEncryptedString($input)
     {
- 
         $data = [
-            RequestFields::MODE       => $mode,
-            RequestFields::PAYEE_ID   => $this->getPid(),
-            RequestFields::USER_TYPE  => Constants::RETAIL_USER
+            RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
+            RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
+            RequestFields::AMOUNT             => ($input['payment']['amount'] / 100),
+            RequestFields::CURRENCY_CODE      => Currency::INR,
+            RequestFields::CONFIRMATION       => Constants::YES,
+            RequestFields::RETURN_URL         => $input['callbackUrl'],
         ];
 
-        if ($mode === Constants::VERIFY)
-        {
-            $data[RequestFields::PAYMENT_TYPE] = Constants::HOT_PAYMENT;
-        }
+        $queryString = $this->createQueryString($data);
 
-        return $data;
+        $masterKey = $this->getSecret();
+
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+
+        return strtoupper(bin2hex($aes->encryptString($queryString)));
     }
 
     /*
@@ -244,7 +259,7 @@ class Gateway extends Base\Gateway
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
-        $masterKey = $this->getBinarySecret();
+        $masterKey = $this->getsecret();
 
         $crypto = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
@@ -328,8 +343,7 @@ class Gateway extends Base\Gateway
     {
         return [
             'received'          => true,
-            'status'            => $content[ResponseFields::PAYMENT_STATUS],
-            'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
+            'status'            => $content[ResponseFields::STATUS],
         ];
     }
 
@@ -339,7 +353,7 @@ class Gateway extends Base\Gateway
 
         // Lets assume we verify only one payment at a time
         // So the response will contain just 1 table at a time
-        return (array) $responseArray['Table1'];
+        return (array) $responseArray['@attributes'];
     }
 
     public function getMerchantId()
@@ -361,9 +375,9 @@ class Gateway extends Base\Gateway
         return $this->config['live_hash_secret'];
     }
 
-    protected function getBinarySecret()
+    public function getSecret()
     {
-        $secret = $this->getSecret();
+        $secret = parent::getSecret();
 
         return pack('H*', $secret);
     }

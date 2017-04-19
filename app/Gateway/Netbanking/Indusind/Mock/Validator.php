@@ -24,10 +24,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRules = [
-        RequestFields::MODE          => 'required|alpha|size:1|in:V',
-        RequestFields::PAYEE_ID      => 'required|string',
-        RequestFields::AMOUNT        => 'required|numeric',
-        RequestFields::ITEM_CODE     => 'required|alpha_num|size:14',
-        RequestFields::CURRENCY_CODE => 'required|in:INR',
+        RequestFields::MODE             => 'required|alpha|in:V',
+        RequestFields::PAYEE_ID         => 'required|string',
+        RequestFields::USER_TYPE        => 'required|string',
+        RequestFields::ENCRYPTED_STRING => 'required|string',
     ];
 }

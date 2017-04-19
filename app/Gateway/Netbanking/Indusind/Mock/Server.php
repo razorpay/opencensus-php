@@ -69,7 +69,7 @@ class Server extends Base\Mock\Server
 
         $aes = new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
 
-        $content[ResponseFields::ENCRYPTED_STRING] = base64_encode($aes->encryptString($httpQuery));
+        $content[ResponseFields::ENCRYPTED_STRING] = bin2hex($aes->encryptString($httpQuery));
 
         $this->content($content, 'hash');
 
@@ -82,7 +82,7 @@ class Server extends Base\Mock\Server
 
         $aes = new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
 
-        $decryptedString = $aes->decryptString(base64_decode($input[RequestFields::ENCRYPTED_STRING]));
+        $decryptedString = $aes->decryptString(hex2bin($input[RequestFields::ENCRYPTED_STRING]));
 
         if ($decryptedString === false)
         {
@@ -116,12 +116,7 @@ class Server extends Base\Mock\Server
     protected function createResponseArray(array $input)
     {
         return [
-            ResponseFields::ITEM_CODE    => $input[RequestFields::ITEM_CODE],
-            ResponseFields::PAYMENT_ID   => $input[RequestFields::PAYMENT_ID],
-            ResponseFields::CURRENCY     => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::PAYMENT_DATE => $input[RequestFields::PAYMENT_DATE],
-            ResponseFields::AMOUNT       => $input[RequestFields::AMOUNT],
-            ResponseFields::STATUS       => Status::SUCCESS,
+            ResponseFields::STATUS  => Constants::SUCCESS,
         ];
     }
 }

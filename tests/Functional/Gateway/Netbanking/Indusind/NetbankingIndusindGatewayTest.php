@@ -22,7 +22,7 @@ class NetbankingIndusindGatewayTest extends TestCase
 
         $this->gateway = 'netbanking_indusind';
 
-        $this->payment = $this->getDefaultNetbankingPaymentArray('INDUSIND');
+        $this->payment = $this->getDefaultNetbankingPaymentArray('INDB');
 
         $this->setMockGatewayTrue();
 
