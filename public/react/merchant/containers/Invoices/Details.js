@@ -69,6 +69,7 @@ export default class InvoiceDetailContainer extends Component {
     this.props.openModal({
       size: 'small',
       component: <IssueConfirmModal
+        isPaymentLink={true}
         customer={this.props.invoice.customer}
         onIssue={(notifyProps) => {
           return this.issueInvoice(this.props.invoice, notifyProps)

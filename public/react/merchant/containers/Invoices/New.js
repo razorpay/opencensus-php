@@ -237,7 +237,7 @@ export default class InvoicesNewContainer extends Component {
         })
         return invoice
       })
-    }, false)
+    })
   }
 
   resendInvoice = (props) => {
@@ -262,15 +262,15 @@ export default class InvoicesNewContainer extends Component {
           message: errors
         })
       })
-    })
+    }, true)
   }
 
   showIssueConfirmModal(onIssueCallback, disableIssueOnEmptySelection) {
     this.props.openModal({
       size: 'small',
       component: <IssueConfirmModal
-        customer={this.props.customer}
         disableIssueOnEmptySelection={disableIssueOnEmptySelection}
+        customer={this.props.customer}
         onIssue={(notifyProps) => {
           return onIssueCallback(notifyProps)
         }}
@@ -400,6 +400,7 @@ export default class InvoicesNewContainer extends Component {
       invoice,
     } = this.props
 
+    let isTestMode = this.props.session.mode === 'test'
     let isNew = !invoice.id
     let status = invoice.status
     let isDraft = status === 'draft'
@@ -434,6 +435,12 @@ export default class InvoicesNewContainer extends Component {
                     />
 
                     <div class='invoice'>
+                      {
+                        isTestMode &&
+                          <div class='alert-sm alert-warning testmode-warning'>
+                            Invoice is created in <b>Test Mode</b>. Only test payments can be made for this invoice
+                          </div>
+                      }
                       <InvoiceLogo
                         logo={this.state.merchantLogoUrl}
                         name={this.state.merchantName}

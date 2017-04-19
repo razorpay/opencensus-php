@@ -78,4 +78,17 @@ angular.module('app.filters', []).filter('fromNow', function () {
         return rolesLabels[role];
       }
     };
+}).filter('methodtoname', function() {
+    return function(method) {
+      var methodNames = {
+        card:       'Card',
+        netbanking: 'Netbanking',
+        upi:        'UPI',
+        emi:        'EMI',
+        wallet:     'Wallet',
+        null:       'All'
+      };
+
+      return methodNames[method];
+    };
 });

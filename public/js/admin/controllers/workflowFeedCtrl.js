@@ -162,6 +162,14 @@ app.controller('WorkflowFeedCtrl', [
           });
 
           $scope.cards = $scope.cards.concat(checkers);
+
+          $scope.approverList = $scope.cards.filter(function(card){
+            return card.approved;
+          });
+
+          $scope.rejectorList = $scope.cards.filter(function(card){
+            return !card.approved;
+          });
         }
       });
     };
@@ -351,11 +359,20 @@ app.controller('WorkflowFeedCtrl', [
   '$modalInstance',
   '$http',
   'action_data',
-  function($scope, $modalInstance, $http, action_data) {
+  'utils',
+  function($scope, $modalInstance, $http, action_data, utils) {
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };
 
     $scope.data = action_data;
+    $scope.isArray = utils.isArray;
+    $scope.dataKeys = [];
+
+    if ($scope.data && $scope.data.success) {
+      var oldData = $scope.data.data.old ? $scope.data.data.old : [];
+      var newData = $scope.data.data.new ? $scope.data.data.new : [];
+      $scope.dataKeys  = utils.mergeUnique(Object.keys(oldData).concat(Object.keys(newData)));
+    }
   }
 ]);

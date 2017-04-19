@@ -73,6 +73,7 @@ app.controller('EntitiesCtrl', [
       'netbanking_icici',
       'netbanking_airtel',
       'netbanking_federal',
+      'netbanking_indusind',
       'paytm',
       'sharp',
       'upi_icici',
