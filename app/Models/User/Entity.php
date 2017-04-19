@@ -46,19 +46,6 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = false;
 
-    /**
-     * Determine if the user is a member of any merchants.
-     *
-     * @return bool
-     */
-    public function hasMerchants()
-    {
-        return (count($this->merchants) > 0);
-    }
-
-    /**
-     * Get all of the merchants that the user belongs to.
-     */
     public function merchants()
     {
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
@@ -66,111 +53,13 @@ class Entity extends Base\PublicEntity
                     ->orderBy(self::NAME);
     }
 
-    /**
-     * Get the token value for the "remember me" session.
-     *
-     * @return string
-     */
-    public function getRememberToken()
-    {
-        return $this->getAttribute(self::REMEMBER_TOKEN);
-    }
-
-    /**
-     * Set the token value for the "remember me" session.
-     *
-     * @param  string  $value
-     * @return void
-     */
-    public function setRememberToken($value)
-    {
-        $this->setAttribute(self::REMEMBER_TOKEN, $value);
-    }
-
-    /**
-     * Get the column name for the "remember me" token.
-     *
-     * @return string
-     */
-    public function getRememberTokenName()
-    {
-        return self::REMEMBER_TOKEN;
-    }
-
-    /**
-     * Get the e-mail address where password reminders are sent.
-     *
-     * @return string
-     */
-    public function getReminderEmail()
-    {
-        return $this->email;
-    }
-
     public function setConfirmTokenNull()
     {
         $this->setAttribute(self::CONFIRM_TOKEN, null);
     }
 
-    public function setPassword(string $password)
-    {
-        $this->setAttribute(self::PASSWORD, $password);
-    }
-
     public function getPassword()
     {
         return $this->getAttribute(self::PASSWORD);
-    }
-
-    /**
-     * Determine if the given merchant is owned by the user.
-     *
-     * @param  \RZP\Models\Merchant\Entity  $merchant
-     * @return bool
-     */
-    public function ownsMerchant($merchant)
-    {
-        $merchant = $this->merchants()
-                         ->where(self::MERCHANT_ID, $merchant['id'])
-                         ->where(self::ROLE, self::OWNER)
-                         ->first();
-
-        return !is_null($merchant);
-    }
-
-    /**
-     * Get the user's role on a given merchant.
-     *
-     * @param  \RZP\Models\Merchant\Entity  $merchant
-     * @return string
-     */
-    public function getMerchantRole($merchant)
-    {
-        $merchant = $this->merchants->find($merchant->id);
-
-        if ($merchant)
-        {
-            return $merchant->pivot->role;
-        }
-    }
-
-    /**
-     * Generates a one time use token of the given length
-     */
-    protected function generateOneTimeUseToken($length)
-    {
-        $bytes = random_bytes($length/2);
-
-        $token = bin2hex($bytes);
-
-        return $token;
-    }
-
-    /**
-     * Generates Confirmation token
-     */
-    protected function generateConfirmToken()
-    {
-        $this->setAttribute(self::CONFIRM_TOKEN, $this->generateOneTimeUseToken(32));
     }
 }
