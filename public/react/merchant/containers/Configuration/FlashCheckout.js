@@ -42,7 +42,7 @@ export default class FlashCheckout extends Component {
     let fcEnabled = this.state.fcEnabled;
     var data = {
       features: {
-        noflashcheckout: fcEnabled ? 0 : 1,
+        noflashcheckout: fcEnabled ? 1 : 0,
       },
     };
 
@@ -104,7 +104,7 @@ export default class FlashCheckout extends Component {
                       ? 'Disable Flash Checkout'
                       : 'Enable Flash Checkout'
                   }
-                  pendingText={fcEnabled ? 'Disabling...' : 'Enabling'}
+                  pendingText={fcEnabled ? 'Disabling...' : 'Enabling...'}
                   onClick={this.toggleFc}
                 />
               </div>
