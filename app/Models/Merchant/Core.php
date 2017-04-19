@@ -88,7 +88,7 @@ class Core extends Base\Core
         return $subMerchant;
     }
 
-    protected function addMerchantSupportingEntities($merchant)
+    protected function addMerchantSupportingEntities(Entity $merchant)
     {
         $this->createBalance($merchant, Mode::TEST);
 

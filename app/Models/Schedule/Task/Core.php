@@ -13,13 +13,13 @@ use RZP\Models\Schedule;
 class Core extends Base\Core
 {
     /**
-     * create a default settlement schedule for merchant
+     * Create a default settlement schedule for merchant
+     *
+     * @param Merchant\Entity $merchant
      */
-    public function createDefaultSettlementSchedule($merchant)
+    public function createDefaultSettlementSchedule(Merchant\Entity $merchant)
     {
-        $defaultDelay = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
-
-        $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
+        $schedule = $this->getDefaultMerchantSchedule($merchant);
 
         $merchant->schedule()->associate($schedule);
 
@@ -34,6 +34,12 @@ class Core extends Base\Core
 
     /**
      * Create a merchant schedule task entity and deletes the existing entity if any
+     *
+     * @param Merchant\Entity $merchant
+     * @param Base\Entity     $entity
+     * @param                 $input
+     *
+     * @return Entity
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
@@ -113,6 +119,32 @@ class Core extends Base\Core
                                     $scheduleTasks, $method);
 
         return $scheduleTask;
+    }
+
+    /**
+     * Fetch schedule to assign for a new merchant
+     *
+     * @param Merchant\Entity $merchant
+     * @return Schedule\Entity
+     */
+    protected function getDefaultMerchantSchedule(Merchant\Entity $merchant)
+    {
+        //
+        // For marketplace linked accounts, use the parent merchants
+        // schedule
+        //
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $schedule = $merchant->parent->schedule;
+        }
+        else
+        {
+            $defaultDelay = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+            $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
+        }
+
+        return $schedule;
     }
 
     /**
