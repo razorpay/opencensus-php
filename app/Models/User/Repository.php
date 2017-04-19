@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -56,5 +57,14 @@ class Repository extends Base\Repository
         $this->repo->saveOrFail($user);
 
         return $user;
+    }
+
+    public function getOwners(string $merchantId)
+    {
+        return $this->newQuery()
+                    ->join(Table::MERCHANT_USERS, Entity::ID, '=', 'merchant_users.user_id')
+                    ->whereIn('merchant_users.merchant_id', $merchantId)
+                    ->whereIn('merchant_users.role', Entity::OWNER)
+                    ->get();
     }
 }

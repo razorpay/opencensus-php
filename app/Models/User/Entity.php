@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -17,11 +18,8 @@ class Entity extends Base\PublicEntity
     const REMEMBER_TOKEN        = 'remember_token';
     const CONFIRM_TOKEN         = 'confirm_token';
 
-    // For merchant-user pivot table
-    const MERCHANT_USERS        = 'merchant_users';
-    const USER_ID               = 'user_id';
-
     const ACTION                = 'action';
+    const USER_ID               = 'user_id';
     const MERCHANT_ID           = 'merchant_id';
     const ROLE                  = 'role';
     const OWNER                 = 'owner';
@@ -63,14 +61,9 @@ class Entity extends Base\PublicEntity
      */
     public function merchants()
     {
-        $query = $this->belongsToMany(
-                            Merchant\Entity::class,
-                            self::MERCHANT_USERS,
-                            self::USER_ID,
-                            self::MERCHANT_ID)
-                      ->withPivot(self::ROLE);
-
-        return $query->orderBy(self::NAME, 'asc');
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot(self::ROLE)
+                    ->orderBy(self::NAME);
     }
 
     /**

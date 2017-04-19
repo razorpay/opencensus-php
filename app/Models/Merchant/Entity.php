@@ -46,8 +46,6 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
-    const MERCHANT_USERS            = 'merchant_users';
-    const USER_ID                   = 'user_id';
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
@@ -965,41 +963,10 @@ class Entity extends Base\PublicEntity
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
     }
 
-    /**
-     * Determine if the merchant has any users.
-     *
-     * @return bool
-     */
-    public function hasUsers()
-    {
-        return count($this->users) > 0;
-    }
-
-    /**
-     * Get all of the users that belong to the merchant.
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
     public function users()
     {
-        return $this->belongsToMany(
-            User\Entity::class, self::MERCHANT_USERS, self::MERCHANT_ID, self::USER_ID
-        )->withPivot('role');
-    }
-
-    /**
-     * Get the owners of the merchant.
-     */
-    public function owners()
-    {
-        return $this->users()->where('role', 'owner')->orderBy(self::MERCHANT_USERS.'.updated_at', 'desc')->get();
-    }
-
-    /**
-     * Get the primary owner of the merchant.
-     */
-    public function primaryOwner()
-    {
-        return $this->owners()->first();
+        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot(User\Entity::ROLE);
     }
 
     public function isEmailOptional()

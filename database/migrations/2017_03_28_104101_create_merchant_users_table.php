@@ -1,12 +1,10 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
-
 use RZP\Constants\Table;
-
-use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\User\Entity as User;
+use Illuminate\Database\Schema\Blueprint;
+use RZP\Models\Merchant\Entity as Merchant;
+use Illuminate\Database\Migrations\Migration;
 
 class CreateMerchantUsersTable extends Migration
 {
@@ -23,14 +21,14 @@ class CreateMerchantUsersTable extends Migration
 
             $table->char(Merchant::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->char(Merchant::USER_ID, 14);
+            $table->char(User::USER_ID, User::ID_LENGTH);
 
-            $table->string('role');
+            $table->string(User::ROLE);
 
-            $table->integer(Merchant::CREATED_AT);
-            $table->integer(Merchant::UPDATED_AT);
+            $table->integer(User::CREATED_AT);
+            $table->integer(User::UPDATED_AT);
 
-            $table->foreign(Merchant::MERCHANT_ID)
+            $table->foreign(User::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
@@ -51,8 +49,9 @@ class CreateMerchantUsersTable extends Migration
     {
         Schema::table(Merchant::MERCHANT_USERS, function(Blueprint $table)
         {
-            $table->dropForeign('merchant_users_merchant_id_foreign');
-            $table->dropForeign('merchant_users_user_id_foreign');
+            $table->dropForeign(Table::MERCHANT_USERS .'_' .User::MERCHANT_ID .'_foreign');
+
+            $table->dropForeign(Table::MERCHANT_USERS .'_' .User::USER_ID .'_foreign');
         });
 
         Schema::drop(Merchant::MERCHANT_USERS);
