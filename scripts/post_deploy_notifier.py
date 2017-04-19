@@ -19,7 +19,8 @@ class KeyStore:
 
     @staticmethod
     def get_github_token():
-        return KeyStore.get_key("GITHUB_TOKEN")
+        #return KeyStore.get_key("GITHUB_TOKEN")
+        return KeyStore.get_key("github_token")
 
     @staticmethod
     def get_wercker_api_token():
@@ -27,7 +28,7 @@ class KeyStore:
 
     @staticmethod
     def get_prod_pipeline_id():
-        return KeyStore.get_key("PROD_PIPELINE_ID")
+        return KeyStore.get_key("RZP_WERCKER_PROD_PIPELINE_ID")
 
     @staticmethod
     def get_slack_token():
