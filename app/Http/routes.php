@@ -177,7 +177,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/admin/activity/{id}', 'AdminController@deleteAdminActivity');
 
         Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
-        Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
         Route::get('/admin/file/{fileId}', 'AdminController@getUploadedFile');
         Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
@@ -242,8 +241,6 @@ Route::group(['middleware' => ['web']], function () {
                 ->name('admin_payment_capture');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
-        // Admin Main Actions, mostly initiated from the Actions screen
-        Route::post('/admin/trigger/error', 'AdminController@triggerError');
         // Newsletter
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
         Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
