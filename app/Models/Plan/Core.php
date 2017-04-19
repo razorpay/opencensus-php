@@ -44,7 +44,7 @@ class Core extends Base\Core
 
         $scheduleInput = array_merge($input[Entity::SCHEDULE], $extraInput);
 
-        $schedule = (new Schedule\Core)->createSchedule($scheduleInput, $plan->merchant);
+        $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
 
         $plan->schedule()->associate($schedule);
     }

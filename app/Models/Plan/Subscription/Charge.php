@@ -444,7 +444,7 @@ class Charge extends Base\Core
 
         // TODO: This is not DONE! Need to understand and then refactor how
         // next run is updated.
-        $task->updateNextRun();
+        $task->updateNextRunAndLastRun(false);
     }
 
     /**

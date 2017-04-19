@@ -142,7 +142,7 @@ class Entity extends Base\PublicEntity
 
     // ------------------------- Helper methods --------------------------------
 
-    public function updateNextRunAndLastRun()
+    public function updateNextRunAndLastRun($considerHolidays = true)
     {
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), 'Asia/Kolkata');
 
