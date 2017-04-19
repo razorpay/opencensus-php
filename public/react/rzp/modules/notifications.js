@@ -31,14 +31,12 @@ let initialState = {
 export default (state = initialState, action) => {
   switch (action.type) {
     case NOTIFICATION_SHOW:
-      debugger
       return merge(state, {
         notifications: unshift(state.notifications, action.payload),
         hidePrevious: state.notifications.length >= 1 ? action.payload.hidePrevious : false
       })
 
     case NOTIFICATION_HIDE:
-      debugger
       let notifications = remove(state.notifications, (notification) => notification.id === action.payload.id)
       return set(state, 'notifications', notifications)
 

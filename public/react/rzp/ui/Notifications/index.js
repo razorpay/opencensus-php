@@ -15,7 +15,6 @@ export default class Notifications extends Component {
 
   render() {
     let { notifications, hidePrevious } = this.props
-    debugger
 
     if (!notifications.length) {
       return null

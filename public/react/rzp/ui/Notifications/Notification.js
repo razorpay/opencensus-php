@@ -44,7 +44,6 @@ class Notification extends Component {
   render() {
     let { type, message, showClose, hidePrevious } = this.props
 
-    debugger
     if (hidePrevious) {
       return null
     }
