@@ -112,7 +112,7 @@ class AuthPolicyTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = (new Admin\Repository)->findOrFailPublic($admin->getId());
 
         $this->assertNull($admin['last_login_at']);
         $this->assertEquals(true, $admin['locked']);
