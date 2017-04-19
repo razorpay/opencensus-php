@@ -383,4 +383,9 @@ class Gateway extends Base\Gateway
 
         return $this->getLiveMerchantId();
     }
+
+    protected function getLiveMerchantId()
+    {
+        return $this->config['live_merchant_id'];
+    }
 }
