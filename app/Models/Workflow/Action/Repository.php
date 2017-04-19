@@ -42,20 +42,6 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
-    public function findOpenWorkflows(string $workflowId)
-    {
-        /*
-            SELECT *
-            FROM workflow_actions
-            WHERE workflow_id = $workflow_id AND state IN ('open')
-        */
-
-        return $this->newQuery()
-                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
-                    ->whereIn(Entity::STATE, [State\Entity::OPEN])
-                    ->get();
-    }
-
     public function findActionsForChecker(array $roleIds)
     {
         /*
@@ -122,6 +108,16 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->orgId($orgId)
+                    ->whereIn(Entity::STATE, $openStates)
+                    ->get();
+    }
+
+    public function fetchOpenActionsByWorkflowId(string $workflowId)
+    {
+        $openStates = State\Entity::OPEN_STATES;
+
+        return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->whereIn(Entity::STATE, $openStates)
                     ->get();
     }

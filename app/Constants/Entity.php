@@ -30,6 +30,7 @@ class Entity
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
     const REFUND                = 'refund';
+    const REPORT                = 'report';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
@@ -135,6 +136,7 @@ class Entity
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
         self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
+        self::REPORT                => \RZP\Models\Report::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,
         self::CREDITS               => \RZP\Models\Merchant\Credits::class,
         self::METHODS               => \RZP\Models\Merchant\Methods::class,

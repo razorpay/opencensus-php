@@ -16,9 +16,6 @@ use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
 class ApiEventSubscriber extends Base\Core
 {
-    // Used to push jobs to queues
-    use DispatchRouter;
-
     /**
      * Event being fired
      * @var string
@@ -263,9 +260,7 @@ class ApiEventSubscriber extends Base\Core
 
         $job = new Webhook($data);
 
-        $queueConfig = [Constants\Jobs::WEBHOOK, $this->getMode(), $this->event];
-
-        $this->dispatchOn($job, $queueConfig);
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::WEBHOOK, [$this->event]);
     }
 
     protected function getWebhookData($payload)
