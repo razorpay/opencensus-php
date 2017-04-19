@@ -59,6 +59,7 @@ export default class FileUploadButton extends Component {
       rejectedText,
       disabled,
       labelClass,
+      maxSize,
       ...attributes,
     } = this.props
 
@@ -80,7 +81,7 @@ export default class FileUploadButton extends Component {
 
     return (
       <label
-        class={`fileupload-btn ${labelClass}`}
+        class={`fileupload-btn btn ${labelClass}`}
         disabled={isDisabled}
       >
         <i class='fa fa-folder-open'></i>
@@ -103,5 +104,5 @@ export default class FileUploadButton extends Component {
 FileUploadButton.defaultProps = {
   text: 'Choose File',
   pendingText: 'Uploading...',
-  labelClass: 'btn btn-default'
+  labelClass: 'btn-default'
 }

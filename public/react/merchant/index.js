@@ -105,7 +105,7 @@ createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
 createNgDirective('customersList', CustomersListContainer)
 createNgDirective('itemsList', ItemsListContainer)
 createNgDirective('creditsNew', CreditsContainer)
-createNgDirective('configNew', ConfigContainer)
+createNgDirective('configDetails', ConfigContainer)
 
 createNgDirective('ordersList', OrdersListContainer)
 createNgDirective('orderDetails', OrderDetailsContainer, ['id'])

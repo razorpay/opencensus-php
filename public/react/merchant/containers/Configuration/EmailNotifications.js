@@ -1,60 +1,52 @@
-import React, { Component, PropTypes } from 'react'
-import { connect } from 'react-redux'
-import { refreshConfig } from 'merchant/modules/config'
-import * as NotificationActions from 'merchant/modules/notifications'
+import { Component } from 'react';
+import { connect } from 'react-redux';
+import { Field, reduxForm } from 'redux-form';
+import AsyncButton from 'react-async-button';
+import InputField from 'rzp/ui/Forms/InputField';
+import { showNotification } from 'merchant/modules/notifications';
+import { required } from 'rzp/utils/validators';
 
-@connect(
-  (state) => {
-    return {
-      config: state.config.config
-    }
-  },
-  { refreshConfig, ...NotificationActions }
-)
-export default class Congfiguration extends Component {
+@connect(state => state.config, { showNotification })
+@reduxForm()
+export default class EmailNotifications extends Component {
+  componentWillMount() {
+    this.props.initialize(this.props.config);
+  }
 
   render() {
+    let { handleSubmit, onSave } = this.props;
     return (
       <div class="panel panel-default">
-        <div class="panel-heading">
-          Email Notifications
-        </div>
-        <div class="panel-body">
+        <div class="panel-heading">Email Notifications</div>
 
-          <div class="form-group">
-            <div class="">
-              <div class="help-block m-b">
-                Enter email addresses that will receive email notifications regarding payments, settlements, daily payment reports, webhooks, etc. (You can enter multiple email addresses separated by a comma.)
+        <div class="panel-body">
+          <form class="form-horizontal" onSubmit={handleSubmit(onSave)}>
+            <div class="help-block">
+              Enter email addresses that will receive email notifications regarding payments, settlements, daily payment reports, webhooks, etc. (You can enter multiple email addresses separated by a comma.)
+            </div>
+
+            <div class="form-group">
+              <div class="col-sm-10">
+                <Field
+                  name="transaction_report_email"
+                  component={InputField}
+                  class="form-control"
+                  maxLength="255"
+                  validate={required()}
+                />
+              </div>
+
+              <div class="col-sm-2">
+                <AsyncButton
+                  class="btn btn-default pull-right"
+                  text="Save Changes"
+                  pendingText="Saving..."
+                  onClick={handleSubmit(onSave)}
+                />
               </div>
             </div>
-          </div>
-          <div class="m-t m-b text-center prev-next">
-            <div class="col-sm-10">
-              <input type="text"
-                     class="form-control m-l-neg"
-                     maxLength="255"
-                     value ={this.props.config.transaction_report_email ? this.props.config.transaction_report_email : ''}
-                     onChange={(evnt)=>{
-                       let {transaction_report_email , ...rest} = this.props.config;
-                       transaction_report_email = evnt.target.value;
-                       let newConfig = {transaction_report_email, ...rest}
-                       this.props.refreshConfig(newConfig);
-                     }}/>
-            </div>
-            <button class="btn btn-save btn-default btn-rounded col-sm-2"
-                    type="submit"
-                    onClick={this.props.saveConfig}>
-              Save Changes
-            </button>
-          </div>
+          </form>
         </div>
-        <footer class="panel-footer">
-          {/*
-           <div class="text-center m-t m-b">
-           <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
-           </div>
-           */}
-        </footer>
       </div>
     );
   }

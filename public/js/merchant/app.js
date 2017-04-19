@@ -226,7 +226,7 @@ var app = angular.module('app', [
       templateProvider: reactTemplateProvider('<manage-team />')
     }).state('app.config', {
       url: '/config',
-      templateProvider: reactTemplateProvider('<config-new/>'),
+      templateProvider: reactTemplateProvider('<config-details/>'),
     })
 
       //Guest Routes
