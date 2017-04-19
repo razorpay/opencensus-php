@@ -3,10 +3,6 @@
 namespace RZP\Reconciliator\Ebs;
 
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\FileProcessor;
-use RZP\Reconciliator\Converter;
-
-use PHPExcel_IOFactory;
 
 class Reconciliate extends Base\Reconciliate
 {
