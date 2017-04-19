@@ -366,8 +366,7 @@ class Repository extends Base\Repository
                     ->join($pTableName, $rPaymentId, '=', $pId)
                     ->where($rAttempts, '<', $attempts)
                     ->where($rStatus, '=', Refund\Status::FAILED)
-                    ->where($rCreatedAt, '>=', $from)
-                    ->where($rCreatedAt, '<', $to)
+                    ->whereBetween($rCreatedAt, [$from, $to])
                     ->where($pGateway, '=', $gateway)
                     ->with(['payment','payment.terminal'])
                     ->get();

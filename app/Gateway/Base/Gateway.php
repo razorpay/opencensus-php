@@ -232,6 +232,18 @@ class Gateway
         $this->action = Action::VERIFY;
     }
 
+    /**
+     * Calls gateway to verify if a refund has
+     * been successfully performed or not.
+     * @param array $input
+     * @return bool
+     */
+    public function verifyRefund2(array $input)
+    {
+        $this->input = $input;
+        // $this->action = Action::VERIFY_ACTION2;
+    }
+
     public function action(array $input, $action)
     {
         $this->action = $action;
@@ -884,16 +896,5 @@ class Gateway
                     'Failed to convert json to array',
                     ['json' => $json]);
         }
-    }
-
-    /**
-     * Calls gateway to verify if a refund has
-     * been successfully performed or not.
-     * @param array $input
-     * @return bool
-     */
-    public function verifyRefund2(array $input)
-    {
-        ;
     }
 }

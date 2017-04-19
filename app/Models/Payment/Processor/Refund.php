@@ -504,7 +504,7 @@ trait Refund
 
     protected function refundOnGateway($data)
     {
-        $refunded = false;
+        $gatewayRefunded = false;
 
         try
         {
@@ -528,7 +528,7 @@ trait Refund
 
             $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
 
-            $refunded = true;
+            $gatewayRefunded = true;
         }
         catch (Exception\BaseException $e)
         {
@@ -542,7 +542,7 @@ trait Refund
             $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
 
-        return $refunded;
+        return $gatewayRefunded;
     }
 
     protected function reverseOnGateway($data)
@@ -645,6 +645,8 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
+            $this->updateRefundAttemptInfo();
+
             $this->repo->transaction(function() use ($data, $payment)
             {
                 $this->recordTransactionForRefund();
@@ -717,25 +719,29 @@ trait Refund
         {
             $this->updateRefundAttemptInfo();
 
-            $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
+            $refundedOnGateway = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
             {
                 // refund/reverse on gateway
                 if ($payment->getTransactionId() !== null)
                 {
                     $refunded = $this->refundOnGateway($data);
-
-                    $this->refund->setGatewayRefunded($refunded);
                 }
                 else if ($this->gatewaySupportsReversal($payment) === true)
                 {
-                    $reversed = $this->reverseOnGateway($data);
-
-                    $this->refund->setGatewayRefunded($reversed);
+                    $refunded = $this->reverseOnGateway($data);
                 }
 
-                $this->repo->saveOrFail($this->refund);
+                return $refunded;
             });
         }
+        else
+        {
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+        }
+
+        $this->refund->setGatewayRefunded($refundedOnGateway);
+
+        $this->repo->saveOrFail($this->refund);
 
         return $this->refund;
     }

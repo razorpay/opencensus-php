@@ -59,6 +59,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::TRANSACTION_ID,
         self::BATCH_ID,
+        self::ATTEMPTS,
+        self::LAST_ATTEMPTED_AT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -80,6 +82,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
+        self::AMOUNT           => 'int',
+        self::BASE_AMOUNT      => 'int',
         self::GATEWAY_REFUNDED => 'bool',
     ];
 
@@ -178,11 +182,6 @@ class Entity extends Base\PublicEntity
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
-    }
-
-    public function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
     }
 
     public function setGatewayRefunded($gatewayRefunded)

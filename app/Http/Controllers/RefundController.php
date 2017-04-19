@@ -140,7 +140,7 @@ class RefundController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postRefundRetryFailed()
+    public function postRetryFailedRefunds()
     {
         $input = Request::all();
 
