@@ -321,21 +321,18 @@ app.controller('MerchantDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-    $scope.assignSchedule = function (schedule_id) {
-
-      var body = {'settlement_schedule_id':schedule_id};
+    $scope.assignSchedule = function (data) {
 
       var request = $http({
         method: 'post',
         url: '/admin/merchant/' + $scope.merchant.id + '/schedules',
         transformRequest: transformRequestAsFormPost,
-        data: body
+        data: data
       });
 
       request.success(function (data){
         if (data.success) {
           $scope.alerts.addAlert('success', 'Schedule Assigned successfully', true);
-          $scope.merchant.schedule_id = data.data.settlement_schedule_id;
         }
         else {
           $scope.alerts.resetAlerts();
@@ -632,20 +629,25 @@ app.controller('MerchantDetailCtrl', [
 
     $scope.openAssignSchedule = function() {
 
-      var currentSchedule = $scope.merchant.schedule_id || '';
+      var currentSchedule = '';
+      var currentType = '';
+      var currentMethod = '';
 
       var modalInstance = $modal.open({
         templateUrl: 'assignScheduleModalContent.html',
         controller: 'assignScheduleModalCtrl',
         resolve: {
           current: function() {
-            return currentSchedule;
+            return {'type': currentType,
+                    'schedule': currentSchedule,
+                    'method': currentMethod
+                   };
           }
         }
       });
 
-      modalInstance.result.then(function (data) {
-        $scope.assignSchedule(data);
+      modalInstance.result.then(function (schedule_data) {
+        $scope.assignSchedule(schedule_data);
       }, $.noop);
 
     };
@@ -955,7 +957,7 @@ app.controller('MerchantDetailCtrl', [
         if (data.success) {
           $scope.merchant = data.data;
           sortTerminals();
-          $scope.scheduleKeys = $scope.merchant.schedule ? Object.keys($scope.merchant.schedule) : [];
+          $scope.scheduleKeys = ['type', 'method', 'schedule_id', 'next_run_at'];
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = data.data.details.merchant_details.activation_progress;
           $scope.referer = getReferer($scope.merchant.details.tags);
@@ -1605,7 +1607,10 @@ app.controller('MerchantDetailCtrl', [
   function ($scope, $modalInstance, $http, current) {
     $scope.loading = true;
     $scope.schedule_list = {};
-    $scope.schedule_id = current;
+
+    $scope.type = current.type;
+    $scope.schedule_id = current.schedule;
+    $scope.method = current.method;
 
     var request = $http.get('/admin/schedule/list');
     request.success(function (data) {
@@ -1614,6 +1619,9 @@ app.controller('MerchantDetailCtrl', [
         $scope.schedule_list[value.id] = value.name;
       });
 
+      $scope.type_list = {'Settlement' : 'settlement'};
+      $scope.methods = [null, 'card', 'netbanking', 'emi', 'wallet', 'upi'];
+
       $scope.loading = false;
     });
 
@@ -1621,8 +1629,12 @@ app.controller('MerchantDetailCtrl', [
       return Object.keys($scope.schedule_list).length;
     };
 
-    $scope.ok = function (schedule_id) {
-      $modalInstance.close(schedule_id);
+    $scope.ok = function (type, schedule_id, method) {
+      $modalInstance.close({
+        type: type,
+        schedule_id: schedule_id,
+        method: method
+      });
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

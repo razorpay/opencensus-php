@@ -543,14 +543,13 @@ class Service extends Base\Service
 
         $pricingPlan = $this->fetchMerchantPricing($id);
 
-        $schedule = !empty($details['settlement_schedule_id']) ?
-                    $this->fetchMerchantScheduleById($details['settlement_schedule_id']) : null;
+        $scheduleTasks = $this->fetchMerchantSchedule($id);
 
         $data = array(
                     'details' => $details,
                     'terminals' => $terminal,
                     'pricing_plan' => $pricingPlan,
-                    'schedule' => $schedule);
+                    'schedule_tasks' => $scheduleTasks);
 
         return [$error, $data];
     }
@@ -1134,11 +1133,11 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchMerchantScheduleById($id)
+    public function fetchMerchantSchedule($id)
     {
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, 'live');
 
-        $response = $this->api->schedule->fetch($id)->toArray();
+        $response = $this->api->admin->fetchMultipleEntities('schedule_task', ['merchant_id' => $id])->toArray();
 
         return $response;
     }
@@ -1594,22 +1593,6 @@ class Service extends Base\Service
         return array($error, $response);
     }
 
-    /**
-     * Sends a redirect the the file
-     */
-    public function getBeneficiaryFile($input)
-    {
-        $error = (new Validator)->validateInput('get_beneficiary', $input)->messages();
-
-        if (empty($error))
-        {
-            $date = \Input::get('date', date('Y-m-d'));
-            return [null, $this->getBeneficiaryFileUrl($date)];
-        }
-
-        return [$error, null];
-    }
-
     public function getUploadedFile($id)
     {
         $error = null;
@@ -1635,23 +1618,6 @@ class Service extends Base\Service
         }
 
         return array($error, $url);
-    }
-
-    /**
-     * Returns a pre-authed S3 URL to download beneficiary file
-     * @param  Date $date date in Y-m-d format (with leading zeroes)
-     * @return String URL
-     */
-    protected function getBeneficiaryFileUrl($date)
-    {
-        $s3 = $this->getS3Client();
-
-        $beneficiaryBucket = Config::get('aws::config.buckets')['beneficiary'];
-        $filename = $date.'.xls';
-
-        return $s3->getObjectUrl($beneficiaryBucket, $filename, '+2 minutes', [
-            'https'     => true
-        ]);
     }
 
     /**
@@ -1791,27 +1757,6 @@ class Service extends Base\Service
         {
             return [null, $this->api->admin->sendNewsletter($input)
                 ->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    public function triggerError()
-    {
-        $this->setApiCredentials();
-        try
-        {
-            $errorMsg = $this->api->admin->triggerError();
-            if($errorMsg)
-            {
-                return [null, $errorMsg];
-            }
-            else
-            {
-                return ['Error not triggered', null];
-            }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
