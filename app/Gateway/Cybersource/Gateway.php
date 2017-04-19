@@ -328,12 +328,12 @@ class Gateway extends Base\Gateway
     {
         $entity = 'payment';
 
-        if ($action === Action::VERIFY_REFUND)
+        if ($this->action === Action::VERIFY_REFUND)
         {
             $entity = 'refund';
         }
 
-        $targetDate = Carbon::createFromTimestamp($input['refund']['created_at'], 'UTC')
+        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'UTC')
                                 ->format('Ymd');
 
         $content = [
@@ -426,7 +426,7 @@ class Gateway extends Base\Gateway
     {
         $type = ['ics_auth'];
 
-        if ($action === Action::VERIFY_REFUND)
+        if ($this->action === Action::VERIFY_REFUND)
         {
             $type = ['ics_credit', 'ics_auth_reversal'];
         }

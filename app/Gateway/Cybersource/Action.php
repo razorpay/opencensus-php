@@ -8,4 +8,5 @@ class Action extends Base\Action
 {
     const SALE     = 'sale';
     const REVERSE  = 'reverse';
+    const VERIFY_REFUND = 'verify_refund';
 }

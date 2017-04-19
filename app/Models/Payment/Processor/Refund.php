@@ -651,14 +651,16 @@ trait Refund
                 if ($payment->getTransactionId() !== null)
                 {
                     $refunded = $this->refundOnGateway($data);
+
+                    $this->refund->setGatewayRefunded($refunded);
                 }
                 else if ($this->gatewaySupportsReversal($payment) === true)
                 {
-                    $refunded = $this->reverseOnGateway($data);
+                    $reversed = $this->reverseOnGateway($data);
+
+                    $this->refund->setGatewayRefunded($reversed);
                 }
             });
-
-            $this->refund->setGatewayRefunded($refunded);
 
             $this->repo->saveOrFail($this->refund);
 
@@ -716,13 +718,15 @@ trait Refund
                 if ($payment->getTransactionId() !== null)
                 {
                     $refunded = $this->refundOnGateway($data);
+
+                    $this->refund->setGatewayRefunded($refunded);
                 }
                 else if ($this->gatewaySupportsReversal($payment) === true)
                 {
-                    $refunded = $this->reverseOnGateway($data);
-                }
+                    $reversed = $this->reverseOnGateway($data);
 
-                $this->refund->setGatewayRefunded($refunded);
+                    $this->refund->setGatewayRefunded($reversed);
+                }
 
                 $this->repo->saveOrFail($this->refund);
             });
