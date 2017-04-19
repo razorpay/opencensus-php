@@ -63,6 +63,7 @@ export default class FileUploadButton extends Component {
       disabled,
       labelClass,
       maxSize,
+      showNotification,
       ...attributes,
     } = this.props
 

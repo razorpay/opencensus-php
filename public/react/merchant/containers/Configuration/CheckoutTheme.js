@@ -41,7 +41,7 @@ export default class CheckoutTheme extends Component {
           <form class="form-horizontal">
             <div class="form-group">
               <label class="col-md-12"><strong>Theme Color</strong></label>
-              <div class="col-md-4">
+              <div class="col-md-2 col-sm-3">
                 <Field
                   name="brand_color"
                   component="input"
@@ -49,7 +49,7 @@ export default class CheckoutTheme extends Component {
                   type="color"
                 />
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3 col-sm-6">
                 <Field
                   name="brand_color"
                   component="input"
