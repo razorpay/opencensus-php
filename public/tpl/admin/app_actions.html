@@ -41,10 +41,6 @@
           ng-show="admin.permissions.indexOf('create_netbanking_refund') !== -1">
           Generate Refunds Excel (Netbanking)
         </a>
-        <a href class="list-group-item" ng-click="generateBeneficiaryFile()"
-          ng-show="admin.permissions.indexOf('create_beneficiary_file') !== -1">
-          Generate Beneficiary File
-        </a>
         <a href class="list-group-item" ng-click="downloadBeneficiaryFile()"
           ng-show="admin.permissions.indexOf('view_beneficiary_file') !== -1">
           Download Beneficiary File

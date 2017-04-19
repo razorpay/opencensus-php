@@ -353,27 +353,7 @@ app.controller('ActionsCtrl', [
           }
         }, $.noop);
       };
-      $scope.generateBeneficiaryFile = function () {
-        var request = $http.get('/admin/generic', {
-          params: {
-            route_name: 'merchant_beneficiary_file'
-          }
-        });
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Beneficary file generated successfully', true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
     });
-
     $scope.openConfirmUser = function () {
       var modalInstance = $modal.open({
         templateUrl: 'confirmUserModal.html',
@@ -437,25 +417,6 @@ app.controller('ActionsCtrl', [
           window.open('/admin/beneficiary/dl?date=' + date);
         }
       }, $.noop);
-    };
-    $scope.generateBeneficiaryFile = function () {
-      var request = $http.get('/admin/generic', {
-        params: {
-          route_name: 'merchant_beneficiary_file'
-        }
-      });
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Beneficary file generated successfully', true);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
     };
     $scope.openAddSchedule = function() {
       var modalInstance = $modal.open({

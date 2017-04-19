@@ -293,8 +293,6 @@ return [
         'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
         // Generate Refunds Excel (Netbanking)
         'refund_netbanking_generate_excel'  => 'refunds/netbanking/excel',
-        // Generate Beneficiary File
-        'merchant_beneficiary_file'         => 'merchants/beneficiary/file',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
