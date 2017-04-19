@@ -10,6 +10,7 @@ use Mail;
 use RZP\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
@@ -46,7 +47,7 @@ class Reconciler
      */
     protected $reconciledAt;
 
-    protected $batchFundTransferUpdateAttrs = [];
+    protected $batchFundTransferStats = [];
 
     protected $app;
 
@@ -154,7 +155,7 @@ class Reconciler
                     $failures->push($entity);
                 }
             }
-            foreach ($this->batchFundTransferUpdateAttrs as $batchId => $attrs)
+            foreach ($this->batchFundTransferStats as $batchId => $attrs)
             {
                 $this->repo->batch_fund_transfer->updateBatch($batchId, $attrs);
             }
@@ -277,20 +278,20 @@ class Reconciler
 
             $entity->setStatus($status);
 
-            if ($status === FundTransferAttempt\Status::FAILED)
+            if ($status === FundTransferAttempt\Status::PROCESSED)
             {
                 $batchId = $entity->batchFundTransfer->getId();
 
-                if (isset($this->batchFundTransferUpdateAttrs[$batchId]) === false)
+                if (isset($this->batchFundTransferStats[$batchId]) === false)
                 {
-                    $this->batchFundTransferUpdateAttrs[$batchId] =
-                        ['total_failed_count' => 1, 'failed_amount' => $source->getAmount()];
+                    $this->batchFundTransferStats[$batchId] =
+                        ['processed_count' => 1, 'processed_amount' => $source->getAmount()];
                 }
                 else
                 {
-                    $this->batchFundTransferUpdateAttrs[$batchId]['total_failed_count']++;
+                    $this->batchFundTransferStats[$batchId]['processed_count']++;
 
-                    $this->batchFundTransferUpdateAttrs[$batchId]['failed_amount'] += $source->getAmount();
+                    $this->batchFundTransferStats[$batchId]['processed_amount'] += $source->getAmount();
                 }
             }
         }
@@ -349,7 +350,7 @@ class Reconciler
 
             // If current time is before 10 pm, dont mark the settlement as
             // processed and update only the utr
-            if ($now < $tenPm)
+            if (($now < $tenPm) and ($this->getMode() === Mode::LIVE))
             {
                 $status = $entity->getStatus();
             }

@@ -1902,5 +1902,5 @@ ALTER TABLE upi
     ADD INDEX upi_refund_id_index (refund_id);
 
 ALTER TABLE daily_settlements
-    ADD COLUMN failed_amount bigint(20) unsigned NOT NULL AFTER amount,
-    ADD COLUMN total_failed_count int(11) NOT NULL AFTER total_count;
+    ADD COLUMN processed_amount bigint(20) unsigned NOT NULL AFTER amount,
+    ADD COLUMN processed_count int(11) NOT NULL AFTER total_count;

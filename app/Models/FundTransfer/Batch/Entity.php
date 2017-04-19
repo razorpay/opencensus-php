@@ -20,12 +20,12 @@ class Entity extends Base\PublicEntity
     const TYPE                  = 'type';
     const CHANNEL               = 'channel';
     const AMOUNT                = 'amount';
-    const FAILED_AMOUNT         = 'failed_amount';
+    const PROCESSED_AMOUNT      = 'processed_amount';
     const FEES                  = 'fees';
     const API_FEE               = 'api_fee';
     const GATEWAY_FEE           = 'gateway_fee';
     const TOTAL_COUNT           = 'total_count';
-    const TOTAL_FAILED_COUNT    = 'total_failed_count';
+    const PROCESSED_COUNT       = 'processed_count';
     const TRANSACTION_COUNT     = 'transaction_count';
     const SERVICE_TAX           = 'service_tax';
     const URLS                  = 'urls';
@@ -45,10 +45,10 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::CHANNEL,
         self::AMOUNT,
-        self::FAILED_AMOUNT,
+        self::PROCESSED_AMOUNT,
         self::FEES,
         self::TOTAL_COUNT,
-        self::TOTAL_FAILED_COUNT,
+        self::PROCESSED_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
         self::INITIATED_AT,
@@ -66,12 +66,12 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::CHANNEL,
         self::AMOUNT,
-        self::FAILED_AMOUNT,
+        self::PROCESSED_AMOUNT,
         self::FEES,
         self::API_FEE,
         self::GATEWAY_FEE,
         self::TOTAL_COUNT,
-        self::TOTAL_FAILED_COUNT,
+        self::PROCESSED_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
         self::URLS,
@@ -102,7 +102,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT                => 'int',
-        self::FAILED_AMOUNT         => 'int',
+        self::PROCESSED_AMOUNT      => 'int',
         self::FEES                  => 'int',
         self::DATE                  => 'int',
         self::SERVICE_TAX           => 'int',
@@ -110,13 +110,13 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_FEE           => 'int',
         self::INITIATED_AT          => 'int',
         self::TOTAL_COUNT           => 'int',
-        self::TOTAL_FAILED_COUNT    => 'int',
+        self::PROCESSED_COUNT       => 'int',
         self::TRANSACTION_COUNT     => 'int',
     ];
 
     protected $defaults = [
-        self::FAILED_AMOUNT         => 0,
-        self::TOTAL_FAILED_COUNT    => 0,
+        self::PROCESSED_AMOUNT   => 0,
+        self::PROCESSED_COUNT    => 0,
     ];
 
     protected function generateDate($input)

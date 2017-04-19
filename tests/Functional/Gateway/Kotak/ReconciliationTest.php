@@ -57,8 +57,9 @@ class ReconciliationTest extends TestCase
         $this->assertNotNull($setl['utr']);
 
         $batch = $this->getLastEntity('batch_fund_transfer', true);
-        $this->assertEquals(0, $batch['total_failed_count']);
-        $this->assertEquals(0, $batch['failed_amount']);
+
+        $this->assertEquals(1, $batch['processed_count']);
+        $this->assertEquals(4385000, $batch['processed_amount']);
 
         // Validate settlement-transaction entity
         $txn = $this->getLastEntity('transaction', true);
@@ -109,8 +110,8 @@ class ReconciliationTest extends TestCase
 
         // Validate batch fund transfer entity
         $batch = $this->getLastEntity('batch_fund_transfer', true);
-        $this->assertEquals(1, $batch['total_failed_count']);
-        $this->assertEquals(4385000, $batch['failed_amount']);
+        $this->assertEquals(0, $batch['processed_count']);
+        $this->assertEquals(0, $batch['processed_amount']);
 
         // Validate settlement-transaction entity
         $txn = $this->getLastEntity('transaction', true);
