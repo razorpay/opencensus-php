@@ -297,6 +297,8 @@ return [
         'merchant_beneficiary_file'         => 'merchants/beneficiary/file',
         // Initiate Settlement
         'setl_initiate'                     => 'settlements/initiate/{channel?}',
+        // Trigger Dummy Error
+        'dummy_critical_error'              => 'trigger/error',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
