@@ -9,8 +9,7 @@ use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
-    // Have to check this
-    protected static $fileToWriteName = 'IConnect_Refunds_RAZORPAY';
+    protected static $fileToWriteName = 'IConnect_Refund_RAZORPAY';
 
     const EMAIL_BODY = 'Please forward the Axis Netbanking refunds file to the operations team';
 
@@ -59,12 +58,12 @@ class RefundFile extends Base\RefundFile
                 $row['gateway']['bank_payment_id'],
                 strtoupper($row['payment']['id']),
                 $row['payment']['id'],
-                number_format($row['payment']['amount'] /100, 2, '.', ''),
+                number_format($row['payment']['amount'] / 100, 2, '.', ''),
                 $date,
-                number_format($row['refund']['amount'] /100, 2, '.', '')
+                number_format($row['refund']['amount'] / 100, 2, '.', '')
             ];
 
-            $totalAmount += $row['refund']['amount'] /100;
+            $totalAmount += $row['refund']['amount'] / 100;
         }
 
         $initialLine = $this->getInitialLine();

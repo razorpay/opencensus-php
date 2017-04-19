@@ -20,7 +20,7 @@ class GatewayController extends Controller
         $this->callbackGateway('axis');
     }
 
-    protected function processS2SCallback($input, $gateway)
+    protected function processServerCallback($input, $gateway)
     {
         $gateway = $this->app['gateway']->gateway($gateway);
 
@@ -28,7 +28,8 @@ class GatewayController extends Controller
         // to be able to call the next few methods.
         //
         // Eg: gateway request needs to be decrypted
-        $input = $gateway->preProcessS2SResponse($input);
+
+        $input = $gateway->preProcessServerCallback($input);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
@@ -94,7 +95,7 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             case 'billdesk':
-                $data = $this->processS2SCallback($input, $gateway);
+                $data = $this->processServerCallback($input, $gateway);
                 break;
 
             case 'wallet_olamoney':
@@ -102,7 +103,7 @@ class GatewayController extends Controller
                 break;
 
             case 'wallet_freecharge':
-                $data = $this->processS2SCallback($input, $gateway);
+                $data = $this->processServerCallback($input, $gateway);
                 break;
 
             case 'upi':
@@ -110,7 +111,7 @@ class GatewayController extends Controller
                 $input = Request::getContent();
                 $gateway = 'upi_icici';
 
-                $data = $this->processS2SCallback($input, $gateway);
+                $data = $this->processServerCallback($input, $gateway);
 
                 break;
         }

@@ -3,6 +3,9 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
+use DB;
+
+use RZP\Constants\Table;
 
 class Org extends Base
 {
@@ -23,16 +26,18 @@ class Org extends Base
     public function createDefaultTestOrganization()
     {
         // Default organisation to be used for tests
-        $this->fixtures->create('org', [
+        $org = $this->fixtures->create('org', [
             'id'            => self::HDFC_ORG,
             'email'         => 'test@hdfcbank.com',
             'email_domains' => 'hdfcbank.com'
         ]);
 
         $orgHost = $this->fixtures->create('org_hostname', [
-            'org_id'    => self::RZP_ORG,
+            'org_id'    => self::HDFC_ORG,
             'hostname'  => 'hdfcbank.com',
         ]);
+
+        return $org;
     }
 
     public function createRazorpayOrganization()
@@ -76,6 +81,17 @@ class Org extends Base
         ]);
 
         $permissions = $this->fixtures->create('permission:default_permissions');
+
+        foreach ($permissions as $permission)
+        {
+            DB::table(Table::PERMISSION_MAP)->insert([
+                [
+                    'permission_id' => $permission->getId(),
+                    'entity_id'     => self::RZP_ORG,
+                    'entity_type'   => 'org',
+                ]
+            ]);
+        }
 
         $liveAdminRole = clone $adminRole;
         $testAdminRole = clone $adminRole;

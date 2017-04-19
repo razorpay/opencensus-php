@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Permission;
 
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
@@ -11,18 +12,26 @@ class Core extends Base\Core
     {
         $permission = (new Entity)->build($input);
 
+        $permission->generateId();
+
         $permission->setAuditAction(Action::CREATE_PERMISSION);
 
-        $this->repo->saveOrFail($permission);
+        $this->repo->transactionOnLiveAndTest(function() use($permission, $input)
+        {
+            $this->repo->saveOrFail($permission);
+
+            if (empty($input[Entity::ORGS]) === false)
+            {
+                $orgs = $this->repo->org->findMany($input[Entity::ORGS]);
+
+                foreach ($orgs as $org)
+                {
+                    (new Org\Core)->addPermissionToOrg($permission, $org);
+                }
+            }
+        });
 
         return $permission;
-    }
-
-    public function getMultiplePermissionIdsByNames(array $names)
-    {
-        $permissions = $this->repo->permission->retrieveIdsByNames($names);
-
-        return $permissions;
     }
 
     public function edit(Entity $permission, array $input)
@@ -31,7 +40,39 @@ class Core extends Base\Core
 
         $permission->setAuditAction(Action::EDIT_PERMISSION);
 
-        $this->repo->saveOrFail($permission);
+        $this->repo->transactionOnLiveAndTest(function() use($permission, $input)
+        {
+            $this->repo->saveOrFail($permission);
+
+            if (empty($input[Entity::ORGS]) === false)
+            {
+                $assignedOrgs = $permission->orgs()->getRelatedIds()->toArray();
+
+                $newOrgs = array_diff($input[Entity::ORGS], $assignedOrgs);
+
+                $unassignedOrgs = array_diff($assignedOrgs, $input[Entity::ORGS]);
+
+                if (empty($newOrgs) === false)
+                {
+                    $orgs = $this->repo->org->findMany($newOrgs);
+
+                    foreach ($orgs as $org)
+                    {
+                        (new Org\Core)->addPermissionToOrg($permission, $org);
+                    }
+                }
+
+                if (empty($unassignedOrgs) === false)
+                {
+                    $orgs = $this->repo->org->findMany($unassignedOrgs);
+
+                    foreach ($orgs as $org)
+                    {
+                        (new Org\Core)->deletePermissionFromOrg($permission, $org);
+                    }
+                }
+            }
+        });
 
         return $permission;
     }

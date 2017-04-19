@@ -33,9 +33,9 @@ class Validator extends Base\Validator
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
     //
-    // A minimum of 1 days of gap must exist between invoice issue and expired by
+    // A minimum of 15 minutes of gap must exist between invoice issue and expired by
     //
-    const MIN_EXPIRY_SECS = 86400;
+    const MIN_EXPIRY_SECS = 900;
 
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
@@ -59,7 +59,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
@@ -94,7 +94,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
@@ -116,7 +116,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
@@ -132,15 +132,11 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
-        Entity::VIEW_LESS           => 'sometimes|in:1',
-        Entity::SOURCE              => 'sometimes|string|max:32|custom',
-        Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::EXPIRE_BY           => 'sometimes|epoch',
         Entity::DRAFT               => 'sometimes|boolean',
     ];
@@ -178,16 +174,28 @@ class Validator extends Base\Validator
 
     public function validateAmount(array $input)
     {
-        //
-        // Amount should only be sent, if type is not invoice as invoice must
-        // have line items and amount gets calculated from there.
-        //
-
         if (isset($input[Entity::AMOUNT]) === false)
         {
             return;
         }
 
+        $this->checkIfAmountIsExpectedInInput($input);
+
+        $this->validateMaxAllowedAmount($input[Entity::AMOUNT]);
+    }
+
+    /**
+     * Checks if amount is expected in input key.
+     * Rules:
+     * - Amount should only be sent in input for ecod or link types.
+     * - Amount should not be sent if line_items are being sent with above types.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    private function checkIfAmountIsExpectedInInput(array $input)
+    {
         $type = $input[Entity::TYPE] ?? $this->entity->getType();
 
         if ($type === null)
@@ -202,13 +210,39 @@ class Validator extends Base\Validator
             );
         }
 
-        // If amount is set, input should not contain line_items.
-
         if (isset($input[Entity::LINE_ITEMS]) === true)
         {
             throw new BadRequestValidationFailureException(
                 'amount should not be sent if line_items are being sent in the input.'
             );
+        }
+    }
+
+    /**
+     * Checks if amount is lesser than max payment amount allowed for merchant.
+     * This method also gets called from other flow when line_items are getting
+     * added/updated/removed. At that time too we need to check for the following.
+     *
+     * @param int $amount
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateMaxAllowedAmount(int $amount)
+    {
+        $invoice = $this->entity;
+
+        $maxAmountAllowed = $invoice->merchant->getMaxPaymentAmount();
+
+        if ($amount > $maxAmountAllowed)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invoice amount exceeds maximum payment amount allowed.',
+                'amount',
+                [
+                    'id'                 => $invoice->getId(),
+                    'amount'             => $amount,
+                    'max_amount_allowed' => $maxAmountAllowed,
+                ]);
         }
     }
 
@@ -267,30 +301,80 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantHasKeys()
+    /**
+     * Does few validations around merchant data to decide if invoice should
+     * allowed to be created or not.
+     *
+     * @return null
+     *
+     * @throws BadRequestException
+     */
+    public function validateMerchantSpecificData()
     {
-        $merchant = $this->entity->merchant;
+        $invoice = $this->entity;
+        $merchant = $invoice->merchant;
 
-        $keys = $merchant->keys;
+        $this->validateMerchantHasKeys($merchant);
+        $this->validateMerchantIsNotFeeBearer($merchant, $invoice);
+    }
 
-        foreach ($keys as $key)
+    /**
+     * Validates if merchant has API keys generated in advance before using
+     * invoices.
+     * This is done because hosted page (invoice payment) will not load
+     * and will throw an exception if Invoice gets created without
+     * merchant having API keys.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @throws BadRequestException
+     */
+    protected function validateMerchantHasKeys(Merchant\Entity $merchant)
+    {
+        //
+        // Validates if merchant has API keys generated in advance before using
+        // invoices.
+        // This is done because hosted page (invoice payment) will not load
+        // and will throw an exception if Invoice gets created without
+        // merchant having API keys.
+        //
+
+        $keys = $merchant->keys->filter(
+                    function($key, $index)
+                    {
+                        return ($key->isExpiredOrExpiring() === false);
+                    });
+
+        if ($keys->count() === 0)
         {
-            if ($key->isExpiredOrExpiring() === false)
-            {
-                return;
-            }
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
+                null,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
         }
+    }
 
+    protected function validateMerchantIsNotFeeBearer(
+        Merchant\Entity $merchant,
+        Entity $invoice)
+    {
         //
-        // Note that this exception will be thrown even if a key is present
-        // but if it is going to be expired soon or is already expired.
+        // If merchant is a customer-fee-bearer client, for now don't allow
+        // him to create invoices of type=invoice.
         //
-        throw new BadRequestException(
-            ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
-            null,
-            [
-                'merchant_id' => $merchant->getId(),
-            ]);
+
+        if (($merchant->isFeeBearerCustomer() === true) and
+            ($invoice->isTypeInvoice() === true))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER,
+                null,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
     }
 
     public function validateSendNotificationRequest(string $medium)
@@ -336,6 +420,7 @@ class Validator extends Base\Validator
         switch ($operation)
         {
             case 'update':
+            case 'cancelInvoice':
                 $allowedStatuses = [
                     Status::DRAFT,
                     Status::ISSUED,
@@ -399,6 +484,12 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
+        // If expired_by is not set at all, nothing to validate.
+        if ($invoice->getExpireBy() === null)
+        {
+            return;
+        }
+
         $now = Carbon::now('Asia/Kolkata');
         $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
 
@@ -411,6 +502,12 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Invoice is only payable if it's not deleted and is in ISSUED state.
+     *
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
     public function validateInvoicePayable()
     {
         $invoice = $this->entity;

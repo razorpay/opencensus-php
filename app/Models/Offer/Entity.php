@@ -27,11 +27,12 @@ class Entity extends Base\PublicEntity
     const PAYMENT_COUNT             = 'payment_count';
 
     // Processing time denotes the number of seconds required for offer cashback to be
-    // settled to customer's account. Not being used now, may
+    // settled to customer's account. Not being used now, may be used later
     const PROCESSING_TIME           = 'processing_time';
     const STARTS_AT                 = 'starts_at';
     const ENDS_AT                   = 'ends_at';
     const DISPLAY_TEXT              = 'display_text';
+    const ERROR_MESSAGE             = 'error_message';
     const TERMS                     = 'terms';
 
     // Offer types
@@ -45,6 +46,8 @@ class Entity extends Base\PublicEntity
     const PAYMENT_NETWORK_LENGTH           = 20;
     const ISSUER_LENGTH                    = 10;
     const DISPLAY_TEXT_LENGTH              = 255;
+
+    const DEFAULT_ERROR_MESSAGE = 'Payment method used is not eligible for offer. Please try with a different payment method.';
 
     protected $entity      = 'offer';
 
@@ -71,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::STARTS_AT,
         self::ENDS_AT,
         self::DISPLAY_TEXT,
+        self::ERROR_MESSAGE,
         self::TERMS,
     ];
 
@@ -94,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::STARTS_AT,
         self::ENDS_AT,
         self::DISPLAY_TEXT,
+        self::ERROR_MESSAGE,
         self::TERMS,
     ];
 
@@ -115,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::STARTS_AT,
         self::ENDS_AT,
         self::DISPLAY_TEXT,
+        self::ERROR_MESSAGE,
         self::ACTIVE,
         self::BLOCK,
         self::TERMS,
@@ -123,9 +129,10 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ACTIVE => 1,
-        self::BLOCK  => 1,
-        self::TYPE   => self::DEFERRED,
+        self::ACTIVE        => 1,
+        self::BLOCK         => 1,
+        self::TYPE          => self::DEFERRED,
+        self::ERROR_MESSAGE => self::DEFAULT_ERROR_MESSAGE,
     ];
 
     protected static $generators = [
@@ -234,6 +241,11 @@ class Entity extends Base\PublicEntity
     public function getDisplayText()
     {
         return $this->getAttribute(self::DISPLAY_TEXT);
+    }
+
+    public function getErrorMessage()
+    {
+        return $this->getAttribute(self::ERROR_MESSAGE);
     }
 
     public function getTerms()

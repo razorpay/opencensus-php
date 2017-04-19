@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Checkout;
 use RZP\Exception;
+use RZP\Constants\Mode;
 
 class ViewDataSerializer extends Base\Core
 {
@@ -40,11 +41,18 @@ class ViewDataSerializer extends Base\Core
      */
     public function get()
     {
+        $publicId = $this->invoice->getPublicId();
+
         if ($this->invoice->isDraft())
         {
-            $id = $this->invoice->getPublicId();
+            throw new Exception\BadRequestValidationFailureException(
+                "Invoice with id $publicId is not issued yet");
+        }
 
-            throw new Exception\BadRequestValidationFailureException("Invoice with id $id is not issued yet");
+        if ($this->invoice->isCancelled())
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invoice with id $publicId is cancelled");
         }
 
         $invoiceData = $this->getFormattedInvoiceDataForView();
@@ -60,6 +68,9 @@ class ViewDataSerializer extends Base\Core
 
         return [
             'environment'   => $this->app->environment(),
+            // Following is sent to view for showing warning(in hosted page and
+            // emails) to avoid mis communication.
+            'is_test_mode'  => ($this->mode === Mode::TEST),
             'invoicejs_url' => $invoiceJsUrl,
             'key_id'        => $keyId,
             'merchant'      => $merchantData,

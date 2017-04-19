@@ -1,0 +1,121 @@
+<?php
+
+namespace RZP\Models\Workflow\Action;
+
+use RZP\Models\Base;
+use RZP\Models\Workflow\Action\Differ;
+
+class Service extends Base\Service
+{
+    public function create(array $input)
+    {
+        $action = $this->core()->create($input);
+
+        return $action->toArrayPublic();
+    }
+
+    public function get(string $id)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $action = $this->core()->get($id);
+
+        return $action->toArrayPublic();
+    }
+
+    public function fetchMultiple(array $input)
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $orgId = $admin->getOrgId();
+
+        $input[Entity::ORG_ID] = $orgId;
+
+        $actions = $this->repo->workflow_action->findByOrgId($orgId);
+
+        return $actions->toArrayPublic();
+    }
+
+    public function getActionDetails(string $actionId)
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $orgId = $admin->getOrgId();
+
+        Entity::verifyIdAndStripSign($actionId);
+
+        $relations = ['workflow.steps', 'admin'];
+
+        $action = $this->repo
+                       ->workflow_action
+                       ->findByIdAndOrgId($actionId, $orgId, $relations)
+                       ->first();
+
+        $data = $action->toArrayPublicWithAdminAndSteps();
+
+        // Checkers
+        $checkers = $this->repo
+                         ->action_checker
+                         ->fetchByActionIdWithRelations(
+                             $actionId, [Entity::ADMIN]);
+
+        $data['checkers'] = $checkers->map(function ($checker) {
+            return $checker->toArrayPublic();
+        })->toArray();
+
+        // Comments
+        $comments = $this->repo
+                         ->action_comment
+                         ->fetchByActionIdWithRelations(
+                             $actionId, [Entity::ADMIN]);
+
+        $data['comments'] = $comments->map(function ($comment)
+        {
+            return $comment->toArrayPublic();
+        });
+
+        return $data;
+    }
+
+    public function updateWorkflowAction(string $actionId, array $input)
+    {
+        Entity::verifyIdAndStripSign($actionId);
+
+        $action = $this->repo->workflow_action->findOrFailPublic($actionId);
+
+        $action = $this->core()->edit($action, $input);
+
+        return $action->toArrayPublic();
+    }
+
+    public function getStatesOfAction(string $actionId)
+    {
+        Entity::verifyIdAndStripSign($actionId);
+
+        $states = $this->repo
+                       ->action_state
+                       ->fetchStateTransitionsByActionId($actionId)
+                       ->map(function ($state) {
+                        return $state->toArrayPublic();
+                       })
+                       ->toArray();
+
+        return $states;
+    }
+
+    public function closeAction(string $id)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $action = $this->repo->workflow_action->findOrFailPublic($id);
+
+        $this->core()->close($action, $admin);
+
+        // fetch again from db to get updated values
+        $action = $this->repo->workflow_action->findOrFailPublic($id);
+
+        return $action->toArrayPublic();
+    }
+}

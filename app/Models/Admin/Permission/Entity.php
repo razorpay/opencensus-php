@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Admin\Permission;
 
+use RZP\Constants\Table;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Org;
 
 class Entity extends Base\Entity
 {
@@ -12,6 +14,10 @@ class Entity extends Base\Entity
     const NAME              = 'name';
     const DESCRIPTION       = 'description';
     const CATEGORY          = 'category';
+    const ASSIGNABLE        = 'assignable';
+
+    // We sync the new permission with orgs
+    const ORGS = 'orgs';
 
     protected $entity = 'permission';
 
@@ -28,6 +34,7 @@ class Entity extends Base\Entity
         self::NAME,
         self::DESCRIPTION,
         self::CATEGORY,
+        self::ASSIGNABLE,
     ];
 
     protected $public = [
@@ -35,6 +42,8 @@ class Entity extends Base\Entity
         self::NAME,
         self::DESCRIPTION,
         self::CATEGORY,
+        self::ASSIGNABLE,
+        self::ORGS,
     ];
 
     protected $visible = [
@@ -42,7 +51,24 @@ class Entity extends Base\Entity
         self::NAME,
         self::DESCRIPTION,
         self::CATEGORY,
+        self::ASSIGNABLE,
     ];
+
+    protected $casts = [
+        self::ASSIGNABLE => 'bool',
+    ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Detach the permission from all roles and orgs
+        static::deleting(function ($permission)
+        {
+            $permission->roles()->detach();
+            $permission->orgs()->detach();
+        });
+    }
 
     /**
      * Returns all roles with permission in organisation
@@ -55,11 +81,14 @@ class Entity extends Base\Entity
 
     /**
      * Returns organisation for permission
-     *
-     * TODO : Check if required
      **/
-    public function org()
+    public function orgs()
     {
-        return $this->morphedByMany('RZP\Models\Admin\Role\Entity', 'entity', Table::PERMISSION_MAP);
+        return $this->morphedByMany(Org\Entity::class, 'entity', Table::PERMISSION_MAP);
+    }
+
+    public function workflows()
+    {
+        return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSIONS);
     }
 }

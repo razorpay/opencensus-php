@@ -37,11 +37,19 @@ class FeaturesTest extends TestCase
 
     public function testDeleteFeatureFromMerchant()
     {
+        $this->ba->adminAuth();
+
+        $this->ba->addAdminAuthHeaders('org_100000razorpay');
+
         $features = $this->fixtures->merchant->addFeatures(['dummy']);
 
         $request = [
             'url'       => '/features/10000000000000/dummy',
-            'method'    => 'delete'
+            'method'    => 'delete',
+            'server' => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -54,11 +62,19 @@ class FeaturesTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($resultData, $content);
+
+        $this->ba->appAuth();
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
     {
+        $this->ba->adminAuth();
+
+        $this->ba->addAdminAuthHeaders('org_100000razorpay');
+
         $this->startTest();
+
+        $this->ba->appAuth();
     }
 
     public function testMultiAssignFeature()

@@ -172,6 +172,21 @@ class NetbankingIciciGatewayTest extends TestCase
             });
     }
 
+    public function testEmptyVerifyResponse()
+    {
+        $data = $this->testData['testFailedPaymentEmptyVerify'];
+
+        $this->testFailedAuthPayment();
+
+        $this->mockNullVerifyResponse();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertArraySelectiveEquals($data, $verify);
+    }
+
     public function testAuthResponseDecryptionFailure()
     {
         $this->mockAuthDecryptionFailure();
@@ -260,9 +275,11 @@ class NetbankingIciciGatewayTest extends TestCase
                     Mockery::any(),
                     Mockery::on(function ($data)
                     {
-                        $body = 'Please forward the ICICI Netbanking refunds file to UBPS operations team';
+                        $date = Carbon::now('Asia/Kolkata')->format('jS F Y');
 
-                        $this->assertEquals($body, $data['body']);
+                        $this->assertEquals(1000.00, $data['amount']);
+                        $this->assertEquals('3', $data['count']);
+                        $this->assertEquals($date, $data['date']);
 
                         return true;
                     }),
@@ -283,6 +300,14 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content['STATUS'] = 'FAILED';
+        });
+    }
+
+    protected function mockNullVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content = "";
         });
     }
 

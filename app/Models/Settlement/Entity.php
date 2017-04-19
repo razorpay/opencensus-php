@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX            = 'service_tax';
     const STATUS                 = 'status';
     const TRANSACTION_ID         = 'transaction_id';
+    const ATTEMPTS               = 'attempts';
     const CHANNEL                = 'channel';
     const UTR                    = 'utr';
     const FAILURE_REASON         = 'failure_reason';
@@ -28,15 +29,19 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'settlement';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::FEES,
         self::SERVICE_TAX,
         self::STATUS,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
-        self::TRANSACTION_ID);
+        self::TRANSACTION_ID,
+        self::ATTEMPTS,
+        self::CHANNEL,
+        self::AMOUNT,
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
@@ -46,14 +51,16 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::STATUS,
         self::TRANSACTION_ID,
+        self::ATTEMPTS,
         self::FAILURE_REASON,
         self::REMARKS,
         self::CHANNEL,
         self::UTR,
         self::CREATED_AT,
-        self::UPDATED_AT);
+        self::UPDATED_AT
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::AMOUNT,
@@ -61,13 +68,22 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::SERVICE_TAX,
         self::UTR,
-        self::CREATED_AT);
+        self::CREATED_AT
+    ];
 
-    protected $amounts = array(
+    protected $defaults = [
+        self::ATTEMPTS => 1,
+    ];
+
+    protected $casts = [
+        self::ATTEMPTS => 'int',
+    ];
+
+    protected $amounts = [
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
-    );
+    ];
 
     // --------------------------------- relations -------------------------------
 
@@ -160,6 +176,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
+    public function getAttempts()
+    {
+        return $this->getAttribute(self::ATTEMPTS);
+    }
+
     // --------------------------------- setters -------------------------------
 
     public function setAmount($amount)
@@ -222,6 +243,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERSION, $version);
     }
 
+    public function setAttempts($count)
+    {
+        $this->setAttribute(self::ATTEMPTS, $count);
+    }
+
     // --------------------------------- modifiers -------------------------------
 
     protected function getServiceTaxAttribute()
@@ -245,6 +271,15 @@ class Entity extends Base\PublicEntity
 
         return $fee;
     }
+
+    // ------------------------------- mutators --------------------------------
+
+    protected function setRemarksAttribute($remarks)
+    {
+        $this->attributes[self::REMARKS] = substr($remarks, 0, 255);
+    }
+
+    // ------------------------------- end mutators ----------------------------
 
     // --------------------------------- entity methods -------------------------------
 
@@ -270,19 +305,11 @@ class Entity extends Base\PublicEntity
 
     public function save(array $options = array())
     {
-        $this->validateAmount();
-
         return parent::save($options);
     }
 
-    protected function validateAmount()
+    public function incrementAttempts()
     {
-        // if ($this->getAmount() <= 0)
-        // {
-        //     throw new Exception\LogicException(
-        //         'Something very wrong is happening! ' .
-        //         'Settlement amount should not be 0 or -ve',
-        //         $this->toArray());
-        // }
+        $this->increment(self::ATTEMPTS);
     }
 }
