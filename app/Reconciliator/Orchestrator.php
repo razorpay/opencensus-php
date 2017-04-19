@@ -754,8 +754,6 @@ class Orchestrator extends Base\Core
      */
     protected function handleSettingExcelContent(array $fileDetails)
     {
-        $this->gatewayReconciliator->writeXlsToXlsx($fileDetails);
-
         //
         // Gets the sheet names which need to be collected for the given gateway.
         // Returns empty if there is no restriction on which sheets to collect.

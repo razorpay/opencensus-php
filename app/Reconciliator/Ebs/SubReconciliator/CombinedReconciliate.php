@@ -9,13 +9,13 @@ class CombinedReconciliate extends Base\CombinedReconciliate
 {
     // ----- Row header names -----
 
-    const REFUND_TXN_COLUMN     = 'Refunded';
+    const REFUND_TXN_COLUMN     = 'refunded';
 
-    const CAPTURE_TXN_COLUMN    = 'Captured';
+    const CAPTURE_TXN_COLUMN    = 'captured';
 
     protected function getReconciliationTypeForRow($row)
     {
-        if ($row[self::REFUND_TXN_COLUMN] !== 0)
+        if ($row[self::REFUND_TXN_COLUMN] !== (float) 0)
         {
             return BaseReconciliate::REFUND;
         }
