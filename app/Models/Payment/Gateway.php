@@ -62,26 +62,29 @@ class Gateway
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
     ];
 
-    const POWER_WALLETS = array(
+    const POWER_WALLETS = [
         Wallet::MOBIKWIK,
         Wallet::PAYUMONEY,
         Wallet::OLAMONEY,
         Wallet::FREECHARGE,
         Wallet::MPESA,
-    );
+    ];
 
+    /**
+     * These are the wallets that support both
+     * auth as well as power wallet flow
+     */
     const AUTH_AND_POWER_WALLETS = [
         Wallet::MPESA,
     ];
 
-    const TOPUP_GATEWAYS = array(
+    const TOPUP_GATEWAYS = [
         self::MOBIKWIK,
         self::WALLET_PAYUMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::SHARP,
-        // self::WALLET_MPESA,
-    );
+    ];
 
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
         self::WALLET_FREECHARGE,

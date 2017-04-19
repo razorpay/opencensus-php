@@ -9,7 +9,6 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
-use RZP\Gateway\Wallet\Base as Wallet;
 
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
@@ -565,10 +564,8 @@ class Gateway
 
     protected function getPaymentToVerify($verify)
     {
-        $action = [Action::AUTHORIZE, Wallet\Action::OTP_GENERATE];
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActions(
-                    $verify->input['payment']['id'], $action);
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                    $verify->input['payment']['id'], Action::AUTHORIZE);
 
         $verify->payment = $gatewayPayment;
 

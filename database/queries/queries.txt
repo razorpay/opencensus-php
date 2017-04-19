@@ -1443,7 +1443,7 @@ ALTER TABLE merchant_banks
 
 # Query to add mpesa method
 ALTER TABLE merchant_banks
-    ADD COLUMN mpesa TINYINT(1) DEFAULT 1 AFTER jiomoney,
+    ADD COLUMN mpesa TINYINT(1) DEFAULT 0 AFTER jiomoney,
 
 ALTER TABLE payments
     MODIFY contact VARCHAR(20);

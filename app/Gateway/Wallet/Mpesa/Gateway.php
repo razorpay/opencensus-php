@@ -169,7 +169,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $data = $this->getQueryData();
+        $data = $this->getVerifyRequestData();
 
         $verify->response = $this->sendSoapRequest($data,
                                                    SoapAction::QUERY_API,
@@ -190,16 +190,16 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseContent;
 
-        $status = $this->getVerifyMatchStatus($verify);
+        $status = $this->getVerifyStatus($verify);
 
         $verify->status = $status;
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $verify->payment = $this->saveVerifyContentIfNeeded($verify);
+        $verify->payment = $this->saveVerifyContent($verify);
     }
 
-    protected function getVerifyMatchStatus(Verify $verify)
+    protected function getVerifyStatus(Verify $verify)
     {
         $status = VerifyResult::STATUS_MATCH;
 
@@ -251,6 +251,14 @@ class Gateway extends Base\Gateway
                                            SoapAction::CUSTOMER_API,
                                            SoapMethod::VALIDATE_CUSTOMER);
 
+        $this->trace->info(
+            'GATEWAY_VALIDATE_CUSTOMER_RESPONSE',
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
         $content = $response[ResponseFields::VALIDATE_CUSTOMER];
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
@@ -262,7 +270,7 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeRequestData()
     {
         $data = [
-            RequestFields::GATEWAY_PARAM => $this->getGatewayRequestArray(), 
+            RequestFields::GATEWAY_PARAM => $this->getGatewayRequestArray(),
             RequestFields::CHECKSUM      => $this->getCheckSum(),
         ];
 
@@ -287,12 +295,14 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayParamArray()
     {
+        $amount = $this->input['payment']['amount'] / 100;
+
         $gatewayParam = [
             RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
             RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
-            RequestFields::AMOUNT                => $this->input['payment']['amount'] / 100,
+            RequestFields::AMOUNT                => $amount,
             RequestFields::NARRATION             => Constants::NARRATION,
             RequestFields::RETURN_URL            => $this->input['callbackUrl'],
             RequestFields::SURCHARGE             => Constants::SURCHARGE,
@@ -301,23 +311,25 @@ class Gateway extends Base\Gateway
         return $gatewayParam;
     }
 
-    protected function getQueryData()
+    protected function getVerifyRequestData()
     {
-        $wallet = $this->repo->findByPaymentIdAndActions(
+        $wallet = (new Repository($this->repo))->findByPaymentIdAndActions(
             $this->input['payment']['id'],
             [Action::AUTHORIZE, Action::OTP_GENERATE]);
 
-        $gatewayPaymentId = $wallet->getGatewayPaymentId();
+        $gatewayPaymentId = $wallet->getGatewayPaymentId() ?? "";
 
         $paymentId = $this->input['payment']['id'];
+
+        $amount = $this->input['payment']['amount'] / 100;
 
         $queryData = [
             RequestFields::MERCHANT_CODE             => $this->getMerchantId(),
             RequestFields::QUERY_TRANSACTION_DATE    => $this->getFormattedDate(),
-            RequestFields::COM_TRANSACTION_ID        => $gatewayPaymentId ?? "",
+            RequestFields::COM_TRANSACTION_ID        => $gatewayPaymentId,
             RequestFields::QUERY_TRANSACTION_REF     => $paymentId,
             RequestFields::PMT_TRANSACTION_REFERENCE => $paymentId,
-            RequestFields::AMOUNT                    => $this->input['payment']['amount'] / 100,
+            RequestFields::AMOUNT                    => $amount,
         ];
 
         if ($wallet->getAction() === Action::OTP_GENERATE)
@@ -361,12 +373,14 @@ class Gateway extends Base\Gateway
 
         $gatewayPaymentId2 = $wallet->getGatewayPaymentId2();
 
+        $amount = $this->input['payment']['amount'] / 100;
+
         $data = [
             RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
             RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
-            RequestFields::AMOUNT                => $this->input['payment']['amount'] / 100,
+            RequestFields::AMOUNT                => $amount,
             RequestFields::MOBILE_NUMBER         => $this->getFormattedPhoneNo(),
             RequestFields::FROM_ENTITY_TYPE      => Constants::ENTITY_TYPE_ID,
             RequestFields::TO_ENTITY_TYPE        => Constants::TO_ENTITY_TYPE,
@@ -381,17 +395,19 @@ class Gateway extends Base\Gateway
 
     protected function getRefundData()
     {
-        $wallet = $this->repo->findByPaymentIdAndActions(
+        $wallet = (new Repository($this->repo))->findByPaymentIdAndActions(
             $this->input['payment']['id'],
             [Action::AUTHORIZE, Action::OTP_GENERATE]);
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId();
 
+        $amount = $this->input['refund']['amount'] / 100;
+
         $data = [
             RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::COM_TRANSACTION_ID    => $gatewayPaymentId ?? "",
             RequestFields::QUERY_TRANSACTION_REF => $this->input['payment']['id'],
-            RequestFields::S2S_AMOUNT            => $this->input['payment']['amount'] / 100,
+            RequestFields::S2S_AMOUNT            => $amount,
             RequestFields::REFUND_NARRATION      => Constants::REFUND_NARRATION,
             RequestFields::REVERSAL_TYPE         => $this->getReversalType()
         ];
@@ -404,8 +420,8 @@ class Gateway extends Base\Gateway
         $response = $content['response'];
 
         $attributes = [
-            Base\Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER] ?? null,
-            Base\Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER] ?? null,
+            Base\Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER],
+            Base\Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER],
             Base\Entity::AMOUNT              => $this->input['payment']['amount']
         ];
 
@@ -419,7 +435,7 @@ class Gateway extends Base\Gateway
 
         $attributes = [
             Base\Entity::RECEIVED           => true,
-            Base\Entity::GATEWAY_PAYMENT_ID => $content[ResponseFields::S2S_TRANS_ID] ?? null
+            Base\Entity::GATEWAY_PAYMENT_ID => $content[ResponseFields::S2S_TRANS_ID]
         ];
 
         $this->updateGatewayPaymentEntity($wallet, $attributes, false);
@@ -433,8 +449,8 @@ class Gateway extends Base\Gateway
             Base\Entity::RECEIVED             => true,
             Base\Entity::PAYMENT_ID           => $input['payment']['id'],
             Base\Entity::WALLET               => Wallet::MPESA,
-            Base\Entity::AMOUNT               => $input['refund']['amount'] / 100,
-            Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID] ?? null,
+            Base\Entity::AMOUNT               => $input['refund']['amount'],
+            Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID],
             Base\Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
             Base\Entity::REFUND_ID            => $input['refund']['id'],
             Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
@@ -445,30 +461,25 @@ class Gateway extends Base\Gateway
 
     /**
      * If refund amount is less than payment amount, it is a partial refund
+     *
      * @return string $reversalType
      */
     protected function getReversalType()
     {
         $refund = $this->input['payment']['amount'] - $this->input['refund']['amount'];
 
-        switch ($refund)
+        if ($refund === 0)
         {
-            case 0:
-                $reversalType = Constants::FULL_REVERSAL;
-                break;
-
-            default:
-                $reversalType = Constants::PARTIAL_REVERSAL;
-                break;
+            return Constants::FULL_REVERSAL;
         }
 
-        return $reversalType;
+        return Constants::PARTIAL_REVERSAL;
     }
 
     /**
      * Converts Indian numbers into mpesa acceptable format
      * Example: +91-1234567899 returns 1234567899
-     * 
+     *
      * @return number
      */
     protected function getFormattedPhoneNo()
@@ -561,9 +572,9 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
     }
 
-    protected function saveVerifyContentIfNeeded(Verify $verify)
+    protected function saveVerifyContent(Verify $verify)
     {
-        $wallet = $this->repo->findByPaymentIdAndActions(
+        $wallet = (new Repository($this->repo))->findByPaymentIdAndActions(
             $this->input['payment']['id'],
             [Action::AUTHORIZE, Action::OTP_GENERATE]);
 
@@ -579,7 +590,7 @@ class Gateway extends Base\Gateway
 
         if (empty($wallet[Base\Entity::GATEWAY_PAYMENT_ID]) === true)
         {
-            $contentToSave[Base\Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::S2S_TRANS_ID] ?? null;
+            $contentToSave[Base\Entity::GATEWAY_PAYMENT_ID] = $content[ResponseFields::S2S_TRANS_ID];
         }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
@@ -620,5 +631,17 @@ class Gateway extends Base\Gateway
     {
         // TODO: Add live password
         return $this->config['test_password'];
+    }
+
+    protected function getPaymentToVerify($verify)
+    {
+        $actions = [Action::AUTHORIZE, Action::OTP_GENERATE];
+
+        $gatewayPayment = (new Repository($this->repo))->findByPaymentIdAndActions(
+                    $verify->input['payment']['id'], $actions);
+
+        $verify->payment = $gatewayPayment;
+
+        return $gatewayPayment;
     }
 }

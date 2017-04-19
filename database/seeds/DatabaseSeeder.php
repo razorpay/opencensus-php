@@ -1574,8 +1574,8 @@ class DatabaseSeeder extends Seeder
                 'gateway'                   => Gateway::WALLET_MPESA,
                 'card'                      => '0',
                 'netbanking'                => '0',
-                'gateway_terminal_id'       => null,
-                'gateway_terminal_password' => null,
+                'gateway_merchant_id'       => 'random_merchant_id',
+                'gateway_secure_secret'     => Crypt::encrypt('demo_account_mpesa_secure_secret'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )

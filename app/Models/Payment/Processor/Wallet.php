@@ -29,7 +29,7 @@ class Wallet
         self::FREECHARGE    => 'Freecharge',
         self::JIOMONEY      => 'JioMoney',
         self::OPENWALLET    => 'RZP Open Wallet',
-        self::MPESA         => 'Vodafone Mpesa'
+        self::MPESA         => 'Vodafone mPesa'
     );
 
     public static function exists($wallet)
