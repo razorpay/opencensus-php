@@ -110,7 +110,10 @@ trait RepositoryUpdateTestAndLive
             });
     }
 
-    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    public function attach(
+        $entity, $relation,
+        array $ids = [],
+        array $attributes = [], $touch = true)
     {
         return $this->manager->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids, $touch)
@@ -123,10 +126,10 @@ trait RepositoryUpdateTestAndLive
 
                 // Attach the relationship in both live and test databases.
                 Config::set('database.default', Mode::LIVE);
-                $liveEntity->$relation()->attach($id);
+                $liveEntity->$relation()->attach($ids);
 
                 Config::set('database.default', Mode::TEST);
-                $testEntity->$relation()->attach($id);
+                $testEntity->$relation()->attach($ids);
             });
     }
 

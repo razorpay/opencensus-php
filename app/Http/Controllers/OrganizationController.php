@@ -335,6 +335,13 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getRolesForPermission(string $id)
+    {
+        $data = (new Admin\Permission\Service)->getRolesForPermission($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function putPermission(string $id)
     {
         $input = Request::all();
