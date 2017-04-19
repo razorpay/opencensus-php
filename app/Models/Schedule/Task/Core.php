@@ -142,15 +142,22 @@ class Core extends Base\Core
      */
     protected function getDefaultMerchantSchedule(Merchant\Entity $merchant)
     {
+        $schedule = null;
+
         //
         // For marketplace linked accounts, use the parent merchants
-        // schedule
+        // schedule, if available
         //
         if ($merchant->isLinkedAccount() === true)
         {
-            $schedule = $merchant->parent->schedule;
+            $parentMerchant = $merchant->parent;
+
+            $schedule = $this->repo
+                             ->schedule_task
+                             ->findByMerchantAndMethod($parentMerchant, null);
         }
-        else
+
+        if ($schedule === null)
         {
             $defaultDelay = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
 
