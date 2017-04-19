@@ -73,6 +73,13 @@ class RawApiRequest
 
     protected function setupCredentials($input)
     {
+        $adminUser = Auth::guard('api')->user();
+
+        if (empty($adminUser) === false)
+        {
+            $adminToken = $adminUser->token;
+        }
+
         // Setup credentials based on auth
         switch ($input['auth'])
         {
@@ -87,12 +94,29 @@ class RawApiRequest
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
+            case 'admin_proxy':
+                if (isset($adminToken) === true)
+                {
+                    $this->params['headers']['X-Admin-Token'] = $adminToken;
+                }
+
+                $this->setApiCredentials($input['mode'], $merchantId);
+                break;
+
             case 'admin':
-                $token = Auth::guard('api')->user()->token;
-                $this->setAdminCredentials($token, $input['mode']);
+                $this->setAdminCredentials($adminToken, $input['mode']);
                 break;
 
             case 'internal':
+                $this->setApiCredentials($input['mode']);
+                break;
+
+            case 'admin_internal':
+                if (isset($adminToken) === true)
+                {
+                    $this->params['headers']['X-Admin-Token'] = $adminToken;
+                }
+
                 $this->setApiCredentials($input['mode']);
                 break;
         }
