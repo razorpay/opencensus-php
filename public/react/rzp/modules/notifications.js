@@ -3,7 +3,7 @@ import { set, merge, remove, unshift } from 'rzp/utils/immutable'
 const NOTIFICATION_SHOW = 'NOTIFICATION_SHOW'
 const NOTIFICATION_HIDE = 'NOTIFICATION_HIDE'
 
-export const showNotification = (payload, hideAllPrev = false) => {
+export const showNotification = (payload) => {
   return (dispatch) => {
     return dispatch({
       type: NOTIFICATION_SHOW,
@@ -11,7 +11,6 @@ export const showNotification = (payload, hideAllPrev = false) => {
         ...payload,
         id: +new Date()
       },
-      hideAllPrev: hideAllPrev
     })
   }
 }
@@ -32,12 +31,14 @@ let initialState = {
 export default (state = initialState, action) => {
   switch (action.type) {
     case NOTIFICATION_SHOW:
+      debugger
       return merge(state, {
         notifications: unshift(state.notifications, action.payload),
-        hideAllPrev: state.notifications.length >= 1 ? action.hideAllPrev : false
+        hidePrevious: state.notifications.length >= 1 ? action.payload.hidePrevious : false
       })
 
     case NOTIFICATION_HIDE:
+      debugger
       let notifications = remove(state.notifications, (notification) => notification.id === action.payload.id)
       return set(state, 'notifications', notifications)
 

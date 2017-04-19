@@ -41,6 +41,7 @@ export default class CongfigurationContainer extends Component {
         this.props.showNotification({
           type: 'success',
           message: 'Configuration Updated',
+          hidePrevious: true,
         });
       })
       .catch(err => {

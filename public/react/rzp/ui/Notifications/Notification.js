@@ -17,7 +17,7 @@ class Notification extends Component {
   }
 
   componentWillUpdate(nextProps) {
-    if(nextProps.hideAllPrev) {
+    if (nextProps.hidePrevious) {
       clearTimeout(this.timerId)
       this.close()
     }
@@ -42,9 +42,10 @@ class Notification extends Component {
   }
 
   render() {
-    let { type, message, showClose, hideAllPrev } = this.props
+    let { type, message, showClose, hidePrevious } = this.props
 
-    if(hideAllPrev) {
+    debugger
+    if (hidePrevious) {
       return null
     }
 
