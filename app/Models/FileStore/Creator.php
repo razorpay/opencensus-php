@@ -143,6 +143,20 @@ class Creator extends Base\Core
     }
 
     /**
+     * Set the Local file Path
+     *
+     * @param string $filePath Local File Path
+     *
+     * @return Creator object
+     */
+    public function localFilePath(string $filePath)
+    {
+        $this->localFilePath = $filePath;
+
+        return $this;
+    }
+
+    /**
      * Set the Extension of File Store
      *
      * @param string $extension Extension of file
@@ -294,16 +308,27 @@ class Creator extends Base\Core
     {
         $this->validateBeforeSave();
 
-        if ($this->localFile === null)
+        if ($this->localFile !== null)
         {
-            $this->writeToLocalFile();
+            $this->filePath = $this->localFile->getPathname();
+
+            $this->mime($this->localFile->getMimeType());
+        }
+        else if ($this->localFilePath !== null)
+        {
+            $this->filePath = $this->localFilePath;
+
+            if ($this->file->getMime() === null)
+            {
+                throw new Exception\LogicException('Mime Type is not Set');
+            }
         }
         else
         {
-            $this->filePath = $this->localFile->getPathname();
-        }
+            $this->writeToLocalFile();
 
-        $this->mime($this->localFile->getMimeType());
+            $this->mime($this->localFile->getMimeType());
+        }
 
         $this->validateBeforeUpload();
 
