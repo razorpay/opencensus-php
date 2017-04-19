@@ -37,7 +37,7 @@ app.controller('PermissionDetailCtrl', [
         }
       }
 
-      $scope.localOrgs = utils.concatObj(tmpAllOrgs, tmpSelOrgs, $scope.localOrgs); // Don't change order for tmpAllOrgs, tmpSelOrgs
+      $scope.localOrgs = utils.concatObj(tmpAllOrgs, $scope.localOrgs, tmpSelOrgs); // Don't change order
     }
 
     // Fetch orgs having permissions
