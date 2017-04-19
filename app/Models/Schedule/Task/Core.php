@@ -87,6 +87,12 @@ class Core extends Base\Core
 
     /**
      * Creates merchant schedule entity
+     *
+     * @param Merchant\Entity $merchant
+     * @param Base\Entity     $entity
+     * @param                 $input
+     *
+     * @return Entity
      */
     public function create(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
@@ -109,14 +115,21 @@ class Core extends Base\Core
 
     /**
      * Get All Settlement schedules assigned to merchant for payment method
+     *
+     * @param Merchant\Entity $merchant
+     * @param                 $method
+     *
+     * @return Entity
      */
     public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
     {
-        $scheduleTasks = $this->repo->schedule_task
-                                  ->fetchByMerchant($merchant, Type::SETTLEMENT);
+        $scheduleTasks = $this->repo
+                              ->schedule_task
+                              ->fetchByMerchant($merchant, Type::SETTLEMENT);
 
         $scheduleTask = $this->filterAndGetScheduleByMethodOrDefault(
-                                    $scheduleTasks, $method);
+                                    $scheduleTasks,
+                                    $method);
 
         return $scheduleTask;
     }
@@ -149,6 +162,11 @@ class Core extends Base\Core
 
     /**
      * Filter a schedule by method or default
+     *
+     * @param $scheduleTasks
+     * @param $method
+     *
+     * @return Entity
      */
     protected function filterAndGetScheduleByMethodOrDefault(
         $scheduleTasks,
