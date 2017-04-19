@@ -1137,7 +1137,7 @@ class Service extends Base\Service
     {
         $this->setApiCredentials(null, 'live');
 
-        $response = $this->api->admin->fetchMultipleEntities('schedule_task')->toArray();
+        $response = $this->api->admin->fetchMultipleEntities('schedule_task', ['merchant_id' => $id])->toArray();
 
         return $response;
     }
