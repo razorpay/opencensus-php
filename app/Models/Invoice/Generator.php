@@ -136,9 +136,7 @@ class Generator extends Base\Core
                 $this->merchant,
                 $this->invoice);
 
-            $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
-
-            $this->invoice->setAmount($totalAmount);
+            $this->calculateAndSetInvoiceAmount();
         }
 
         if ($this->invoice->getStatus() === Status::ISSUED)
@@ -202,11 +200,13 @@ class Generator extends Base\Core
 
         $invoice = new Entity;
 
+        // Merchant should get associated before calling build()
+        // as invoice's validator uses merchant relation.
+        $invoice->merchant()->associate($this->merchant);
+
         $invoice->build($input);
 
         (new Validator)->validateInput(camel_case($operation), $input);
-
-        $invoice->merchant()->associate($this->merchant);
 
         //
         // This is being done because dashboard can create an invoice
@@ -284,9 +284,7 @@ class Generator extends Base\Core
             $this->merchant,
             $this->invoice);
 
-        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
-
-        $this->invoice->setAmount($totalAmount);
+        $this->calculateAndSetInvoiceAmount();
     }
 
     protected function createAndAssociateOrderForInvoice()
@@ -307,6 +305,20 @@ class Generator extends Base\Core
         $order = (new Order\Core)->create($orderInput, $this->merchant);
 
         $this->invoice->order()->associate($order);
+    }
+
+    /**
+     * Calculates, validates and sets the invoice amount after creation of
+     * its line items.
+     */
+    protected function calculateAndSetInvoiceAmount()
+    {
+        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
+
+        $this->invoice->getValidator()
+                      ->validateMaxAllowedAmount($totalAmount);
+
+        $this->invoice->setAmount($totalAmount);
     }
 
     /**

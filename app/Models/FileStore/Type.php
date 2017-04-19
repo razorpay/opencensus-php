@@ -36,6 +36,8 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
+    const REPORT                            = 'report';
+
     const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
     const FUND_TRANSFER_H2H                 = 'fund_transfer_h2h';
 
@@ -70,6 +72,7 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
+            self::REPORT,
         ],
 
         Constants\Entity::BATCH => [
@@ -128,6 +131,7 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
+            self::REPORT
         ],
 
         self::BATCH_BUCKET_CONFIG => [

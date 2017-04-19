@@ -11,7 +11,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME                => 'required|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::AMOUNT              => 'required|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'required|integer|min:100',
         Entity::CURRENCY            => 'required|size:3|in:INR',
         Entity::TYPE                => 'required|string|max:16|custom',
     ];
@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         Entity::ACTIVE              => 'sometimes|boolean',
         Entity::NAME                => 'sometimes|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::CURRENCY            => 'sometimes|size:3|in:INR',
     ];
 

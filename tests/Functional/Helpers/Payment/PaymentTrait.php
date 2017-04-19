@@ -932,7 +932,7 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArrayNeutral();
 
         $payment['method'] = 'upi';
-        $payment['vpa'] = 'shk@hdfcbank';
+        $payment['vpa'] = 'vishnu@icici';
 
         return $payment;
     }

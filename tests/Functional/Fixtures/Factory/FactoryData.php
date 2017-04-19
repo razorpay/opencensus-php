@@ -41,6 +41,7 @@ final class FactoryData
             'shared'                    => 1,
             'currency'                  => 'INR',
             'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => $faker->word,
             'gateway_terminal_id'       => $faker->word,
             'gateway_terminal_password' => null,

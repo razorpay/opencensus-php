@@ -23,6 +23,7 @@ class Table
     const ADD_ON                = 'add_ons';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
+    const REPORT                = 'reports';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';

@@ -1896,3 +1896,10 @@ ALTER TABLE settlements
 
 ALTER TABLE payment_analytics
     ADD CONSTRAINT payment_analytics_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments(id);
+
+ALTER TABLE upi
+    ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,
+    ADD INDEX upi_refund_id_index (refund_id);
+
+ALTER TABLE workflow_steps
+    ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;

@@ -75,7 +75,6 @@ class EntityReportTest extends TestCase
             'month' => $dt->month,
             'day' => $dt->day);
 
-
         $orderReport = $this->fetchReport('order', $input);
 
         assert(count($orderReport) === 1);
@@ -164,8 +163,8 @@ class EntityReportTest extends TestCase
 
         $dt = Carbon::today('Asia/Kolkata');
         $input = [
-            'year' => $dt->year,
-            'month'=> $dt->month
+            'year'  => $dt->year,
+            'month' => $dt->month
         ];
 
         $invoice = $this->fetchInvoice($input);

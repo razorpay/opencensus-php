@@ -525,6 +525,8 @@ class TraceCode
     const RECON_FILE_LINK                               = 'RECON_FILE_LINK';
     const IIN_INSERT_FAILED                             = 'IIN_INSERT_FAILED';
 
+    const QUEUE_INVALID_CONFIG                          = 'QUEUE_INVALID_CONFIG';
+
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH           = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
     const TRANSACTION_MIGRATION_FEE_MISTMATCH           = 'TRANSACTION_MIGRATION_FEE_MISTMATCH';
@@ -656,7 +658,12 @@ class TraceCode
     const REMOVE_GATEWAY_PRIORITY_REQUEST               = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const REDIS_DATA_FETCHED                            = 'REDIS_DATA_FETCHED';
 
-    // Trace codes for gateway
+// Trace codes for Merchant Reports
+
+    const REPORT_CREATE_REQUEST                         = 'REPORT_CREATE_REQUEST';
+    const REPORT_ENTITY_FETCH_REQUEST                   = 'REPORT_ENTITY_FETCH_REQUEST';
+
+// Trace codes for gateway
     const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
     const USER_EDIT                                     = 'USER_EDIT';
 
@@ -709,6 +716,8 @@ class TraceCode
         self::SUBSCRIPTION_PAYMENT_QUEUE_DATA           => 'Payment request data received via queue via subscription',
         self::SUBSCRIPTION_PAYMENT_FAILED               => 'Subscription payment failed with an exception',
         self::GATEWAY_REFUND_ABSENT                     => 'Refund not done on the gateway side.',
+
+        self::QUEUE_INVALID_CONFIG                      => 'Invalid Config used for Queue name and connection fetching',
 
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 

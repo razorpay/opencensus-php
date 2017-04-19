@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         Entity::ADD_ON_ID           => 'sometimes|string|max:19',
         Entity::NAME                => 'required_without:item_id|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::AMOUNT              => 'required_without:item_id|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'required_without:item_id|integer|min:100',
         Entity::CURRENCY            => 'required_without:item_id|size:3|in:INR',
     ];
 
@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Entity::ITEM_ID             => 'sometimes|string|max:19',
         Entity::NAME                => 'sometimes|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::CURRENCY            => 'sometimes|size:3|in:INR',
     ];
 
