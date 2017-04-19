@@ -1857,4 +1857,4 @@ UPDATE tokens
 ALTER TABLE refunds
     ADD COLUMN status            VARCHAR(255) AFTER      base_amount,
     ADD COLUMN attempts          TINYINT(1) NOT NULL DEFAULT '1' AFTER gateway_refunded,
-    ADD COLUMN last_attempted_at  INT          AFTER       updated_at;
+    ADD COLUMN last_attempted_at INT NULL  AFTER       updated_at;
