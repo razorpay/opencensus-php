@@ -180,8 +180,13 @@ class Service extends Base\Service
                 $user = (new User\Service)->createUserForSubmerchant($input);
                 $user->save();
 
+                $userApiData = (new User\Service)->getUserApiData($user);
+                (new User\Service)->createUserOnApi($userApiData);
+
                 // Finally attach the new user to the sub merchant
                 $user->joinMerchantByIdWithRole($input['id'], 'owner');
+
+                (new User\Service)->attachMerchantUserOnApi($user->id, $input['id'], 'owner');
 
                 return [null, $user->toArray()];
             }
@@ -671,6 +676,8 @@ class Service extends Base\Service
                 'role' => $newRole
             ]
         );
+
+        (new User\Service)->updateMerchantUserMappingOnApi($userId, $this->currentMerchant->id, $input['role']);
 
         list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($this->currentUser);
 

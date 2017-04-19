@@ -31,8 +31,8 @@
               </select>
             </div>
             <div class="list-group">
-              <div 
-                class="list-group-item perm-row" 
+              <div
+                class="list-group-item perm-row"
                 ng-repeat="(key, id) in permissionsSelected track by key"
               >
                 <div class="description pull-left col-xs-12 row truncate">
@@ -48,11 +48,12 @@
         <div ng-repeat="(stepIndex, step) in steps" class="action-desc-panel panel panel-default">
           <div class="panel-heading">
             Step {{stepIndex + 1}}
-            <i class="delete-btn pull-right fa fa-times" ng-click="removeStep(stepIndex)" ng-if="!editLayout"></i>    
+            <i class="delete-btn pull-right fa fa-times" ng-click="removeStep(stepIndex)" ng-if="!editLayout"></i>
           </div>
           <div class="wrapper clearfix">
             <div class="m-b">Add a checker to approve the action. Select a role.</div>
             <div class="assignee-list m-b">
+
               <div class="" ng-repeat="(roleIndex, role) in step">
                 <span class="assignee-row" >
                   <span class="assignee-label">{{roleNames[role.role_id]}} <i class="delete-btn fa fa-times m-l" ng-click="removeRoleFromStep(roleIndex, stepIndex)" ng-if="!editLayout"></i></span>
@@ -66,11 +67,12 @@
                   </div>
                 </span>
               </div>
+
             </div>
             <div ng-if="!editLayout" class="role-select2-container col-xs-6 row">
               <select class="select2 role-select2 " multiple="multiple" style="width: 100%" ng-model="roleSelect">
                 <option></option>
-                <option  ng-repeat="(key, role) in roles" data-step-index={{stepIndex}} data-role-id={{role.id}} value="{{key}}">{{role.name}}</option>
+                <option  ng-repeat="(key, role) in roles | filter:filterItems(stepIndex)" data-step-index={{stepIndex}} data-role-id={{role.id}} value="{{key}}">{{role.name}}</option>
               </select>
             </div>
           </div>
@@ -85,6 +87,6 @@
           Save Changes
         </button>
       </div>
-    </div>  
+    </div>
   </div>
 </div>

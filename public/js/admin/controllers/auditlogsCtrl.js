@@ -112,7 +112,8 @@ app.controller('AuditlogsCtrl', [
   '$http',
   'audit_log_id',
   'audit_log_cache',
-  function($scope, $modalInstance, $http, audit_log_id, audit_log_cache) {
+  'utils',
+  function($scope, $modalInstance, $http, audit_log_id, audit_log_cache, utils) {
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };
@@ -120,5 +121,12 @@ app.controller('AuditlogsCtrl', [
     $scope.audit_log_id = audit_log_id;
 
     $scope.data = audit_log_cache[audit_log_id];
+
+    $scope.dataKeys = [];
+    if ($scope.data.entity && $scope.data.entity.change) {
+      var oldData = $scope.data.entity.change.old ? $scope.data.entity.change.old : [];
+      var newData = $scope.data.entity.change.new ? $scope.data.entity.change.new : [];
+      $scope.dataKeys  = utils.mergeUnique(Object.keys(oldData).concat(Object.keys(newData)));
+    }
   }
 ]);

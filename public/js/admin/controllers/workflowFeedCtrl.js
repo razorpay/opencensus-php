@@ -162,6 +162,14 @@ app.controller('WorkflowFeedCtrl', [
           });
 
           $scope.cards = $scope.cards.concat(checkers);
+
+          $scope.approverList = $scope.cards.filter(function(card){
+            return card.approved;
+          });
+
+          $scope.rejectorList = $scope.cards.filter(function(card){
+            return !card.approved;
+          });
         }
       });
     };
@@ -175,6 +183,7 @@ app.controller('WorkflowFeedCtrl', [
     $scope.actionStateChange = function (state) {
       var body = {};
       var route_name;
+      var method = 'POST';
 
       if (state === 'approve') {
         body = {
@@ -192,6 +201,11 @@ app.controller('WorkflowFeedCtrl', [
         route_name = 'action_checker_create';
       }
 
+      if (state === 'close') {
+        route_name = 'workflow_action_close';
+        method = 'PUT';
+      }
+
       if (state === 'execute') {
         route_name = 'action_request_execute';
       }
@@ -199,7 +213,7 @@ app.controller('WorkflowFeedCtrl', [
       if (typeof route_name !== 'undefined') {
         var request = $http({
           url: '/admin/generic',
-          method: 'POST',
+          method: method,
 
           params: {
             route_name: route_name,
@@ -217,6 +231,7 @@ app.controller('WorkflowFeedCtrl', [
         request.success(function (data) {
           if (data.success) {
             $scope.alerts.addAlert('success', 'Action performed successfully!', true);
+            $scope.action_details.state = data.data.state; // Change state of request
           }
           else {
             angular.forEach(data.errors, function (value, key) {
@@ -344,11 +359,20 @@ app.controller('WorkflowFeedCtrl', [
   '$modalInstance',
   '$http',
   'action_data',
-  function($scope, $modalInstance, $http, action_data) {
+  'utils',
+  function($scope, $modalInstance, $http, action_data, utils) {
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };
 
     $scope.data = action_data;
+    $scope.isArray = utils.isArray;
+    $scope.dataKeys = [];
+
+    if ($scope.data && $scope.data.success) {
+      var oldData = $scope.data.data.old ? $scope.data.data.old : [];
+      var newData = $scope.data.data.new ? $scope.data.data.new : [];
+      $scope.dataKeys  = utils.mergeUnique(Object.keys(oldData).concat(Object.keys(newData)));
+    }
   }
 ]);

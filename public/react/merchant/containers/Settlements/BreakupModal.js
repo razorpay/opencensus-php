@@ -4,7 +4,7 @@ import Alert from 'rzp/ui/Forms/Alert'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import SettlementBreakupTable from 'merchant/components/Settlements/BreakupTable'
 import { fetchBreakupDetails } from 'merchant/modules/settlements/details'
-import * as ModalActions from 'merchant/modules/modals'
+import * as ModalActions from 'rzp/modules/modals'
 
 @connect(
   (state) => state.settlement.breakupDetails,

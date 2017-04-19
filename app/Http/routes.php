@@ -177,7 +177,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/admin/activity/{id}', 'AdminController@deleteAdminActivity');
 
         Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
-        Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
         Route::get('/admin/file/{fileId}', 'AdminController@getUploadedFile');
         Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
@@ -232,8 +231,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // Admin Payment Actions
         Route::get('/admin/{mode}/payments/{id}/analytics', 'AdminController@getPaymentAnalytics');
-        Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
-        Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
         Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
 
         // More admin payment actions
@@ -244,11 +241,6 @@ Route::group(['middleware' => ['web']], function () {
                 ->name('admin_payment_capture');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
-        // Admin Main Actions, mostly initiated from the Actions screen
-        Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');
-        Route::post('/admin/trigger/error', 'AdminController@triggerError');
-        Route::post('/admin/{mode}/refunds/netbanking', 'AdminController@generateNetBankingRefunds');
-        Route::post('/admin/settlement/initiate/{channel}', 'AdminController@postInitiateSetl');
         // Newsletter
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
         Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
@@ -268,7 +260,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('admin/schedule/list', 'AdminController@getScheduleList');
         Route::post('admin/merchant/{id}/schedules', 'AdminController@postMerchantSchedule');
-        Route::post('admin/schedules', 'AdminController@createSchedule');
 
         Route::group(['middleware'  =>  ['admin', 'superadmin', 'admin_access']], function()
         {

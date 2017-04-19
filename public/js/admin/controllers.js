@@ -9,11 +9,6 @@ angular.module('app.controllers', [
   'theme',
   'organization',
   function ($scope, $localStorage, $window, theme, organization) {
-    // add 'ie' classes to html
-    var isIE = !!navigator.userAgent.match(/MSIE/i);
-    isIE && angular.element($window.document.body).addClass('ie');
-    isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
-
     var baseTheme = {
       transparent : 'rgba(0,0,0,0.2)',
       transparentDark : 'rgba(0,0,0,0.4)',
@@ -86,12 +81,6 @@ angular.module('app.controllers', [
       $localStorage.settings = $scope.app.settings;
     }, true);
 
-    function isSmartDevice($window) {
-      // Adapted from http://www.detectmobilebrowsers.com
-      var ua = $window.navigator.userAgent || $window.navigator.vendor || $window.opera;
-      // Checks for iOs, Android, Blackberry, Opera Mini, and Windows mobile devices
-      return /iPhone|iPod|iPad|Silk|Android|BlackBerry|Opera Mini|IEMobile/.test(ua);
-    }
     $scope.flag = false;
   }
 ]).controller('confirmModalCtrl', [
@@ -107,4 +96,4 @@ angular.module('app.controllers', [
       $modalInstance.dismiss('cancel');
     };
   }
-]);  //Rest controllers loaded from /public/js/admin/controllers/*.js by grunt
+]);

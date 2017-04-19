@@ -8,7 +8,7 @@ import ItemsList from 'merchant/components/Items/ItemsList'
 import ItemCreation from 'merchant/containers/Items/New'
 import ListContainer from 'merchant/containers/ListContainer'
 import * as ItemActions from 'merchant/modules/items'
-import * as ModalActions from 'merchant/modules/modals'
+import * as ModalActions from 'rzp/modules/modals'
 
 @connect(
   (state) => state.items,

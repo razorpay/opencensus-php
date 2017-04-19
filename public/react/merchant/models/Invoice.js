@@ -109,7 +109,8 @@ export default class Invoice extends GenericEntity {
           .map((item, index) => {
             let lineItem = {
               quantity: item.quantity,
-              description: item.description
+              description: item.description,
+              amount: item.amountInINR * 100,
             }
 
             if (item.item_id) {

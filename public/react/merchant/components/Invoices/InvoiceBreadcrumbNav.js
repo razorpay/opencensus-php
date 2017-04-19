@@ -5,7 +5,7 @@ export default ({ invoice, onBackNavClick }) => {
   return (
     <ol class='breadcrumb breadcrumb__backNav'>
       <li>
-        <a class='breadcrumb__backNav--link' onClick={onBackNavClick}>
+        <a class='breadcrumb__backNav--link btn' onClick={onBackNavClick}>
           <i class='fa fa-arrow-left'></i>
           <span>All Invoices</span>
         </a>

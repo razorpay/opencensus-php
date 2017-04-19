@@ -543,14 +543,13 @@ class Service extends Base\Service
 
         $pricingPlan = $this->fetchMerchantPricing($id);
 
-        $schedule = !empty($details['settlement_schedule_id']) ?
-                    $this->fetchMerchantScheduleById($details['settlement_schedule_id']) : null;
+        $scheduleTasks = $this->fetchMerchantSchedule($id);
 
         $data = array(
                     'details' => $details,
                     'terminals' => $terminal,
                     'pricing_plan' => $pricingPlan,
-                    'schedule' => $schedule);
+                    'schedule_tasks' => $scheduleTasks);
 
         return [$error, $data];
     }
@@ -881,46 +880,6 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function postInitiateSetl($channel)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $data = $this->api->settlement->initiate($channel)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
-    public function authorizeFailedPayment($mode, $id)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $data = $this->api->admin->fetchEntityById('payment', $id)
-                ->authorizeFailed()
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
     public function refundAuthorizedPayment($mode, $merchantId, $id)
     {
         $data = [];
@@ -1174,11 +1133,11 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchMerchantScheduleById($id)
+    public function fetchMerchantSchedule($id)
     {
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, 'live');
 
-        $response = $this->api->schedule->fetch($id)->toArray();
+        $response = $this->api->admin->fetchMultipleEntities('schedule_task', ['merchant_id' => $id])->toArray();
 
         return $response;
     }
@@ -1634,22 +1593,6 @@ class Service extends Base\Service
         return array($error, $response);
     }
 
-    /**
-     * Sends a redirect the the file
-     */
-    public function getBeneficiaryFile($input)
-    {
-        $error = (new Validator)->validateInput('get_beneficiary', $input)->messages();
-
-        if (empty($error))
-        {
-            $date = \Input::get('date', date('Y-m-d'));
-            return [null, $this->getBeneficiaryFileUrl($date)];
-        }
-
-        return [$error, null];
-    }
-
     public function getUploadedFile($id)
     {
         $error = null;
@@ -1675,39 +1618,6 @@ class Service extends Base\Service
         }
 
         return array($error, $url);
-    }
-
-    /**
-     * Returns a pre-authed S3 URL to download beneficiary file
-     * @param  Date $date date in Y-m-d format (with leading zeroes)
-     * @return String URL
-     */
-    protected function getBeneficiaryFileUrl($date)
-    {
-        $s3 = $this->getS3Client();
-
-        $beneficiaryBucket = Config::get('aws::config.buckets')['beneficiary'];
-        $filename = $date.'.xls';
-
-        return $s3->getObjectUrl($beneficiaryBucket, $filename, '+2 minutes', [
-            'https'     => true
-        ]);
-    }
-
-    public function generateBeneficiaryFile()
-    {
-        $this->setApiCredentials();
-        try
-        {
-            $response = $this->api->merchant->generateBeneficiaryFile();
-        }
-
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array();
     }
 
     /**
@@ -1854,27 +1764,6 @@ class Service extends Base\Service
         }
     }
 
-    public function triggerError()
-    {
-        $this->setApiCredentials();
-        try
-        {
-            $errorMsg = $this->api->admin->triggerError();
-            if($errorMsg)
-            {
-                return [null, $errorMsg];
-            }
-            else
-            {
-                return ['Error not triggered', null];
-            }
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
     public function deleteTerminal($mode, $terminalId)
     {
         $this->setApiCredentials(null, $mode);
@@ -1990,20 +1879,6 @@ class Service extends Base\Service
         }
     }
 
-    public function verifyAllPayments()
-    {
-        $this->setApiCredentials(null, 'live');
-        try
-        {
-            $response = $this->api->payment->verifyAll();
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [[$e->getMessage()], null];
-        }
-    }
-
     public function editCredits($merchantId, $input)
     {
         $this->setApiCredentials(null, 'live');
@@ -2017,23 +1892,6 @@ class Service extends Base\Service
             return [null, $response->toArray()];
         }
 
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [[$e->getMessage()], null];
-        }
-
-    }
-
-    public function generateNetBankingRefunds($input)
-    {
-        $this->setApiCredentials(null, $input['mode']);
-        unset($input['mode']);
-
-        try
-        {
-            $response = $this->api->refund->generateNetBankingExcel($input);
-            return [null, $response->toArray()];
-        }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return [[$e->getMessage()], null];
@@ -2594,31 +2452,6 @@ class Service extends Base\Service
         catch (\Exception $e)
         {
             $error[] = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
-    /**
-    * Create new schedule
-    * Uses admin auth on the API
-    *
-    * @param $input input array
-    * @return $data array with schedule details created
-    */
-    public function createSchedule($input)
-    {
-        $error = $data = null;
-
-        $this->setAdminCredentials();
-
-        try
-        {
-            $data = $this->api->schedule->createSchedule($input);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
         }
 
         return [$error, $data];
