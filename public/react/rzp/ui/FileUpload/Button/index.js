@@ -1,8 +1,11 @@
 import { Component } from 'react'
+import { connect } from 'react-redux'
+import { showNotification } from 'rzp/modules/notifications';
 import './FileUploadButton.styl'
 
 // Duplicated AsyncButton logic here.
 // TODO: Should make `react-async-button` quite composable in the upstream
+@connect(null, { showNotification })
 export default class FileUploadButton extends Component {
   constructor() {
     super(...arguments)
@@ -92,7 +95,14 @@ export default class FileUploadButton extends Component {
           type='file'
           onChange={(event) => {
             if (event.target.files.length) {
-              this.handleChange(event)
+              if (maxSize && event.target.files[0].size > maxSize) {
+                this.props.showNotification({
+                  type: 'error',
+                  message: 'Max file size allowed is 1 MB'
+                })
+              } else {
+                this.handleChange(event)
+              }
             }
           }}
         />

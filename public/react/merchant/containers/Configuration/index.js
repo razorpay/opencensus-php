@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import Header from 'rzp/ui/Header';
 import Spinner from 'rzp/ui/Spinner';
 import * as ConfigActions from 'merchant/modules/config';
-import * as NotificationActions from 'merchant/modules/notifications';
+import * as NotificationActions from 'rzp/modules/notifications';
 import FlashCheckout from './FlashCheckout';
 import CheckoutTheme from './CheckoutTheme';
 import EmailNotifications from './EmailNotifications';
@@ -52,7 +52,7 @@ export default class CongfigurationContainer extends Component {
   };
 
   render() {
-    let { config, features, loading, error } = this.props.configState;
+    let { config, features, loading } = this.props.configState;
 
     return (
       <div class="react-root">

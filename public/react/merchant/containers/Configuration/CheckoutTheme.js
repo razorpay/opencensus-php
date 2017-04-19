@@ -4,7 +4,7 @@ import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import FileUploadButton from 'rzp/ui/FileUpload/Button';
 import { uploadLogo } from 'merchant/modules/config';
-import { showNotification } from 'merchant/modules/notifications';
+import { showNotification } from 'rzp/modules/notifications';
 
 @connect(state => state.config, { uploadLogo, showNotification })
 @reduxForm()

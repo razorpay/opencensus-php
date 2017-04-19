@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import { updateFeatures } from 'merchant/modules/config';
-import { showNotification } from 'merchant/modules/notifications';
+import { showNotification } from 'rzp/modules/notifications';
 
 @connect(
   state => {
