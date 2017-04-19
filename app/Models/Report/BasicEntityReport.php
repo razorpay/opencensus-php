@@ -291,18 +291,17 @@ class BasicEntityReport extends Base
      */
     protected function createFileAndSave($filePath, $fileName)
     {
-        $file = new UploadedFile($filePath, $fileName);
-
         $creator = new FileStore\Creator;
 
-        $s3File = $creator->extension(FileStore\Format::CSV)
-                            ->localFile($file)
-                            ->name('reports/' . $fileName)
-                            ->store(FileStore\Store::S3)
-                            ->type(FileStore\Type::REPORT)
-                            ->merchant($this->merchant)
-                            ->save()
-                            ->getSignedUrl();
+        $s3File = $creator->localFilePath($filePath)
+                          ->extension(FileStore\Format::CSV)
+                          ->mime('text/csv')
+                          ->name('reports/' . $fileName)
+                          ->store(FileStore\Store::S3)
+                          ->type(FileStore\Type::REPORT)
+                          ->merchant($this->merchant)
+                          ->save()
+                          ->getSignedUrl();
 
         return $s3File;
     }
