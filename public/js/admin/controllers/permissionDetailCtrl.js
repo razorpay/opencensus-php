@@ -40,6 +40,7 @@ app.controller('PermissionDetailCtrl', [
       $scope.localOrgs = utils.concatObj(tmpAllOrgs, tmpSelOrgs, $scope.localOrgs); // Don't change order for tmpAllOrgs, tmpSelOrgs
     }
 
+    // Fetch orgs having permissions
     $scope.fetchPermission = function (id) {
       var data = {
         route_name: 'permission_get',
@@ -86,7 +87,7 @@ app.controller('PermissionDetailCtrl', [
     };
 
     // Fetch entire list of org
-    $scope.fetchOrgs = function () {
+    function fetchOrgs() {
       var request = $http.get('/admin/generic', {
         params: {
           route_name: 'org_get_multiple'
@@ -101,10 +102,35 @@ app.controller('PermissionDetailCtrl', [
       });
     };
 
-    $scope.fetchOrgs();
+    fetchOrgs();
+
+    $scope.roles = null;
+    // Fetch roles for corresponding permission id
+    function fetchRolesById(perm_id) {
+      var request = $http.get('/admin/generic', {
+        ignoreErrors: true,
+        params: {
+          route_name: 'permission_get_roles',
+          url_params: {
+            '{id}': perm_id
+          }
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.roles = data.data.items;
+
+        }
+      });
+
+      request.finally(function () {
+      });
+    }
 
     if ($stateParams.id) {
       $scope.fetchPermission($stateParams.id)
+      fetchRolesById($stateParams.id)
     }
 
     $scope.save = function (permission) {
