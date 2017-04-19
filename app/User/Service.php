@@ -215,7 +215,27 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->user->attach($userId, $merchantId, $role);
+        $data = ['role' => $role, 'merchant_id' => $merchantId];
+
+        $response = $this->api->user->attach($userId, $data);
+    }
+
+    public function updateMerchantUserMappingOnApi($userId, $merchantId, $role)
+    {
+        $this->setApiCredentials();
+
+        $data = ['role' => $role, 'merchant_id' => $merchantId];
+
+        $response = $this->api->user->updateMapping($userId, $data);
+    }
+
+    public function detachMerchantUserOnApi($userId, $merchantId, $role)
+    {
+        $this->setApiCredentials();
+
+        $data = ['role' => $role, 'merchant_id' => $merchantId];
+
+        $response = $this->api->user->detach($userId, $data);
     }
 
     public function getUserApiData(Entity $user)
@@ -334,9 +354,20 @@ class Service extends Base\Service
 
         $user->confirm();
 
+        $this->confirmUserOnApi($user->id);
+
         $this->subscribeToMailingList($user);
 
         return [null, ['email' => $user->email]];
+    }
+
+    public function confirmUserOnApi($userId)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->user->confirm($userId);
+
+        return $response;
     }
 
     /**
@@ -644,6 +675,8 @@ class Service extends Base\Service
             $user->password = Hash::make($user->password);
             $user->save();
 
+            $this->updatePasswordOnApi($user);
+
             $currentSessionId = Session::getId();
             (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->getAuthIdentifier(), $currentSessionId);
         });
@@ -749,5 +782,14 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    public function updatePasswordOnApi($user)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->user->changePassword($user->id, ['password' => $user->password]);
+
+        return $response;
     }
 }

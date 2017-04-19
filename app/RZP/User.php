@@ -16,10 +16,38 @@ class User extends Entity
         return $this->request('PUT', $relativeUrl, $params);
     }
 
-    public function attach($userId, $merchantId, $role)
+    public function attach($userId, array $params)
     {
         $relativeUrl = $this->getEntityUrl().$userId.'/attach';
 
-        return $this->request('PUT', $relativeUrl, ['merchant_id' => $merchantId, 'role' => $role]);
+        return $this->request('PUT', $relativeUrl, $params);
+    }
+
+    public function detach($userId, array $params)
+    {
+        $relativeUrl = $this->getEntityUrl().$userId.'/detach';
+
+        return $this->request('PUT', $relativeUrl, $params);
+    }
+
+    public function updateMapping($userId, array $params)
+    {
+        $relativeUrl = $this->getEntityUrl().$userId.'/update';
+
+        return $this->request('PUT', $relativeUrl, $params);
+    }
+
+    public function confirm($userId)
+    {
+        $relativeUrl = $this->getEntityUrl().$userId.'/confirm';
+
+        return $this->request('PUT', $relativeUrl);
+    }
+
+    public function changePassword($userId, array $params)
+    {
+        $relativeUrl = $this->getEntityUrl().$userId.'/password';
+
+        return $this->request('PUT', $relativeUrl, $params);
     }
 }

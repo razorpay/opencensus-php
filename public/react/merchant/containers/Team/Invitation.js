@@ -2,7 +2,7 @@ import { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm } from 'redux-form'
 import AsyncButton from 'react-async-button'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import * as NotificationsActions from 'rzp/modules/notifications'
 import { roles, resendInvitation, updateInvitation, cancelInvitation, fetchTeamDetails } from 'merchant/modules/team'
 
 @connect(

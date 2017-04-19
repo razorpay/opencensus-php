@@ -17,9 +17,9 @@
       <div class="col-xs-9">
         <div class="action-desc-panel panel panel-default">
           <div class="panel-heading">
-            <strong>{{ action_details.admin.name }}</strong>
-            performed this action
-            <span title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
+            <strong ng-if="action_details.admin.name">{{ action_details.admin.name }}</strong>
+            <span ng-style="!action_details.admin.name && {'visibility':'collapse'}">performed this action</span>
+            <span ng-if="action_details.created_at" title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
 
             <span class="label pending-bg-color pull-right action-state">{{ action_details.state }}</span>
           </div>
@@ -38,9 +38,9 @@
                   <div class="input-group input-group-lg">
                     <input type="text" class="form-control " id="title-input" aria-describedby="sizing-addon1" ng-model="action_details.title"> <!-- placeholder="Add a title" -->
                     <span class="input-group-btn " >
-                      <button 
-                        class="btn btn-info " 
-                        id="title-input-button" 
+                      <button
+                        class="btn btn-info "
+                        id="title-input-button"
                         type="button"
                         ng-click="saveTitle()"
                       >{{titleActive ? (titleStatus === "saving" ? "Saving" : "Save") : "Click to edit"}}</button>
@@ -52,7 +52,7 @@
             </div>
             <div class="border-bottom m-b"></div>
             <div class="description" ng-class="{'desc-active': descActive}">
-              <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>  
+              <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>
               <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea"></textarea>
               <div class="desc-text wrapper-sm" ng-click="setDescActive();alerts.resetAlerts();" >
                 <!-- <div class="bg-white"></div> -->
@@ -66,7 +66,7 @@
               <!-- <div class="description-text">
                 {{ action_details.description || "Click to add a description" }}
               </div> -->
-              <div class="clearfix"></div>  
+              <div class="clearfix"></div>
             </div>
             <div class="assignment-container ">
               <div class="strong assignee-heading m-t"><strong>Assigned to:</strong></div>
@@ -120,18 +120,26 @@
           </form>
         </div>
       </div>
-      <div class="col-xs-3" ng-show="['open', 'approved'].indexOf(action_details.state) !== -1">
+      <div class="col-xs-3" ng-if="['open', 'approved'].indexOf(action_details.state) !== -1 && action_details.state">
         <div class="right-label m-b">Actions</div>
         <div class="row btn-group-vertical btn-block m-b" role="group" aria-label="...">
-          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('approve')" ng-hide="['rejected', 'executed', 'failed', 'approved'].indexOf(action_details.state) !== -1">
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('approve')" ng-if="['approved'].indexOf(action_details.state) === -1"
+                  ng-confirm-click="Are you sure you want to Approve this request?">
             <i class="fa fa-check-circle approved-color"></i>
             Approve
           </button>
-          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('reject')" ng-hide="['approved'].indexOf(action_details.state) !== -1">
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('reject')" ng-if="['approved'].indexOf(action_details.state) === -1"
+                  ng-confirm-click="Are you sure you want to Reject this request?">
             <i class="fa fa-times-circle rejected-color"></i>
             Reject
           </button>
-          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('execute')" ng-show="['approved'].indexOf(action_details.state) !== -1">
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('close')" ng-if="['approved'].indexOf(action_details.state) === -1"
+                  ng-confirm-click="Are you sure you want to Close this request?">
+            <i class="fa fa-times-circle pending-color"></i>
+            Close
+          </button>
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('execute')" ng-if="['approved'].indexOf(action_details.state) !== -1"
+                  ng-confirm-click="Are you sure you want to Execute this request?">
             <i class="fa fa-arrow-circle-up approved-color"></i>
             Execute
           </button>
@@ -140,19 +148,31 @@
             Ignore
           </button> -->
         </div>
-        <!--<div class="right-label m-b m-t">Approved by</div>
-        <div class="assignee-list m-b">
-          <div class="">
-            <span class="assignee-label">Shashank Kumar</span>
+      </div>
+
+      <!-- Approver/Rejector list-->
+      <div class="col-xs-3">
+        <div ng-if="approverList && approverList.length">
+        <div class="right-label m-b m-t">Approved by</div>
+          <div class="assignee-list m-b">
+            <div class="">
+              <div class="assignee-label" ng-repeat="card in approverList">
+                {{card.admin_name}}
+              </div>
+            </div>
           </div>
         </div>
-        <div class="right-label m-b m-t">Rejected by</div>
-        <div class="assignee-list m-b">
-          <div class="">
-            <span class="assignee-label">Shashank Kumar</span>
+
+        <div ng-if="rejectorList && rejectorList .length">
+          <div class="right-label m-b m-t">Rejected by</div>
+          <div class="assignee-list m-b">
+            <div class="">
+              <div class="assignee-label" ng-repeat="card in rejectorList ">
+                {{card.admin_name}}
+              </div>
+            </div>
           </div>
-          <div class=""><span class="assignee-label">Ashmeet Sidhu</span></div>
-        </div>-->
+        </div>
       </div>
     </div>
   </div>
@@ -166,42 +186,35 @@
 
   <div class="modal-body new-key-modal" style="overflow: auto;">
 
-    <h4 ng-show="data.data">Change</h4>
 
-    <p ng-show="data.data.old"><em>Old Data:</em></p>
-
-    <table ng-show="data.data.old" class="table table-striped b-t b-light">
+    <h4 ng-if="data.data">Change</h4>
+    <table ng-if="data.data" class="table table-striped b-t b-light">
       <thead>
-        <tr>
-          <th>Property</th>
-          <th>Value</th>
-        </tr>
+      <tr>
+        <th>Property</th>
+        <th>Old Value</th>
+        <th>New Value</th>
+      </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="(key, value) in data.data.old">
-          <td>{{ key }}</td>
-          <td>{{ value }}</td>
-        </tr>
+      <tr></tr>
+      <tr ng-repeat="type in dataKeys">
+        <td>{{ type }}</td>
+        <td ng-if="data">
+          <ul ng-if="isArray(data.data.old[type])" class="comparison-list">
+            <li ng-repeat="obj in data.data.old[type]" ng-if="obj.name">{{obj.name}}</li>
+          </ul>
+          <span ng-if="!isArray(data.data.old[type])">{{data.data.old[type]}}</span>
+        </td>
+        <td ng-if="data">
+          <ul ng-if="isArray(data.data.new[type])" class="comparison-list">
+            <li ng-repeat="obj in data.data.new[type]"  ng-if="obj.name">{{obj.name}}</li>
+          </ul>
+          <span ng-if="!isArray(data.data.new[type])">{{data.data.new[type]}}</span>
+        </td>
+      </tr>
       </tbody>
     </table>
-
-    <p ng-show="data.data.new"><em>New Data:</em></p>
-
-    <table ng-show="data.data.new" class="table table-striped b-t b-light">
-      <thead>
-        <tr>
-          <th>Property</th>
-          <th>Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat="(key, value) in data.data.new">
-          <td>{{ key }}</td>
-          <td>{{ value }}</td>
-        </tr>
-      </tbody>
-    </table>
-
   </div>
 
   <div class="modal-footer">

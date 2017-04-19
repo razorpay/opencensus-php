@@ -8,7 +8,7 @@ import ListContainer from 'merchant/containers/ListContainer'
 import CreatePaymentLink from './CreatePaymentLink'
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter'
 import * as InvoiceActions from 'merchant/modules/invoices/list'
-import * as ModalActions from 'merchant/modules/modals'
+import * as ModalActions from 'rzp/modules/modals'
 
 @connect(
   (state) => state.invoices,

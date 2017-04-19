@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import { connect } from 'react-redux'
 import Notification from './Notification'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import * as NotificationsActions from 'rzp/modules/notifications'
 import './Notifications.styl'
 
 @connect(

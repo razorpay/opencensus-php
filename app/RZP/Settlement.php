@@ -13,11 +13,4 @@ class Settlement extends Entity
     {
         return parent::all($options);
     }
-
-    public function initiate($channel)
-    {
-        $relativeUrl = $this->getEntityUrl().'initiate/'.$channel;
-
-        return $this->request('POST', $relativeUrl);
-    }
 }

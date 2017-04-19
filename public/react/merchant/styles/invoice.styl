@@ -7,6 +7,7 @@ $muted = rgba(0, 0, 0, 0.27)
 
   .breadcrumb__backNav--heading {
     margin-right: 5px;
+    vertical-align: middle;
   }
 
   .invoice-container {
@@ -19,6 +20,13 @@ $muted = rgba(0, 0, 0, 0.27)
     border-radius: 4px;
     box-shadow: 0 0 8px 0 rgba(0,0,0,0.1);
     min-height: 761px;
+
+    .testmode-warning {
+      margin: -40px -40px 40px;
+      text-align: center;
+      font-size: 13px;
+      padding: 8px;
+    }
 
     > .row {
       margin-bottom: 40px;
@@ -258,6 +266,13 @@ $muted = rgba(0, 0, 0, 0.27)
   padding: 4px 10px;
 }
 
+.issue-invoice-modal {
+  .alert-warning {
+    margin-top: 16px;
+    margin-bottom: 0;
+  }
+}
+
 .payment-link-form {
   .or-separator::before {
     content: '(or)';
@@ -270,6 +285,10 @@ $muted = rgba(0, 0, 0, 0.27)
 
   .form-group {
     margin-bottom: 24px;
+  }
+
+  .alert-warning {
+    margin-bottom: 0;
   }
 }
 

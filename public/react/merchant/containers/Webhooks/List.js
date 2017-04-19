@@ -6,7 +6,7 @@ import ListContainer from 'merchant/containers/ListContainer'
 import WebhooksList from 'merchant/components/Webhooks/List'
 import WebhookCreation from 'merchant/containers/Webhooks/New'
 import * as WebhookActions from 'merchant/modules/webhooks'
-import * as ModalActions from 'merchant/modules/modals'
+import * as ModalActions from 'rzp/modules/modals'
 
 @connect(
   (state) => {

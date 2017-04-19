@@ -8,7 +8,7 @@ import SettlementsList from 'merchant/components/Settlements/List'
 import SettlementsListFilter from 'merchant/components/Settlements/ListFilter'
 import SettlementBreakupModal from './BreakupModal'
 import { fetchSettlements } from 'merchant/modules/settlements/list'
-import * as ModalActions from 'merchant/modules/modals'
+import * as ModalActions from 'rzp/modules/modals'
 
 @connect(
   (state) => state.settlements,

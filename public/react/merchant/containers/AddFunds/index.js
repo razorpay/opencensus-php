@@ -7,7 +7,7 @@ import Header from 'rzp/ui/Header'
 import InputField from 'rzp/ui/Forms/InputField'
 import { required } from 'rzp/utils/validators'
 import * as AddFundsActions from 'merchant/modules/addfunds'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import * as NotificationsActions from 'rzp/modules/notifications'
 
 @connect(
   (state) => state.session,

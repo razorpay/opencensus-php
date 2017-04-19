@@ -7,11 +7,9 @@ import NgRouterProvider from 'rzp/Providers/NgRouterProvider'
 import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider'
 import ModalDialog from 'rzp/ui/ModalDialog'
 import Notifications from 'rzp/ui/Notifications'
-import SessionProvider from 'merchant/SessionProvider'
 import store from './store'
 
 // import './mocks/faker'
-console.log('bro')
 // import WorkflowsListContainer from './containers/workflows'
 // import ItemsListContainer from 'merchant/containers/Items/List'
 // import InvoicesListContainer from './containers/Invoices/List'
@@ -48,18 +46,14 @@ function contextProvider({ component, ngRouter, store, user, modeFactory }) {
         NgRouterProvider,
         { ngRouter },
         React.createElement(
-          SessionProvider,
-          { user, modeFactory },
+          ConfirmModalProvider,
+          null,
           React.createElement(
-            ConfirmModalProvider,
+            'div',
             null,
-            React.createElement(
-              'div',
-              null,
-              React.createElement(component, props),
-              React.createElement(ModalDialog),
-              React.createElement(Notifications),
-            )
+            React.createElement(component, props),
+            React.createElement(ModalDialog),
+            React.createElement(Notifications)
           )
         )
       )
@@ -86,19 +80,7 @@ function createNgDirective(directiveName, component, ...args) {
   ])
 }
 
-class WorkflowsListContainer extends Component {
-  render() {
-
-    return (
-      <div>
-        Workflows Header
-      </div>
-    )
-  }
-}
-
-
-createNgDirective('workflowsListDirective', WorkflowsListContainer)
+// createNgDirective('workflowsListDirective', WorkflowsListContainer)
 // createNgDirective('invoicesList', InvoicesListContainer)
 // createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
 // createNgDirective('customersList', CustomersListContainer)
