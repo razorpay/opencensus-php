@@ -17,10 +17,6 @@
     </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
-        <a href class="list-group-item" ng-click="openInitiateSetl()"
-          ng-show="admin.permissions.indexOf('create_settlement_initiate') !== -1">
-          Initiate Settlement
-        </a>
         <a href class="list-group-item" ng-click="openSetlUpload()"
           ng-show="admin.permissions.indexOf('add_settlement_reconciliation') !== -1">
           Upload Settlement Reconciliation (UTR)
@@ -136,27 +132,6 @@
     <button class="btn btn-primary modal-ok" ng-click="ok(lists, subject, message, template)"
       ng-confirm-click="Please make sure you have sent a test email to yourself before sending a newsletter. Click OK only after that."
     >OK</button>
-  </div>
-</script>
-<script type="text/ng-template" id="initiateSetlModalContent.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Initiate Settlement</h3>
-  </div>
-  <div class="modal-body settlement-modal">
-    <form class="form-horizontal" ng-init="channel='kotak'">
-      <div class="form-group">
-        <label for="channel" class="col-lg-2 control-label">Channel</label>
-        <div class="col-lg-10" >
-          <select class="form-control m-b" name="channel" ng-model="channel">
-            <option value="kotak">Kotak</option>
-          </select>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(channel)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="addIINModalContent.html">
