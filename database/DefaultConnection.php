@@ -16,7 +16,7 @@ class DefaultConnection
         // adding namespace above causes conflicts on Route class
         $slaveRoutes = \RZP\Http\Route::getSlaveRoutes();
 
-        // In the testing environment, we can set slave connection because all
+        // In the testing environment, we can't set slave connection because all
         // entitites created during test execution are not commited and we can't
         // fetch them using a different slave connection
         if ((\App::getFacadeRoot()['env'] !== 'testing') and
