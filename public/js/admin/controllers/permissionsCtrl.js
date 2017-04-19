@@ -72,5 +72,67 @@ app.controller('PermissionsCtrl', [
         }
       });
     };
+
+    $scope.showPermRoles = function (perm_id) {
+      $modal.open({
+        templateUrl: 'permissionRolesContent.html',
+        controller: 'PermissionsRolesCtrl',
+        resolve: {
+          perm_id: function () {
+            return perm_id;
+          }
+        }
+      });
+    };
+  }
+])
+.controller('PermissionsRolesCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'perm_id',
+  function($scope, $modalInstance, $http, perm_id) {
+    $scope.roles = null;
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
+    function showLoader() {
+      $scope.showLoader = true;
+    }
+
+    function hideLoader() {
+      $scope.showLoader = false;
+    }
+
+    // Fetch roles for permission
+    function fetchRolesById() {
+      showLoader();
+
+      var request = $http.get('/admin/generic', {
+        ignoreErrors: true,
+        params: {
+          route_name: 'permission_get_roles',
+          url_params: {
+            '{id}': perm_id
+          }
+        }
+      });
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.roles = data.data.items;
+
+        }
+      });
+
+      request.finally(function () {
+        hideLoader();
+      });
+    }
+
+    fetchRolesById();
   }
 ]);
+
