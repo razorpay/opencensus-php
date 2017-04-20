@@ -264,7 +264,7 @@ app.controller('AuthCtrl', [
           user.identity(true).then(function(userDetails) {
           // user.authorize and then if email verified
             if (user.isVerified()) {
-              var role = userDetails.merchants[userDetails.id].pivot.role;
+              var role = userDetails.merchants[userDetails.id].role;
               $scope.goToDashboard(role);
             } else {
               goToVerification();

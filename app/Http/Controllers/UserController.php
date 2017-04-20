@@ -182,6 +182,12 @@ class UserController extends Controller
         return AppResponse::jsonResponse(null, $data);
     }
 
+    public function getUserDetailsV2()
+    {
+        list($error, $data) = (new User\Service)->getUserDetails();
+
+        return AppResponse::jsonResponse($error, $data);
+    }
 
     public function postUpgradeUserToMerchant()
     {

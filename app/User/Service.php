@@ -780,9 +780,120 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->user->changePassword($user->id, ['password' => $user->password]);
+        $params = [
+            'password'         => $user->password,
+            'confirm_password' =>$user->password,
+        ];
+
+        $response = $this->api->user->changePassword($user->id, $params);
 
         return $response;
+    }
+
+    public function getUserDetails()
+    {
+        $data = [
+            'current'   =>  null
+        ];
+
+        $user = Auth::user();
+
+        list($error, $userDetails) = (new User\Service)->getUserFromApi($user->id);
+
+        if (empty($error) === false)
+        {
+            return [$error, $data];
+        }
+
+        $this->getTags($userDetails);
+
+        $merchants = $userDetails['merchants'];
+
+        $currentMerchant = $this->getCurrentMerchant($userDetails);
+
+        $data = $data + $currentMerchant;
+
+        if ($currentMerchant['role'] === 'owner')
+        {
+            $data['primaryOwner'] = true;
+        }
+        else
+        {
+            $data['primaryOwner'] = false;
+        }
+
+        $currentMerchantId = $currentMerchant['id'];
+
+        // If the user is logged in as someone
+        if ($currentMerchantId)
+        {
+            // Fetch merchant details for current merchant
+            $data = $data + (new MerchantDetails\Service)->fetchDetails();
+
+            $data["pre_signup"] = (new Merchant\Service)->getPreSignupDetails($currentMerchantId);
+
+            foreach ($merchants as $merchant) {
+
+                $data['merchants'][$merchant['id']] = $merchant;
+
+                if ($merchant['id'] === $currentMerchantId)
+                {
+                    $data['current'] = $currentMerchantId;
+                }
+            }
+        }
+
+        $data['user'] = $userDetails;
+
+        return [[], $data];
+    }
+
+    public function getCurrentMerchant(array $userDetails)
+    {
+        $merchants = $userDetails['merchants'];
+
+        $sessionMerchantId = Session::get('current_merchant_id');
+
+        if ($sessionMerchantId !== null)
+        {
+            $currentMerchant = array_filter($merchants, function($merchant) use ($sessionMerchantId)
+            {
+                return ($merchant['id'] === $sessionMerchantId);
+            })[0];
+        }
+        else
+        {
+            $currentMerchant = $merchants[0];
+
+            Session::put('current_merchant_id', $currentMerchant['id']);
+        }
+
+        return $currentMerchant;
+    }
+
+    protected function getTags(array & $userDetails)
+    {
+        $merchants = $userDetails['merchants'];
+
+        $merchantIds = array_column($merchants, 'id');
+
+        $data = Merchant\Entity::select(['merchants.id'])
+                                ->with('tagged')
+                                ->whereIn('merchants.id', $merchantIds)
+                                ->get()
+                                ->toArray();
+
+        foreach ($merchants as & $merchant)
+        {
+            $key = array_search($merchant['id'], array_column($data, 'id'));
+
+            if ($key !== false)
+            {
+                $merchant = array_merge($merchant, $data[$key]);
+            }
+        }
+
+        $userDetails['merchants'] = $merchants;
     }
 
     protected function loginOnApi(array $input)
@@ -794,6 +905,24 @@ class Service extends Base\Service
         try
         {
             $response = $this->api->user->login($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
+    }
+
+    protected function getUserFromApi($userId, array $input = [])
+    {
+        $error = $response = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->user->get($userId, $input)->toArray();
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {

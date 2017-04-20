@@ -16,6 +16,13 @@ class User extends Entity
         return $this->request('PUT', $relativeUrl, $params);
     }
 
+    public function get($userId, array $params)
+    {
+        $relativeUrl = $this->getEntityUrl().$userId;
+
+        return $this->request('GET', $relativeUrl, $params);
+    }
+
     public function attach($userId, array $params)
     {
         $relativeUrl = $this->getEntityUrl().$userId.'/attach';
