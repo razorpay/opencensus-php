@@ -23,6 +23,7 @@ export default class RefundsListContainer extends ListContainer {
         <Header title="Refunds">
           <ShowWhen
             featureEnabled="Batchrefunds"
+            myRole="owner manager operations admin finance"
           >
             <a
               class="btn btn-primary pull-right"
