@@ -858,38 +858,6 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
-    // ----- Credits -----
-
-    // Get log of merchant's credit entries
-    public function getMerchantCreditsLog($merchantId)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->getMerchantCreditsLog($merchantId, $input['mode']);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    // Add free credits for the merchant
-    public function addMerchantCredits($merchantId)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->addMerchantCredits($merchantId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function deleteMerchantCredit($merchantId, $creditId)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->deleteMerchantCredit($merchantId, $creditId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    // ----- /Credits -----
 
     // ----- Heimdall (Whitelabel) -----
 
