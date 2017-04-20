@@ -229,6 +229,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $refund->setRRN($rrn);
 
+        $this->repo->saveOrFail($refund);
+
         // Sets the corresponding payment for the refund.
         $this->payment = $this->refund->payment;
 
