@@ -977,12 +977,12 @@ class BasicAuth
 
                 $this->internalApp = $name;
 
-                if ((isset($info['cloud'])) and
-                    ($info['cloud'] === true))
-                {
-                    // Disable internal ip checks for now
-                    // $verify = $this->verifyClientIpInternal();
-                }
+                // if ((isset($info['cloud'])) and
+                //     ($info['cloud'] === true))
+                // {
+                //     Disable internal ip checks for now
+                //     $verify = $this->verifyClientIpInternal();
+                // }
 
                 break;
             }
@@ -1129,6 +1129,11 @@ class BasicAuth
     public function isAdminAuth()
     {
         return ($this->type === Type::ADMIN_AUTH);
+    }
+
+    public function isAdmin()
+    {
+        return $this->isAdmin;
     }
 
     public function isPublicAuth()
