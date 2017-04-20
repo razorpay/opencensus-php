@@ -449,7 +449,7 @@ class Gateway extends Base\Gateway
     {
         $requests = $content[F::REQUESTS][F::REQUEST] ?? null;
 
-        $response[] = [[], []];
+        $response = null;
 
         if ($requests !== null)
         {
@@ -477,7 +477,7 @@ class Gateway extends Base\Gateway
             }
         }
 
-        return $response;
+        return $response ?: [[[], []]];
     }
 
     /**
