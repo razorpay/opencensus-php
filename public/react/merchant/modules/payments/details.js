@@ -73,7 +73,6 @@ export default function (state = initialState, action) {
   switch(action.type) {
     case `${PAYMENT_FETCH}::PENDING`:
     case `${PAYMENT_CAPTURE}::PENDING`:
-    case `${PAYMENT_REFUND}::PENDING`:
       return merge(state, {
         loading: true
       })
@@ -132,13 +131,6 @@ export default function (state = initialState, action) {
       return set(state, 'refunds', {
         loading: false,
         items: [],
-        error: action.payload.errors
-      })
-
-    case `${PAYMENT_CAPTURE}::ERROR`:
-    case `${PAYMENT_REFUND}::ERROR`:
-      return merge(state, {
-        loading: false,
         error: action.payload.errors
       })
 

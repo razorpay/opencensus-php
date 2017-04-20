@@ -41,7 +41,7 @@ export default class PaymentDetailsContainer extends Component {
       affirmativePendingLabel: 'Capturing...',
       abortLabel: 'No, don\'t!',
       action: () => {
-        this.props.capturePayment(payment).then(() => {
+        return this.props.capturePayment(payment).then(() => {
           this.props.showNotification({
             type: 'success',
             message: 'Payment Captured',
