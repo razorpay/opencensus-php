@@ -38,10 +38,11 @@ trait Refund
         return $refund;
     }
 
-    public function createRefundOnApiFromRecon(Payment\Entity $payment,
-                                                string $refundId,
-                                                int $refundAmount,
-                                                string $rrn = null)
+    public function createRefundOnApiFromRecon(
+        Payment\Entity $payment,
+        string $refundId,
+        int $refundAmount,
+        string $rrn = null)
     {
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount, $rrn);
     }
@@ -850,10 +851,11 @@ trait Refund
         $this->notifyDashboard('refund', $this->refund);
     }
 
-    protected function createRefundOnApiSeparately(Payment\Entity $payment,
-                                                    string $refundId,
-                                                    int $refundAmount,
-                                                    string $rrn = null)
+    protected function createRefundOnApiSeparately(
+        Payment\Entity $payment,
+        string $refundId,
+        int $refundAmount,
+        string $rrn = null)
     {
         if ($payment->transaction === null)
         {
