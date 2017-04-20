@@ -106,15 +106,15 @@ var app = angular.module('app', [
     }).state('app.config', {
       url: '/config',
       templateUrl: 'tpl/app_config.html'
-    }).state('app.batch', {
-      url: '/batch',
-      template: '<div ui-view class="fade-in-down"></div>'
-    }).state('app.batch.upload', {
-      url: '/upload',
-      templateUrl: 'tpl/app_batch_upload.html'
-    }).state('app.batch.list', {
-      url: '/list',
-      templateUrl: 'tpl/app_batch_list.html'
+    // }).state('app.batch', {
+    //   url: '/batch',
+    //   template: '<div ui-view class="fade-in-down"></div>'
+    // }).state('app.batch.upload', {
+    //   url: '/upload',
+    //   templateUrl: 'tpl/app_batch_upload.html'
+    // }).state('app.batch.list', {
+    //   url: '/list',
+    //   templateUrl: 'tpl/app_batch_list.html'
     }).state('app.transactions', {
       url: '/transactions',
       template: '<div ui-view class="fade-in-down"></div>'
@@ -230,6 +230,15 @@ var app = angular.module('app', [
         $scope.id = $stateParams.id;
       }],
       templateProvider: reactTemplateProvider('<refund-details id="id" />')
+    }).state('app.batch', {
+      url: '/batch',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.batch.upload', {
+      url: '/upload',
+      templateProvider: reactTemplateProvider('<batch-upload />')
+    }).state('app.batch.list', {
+      url: '/list',
+      templateProvider: reactTemplateProvider('<batch-list />')
     })
 
       //Guest Routes

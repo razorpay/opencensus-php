@@ -1,34 +1,32 @@
-import Time from 'rzp/ui/Time'
-import TableBody from '../TableBody'
+import Time from 'rzp/ui/Time';
+import TableBody from '../TableBody';
 
 const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <a
-          target='_blank'
-          href={`#/app/refunds/${refund.id}`}
-        >
+        <a target="_blank" href={`#/app/refunds/${refund.id}`}>
           {refund.id}
         </a>
       </td>
-      <td>{refund.payment_id}</td>
+      <td>
+        <a target="_blank" href={`#/app/payments/${refund.payment_id}`}>
+          {refund.payment_id}
+        </a>
+      </td>
       <td>{refund.currency}</td>
       <td>{refund.amountInINR}</td>
       <td>
-        <Time
-          value={refund.created_at}
-          format='DD MMM YYYY, hh:mm:ss a'
-        />
+        <Time value={refund.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
     </tr>
-  )
-}
+  );
+};
 
 export default ({ refunds, isLoading }) => {
   return (
-    <div class='table-responsive'>
-      <table class='table table-hover table-striped'>
+    <div class="table-responsive">
+      <table class="table table-hover table-striped">
         <thead>
           <tr>
             <th>Refund Id</th>
@@ -40,20 +38,15 @@ export default ({ refunds, isLoading }) => {
         </thead>
         <TableBody
           isLoading={isLoading}
-          colSpan={7}
+          colSpan={5}
           rows={refunds}
-          emptyTableMsg='No Refunds found!'
+          emptyTableMsg="No Refunds found!"
         >
-        {
-          refunds.map((refund) =>
-            <RefundsListItem
-              key={refund.id}
-              refund={refund}
-            />
-          )
-        }
+          {refunds.map(refund => (
+            <RefundsListItem key={refund.id} refund={refund} />
+          ))}
         </TableBody>
       </table>
     </div>
-  )
-}
+  );
+};

@@ -1,42 +1,44 @@
-import Refund from 'merchant/models/Refund';
+import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
 
-const REFUNDS_FETCH = 'REFUNDS_FETCH';
+const BATCH_UPLOADS_FETCH = 'BATCH_UPLOADS_FETCH';
 
-export const fetchRefunds = params => {
+export const fetchBatchUploads = params => {
   return dispatch => {
-    let refund = new Refund();
     return dispatch({
-      type: REFUNDS_FETCH,
-      payload: refund.fetchAll(params),
+      type: BATCH_UPLOADS_FETCH,
+      payload: ajax({
+        url: '/batches',
+      }),
     });
   };
 };
 
 let initialState = {
   loading: true,
-  refunds: [],
+  batchuploads: [],
   count: 0,
   error: null,
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
-    case `${REFUNDS_FETCH}::PENDING`:
+    case `${BATCH_UPLOADS_FETCH}::PENDING`:
       return set(state, 'loading', true);
 
-    case `${REFUNDS_FETCH}::SUCCESS`:
+    case `${BATCH_UPLOADS_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
-        refunds: action.payload.data.items,
+        batchuploads: action.payload.data.items,
         count: action.payload.data.count,
         error: null,
       });
 
-    case `${REFUNDS_FETCH}::ERROR`:
+    case `${BATCH_UPLOADS_FETCH}::ERROR`:
       return merge(state, {
         loading: false,
         error: action.payload.errors,
+        batchuploads: initialState.batchuploads,
       });
 
     default:

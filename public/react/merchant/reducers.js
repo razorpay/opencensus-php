@@ -17,6 +17,7 @@ import webhooksReducer from 'merchant/modules/webhooks'
 import creditsReducer from 'merchant/modules/credits'
 import refundsReducer from 'merchant/modules/refunds/list'
 import refundReducer from 'merchant/modules/refunds/details'
+import batchuploadsReducer from 'merchant/modules/refunds/batchuploads'
 
 export default combineReducers({
   form: formReducer,
@@ -36,5 +37,6 @@ export default combineReducers({
   webhooks: webhooksReducer,
   credits: creditsReducer,
   refunds: refundsReducer,
-  refund: refundReducer
+  refund: refundReducer,
+  batchuploads: batchuploadsReducer,
 })

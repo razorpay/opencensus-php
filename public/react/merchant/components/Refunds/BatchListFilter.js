@@ -5,22 +5,8 @@ export default props => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
-        <label>Refund ID:</label>
+        <label>Batch Upload ID:</label>
         <Field name="id" component="input" class="form-control input-sm" />
-      </div>
-
-      <div class="form-group list-filter-item">
-        <label>Payment Id:</label>
-        <Field
-          name="payment_id"
-          component="input"
-          class="form-control input-sm"
-        />
-      </div>
-
-      <div class="form-group list-filter-item">
-        <label>Notes:</label>
-        <Field name="notes" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item count">

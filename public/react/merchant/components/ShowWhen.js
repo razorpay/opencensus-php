@@ -8,7 +8,7 @@ import { connect } from 'react-redux'
 export default class ShowWhen extends Component {
   render() {
     let {
-      notMyRole,
+      notMyRole = '',
       children,
       featureEnabled,
     } = this.props
