@@ -205,7 +205,7 @@ class Server extends Base\Mock\Server
 
         $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
 
-        $this->content($response);
+        $this->content($response, 'refund');
 
         return $response;
     }
@@ -818,6 +818,17 @@ class Server extends Base\Mock\Server
         $this->content($content, 'verify_content');
 
         $xml = require __DIR__ . '/VerifyResponseXml.php';
+
+        $this->content($xml, 'verify_xml');
+
+        return $this->makeResponse($xml);
+    }
+
+    public function verifyRefund2($input)
+    {
+        parent::verify($input);
+
+        $xml = '';
 
         $this->content($xml, 'verify_xml');
 
