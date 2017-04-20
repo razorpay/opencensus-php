@@ -360,7 +360,7 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        list($authReply, $requestContent) = $this->fetchGatewayReplyFromContent($content);
+        list($authReply, $requestContent) = $this->fetchPaymentGatewayReplyFromContent($content);
 
         // Payment is failed when ics_auth is not present
         if ((isset($authReply[F::R_FLAG]) === false) or

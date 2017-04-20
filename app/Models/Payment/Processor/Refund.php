@@ -422,11 +422,12 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
-            $this->tracePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_VERIFY_REFUND_FAILURE);
-
-            throw $e;
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_REFUND_FAILURE,
+                [
+                    'exception' => $e->getData(),
+                    'refund' => $data['refund']
+                ]);
         }
 
         return $verifyRefund2Result;
@@ -654,19 +655,9 @@ trait Refund
                 // update the payment entity for refund
                 $this->updatePaymentRefunded();
 
-                // refund/reverse on gateway
-                if ($payment->getTransactionId() !== null)
-                {
-                    $refunded = $this->refundOnGateway($data);
+                $refunded = $this->callGatewayRefundFunction($payment, $data);
 
-                    $this->refund->setGatewayRefunded($refunded);
-                }
-                else if ($this->gatewaySupportsReversal($payment) === true)
-                {
-                    $reversed = $this->reverseOnGateway($data);
-
-                    $this->refund->setGatewayRefunded($reversed);
-                }
+                $this->refund->setGatewayRefunded($reversed);
             });
 
             $this->repo->saveOrFail($this->refund);
@@ -677,6 +668,23 @@ trait Refund
         });
 
         return $this->refund;
+    }
+
+    protected function callGatewayRefundFunction($payment, $data)
+    {
+        $refunded = false;
+
+        // refund/reverse on gateway
+        if ($payment->getTransactionId() !== null)
+        {
+            $refunded = $this->refundOnGateway($data);
+        }
+        else if ($this->gatewaySupportsReversal($payment) === true)
+        {
+            $refunded = $this->reverseOnGateway($data);
+        }
+
+        return $refunded;
     }
 
     /**
@@ -721,17 +729,7 @@ trait Refund
 
             $refundedOnGateway = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
             {
-                // refund/reverse on gateway
-                if ($payment->getTransactionId() !== null)
-                {
-                    $refunded = $this->refundOnGateway($data);
-                }
-                else if ($this->gatewaySupportsReversal($payment) === true)
-                {
-                    $refunded = $this->reverseOnGateway($data);
-                }
-
-                return $refunded;
+                return $this->callGatewayRefundFunction($payment, $data);
             });
         }
         else
