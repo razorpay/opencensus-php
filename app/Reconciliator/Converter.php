@@ -101,7 +101,7 @@ class Converter
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
         $reader = ReaderFactory::create(Type::XLSX);
-
+        $reader->setShouldPreserveEmptyRows(false);
         $reader->open($filePath);
 
         if (empty($sheetNames) === false)
