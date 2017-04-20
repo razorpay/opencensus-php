@@ -100,6 +100,13 @@ class RawApiRequest
                     $this->params['headers']['X-Admin-Token'] = $adminToken;
                 }
 
+                $merchantId = $input['merchant_id'] ?? null;
+
+                if (empty($merchantId))
+                {
+                    $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
+                }
+
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 

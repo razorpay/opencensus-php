@@ -893,13 +893,13 @@ app.controller('MerchantDetailCtrl', [
 
     function getCreditsLog(mode) {
       var data = {
+        route_name: 'credits_fetch_multiple',
+        merchant_id: $scope.merchant.id,
         mode: mode
       };
-
-      var request = $http.get('/admin/merchant/'+$scope.merchant.id+'/credits_log', {
+      var request = $http.get('/admin/generic', {
         params: data
       });
-
       request.success(function (data) {
         if (data.success) {
           $scope.merchant.creditsLog = data.data;

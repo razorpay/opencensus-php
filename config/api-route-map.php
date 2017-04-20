@@ -149,9 +149,6 @@ return [
             'routeName' => 'settlements_get_detail'
         ],
 
-        // Credits
-        'credits_fetch_multiple'            => 'credits',
-
         // Balance
         'balance_fetch'                     => [
             'url'       => 'balance',
@@ -255,6 +252,12 @@ return [
             'url'       => 'items/{id}',
             'routeName' => 'item_delete'
         ],
+    ],
+
+    // auth
+    'admin_proxy' => [
+        // Credits
+        'credits_fetch_multiple'            => 'credits',
     ],
 
     // auth
