@@ -24,8 +24,6 @@ class Entity extends Base\PublicEntity
     const GATEWAY_REFUNDED  = 'gateway_refunded';
     const RRN               = 'rrn';
 
-    const RRN_LENGTH        = 50;
-
     protected static $sign = 'rfnd';
 
     protected $entity = 'refund';
@@ -69,7 +67,6 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::PAYMENT_ID,
         self::NOTES,
-        self::RRN,
         self::CREATED_AT
     ];
 
@@ -219,7 +216,7 @@ class Entity extends Base\PublicEntity
             Payment\Entity::getIdPrefix() . $this->getAttribute(self::PAYMENT_ID);
     }
 
-    public function getRrn(string $rrn)
+    public function setRrn(string $rrn)
     {
         $this->setAttribute(self::RRN, $rrn);
     }
