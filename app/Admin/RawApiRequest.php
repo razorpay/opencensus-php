@@ -84,11 +84,17 @@ class RawApiRequest
         switch ($input['auth'])
         {
             case 'proxy':
-                $merchantId = $input['merchant_id'] ?? null;
+                // Note: Order of setting merchantId is important
+                $merchantUser = Auth::guard('user')->user();
 
-                if (empty($merchantId))
+                if (empty($merchantUser) === false)
                 {
-                    $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
+                    $merchantId = $merchantUser->currentMerchant()->id;
+                }
+
+                if (isset($merchantId) === false && empty($merchantId) === true)
+                {
+                    $merchantId = $input['merchant_id'] ?? null;
                 }
 
                 $this->setApiCredentials($input['mode'], $merchantId);
@@ -100,11 +106,17 @@ class RawApiRequest
                     $this->params['headers']['X-Admin-Token'] = $adminToken;
                 }
 
-                $merchantId = $input['merchant_id'] ?? null;
+                // Note: Order of setting merchantId is important
+                $merchantUser = Auth::guard('user')->user();
 
-                if (empty($merchantId))
+                if (empty($merchantUser) === false)
                 {
-                    $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
+                    $merchantId = $merchantUser->currentMerchant()->id;
+                }
+
+                if (isset($merchantId) === false && empty($merchantId) === true)
+                {
+                    $merchantId = $input['merchant_id'] ?? null;
                 }
 
                 $this->setApiCredentials($input['mode'], $merchantId);
