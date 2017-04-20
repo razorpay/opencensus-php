@@ -171,7 +171,7 @@ export default (props) => {
 
                 <DetailRow
                   label='Total Fees'
-                  tooltip='Total Fees is inclusive of Service Tax charges'
+                  data-tip='Total Fees is inclusive of Service Tax charges'
                   value={ () => <Amount value={payment.fee} /> }
                 />
 

@@ -1,4 +1,4 @@
-export default ({ label, value }) => {
+export default ({ label, value, ...otherProps }) => {
   if (value === null || value === undefined) {
     value = 'None'
   } else if (value === '') {
@@ -6,7 +6,7 @@ export default ({ label, value }) => {
   }
 
   return (
-    <div class='list-group-item'>
+    <div class='list-group-item' {...otherProps}>
       {
         typeof label === 'function' ? label() : <span>{label}</span>
       }
