@@ -215,9 +215,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
         Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
-        Route::get('/admin/merchant/{id}/credits_log', 'AdminController@getMerchantCreditsLog');
-        Route::post('/admin/merchant/{id}/credits/add', 'AdminController@addMerchantCredits');
-        Route::delete('/admin/merchant/{id}/credit/{cid}', 'AdminController@deleteMerchantCredit');
 
         // Creevey Related routes
         Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');

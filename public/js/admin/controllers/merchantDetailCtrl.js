@@ -871,11 +871,21 @@ app.controller('MerchantDetailCtrl', [
         // Transform money from paise to rupee
         var creditsDataCloned = JSON.parse(JSON.stringify(creditsData));
         creditsDataCloned.value = creditsDataCloned.value * 100;
+        var mode = creditsDataCloned.mode;
+        delete creditsDataCloned.mode;
 
+        var data = {
+          route_name: 'credits_create',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          },
+          body: creditsDataCloned,
+          mode: mode
+        };
         var request = $http({
-          method: 'POST',
-          url: '/admin/merchant/' + $scope.merchant.id + '/credits/add',
-          data: creditsDataCloned
+          method: 'post',
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -893,13 +903,13 @@ app.controller('MerchantDetailCtrl', [
 
     function getCreditsLog(mode) {
       var data = {
+        route_name: 'credits_fetch_multiple',
+        merchant_id: $scope.merchant.id,
         mode: mode
       };
-
-      var request = $http.get('/admin/merchant/'+$scope.merchant.id+'/credits_log', {
+      var request = $http.get('/admin/generic', {
         params: data
       });
-
       request.success(function (data) {
         if (data.success) {
           $scope.merchant.creditsLog = data.data;
@@ -917,12 +927,17 @@ app.controller('MerchantDetailCtrl', [
     $scope.deleteCredit = function (creditId, $index) {
       creditId = creditId.split('_')[1];
 
-      var request = $http.delete('/admin/merchant/' + $scope.merchant.id + '/credit/' + creditId, {
-        params: {
-          mode: $scope.merchant.creditsLogMode
-        }
+      var data = {
+        route_name: 'credits_delete',
+        url_params: {
+          '{mid}': $scope.merchant.id,
+          '{id}': creditId
+        },
+        mode: $scope.merchant.creditsLogMode
+      }
+      var request = $http.delete('/admin/generic', {
+        params: data
       });
-
       request.success(function (data) {
         if (data.success) {
           // Remove the object from the model
