@@ -1905,6 +1905,10 @@ ALTER TABLE workflow_steps
     ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;
 
 ALTER TABLE refunds
-    ADD COLUMN status            VARCHAR(255) AFTER      base_amount,
-    ADD COLUMN attempts          TINYINT(1) NOT NULL DEFAULT '1' AFTER gateway_refunded,
-    ADD COLUMN last_attempted_at INT NULL  AFTER       updated_at;
+    ADD COLUMN status VARCHAR(255) AFTER base_amount,
+    ADD COLUMN attempts TINYINT(1) NOT NULL DEFAULT 1 AFTER transaction_id,
+    ADD COLUMN last_attempted_at INT NULL DEFAULT NULL AFTER attempts,
+    ADD INDEX refunds_status_index (status),
+    ADD INDEX refunds_gateway_refunded_index (gateway_refunded),
+    ADD INDEX refunds_attempts_index (attempts),
+    ADD INDEX refunds_created_at_index (created_at);
