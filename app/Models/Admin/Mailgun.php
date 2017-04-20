@@ -5,17 +5,22 @@ namespace RZP\Models\Admin;
 use Config;
 use Carbon\Carbon;
 
+use RZP\Error;
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
 use RZP\Constants\HashAlgo;
-use RZP\Exception;
-use RZP\Error;
-use RZP\Models\Base;
 
 /**
  * Defines functions to process Mailgun webhook requests
  */
 class Mailgun extends Base\Core
 {
+    const EVENT         = 'event';
+    const BOUNCED_EVENT = 'bounced';
+    const DROPPED_EVENT = 'dropped';
+
     /**
      * Process request and notify on slack channel
      * Response - Status 200 = Accept / Status 406 = Reject. No retry made
@@ -58,14 +63,24 @@ class Mailgun extends Base\Core
 
     protected function failureCallback($input)
     {
-        if (isset($input[MailTags::HEADER]) === false)
+        switch ($input[self::EVENT])
         {
-            return 406;
+            case self::BOUNCED_EVENT:
+                return $this->bouncedCallback($input);
+
+            case self::DROPPED_EVENT:
+                return $this->droppedCallback($input);
         }
 
-        if (in_array($input[MailTags::HEADER], MailTags::$notifyTags, true))
+        return 406;
+    }
+
+    protected function droppedCallback($input)
+    {
+        if ((isset($input[MailTags::HEADER]) === true) and
+            (in_array($input[MailTags::HEADER], MailTags::$setlNotifyTags, true)))
         {
-            $this->notifyFailureOnSlack($input);
+            $this->notifyDrop($input);
 
             return 200;
         }
@@ -73,24 +88,43 @@ class Mailgun extends Base\Core
         return 406;
     }
 
-    protected function notifyFailureOnSlack($input)
+    protected function bouncedCallback($input)
+    {
+        $this->notifyBounce($input);
+
+        return 200;
+    }
+
+    protected function notifyDrop($input)
+    {
+        $message = '*ALERT*: Email delivery dropped, for tag: ' . $input[MailTags::HEADER];
+
+        $channel = Config::get('slack.channels.settlements');
+
+        $this->notifyOnSlack($message, $channel, $input);
+    }
+
+    protected function notifyBounce($input)
+    {
+        $message = '*ALERT*: Email delivery bounced';
+
+        $channel = Config::get('slack.channels.tech_logs_mail');
+
+        $this->notifyOnSlack($message, $channel, $input);
+    }
+
+    protected function notifyOnSlack($message, $channel, $input)
     {
         $sentDate = Carbon::createFromTimestamp($input['timestamp'], 'Asia/Kolkata')->format('d-M-Y H:i:s');
 
-        $message = '*ALERT*: Email delivery failed/bounced, for tag: ' . $input[MailTags::HEADER];
-
         $params = [
             'recipient' => $input['recipient'],
-            'sent_at'   => $sentDate
+            'sent_at'   => $sentDate,
+            'code'      => $input['code']   ?? null,
+            'reason'    => $input['reason'] ?? null,
+            'error'     => $input['error']  ?? null,
         ];
 
-        if (isset($input['reason']))
-        {
-            $params['reason'] = $input['reason'];
-        }
-
-        $notifyChannel = Config::get('slack.channels.settlements');
-
-        $this->app->slack->queue($message, $params, ['channel' => $notifyChannel]);
+        $this->app->slack->queue($message, $params, ['channel' => $channel]);
     }
 }

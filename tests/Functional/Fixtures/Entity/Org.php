@@ -26,7 +26,7 @@ class Org extends Base
     public function createDefaultTestOrganization()
     {
         // Default organisation to be used for tests
-        $this->fixtures->create('org', [
+        $org = $this->fixtures->create('org', [
             'id'            => self::HDFC_ORG,
             'email'         => 'test@hdfcbank.com',
             'email_domains' => 'hdfcbank.com'
@@ -36,6 +36,8 @@ class Org extends Base
             'org_id'    => self::HDFC_ORG,
             'hostname'  => 'hdfcbank.com',
         ]);
+
+        return $org;
     }
 
     public function createRazorpayOrganization()

@@ -16,6 +16,9 @@ class Core extends Base\Core
     {
         $workflow = (new Entity)->generateId();
 
+        $workflow->getValidator()->validatePermissionHasOneWorkflow(
+            $input[Entity::PERMISSIONS]);
+
         $workflow->build($input);
 
         // $minLevel = $this->getMinLevelFromSteps($input[Entity::STEPS]);
@@ -30,13 +33,9 @@ class Core extends Base\Core
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
             // 3. Create its steps
-            foreach ($input[Entity::STEPS] as $step)
+            foreach ($input[Entity::LEVELS] as $level)
             {
-                $step[Step\Entity::WORKFLOW_ID] = $workflow->getId();
-
-                Role\Entity::verifyIdAndStripSign($step[Step\Entity::ROLE_ID]);
-
-                (new Step\Core)->create($step);
+                $step = $this->createStepsForWorkflow($level, $workflow);
             }
         });
 
@@ -50,11 +49,29 @@ class Core extends Base\Core
         return $workflow;
     }
 
+    protected function createStepsForWorkflow(array $level, Entity $workflow)
+    {
+        $steps = $level[Entity::STEPS];
+
+        foreach ($steps as $step)
+        {
+            $data = [
+                Step\Entity::WORKFLOW_ID => $workflow->getId(),
+                Step\Entity::LEVEL       => $level[Step\Entity::LEVEL],
+                Step\Entity::OP_TYPE     => $level[Step\Entity::OP_TYPE],
+            ];
+
+            $step = array_merge($step, $data);
+
+            Role\Entity::verifyIdAndSilentlyStripSign($step[Step\Entity::ROLE_ID]);
+
+            (new Step\Core)->create($step);
+        }
+    }
+
     public function update(Entity $workflow, array $input)
     {
-        $openWorkflows = (new Action\Core)->fetchOpenWorkflows($workflow->getId());
-
-        if (count($openWorkflows) > 0)
+        if ($this->isWorkflowEditable($workflow) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
@@ -62,17 +79,29 @@ class Core extends Base\Core
 
         $workflow->edit($input);
 
-        // $minLevel = $this->getMinLevelFromSteps($workflow->steps);
-        // $this->validateExistingWorkflows($input[Entity::PERMISSIONS] ,$minLevel);
-
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
             $this->repo->saveOrFail($workflow);
 
-            $workflow->permissions()->sync($input[Entity::PERMISSIONS]);
+            $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
+
+            // If levels are passed to the edit function, delete the old steps
+            // and create the new ones. Dashboard finds it harder to update the
+            // existing entitites
+            if (empty($input[Entity::LEVELS]) === false)
+            {
+                $workflow->steps()->delete();
+
+                // 3. Create its steps
+                foreach ($input[Entity::LEVELS] as $level)
+                {
+                    $step = $this->createStepsForWorkflow($level, $workflow);
+                }
+            }
         });
 
         $id = $workflow->getPublicId();
+
         $orgId = $this->app['basicauth']->getAdminOrgId();
 
         $workflow = $this->repo->workflow
@@ -84,9 +113,7 @@ class Core extends Base\Core
 
     public function delete(Entity $workflow)
     {
-        $openWorkflows = (new Action\Core)->fetchOpenWorkflows($workflow->getId());
-
-        if (count($openWorkflows) > 0)
+        if ($this->isWorkflowEditable($workflow) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
@@ -99,12 +126,18 @@ class Core extends Base\Core
 
     protected function getPermissionIds(Entity $workflow, array $permissions = [])
     {
-        $permissionIds = $workflow->permissions
-                                  ->map(function($permission) {
-                                        return $permission->getId();
-                                    })
-                                  ->toArray();
+        $permissionIds = $workflow->permissions->getRelatedIds()->toArray();
 
         return array_unique(array_merge($permissionIds, $permissions));
+    }
+
+    public function isWorkflowEditable(Entity $workflow)
+    {
+        $actions = $this->repo
+                        ->workflow_action
+                        ->fetchOpenActionsByWorkflowId($workflow->getId())
+                        ->toArray();
+
+        return (empty($actions) === true);
     }
 }

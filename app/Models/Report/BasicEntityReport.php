@@ -3,13 +3,15 @@
 namespace RZP\Models\Report;
 
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+use RZP\Exception;
+use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
-use RZP\Exception;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Trace\TraceCode;
 
 class BasicEntityReport extends Base
 {
@@ -97,9 +99,20 @@ class BasicEntityReport extends Base
 
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $fileName = $this->merchant->getId() . '_' . $this->entity . '_' . $now;
+        $merchantId = $this->merchant->getId();
+
+        $fileName = $merchantId . '_' . $this->entity . '_' . $now;
 
         $append = false;
+
+        // get or create report entity
+        $report = (new Core)->getReportEntity($from, $to, $this->entity, $input);
+
+        // set generatedAt value for report
+        // this is set as `now` because
+        // generated_at represents the time
+        // right before `getReportData` is envoked
+        $report->setGeneratedAt($now);
 
         while ($count === self::BATCH_LIMIT)
         {
@@ -112,13 +125,15 @@ class BasicEntityReport extends Base
             $append = true;
         }
 
-        $csvMimeType = 'text/csv';
+        $fileData = $this->createFileAndSave($fullpath, $fileName);
 
-        $key = 'report/' . $fileName . '.csv';
+        $signedUrl = $fileData['url'];
 
-        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
+        // set fileId/UFH
+        $report->setFileId($fileData['id']);
 
-        $signedUrl = $this->getPreSignedUrlFromAws($key);
+        // save changes to report
+        $this->repo->saveOrFail($report);
 
         if (file_exists($fullpath) === true)
         {
@@ -183,6 +198,14 @@ class BasicEntityReport extends Base
         return [$formattedData, $fetchCount];
     }
 
+    /**
+     * 1. Checks if entity is allowed for report
+     * 2. Increases system limits
+     * 3. Validates input
+     * 4. Sets timezone
+     *
+     * @param $input array
+     */
     protected function preReportProcessing(array $input)
     {
         $this->checkAllowedEntity();
@@ -194,6 +217,10 @@ class BasicEntityReport extends Base
         date_default_timezone_set('Asia/Kolkata');
     }
 
+    /**
+     * Checks if the entity is allowed
+     * to be made a report of
+     */
     protected function checkAllowedEntity()
     {
         if (in_array($this->entity, $this->allowed, true) === false)
@@ -252,5 +279,30 @@ class BasicEntityReport extends Base
     {
         RuntimeManager::setMemoryLimit('1024M');
         RuntimeManager::setTimeLimit(501);
+    }
+
+    /**
+     * Creates uploded file &
+     * Uses UFH to save file to s3
+     *
+     * @param  $filePath string
+     * @param  $fileName string
+     * @return $s3File   array containing fileId and url
+     */
+    protected function createFileAndSave($filePath, $fileName)
+    {
+        $creator = new FileStore\Creator;
+
+        $s3File = $creator->localFilePath($filePath)
+                          ->extension(FileStore\Format::CSV)
+                          ->mime('text/csv')
+                          ->name('reports/' . $fileName)
+                          ->store(FileStore\Store::S3)
+                          ->type(FileStore\Type::REPORT)
+                          ->merchant($this->merchant)
+                          ->save()
+                          ->getSignedUrl();
+
+        return $s3File;
     }
 }
