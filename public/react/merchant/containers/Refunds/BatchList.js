@@ -8,14 +8,22 @@ import ListContainer from 'merchant/containers/ListContainer';
 import BatchListFilter from 'merchant/components/Refunds/BatchListFilter';
 import { fetchBatchUploads } from 'merchant/modules/refunds/batchuploads';
 
-@connect(state => state.batchuploads, { fetchBatchUploads })
+@connect(
+  state => {
+    return {
+      mode: state.session.mode,
+      ...state.batchuploads,
+    };
+  },
+  { fetchBatchUploads }
+)
 export default class BatchListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchBatchUploads(params);
   }
 
   render() {
-    let { loading, batchuploads, error } = this.props;
+    let { loading, batchuploads, error, mode } = this.props;
 
     return (
       <div class="react-root">
@@ -37,7 +45,11 @@ export default class BatchListContainer extends ListContainer {
 
             {error && <Alert type="error" message={error} />}
 
-            <BatchList batchuploads={batchuploads} isLoading={loading} />
+            <BatchList
+              batchuploads={batchuploads}
+              isLoading={loading}
+              mode={mode}
+            />
 
             <Pager
               count={this.state.count}

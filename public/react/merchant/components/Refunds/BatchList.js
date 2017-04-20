@@ -1,13 +1,17 @@
 import TableBody from '../TableBody';
 
-const BatchUploadsListItem = ({ batchupload }) => {
+const BatchUploadsListItem = ({ batchupload, mode }) => {
   return (
     <tr>
       <td><code>{batchupload.id}</code></td>
       <td>{batchupload.total_count}</td>
       <td>{batchupload.status}</td>
       <td>
-        <a class="btn btn-default btn-xs" href={`#/app/batches/${batchupload.id}/download`} target="_blank">
+        <a
+          class="btn btn-default btn-xs"
+          href={`{mode}/batches/${batchupload.id}/download`}
+          target="_blank"
+        >
           Download
         </a>
       </td>
@@ -15,7 +19,7 @@ const BatchUploadsListItem = ({ batchupload }) => {
   );
 };
 
-export default ({ batchuploads, isLoading }) => {
+export default ({ batchuploads, isLoading, mode }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover table-striped">
@@ -34,7 +38,11 @@ export default ({ batchuploads, isLoading }) => {
           emptyTableMsg="No Batch Uploads found!"
         >
           {batchuploads.map(batchupload => (
-            <BatchUploadsListItem key={batchupload.id} batchupload={batchupload} />
+            <BatchUploadsListItem
+              key={batchupload.id}
+              batchupload={batchupload}
+              mode={mode}
+            />
           ))}
         </TableBody>
       </table>
