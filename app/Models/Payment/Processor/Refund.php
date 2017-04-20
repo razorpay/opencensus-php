@@ -675,7 +675,8 @@ trait Refund
         $refunded = false;
 
         // refund/reverse on gateway
-        if ($payment->getTransactionId() !== null)
+        if (($payment->getTransactionId() !== null) or
+            ($payment->isGatewayCaptured() === true))
         {
             $refunded = $this->refundOnGateway($data);
         }
