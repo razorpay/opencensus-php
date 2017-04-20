@@ -55,12 +55,6 @@ class DispatchRouter extends Base\Core
 
     protected function setQueueConnectionAndName(Job $job, string $configClass, array $configArray)
     {
-        //TODO : Remove it after tested on prod
-        if ($this->mode !== Mode::TEST)
-        {
-            return;
-        }
-
         $queueNameConfig = 'queue.' . $configClass . '.' . $this->mode;
 
         if (empty($configArray) === false)

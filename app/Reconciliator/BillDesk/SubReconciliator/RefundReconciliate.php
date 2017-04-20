@@ -24,6 +24,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $gatewayRefundId = $row[self::COLUMN_REFUND_ID];
 
+        if (empty($gatewayRefundId) === true)
+        {
+            return null;
+        }
+
         $billDeskRepo = $this->app['repo']->billdesk;
 
         $refundId = $billDeskRepo->findByGatewayRefundId($gatewayRefundId)->getRefundId();

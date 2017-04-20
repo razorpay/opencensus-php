@@ -189,11 +189,16 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function saveOrFail($entity, array $options = array())
     {
+        // TODO: getDirty() doesn't handle related models update. Currently there
+        // is no such use case but will come very soon. Handle the same then.
+
         $dirty = $entity->getDirty();
+
+        $esAction = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
 
         $entity->saveOrFail($options);
 
-        $this->syncToEs($entity, EsRepository::UPSERT, $dirty);
+        $this->syncToEs($entity, $esAction, $dirty);
     }
 
     public function deleteOrFail($entity)
@@ -217,9 +222,14 @@ class Repository extends \Razorpay\Spine\Repository
         return $this;
     }
 
-    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    public function attach(
+        $entity,
+        $relation,
+        array $ids = [],
+        array $attributes = [],
+        $touch = true)
     {
-        $entity->$relation()->attach($id, $attributes, $touch);
+        $entity->$relation()->attach($ids, $attributes, $touch);
 
         return $this;
     }
@@ -520,13 +530,6 @@ class Repository extends \Razorpay\Spine\Repository
      */
     protected function syncToEsDeprecated(Models\Base\PublicEntity $entity, array $dirty)
     {
-        $esFields = $this->esRepo->getFields();
-
-        if (empty(array_intersect(array_keys($dirty), $esFields)) === true)
-        {
-            return;
-        }
-
         try
         {
             $esRepoClassPath = $this->getEsRepoClassPath();
@@ -560,10 +563,6 @@ class Repository extends \Razorpay\Spine\Repository
      * Syncs model changes to es.
      * Upserts in case of addition/updates and deletes es document otherwise.
      *
-     * Has set of conditions:
-     * - Only follows if there is corresponding EsRepository class for model and
-     *   dirtied (in case of updates) fields are in list of indexed fields.
-     *
      * @param Models\Base\PublicEntity $entity
      * @param string                   $action
      * @param array                    $dirty
@@ -582,29 +581,15 @@ class Repository extends \Razorpay\Spine\Repository
             return;
         }
 
+        if ($this->isEsSyncNeeded($action, $dirty) === false)
+        {
+            return;
+        }
+
         // If entity is in old flow use the old method. To be removed later.
         if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
         {
             return $this->syncToEsDeprecated($entity, $dirty);
-        }
-
-        $esFields = $this->esRepo->getFields();
-
-        // If no es fields set, just return.
-        if (count($esFields) === 0)
-        {
-            return;
-        }
-
-        // If dirtied fields in case of update doesn't include any of the indexed
-        // field lists, return.
-        //
-        // TODO: getDirty() doesn't handle related models update. Currently there
-        // is no such use case but will come very soon. Handle the same then.
-        if (($action === EsRepository::UPSERT) and
-            (empty(array_intersect(array_keys($dirty), $esFields)) === true))
-        {
-            return;
         }
 
         try
@@ -625,13 +610,75 @@ class Repository extends \Razorpay\Spine\Repository
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::ES_SAVE_FAILED,
+                TraceCode::ES_SYNC_FAILED,
                 [
                     'entity_id' => $entity->getId(),
                     'action'    => $action,
                 ]
             );
         }
+    }
+
+    /**
+     * Checks if es sync after a model operation is needed or not.
+     *
+     * @param string $action
+     * @param array  $dirty
+     *
+     * @return bool
+     */
+    protected function isEsSyncNeeded(string $action, array $dirty): bool
+    {
+        $esFields = $this->esRepo->getFields();
+
+        // If no fields are configured to be in ES in the repository, return false.
+        if (count($esFields) === 0)
+        {
+            return false;
+        }
+
+        if ($action === EsRepository::DELETE)
+        {
+            return true;
+        }
+
+        // Checks if dirtied field($dirty) contains any of $esFields. If so, checks
+        // if they are non-empty. Eg. '{}'' json string in notes doesn't need to
+        // be indexed alone.
+
+        if (empty(array_intersect(array_keys($dirty), $esFields)) === true)
+        {
+            return false;
+        }
+
+        if ($action === EsRepository::UPDATE)
+        {
+            return true;
+        }
+
+        $shouldSync = false;
+
+        foreach ($esFields as $esField)
+        {
+            if (empty($dirty[$esField]) === false)
+            {
+                if (isJson($dirty[$esField]) === true)
+                {
+                    if (empty(json_decode($dirty[$esField], true)) === false)
+                    {
+                        $shouldSync = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    $shouldSync = true;
+                    break;
+                }
+            }
+        }
+
+        return $shouldSync;
     }
 
     /**

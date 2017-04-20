@@ -254,6 +254,7 @@ return array(
 
     'netbanking_federal' => [
         'test_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_TEST_MERCHANT_ID'),
+        'live_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_LIVE_MERCHANT_ID'),
     ],
 
     'sharp' => array(

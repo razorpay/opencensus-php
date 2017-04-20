@@ -123,7 +123,8 @@ class EsSync extends Job implements ShouldQueue
     {
         switch ($this->action)
         {
-            case Es\Repository::UPSERT:
+            case Es\Repository::CREATE:
+            case Es\Repository::UPDATE:
 
                 $document = $this->repo->findForIndexing($this->id);
 

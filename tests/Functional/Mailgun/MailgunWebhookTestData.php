@@ -11,15 +11,15 @@ return [
         'request' => [
             'content' => [
                 'X-Mailgun-Tag' => 'kotak_beneficiary_mail',
-                'recipient' => 'random@email.com',
-                'event' => 'dropped'
+                'recipient'     => 'random@email.com',
+                'event'         => 'dropped'
             ],
-            'method' => 'POST',
-            'url' => '/mailgun/callback/failure',
+            'method'  => 'POST',
+            'url'     => '/mailgun/callback/failure',
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [],
+            'content'     => [],
         ],
     ],
     'testNoEmailTag' => [
@@ -28,38 +28,52 @@ return [
                 'recipient' => 'random@email.com',
                 'event' => 'dropped'
             ],
-            'method' => 'POST',
-            'url' => '/mailgun/callback/failure',
+            'method'  => 'POST',
+            'url'     => '/mailgun/callback/failure',
         ],
         'response' => [
             'status_code' => 406,
-            'content' => [],
+            'content'     => [],
         ],
     ],
     'testEmailTagOutOfWebhookScope' => [
         'request' => [
             'content' => [
                 'X-Mailgun-Tag' => 'tag_not_in_$notifyTags',
-                'recipient' => 'random@email.com',
-                'event' => 'dropped'
+                'recipient'     => 'random@email.com',
+                'event'         => 'dropped'
             ],
-            'method' => 'POST',
-            'url' => '/mailgun/callback/failure',
+            'method'  => 'POST',
+            'url'     => '/mailgun/callback/failure',
         ],
         'response' => [
             'status_code' => 406,
-            'content' => [],
+            'content'     => [],
+        ],
+    ],
+    'testEmailBounce' => [
+        'request' => [
+            'content' => [
+                'recipient' => 'random@email.com',
+                'event'     => 'bounced'
+            ],
+            'method'  => 'POST',
+            'url'     => '/mailgun/callback/failure',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [],
         ],
     ],
     'testInvalidSignature' => [
         'request' => [
             'content' => [
                 'X-Mailgun-Tag' => 'tag_not_in_$notifyTags',
-                'recipient' => 'random@email.com',
-                'event' => 'dropped'
+                'recipient'     => 'random@email.com',
+                'event'         => 'dropped'
             ],
-            'method' => 'POST',
-            'url' => '/mailgun/callback/failure',
+            'method'  => 'POST',
+            'url'     => '/mailgun/callback/failure',
         ],
         'response'  => [
             'content'     => [

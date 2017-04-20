@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Checkout;
 use RZP\Exception;
+use RZP\Constants\Mode;
 
 class ViewDataSerializer extends Base\Core
 {
@@ -67,6 +68,9 @@ class ViewDataSerializer extends Base\Core
 
         return [
             'environment'   => $this->app->environment(),
+            // Following is sent to view for showing warning(in hosted page and
+            // emails) to avoid mis communication.
+            'is_test_mode'  => ($this->mode === Mode::TEST),
             'invoicejs_url' => $invoiceJsUrl,
             'key_id'        => $keyId,
             'merchant'      => $merchantData,

@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Admin\Role;
 
+use Config;
+
+use RZP\Constants\Table;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
@@ -54,5 +57,32 @@ class Repository extends Base\Repository
                     ->where(Entity::ORG_ID, '=', $org->getId())
                     ->where(Entity::NAME, '=', $name)
                     ->firstOrFailPublic();
+    }
+
+    public function getSuperAdminRoleByOrgId(string $orgId)
+    {
+        $name = Config::get('heimdall.default_role_name');
+
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->where(Entity::NAME, '=', $name)
+                    ->firstOrFailPublic();
+    }
+
+    public function getRolesForPermission(string $id, string $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $pmMap = Table::PERMISSION_MAP;
+
+        $rId = $this->getAttributeWithTableName(Entity::ID);
+        $rOrgId = $this->getAttributeWithTableName(Entity::ORG_ID);
+
+        return $this->newQuery()
+                    ->join($pmMap, $rId, '=', $pmMap . '.entity_id')
+                    ->where($pmMap . '.entity_type', '=', 'role')
+                    ->where($pmMap . '.permission_id', '=', $id)
+                    ->where($rOrgId, '=', $orgId)
+                    ->get();
     }
 }

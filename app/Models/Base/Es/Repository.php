@@ -24,7 +24,8 @@ class Repository extends \Razorpay\Spine\Repository
     const JOB_RELEASE_WAIT = 120;
 
     // Different actions on ES document
-    const UPSERT           = 'upsert';
+    const CREATE           = 'create';
+    const UPDATE           = 'update';
     const DELETE           = 'delete';
 
     // Some common query params while searching in ES

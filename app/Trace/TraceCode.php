@@ -628,7 +628,12 @@ class TraceCode
     const REMOVE_GATEWAY_PRIORITY_REQUEST               = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const REDIS_DATA_FETCHED                            = 'REDIS_DATA_FETCHED';
 
-    // Trace codes for gateway
+// Trace codes for Merchant Reports
+
+    const REPORT_CREATE_REQUEST                         = 'REPORT_CREATE_REQUEST';
+    const REPORT_ENTITY_FETCH_REQUEST                   = 'REPORT_ENTITY_FETCH_REQUEST';
+
+// Trace codes for gateway
     const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
     const USER_EDIT                                     = 'USER_EDIT';
 

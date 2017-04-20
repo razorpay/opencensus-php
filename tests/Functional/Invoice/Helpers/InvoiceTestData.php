@@ -215,6 +215,32 @@ return [
         'response' => [],
     ],
 
+    'testCreateLinkWithTooLargeAmount' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                // Max allowed amount for test merchant is 50000000.
+                'amount'      => 60000000,
+                'description' => 'Sample Description',
+                'type'        => 'link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invoice amount exceeds maximum payment amount allowed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateInvoiceWithMultipleLineItems' => [
         'request' => [
             'url' => '/invoices',
@@ -541,6 +567,41 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Operation not allowed for Invoice in draft status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateDraftInvoiceWithLineItemsAndMaxAllowedAmount' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'line_items' => [
+                    [
+                        'name'     => "Line item #1",
+                        'amount'   => 10000000,
+                        'quantity' => 4,
+                    ],
+                    [
+                        'name'     => "Line item #2",
+                        'amount'   => 15000000,
+                        'quantity' => 2,
+                    ],
+                ],
+                'type' => 'invoice',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invoice amount exceeds maximum payment amount allowed.',
                 ],
             ],
             'status_code' => 400,
@@ -1246,6 +1307,35 @@ return [
         ]
     ],
 
+    'testUpdateDraftInvoiceWithLineItemsTooLargeAmount' => [
+        'request' => [
+            'url'    => '/invoices/inv_1000000invoice',
+            'method' => 'patch',
+            'content' => [
+                'line_items' => [
+                    [
+                        'name' => 'Costly line item',
+                        'quantity' => 1,
+                        'amount' => 60000000,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invoice amount exceeds maximum payment amount allowed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testUpdateDraftInvoiceAmountWhenLineItemsExists' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
@@ -1800,7 +1890,7 @@ return [
             'url'       => '/invoices/inv_1000000invoice/line_items/li_100000lineitem',
             'method'    => 'patch',
             'content'   => [
-                'quantity'    => 1000,
+                'quantity'    => 10,
                 'description' => 'Some different description from item template'
             ],
         ],
@@ -1818,7 +1908,7 @@ return [
                 'order_id'         => null,
                 'line_items'       => [
                     [
-                        'quantity'         => 1000,
+                        'quantity'         => 10,
                         'name'             => 'Some item name',
                         'description'      => 'Some different description from item template',
                         'amount'           => 100000,
@@ -1827,7 +1917,7 @@ return [
                 ],
                 'payment_id'       => null,
                 'status'           => 'draft',
-                'amount'           => 100000000,
+                'amount'           => 1000000,
                 'currency'         => 'INR',
             ]
         ]

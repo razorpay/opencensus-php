@@ -151,7 +151,7 @@ class Workflow
 
     private function getRoutePermissions($routeName)
     {
-        $adminAuthRoutes = Route::$adminPermission;
+        $adminAuthRoutes = Route::$routePermission;
 
         if ((isset($adminAuthRoutes[$routeName]) === false) or
             (in_array(self::WILDCARD_PERMISSION, $adminAuthRoutes[$routeName], true) === true))
