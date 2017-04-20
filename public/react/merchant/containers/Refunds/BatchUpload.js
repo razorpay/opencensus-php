@@ -53,7 +53,7 @@ export default class BatchUpload extends Component {
 
         <div class="content-wrapper">
           <div class="row">
-            <div class="col-md-6 col-md-offset-3 col-sm-12">
+            <div class="col-md-8 col-md-offset-2 col-sm-12">
               <div class="panel panel-default">
                 <div class="panel-heading">
                   Refunds File Upload - {this.props.modeFormatted} Mode
@@ -100,6 +100,7 @@ export default class BatchUpload extends Component {
                     <div class="text-center">
                       <AsyncButton
                         class="btn btn-primary"
+                        type="button"
                         text="Submit"
                         pendingText="Submitting..."
                         disabled={!this.state.file}
