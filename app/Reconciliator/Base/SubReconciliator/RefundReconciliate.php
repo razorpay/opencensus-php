@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Base\PublicEntity;
 
 use App;
 use RZP\Trace\TraceCode;
@@ -85,7 +86,9 @@ class RefundReconciliate extends Foundation\SubReconciliate
         {
             $this->runPreReconciledAtCheckRecon($rowDetails);
 
-            $this->persistRrnForRow($row);
+            $this->persistRefundRrn($rowDetails);
+
+            $this->persistGatewayData($rowDetails);
 
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
@@ -255,9 +258,12 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
+        $rrn = $this->getRrn($row);
+
         $rowDetails = [
             BaseReconciliate::REFUND_ID             => $refundId,
             BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
+            BaseReconciliate::RRN                   => $rrn,
         ];
 
         return $rowDetails;
@@ -401,7 +407,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * @param $row array
      * @return null
      */
-    protected function getRRN(array $row)
+    protected function getRrn(array $row)
     {
         return null;
     }
@@ -411,14 +417,61 @@ class RefundReconciliate extends Foundation\SubReconciliate
      *
      * @param $row array
      */
-    protected function persistRrnForRow(array $row)
+    protected function persistRefundRrn(array $rowDetails)
     {
-        $rrn = $this->getRRN($row);
+        if (empty($rowDetails[BaseReconciliate::RRN]) === true)
+        {
+            return;
+        }
+
+        $rrn = $rowDetails[BaseReconciliate::RRN];
 
         $refund = $this->refund;
 
-        $refund->setRRN($rrn);
+        $refund->setRrn($rrn);
 
         $this->repo->saveOrFail($refund);
+    }
+
+    protected function persistGatewayData(array $rowDetails)
+    {
+        $gatewayRefund = $this->getGatewayRefund($this->refund->getId());
+
+        $this->persistGatewayRrn($rowDetails, $gatewayRefund);
+    }
+
+    /**
+     * Getting the gatewayRefund associated with payment entity.
+     * It is implemented in the child class.
+     *
+     * NOTE: If this is being implemented in the child class,
+     * ensure that the relevant setters are implemented in the entity.
+     */
+    protected function getGatewayRefund(string $refundId)
+    {
+        return null;
+    }
+
+    /**
+     * Sets the rrn number in the corresponding gateway
+     *
+     * @param $rowDetails array
+     * @param $gatewayRefund PublicEntity
+     */
+    protected function persistGatewayRrn(array $rowDetails, PublicEntity $gatewayRefund)
+    {
+        if (empty($rowDetails[BaseReconciliate::RRN]) === true)
+        {
+            return;
+        }
+
+        $rrn = $rowDetails[BaseReconciliate::RRN];
+
+        $this->setRrnInGateway($rrn, $gatewayRefund);
+    }
+
+    protected function setRrnInGateway(string $rrn, PublicEntity $gatewayRefund)
+    {
+        return;
     }
 }

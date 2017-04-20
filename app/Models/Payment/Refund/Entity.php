@@ -219,7 +219,7 @@ class Entity extends Base\PublicEntity
             Payment\Entity::getIdPrefix() . $this->getAttribute(self::PAYMENT_ID);
     }
 
-    public function setRRN(string $rrn)
+    public function getRrn(string $rrn)
     {
         $this->setAttribute(self::RRN, $rrn);
     }

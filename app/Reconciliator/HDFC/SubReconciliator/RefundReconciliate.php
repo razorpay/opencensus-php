@@ -39,10 +39,29 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $paymentId;
     }
 
-    protected function getRRN(array $row)
+    protected function getRrn(array $row)
     {
+        if (empty($row[self::COLUMN_RRN]) === true)
+        {
+            return null;
+        }
+
         $rrn = $row[self::COLUMN_RRN];
 
         return $rrn;
+    }
+
+    protected function getGatewayRefund(string $refundId)
+    {
+        $gatewayEntities = $this->repo->hdfc->findSuccessfulRefundByRefundId($refundId);
+
+        $refundEntity = $gatewayEntities->first();
+
+        return $refundEntity;
+    }
+
+    protected function setRrnInGateway(string $rrn, PublicEntity $gatewayRefund)
+    {
+        $gatewayRefund->setArnNo($rrn);
     }
 }
