@@ -77,8 +77,6 @@ class SlackNotifier:
 
     def notify(self, message):
         slackMessage = self.formatSlackMessage(message)
-        print slackMessage
-        sys.exit(0)
         try:
             r = requests.post(self.url, data=json.dumps(slackMessage))
             r.raise_for_status()
@@ -204,6 +202,4 @@ class MergeCommitParser:
 
 if __name__ == "__main__":
     parser = MergeCommitParser()
-    #deploy_details = parser.getDeployDetails()
-    # print deploy_details
     parser.getDeployDetailsAndNotifySlack()
