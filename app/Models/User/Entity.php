@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const MERCHANTS             = 'merchants';
     const ROLE                  = 'role';
     const OWNER                 = 'owner';
+    const CONFIRMED             = 'confirmed';
 
     protected $entity = 'user';
 
@@ -42,10 +43,13 @@ class Entity extends Base\PublicEntity
     	self::NAME,
     	self::EMAIL,
     	self::CONTACT_MOBILE,
+        self::CONFIRMED,
     	self::CREATED_AT,
     ];
 
     protected $generateIdOnCreate = false;
+
+    protected $appends = ['confirmed'];
 
     public function merchants()
     {
@@ -62,5 +66,10 @@ class Entity extends Base\PublicEntity
     public function getPassword()
     {
         return $this->getAttribute(self::PASSWORD);
+    }
+
+    public function getConfirmedAttribute()
+    {
+        return ($this->getAttribute(self::CONFIRM_TOKEN) === null);
     }
 }
