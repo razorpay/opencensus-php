@@ -26,8 +26,8 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->join(Table::MERCHANT_USERS, Entity::ID, '=', 'merchant_users.user_id')
-                    ->whereIn('merchant_users.merchant_id', $merchantId)
-                    ->whereIn('merchant_users.role', Entity::OWNER)
+                    ->where('merchant_users.merchant_id', '=', $merchantId)
+                    ->where('merchant_users.role', '=', Entity::OWNER)
                     ->get();
     }
 }

@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const ACTION                = 'action';
     const USER_ID               = 'user_id';
     const MERCHANT_ID           = 'merchant_id';
+    const MERCHANTS             = 'merchants';
     const ROLE                  = 'role';
     const OWNER                 = 'owner';
 

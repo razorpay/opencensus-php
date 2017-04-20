@@ -30,16 +30,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $actionRules = [
-        Entity::ACTION            => 'required|custom',
-        Entity::MERCHANT_ID       => 'required|max:14',
-        Entity::ROLE              => 'required|string',
+        Entity::ACTION                => 'required|custom',
+        Entity::MERCHANT_ID           => 'required|max:14',
+        Entity::ROLE                  => 'required|string',
     ];
 
     protected static $loginRules = [
         Entity::EMAIL                 => 'required|email',
         Entity::PASSWORD              => 'required|between:6,50',
     ];
-
 
     protected function validateAction(string $attribute, string $action)
     {

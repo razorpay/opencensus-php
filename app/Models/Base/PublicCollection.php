@@ -63,6 +63,15 @@ class PublicCollection extends Collection
         return $this->itemsToArrayPublic();
     }
 
+    public function toArrayUserRole()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArray();
+
+        }, $this->items);
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)

@@ -52,7 +52,6 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-
     public function loginUser()
     {
         $input = Request::all();
@@ -64,7 +63,9 @@ class UserController extends Controller
 
     public function getUser(string $id)
     {
-        $data = (new User\Service)->get($id);
+        $input = Request::all();
+
+        $data = (new User\Service)->get($id, $input);
 
         return ApiResponse::json($data);
     }

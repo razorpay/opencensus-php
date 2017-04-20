@@ -300,41 +300,7 @@ class Repository extends Base\Repository
                       ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
                       ->whereIn(Entity::ID, $merchantIds);
 
-        switch (true)
-        {
-            case (empty($input['suspended']) === false):
-                $query = $query->whereNotNull(Entity::SUSPENDED_AT);
-                break;
-
-            case (empty($input['archived']) === false):
-                $query = $query->whereNotNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['activated']) === false):
-                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['pending']) === false):
-                $query = $query->whereNull(Entity::ACTIVATED_AT)
-                               ->whereNotNull($submittedAt)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['dead']) === false):
-                $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
-                               ->whereNull($submittedAt)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            default:
-                $query = $query->whereNull(Entity::ARCHIVED_AT)
-                               ->whereNull(Entity::SUSPENDED_AT);
-                break;
-        }
+        $this->modifyQuery($query, $input);
 
         // Marketplace accounts filter
         if (empty($input['sub_accounts']) === false)
@@ -396,5 +362,66 @@ class Repository extends Base\Repository
         return $query->take($count)
                      ->skip($skip)
                      ->get();
+    }
+
+    public function getMerchantsForUser(string $userId, array $input)
+    {
+        $query = $this->newQuery()
+                      ->select(Entity::ID,
+                               Entity::NAME,
+                               Entity::EMAIL,
+                               Entity::ACTIVATED,
+                               Entity::ARCHIVED_AT,
+                               Entity::SUSPENDED_AT,
+                               'merchants.created_at',
+                               'merchants.updated_at',
+                               'merchant_users.role'
+                        )
+                      ->join(Table::MERCHANT_USERS, Entity::ID, '=', 'merchant_users.merchant_id')
+                      ->where('merchant_users.user_id', '=', $userId);
+
+        $this->modifyQuery($query, $input);
+
+        return $query->orderBy(Entity::NAME, 'asc')
+                     ->get();
+    }
+
+    protected function modifyQuery($query, array $input)
+    {
+        switch (true)
+        {
+            case (empty($input['suspended']) === false):
+                $query = $query->whereNotNull(Entity::SUSPENDED_AT);
+                break;
+
+            case (empty($input['archived']) === false):
+                $query = $query->whereNotNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['activated']) === false):
+                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['pending']) === false):
+                $query = $query->whereNull(Entity::ACTIVATED_AT)
+                               ->whereNotNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['dead']) === false):
+                $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
+                               ->whereNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            default:
+                $query = $query->whereNull(Entity::ARCHIVED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT);
+                break;
+        }
     }
 }

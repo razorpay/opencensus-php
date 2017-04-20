@@ -82,9 +82,17 @@ class Core extends Base\Core
         return $user;
     }
 
-    public function get(Entity $user)
+    public function get(string $userId, array $input)
     {
+        $user = $this->repo->user->findOrFail($userId);
 
+        $merchants = $this->repo->merchant->getMerchantsForUser($userId, $input)->toArrayUserRole();
+
+        $userArray = $user->toArrayPublic();
+
+        $userArray[Entity::MERCHANTS] = $merchants;
+
+        return $userArray;
     }
 
     protected function attach(Entity $user, array $input)
@@ -99,12 +107,12 @@ class Core extends Base\Core
 
         $merchantId = $input[Entity::MERCHANT_ID];
 
-        $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams]);
+        $this->repo->sync($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
     }
 
     protected function detach(Entity $user, array $input)
     {
-        $this->repo->detach($user, 'merchants', $input[Entity::MERCHANT_ID]);
+        $this->repo->detach($user, Entity::MERCHANTS, $input[Entity::MERCHANT_ID]);
     }
 
     protected function update(Entity $user, array $input)
@@ -118,6 +126,6 @@ class Core extends Base\Core
 
         $merchantId = $input[Entity::MERCHANT_ID];
 
-        $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams]);
+        $this->repo->sync($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
     }
 }
