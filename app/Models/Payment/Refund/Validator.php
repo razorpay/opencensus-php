@@ -44,7 +44,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRefund2Gateways = [
-        Payment\Gateway::BILLDESK,
+        Payment\Gateway::CYBERSOURCE,
     ];
 
     protected $payment;

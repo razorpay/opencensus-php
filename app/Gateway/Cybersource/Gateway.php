@@ -435,7 +435,7 @@ class Gateway extends Base\Gateway
         return $this->fetchGatewayReplyFromContent($content, ['ics_auth']);
     }
 
-    protected function fetchGatewayReplyFromContent($content, $type)
+    protected function fetchGatewayReplyFromContent($content, array $types)
     {
         $requests = $content[F::REQUESTS][F::REQUEST] ?? null;
 
@@ -457,7 +457,7 @@ class Gateway extends Base\Gateway
 
                 foreach($applicationReplies as $applicationReply)
                 {
-                    if (in_array($applicationReply['@attributes'][F::NAME], $type, true))
+                    if (in_array($applicationReply['@attributes'][F::NAME], $types, true))
                     {
                         return [$applicationReply, $request];
                     }
