@@ -237,15 +237,18 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        list($refundReply, $requestContent) = $this->fetchRefundGatewayReplyFromContent($content);
+        $refundReplies = $this->fetchRefundGatewayReplyFromContent($content);
 
-        if ((isset($refundReply[F::R_FLAG]) === false) or
-            ($refundReply[F::R_FLAG] !== ReplyFlag::SOK))
+        foreach ($refundReplies as $refundReply)
         {
-            return true;
+            if ((isset($refundReply[0][F::R_FLAG]) === true) and
+                ($refundReply[0][F::R_FLAG] === ReplyFlag::SOK))
+            {
+                return false;
+            }
         }
 
-        return false;
+        return true;
     }
 
     protected function sendRefundVerifyRequest($input)
@@ -331,13 +334,20 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestContent(array $input)
     {
-        return $this->getVerifyRequestContent($input, 'refund');
+        $request = $this->getVerifyRequestContent($input, 'refund');
+
+        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'UTC')
+                            ->format('Ymd');
+
+        $request['content'][F::TARGET_DATE] = $targetDate;
+
+        return $request;
     }
 
     protected function getVerifyRequestContent(array $input, $entity)
     {
         $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'UTC')
-                                ->format('Ymd');
+                            ->format('Ymd');
 
         $content = [
             F::TYPE                      => 'transaction',
@@ -432,12 +442,14 @@ class Gateway extends Base\Gateway
 
     protected function fetchPaymentGatewayReplyFromContent($content)
     {
-        return $this->fetchGatewayReplyFromContent($content, ['ics_auth']);
+        return $this->fetchGatewayReplyFromContent($content, ['ics_auth'])[0];
     }
 
     protected function fetchGatewayReplyFromContent($content, array $types)
     {
         $requests = $content[F::REQUESTS][F::REQUEST] ?? null;
+
+        $response[] = [[], []];
 
         if ($requests !== null)
         {
@@ -459,13 +471,13 @@ class Gateway extends Base\Gateway
                 {
                     if (in_array($applicationReply['@attributes'][F::NAME], $types, true))
                     {
-                        return [$applicationReply, $request];
+                        $response[] = [$applicationReply, $request];
                     }
                 }
             }
         }
 
-        return [[], []];
+        return $response;
     }
 
     /**
