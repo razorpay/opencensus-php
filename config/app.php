@@ -162,7 +162,7 @@ return array(
         RZP\Services\ApiServiceProvider::class,
         RZP\Providers\EventServiceProvider::class,
         RZP\Providers\RouteServiceProvider::class,
-        RZP\Providers\MailerServiceProvider::class,
+        RZP\Services\MailServiceProvider::class,
         RZP\Http\BasicAuth\ServiceProvider::class,
         RZP\Trace\TraceServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
