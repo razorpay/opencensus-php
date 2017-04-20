@@ -296,10 +296,6 @@ return [
         'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
         // Generate Refunds Excel (Netbanking)
         'refund_netbanking_generate_excel'  => 'refunds/netbanking/excel',
-        // Generate Beneficiary File
-        'merchant_beneficiary_file'         => 'merchants/beneficiary/file',
-        // Initiate Settlement
-        'setl_initiate'                     => 'settlements/initiate/{channel?}',
         // Trigger Dummy Error
         'dummy_critical_error'              => 'trigger/error',
 

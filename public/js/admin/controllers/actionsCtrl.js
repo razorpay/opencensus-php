@@ -11,31 +11,6 @@ app.controller('ActionsCtrl', [
       $scope.admin = data;
       $scope.response = null;
       $scope.alerts = alertsFactory.getHandler();
-      $scope.initiateSetl = function (channel) {
-        var data = {
-          route_name: 'setl_initiate',
-          url_params: {
-            '{channel?}' : channel
-          }
-        };
-        var request = $http({
-          method: 'post',
-          url: '/admin/generic',
-          data: data
-        });
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Settlement initiated successfully. Response: ' + JSON.stringify(data.data), true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
       $scope.addIIN = function (iin) {
         iin.emi = iin.emi ? 1 : 0;
 
@@ -245,14 +220,6 @@ app.controller('ActionsCtrl', [
           $scope.alerts.addAlert('danger', null, true);
         });
       };
-      $scope.openInitiateSetl = function () {
-        var modalInstance = $modal.open({
-          templateUrl: 'initiateSetlModalContent.html',
-          controller: 'initiateSetlModalCtrl'
-        });
-        modalInstance.result.then($scope.initiateSetl, $.noop);
-      };
-
       $scope.openSetlUpload = function () {
         var modalInstance = $modal.open({
           templateUrl: 'uploadSetlRecon.html',
@@ -370,41 +337,7 @@ app.controller('ActionsCtrl', [
           }
         }, $.noop);
       };
-      $scope.downloadBeneficiaryFile = function () {
-        $scope.date = moment().format('yyyy-MM-dd');
-        var modalInstance = $modal.open({
-          templateUrl: 'downloadBeneficiaryFile.html',
-          controller: 'downloadBeneficiaryFileCtrl'
-        });
-        modalInstance.result.then(function (date) {
-          if (date) {
-            window.open('/admin/beneficiary/dl');
-          } else {
-            window.open('/admin/beneficiary/dl?date=' + date);
-          }
-        }, $.noop);
-      };
-      $scope.generateBeneficiaryFile = function () {
-        var request = $http.get('/admin/generic', {
-          params: {
-            route_name: 'merchant_beneficiary_file'
-          }
-        });
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Beneficary file generated successfully', true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
     });
-
     $scope.openConfirmUser = function () {
       var modalInstance = $modal.open({
         templateUrl: 'confirmUserModal.html',
@@ -437,39 +370,6 @@ app.controller('ActionsCtrl', [
         }
       }, $.noop);
     };
-    $scope.downloadBeneficiaryFile = function () {
-      $scope.date = moment().format('yyyy-MM-dd');
-      var modalInstance = $modal.open({
-        templateUrl: 'downloadBeneficiaryFile.html',
-        controller: 'downloadBeneficiaryFileCtrl'
-      });
-      modalInstance.result.then(function (date) {
-        if (date) {
-          window.open('/admin/beneficiary/dl');
-        } else {
-          window.open('/admin/beneficiary/dl?date=' + date);
-        }
-      }, $.noop);
-    };
-    $scope.generateBeneficiaryFile = function () {
-      var request = $http.get('/admin/generic', {
-        params: {
-          route_name: 'merchant_beneficiary_file'
-        }
-      });
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Beneficary file generated successfully', true);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-    };
     $scope.openAddSchedule = function() {
       var modalInstance = $modal.open({
         templateUrl: 'addScheduleModalContent.html',
@@ -499,18 +399,6 @@ app.controller('ActionsCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    };
-  }
-]).controller('initiateSetlModalCtrl', [
-  '$scope',
-  '$modalInstance',
-  '$http',
-  function ($scope, $modalInstance, $http) {
-    $scope.ok = function (channel) {
-      $modalInstance.close(channel);
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
     };
   }
 ]).controller('addIINModalCtrl', [
@@ -625,18 +513,6 @@ app.controller('ActionsCtrl', [
         msg: msg,
         template: template
       });
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
-  }
-]).controller('downloadBeneficiaryFileCtrl', [
-  '$scope',
-  '$modalInstance',
-  '$http',
-  function ($scope, $modalInstance, $http) {
-    $scope.ok = function (date) {
-      $modalInstance.close(date);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
