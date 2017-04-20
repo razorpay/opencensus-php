@@ -191,7 +191,7 @@ class InvoiceAction extends Job implements ShouldQueue
 
         if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
         {
-            $this->deleted();
+            $this->delete();
         }
         else
         {
