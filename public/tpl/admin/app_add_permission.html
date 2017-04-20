@@ -55,7 +55,7 @@
             </div>
 
             <!-- Organizations -->
-            <div class="form-group" ng-if="localOrgs || organizations">
+            <div class="form-group" ng-if="organizations">
               <div class="col-lg-3 control-label">Organizations</div>
               <div class="col-lg-8 scrollable-table">
                 <table ui-jq="footable" data-page-size="10000" class="table table-striped b-t b-light">
@@ -66,23 +66,18 @@
                       </th>
                       <th>Business Name</th>
                       <th>Display Name</th>
-                      <th>Email</th>
-                      <th>Email Domains</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr ng-repeat="row in organizations">
+                    <tr ng-repeat="org in organizations">
                       <td>
                         <input type="checkbox" name='organizations[]'
-                               ng-model="localOrgs[row.id]"
-                               ng-checked="localOrgs[row.id]"
-                               ng-change="updateSelAllTag(row.id)"
-                               ng-disabled="row.id.localeCompare(RZid) === 0 && freezeRZ">
+                               ng-model="selected_organizations[org.id]"
+                               ng-checked="selected_organizations[org.id]"
+                               ng-change="updateSelAllTag(org.id)">
                       </td>
-                      <td>{{row.business_name}}</td>
-                      <td>{{row.display_name}}</td>
-                      <td>{{row.email}}</td>
-                      <td>{{row.email_domains.join(', ')}}</td>
+                      <td>{{org.business_name}}</td>
+                      <td>{{org.display_name}}</td>
                     </tr>
                   </tbody>
                 </table>
