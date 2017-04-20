@@ -75,6 +75,9 @@ app.controller('WorkflowNewCtrl', [
         params: {
           route_name: 'permission_get_multiple',
           count: 1000 /* A very high number, todo discuss with Rishabh */,
+          url_params: {
+            '{type}': 'workflow'
+          }
         },
       });
 
