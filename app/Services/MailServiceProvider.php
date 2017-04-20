@@ -2,20 +2,11 @@
 
 namespace RZP\Services;
 
-use Swift_Mailer;
-use Illuminate\Mail\TransportManager;
 use RZP\Services\Mailer;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Mail\MailServiceProvider as LaravelMailServiceProvider;
 
-class MailServiceProvider extends ServiceProvider
+class MailServiceProvider extends LaravelMailServiceProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = true;
-
     /**
      * Register the service provider.
      *
@@ -57,63 +48,5 @@ class MailServiceProvider extends ServiceProvider
 
             return $mailer;
         });
-    }
-
-    /**
-     * Set a few dependencies on the mailer instance.
-     *
-     * @param  \Illuminate\Mail\Mailer  $mailer
-     * @param  \Illuminate\Foundation\Application  $app
-     * @return void
-     */
-    protected function setMailerDependencies($mailer, $app)
-    {
-        $mailer->setContainer($app);
-
-        if ($app->bound('queue'))
-        {
-            $mailer->setQueue($app['queue.connection']);
-        }
-    }
-
-    /**
-     * Register the Swift Mailer instance.
-     *
-     * @return void
-     */
-    public function registerSwiftMailer()
-    {
-        $this->registerSwiftTransport();
-
-        // Once we have the transporter registered, we will register the actual Swift
-        // mailer instance, passing in the transport instances, which allows us to
-        // override this transporter instances during app start-up if necessary.
-        $this->app['swift.mailer'] = $this->app->share(function ($app)
-        {
-            return new Swift_Mailer($app['swift.transport']->driver());
-        });
-    }
-
-    /**
-     * Register the Swift Transport instance.
-     *
-     * @return void
-     */
-    protected function registerSwiftTransport()
-    {
-        $this->app['swift.transport'] = $this->app->share(function ($app)
-        {
-            return new TransportManager($app);
-        });
-    }
-
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return ['mailer', 'swift.mailer', 'swift.transport'];
     }
 }
