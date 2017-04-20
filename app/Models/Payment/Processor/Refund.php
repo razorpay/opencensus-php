@@ -41,10 +41,9 @@ trait Refund
     public function createRefundOnApiFromRecon(
         Payment\Entity $payment,
         string $refundId,
-        int $refundAmount,
-        string $rrn = null)
+        int $refundAmount)
     {
-        $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount, $rrn);
+        $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
 
     public function createRefundOnApiForCancelledBilldeskRefund(
@@ -854,8 +853,7 @@ trait Refund
     protected function createRefundOnApiSeparately(
         Payment\Entity $payment,
         string $refundId,
-        int $refundAmount,
-        string $rrn = null)
+        int $refundAmount)
     {
         if ($payment->transaction === null)
         {
@@ -864,8 +862,7 @@ trait Refund
         }
 
         $input = [
-            'amount' => $refundAmount,
-            'rrn'    => $rrn
+            'amount' => $refundAmount
         ];
 
         $refund = $this->buildRefundEntity($payment, $input);

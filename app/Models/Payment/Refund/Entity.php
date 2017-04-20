@@ -43,8 +43,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
-        self::NOTES,
-        self::RRN
+        self::NOTES
     ];
 
     protected $visible = [
@@ -218,6 +217,11 @@ class Entity extends Base\PublicEntity
     {
         $array[self::PAYMENT_ID] =
             Payment\Entity::getIdPrefix() . $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function setRRN(string $rrn)
+    {
+        $this->setAttribute(self::RRN, $rrn);
     }
 
     public function getGateway()

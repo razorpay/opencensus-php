@@ -224,10 +224,15 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
-        $refundId = $refund->getId();
+        // Set RRN for refund, if present
+        $rrn = $this->getRRN($row);
+
+        $refund->setRRN($rrn);
 
         // Sets the corresponding payment for the refund.
         $this->payment = $this->refund->payment;
+
+        $refundId = $refund->getId();
 
         // If payment is not present, return. There's something wrong with this transaction.
         if (empty($this->payment) === true)
@@ -343,8 +348,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $refundAmount = $this->getRefundAmount($row);
 
-        $rrn = $this->getRRN($row);
-
         if (($paymentId === null) or ($refundAmount === null))
         {
             $this->trace->info(
@@ -354,7 +357,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message' => 'Unable to get the payment ID or amount from the refund recon file',
                     'refund_id' => $refundId,
                     'refund_amount' => $refundAmount,
-                    'rrn' => $rrn,
                     'payment_id' => $paymentId,
                 ]);
 
@@ -369,7 +371,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         try
         {
-            $processor->createRefundOnApiFromRecon($payment, $refundId, $refundAmount, $rrn);
+            $processor->createRefundOnApiFromRecon($payment, $refundId, $refundAmount);
         }
         catch (\Exception $ex)
         {
