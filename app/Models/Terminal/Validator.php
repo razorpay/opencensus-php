@@ -237,7 +237,6 @@ class Validator extends Base\Validator
 
     protected static $netbankingFederalTerminalRules = [
         Entity::GATEWAY                     => 'required|in:netbanking_federal',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string'
     ];
 
     protected function validateGateway($input)
