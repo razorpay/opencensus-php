@@ -81,4 +81,18 @@ class Validator extends Base\Validator
                 $data);
         }
     }
+
+    public function validateActionIsOpen(Entity $action = null)
+    {
+        if ($action === null)
+        {
+            $action = $this->entity;
+        }
+
+        if ($action->isClosed() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSED);
+        }
+    }
 }
