@@ -20,9 +20,9 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      * @param $row array
      * @return string
      */
-    protected function getReconciliationTypeForRow($row)
+    protected function getReconciliationTypeForRow(array $row)
     {
-        if ($row[self::REFUND_TXN_COLUMN] !== (float) 0)
+        if ($row[self::REFUND_TXN_COLUMN] !== 0.0)
         {
             return BaseReconciliate::REFUND;
         }

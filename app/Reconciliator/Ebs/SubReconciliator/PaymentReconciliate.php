@@ -20,7 +20,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param $row array
      * @return $paymentId string
      */
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
@@ -33,11 +33,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param $row array
      * @return $paymentAmount integer
      */
-    protected function getGatewayPaymentAmount($row)
+    protected function getGatewayPaymentAmount(array $row)
     {
         $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
 
-        return abs(intval(number_format($paymentAmount, 2, '.', '')));
+        return abs($paymentAmount);
     }
 
     /**
@@ -46,7 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param $row array
      * @return $serviceTax float
      */
-    protected function getGatewayServiceTax($row)
+    protected function getGatewayServiceTax(array $row)
     {
         // Convert service tax into paise
         $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
@@ -60,7 +60,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param $row array
      * @return $fee float
      */
-    protected function getGatewayFee($row)
+    protected function getGatewayFee(array $row)
     {
         // Convert fee into basic unit of currency (ex: paise)
         $fee = floatval($row[self::COLUMN_FEE]) * 100;
@@ -74,7 +74,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     }
 
-    protected function getReferenceNumber($row)
+    protected function getReferenceNumber(array $row)
     {
         $referenceNumber = $row[self::COLUMN_BANK_REFERENCE_NO];
 
