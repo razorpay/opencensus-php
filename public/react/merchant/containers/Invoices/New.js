@@ -141,7 +141,8 @@ export default class InvoicesNewContainer extends Component {
   }
 
   getMerchantInfo() {
-    return this.props.fetchConfig().then((config) => {
+    return this.props.fetchConfig().then((response) => {
+      let config = response.data
       let user = this.props.session.user
       let merchant = user.merchants[user.current]
       let logoUrl = ''
