@@ -1,6 +1,8 @@
 export default ({ label, value }) => {
   if (value === null || value === undefined) {
     value = 'None'
+  } else if (value === '') {
+    value = '--'
   }
 
   return (

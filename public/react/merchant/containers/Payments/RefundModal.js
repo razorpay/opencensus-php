@@ -179,11 +179,11 @@ export default class RefundModal extends Component {
             <div class='form-group'>
               <div class='col-md-8 col-md-offset-3'>
                 The payment will be {this.props.partial ? 'partially ' : 'completely '}
-                refunded with the refund amount set to {
+                refunded with the refund amount set to <b>{
                   (this.props.partial ?
                   this.props.payable_amount :
                   (payment.amount - payment.amount_refunded)/100) || 0
-                } INR
+                } INR</b>
               </div>
             </div>
           </div>
