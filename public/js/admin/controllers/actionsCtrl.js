@@ -11,32 +11,17 @@ app.controller('ActionsCtrl', [
       $scope.admin = data;
       $scope.response = null;
       $scope.alerts = alertsFactory.getHandler();
-      $scope.initiateSetl = function (channel) {
-        var request = $http({
-          method: 'post',
-          url: '/admin/settlement/initiate/' + channel
-        });
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Settlement initiated successfully. Response: ' + JSON.stringify(data.data), true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
       $scope.addIIN = function (iin) {
         iin.emi = iin.emi ? 1 : 0;
 
+        var data = {
+          route_name: 'iin_add',
+          body: iin
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/iin/add',
-          transformRequest: transformRequestAsFormPost,
-          data: iin
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -52,11 +37,14 @@ app.controller('ActionsCtrl', [
         });
       };
       $scope.addEMI = function (emi) {
+        var data = {
+          route_name: 'emi_plan_add',
+          body: emi
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/emi',
-          transformRequest: transformRequestAsFormPost,
-          data: emi
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -71,30 +59,16 @@ app.controller('ActionsCtrl', [
           $scope.alerts.addAlert('danger', null, true);
         });
       };
-      $scope.verifyAllPayments = function () {
-        var request = $http({
-          method: 'POST',
-          url: '/admin/payments/verify'
-        });
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Payments Verified successfully ' + JSON.stringify(data.data), true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
       $scope.generateNetBankingRefunds = function (params) {
-        var url = 'admin/' + params.mode + '/refunds/netbanking';
+        var data = {
+          route_name: 'refund_netbanking_generate_excel',
+          body: params,
+          mode: params.mode
+        };
         var request = $http({
-          method: 'POST',
-          url: url,
-          data: params
+          method: 'post',
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -219,30 +193,18 @@ app.controller('ActionsCtrl', [
         });
 
       };
-
-      $scope.verifyPayment = function (payment_id) {
-        var request = $http({
-          method: 'get',
-          url: '/admin/payment/' + payment_id + '/verify'
-        });
-        request.success(function (data) {
-          if (data.success) {
-            var payment = JSON.stringify(data.data.payment);
-            $scope.alerts.addAlert('success', 'Payment Verified successfully: ' + payment, true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
       $scope.authorizeFailedPayment = function (payment_id, mode) {
+        var data = {
+          route_name: 'payment_authorize_failed',
+          url_params: {
+            '{id}' : payment_id
+          },
+          mode: mode
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/' + mode + '/payments/' + payment_id + '/authorize_failed'
+          url: '/admin/generic',
+          data: data
         });
         request.success(function (data) {
           if (data.success) {
@@ -258,14 +220,6 @@ app.controller('ActionsCtrl', [
           $scope.alerts.addAlert('danger', null, true);
         });
       };
-      $scope.openInitiateSetl = function () {
-        var modalInstance = $modal.open({
-          templateUrl: 'initiateSetlModalContent.html',
-          controller: 'initiateSetlModalCtrl'
-        });
-        modalInstance.result.then($scope.initiateSetl, $.noop);
-      };
-
       $scope.openSetlUpload = function () {
         var modalInstance = $modal.open({
           templateUrl: 'uploadSetlRecon.html',
@@ -314,30 +268,6 @@ app.controller('ActionsCtrl', [
         });
         modalInstance.result.then($scope.addEMI, $.noop);
       };
-      $scope.openVerifyPayment = function () {
-        var modalInstance = $modal.open({
-          templateUrl: 'verifyPaymentModalContent.html',
-          controller: 'verifyPaymentModalCtrl'
-        });
-        modalInstance.result.then($scope.verifyPayment, $.noop);
-      };
-
-      $scope.archiveMerchant = function (id) {
-        var request = $http.get('/admin/merchant/' + id + '/archive');
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Merchant archived successfully', true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
-
       $scope.confirmUser = function (email) {
         var request = $http({
           method: 'post',
@@ -359,15 +289,6 @@ app.controller('ActionsCtrl', [
           $scope.alerts.addAlert('danger', null, true);
         });
       };
-
-      $scope.openArchiveMerchant = function () {
-        var modalInstance = $modal.open({
-          templateUrl: 'archiveMerchantModal.html',
-          controller: 'archiveMerchantModalCtrl'
-        });
-        modalInstance.result.then($scope.archiveMerchant, $.noop);
-      };
-
       $scope.openConfirmUser = function () {
         var modalInstance = $modal.open({
           templateUrl: 'confirmUserModal.html',
@@ -385,18 +306,16 @@ app.controller('ActionsCtrl', [
         }, $.noop);
       };
       $scope.triggerError = function () {
-        var request = $http({
-          method: 'post',
-          url: '/admin/trigger/error'
+        var request = $http.get('/admin/generic', {
+          params: {
+            route_name: 'dummy_critical_error'
+          }
         });
         request.success(function (data) {
-          if (data.success) {
+          if (!data.success) {
             $scope.alerts.addAlert('success', 'Error triggerred successfully', true);
           } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
+            $scope.alerts.addAlert('danger', 'Error not triggerred successfully', true);
           }
         }).error(function () {
           $scope.alerts.addAlert('danger', null, true);
@@ -418,40 +337,7 @@ app.controller('ActionsCtrl', [
           }
         }, $.noop);
       };
-      $scope.downloadBeneficiaryFile = function () {
-        $scope.date = moment().format('yyyy-MM-dd');
-        var modalInstance = $modal.open({
-          templateUrl: 'downloadBeneficiaryFile.html',
-          controller: 'downloadBeneficiaryFileCtrl'
-        });
-        modalInstance.result.then(function (date) {
-          if (date) {
-            window.open('/admin/beneficiary/dl');
-          } else {
-            window.open('/admin/beneficiary/dl?date=' + date);
-          }
-        }, $.noop);
-      };
-      $scope.generateBeneficiaryFile = function () {
-        var request = $http({
-          method: 'post',
-          url: '/admin/beneficiary'
-        });
-        request.success(function (data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Beneficary file generated successfully', true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function (value, key) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        }).error(function () {
-          $scope.alerts.addAlert('danger', null, true);
-        });
-      };
     });
-
     $scope.openConfirmUser = function () {
       var modalInstance = $modal.open({
         templateUrl: 'confirmUserModal.html',
@@ -467,24 +353,6 @@ app.controller('ActionsCtrl', [
       modalInstance.result.then(function (data) {
         $scope.authorizeFailedPayment(data.id, data.mode);
       }, $.noop);
-    };
-    $scope.triggerError = function () {
-      var request = $http({
-        method: 'post',
-        url: '/admin/trigger/error'
-      });
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Error triggerred successfully', true);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
     };
     $scope.openEditNewsletter = function () {
       var modalInstance = $modal.open({
@@ -502,38 +370,6 @@ app.controller('ActionsCtrl', [
         }
       }, $.noop);
     };
-    $scope.downloadBeneficiaryFile = function () {
-      $scope.date = moment().format('yyyy-MM-dd');
-      var modalInstance = $modal.open({
-        templateUrl: 'downloadBeneficiaryFile.html',
-        controller: 'downloadBeneficiaryFileCtrl'
-      });
-      modalInstance.result.then(function (date) {
-        if (date) {
-          window.open('/admin/beneficiary/dl');
-        } else {
-          window.open('/admin/beneficiary/dl?date=' + date);
-        }
-      }, $.noop);
-    };
-    $scope.generateBeneficiaryFile = function () {
-      var request = $http({
-        method: 'post',
-        url: '/admin/beneficiary'
-      });
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Beneficary file generated successfully', true);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-    };
     $scope.openAddSchedule = function() {
       var modalInstance = $modal.open({
         templateUrl: 'addScheduleModalContent.html',
@@ -542,13 +378,15 @@ app.controller('ActionsCtrl', [
       modalInstance.result.then($scope.addSchedule, $.noop);
     };
     $scope.addSchedule = function (schedule) {
+      var data = {
+        route_name: 'schedule_create',
+        body: schedule
+      };
       var request = $http({
         method: 'post',
-        url: 'admin/schedules',
-        transformRequest: transformRequestAsFormPost,
-        data: schedule
+        url: '/admin/generic',
+        data: data,
       });
-
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Schedule added successfully', true);
@@ -561,18 +399,6 @@ app.controller('ActionsCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);
       });
-    };
-  }
-]).controller('initiateSetlModalCtrl', [
-  '$scope',
-  '$modalInstance',
-  '$http',
-  function ($scope, $modalInstance, $http) {
-    $scope.ok = function (channel) {
-      $modalInstance.close(channel);
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
     };
   }
 ]).controller('addIINModalCtrl', [
@@ -687,18 +513,6 @@ app.controller('ActionsCtrl', [
         msg: msg,
         template: template
       });
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
-  }
-]).controller('downloadBeneficiaryFileCtrl', [
-  '$scope',
-  '$modalInstance',
-  '$http',
-  function ($scope, $modalInstance, $http) {
-    $scope.ok = function (date) {
-      $modalInstance.close(date);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

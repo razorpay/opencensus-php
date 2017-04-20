@@ -26,7 +26,12 @@ import AddFundsContainer from './containers/AddFunds'
 import SettlementsListContainer from './containers/Settlements/List'
 import SettlementDetailsContainer from './containers/Settlements/Details'
 
+import KeysListContainer from './containers/Keys/List'
 import CreditsContainer from './containers/Credits/List'
+import ReportsContainer from './containers/Reports'
+import TeamContainer from './containers/Team'
+
+import ConfigContainer from './containers/Configuration'
 
 import RefundsListContainer from './containers/Refunds/List'
 import RefundDetailsContainer from './containers/Refunds/Details'
@@ -108,6 +113,7 @@ createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
 createNgDirective('customersList', CustomersListContainer)
 createNgDirective('itemsList', ItemsListContainer)
 createNgDirective('creditsNew', CreditsContainer)
+createNgDirective('configDetails', ConfigContainer)
 
 createNgDirective('ordersList', OrdersListContainer)
 createNgDirective('orderDetails', OrderDetailsContainer, ['id'])
@@ -116,7 +122,11 @@ createNgDirective('settlementsList', SettlementsListContainer)
 createNgDirective('settlementDetails', SettlementDetailsContainer, ['id'])
 
 createNgDirective('webhooksList', WebhooksContainer)
+
+createNgDirective('keysList', KeysListContainer)
 createNgDirective('addFunds', AddFundsContainer)
+createNgDirective('generateReport', ReportsContainer)
+createNgDirective('manageTeam', TeamContainer)
 
 createNgDirective('refundsList', RefundsListContainer)
 createNgDirective('refundDetails', RefundDetailsContainer, ['id'])

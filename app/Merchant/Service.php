@@ -12,9 +12,9 @@ use App\Merchant;
 use App\User;
 use App\Invitation;
 use App\MerchantDetails;
+use App\Mailers\UserMailer;
 use App\Admin;
 use App\Exceptions\EntityNotFoundException;
-use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 
@@ -180,8 +180,13 @@ class Service extends Base\Service
                 $user = (new User\Service)->createUserForSubmerchant($input);
                 $user->save();
 
+                $userApiData = (new User\Service)->getUserApiData($user);
+                (new User\Service)->createUserOnApi($userApiData);
+
                 // Finally attach the new user to the sub merchant
                 $user->joinMerchantByIdWithRole($input['id'], 'owner');
+
+                (new User\Service)->attachMerchantUserOnApi($user->id, $input['id'], 'owner');
 
                 return [null, $user->toArray()];
             }
@@ -384,7 +389,7 @@ class Service extends Base\Service
 
             if ($user->once($credentials))
             {
-                $user = Auth::user()->get();
+                $user = Auth::user();
 
                 if ($user->getConfirmToken() === null)
                 {
@@ -392,6 +397,7 @@ class Service extends Base\Service
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
                 }
 
+                $user->token = $user->getConfirmToken();
                 (new UserMailer($user))->accountVerification()->queueAndDeliver();
 
                 return array(array(),array());
@@ -670,6 +676,8 @@ class Service extends Base\Service
                 'role' => $newRole
             ]
         );
+
+        (new User\Service)->updateMerchantUserMappingOnApi($userId, $this->currentMerchant->id, $input['role']);
 
         list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($this->currentUser);
 

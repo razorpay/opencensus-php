@@ -9,9 +9,6 @@ angular.module('app.controllers', [
   'theme',
   'organization',
   function ($scope, $localStorage, $window, theme, organization) {
-    // add 'ie' classes to html
-    var isIE = !!navigator.userAgent.match(/MSIE/i);
-    isIE && angular.element($window.document.body).addClass('ie');
     isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
 
     var baseTheme = {

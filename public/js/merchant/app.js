@@ -103,9 +103,6 @@ var app = angular.module('app', [
     }).state('app.payments.detail', {
       url: '/:id',
       templateUrl: 'tpl/app_payment_detail.html'
-    }).state('app.config', {
-      url: '/config',
-      templateUrl: 'tpl/app_config.html'
     // }).state('app.batch', {
     //   url: '/batch',
     //   template: '<div ui-view class="fade-in-down"></div>'
@@ -124,15 +121,6 @@ var app = angular.module('app', [
     }).state('app.transactions.detail', {
       url: '/:id',
       templateUrl: 'tpl/app_transaction_detail.html'
-    }).state('app.generatereport', {
-      url: '/generatereport',
-      templateUrl: 'tpl/app_generate_report.html'
-    }).state('app.teammanagement', {
-      url: '/team',
-      templateUrl: 'tpl/app_team_management.html'
-    }).state('app.keys', {
-      url: '/keys',
-      templateUrl: 'tpl/app_keys.html'
     }).state('app.activation', {
       url: '/activation',
       templateUrl: 'tpl/app_activation.html'
@@ -212,12 +200,24 @@ var app = angular.module('app', [
     }).state('app.webhooks', {
       url: '/webhooks',
       templateProvider: reactTemplateProvider('<webhooks-list />')
+    }).state('app.keys', {
+      url: '/keys',
+      templateProvider: reactTemplateProvider('<keys-list />')
     }).state('app.credits', {
       url: '/credits',
       templateProvider: reactTemplateProvider('<credits-new/>'),
     }).state('app.addfunds', {
       url: '/addfunds',
       templateProvider: reactTemplateProvider('<add-funds />')
+    }).state('app.generatereport', {
+      url: '/generatereport',
+      templateProvider: reactTemplateProvider('<generate-report />')
+    }).state('app.teammanagement', {
+      url: '/team',
+      templateProvider: reactTemplateProvider('<manage-team />')
+    }).state('app.config', {
+      url: '/config',
+      templateProvider: reactTemplateProvider('<config-details/>'),
     }).state('app.refunds', {
       url: '/refunds',
       template: '<div ui-view class="fade-in-down"></div>'

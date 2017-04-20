@@ -483,34 +483,9 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postInitiateSetl($channel)
-    {
-        list($error, $data) = (new Admin\Service)->postInitiateSetl($channel);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postAddIIN()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postAddIIN($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getPaymentRefunds($mode, $paymentId)
     {
         list($error, $data) = (new Admin\Service)->getPaymentRefunds($mode, $paymentId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getVerifyPayment($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Admin\Service)->getVerifyPayment($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -520,13 +495,6 @@ class AdminController extends Controller
         $this->checkMode($mode);
 
         list($error, $data) = (new Admin\Service)->getPaymentAnalytics($mode, $id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postAuthorizeFailedPayment($mode, $id)
-    {
-        list($error, $data) = (new Admin\Service)->authorizeFailedPayment($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -624,31 +592,11 @@ class AdminController extends Controller
         $file->download('xlsx');
     }
 
-    public function getBeneficiaryFile()
-    {
-        $input = Input::all();
-
-        list($error, $url) = (new Admin\Service)->getBeneficiaryFile($input);
-
-        if(empty($error) === false)
-        {
-            return AppResponse::jsonResponse($error);
-        }
-
-        return Redirect::to($url);
-    }
-
     public function getUploadedFile($id)
     {
         list($error, $url) = (new Admin\Service)->getUploadedFile($id);
 
         return Redirect::to($url);
-    }
-
-    public function generateBeneficiaryFile()
-    {
-        $error = (new Admin\Service)->generateBeneficiaryFile();
-        return AppResponse::jsonResponse($error);
     }
 
     public function postSendTestNewsletter()
@@ -665,13 +613,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->sendNewsletter($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function triggerError()
-    {
-        list($error, $data) = (new Admin\Service)->triggerError();
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -730,22 +671,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->toggleTerminal($mode, $terminalId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function verifyAllPayments()
-    {
-        list($error, $data) = (new Admin\Service)->verifyAllPayments();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function generateNetBankingRefunds()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->generateNetBankingRefunds($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -872,16 +797,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postAddEMIPlan()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)
-            ->addEMI($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postSlackQuery()
     {
         $input = Input::all();
@@ -1003,11 +918,11 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function createSchedule()
+    public function getEmailLogs()
     {
         $input = Input::all();
 
-        list($error, $response) = (new Admin\Service)->createSchedule($input);
+        list($error, $response) = (new Admin\Mailgun)->getMailgunLogs($input);
 
         return AppResponse::jsonResponse($error, $response);
     }

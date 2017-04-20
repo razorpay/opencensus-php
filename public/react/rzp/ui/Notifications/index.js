@@ -1,7 +1,7 @@
 import { Component } from 'react'
 import { connect } from 'react-redux'
 import Notification from './Notification'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import * as NotificationsActions from 'rzp/modules/notifications'
 import './Notifications.styl'
 
 @connect(
@@ -9,17 +9,12 @@ import './Notifications.styl'
   NotificationsActions
 )
 export default class Notifications extends Component {
-  constructor() {
-    super(...arguments)
-    this.closeNotification = ::this.closeNotification
-  }
-
-  closeNotification(notification) {
+  closeNotification = (notification) => {
     this.props.hideNotification(notification)
   }
 
   render() {
-    let { notifications } = this.props
+    let { notifications, hidePrevious } = this.props
 
     if (!notifications.length) {
       return null
@@ -35,6 +30,8 @@ export default class Notifications extends Component {
               message={notification.message}
               showClose={notification.showClose}
               onClose={() => this.closeNotification(notification)}
+              closeTimeout={notification.closeTimeout}
+              hidePrevious={hidePrevious && idx > 0}
             />
           ))
         }

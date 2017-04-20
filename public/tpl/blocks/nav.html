@@ -92,7 +92,7 @@
         <span>Reports</span>
       </a>
     </li>
-    <li ng-show="merchant && user.primaryOwner" ui-sref="app.teammanagement" ui-sref-active="active">
+    <li ng-show="merchant" my-role="owner" ui-sref="app.teammanagement" ui-sref-active="active">
       <a id="manageTeamNav" ui-sref="app.teammanagement" ui-sref-active="active">
         <i class="fa fa-users icon text-info-lter"></i>
         <b class="badge bg-success dk pull-right ng-binding">beta</b>

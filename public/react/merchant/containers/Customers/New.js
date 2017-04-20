@@ -7,8 +7,8 @@ import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
 import { required, email, phone } from 'rzp/utils/validators'
 import * as CustomerActions from 'merchant/modules/customers'
-import * as ModalActions from 'merchant/modules/modals'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import * as ModalActions from 'rzp/modules/modals'
+import * as NotificationsActions from 'rzp/modules/notifications'
 
 function validate(values) {
   let errors = {}

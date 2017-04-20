@@ -20,11 +20,11 @@ class Service
 
     public function setAdminCredentials($mode = 'live')
     {
-        $this->setHeaders();
-
         $token = Auth::guard('api')->user()->token;
 
-        $this->api = new Api("rzp_{$mode}_admin", $token);
+        ApiRequest::addHeader('X-Admin-Token', $token);
+
+        $this->setApiCredentials(null, $mode);
     }
 
     public function setApiCredentials($merchant_id = null, $mode = 'live')

@@ -100,7 +100,9 @@ class RawApiRequest
 
     protected function setAdminCredentials($token, $mode = 'live')
     {
-        $this->params['auth'] = ["rzp_{$mode}_admin", $token];
+        $this->setApiCredentials($mode);
+
+        $this->params['headers']['X-Admin-Token'] = $token;
     }
 
     protected function setApiCredentials($mode, $merchantId = '')
