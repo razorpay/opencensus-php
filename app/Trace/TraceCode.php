@@ -194,6 +194,9 @@ class TraceCode
     const INVOICE_NEW_CUSTOMER                          = 'INVOICE_NEW_CUSTOMER';
     const INVOICE_ACTION_JOB_RECEIVED                   = 'INVOICE_ACTION_JOB_RECEIVED';
     const INVOICE_ACTION_JOB_HANDLED                    = 'INVOICE_ACTION_JOB_HANDLED';
+
+    const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
+    const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
