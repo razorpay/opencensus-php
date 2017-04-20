@@ -285,8 +285,9 @@ class NodalAccount
                                               ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
                                               ->save();
 
-        // Create txt file
-        if ($h2h === true)
+        // Create txt file in h2h only for live mode and h2h is true
+        if (($this->getMode() === Mode::LIVE) and
+            ($h2h === true))
         {
             $metadata = [
                 'gid'   => '10000',

@@ -81,4 +81,15 @@ class Repository extends Base\Repository
 
         return $workflow;
     }
+
+    public function getWorkflowIdsForPermissions(array $permissionIds)
+    {
+        $pid = 'workflow_permissions.permission_id';
+
+        return $this->newQuery()
+                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
+                    ->whereIn($pid, $permissionIds)
+                    ->whereNull(Entity::DELETED_AT)
+                    ->pluck(Entity::ID);
+    }
 }

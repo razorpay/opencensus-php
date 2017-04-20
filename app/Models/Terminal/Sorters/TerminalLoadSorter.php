@@ -44,6 +44,12 @@ class TerminalLoadSorter extends Terminal\Sorter
                 Terminal\Entity::GATEWAY_ACQUIRER   => Gateway::ACQUIRER_AXIS,
             ]
         ],
+        [
+            'load'          => 5,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY           => Gateway::EBS
+            ]
+        ],
     ];
 
     public function getRules()
