@@ -1030,11 +1030,7 @@ final class Route
         'workflow_action_states'           => ['*'],
         'workflow_action_details'          => ['*'],
         'workflow_action_get_multiple'     => ['*'],
-
-        // Proxy route with Admin Token
         'credits_fetch_multiple'           => [Permission::VIEW_MERCHANT_CREDITS_LOG],
-
-        // Internal route with Admin Token
         'credits_create'                   => [Permission::ADD_MERCHANT_CREDITS],
         'credits_delete'                   => [Permission::DELETE_MERCHANT_CREDITS],
     ];
