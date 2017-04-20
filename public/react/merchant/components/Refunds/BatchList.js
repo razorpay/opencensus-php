@@ -1,15 +1,16 @@
 import TableBody from '../TableBody';
+import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 
 const BatchUploadsListItem = ({ batchupload, mode }) => {
   return (
     <tr>
       <td><code>{batchupload.id}</code></td>
       <td>{batchupload.total_count}</td>
-      <td>{batchupload.status}</td>
+      <td><BatchUploadStatusLabel status={batchupload.status} /></td>
       <td>
         <a
           class="btn btn-default btn-xs"
-          href={`{mode}/batches/${batchupload.id}/download`}
+          href={`/${mode}/batches/${batchupload.id}/download`}
           target="_blank"
         >
           Download
