@@ -376,12 +376,14 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
+        $mode = $this->getLiveMerchantId();
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->getTestMerchantId();
+            $mode = $this->getTestMerchantId();
         }
 
-        return $this->getLiveMerchantId();
+        return $mode;
     }
 
     protected function getLiveMerchantId()
