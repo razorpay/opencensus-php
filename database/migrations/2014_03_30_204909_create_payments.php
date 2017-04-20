@@ -205,6 +205,13 @@ class CreatePayments extends Migration
                   ->nullable();
 
             $table->tinyInteger(Payment::CONVERT_CURRENCY)
+                ->nullable();
+
+
+            $table->string(Payment::ENTITY_ID, Payment::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Payment::ENTITY_TYPE)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table

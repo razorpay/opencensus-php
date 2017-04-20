@@ -28,6 +28,7 @@ class Table
     const UPI_VPA               = 'upi_vpa';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
+    const AADHAAR               = 'aadhaars';
     const ADDRESS               = 'addresses';
     const FEATURE               = 'features';
     const SCHEDULE              = 'schedules';
@@ -84,6 +85,7 @@ class Table
     // Gateway related
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
+    const AEPS                  = 'aeps';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const MIGS                  = 'axis';

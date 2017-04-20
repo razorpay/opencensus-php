@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
     const UPI                           = 'upi';
+    const AEPS                          = 'aeps';
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
     const INTERNATIONAL                 = 'international';
@@ -62,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::NETWORK_CATEGORY,
         self::UPI,
+        self::AEPS,
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
@@ -90,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::NETWORK_CATEGORY,
         self::UPI,
+        self::AEPS,
         self::EMI,
         self::EMI_DURATION,
         self::RECURRING,
@@ -154,6 +157,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL             => 'boolean',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
+        self::AEPS                      => 'boolean',
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'boolean',
     ];
@@ -511,6 +515,11 @@ class Entity extends Base\PublicEntity
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
+    }
+
+    public function isAepsTerminal()
+    {
+        return (substr($this->gateway, 0, 4) === 'aeps');
     }
 
     public function isGatewayAcquirer($acquirer)

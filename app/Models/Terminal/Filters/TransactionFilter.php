@@ -63,6 +63,9 @@ class TransactionFilter extends Terminal\Filter
             case Method::UPI:
                 return $terminal->isUpiEnabled();
 
+            case Method::AEPS:
+                return $terminal->isAepsTerminal();
+
             default:
                 throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
         }
