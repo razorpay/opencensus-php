@@ -9,17 +9,12 @@ import './Notifications.styl'
   NotificationsActions
 )
 export default class Notifications extends Component {
-  constructor() {
-    super(...arguments)
-    this.closeNotification = ::this.closeNotification
-  }
-
-  closeNotification(notification) {
+  closeNotification = (notification) => {
     this.props.hideNotification(notification)
   }
 
   render() {
-    let { notifications } = this.props
+    let { notifications, hidePrevious } = this.props
 
     if (!notifications.length) {
       return null
@@ -36,6 +31,7 @@ export default class Notifications extends Component {
               showClose={notification.showClose}
               onClose={() => this.closeNotification(notification)}
               closeTimeout={notification.closeTimeout}
+              hidePrevious={hidePrevious && idx > 0}
             />
           ))
         }

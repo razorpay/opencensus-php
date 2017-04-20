@@ -31,6 +31,7 @@ import CreditsContainer from './containers/Credits/List'
 import ReportsContainer from './containers/Reports'
 import TeamContainer from './containers/Team'
 
+import ConfigContainer from './containers/Configuration'
 // import PlansListContainer from './containers/Plans/List'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
 // import SubscriptionsNewContainer from './containers/Subscriptions/New'
@@ -105,6 +106,7 @@ createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
 createNgDirective('customersList', CustomersListContainer)
 createNgDirective('itemsList', ItemsListContainer)
 createNgDirective('creditsNew', CreditsContainer)
+createNgDirective('configDetails', ConfigContainer)
 
 createNgDirective('ordersList', OrdersListContainer)
 createNgDirective('orderDetails', OrderDetailsContainer, ['id'])
