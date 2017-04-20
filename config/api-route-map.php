@@ -38,6 +38,7 @@ return [
 
         // Permissions
         'permission_get_by_type'            => 'permissions/get/{type}',
+        'permission_get_roles'              => 'permissions/{id}/roles',
         'permission_get_multiple'           => 'orgs/{id}/permissions',
         'permission_create'                 => 'permissions',
         'permission_get'                    => 'permissions/{id}',
