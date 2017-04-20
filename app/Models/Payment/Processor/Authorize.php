@@ -15,6 +15,7 @@ use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
+use RZP\Models\Aadhaar;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
@@ -782,12 +783,40 @@ trait Authorize
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
+        if ($payment->isAeps())
+        {
+            $gatewayInput['aadhaar'] = $this->createAadhaarEntity($input, $this->merchant);
+        }
+
         if ($payment->isUpi())
         {
             $this->validateUpiPspIsAllowed($payment);
         }
 
         $payment->setInternational();
+    }
+
+    protected function createAadhaarEntity(array $input, Merchant\Entity $merchant)
+    {
+        //
+        // Creates Aadhaar entity
+        //
+
+        $aadhaarCore = new Aadhaar\Core;
+
+        $aadhaarRawData = [
+            'bank'           => $input['bank'],
+            'fingerprint'    => $input['aadhaar']['fingerprint'],
+            'number'         => $input['aadhaar']['number'],
+        ];
+
+        $aadhaarData = $aadhaarCore->create($aadhaarRawData, $merchant);
+
+        $this->repo->saveOrFail($aadhaarData);
+
+        $this->payment->entity()->associate($aadhaarData);
+
+        return $aadhaarRawData;
     }
 
     protected function preProcessPaymentWithoutSaving($payment, array & $input, array & $gatewayInput)
@@ -1071,6 +1100,10 @@ trait Authorize
                 $this->verifyUpiEnabled();
                 break;
 
+            case Payment\Method::AEPS:
+                $this->verifyAepsEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -1173,6 +1206,21 @@ trait Authorize
         ];
 
         $this->segment->trackPayment($payment, TraceCode::ASYNC_PAYMENT_RESPONSE, $response);
+
+        return $response;
+    }
+
+    /**
+     * @see  CoProto supports direct payments https://github.com/razorpay/api/wiki/COPROTO
+     * @param $request
+     * @param Payment\Entity $payment
+     * @return array payment response
+     */
+    protected function getFinalPaymentCreatedResponse($request, Payment\Entity $payment)
+    {
+        $response = $payment->toArrayPublic();
+
+        $this->segment->trackPayment($payment, TraceCode::FINAL_PAYMENT_RESPONSE, $response);
 
         return $response;
     }
@@ -1320,6 +1368,11 @@ trait Authorize
             'razorpay_payment_id' => $payment->getPublicId()
         ];
 
+        if ($payment->isAeps())
+        {
+            $this->fillReturnDataWithAepsInfo($payment, $returnData);
+        }
+
         if ($payment->getApiOrderId() !== null)
         {
             $this->fillReturnDataWithOrder($payment, $returnData);
@@ -1332,6 +1385,24 @@ trait Authorize
         }
 
         return $returnData;
+    }
+
+    protected function fillReturnDataWithAepsInfo(Payment\Entity $payment, & $data)
+    {
+        $data['status'] = $payment->getStatus();
+        $data['amount'] = $payment->getAmount();
+    }
+
+    protected function verifyAepsEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isAepsEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AEPS_NOT_ENABLED_FOR_MERCHANT);
+        }
     }
 
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
