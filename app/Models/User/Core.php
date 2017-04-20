@@ -86,11 +86,12 @@ class Core extends Base\Core
     {
         $user = $this->repo->user->findOrFail($userId);
 
-        $merchants = $this->repo->merchant->getMerchantsForUser($userId, $input)->toArrayUserRole();
+        $merchants = $this->repo->merchant->getMerchantsForUser($userId, $input);
 
         $userArray = $user->toArrayPublic();
 
-        $userArray[Entity::MERCHANTS] = $merchants;
+        // $merchants->toArray will return only the selected column names.
+        $userArray[Entity::MERCHANTS] = $merchants->toArray();
 
         return $userArray;
     }
