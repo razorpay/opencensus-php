@@ -18,7 +18,9 @@ class PermissionSeeder extends Seeder
     {
         self::$permissions = Config::get('heimdall.permissions');
 
-        self::$assignablePermissions = Config::get('heimdall.assignablePermissions');
+        self::$assignablePermissions = Config::get('heimdall.assignable_permissions');
+
+        self::$enableWorkflowPermissions = Config::get('heimdall.enable_workflow_permissions');
     }
 
     /**
@@ -41,7 +43,9 @@ class PermissionSeeder extends Seeder
 
         $assignablePermissions = self::$assignablePermissions;
 
-        DB::transaction(function() use ($permissions, $assignablePermissions)
+        $enableWorkflowPermissions = self::$enableWorkflowPermissions;
+
+        DB::transaction(function() use ($permissions, $assignablePermissions, $enableWorkflowPermissions)
         {
             $index = 0;
 
@@ -112,6 +116,15 @@ class PermissionSeeder extends Seeder
                                 'entity_type'   => 'org',
                             ]
                         ]);
+                    }
+
+                    // For trimmed down ones (like HDFC)
+                    if (isset($enableWorkflowPermissions[$category]) and
+                        isset($enableWorkflowPermissions[$category][$permission]))
+                    {
+                        DB::table(Table::PERMISSION)
+                            ->where('id', $id)
+                            ->update(['enable_workflow' => 1]);
                     }
                 }
             }
