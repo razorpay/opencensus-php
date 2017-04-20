@@ -2221,67 +2221,6 @@ class Service extends Base\Service
         return $minimal_payment;
     }
 
-    // ----- Credits -----
-
-    public function getMerchantCreditsLog($merchantId, $mode)
-    {
-        $error = $data = null;
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        try
-        {
-            $data = $this->api->merchant->getMerchantCreditLogs();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function addMerchantCredits($merchantId, $input)
-    {
-        $error = $data = null;
-
-        $this->setApiCredentials(null, $input['mode']);
-
-        unset($input['mode']);
-
-        try
-        {
-            $data = $this->api->merchant->addMerchantCredits($merchantId, $input)->toArray();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function deleteMerchantCredit($merchantId, $creditId, $input)
-    {
-        $error = $data = null;
-
-        $this->setApiCredentials(null, $input['mode']);
-
-        unset($input['mode']);
-
-        try
-        {
-            $data = $this->api->merchant->deleteMerchantCredits($merchantId, $creditId);
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-
     public function getOrg($domain)
     {
         $error = $data = null;
