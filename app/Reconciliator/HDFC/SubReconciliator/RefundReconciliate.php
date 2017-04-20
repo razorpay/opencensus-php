@@ -11,8 +11,9 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID = 'merchant_trackid';
-    const COLUMN_REFUND_AMOUNT = 'domestic_amt';
+    const COLUMN_REFUND_ID      = 'merchant_trackid';
+    const COLUMN_REFUND_AMOUNT  = 'domestic_amt';
+    const COLUMN_RRN            = '';
 
     protected function getRefundId(array $row)
     {
@@ -36,5 +37,12 @@ class RefundReconciliate extends Base\RefundReconciliate
         $paymentId = $gatewayEntities->first()->getPaymentId();
 
         return $paymentId;
+    }
+
+    protected function getRRN(array $row)
+    {
+        $rrn = $row[self::COLUMN_RRN];
+
+        return $rrn;
     }
 }

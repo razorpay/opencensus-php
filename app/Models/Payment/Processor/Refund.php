@@ -38,9 +38,12 @@ trait Refund
         return $refund;
     }
 
-    public function createRefundOnApiFromRecon(Payment\Entity $payment, string $refundId, int $refundAmount)
+    public function createRefundOnApiFromRecon(Payment\Entity $payment,
+                                                string $refundId,
+                                                int $refundAmount,
+                                                string $rrn = null)
     {
-        $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
+        $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount, $rrn);
     }
 
     public function createRefundOnApiForCancelledBilldeskRefund(
@@ -847,7 +850,10 @@ trait Refund
         $this->notifyDashboard('refund', $this->refund);
     }
 
-    protected function createRefundOnApiSeparately(Payment\Entity $payment, string $refundId, int $refundAmount)
+    protected function createRefundOnApiSeparately(Payment\Entity $payment,
+                                                    string $refundId,
+                                                    int $refundAmount,
+                                                    string $rrn = null)
     {
         if ($payment->transaction === null)
         {
@@ -855,7 +861,10 @@ trait Refund
                 'Transaction expected but not present for payment: ' . $payment->getId());
         }
 
-        $input = ['amount' => $refundAmount];
+        $input = [
+            'amount' => $refundAmount,
+            'rrn'    => $rrn
+        ];
 
         $refund = $this->buildRefundEntity($payment, $input);
 

@@ -343,6 +343,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $refundAmount = $this->getRefundAmount($row);
 
+        $rrn = $this->getRRN($row);
+
         if (($paymentId === null) or ($refundAmount === null))
         {
             $this->trace->info(
@@ -352,6 +354,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'message' => 'Unable to get the payment ID or amount from the refund recon file',
                     'refund_id' => $refundId,
                     'refund_amount' => $refundAmount,
+                    'rrn' => $rrn,
                     'payment_id' => $paymentId,
                 ]);
 
@@ -366,7 +369,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         try
         {
-            $processor->createRefundOnApiFromRecon($payment, $refundId, $refundAmount);
+            $processor->createRefundOnApiFromRecon($payment, $refundId, $refundAmount, $rrn);
         }
         catch (\Exception $ex)
         {
@@ -389,5 +392,18 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
         return true;
+    }
+
+    /**
+     * If this is being implemented in the child class,
+     * the setter for storing the rrn should be present
+     * in the gateway entity.
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getRRN(array $row)
+    {
+        return null;
     }
 }

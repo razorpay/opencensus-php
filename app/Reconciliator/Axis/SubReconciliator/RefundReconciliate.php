@@ -50,4 +50,11 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         return null;
     }
+
+    protected function getRRN(array $row)
+    {
+        $rrn = $row[self::COLUMN_RRN];
+
+        return $rrn;
+    }
 }
