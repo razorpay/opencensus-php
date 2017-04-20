@@ -344,7 +344,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchRefundsByGatewayAttemptsBetween($gateway, $attempts, $from, $to)
+    public function fetchRefundsByGatewayAndAttempts($gateway, $attempts)
     {
         // Select * from refunds join payments on refunds.payment_id = payments.id
         // where payments.gateway = $gateway and refunds.attempts = $attempt
@@ -354,7 +354,6 @@ class Repository extends Base\Repository
         $pTableName = $pRepo->getTableName();
 
         $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
-        $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
         $rAttempts = $this->getAttributeWithTableName(Refund\Entity::ATTEMPTS);
         $rStatus = $this->getAttributeWithTableName(Refund\Entity::STATUS);
 
@@ -366,9 +365,9 @@ class Repository extends Base\Repository
                     ->join($pTableName, $rPaymentId, '=', $pId)
                     ->where($rAttempts, '<', $attempts)
                     ->where($rStatus, '=', Refund\Status::FAILED)
-                    ->whereBetween($rCreatedAt, [$from, $to])
-                    ->where($pGateway, '=', $gateway)
+                    ->whereIn($pGateway, $gateway)
                     ->with(['payment','payment.terminal'])
+                    ->limit(100)
                     ->get();
     }
 }

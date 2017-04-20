@@ -241,7 +241,7 @@ class Gateway
     public function verifyRefund2(array $input)
     {
         $this->input = $input;
-        // $this->action = Action::VERIFY_ACTION2;
+        $this->action = Action::VERIFY_REFUND2;
     }
 
     public function action(array $input, $action)

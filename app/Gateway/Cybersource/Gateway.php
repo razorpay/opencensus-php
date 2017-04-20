@@ -237,7 +237,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        list($refundReply, $requestContent) = $this->fetchGatewayReplyFromContent($content);
+        list($refundReply, $requestContent) = $this->fetchRefundGatewayReplyFromContent($content);
 
         if ((isset($refundReply[F::R_FLAG]) === false) or
             ($refundReply[F::R_FLAG] !== ReplyFlag::SOK))
@@ -250,7 +250,7 @@ class Gateway extends Base\Gateway
 
     protected function sendRefundVerifyRequest($input)
     {
-        $request = $this->getVerifyRequestContent($input);
+        $request = $this->getRefundVerifyRequestContent($input);
 
         $this->traceGatewayRequest(
             TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
@@ -295,7 +295,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getVerifyRequestContent($input);
+        $request = $this->getPaymentVerifyRequestContent($input);
 
         $this->traceGatewayRequest(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -324,15 +324,18 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getVerifyRequestContent(array $input)
+    protected function getPaymentVerifyRequestContent(array $input)
     {
-        $entity = 'payment';
+        return $this->getVerifyRequestContent($input, 'payment');
+    }
 
-        if ($this->action === Action::VERIFY_REFUND)
-        {
-            $entity = 'refund';
-        }
+    protected function getRefundVerifyRequestContent(array $input)
+    {
+        return $this->getVerifyRequestContent($input, 'refund');
+    }
 
+    protected function getVerifyRequestContent(array $input, $entity)
+    {
         $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'UTC')
                                 ->format('Ymd');
 
@@ -422,15 +425,18 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function fetchGatewayReplyFromContent($content)
+    protected function fetchRefundGatewayReplyFromContent($content)
     {
-        $type = ['ics_auth'];
+        return $this->fetchGatewayReplyFromContent($content, ['ics_credit', 'ics_auth_reversal']);
+    }
 
-        if ($this->action === Action::VERIFY_REFUND)
-        {
-            $type = ['ics_credit', 'ics_auth_reversal'];
-        }
+    protected function fetchPaymentGatewayReplyFromContent($content)
+    {
+        return $this->fetchGatewayReplyFromContent($content, ['ics_auth']);
+    }
 
+    protected function fetchGatewayReplyFromContent($content, $type)
+    {
         $requests = $content[F::REQUESTS][F::REQUEST] ?? null;
 
         if ($requests !== null)

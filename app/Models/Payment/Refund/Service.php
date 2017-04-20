@@ -27,18 +27,6 @@ class Service extends Base\Service
      */
     const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
 
-    /**
-     * List of gateways that we wish to attempt this with.
-     * This should eventually cover all API based refund
-     * gateways.
-     *
-     * These gateways should have verifyRefund2 implemented.
-     * and be allowed to perform it.
-     * */
-    const RETRY_FAILED_REFUND_GATEWAYS = [
-        Payment\Gateway::BILLDESK,
-    ];
-
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
     const DURATION_REFUNDS = [
@@ -660,40 +648,31 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::REFUND_RETRY_INITIATED, $input);
 
-        $gateways = self::RETRY_FAILED_REFUND_GATEWAYS;
+        $gateways = Payment\Gateway::REFUND_RETRY_GATEWAYS;
 
         $status = [];
 
-        $attempts = $input['attempts'] ?? 3;
-
-        $from = $input['from'];
-
-        $to = $input['to'];
+        $attempts = $input['attempts'] ?? self::MAX_REFUND_RETRY_ATTEMPTS;
 
         if ((isset($input['gateway']) === true) and
-            (in_array($input['gateway'], self::RETRY_FAILED_REFUND_GATEWAYS, true) === true))
+            (in_array($input['gateway'], Payment\Gateway::REFUND_RETRY_GATEWAYS, true) === true))
         {
             $gateways = [$input['gateway']];
         }
 
-        foreach ($gateways as $gateway)
+        // Every combination of gateway / refund needs to be processed
+        // Get the appropriate refunds and pass them as part of the refund
+        // Get refunds that have failed and those that have not been
+        // retried more than 3. Post every retry update last retried at.
+        $refunds = $this->repo->refund->fetchRefundsByGatewayAndAttempts($gateways, $attempts);
+
+        foreach ($refunds as $refund)
         {
-            // Every combination of gateway / refund needs to be processed
-            // Get the appropriate refunds and pass them as part of the refund
-            // Get refunds that have failed and those that have not been
-            // retried more than 3. Post every retry update last retried at.
-            $status[$gateway] = [];
+            $processor = $this->getNewProcessor($refund->merchant);
 
-            $refunds = $this->repo->refund->fetchRefundsByGatewayAttemptsBetween($gateway, $attempts, $from, $to);
+            $refundId = $refund->getId();
 
-            foreach ($refunds as $refund)
-            {
-                $processor = $this->getNewProcessor($refund->merchant);
-
-                $refundId = $refund->getId();
-
-                $status[$gateway][$refundId] = $processor->processRefundRetry($refund);
-            }
+            $status[$refundId] = $processor->processRefundRetry($refund);
         }
 
         $this->trace->info(TraceCode::REFUND_RETRY_RESULT, $status);
