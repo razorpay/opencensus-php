@@ -22,6 +22,9 @@ class Entity extends Base\PublicEntity
     const NOTES             = 'notes';
     const BATCH_ID          = 'batch_id';
     const GATEWAY_REFUNDED  = 'gateway_refunded';
+    const RRN               = 'rrn';
+
+    const RRN_LENGTH        = 50;
 
     protected static $sign = 'rfnd';
 
@@ -40,7 +43,8 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
-        self::NOTES
+        self::NOTES,
+        self::RRN
     ];
 
     protected $visible = [
@@ -54,6 +58,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::BATCH_ID,
         self::GATEWAY_REFUNDED,
+        self::RRN,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -65,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::PAYMENT_ID,
         self::NOTES,
+        self::RRN,
         self::CREATED_AT
     ];
 
