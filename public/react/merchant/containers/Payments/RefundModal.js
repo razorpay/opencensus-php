@@ -14,6 +14,10 @@ import { closeModal } from 'merchant/modules/modals'
 const amountValidation = (value, allValues, props) => {
   value = value || ''
   if (allValues.partial) {
+    if (!value) {
+      return 'Amount is required'
+    }
+
     if (isNaN(value) || (value.split('.')[1] || []).length > 2) {
       return 'Amount can only be a Number with atmost 2 decimal places.'
     }
@@ -151,6 +155,7 @@ export default class RefundModal extends Component {
                     component={InputField}
                     class='form-control'
                     validate={amountValidation}
+                    placeholder='Enter the refund amount'
                   />
                   <i></i>
                 </div>
@@ -165,6 +170,7 @@ export default class RefundModal extends Component {
                   name='comment'
                   component={InputField}
                   class='form-control'
+                  placeholder='Add an optional comment'
                 />
                 <i></i>
               </div>
