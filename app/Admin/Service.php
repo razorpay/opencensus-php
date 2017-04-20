@@ -1593,22 +1593,6 @@ class Service extends Base\Service
         return array($error, $response);
     }
 
-    /**
-     * Sends a redirect the the file
-     */
-    public function getBeneficiaryFile($input)
-    {
-        $error = (new Validator)->validateInput('get_beneficiary', $input)->messages();
-
-        if (empty($error))
-        {
-            $date = \Input::get('date', date('Y-m-d'));
-            return [null, $this->getBeneficiaryFileUrl($date)];
-        }
-
-        return [$error, null];
-    }
-
     public function getUploadedFile($id)
     {
         $error = null;
@@ -1634,23 +1618,6 @@ class Service extends Base\Service
         }
 
         return array($error, $url);
-    }
-
-    /**
-     * Returns a pre-authed S3 URL to download beneficiary file
-     * @param  Date $date date in Y-m-d format (with leading zeroes)
-     * @return String URL
-     */
-    protected function getBeneficiaryFileUrl($date)
-    {
-        $s3 = $this->getS3Client();
-
-        $beneficiaryBucket = Config::get('aws::config.buckets')['beneficiary'];
-        $filename = $date.'.xls';
-
-        return $s3->getObjectUrl($beneficiaryBucket, $filename, '+2 minutes', [
-            'https'     => true
-        ]);
     }
 
     /**

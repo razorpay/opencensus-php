@@ -592,20 +592,6 @@ class AdminController extends Controller
         $file->download('xlsx');
     }
 
-    public function getBeneficiaryFile()
-    {
-        $input = Input::all();
-
-        list($error, $url) = (new Admin\Service)->getBeneficiaryFile($input);
-
-        if(empty($error) === false)
-        {
-            return AppResponse::jsonResponse($error);
-        }
-
-        return Redirect::to($url);
-    }
-
     public function getUploadedFile($id)
     {
         list($error, $url) = (new Admin\Service)->getUploadedFile($id);
