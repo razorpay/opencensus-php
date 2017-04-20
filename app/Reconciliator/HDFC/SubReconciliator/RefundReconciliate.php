@@ -13,7 +13,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      *******************/
     const COLUMN_REFUND_ID      = 'merchant_trackid';
     const COLUMN_REFUND_AMOUNT  = 'domestic_amt';
-    const COLUMN_RRN            = '';
+    const COLUMN_RRN            = 'arn_no';
 
     protected function getRefundId(array $row)
     {

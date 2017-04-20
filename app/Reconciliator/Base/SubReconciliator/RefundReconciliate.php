@@ -85,6 +85,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         {
             $this->runPreReconciledAtCheckRecon($rowDetails);
 
+            $this->persistRrnForRow($row);
+
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
             if ($reconciled === true)
@@ -223,13 +225,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
         {
             return null;
         }
-
-        // Set RRN for refund, if present
-        $rrn = $this->getRRN($row);
-
-        $refund->setRRN($rrn);
-
-        $this->repo->saveOrFail($refund);
 
         // Sets the corresponding payment for the refund.
         $this->payment = $this->refund->payment;
@@ -403,11 +398,27 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * the setter for storing the rrn should be present
      * in the gateway entity.
      *
-     * @param $row
+     * @param $row array
      * @return null
      */
     protected function getRRN(array $row)
     {
         return null;
+    }
+
+    /**
+     * Saves the Rrn number, if present in the refund entity
+     *
+     * @param $row array
+     */
+    protected function persistRrnForRow(array $row)
+    {
+        $rrn = $this->getRRN($row);
+
+        $refund = $this->refund;
+
+        $refund->setRRN($rrn);
+
+        $this->repo->saveOrFail($refund);
     }
 }
