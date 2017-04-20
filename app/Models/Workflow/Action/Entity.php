@@ -197,4 +197,18 @@ class Entity extends Base\Entity
 
         return $data;
     }
+
+    public function isOpen()
+    {
+        $state = $this->getState();
+
+        return (in_array($state, State\Entity::OPEN_STATES, true) === true);
+    }
+
+    public function isClosed()
+    {
+        $state = $this->getState();
+
+        return (in_array($state, State\Entity::CLOSED_STATES, true) === true);
+    }
 }
