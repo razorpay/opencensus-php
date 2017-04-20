@@ -103,9 +103,6 @@ var app = angular.module('app', [
     }).state('app.payments.detail', {
       url: '/:id',
       templateUrl: 'tpl/app_payment_detail.html'
-    }).state('app.config', {
-      url: '/config',
-      templateUrl: 'tpl/app_config.html'
     }).state('app.refunds', {
       url: '/refunds',
       template: '<div ui-view class="fade-in-down"></div>'
@@ -227,6 +224,9 @@ var app = angular.module('app', [
     }).state('app.teammanagement', {
       url: '/team',
       templateProvider: reactTemplateProvider('<manage-team />')
+    }).state('app.config', {
+      url: '/config',
+      templateProvider: reactTemplateProvider('<config-details/>'),
     })
 
       //Guest Routes
