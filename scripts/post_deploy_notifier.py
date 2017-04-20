@@ -48,9 +48,8 @@ class SlackNotifier:
         attachments = {}
         slackMessage = {}
         metadata = message['metadata']
-        startTime = metadata['startedAt'].strftime('%d-%b-%Y %H:%M:%S')
-        finishedAt = metadata['finishedAt'].strftime('%d-%b-%Y %H:%M:%S')
-        #attachments['pretext'] = 'API Deploy Logs.Started:%s, Finished:%s' %(startTime, finishedAt)
+        startTime = "%s UTC" %(metadata['startedAt'].strftime('%d-%b-%Y %H:%M:%S'))
+        finishedAt = "%s UTC" %(metadata['finishedAt'].strftime('%d-%b-%Y %H:%M:%S'))
         attachments['title'] = 'Deployed by %s' % (metadata['deployed_by'])
         attachments['fallback'] = 'API Deploy Completed at :%s' % (
             metadata['finishedAt'])
@@ -78,6 +77,8 @@ class SlackNotifier:
 
     def notify(self, message):
         slackMessage = self.formatSlackMessage(message)
+        print slackMessage
+        sys.exit(0)
         try:
             r = requests.post(self.url, data=json.dumps(slackMessage))
             r.raise_for_status()
