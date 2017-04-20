@@ -3,6 +3,8 @@
 namespace RZP\Services;
 
 use App;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Illuminate\Mail\Mailer as LaravelMailer;
 
 class Mailer extends LaravelMailer
@@ -34,16 +36,16 @@ class Mailer extends LaravelMailer
         }
         catch (\Throwable $e)
         {
-            if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
+            if ($job->attempts() > self::MAX_ALLOWED_ATTEMPTS)
             {
-                $this->delete();
+                $job->delete();
             }
             else
             {
-                $this->release(self::RELEASE_WAIT_SECS);
+                $job->release(self::RELEASE_WAIT_SECS);
             }
 
-            $this->trace->traceException(
+            $trace->traceException(
                 $e,
                 Trace::ERROR,
                 TraceCode::MAILER_JOB_ERROR,
