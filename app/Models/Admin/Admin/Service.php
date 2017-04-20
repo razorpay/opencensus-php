@@ -34,8 +34,6 @@ class Service extends Base\Service
 
     public function authenticate(string $orgId, array $input)
     {
-        \Database\DefaultConnection::set('live');
-
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
         return $this->login($orgId, $input);

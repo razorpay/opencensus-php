@@ -30,7 +30,7 @@ class AuthPolicyTest extends TestCase
 
     public function testAdminLogin()
     {
-        $this->ba->appAuth('rzp_live');
+        $this->ba->appAuth();
 
         $result = $this->startTest();
 
@@ -215,7 +215,7 @@ class AuthPolicyTest extends TestCase
 
     public function testPasswordChangedAtPolicy()
     {
-        $this->ba->appAuth('rzp_live');
+        $this->ba->appAuth();
 
         $passwordChangedAt = Carbon::now()->subDays(40)->timestamp;
 
