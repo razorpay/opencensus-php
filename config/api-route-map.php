@@ -306,4 +306,11 @@ return [
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
     ],
+
+    // auth
+    'admin_internal' => [
+        // Credits
+        'credits_create'                    => 'merchants/{id}/credits_log',
+        'credits_delete'                    => 'merchants/{mid}/credits/{id}',
+    ],
 ];
