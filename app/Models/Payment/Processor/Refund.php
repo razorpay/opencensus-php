@@ -657,7 +657,7 @@ trait Refund
 
                 $refunded = $this->callGatewayRefundFunction($payment, $data);
 
-                $this->refund->setGatewayRefunded($reversed);
+                $this->refund->setGatewayRefunded($refunded);
             });
 
             $this->repo->saveOrFail($this->refund);
