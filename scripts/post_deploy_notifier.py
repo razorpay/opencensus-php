@@ -19,7 +19,6 @@ class KeyStore:
 
     @staticmethod
     def get_github_token():
-        #return KeyStore.get_key("GITHUB_TOKEN")
         return KeyStore.get_key("github_token")
 
     @staticmethod
@@ -31,6 +30,10 @@ class KeyStore:
         return KeyStore.get_key("RZP_WERCKER_PROD_PIPELINE_ID")
 
     @staticmethod
+    def get_current_pipeline_id():
+        return KeyStore.get_key("RZP_WERCKER_CURR_PIPELINE_ID")
+
+    @staticmethod
     def get_slack_token():
         return KeyStore.get_key('SLACK_TOKEN')
 
@@ -38,7 +41,7 @@ class KeyStore:
 class SlackNotifier:
     def __init__(self):
         # currently hardcoding this. We need to arrive at this value later
-        self.channel = "C52PN72AK" ## tech_deploys
+        self.channel = "C52PN72AK"  # tech_deploys
         self.icon_url = 'https://s3-us-west-2.amazonaws.com/slack-files2/bot_icons/2015-06-25/6837962368_48.png'
         self.url = 'https://razorpay.slack.com/services/hooks/incoming-webhook?token=%s' % (
             KeyStore.get_slack_token())
@@ -48,8 +51,10 @@ class SlackNotifier:
         attachments = {}
         slackMessage = {}
         metadata = message['metadata']
-        startTime = "%s UTC" %(metadata['startedAt'].strftime('%d-%b-%Y %H:%M:%S'))
-        finishedAt = "%s UTC" %(metadata['finishedAt'].strftime('%d-%b-%Y %H:%M:%S'))
+        startTime = "%s UTC" % (
+            metadata['startedAt'].strftime('%d-%b-%Y %H:%M:%S'))
+        finishedAt = "%s UTC" % (
+            metadata['finishedAt'].strftime('%d-%b-%Y %H:%M:%S'))
         attachments['title'] = 'Deployed by %s' % (metadata['deployed_by'])
         attachments['fallback'] = 'API Deploy Completed at :%s' % (
             metadata['finishedAt'])
@@ -123,6 +128,9 @@ class MergeCommitParser:
         wercker_api_token = KeyStore.get_wercker_api_token()
         headers = {'Authorization': 'Bearer {0}'.format(wercker_api_token)}
         pipeline_id = KeyStore.get_prod_pipeline_id()
+        current_pipeline_id = KeyStore.get_current_pipeline_id()
+        if current_pipeline_id != pipeline_id:
+            sys.exit(0)
         params = {
             'pipelineId': pipeline_id,
             'limit': self.limit,
@@ -187,7 +195,7 @@ class MergeCommitParser:
                 pr_details['title'] = title
                 pr_details['details'] = body
                 pr_details['pr'] = p
-                pr_details['pr_url'] = '%s%s' %(self.base_pr_url, p)
+                pr_details['pr_url'] = '%s%s' % (self.base_pr_url, p)
             del m['pr_nums']
             m.update(pr_details)
             commits.append(m)
