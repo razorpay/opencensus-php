@@ -608,6 +608,9 @@ class Entity extends Base\PublicEntity
         $reportTxn[Payment\Entity::ORDER_ID] = null;
         $reportTxn['order_receipt'] = null;
         $reportTxn[Payment\Entity::METHOD] = null;
+        $reportTxn['card_network'] = null;
+        $reportTxn['card_issuer'] = null;
+        $reportTxn['card_type'] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
@@ -633,6 +636,15 @@ class Entity extends Base\PublicEntity
 
                 $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
                 $reportTxn['order_receipt'] = $order->getReceipt();
+            }
+
+            if ($payment->isMethodCardOrEmi())
+            {
+                $card = $payment->card;
+
+                $reportTxn['card_network'] = $card->getNetwork();
+                $reportTxn['card_issuer'] = $card->getIssuer();
+                $reportTxn['card_type'] = $card->getType();
             }
         }
         else if ($this->isTypeRefund())
