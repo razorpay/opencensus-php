@@ -40,10 +40,11 @@ class Repository extends Base\Repository
     /**
      * Fetches all attempts pending reconciliation between given timstamps (both including)
      */
-    public function getAttemptsBetweenTimestamps(int $from, int $to)
+    public function getAttemptsBetweenTimestampsWithStatus(int $from, int $to, string $status)
     {
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->where(Entity::STATUS, '=', $status)
                     ->get();
     }
 }

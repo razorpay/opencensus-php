@@ -263,7 +263,9 @@ class ReconciliationTest extends TestCase
         $txtFile1 = $this->createSettlementsAndSettlementFile(3);
 
         // Added so that a new file name is created for next settlement
-        sleep(1);
+        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime->addSecond();
+        Carbon::setTestNow($currentTime);
 
         $txtFile2 = $this->createSettlementsAndSettlementFile(
             2, Carbon::today("Asia/Kolkata")->subDays(5)->timestamp);

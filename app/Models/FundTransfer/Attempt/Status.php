@@ -8,5 +8,5 @@ class Status
     const FAILED        = 'failed';
     const PROCESSED     = 'processed';
 
-    const PENDING_RECONCILIATION = [self::CREATED];
+    const PENDING_RECONCILIATION = self::CREATED;
 }

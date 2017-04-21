@@ -44,14 +44,14 @@ class ReconciliationGenerator
 
     public function reconcileSettlementsInTestMode($input)
     {
-        // get all attempts for today
-        $start = Carbon::today("Asia/Kolkata")->timestamp;
-
-        $end = Carbon::today("Asia/Kolkata")->addDay()->timestamp - 1;
+        list($startTimestamp, $endTimestamp) = $this->getReconcileTimestamps();
 
         $nonReconciledAttempts = $this->repo
                                       ->fund_transfer_attempt
-                                      ->getAttemptsBetweenTimestamps($start, $end);
+                                      ->getAttemptsBetweenTimestampsWithStatus(
+                                            $startTimestamp,
+                                            $endTimestamp,
+                                            FundTransfer\Attempt\Status::PENDING_RECONCILIATION);
 
         // get batch id of all above attempts
         $batchIds = $nonReconciledAttempts->pluck(FundTransfer\Attempt\Entity::BATCH_FUND_TRANSFER_ID)
@@ -159,5 +159,37 @@ class ReconciliationGenerator
         }
 
         return $data;
+    }
+
+    /**
+     * Gets timestamps of settlement that need to be reconciled
+     *
+     * If yesterday was a working day
+     *      start timestamp = Start of today
+     * Else find the last working day
+     *      start timestamp = beginning of the day post the last working day
+     *
+     * @return Array of timestamps [$startTimestamp, $endTimestamp]
+     */
+    protected function getReconcileTimestamps(): array
+    {
+        $today = Carbon::today('Asia/Kolkata');
+
+        $endTimestamp = Carbon::tomorrow('Asia/Kolkata')->timestamp - 1;
+
+        $yesterday = Carbon::yesterday('Asia/Kolkata');
+
+        $lastWorkingDay = Settlement\Holidays::getPreviousWorkingDay($today);
+
+        if ($lastWorkingDay === $yesterday)
+        {
+            $startTimestamp = $today->timestamp;
+        }
+        else
+        {
+            $startTimestamp = $lastWorkingDay->timestamp + 1;
+        }
+
+        return [$startTimestamp, $endTimestamp];
     }
 }

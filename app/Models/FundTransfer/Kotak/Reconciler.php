@@ -35,7 +35,7 @@ class Reconciler
         'Presented and Paid',
     ];
 
-    const MUTEX_RESOURCE        = 'SETTLEMENT_RECONCILIATION_PROCESSING';
+    const MUTEX_RESOURCE        = 'SETTLEMENT_RECONCILIATION_PROCESSING_%s';
 
     const MUTEX_LOCK_TIMEOUT    = 300;
 
@@ -58,6 +58,11 @@ class Reconciler
 
         $this->app = App::getFacadeRoot();
 
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
+
         $this->repo = $this->app['repo'];
 
         $this->trace = $this->app['trace'];
@@ -67,8 +72,10 @@ class Reconciler
 
     public function process($input)
     {
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
+
         $data = $this->mutex->acquireAndRelease(
-            self::MUTEX_RESOURCE,
+            $mutexResource,
             function () use ($input)
             {
                 return $this->processReconciliation($input);
