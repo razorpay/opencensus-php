@@ -1,0 +1,76 @@
+<?php
+
+namespace RZP\Models\Tax;
+
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+use RZP\Models\Base;
+
+class Entity extends Base\PublicEntity
+{
+    use SoftDeletes;
+
+    // Table attributes
+
+    const MERCHANT_ID = 'merchant_id';
+    const NAME        = 'name';
+
+    /**
+     * Rate type: Either of percentage, flat.
+     */
+    const RATE_TYPE   = 'rate_type';
+
+    /**
+     * Rate: The rate value. Must be integer.
+     * In case of flat type, it's integer value in paisa, otherwise percentage
+     * amount multiplied by 100 (so between 0 - 10000).
+     */
+    const RATE        = 'rate';
+
+    protected static $sign = 'tax';
+
+    protected $entity = 'tax';
+
+    protected $generateIdOnCreate = true;
+
+    protected $visible = [
+        self::ID,
+        self::PUBLIC_ID,
+        self::MERCHANT_ID,
+        self::NAME,
+        self::RATE_TYPE,
+        self::RATE,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT,
+    ];
+
+    protected $public = [
+        self::ID,
+        self::ENTITY,
+        self::NAME,
+        self::RATE_TYPE,
+        self::RATE,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
+    protected $fillable = [
+        self::NAME,
+        self::RATE_TYPE,
+        self::RATE,
+    ];
+
+    protected $casts = [
+        self::RATE => 'int',
+    ];
+
+    // Getters
+
+    // Relations
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+}
