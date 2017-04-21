@@ -3,12 +3,14 @@
 namespace RZP\Models\FundTransfer\Kotak;
 
 use Carbon\Carbon;
+use Excel;
+use Illuminate\Support\Facades\App;
+use Mail;
+
+use RZP\Constants\Mode;
+use RZP\Constants\MailTags;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Excel;
-use Mail;
-use RZP\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Merchant;
@@ -16,10 +18,9 @@ use RZP\Models\Transaction;
 use RZP\Models\Payout;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
-use RZP\Constants\MailTags;
 use RZP\Models\Settlement\SlackNotification;
-
-use Illuminate\Support\Facades\App;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Reconciler
 {
@@ -86,7 +87,7 @@ class Reconciler
         return $data;
     }
 
-    protected function processReconciliation($input)
+    protected function processReconciliation($input): array
     {
         $reconcileFile = $this->getReconcilationFile($input);
 
@@ -98,7 +99,7 @@ class Reconciler
                     'message' => 'No file present'
                 ]);
 
-            return new Base\PublicCollection;
+            return [];
         }
 
         $data = $this->parseTextFile($reconcileFile);
@@ -107,9 +108,7 @@ class Reconciler
 
         if (empty($data) === true)
         {
-            $response =  [
-                'message' => 'no records to reconcile'
-            ];
+            $response =  ['message' => 'no records to reconcile'];
         }
         else
         {
@@ -128,7 +127,7 @@ class Reconciler
         return $response;
     }
 
-    protected function reconcile($data)
+    protected function reconcile($data): array
     {
         $collection = new Base\PublicCollection;
         $failures = new Base\PublicCollection;
@@ -183,10 +182,11 @@ class Reconciler
         ];
 
         (new SlackNotification)->success('setl_reconciliation', $response);
+
         return $response;
     }
 
-    protected function reconcileEntity($row)
+    protected function reconcileEntity($row): array
     {
         // reconciliation version
         $version = $row[Headings::VERSION] ?: FundTransferAttempt\Version::V1;
@@ -299,7 +299,7 @@ class Reconciler
         return $source;
     }
 
-    protected function parseDataFromRow($entity, $row)
+    protected function parseDataFromRow($entity, $row): array
     {
         $utr = null;
 
@@ -358,7 +358,7 @@ class Reconciler
         ];
     }
 
-    protected function loadEntityAndRelationsV1($row)
+    protected function loadEntityAndRelationsV1($row): array
     {
         $entityId = $row[Headings::PAYMENT_REF_NO];
 
@@ -398,7 +398,7 @@ class Reconciler
         ];
     }
 
-    protected function loadEntityAndRelationsV2($row)
+    protected function loadEntityAndRelationsV2($row): array
     {
         $entityId = $row[Headings::PAYMENT_REF_NO];
 
@@ -427,6 +427,11 @@ class Reconciler
 
     protected function sendReconciliationMail($date, $response)
     {
+        if ($this->getMode === Mode::TEST)
+        {
+            return;
+        }
+
         $msg = 'UTR File reconciled.' . PHP_EOL;
 
         $failureCount = $response['failures_count'];
