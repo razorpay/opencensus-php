@@ -276,8 +276,9 @@ WHERE id IN (395660, 397342, 406882, 408098, 408125, 408183, 420107, 420132, 420
 
 update daily_settlements join
 (
-    select batch_fund_transfer_id, sum(case when `status`='processed' then 1 else 0 end) as processed_count
+    select batch_fund_transfer_id, count(*) as processed_count
     from settlements
+    where status = 'processed'
     group by batch_fund_transfer_id
 ) as stats
 on daily_settlements.id =  stats.`batch_fund_transfer_id`
@@ -285,8 +286,9 @@ set daily_settlements.processed_count = stats.processed_count;
 
 update daily_settlements join
 (
-    select batch_fund_transfer_id, sum(case when `status`='processed' then 1 else 0 end) as processed_count
+    select batch_fund_transfer_id, count(*) as processed_count
     from fund_transfer_attempts
+    where status = 'processed'
     group by batch_fund_transfer_id
 ) as stats
 on daily_settlements.id =  stats.`batch_fund_transfer_id`
@@ -294,18 +296,21 @@ set daily_settlements.processed_count = stats.processed_count;
 
 update daily_settlements join
 (
-    select batch_fund_transfer_id, sum(case when `status`='processed' then `amount` else 0 end) as processed_amount
+    select batch_fund_transfer_id, sum(amount) as processed_amount
     from settlements
     group by batch_fund_transfer_id
 ) as stats
 on daily_settlements.id =  stats.`batch_fund_transfer_id`
-set daily_settlement.processed_amount = stats.processed_amount;
+set daily_settlements.processed_amount = stats.processed_amount;
 
 update daily_settlements join
 (
-    select batch_fund_transfer_id, sum(case when `status`='processed' then `amount` else 0 end) as processed_amount
-    from fund_transfer_attempts
-    group by batch_fund_transfer_id
+    select fund_transfer_attempts.batch_fund_transfer_id, sum(settlements.amount) as processed_amount
+    from fund_transfer_attempts join settlements
+    on fund_transfer_attempts.source_id = settlements.`id`
+    where fund_transfer_attempts.status = 'processed'
+    and fund_transfer_attempts.batch_fund_transfer_id = settlements.batch_fund_transfer_id
+    group by fund_transfer_attempts.batch_fund_transfer_id
 ) as stats
 on daily_settlements.id =  stats.`batch_fund_transfer_id`
-set daily_settlement.processed_amount = stats.processed_amount;
+set daily_settlements.processed_amount = stats.processed_amount;

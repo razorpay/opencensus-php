@@ -237,7 +237,7 @@ class Reconciler
 
         $status = $class::FAILED;
 
-        if ($parsedData['status_code'] === Status::PROCESSED)
+        if ($parsedData['bank_status_code'] === Status::PROCESSED)
         {
             $remarks = $parsedData['remarks'];
 
@@ -350,7 +350,7 @@ class Reconciler
             'version' => $version,
             'payment_ref_no' => trim($row[Headings::PAYMENT_REF_NO] ?? null),
             'utr' => $utr,
-            'status_code' => $statusCode,
+            'bank_status_code' => $statusCode,
             'remarks' => trim($row[Headings::REMARKS] ?? null),
             'payment_date' => trim($row[Headings::PAYMENT_DATE] ?? null),
             'date_time' => trim($row[Headings::DATE_TIME] ?? null),
