@@ -8,9 +8,9 @@ class Service extends Base\Service
 {
     public function reconcileSettlements($input)
     {
-        $collection = (new Reconciler)->process($input);
+        $data = (new Reconciler)->process($input);
 
-        return $collection->toArray();
+        return $data;
     }
 
     public function reconcileH2HSettlements($input)

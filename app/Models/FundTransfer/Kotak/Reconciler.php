@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use Excel;
 use Mail;
-use RZP\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -15,7 +14,6 @@ use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Payout;
-use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
 use RZP\Models\Settlement\SlackNotification;
@@ -39,6 +37,23 @@ class Reconciler
     const MUTEX_RESOURCE        = 'SETTLEMENT_RECONCILIATION_PROCESSING';
 
     const MUTEX_LOCK_TIMEOUT    = 300;
+
+    const SOURCE_ATTRS = [
+        Settlement\Entity::UTR,
+        Settlement\Entity::STATUS,
+        Settlement\Entity::FAILURE_REASON,
+        Settlement\Entity::REMARKS,
+    ];
+
+    const CHILD_ATTRS = [
+        FundTransferAttempt\Entity::UTR,
+        FundTransferAttempt\Entity::STATUS,
+        FundTransferAttempt\Entity::FAILURE_REASON,
+        FundTransferAttempt\Entity::REMARKS,
+        FundTransferAttempt\Entity::BANK_STATUS_CODE,
+        FundTransferAttempt\Entity::DATE_TIME,
+        FundTransferAttempt\Entity::CMS_REF_NO,
+    ];
 
     /**
      * All payments in the current mpr
@@ -94,7 +109,7 @@ class Reconciler
                     'message' => 'No file present'
                 ]);
 
-            return new Base\PublicCollection;
+            return [];
         }
 
         $data = $this->parseTextFile($reconcileFile);
@@ -124,7 +139,7 @@ class Reconciler
         return $response;
     }
 
-    protected function reconcile($data)
+    protected function reconcile($data): array
     {
         $collection = new Base\PublicCollection;
         $failures = new Base\PublicCollection;
@@ -183,27 +198,22 @@ class Reconciler
         ];
 
         (new SlackNotification)->success('setl_reconciliation', $response);
+
         return $response;
     }
 
-    protected function reconcileEntity($row)
+    protected function reconcileEntity($row): array
     {
-        // reconciliation version
-        $version = $row[Headings::VERSION] ?: FundTransferAttempt\Version::V1;
+        $parsedData = $this->parseDataFromRow($row);
 
-        // validate version
-        FundTransferAttempt\Version::validateVersion($version);
-
-        $loadEntityAndRelationsMethod = 'loadEntityAndRelations' . $version;
-        $data = $this->$loadEntityAndRelationsMethod($row);
+        $data = $this->loadEntityAndRelations($parsedData);
 
         $entity = $data['entity'];
         $entityId = $data['entity_id'];
 
         if ($entity !== null)
         {
-            $processEntityStatusMethod = 'processEntityStatus' . $version;
-            $entity = $this->$processEntityStatusMethod($entity, $row);
+            $entity = $this->processEntityStatus($entity, $parsedData);
         }
 
         return [
@@ -212,121 +222,9 @@ class Reconciler
         ];
     }
 
-    protected function processEntityStatusV1($entity, $row)
+    protected function processEntityStatus($entity, $parsedData)
     {
-        $parsedData = $this->parseDataFromRow($entity, $row);
-
-        $utr = $parsedData['utr'] ?? null;
-        $statusCode = $parsedData['status_code'] ?? null;
-        $remarks = $parsedData['remarks'] ?? null;
-        $recordDate = $parsedData['record_date'] ?? null;
-        $failureReason = $parsedData['failure_reason'] ?? null;
-        $status = $parsedData['status'] ?? null;
-
-        // if already processed
-        if ($entity->isPendingReconciliation() === false)
-        {
-            $oldStatus = $entity->getStatus();
-
-            if ($oldStatus !== $status)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Old and new status not matching. ' .
-                    'Old status: ' . $oldStatus . ' New status: ' . $status .
-                    'Entity Id: ' . $entity->getPublicId());
-            }
-        }
-
-        $entity->setUtr($utr);
-        $entity->setStatus($status);
-        $entity->setFailureReason($failureReason);
-        $entity->setRemarks($remarks);
-
-        $this->repo->saveOrFail($entity);
-
-        $entity->transaction->setReconciledAt($this->reconciledAt);
-        $this->repo->saveOrFail($entity->transaction);
-
-        return $entity;
-    }
-
-    protected function processEntityStatusV2($entity, $row)
-    {
-        $parsedData = $this->parseDataFromRow($entity, $row);
-
-        $utr = $parsedData['utr'] ?? null;
-        $statusCode = $parsedData['status_code'] ?? null;
-        $remarks = $parsedData['remarks'] ?? null;
-        $recordDate = $parsedData['record_date'] ?? null;
-        $failureReason = $parsedData['failure_reason'] ?? null;
-        $status = $parsedData['status'] ?? null;
-
-        $oldStatus = $entity->getStatus();
-
-        $source = $entity->source;
-
-        if ($oldStatus !== $status)
-        {
-            // if already processed
-            if ($entity->isPendingReconciliation() === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Old and new status not matching. ' .
-                    'Old status: ' . $oldStatus . ' New status: ' . $status .
-                    'Entity Id: ' . $entity->getPublicId());
-            }
-
-            $entity->setStatus($status);
-
-            if ($status === FundTransferAttempt\Status::PROCESSED)
-            {
-                $batchId = $entity->batchFundTransfer->getId();
-
-                if (isset($this->batchFundTransferStats[$batchId]) === false)
-                {
-                    $this->batchFundTransferStats[$batchId] =
-                        ['processed_count' => 1, 'processed_amount' => $source->getAmount()];
-                }
-                else
-                {
-                    $this->batchFundTransferStats[$batchId]['processed_count']++;
-
-                    $this->batchFundTransferStats[$batchId]['processed_amount'] += $source->getAmount();
-                }
-            }
-        }
-
-        $entity->setUtr($utr);
-        $entity->setFailureReason($failureReason);
-        $entity->setRemarks($remarks);
-        $entity->setBankStatusCode($statusCode);
-        $entity->setDateTime($row[Headings::DATE_TIME]);
-        $entity->setCmsRefNo($row[Headings::CMS_REF_NO]);
-
-        $this->repo->saveOrFail($entity);
-
-        $source->setUtr($utr);
-        $source->setFailureReason($failureReason);
-        $source->setStatus($status);
-        $source->setRemarks($remarks);
-
-        $this->repo->saveOrFail($source);
-
-        $source->transaction->setReconciledAt($this->reconciledAt);
-        $this->repo->saveOrFail($source->transaction);
-
-        return $source;
-    }
-
-    protected function parseDataFromRow($entity, $row)
-    {
-        $utr = null;
-
-        $statusCode = trim($row[Headings::STATUS_OF_TRANSACTION]);
-
-        $remarks = trim($row[Headings::REMARKS]);
-
-        $recordDate = Carbon::createFromFormat('d-M-y', $row[Headings::PAYMENT_DATE], 'Asia/Kolkata');
+        $recordDate = Carbon::createFromFormat('d-M-y', $parsedData['payment_date'], 'Asia/Kolkata');
 
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -339,14 +237,9 @@ class Reconciler
 
         $status = $class::FAILED;
 
-        if ($statusCode === Status::PROCESSED)
+        if ($parsedData['status_code'] === Status::PROCESSED)
         {
-            $utr = trim($row['UTR number']);
-
-            if (empty($utr) === true)
-            {
-                $utr = null;
-            }
+            $remarks = $parsedData['remarks'];
 
             // If current time is before 10 pm, dont mark the settlement as
             // processed and update only the utr
@@ -367,48 +260,148 @@ class Reconciler
             }
         }
 
+        $parsedData['failure_reason'] = $failureReason;
+
+        $parsedData['status'] = $status;
+
+        $source = ($parsedData['version'] === 'V2') ? $entity->source : $entity;
+
+        $this->updateEntities($parsedData, $source, $entity);
+
+        return $source;
+    }
+
+    protected function updateEntities(array $parsedData, $source, $entity)
+    {
+        $oldStatus = $entity->getStatus();
+
+        $status = $parsedData['status'];
+
+        if ($oldStatus !== $status)
+        {
+            // if already processed
+            if ($entity->isPendingReconciliation() === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Old and new status not matching. ' .
+                    'Old status: ' . $oldStatus . ' New status: ' . $status .
+                    'Entity Id: ' . $entity->getPublicId());
+            }
+
+            // Update processed stats in batch entity
+            if ($status === FundTransferAttempt\Status::PROCESSED)
+            {
+                $batchId = $entity->batchFundTransfer->getId();
+
+                $this->updateBatchFundTransferStats($batchId, $source);
+            }
+        }
+
+        // Update source and child entities
+        if ($parsedData['version'] === 'V2')
+        {
+            foreach (self::CHILD_ATTRS as $type => $attr)
+            {
+                $functionName = 'set' . studly_case($attr);
+                $entity->$functionName($parsedData[$attr]);
+            }
+
+            $this->repo->saveOrFail($entity);
+        }
+
+        foreach (self::SOURCE_ATTRS as $type => $attr)
+        {
+            $functionName = 'set' . studly_case($attr);
+            $source->$functionName($parsedData[$attr]);
+        }
+
+        $this->repo->saveOrFail($source);
+
+        $source->transaction->setReconciledAt($this->reconciledAt);
+        $this->repo->saveOrFail($source->transaction);
+
+        return $source;
+    }
+
+    /**
+     * Reads row from reconciliation file, and returns array of parsed data from that
+     *
+     * @param           Entity
+     * @param   Array   Row to be parsed
+     *
+     * @return  Array   Parsed data
+     */
+    protected function parseDataFromRow(array $row): array
+    {
+        $version = $row[Headings::VERSION] ?: FundTransferAttempt\Version::V1;
+        FundTransferAttempt\Version::validateVersion($version);
+
+        $statusCode = trim($row[Headings::STATUS_OF_TRANSACTION] ?? null);
+
+        $utr = null;
+
+        if ($statusCode === Status::PROCESSED)
+        {
+            $utr = trim($row['UTR number']);
+            $utr = ($utr === '') ? null : $utr;
+        }
+
         return [
+            'version' => $version,
+            'payment_ref_no' => trim($row[Headings::PAYMENT_REF_NO] ?? null),
             'utr' => $utr,
             'status_code' => $statusCode,
-            'remarks' => $remarks,
-            'record_date' => $recordDate,
-            'failure_reason' => $failureReason,
-            'status' => $status
+            'remarks' => trim($row[Headings::REMARKS] ?? null),
+            'payment_date' => trim($row[Headings::PAYMENT_DATE] ?? null),
+            'date_time' => trim($row[Headings::DATE_TIME] ?? null),
+            'cms_ref_no' => trim($row[Headings::CMS_REF_NO] ?? null),
         ];
     }
 
-    protected function loadEntityAndRelationsV1($row)
+    protected function loadEntityAndRelations(array $parsedData): array
     {
-        $entityId = $row[Headings::PAYMENT_REF_NO];
+        $entityId = $parsedData['payment_ref_no'];
 
         $entityId = str_replace(' ', '_', $entityId);
 
-        if ($entityId === '')
+        if (($entityId === '') and (strlen(trim((implode($parsedData)))) === 0))
         {
-            // Check if row is empty.
-            if (strlen(implode($row)) === 0)
-            {
                 return;
-            }
         }
 
         $entity = null;
 
-        if (strpos($entityId, Settlement\Entity::getSign(), 0) === 0)
+        switch ($parsedData['version'])
         {
-            Settlement\Entity::verifyIdAndStripSign($entityId);
+            case 'V2':
+                $entity = $this->repo
+                               ->fund_transfer_attempt
+                               ->findWithRelations(
+                                    $entityId,
+                                    ['source', 'source.transaction', 'source.merchant']);
+                break;
 
-            $entity = $this->repo
-                           ->settlement
-                           ->findWithRelations($entityId, ['merchant', 'transaction']);
-        }
-        else if(strpos($entityId, Payout\Entity::getSign(), 0) === 0)
-        {
-            Payout\Entity::verifyIdAndStripSign($entityId);
+            case 'V1':
+                if (strpos($entityId, Settlement\Entity::getSign(), 0) === 0)
+                {
+                    Settlement\Entity::verifyIdAndStripSign($entityId);
 
-            $entity = $this->repo
-                           ->payout
-                           ->findWithRelations($entityId, ['merchant', 'transaction']);
+                    $entity = $this->repo
+                                   ->settlement
+                                   ->findWithRelations($entityId, ['merchant', 'transaction']);
+                }
+                else if(strpos($entityId, Payout\Entity::getSign(), 0) === 0)
+                {
+                    Payout\Entity::verifyIdAndStripSign($entityId);
+
+                    $entity = $this->repo
+                                   ->payout
+                                   ->findWithRelations($entityId, ['merchant', 'transaction']);
+                }
+                break;
+
+            default:
+                throw new Exception\LogicException('Version not supported: ' . $parsedData['version']);
         }
 
         return [
@@ -417,31 +410,19 @@ class Reconciler
         ];
     }
 
-    protected function loadEntityAndRelationsV2($row)
+    protected function updateBatchFundTransferStats($batchId, $source)
     {
-        $entityId = $row[Headings::PAYMENT_REF_NO];
-
-        $entityId = str_replace(' ', '_', $entityId);
-
-        if ($entityId === '')
+        if (isset($this->batchFundTransferStats[$batchId]) === false)
         {
-            // Check if row is empty.
-            if (strlen(implode($row)) === 0)
-            {
-                return;
-            }
+            $this->batchFundTransferStats[$batchId] =
+                ['processed_count' => 1, 'processed_amount' => $source->getAmount()];
         }
+        else
+        {
+            $this->batchFundTransferStats[$batchId]['processed_count']++;
 
-        $entity = null;
-
-        $entity = $this->repo
-                       ->fund_transfer_attempt
-                       ->findWithRelations($entityId, ['source', 'source.transaction', 'source.merchant']);
-
-        return [
-            'entity_id' => $entityId,
-            'entity'    => $entity
-        ];
+            $this->batchFundTransferStats[$batchId]['processed_amount'] += $source->getAmount();
+        }
     }
 
     protected function sendReconciliationMail($date, $response)
@@ -501,7 +482,7 @@ class Reconciler
         return $reconcileFile;
     }
 
-    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix): array
     {
         $count = count($values);
 
