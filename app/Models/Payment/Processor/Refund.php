@@ -653,6 +653,8 @@ trait Refund
                 $this->refund->setGatewayRefunded($refunded);
             });
 
+            // We don't want the transaction to fail if this
+            // save fails that's why keeping it outside.
             $this->repo->saveOrFail($this->refund);
 
             // send notification to merchant/customer, this is outside transaction
@@ -694,7 +696,6 @@ trait Refund
      *
      *   if successful
      * - update the refund status to processed.
-     * - record transaction for the refund.
      * - no need to update payment - marked as refunded
      *
      * @param Payment\Refund\Entity $refund
@@ -739,8 +740,6 @@ trait Refund
     protected function updateRefundAttemptInfo()
     {
         $this->refund->incrementAttempts();
-
-        $this->refund->setLastAttemptedAt();
 
         $this->repo->saveOrFail($this->refund);
     }

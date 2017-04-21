@@ -223,13 +223,13 @@ class Entity extends Base\PublicEntity
         $attempts = $this->getAttribute(self::ATTEMPTS);
 
         $this->setAttribute(self::ATTEMPTS, $attempts + 1);
+
+        $this->setAttribute(self::LAST_ATTEMPTED_AT, $this->freshTimestamp());
     }
 
     public function setLastAttemptedAt()
     {
-        $timestamp = $this->freshTimestamp();
-
-        $this->setAttribute(self::LAST_ATTEMPTED_AT, $timestamp);
+        $this->setAttribute(self::LAST_ATTEMPTED_AT, $this->freshTimestamp());
     }
 
     public function setPublicPaymentIdAttribute(array & $array)

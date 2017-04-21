@@ -8,6 +8,4 @@ class Url
     const TEST_DOMAIN    = 'https://ebctest.cybersource.com/ebctest';
 
     const VERIFY         = '/Query';
-
-    const VERIFY_REFUND2 = '/Query';
 }

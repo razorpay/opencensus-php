@@ -29,11 +29,6 @@ class Service extends Base\Service
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
-    const DURATION_REFUNDS = [
-            1 => 3600,
-            2 => 10800
-    ];
-
     public function create(array $input)
     {
         (new Validator)->validateInput('direct', $input);

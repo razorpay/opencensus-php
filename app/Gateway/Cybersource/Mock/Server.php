@@ -817,18 +817,12 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'verify_content');
 
-        $xml = require __DIR__ . '/VerifyResponseXml.php';
-
-        $this->content($xml, 'verify_xml');
-
-        return $this->makeResponse($xml);
-    }
-
-    public function verifyRefund2($input)
-    {
-        parent::verify($input);
-
         $xml = '';
+
+        if ($content !== [])
+        {
+            $xml = require __DIR__ . '/VerifyResponseXml.php';
+        }
 
         $this->content($xml, 'verify_xml');
 
@@ -837,8 +831,13 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyContent(array $input)
     {
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $input[F::MERCHANT_REFERENCE_NUMBER], Cybersource\Action::AUTHORIZE);
+
+        if ($payment === null)
+        {
+            return [];
+        }
 
         $amount = ($payment->getAmount() / 100);
 

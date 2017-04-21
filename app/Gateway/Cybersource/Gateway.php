@@ -233,7 +233,7 @@ class Gateway extends Base\Gateway
      */
     public function verifyRefund2(array $input)
     {
-        parent::verifyRefund2($input);
+        parent::verify($input);
 
         $content = $this->sendRefundVerifyRequest($input);
 

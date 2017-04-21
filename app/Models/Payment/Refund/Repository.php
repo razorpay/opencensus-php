@@ -370,7 +370,7 @@ class Repository extends Base\Repository
                     ->where($rStatus, '=', Refund\Status::FAILED)
                     ->whereIn($pGateway, $gateways)
                     ->with(['payment','payment.terminal'])
-                    ->limit(100)
+                    ->limit(50)
                     ->get();
     }
 }
