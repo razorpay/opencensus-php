@@ -6,7 +6,7 @@ const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
 const FEATURES_SAVE = 'FEATURES_SAVE';
 
-export const fetchConfig = () => {
+export const fetchConfigAjax = () => {
   return ajax({
     url: '/user/generic',
     appendModeInQueryParam: true,
@@ -31,6 +31,12 @@ export const fetchFeatures = currentUserId => {
   });
 };
 
+export const fetchConfig = () => {
+  return dispatch => {
+    return fetchConfigAjax()
+  }
+}
+
 /*
  * Fetches merchant's config and features
  */
@@ -38,7 +44,7 @@ export const fetchConfigAndFeatures = currentUserId => {
   return dispatch => {
     return dispatch({
       type: CONFIG_AND_FEATURES_FETCH,
-      payload: Promise.all([fetchConfig(), fetchFeatures(currentUserId)]),
+      payload: Promise.all([fetchConfigAjax(), fetchFeatures(currentUserId)]),
     });
   };
 };

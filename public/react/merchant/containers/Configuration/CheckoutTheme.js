@@ -88,6 +88,11 @@ export default class CheckoutTheme extends Component {
                   />
                   <div class="help-block"><i>Max file size: 1MB</i></div>
                 </div>
+                <div>
+                  <small class="help-block">
+                    Upload your logo that will appear on the checkout form. Choose a square image of minimum dimensions 256x256 px.
+                  </small>
+                </div>
               </div>
             </div>
 
