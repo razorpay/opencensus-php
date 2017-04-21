@@ -924,6 +924,21 @@ angular.module('app.services', [])
       }
 
       return val instanceof Array;
+    },
+
+    // rightmost obj gets preference for same keys
+    concatObj: function() {
+      var result = {};
+      var len = arguments.length;
+      for (var i = 0; i < len; i++) {
+        for (var p in arguments[i]) {
+          if (arguments[i].hasOwnProperty(p)) {
+            result[p] = arguments[i][p];
+          }
+        }
+      }
+
+      return result;
     }
   };
 });
