@@ -9,23 +9,21 @@ class Mailgun
     public function __construct()
     {
         $this->mailgunClient = new MailgunClient(config('mailgun.api_key'));
+        $this->domain = config('mailgun.domain');
     }
 
-    public function getMailgunLogs($input)
+    public function getLogs($input)
     {
-        $error = $data = null;
+        return $this->mailgunClient->get($this->domain . "/events", $input)->http_response_body;
+    }
 
-        $domain = config('mailgun.domain');
+    public function getBounce($email)
+    {
+        return $this->mailgunClient->get($this->domain . "/bounces/$email")->http_response_body;
+    }
 
-        try
-        {
-            $data = $this->mailgunClient->get("$domain/events", $input)->http_response_body;
-        }
-        catch (\Exception $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
+    public function deleteBounce($email)
+    {
+        return $this->mailgunClient->delete($this->domain . "/bounces/$email")->http_response_body;
     }
 }

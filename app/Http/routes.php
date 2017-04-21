@@ -289,6 +289,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('admin/get_current');
 
         Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
+        Route::get('/admin/emailbounces/{email}', 'AdminController@getEmailBounce')->name('email_bounce_get');
+        Route::delete('/admin/emailbounces/{email}', 'AdminController@deleteEmailBounce')->name('email_bounce_delete');
     });
 });
 

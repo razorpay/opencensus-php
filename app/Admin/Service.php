@@ -2441,4 +2441,52 @@ class Service extends Base\Service
 
         return $error;
     }
+
+    public function getEmailLogs($input)
+    {
+        $error = $data = null;
+
+        try
+        {
+            $data = (new Admin\Mailgun)->getLogs($input);
+        }
+        catch (\Exception $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function getEmailBounce($email)
+    {
+        $error = $data = null;
+
+        try
+        {
+            $data = (new Admin\Mailgun)->getBounce($email);
+        }
+        catch (\Exception $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function deleteEmailBounce($email)
+    {
+        $error = $data = null;
+
+        try
+        {
+            $data = (new Admin\Mailgun)->deleteBounce($email);
+        }
+        catch (\Exception $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
 }
