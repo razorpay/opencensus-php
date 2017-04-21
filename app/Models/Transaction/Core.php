@@ -182,14 +182,7 @@ class Core extends Base\Core
             $txn->merchant()->associate($payment->merchant);
         }
 
-        if ($updateFees === false)
-        {
-            list($txn, $feesSplit) = $this->fillEmptyTxnFeesAndAmount($txn, $payment);
-        }
-        else
-        {
-            list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
-        }
+        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment, $updateFees);
 
         $txnData = [
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
@@ -224,9 +217,6 @@ class Core extends Base\Core
             Transaction\Entity::FEE                 => 0,
             Transaction\Entity::SERVICE_TAX         => 0,
             Transaction\Entity::AMOUNT              => $amount,
-            Transaction\Entity::CURRENCY            => Currency\Currency::INR,
-            Transaction\Entity::TYPE                => Transaction\Type::PAYMENT,
-            Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
         ];
 
         $txn->fill($values);
@@ -234,8 +224,13 @@ class Core extends Base\Core
         return [$txn, null];
     }
 
-    protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
+    protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment, bool $updateFees = true)
     {
+        if ($updateFees === false)
+        {
+            return $this->fillEmptyTxnFeesAndAmount($txn, $payment);
+        }
+
         $pricingRuleId = null;
 
         $merchant = $payment->merchant;
