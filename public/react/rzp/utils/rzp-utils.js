@@ -5,6 +5,10 @@ export function titleCase(sentence) {
   return text.split(/\s+|_/).map((word) => word.charAt(0).toUpperCase() + word.substr(1)).join(' ')
 }
 
+export function humanize(sentence) {
+  return titleCase(sentence.split('_').join(' '))
+}
+
 export function makeArray(obj) {
   if (!obj) { return [] }
   return Array.isArray(obj) ? obj : [obj]

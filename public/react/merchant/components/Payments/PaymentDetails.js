@@ -10,6 +10,7 @@ import { PaymentStatusLabel } from 'merchant/components/StatusLabel'
 import ShowWhen from 'merchant/components/ShowWhen'
 import TableBody from 'merchant/components/TableBody'
 import DetailRow from 'merchant/components/DetailRow'
+import OtherDetail from 'merchant/components/OtherDetail'
 
 const ListItem = ({ item, value }) => {
   return (
@@ -48,6 +49,46 @@ const RefundsListItem = ({ refund }) => {
   )
 }
 
+const shownByDefault = [
+  'amount',
+  'amount_refunded',
+  'bank',
+  'captured',
+  'contact',
+  'created_at',
+  'currency',
+  'description',
+  'email',
+  'entity',
+  'error_code',
+  'error_description',
+  'fee',
+  'id',
+  'international',
+  'method',
+  'notes',
+  'refund_status',
+  'refunds',
+  'service_tax',
+  'status',
+  'wallet'
+];
+
+const keysNotShown = (entity) => {
+  var keys = [];
+  for (var key in entity) {
+    // If the entity has that key and its not currently shown
+    if (
+      entity.hasOwnProperty(key) &&
+      entity.__stashed__[key] &&
+      shownByDefault.indexOf(key) < 0
+    ) {
+      keys.push(key);
+    }
+  }
+  return keys;
+}
+
 export default (props) => {
   let {
     payment,
@@ -56,6 +97,8 @@ export default (props) => {
     isLoading,
     statusMsg
   } = props
+
+  let otherKeys = keysNotShown(payment);
 
   return (
     <div>
@@ -180,15 +223,16 @@ export default (props) => {
                   value={ () =>  <CheckIcon value={payment.international} /> }
                 />
 
-                <DetailRow
-                  label='Base Amount'
-                  value={ () =>  <Amount value={payment.base_amount} /> }
-                />
-
-                <DetailRow
-                  label='Amount Paidout'
-                  value={ () =>  <Amount value={payment.amount_paidout} /> }
-                />
+                {
+                  otherKeys.map((key) =>
+                    <OtherDetail
+                      key={key}
+                      label={key}
+                      value={payment[key]}
+                      entity={payment}
+                    />
+                  )
+                }
                 {
                   payment.error_code ?
                   <DetailRow
