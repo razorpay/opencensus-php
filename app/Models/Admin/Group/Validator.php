@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Group;
 
-use RZP\Base;
+use RZP\Models\Admin\Base;
 use RZP\Exception;
 
 class Validator extends Base\Validator
@@ -26,4 +26,6 @@ class Validator extends Base\Validator
         'roles'             => 'sometimes|array',
         'parents'           => 'sometimes|array',
     ];
+
+    public $isOrgSpecificValidationSupported = false;
 }

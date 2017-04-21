@@ -15,7 +15,7 @@ class Validator
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
-                    'application/vnd.ms-office'],
+                    'application/vnd.ms-office', 'text/plain'],
         'xlsb'  => [
             'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
@@ -25,28 +25,32 @@ class Validator
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
-        Orchestrator::HDFC            =>
-            "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-        Orchestrator::KOTAK            => "/^PG Transaction File/",
-        Orchestrator::OLAMONEY         => "/^Merchant Settlement File/",
-        Orchestrator::FREECHARGE       => "/^Merchant (Transaction|Settlement) Report/",
-        Orchestrator::NETBANKING_AXIS  =>
-            "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
-            . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/",
-        Orchestrator::NETBANKING_ICICI => "/^Payment Through Internet Banking Center Razorpay/",
+        Orchestrator::HDFC               => "/^'{0,1}Email MPR as of [0-9]{2}-"
+                                            . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+        Orchestrator::KOTAK              => "/^PG Transaction File/",
+        Orchestrator::OLAMONEY           => "/^Merchant Settlement File/",
+        Orchestrator::FREECHARGE         => "/^Merchant (Transaction|Settlement) Report/",
+        Orchestrator::NETBANKING_AXIS    => "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
+                                            . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/",
+        Orchestrator::NETBANKING_ICICI   => "/^Payment Through Internet Banking Center Razorpay/",
+        Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated " .
+                                            "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/",
     ];
 
     const GATEWAY_BODY_REGEX = [
-        Orchestrator::OLAMONEY         => "/^Please find settlement report for /",
-        Orchestrator::FREECHARGE       => "/Please view your (transaction|settlement) report/",
-        Orchestrator::NETBANKING_AXIS  =>
-        "/Kindly find attached below the MIS for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
-        Orchestrator::NETBANKING_ICICI => "/Please find below the payment report for the day./",
+        Orchestrator::OLAMONEY           => "/^Please find settlement report for /",
+        Orchestrator::FREECHARGE         => "/Please view your (transaction|settlement) report/",
+        Orchestrator::NETBANKING_AXIS    => "/Kindly find attached below the MIS for "
+                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
+        Orchestrator::NETBANKING_ICICI   => "/Please find below the payment report for the day./",
+        Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated "
+                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
-        Orchestrator::OLAMONEY         => 1,
-        Orchestrator::NETBANKING_AXIS  => 1,
+        Orchestrator::OLAMONEY           => 1,
+        Orchestrator::NETBANKING_AXIS    => 1,
+        Orchestrator::NETBANKING_FEDERAL => 1
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -135,6 +139,19 @@ class Validator
         // In this case, the number is attachments is variable.
         //
         return ($validSubject and $validBody);
+    }
+
+    public function validateNetbankingFederalEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::NETBANKING_FEDERAL);
+
+        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::NETBANKING_FEDERAL);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::NETBANKING_FEDERAL);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
     }
 
     /**

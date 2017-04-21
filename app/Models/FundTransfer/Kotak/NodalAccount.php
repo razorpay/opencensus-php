@@ -5,14 +5,17 @@ namespace RZP\Models\FundTransfer\Kotak;
 use Carbon\Carbon;
 use Excel;
 use Mail;
+
 use RZP\Exception;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\FileStore;
 use RZP\Models\FundTransfer;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
 use RZP\Models\Transaction;
 
 class NodalAccount
@@ -62,7 +65,7 @@ class NodalAccount
         return Headings::getRequestFileHeadings();
     }
 
-    public function generateSettlementFile($entities, $h2h = true)
+    public function generateSettlementFile($entities, $h2h = true): array
     {
         $textData = $excelData = [];
 
@@ -120,22 +123,13 @@ class NodalAccount
             array_push($excelData, $array);
         }
 
-        $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
-
         $txt = $this->generateText($textData);
 
-        if ($h2h === true)
-        {
-            $name = $this->getH2HFileName();
+        list($excelFileEntity, $textFileEntity) = $this->createSettlementFiles($excelData, $txt, $h2h);
 
-            $urlText = $this->writeToTextFileH2H($name, $txt);
-        }
+        $this->sendSettlementMail($excelFileEntity, $textFileEntity);
 
-        $urlText = $this->writeToTextFile($txt);
-
-        $this->sendKotakSettlementMail();
-
-        return [$urlText, $urlExcel];
+        return [$textFileEntity, $excelFileEntity];
     }
 
     public function getPayoutsFile(Base\PublicCollection $payouts)
@@ -282,8 +276,54 @@ class NodalAccount
         return $dict;
     }
 
-    protected function sendKotakSettlementMail()
+    protected function createSettlementFiles($excelData, $textData, bool $h2h): array
     {
+        // Create excel file
+        $excelFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+                                              ->content($excelData)
+                                              ->extension(FileStore\Format::XLSX)
+                                              ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                                              ->save();
+
+        // Create txt file in h2h only for live mode and h2h is true
+        if (($this->getMode() === Mode::LIVE) and
+            ($h2h === true))
+        {
+            $metadata = [
+                'gid'   => '10000',
+                'uid'   => '10001',
+                'mtime' => Carbon::now()->timestamp,
+                'mode'  => '33188',
+            ];
+
+            $textFile = (new FileStore\Creator())->name('kotak/outgoing/' . $this->getH2HFileNameWithoutExt())
+                                                 ->content($textData)
+                                                 ->extension(FileStore\Format::TXT)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_H2H)
+                                                 ->metadata($metadata)
+                                                 ->save();
+        }
+        else
+        {
+            $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+                                                 ->content($textData)
+                                                 ->extension(FileStore\Format::TXT)
+                                                 ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                                                 ->save();
+        }
+
+        return [$excelFile, $textFile];
+    }
+
+    protected function sendSettlementMail(
+        FileStore\Creator $excelFileEntity,
+        FileStore\Creator $textFileEntity)
+    {
+        if ($this->getMode() === Mode::TEST)
+        {
+            return;
+        }
+
         $summary = $this->summary;
 
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
@@ -291,11 +331,11 @@ class NodalAccount
 
         $data = compact('summary', 'subject');
 
-        $fileName = $this->getFileToWriteNameWithoutExt();
-        $path = $this->getStorageDir();
-        $fullpath = $path . '/'. $fileName;
+        $excelFileEntity = $excelFileEntity->get();
+        $textFileEntity = $textFileEntity->get();
 
-        $data['file'] = $fullpath;
+        $data['excelFile'] = $excelFileEntity['local_file_path'];
+        $data['textFile'] = $textFileEntity['local_file_path'];
 
         Mail::send('emails.admin.settlement', $data, function($message) use ($data)
         {
@@ -307,10 +347,8 @@ class NodalAccount
 
             $message->to($emails);
 
-            $file = $data['file'];
-
-            $message->attach($file . '.xlsx');
-            $message->attach($file . '.txt');
+            $message->attach($data['excelFile']);
+            $message->attach($data['textFile']);
 
             $headers = $message->getHeaders();
 
@@ -348,10 +386,26 @@ class NodalAccount
         });
     }
 
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y-H-i-s');
+
+        $mode = $this->getMode();
+
+        return static::$fileToWriteName.'_'.$mode.'_'.$time;
+    }
+
     // @codingStandardsIgnoreStart
     protected function getH2HFileName()
     {
-        $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
+        $name = $this->getH2HFileNameWithoutExt() . '.txt';
+
+        return $name;
+    }
+
+    protected function getH2HFileNameWithoutExt()
+    {
+        $name = 'RAZORNODAL_'. Carbon::now('Asia/Kolkata')->format('dmYHis');
 
         return $name;
     }

@@ -289,10 +289,11 @@ class Repository extends Base\Repository
                         bool $random = true,
                         int $rowsToFetch = 100)
     {
-        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+        $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
 
         $query = $this->newQuery()
-                      ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
+                      ->whereNotNull(Payment\Entity::GATEWAY)
+                      ->whereNotIn(Payment\Entity::GATEWAY, $verifyDisabledGateways);
 
         if ($verifyStatus !== null)
         {
@@ -518,6 +519,25 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Payment\Entity::ORDER_ID, '=', $orderId)
                     ->get();
+    }
+
+    /**
+     * Fetches all payments for on hold flag update with on_hold_until
+     * timestamp earlier than timestamp parameter.
+     *
+     * @param int $timestamp
+     * @return Base\PublicCollection
+     */
+    public function getPaymentsOnHoldBeforeTimestamp(int $timestamp) : Base\PublicCollection
+    {
+        $data = $this->newQuery()
+                     ->where(Payment\Entity::ON_HOLD, true)
+                     ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
+                     ->with('transfer')
+                     ->limit(500)
+                     ->get();
+
+        return $data;
     }
 
     protected function addQueryParamBank($query, $params)

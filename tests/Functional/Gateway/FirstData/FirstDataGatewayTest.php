@@ -67,8 +67,19 @@ class FirstDataGatewayTest extends TestCase
         $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
 
         $firstDataEntity = $this->getLastEntity('first_data', true);
-
         $this->assertEquals($paymentId, $firstDataEntity['payment_id']);
+
+        // Another payment to test auto-refund
+        $response = $this->doS2SRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+        $this->refundAuthorizedPayment($paymentId);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
     }
 
     public function testPaymentAuthAndCapture()
@@ -77,13 +88,14 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'authorized');
+        $this->assertEquals('authorized', $payment['status']);
 
         $this->capturePayment($authResponse['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('passed', $payment['two_factor_auth']);
     }
 
     public function testMaestroCard()
@@ -96,7 +108,7 @@ class FirstDataGatewayTest extends TestCase
 
         $paymentRes = $this->getLastPayment(true);
 
-        $this->assertEquals($paymentRes['gateway'], 'first_data');
+        $this->assertEquals('first_data', $paymentRes['gateway']);
     }
 
     public function testIciciCardIsFiltered()
@@ -119,7 +131,7 @@ class FirstDataGatewayTest extends TestCase
 
         // FirstData is preferred over Sharp, but does not get selected
         // as ICICI cards are disabled on FirstData
-        $this->assertNotEquals($paymentRes['gateway'], 'first_data');
+        $this->assertNotEquals('first_data', $paymentRes['gateway']);
     }
 
     public function testPaymentVerify()
@@ -132,7 +144,7 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertSame($payment['verified'], 1);
+        $this->assertEquals(1, $payment['verified']);
     }
 
     public function testPaymentRefund()
@@ -149,7 +161,7 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'refunded');
+        $this->assertEquals('refunded', $payment['status']);
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
@@ -172,7 +184,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals('captured', $payment['status']);
 
         $this->assertEquals($refund['payment_id'], $payment['public_id']);
 
@@ -202,11 +214,11 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'refunded');
+        $this->assertEquals('refunded', $payment['status']);
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals($gatewayPayment['action'], 'reverse');
+        $this->assertEquals('reverse', $gatewayPayment['action']);
     }
 
     public function testPaymentAuthAndAlreadyCaptured()
@@ -277,7 +289,7 @@ class FirstDataGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals($gatewayPayment['approval_code'], "N:mocked failure approval code");
+        $this->assertEquals("N:mocked failure approval code", $gatewayPayment['approval_code']);
     }
 
     public function testFailedAuthUnknownError()

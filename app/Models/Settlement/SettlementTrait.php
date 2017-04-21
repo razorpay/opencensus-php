@@ -198,7 +198,7 @@ trait SettlementTrait
                 ['merchant_id' => $merchant->getId()]);
         }
 
-        if (($this->mode !== Mode::TEST) and
+        if (($this->env !== 'testing') and
             ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {
             $shouldSettle = false;
@@ -258,6 +258,7 @@ trait SettlementTrait
         {
             $channels = [$channel];
         }
+
         return $channels;
     }
 

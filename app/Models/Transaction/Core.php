@@ -18,7 +18,8 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
-use RZP\Models\Schedule\Library as Schedule;
+use RZP\Models\Schedule\Library as ScheduleLibrary;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Transfer;
@@ -85,8 +86,10 @@ class Core extends Base\Core
      * Update the corresponding transaction when
      * hold attributes of a Payment are updated
      *
-     * @param  Payment\Entity       $payment
+     * @param  Payment\Entity $payment
+     *
      * @return Transaction\Entity
+     * @throws Exception\BadRequestException
      */
     public function updateOnHoldToggle(Payment\Entity $payment)
     {
@@ -98,19 +101,14 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED);
         }
 
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
-        // $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
-
-        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+        $txn->setOnHold($payment->getOnHold());
 
         $this->trace->info(
             TraceCode::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION,
             [
                 'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId(),
-                'on_hold'        => $payment->getOnHold(),
-                'settled_at'     => $settledAt,
+                'on_hold'        => $payment->getOnHold()
             ]
         );
 
@@ -905,21 +903,32 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        if ($merchant->getSettlementScheduleId() === null)
+        $scheduleTask = (new ScheduleTask\Core)->getMerchantSettlementSchedule($merchant, $payment->getMethod());
+
+        $schedule = $merchant->schedule;
+
+        // use schedule from pivot schedule_task if defined and use next run from there
+        if ($scheduleTask !== null)
+        {
+            $schedule = $scheduleTask->schedule;
+
+            $nextRunAt = $scheduleTask->getNextRunAt();
+
+            $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule, $nextRunAt);
+        }
+        // else fall back to default schedule assigned in merchant enittiy
+        else if ($schedule !== null)
+        {
+            $nextRunAt = $schedule->getNextRun();
+
+            $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule, $nextRunAt);
+        }
+        else
         {
             $addDays = $merchant->getSettlementSchedule();
 
             $returnTime = $this->calculateSettledAtTimestamp($capturedAt, $addDays);
         }
-        else
-        {
-            $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
-        }
-
-        // Implements delayed settlements, commented temporarily
-        // $onHoldUntilTime = $payment->getOnHoldUntil();
-
-        // return max($returnTime, $onHoldUntilTime);
 
         return $returnTime;
     }
@@ -931,11 +940,6 @@ class Core extends Base\Core
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 
         return $returnDay->timestamp;
-    }
-
-    protected function getSettlementSchedule($payment)
-    {
-        return $payment->merchant->getSettlementSchedule();
     }
 
     public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)

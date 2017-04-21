@@ -225,6 +225,8 @@ class CreatePayments extends Migration
             $table->index(Payment::BANK);
             $table->index(Payment::AMOUNT);
             $table->index(Payment::LATE_AUTHORIZED);
+            $table->index(Payment::ON_HOLD);
+            $table->index(Payment::ON_HOLD_UNTIL);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

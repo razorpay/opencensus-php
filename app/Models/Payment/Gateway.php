@@ -45,9 +45,18 @@ class Gateway
     const ACQUIRER_HDFC      = 'hdfc';
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
+    const ACQUIRER_AMEX      = 'amex';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
+
+    const GATEWAY_ACQUIRERS = [
+        self::AXIS_MIGS   => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::HDFC        => [self::ACQUIRER_HDFC],
+        self::CYBERSOURCE => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::FIRST_DATA  => [self::ACQUIRER_ICIC],
+        self::AMEX        => [self::ACQUIRER_AMEX],
+    ];
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
@@ -280,12 +289,13 @@ class Gateway
     );
 
     /**
+     * @deprecated
      * List of gateways for which we run verification checks for all
      * failed payments on a continuous basis.
      *
      * @var array
      */
-    public static $verifyEnabled = array(
+    public static $verifyEnabled = [
         self::AXIS_MIGS,
         self::BILLDESK,
         self::EBS,
@@ -309,7 +319,11 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::UPI_ICICI,
         self::UPI_IDFC,
-    );
+    ];
+
+    public static $verifyDisabled = [
+        self::WALLET_OPENWALLET
+    ];
 
     /**
      * List of gateways that support recurring payments
@@ -341,7 +355,7 @@ class Gateway
      */
     public static $internationalCardGateways = array(
         Gateway::HDFC,
-        // Gateway::AXIS_MIGS,
+        Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
     );
@@ -355,31 +369,6 @@ class Gateway
         IFSC::KKBK,
         IFSC::UTIB,
     ];
-
-    /**
-     * Card gateways which support domestic payments in live mode.
-     *
-     * @var array
-     */
-    public static $domesticCardGateways = array(
-        Gateway::HDFC,
-        Gateway::AXIS_MIGS,
-        Gateway::AMEX,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
-    );
-
-    /**
-     * Card gateways which support domestic payments in test mode.
-     *
-     * @var array
-     */
-    public static $domesticCardGatewaysInTest = array(
-        Gateway::ATOM,
-        Gateway::PAYTM,
-        Gateway::AXIS_GENIUS,
-        Gateway::SHARP,
-    );
 
     /**
      * Some card networks are only supported partially for one or two gateway.

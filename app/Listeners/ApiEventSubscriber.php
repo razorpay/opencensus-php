@@ -2,7 +2,6 @@
 
 namespace RZP\Listeners;
 
-use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Events\Dispatcher;
 
 use App;
@@ -12,13 +11,11 @@ use RZP\Models\Base;
 use RZP\Models\Event;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Jobs\DispatchRouter;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
 class ApiEventSubscriber extends Base\Core
 {
-    // Used to push jobs to queues
-    use DispatchesJobs;
-
     /**
      * Event being fired
      * @var string
@@ -261,7 +258,9 @@ class ApiEventSubscriber extends Base\Core
     {
         $data = $this->getWebhookData($payload);
 
-        $this->dispatch(new Webhook($data));
+        $job = new Webhook($data);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::WEBHOOK, [$this->event]);
     }
 
     protected function getWebhookData($payload)

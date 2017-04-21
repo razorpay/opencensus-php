@@ -54,6 +54,11 @@ class Entity extends Base\Entity
         'parents',
     ];
 
+    protected $diff = [
+        self::NAME,
+        self::DESCRIPTION,
+    ];
+
     protected $publicSetters = [
         self::ID,
         self::ORG_ID,

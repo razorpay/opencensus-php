@@ -77,6 +77,20 @@ deploy:
               fi
             fi
       - script:
+          name: Check if canary branch is up-to-date
+          code: |
+            MASTER=$(git rev-parse master)
+            if [ "$RZP_WERCKER_CURR_PIPELINE_ID" == "$RZP_WERCKER_CANARY_PIPELINE_ID" ]; then
+              if [ "$WERCKER_GIT_BRANCH" != "canary" ]; then
+                echo "[ERROR] Cannot deploy a non-canary branch to canary instance"
+                exit $?
+              fi
+              if [ -n $(git rev-list HEAD | grep $MASTER) ]; then
+                echo "[ERROR] Cannot deploy outdated branch to canary"
+                exit $?
+              fi
+            fi
+      - script:
           name: List directory
           code: ls -lah
       - script:
@@ -101,3 +115,8 @@ deploy:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - script:
+         name: post_deploy_notifier
+         code: |
+            python scripts/post_deploy_notifier.py
+      

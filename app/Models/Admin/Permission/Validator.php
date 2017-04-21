@@ -10,11 +10,15 @@ class Validator extends Base\Validator
         Entity::NAME            => 'required|string|max:255',
         Entity::DESCRIPTION     => 'sometimes|string|max:255',
         Entity::CATEGORY        => 'required|string|max:255',
+        Entity::ASSIGNABLE      => 'sometimes|bool',
+        Entity::ORGS            => 'sometimes|array',
     ];
 
     protected static $editRules = [
         Entity::NAME            => 'sometimes|string|max:255',
         Entity::DESCRIPTION     => 'sometimes|string|max:255',
         Entity::CATEGORY        => 'sometimes|string|max:255',
+        Entity::ASSIGNABLE      => 'sometimes|bool',
+        Entity::ORGS            => 'sometimes|array',
     ];
 }

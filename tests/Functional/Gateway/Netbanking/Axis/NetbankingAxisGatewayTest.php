@@ -248,7 +248,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['status'], 'Y');
+        $this->assertEquals('Y', $gatewayPayment['status']);
     }
 
     protected function createPaymentsToClaim()

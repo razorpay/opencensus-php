@@ -207,9 +207,36 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->fill($attributes);
 
+        $this->runCallbackVerify($input);
+
         $this->repo->saveOrFail($gatewayPayment);
 
         $this->checkApprovalCode($gatewayPayment);
+
+        return $this->getCallbackResponseData($input);
+    }
+
+    protected function runCallbackVerify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $gatewayPayment = $this->getPaymentToVerify($verify);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->verifyPayment($verify);
+
+        if (($verify->gatewaySuccess === false) and
+            ($this->approval === true))
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.', null, [
+                    'expected' => $expectedPaymentId,
+                    'actual'   => $actualPaymentId
+                ]);
+        }
     }
 
     protected function getCallbackGatewayContent(array $input)
@@ -647,8 +674,8 @@ class Gateway extends Base\Gateway
                 $type   = $transactionValue->children('v1', true)->CreditCardTxType->Type->__toString();
 
                 // Verify response contains separate states for all transactions, possibly multiple for refund/capture.
-                // We're only interested in the preauth transaction state, so loop to that one, and check status.
-                if (in_array($type, [TxnType::AUTH, TxnType::SALE], true) === true)
+                // We're only interested in one transaction state, so loop to that one, and check status.
+                if ($this->isRelevantVerifyType($type) === true)
                 {
                     $verifyAuthResponse = $transactionValue;
                 }
@@ -684,6 +711,26 @@ class Gateway extends Base\Gateway
         // expects it to be an array. This avoids an error being thrown
         // during failed->auth process.
         $verify->setVerifyResponseContent([]);
+    }
+
+    protected function isRelevantVerifyType(string $type)
+    {
+        // Verify response components contain a CreditCardTxType field,
+        // that tells us if the corresponding component is significant.
+        //
+        // For an ordinary payment, we look for the preauth component.
+        // For purchase transaction, we look for the sale component.
+        // For second recurring payments, we look for the periodic component.
+        //
+        // More than one of these cannot appear in the same verify response.
+        // So we simply loop through components and look for any one of them.
+        $significantTypes = [
+            TxnType::AUTH,
+            TxnType::SALE,
+            TxnType::PERIODIC,
+        ];
+
+        return (in_array($type, $significantTypes, true) === true);
     }
 
     protected function getVerifyApiStatus(Entity $gatewayPayment, array $payment)
@@ -873,7 +920,7 @@ class Gateway extends Base\Gateway
 
     // This is a SHA hash of the following fields :
     // storename + txndatetime + chargetotal + currency + sharedsecret.
-    protected function getRequestHash(string $txnDateTime, int $chargeTotal, string $currencyCode)
+    protected function getRequestHash(string $txnDateTime, float $chargeTotal, string $currencyCode)
     {
         $storeId = $this->getStoreId();
 
@@ -1113,13 +1160,11 @@ class Gateway extends Base\Gateway
 
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REVERSE;
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::AUTHORIZE);
+        $tdate = $this->getTdateForGatewayPaymentToBeReversed($input);
 
         $body[ApiRequestFields::V1_TRANSACTION_DETAILS] = [
             ApiRequestFields::V1_ORDER_ID => $input['payment']['id'],
-            ApiRequestFields::V1_TDATE    => $gatewayPayment[Entity::TDATE],
+            ApiRequestFields::V1_TDATE    => $tdate,
         ];
 
         $request[ApiRequestFields::V1_TRANSACTION] = $body;
@@ -1147,6 +1192,31 @@ class Gateway extends Base\Gateway
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
 
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+    }
+
+    /**
+     * Fetches tdate of original gatewayPayment that is to be reversed
+     *
+     * Reverse request needs tdate attribute that exists in the authorize
+     * action entity (or in purchase for second recurring payments)
+     *
+     * @param  array  $input gateway input
+     * @return tdate of gatewayPayment
+     */
+    protected function getTdateForGatewayPaymentToBeReversed(array $input)
+    {
+        $requiredAction = Base\Action::AUTHORIZE;
+
+        if ($this->isSecondRecurringPayment($input) === true)
+        {
+            $requiredAction = Base\Action::PURCHASE;
+        }
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                            $input['payment'][Payment\Entity::ID],
+                                            $requiredAction);
+
+        return $gatewayPayment[Entity::TDATE];
     }
 
     protected function arrayToXml(array $array, string $wrap = null)
@@ -1361,7 +1431,7 @@ class Gateway extends Base\Gateway
 
     protected function getChance()
     {
-        if (self::$testChance === null)
+        if ($this->mock === false)
         {
             return 99;
 

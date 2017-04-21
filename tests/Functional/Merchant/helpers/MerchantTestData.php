@@ -204,6 +204,11 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
         ],
         'response' => [
             'content' => [
@@ -252,6 +257,11 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -296,6 +306,10 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt/email',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -312,6 +326,10 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt/email',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -351,6 +369,10 @@ return [
             ],
             'url' => '/account/config',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -435,6 +457,10 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -451,6 +477,10 @@ return [
             'method' => 'post',
             'files' => [
 
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
         'response' => [
@@ -486,6 +516,10 @@ return [
             ],
             'url' => '/account/config',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -884,7 +918,11 @@ return [
                     'UTIB',
                     'PUNB',
                 ],
-            ]
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -1048,6 +1086,10 @@ return [
             ],
             'url' => '/merchants/1X4hRFHFx4UiXt',
             'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -1182,7 +1224,11 @@ return [
                 "optout_reason" => "some reason"
             ],
             'url' => '/merchants/10000000000000/features',
-            'method' => 'post'
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
         ],
         'response' => [
             'content' => [
@@ -1428,4 +1474,21 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
         ],
     ],
+
+    'testScheduleTaskMigration' => [
+        'request' => [
+            'url' => '/merchants/schedules/migrate',
+            'method' => 'POST',
+            'content' => [
+                'merchant_ids' => [
+                    '1X4hRFHFx4UiXt'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ]
 ];

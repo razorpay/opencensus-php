@@ -626,11 +626,11 @@ class Notify
                 'id'            => $this->payment->merchant->getId(),
             ],
             'payment'   => [
-                'id'        => $this->payment->getId(),
-                'public_id' => $this->payment->getPublicId(),
-                'amount'    => "INR ".number_format($this->payment['amount'] / 100, 2),
-                'raw_amount' => $this->payment['amount'],
-                'timestamp' => $this->payment->getUpdatedAt(),
+                'id'          => $this->payment->getId(),
+                'public_id'   => $this->payment->getPublicId(),
+                'amount'      => $this->payment->getFormattedAmount(),
+                'raw_amount'  => $this->payment['base_amount'],
+                'timestamp'   => $this->payment->getUpdatedAt(),
                 'captured_at' => $this->payment->getAttribute('captured_at'),
 
                 // note that payment method is unavailable to the merchant
@@ -657,11 +657,11 @@ class Notify
         if ($this->refund)
         {
             $data['refund'] = [
-                'id'        => $this->refund->getId(),
-                'amount'    => 'INR ' . number_format($this->refund->getAmount() / 100, 2),
-                'timestamp' => $this->refund->getCreatedAt(),
+                'id'         => $this->refund->getId(),
+                'amount'     => $this->refund->getFormattedAmount(),
+                'timestamp'  => $this->refund->getCreatedAt(),
                 'payment_id' => $this->refund->payment->getId(),
-                'public_id' => $this->refund->getPublicId(),
+                'public_id'  => $this->refund->getPublicId(),
             ];
         }
 
@@ -669,7 +669,7 @@ class Notify
         {
             $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
 
-            $data['invoice'] = $payloadForInvoice['invoice'];
+            $data['invoice']   = $payloadForInvoice['invoice'];
             $data['merchant'] += $payloadForInvoice['merchant'];
         }
 

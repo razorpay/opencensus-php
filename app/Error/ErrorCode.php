@@ -61,6 +61,7 @@ class ErrorCode
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
     const GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST                                   = 'GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST';
+    const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                    = 'GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST';
     const GATEWAY_ERROR_PAYMENT_INVALID_REFERENCE_NO                                = 'GATEWAY_ERROR_PAYMENT_INVALID_REFERENCE_NO';
     const GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT                                      = 'GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT';
     const GATEWAY_ERROR_PAYMENT_INVALID_ACTION                                      = 'GATEWAY_ERROR_PAYMENT_INVALID_ACTION';
@@ -146,6 +147,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                                     = 'BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED                                 = 'BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_CVV';
+    const BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED                     = 'BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                                   = 'BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED';
     const BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER                                   = 'BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER';
     const BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED                          = 'BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED';
@@ -428,6 +430,8 @@ class ErrorCode
     const BAD_REQUEST_INVALID_COUNTRY                                               = 'BAD_REQUEST_INVALID_COUNTRY';
 
     // Heimdall Error Codes
+    const BAD_REQUEST_ACCESS_DENIED                                                 = 'BAD_REQUEST_ACCESS_DENIED';
+
     const BAD_REQUEST_ROLE_NOT_ASSIGNED                                             = 'BAD_REQUEST_ROLE_NOT_ASSIGNED';
     const BAD_REQUEST_MERCHANT_NOT_ASSIGNED                                         = 'BAD_REQUEST_MERCHANT_NOT_ASSIGNED';
     const BAD_REQUEST_PASSWORD_EXPIRED                                              = 'BAD_REQUEST_PASSWORD_EXPIRED';
@@ -466,21 +470,27 @@ class ErrorCode
     const BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED                                = 'BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED';
 
     const BAD_REQUEST_INVALID_ADMIN_EMAIL                                           = 'BAD_REQUEST_INVALID_ADMIN_EMAIL';
+    const BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME                                  = 'BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                         = 'BAD_REQUEST_AUTHENTICATION_FAILED';
     const BAD_REQUEST_USER_ACCOUNT_LOCKED                                           = 'BAD_REQUEST_USER_ACCOUNT_LOCKED';
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                         = 'BAD_REQUEST_USER_ACCOUNT_DISABLED';
     const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                    = 'BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED';
+    const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                                  = 'BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                                  = 'BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE';
     const BAD_REQUEST_ORG_ID_REQUIRED                                               = 'BAD_REQUEST_ORG_ID_REQUIRED';
     const BAD_REQUEST_INVALID_PERMISSIONS_USAGE                                     = 'BAD_REQUEST_INVALID_PERMISSIONS_USAGE';
+    const BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED                        = 'BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED';
+    const BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS                                    = 'BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS';
+    const BAD_REQUEST_WORKFLOW_STEP_OP_MISMATCH                                     = 'BAD_REQUEST_WORKFLOW_STEP_OP_MISMATCH';
+
+    const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                    = 'BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED';
 
     const BAD_REQUEST_CASHBACK_CRITERIA_MISSING                                     = 'BAD_REQUEST_CASHBACK_CRITERIA_MISSING';
     const BAD_REQUEST_INVALID_OFFER_DURATION                                        = 'BAD_REQUEST_INVALID_OFFER_DURATION';
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                          = 'BAD_REQUEST_OFFER_ALREADY_EXISTS';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK               = 'BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK';
-    const BAD_REQUEST_PAYMENT_INVALID_OFFER                                         = 'BAD_REQUEST_PAYMENT_INVALID_OFFER';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                                  = 'BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER';
     const BAD_REQUEST_INVALID_FORMAT_FOR_IINS                                       = 'BAD_REQUEST_INVALID_FORMAT_FOR_IINS';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                     = 'BAD_REQUEST_OFFER_ALREADY_DEACTIVATED';
@@ -488,6 +498,25 @@ class ErrorCode
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
+
+    // Workflow Related ErrorCodes
+    const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                                 = 'BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE';
+    const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                      = 'BAD_REQUEST_WORKFLOW_INVLID_CHECKER';
+    const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND';
+    const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED                          = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED';
+    const BAD_REQUEST_ACTION_INVALID_TYPE                                           = 'BAD_REQUEST_ACTION_INVALID_TYPE';
+    const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
+    const BAD_REQUEST_ACTION_NOT_APPROVED                                           = 'BAD_REQUEST_ACTION_NOT_APPROVED';
+    const BAD_REQUEST_ACTION_ALREADY_EXECUTED                                       = 'BAD_REQUEST_ACTION_ALREADY_EXECUTED';
+    const BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED                                   = 'BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED';
+    const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                                  = 'BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE';
+    const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                               = 'BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE';
+    const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND';
+    const BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS                           = 'BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS';
+    const BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL                           = 'BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL';
+    const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                     = 'BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES';
+    const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED                            = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED';
+    const BAD_REQUEST_WORKFLOW_ACTION_CLOSED                                        = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSED';
 
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
@@ -501,4 +530,6 @@ class ErrorCode
 
     // File store
     const BAD_REQUEST_FILE_NOT_FOUND                                                = 'BAD_REQUEST_FILE_NOT_FOUND';
+
+    const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                            = 'BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED';
 }

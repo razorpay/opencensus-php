@@ -7,15 +7,16 @@ use Illuminate\Support\Facades\App;
 
 use RZP\Models;
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Trace;
-use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\EsRepository;
 
 class Repository extends \Razorpay\Spine\Repository
 {
-    use RepositoryFetch, DispatchesJobs;
+    use RepositoryFetch;
 
     protected $app;
 
@@ -143,9 +144,19 @@ class Repository extends \Razorpay\Spine\Repository
         return $this;
     }
 
-    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    public function detach($entity, $relation, $ids = [])
     {
-        $entity->$relation()->attach($id, $attributes, $touch);
+        $entity->$relation()->detach($ids);
+
+        return $this;
+    }
+
+    public function attach(
+        $entity, $relation,
+        array $ids = [],
+        array $attributes = [], $touch = true)
+    {
+        $entity->$relation()->attach($ids, $attributes, $touch);
 
         return $this;
     }
@@ -340,26 +351,55 @@ class Repository extends \Razorpay\Spine\Repository
     {
         try
         {
-            // Checks if whitelisted es params is set. If yes, checks if $dirty contains any of them.
-            if ((isset($this->esWhitelistedParams) === true) and
-                (empty(array_intersect(array_keys($dirty), $this->esWhitelistedParams)) === false))
+            $saveFlag = false;
+
+            // Checks if whitelisted es params is set.
+            // If yes, checks if $dirty contains any of them, and also they are not empty
+            if (isset($this->esWhitelistedParams) === true)
             {
-                $esRepoClassPath = $this->getEsRepoClassPath();
-
-                $esType = $this->getEsType();
-
-                $queueData = [
-                    'es_type'           => $esType,
-                    // This entity object is converted into an array because Queue::push
-                    // decodes and encodes it with assoc array flag set to true.
-                    'entity'            => $entity->toArray(),
-                    'mode'              => $this->app['rzp.mode'],
-                    'es_repo_path'      => $esRepoClassPath,
-                ];
-
-                // Saving the entity in ES.
-                $this->dispatch(new EsRepository($queueData));
+                foreach ($this->esWhitelistedParams as $esWhitelistedParam)
+                {
+                    if (empty($dirty[$esWhitelistedParam]) === false)
+                    {
+                        if (isJson($dirty[$esWhitelistedParam]) === true)
+                        {
+                            if (empty(json_decode($dirty[$esWhitelistedParam], true)) === false)
+                            {
+                                $saveFlag = true;
+                            }
+                        }
+                        else
+                        {
+                            $saveFlag = true;
+                        }
+                    }
+                }
             }
+
+            if ($saveFlag === false)
+            {
+                return;
+            }
+
+            $esRepoClassPath = $this->getEsRepoClassPath();
+
+            $esType = $this->getEsType();
+
+            $mode = $this->app['rzp.mode'];
+
+            $queueData = [
+                'es_type'           => $esType,
+                // This entity object is converted into an array because Queue::push
+                // decodes and encodes it with assoc array flag set to true.
+                'entity'            => $entity->toArray(),
+                'mode'              => $mode,
+                'es_repo_path'      => $esRepoClassPath,
+            ];
+
+            // Saving the entity in ES.
+            $job = new EsRepository($queueData);
+
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES);
         }
         catch (\Exception $ex)
         {

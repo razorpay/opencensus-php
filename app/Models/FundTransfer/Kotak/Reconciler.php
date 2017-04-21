@@ -123,8 +123,7 @@ class Reconciler
 
     protected function reconcile($data)
     {
-        $collection = new Base\PublicCollection;
-        $failures = new Base\PublicCollection;
+        $allEntities = $failureEntities = $successEntities = [];
 
         $this->repo->beginTransaction();
 
@@ -145,13 +144,31 @@ class Reconciler
                     continue;
                 }
 
-                $collection->push($entity);
+                $allEntities[] = $entity->getId();
 
                 if ($entity->isStatusFailed())
                 {
-                    $failures->push($entity);
+                    $failureEntities[] = $entity->getId();
+                }
+                else
+                {
+                    $successEntities[] = $entity->getId();
                 }
             }
+
+            // Get distinct entity ids in all array.
+            // There will be duplicates in case of same day retry
+            // Ideally there shouldn't be duplicates in success, but we do a defensive unique
+            $allEntities = array_unique($allEntities);
+            $successEntities = array_unique($successEntities);
+            $failureEntities = array_unique($failureEntities);
+
+            // If multiple, let's say 2, attempts were made, on the same day for a settlement,
+            // the recon file would have both failure and success rows corresponding to each
+            // attempt. In this case the settlement corresponding to them would be part of
+            // both successEntities, and failureEntities. To avoid a false alarm for this
+            // settlement, we do this
+            $failureEntities = array_diff($failureEntities, $successEntities);
 
             $this->repo->commit();
         }
@@ -164,13 +181,13 @@ class Reconciler
             throw $e;
         }
 
-        $failureIds = implode(',', $failures->getPublicIds());
+        $failureIds = implode(',', $failureEntities);
 
         $processingFailedIds = implode(',', $unprocessedFailedIds);
 
         $response = [
-            'total_count'               => $collection->count(),
-            'failures_count'            => $failures->count(),
+            'total_count'               => count($allEntities),
+            'failures_count'            => count($failureEntities),
             'failure ids'               => $failureIds,
             'processing failed ids'     => $processingFailedIds,
         ];
@@ -282,6 +299,7 @@ class Reconciler
         $source->setUtr($utr);
         $source->setFailureReason($failureReason);
         $source->setStatus($status);
+        $source->setRemarks($remarks);
 
         $this->repo->saveOrFail($source);
 

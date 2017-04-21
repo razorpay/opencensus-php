@@ -621,9 +621,15 @@ trait Refund
             $data['card'] = $card->toArray();
         }
 
+        if ($payment->getTokenId() !== null)
+        {
+            $data['token'] = $payment->localToken;
+        }
+
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            if ($payment->getTransactionId() !== null)
+            if (($payment->getTransactionId() !== null) or
+                ($payment->isGatewayCaptured() === true))
             {
                 $this->refundOnGateway($data);
 
