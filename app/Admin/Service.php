@@ -1498,32 +1498,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    /**
-     * Edits the merchant's methods
-     *
-     * @param  string $id      Merchant Id
-     * @param  array $methods Array containing methods
-     *                        with values 0/1
-     * @return array $error
-     */
-    public function editMethods($id, $methods)
-    {
-        $error = [];
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $this->api->merchant->fetch($id)->editMethods($methods);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage()];
-        }
-
-        return $error;
-    }
-
     public function fetchPricingPlan($id)
     {
         $errors = array();

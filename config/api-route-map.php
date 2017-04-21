@@ -309,5 +309,7 @@ return [
         // Credits
         'credits_create'                    => 'merchants/{id}/credits_log',
         'credits_delete'                    => 'merchants/{mid}/credits/{id}',
+
+        'merchant_put_payment_methods'      => 'merchants/{mid}/methods',
     ],
 ];

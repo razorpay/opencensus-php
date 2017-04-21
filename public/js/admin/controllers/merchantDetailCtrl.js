@@ -257,13 +257,18 @@ app.controller('MerchantDetailCtrl', [
 
       msg = typeof msg !== 'undefined' ? msg : 'Methods edited successfully: ' + JSON.stringify(methods);
 
+      var data = {
+        route_name: 'merchant_put_payment_methods',
+        url_params: {
+          '{mid}' : $scope.merchant.id
+        },
+        body: postMethods
+      };
       var request = $http({
-        method: 'post',
-        url: '/admin/merchant/' + $scope.merchant.id + '/methods',
-        transformRequest: transformRequestAsFormPost,
-        data: postMethods
+        method: 'put',
+        url: '/admin/generic',
+        data: data
       });
-
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', msg, true);

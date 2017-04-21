@@ -378,15 +378,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function postEditMethods($id)
-    {
-        $input = \Input::all();
-
-        $error = (new Admin\Service)->editMethods($id, $input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getLockMerchantDetails($id)
     {
         $error = (new Admin\Service)->lockMerchant($id);
