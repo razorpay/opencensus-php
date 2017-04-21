@@ -38,7 +38,7 @@ class KeyStore:
 class SlackNotifier:
     def __init__(self):
         # currently hardcoding this. We need to arrive at this value later
-        self.channel = "C0KHQBRJN"
+        self.channel = "C52PN72AK" ## tech_deploys
         self.icon_url = 'https://s3-us-west-2.amazonaws.com/slack-files2/bot_icons/2015-06-25/6837962368_48.png'
         self.url = 'https://razorpay.slack.com/services/hooks/incoming-webhook?token=%s' % (
             KeyStore.get_slack_token())
