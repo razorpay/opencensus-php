@@ -1904,8 +1904,8 @@ ALTER TABLE upi
 ALTER TABLE workflow_steps
     ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;
 
-ALTER TABLE refund
-    ADD COLUMN rrn VARCHAR(50) AFTER gateway_refunded;
+ALTER TABLE refunds
+    ADD COLUMN rrn VARCHAR(255) AFTER gateway_refunded;
 
 ALTER TABLE hdfc
     ADD COLUMN arn_no VARCHAR(50) AFTER avr;
