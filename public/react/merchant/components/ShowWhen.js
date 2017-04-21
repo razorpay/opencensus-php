@@ -22,7 +22,10 @@ export default class ShowWhen extends Component {
       userRole = user.merchants[user.id].pivot.role;
     }
 
-    if ((myRoles.indexOf(userRole) === -1) || (notMyRoles.indexOf(userRole) !== -1)) {
+    if (
+      (myRole && myRoles.indexOf(userRole) === -1) ||
+      (notMyRole && notMyRoles.indexOf(userRole) !== -1)
+    ) {
       return null;
     }
 
