@@ -427,7 +427,7 @@ class Reconciler
 
     protected function sendReconciliationMail($date, $response)
     {
-        if ($this->getMode === Mode::TEST)
+        if ($this->getMode() === Mode::TEST)
         {
             return;
         }
