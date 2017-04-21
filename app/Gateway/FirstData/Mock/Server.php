@@ -33,12 +33,12 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         $request = [
-            'url' => '',
-            'method' => 'post',
+            'url'     => '',
+            'method'  => 'post',
             'content' => [
-                'PAReq' => $this->getPaReq($input),
+                'PAReq'   => $this->getPaReq($input),
                 'TermUrl' => $input['responseSuccessURL'],
-                'MD'    => json_encode($input),
+                'MD'      => json_encode($input),
             ]
         ];
 
@@ -110,8 +110,8 @@ class Server extends Base\Mock\Server
         $this->setResponseHash($input, $content);
 
         $request = [
-            'url' => $rawInput['TermUrl'],
-            'method' => 'post',
+            'url'     => $rawInput['TermUrl'],
+            'method'  => 'post',
             'content' => $content
         ];
 

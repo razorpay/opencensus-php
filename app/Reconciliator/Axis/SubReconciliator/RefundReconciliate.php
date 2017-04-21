@@ -26,6 +26,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $rrn = $row[self::COLUMN_RRN];
 
+        if (empty($rrn) === true)
+        {
+            return null;
+        }
+
         $axisMigsRepo = $this->app['repo']->axis_migs;
 
         $refundId = $axisMigsRepo->findByRrn($rrn)->getRefundId();
