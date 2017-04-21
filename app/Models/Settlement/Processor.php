@@ -25,9 +25,9 @@ class Processor extends Base\Core
 
     protected $mutex;
 
-    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
+    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING_%s';
 
-    const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY';
+    const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
     const MUTEX_LOCK_TIMEOUT    = 900;
 
@@ -46,8 +46,10 @@ class Processor extends Base\Core
 
         if ($shouldProcess === true)
         {
+            $mutexResource = sprintf(self::MUTEX_RETRY_RESOURCE, $this->mode);
+
             $data = $this->mutex->acquireAndRelease(
-                self::MUTEX_RETRY_RESOURCE,
+                $mutexResource,
                 function () use ($input)
                 {
                     return $this->retryProcessFailedSettlements();
@@ -67,8 +69,10 @@ class Processor extends Base\Core
 
         if ($shouldProcess === true)
         {
+            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
+
             $data = $this->mutex->acquireAndRelease(
-                self::MUTEX_RESOURCE,
+                $mutexResource,
                 function () use ($channel)
                 {
                     return $this->processSettlements($channel);
@@ -279,8 +283,7 @@ class Processor extends Base\Core
     {
         $today = Carbon::today('Asia/Kolkata');
 
-        if (($this->mode === Mode::LIVE) and
-            (Holidays::isWorkingDay($today) === false))
+        if (Holidays::isWorkingDay($today) === false)
         {
             return [false, Holidays::HOLIDAY_MESSAGE];
         }
@@ -306,8 +309,7 @@ class Processor extends Base\Core
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us
         // some time for fixing things before settlement window opens.
-        if (($this->mode === Mode::LIVE) and
-            ($this->setlTime >= $fivePm))
+        if (($this->setlTime >= $fivePm) and ($this->env !== 'testing'))
         {
             return true;
         }
