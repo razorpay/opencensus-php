@@ -632,13 +632,6 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($this->refund, $payment);
 
-        if ($payment->isMethodCardOrEmi() === true)
-        {
-            $card = $this->repo->card->fetchForPayment($payment);
-
-            $data['card'] = $card->toArray();
-        }
-
         if ($payment->getTokenId() !== null)
         {
             $data['token'] = $payment->localToken;
@@ -704,21 +697,17 @@ trait Refund
      * - record transaction for the refund.
      * - no need to update payment - marked as refunded
      *
-     **/
+     * @param Payment\Refund\Entity $refund
+     *
+     * @return
+     */
     public function processRefundRetry(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
-        $this->setPaymentAndRefundInfo($refund, $refund->payment);
+        $this->setPaymentAndRefundInfo($refund, $payment);
 
-        $data = $this->getGatewayDataForRefund($this->refund, $payment);
-
-        if ($payment->isMethodCardOrEmi() === true)
-        {
-            $card = $this->repo->card->fetchForPayment($payment);
-
-            $data['card'] = $card->toArray();
-        }
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         // true  if refunded
         // false if not refunded
@@ -728,10 +717,12 @@ trait Refund
         {
             $this->updateRefundAttemptInfo();
 
-            $refundedOnGateway = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
-            {
-                return $this->callGatewayRefundFunction($payment, $data);
-            });
+            $refundedOnGateway = $this->mutex->acquireAndRelease(
+                $payment->getId(),
+                function() use ($data, $payment)
+                {
+                    return $this->callGatewayRefundFunction($payment, $data);
+                });
         }
         else
         {
@@ -823,6 +814,13 @@ trait Refund
             $data['amount'] = $refund->getBaseAmount();
 
             $data['currency'] = Currency\Currency::INR;
+        }
+
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $card = $this->repo->card->fetchForPayment($payment);
+
+            $data['card'] = $card->toArray();
         }
 
         return $data;

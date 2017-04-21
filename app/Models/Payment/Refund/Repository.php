@@ -344,10 +344,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchRefundsByGatewayAndAttempts($gateway, $attempts)
+    public function fetchRefundsByGatewayAndAttempts($gateways, $attempts)
     {
+        //
         // Select * from refunds join payments on refunds.payment_id = payments.id
         // where payments.gateway = $gateway and refunds.attempts = $attempt
+        //
+
         $attrs = $this->getAttributeWithTableName('*');
 
         $pRepo = $this->manager->payment;
@@ -365,7 +368,7 @@ class Repository extends Base\Repository
                     ->join($pTableName, $rPaymentId, '=', $pId)
                     ->where($rAttempts, '<', $attempts)
                     ->where($rStatus, '=', Refund\Status::FAILED)
-                    ->whereIn($pGateway, $gateway)
+                    ->whereIn($pGateway, $gateways)
                     ->with(['payment','payment.terminal'])
                     ->limit(100)
                     ->get();

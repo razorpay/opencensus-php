@@ -660,10 +660,12 @@ class Service extends Base\Service
             $gateways = [$input['gateway']];
         }
 
+        //
         // Every combination of gateway / refund needs to be processed
         // Get the appropriate refunds and pass them as part of the refund
         // Get refunds that have failed and those that have not been
         // retried more than 3. Post every retry update last retried at.
+        //
         $refunds = $this->repo->refund->fetchRefundsByGatewayAndAttempts($gateways, $attempts);
 
         foreach ($refunds as $refund)
