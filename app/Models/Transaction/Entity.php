@@ -626,26 +626,10 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            $reportTxn[Payment\Entity::METHOD] = $payment->getMethod();
             $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
             $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
 
-            if ($payment->hasOrder() === true)
-            {
-                $order = $payment->order;
-
-                $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
-                $reportTxn['order_receipt'] = $order->getReceipt();
-            }
-
-            if ($payment->isMethodCardOrEmi())
-            {
-                $card = $payment->card;
-
-                $reportTxn['card_network'] = $card->getNetwork();
-                $reportTxn['card_issuer'] = $card->getIssuer();
-                $reportTxn['card_type'] = $card->getType();
-            }
+            $this->fillPaymentDetails($payment, $reportTxn);
         }
         else if ($this->isTypeRefund())
         {
@@ -662,13 +646,7 @@ class Entity extends Base\PublicEntity
             $reportTxn[Refund\Entity::NOTES] = $refund->getNotesJson();
             $reportTxn[Refund\Entity::PAYMENT_ID] = $payment->getPublicId();
 
-            if ($payment->hasOrder() === true)
-            {
-                $order = $payment->order;
-
-                $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
-                $reportTxn['order_receipt'] = $order->getReceipt();
-            }
+            $this->fillPaymentDetails($payment, $reportTxn);
         }
         else if ($this->isTypeSettlement())
         {
@@ -685,6 +663,28 @@ class Entity extends Base\PublicEntity
         }
 
         return $reportTxn;
+    }
+
+    protected function fillPaymentDetails(Payment\Entity $payment, & $reportTxn)
+    {
+        $reportTxn[Payment\Entity::METHOD] = $payment->getMethod();
+
+        if ($payment->hasOrder() === true)
+        {
+            $order = $payment->order;
+
+            $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
+            $reportTxn['order_receipt'] = $order->getReceipt();
+        }
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $card = $payment->card;
+
+            $reportTxn['card_network'] = $card->getNetwork();
+            $reportTxn['card_issuer'] = $card->getIssuer();
+            $reportTxn['card_type'] = $card->getType();
+        }
     }
 
     public function validateEntityIdUnique()
