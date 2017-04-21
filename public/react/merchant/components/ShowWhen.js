@@ -12,7 +12,8 @@ export default class ShowWhen extends Component {
       );
     }
 
-    let roles = myRole ? myRole.split(' ') : notMyRole.split(' ');
+    let myRoles = myRole.split(' ');
+    let notMyRoles = notMyRole.split(' ');
     let user = this.props.user;
     let tags = (user && user.tags) || [];
     let userRole;
@@ -22,7 +23,8 @@ export default class ShowWhen extends Component {
     }
 
     if (
-      (myRole && roles.indexOf(userRole) < 0) || roles.indexOf(userRole) > -1
+      (myRole && myRoles.indexOf(userRole) === -1) ||
+      (notMyRole && notMyRoles.indexOf(userRole) !== -1)
     ) {
       return null;
     }
