@@ -1,51 +1,39 @@
-import TableBody from '../TableBody'
+import TableBody from '../TableBody';
 
-const ItemsListItem = (props) => {
-  let { item, canHighlightRow } = props
+const ItemsListItem = props => {
+  let { item, canHighlightRow } = props;
   return (
     <tr class={canHighlightRow ? 'luminate' : ''}>
       <td>{item.name}</td>
       <td>{item.description}</td>
-      <td class='text-right'>{item.amountInINR}</td>
-      <td class='row-action'>
-        <div class='btn-group'>
-          <button
-            class='btn btn-xs btn-default'
-            onClick={props.onEdit}
-          >
-            <i class='fa fa-edit'></i>
+      <td class="text-right">{item.amountInINR}</td>
+      <td class="row-action">
+        <div class="btn-group">
+          <button class="btn btn-xs btn-default" onClick={props.onEdit}>
+            <i class="fa fa-edit" />
             <span>edit</span>
           </button>
-          <button
-            class='btn btn-xs btn-default'
-            onClick={props.onDelete}
-          >
-            <i class='fa fa-trash text-danger'></i>
+          <button class="btn btn-xs btn-default" onClick={props.onDelete}>
+            <i class="fa fa-trash text-danger" />
             <span>delete</span>
           </button>
         </div>
       </td>
     </tr>
-  )
-}
+  );
+};
 
-const ItemsList = (props) => {
-  let {
-    items,
-    isLoading,
-    onEdit,
-    onDelete,
-    highlightRow
-  } = props
+const ItemsList = props => {
+  let { items, isLoading, onEdit, onDelete, highlightRow } = props;
 
   return (
-    <div class='table-responsive'>
-      <table class='table table-hover'>
+    <div class="table-responsive">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Item Name</th>
             <th>Description</th>
-            <th class='text-right'>Amount (INR)</th>
+            <th class="text-right">Amount (INR)</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -53,10 +41,9 @@ const ItemsList = (props) => {
           isLoading={isLoading}
           colSpan={4}
           rows={items}
-          emptyTableMsg='No Items found!'
+          emptyTableMsg="No Items found!"
         >
-        {
-          items.map((item) =>
+          {items.map(item => (
             <ItemsListItem
               key={item.id}
               item={item}
@@ -64,16 +51,15 @@ const ItemsList = (props) => {
               onEdit={() => onEdit(item)}
               onDelete={() => onDelete(item)}
             />
-          )
-        }
+          ))}
         </TableBody>
       </table>
     </div>
-  )
-}
+  );
+};
 
 ItemsList.defaultProps = {
-  highlightRow: () => {}
-}
+  highlightRow: () => {},
+};
 
-export default ItemsList
+export default ItemsList;

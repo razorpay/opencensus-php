@@ -1,8 +1,8 @@
-import TableLoader from 'rzp/ui/TableLoader'
-import EmptyTableRow from 'rzp/ui/EmptyTableRow'
+import TableLoader from 'rzp/ui/TableLoader';
+import EmptyTableRow from 'rzp/ui/EmptyTableRow';
 
-export default (props) => {
-  let tableRowComponent
+export default props => {
+  let tableRowComponent;
   let {
     isLoading,
     emptyTableRow,
@@ -11,17 +11,19 @@ export default (props) => {
     rows,
     className,
     children,
-  } = props
+  } = props;
 
   if (isLoading) {
-    tableRowComponent = <TableLoader colSpan={colSpan} />
+    tableRowComponent = <TableLoader colSpan={colSpan} />;
   } else if (!rows.length) {
-    tableRowComponent = emptyTableRow || <EmptyTableRow colSpan={colSpan} message={emptyTableMsg} />
+    tableRowComponent =
+      emptyTableRow ||
+      <EmptyTableRow colSpan={colSpan} message={emptyTableMsg} />;
   }
 
   return (
     <tbody>
       {tableRowComponent || children}
     </tbody>
-  )
-}
+  );
+};

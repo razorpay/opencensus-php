@@ -1,22 +1,19 @@
-import TableBody from '../TableBody'
+import TableBody from '../TableBody';
 
-const CustomersListItem = (props) => {
-  let { customer, canHighlightRow } = props
+const CustomersListItem = props => {
+  let { customer, canHighlightRow } = props;
   return (
     <tr class={canHighlightRow ? 'luminate' : ''}>
       <td>{customer.name}</td>
       <td>{customer.email}</td>
       <td>{customer.contact}</td>
-      <td class='row-action'>
-        <div class='btn-group'>
-          <button
-            class='btn btn-xs btn-default'
-            onClick={props.onEdit}
-          >
-            <i class='fa fa-edit'></i>
+      <td class="row-action">
+        <div class="btn-group">
+          <button class="btn btn-xs btn-default" onClick={props.onEdit}>
+            <i class="fa fa-edit" />
             <span>edit</span>
           </button>
-{/*
+          {/*
           <button
             class='btn btn-xs btn-default'
             onClick={props.onDelete}
@@ -28,21 +25,15 @@ const CustomersListItem = (props) => {
         </div>
       </td>
     </tr>
-  )
-}
+  );
+};
 
-const CustomersList = (props) => {
-  let {
-    customers,
-    isLoading,
-    onEdit,
-    onDelete,
-    highlightRow
-  } = props
+const CustomersList = props => {
+  let { customers, isLoading, onEdit, onDelete, highlightRow } = props;
 
   return (
-    <div class='table-responsive'>
-      <table class='table table-hover'>
+    <div class="table-responsive">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Customer Name</th>
@@ -55,27 +46,25 @@ const CustomersList = (props) => {
           isLoading={isLoading}
           colSpan={4}
           rows={customers}
-          emptyTableMsg='No Customers found!'
+          emptyTableMsg="No Customers found!"
         >
-          {
-            customers.map((customer) =>
-              <CustomersListItem
-                key={customer.id}
-                customer={customer}
-                canHighlightRow={highlightRow(customer)}
-                onEdit={() => onEdit(customer)}
-                onDelete={() => onDelete(customer)}
-              />
-            )
-          }
+          {customers.map(customer => (
+            <CustomersListItem
+              key={customer.id}
+              customer={customer}
+              canHighlightRow={highlightRow(customer)}
+              onEdit={() => onEdit(customer)}
+              onDelete={() => onDelete(customer)}
+            />
+          ))}
         </TableBody>
       </table>
     </div>
-  )
-}
+  );
+};
 
 CustomersList.defaultProps = {
-  highlightRow: () => {}
-}
+  highlightRow: () => {},
+};
 
-export default CustomersList
+export default CustomersList;

@@ -1,15 +1,12 @@
-import Time from 'rzp/ui/Time'
-import { OrderStatusLabel } from 'merchant/components/StatusLabel'
-import TableBody from '../TableBody'
+import Time from 'rzp/ui/Time';
+import { OrderStatusLabel } from 'merchant/components/StatusLabel';
+import TableBody from '../TableBody';
 
 const OrdersListItem = ({ order }) => {
   return (
     <tr>
       <td>
-        <a
-          target='_blank'
-          href={`#/app/orders/${order.id}/details`}
-        >
+        <a target="_blank" href={`#/app/orders/${order.id}/details`}>
           {order.id}
         </a>
       </td>
@@ -21,19 +18,16 @@ const OrdersListItem = ({ order }) => {
       </td>
       <td>{order.receipt}</td>
       <td>
-        <Time
-          value={order.created_at}
-          format='DD MMM YYYY, hh:mm:ss a'
-        />
+        <Time value={order.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
     </tr>
-  )
-}
+  );
+};
 
 export default ({ orders, isLoading }) => {
   return (
-    <div class='table-responsive'>
-      <table class='table table-hover table-striped'>
+    <div class="table-responsive">
+      <table class="table table-hover table-striped">
         <thead>
           <tr>
             <th>Order Id</th>
@@ -49,18 +43,11 @@ export default ({ orders, isLoading }) => {
           isLoading={isLoading}
           colSpan={7}
           rows={orders}
-          emptyTableMsg='No Orders found!'
+          emptyTableMsg="No Orders found!"
         >
-        {
-          orders.map((order) =>
-            <OrdersListItem
-              key={order.id}
-              order={order}
-            />
-          )
-        }
+          {orders.map(order => <OrdersListItem key={order.id} order={order} />)}
         </TableBody>
       </table>
     </div>
-  )
-}
+  );
+};

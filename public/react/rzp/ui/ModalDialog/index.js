@@ -1,14 +1,14 @@
-import { Component } from 'react'
-import Modal from 'react-modal'
-import { connect } from 'react-redux'
-import * as ModalActions from 'rzp/modules/modals'
-import './ModalDialog.styl'
+import { Component } from 'react';
+import Modal from 'react-modal';
+import { connect } from 'react-redux';
+import * as ModalActions from 'rzp/modules/modals';
+import './ModalDialog.styl';
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
   zIndex: 9999,
-  overflowY: 'auto'
-})
+  overflowY: 'auto',
+});
 
 Modal.defaultStyles.content = {
   width: '625px',
@@ -17,16 +17,13 @@ Modal.defaultStyles.content = {
   border: 0,
   boxShadow: '0 5px 15px rgba(0,0,0,0.5)',
   backgroundColor: 'rgb(255, 255, 255)',
-  borderRadius: '5px'
-}
+  borderRadius: '5px',
+};
 
-@connect(
-  (state) => state.modal,
-  ModalActions
-)
+@connect(state => state.modal, ModalActions)
 class ModalDialog extends Component {
   render() {
-    let props = this.props
+    let props = this.props;
     return (
       <div>
         <Modal
@@ -35,13 +32,13 @@ class ModalDialog extends Component {
           closeTimeoutMS={300}
           shouldCloseOnOverlayClick={false}
           class={`Modal ${props.size ? `Modal--${props.size}` : ''}`}
-          contentLabel='Modal'
+          contentLabel="Modal"
         >
           {props.component}
         </Modal>
       </div>
-    )
+    );
   }
 }
 
-export default ModalDialog
+export default ModalDialog;

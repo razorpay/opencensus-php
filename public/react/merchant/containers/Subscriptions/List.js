@@ -1,44 +1,48 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import Header from 'rzp/ui/Header'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import Header from 'rzp/ui/Header';
 
-import { fetchSubscriptions } from 'merchant/modules/subscriptions'
-import { fetchPlans } from 'merchant/modules/plans'
-import SubscriptionsList from 'merchant/components/Subscriptions/SubscriptionsList'
+import { fetchSubscriptions } from 'merchant/modules/subscriptions';
+import { fetchPlans } from 'merchant/modules/plans';
+import SubscriptionsList
+  from 'merchant/components/Subscriptions/SubscriptionsList';
 
 @connect(
-  (state) => {
-    let plansState = state.plans
-    let subscriptionsState = state.subscriptions
+  state => {
+    let plansState = state.plans;
+    let subscriptionsState = state.subscriptions;
 
     return {
       subscriptions: subscriptionsState.subscriptions,
       plans: plansState.plans,
-      loading: subscriptionsState.loading && plansState.loading
-    }
+      loading: subscriptionsState.loading && plansState.loading,
+    };
   },
   { fetchSubscriptions, fetchPlans }
 )
 export default class SubscriptionsListContainer extends Component {
   componentWillMount() {
-    this.props.fetchSubscriptions()
-    this.props.fetchPlans()
+    this.props.fetchSubscriptions();
+    this.props.fetchPlans();
   }
 
   render() {
-    let { loading, subscriptions, plans } = this.props
+    let { loading, subscriptions, plans } = this.props;
 
     return (
       <div>
-        <Header title='Subscriptions'>
-          <a href='#/app/subscriptions/new' className='pull-right btn btn-primary btn-rounded'>
-            <i className='fa fa-plus'></i>
+        <Header title="Subscriptions">
+          <a
+            href="#/app/subscriptions/new"
+            className="pull-right btn btn-primary btn-rounded"
+          >
+            <i className="fa fa-plus" />
             <span>New Subscription</span>
           </a>
         </Header>
 
-        <div className='content-wrapper'>
-          <div className='panel panel-default'>
+        <div className="content-wrapper">
+          <div className="panel panel-default">
             <SubscriptionsList
               subscriptions={subscriptions}
               plans={plans}
@@ -47,6 +51,6 @@ export default class SubscriptionsListContainer extends Component {
           </div>
         </div>
       </div>
-    )
+    );
   }
 }

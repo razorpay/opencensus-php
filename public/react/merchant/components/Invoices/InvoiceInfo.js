@@ -1,55 +1,52 @@
-import Time from 'rzp/ui/Time'
-import Clipboard from 'rzp/ui/Clipboard'
+import Time from 'rzp/ui/Time';
+import Clipboard from 'rzp/ui/Clipboard';
 
 const notificationClassMap = {
   sent: 'text-success',
-  pending: 'text-warning'
-}
+  pending: 'text-warning',
+};
 
 export default ({ invoice }) => {
-  let status = invoice.status
-  let isNew = !invoice.id
-  let isDraft = status === 'draft'
-  let isPaid = status === 'paid'
+  let status = invoice.status;
+  let isNew = !invoice.id;
+  let isDraft = status === 'draft';
+  let isPaid = status === 'paid';
 
   if (isNew || isDraft) {
-    return null
+    return null;
   }
 
   return (
-    <div class='inv__info'>
+    <div class="inv__info">
       <h4>Invoice {invoice.status}</h4>
       <dl>
-        {
-          isPaid ?
-          <div>
-            <dt>Payment Id</dt>
-            <dd>
-              <a href={`#/app/payments/${invoice.payment_id}`}>
-                {invoice.payment_id}
-              </a>
-            </dd>
+        {isPaid
+          ? <div>
+              <dt>Payment Id</dt>
+              <dd>
+                <a href={`#/app/payments/${invoice.payment_id}`}>
+                  {invoice.payment_id}
+                </a>
+              </dd>
 
-            <dt>Paid On</dt>
-            <dd>
-              <Time
-                value={invoice.paid_at}
-                format='DD MMM YYYY, hh:mm:ss a'
-              />
-            </dd>
-          </div> :
-          <div>
-            <dt>Payment Link</dt>
-            <dd>
-              <Clipboard value={invoice.short_url} />
-            </dd>
-          </div>
-        }
-        {
-          invoice.email_status &&
+              <dt>Paid On</dt>
+              <dd>
+                <Time
+                  value={invoice.paid_at}
+                  format="DD MMM YYYY, hh:mm:ss a"
+                />
+              </dd>
+            </div>
+          : <div>
+              <dt>Payment Link</dt>
+              <dd>
+                <Clipboard value={invoice.short_url} />
+              </dd>
+            </div>}
+        {invoice.email_status &&
           <div>
             <dt>Email Sent to</dt>
-            <dd class='text-ellipsis'>
+            <dd class="text-ellipsis">
               {invoice.customer_details.customer_email}
               <span
                 style={{ marginLeft: '10px' }}
@@ -58,11 +55,9 @@ export default ({ invoice }) => {
                 {invoice.email_status ? `(${invoice.email_status})` : ''}
               </span>
             </dd>
-          </div>
-        }
+          </div>}
 
-        {
-          invoice.sms_status &&
+        {invoice.sms_status &&
           <div>
             <dt>SMS Sent to</dt>
             <dd>
@@ -74,18 +69,15 @@ export default ({ invoice }) => {
                 {invoice.sms_status ? `(${invoice.sms_status})` : ''}
               </span>
             </dd>
-          </div>
-        }
-        {
-          isPaid &&
+          </div>}
+        {isPaid &&
           <div>
             <dt>Payment Link</dt>
             <dd>
               <Clipboard value={invoice.short_url} />
             </dd>
-          </div>
-        }
+          </div>}
       </dl>
     </div>
-  )
-}
+  );
+};

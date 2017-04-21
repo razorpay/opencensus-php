@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 /**
  * PricingDetailCtrl
  */
@@ -7,7 +7,7 @@ app.controller('PricingDetailCtrl', [
   '$stateParams',
   '$http',
   'alertsFactory',
-  function ($scope, $stateParams, $http, alertsFactory) {
+  function($scope, $stateParams, $http, alertsFactory) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.pricing_plan_id = $stateParams.id;
@@ -18,27 +18,30 @@ app.controller('PricingDetailCtrl', [
       var params = {
         route_name: 'pricing_get_plan',
         url_params: {
-          '{id}': $scope.pricing_plan_id
-        }
+          '{id}': $scope.pricing_plan_id,
+        },
       };
 
       var request = $http.get('/admin/generic', {
-        params: params
+        params: params,
       });
 
-      request.success(function (data) {
-        if (data.success) {
-          $scope.details = data.data;
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.details = data.data;
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
     };
 
     $scope.fetchPlanDetails();
-}]);
+  },
+]);

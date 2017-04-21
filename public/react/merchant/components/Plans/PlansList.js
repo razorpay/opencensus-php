@@ -1,60 +1,54 @@
-import TableLoader from 'rzp/ui/TableLoader'
-import EmptyTableRow from 'rzp/ui/EmptyTableRow'
+import TableLoader from 'rzp/ui/TableLoader';
+import EmptyTableRow from 'rzp/ui/EmptyTableRow';
 
-const PlansListItem = (props) => {
-  let { plan } = props
+const PlansListItem = props => {
+  let { plan } = props;
   return (
     <tr>
       <td>{plan.name}</td>
       <td>{plan.interval_count} {plan.interval}</td>
-      <td class='text-right'>{plan.amount}</td>
-      <td class='row-action'>
-        <div class='btn-group'>
-          <button
-            class='btn btn-xs btn-default'
-            onClick={props.onEdit}
-          >
-            <i class='fa fa-edit'></i>
+      <td class="text-right">{plan.amount}</td>
+      <td class="row-action">
+        <div class="btn-group">
+          <button class="btn btn-xs btn-default" onClick={props.onEdit}>
+            <i class="fa fa-edit" />
           </button>
-          <button
-            class='btn btn-xs btn-danger'
-            onClick={props.onDelete}
-          >
-            <i class='fa fa-trash'></i>
+          <button class="btn btn-xs btn-danger" onClick={props.onDelete}>
+            <i class="fa fa-trash" />
           </button>
         </div>
       </td>
     </tr>
-  )
-}
+  );
+};
 
 export default ({ plans, isLoading, onEdit, onDelete }) => {
-  let tableRowComponent
+  let tableRowComponent;
 
   if (isLoading) {
-    tableRowComponent = <TableLoader colSpan='4' />
+    tableRowComponent = <TableLoader colSpan="4" />;
   } else if (plans.length) {
-    tableRowComponent = plans.map((plan) =>
+    tableRowComponent = plans.map(plan => (
       <PlansListItem
         key={plan.id}
         plan={plan}
         onEdit={() => onEdit(plan)}
         onDelete={() => onDelete(plan)}
       />
-    )
+    ));
   } else {
-    tableRowComponent = <EmptyTableRow colSpan='4' message='No Plans found!' />
+    tableRowComponent = <EmptyTableRow colSpan="4" message="No Plans found!" />;
   }
 
   return (
-    <div class='table-responsive'>
-      <table class='table table-hover'>
+    <div class="table-responsive">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Plan Name</th>
             <th>Bill Every</th>
-            <th class='text-right'>Plan Amount (INR)</th>
-            <th></th>
+            <th class="text-right">Plan Amount (INR)</th>
+            <th />
           </tr>
         </thead>
         <tbody>
@@ -62,5 +56,5 @@ export default ({ plans, isLoading, onEdit, onDelete }) => {
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};

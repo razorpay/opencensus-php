@@ -1,6 +1,6 @@
 /* global document:true */
 
-export default (src) => {
+export default src => {
   return new Promise((resolve, reject) => {
     try {
       let script = document.createElement('script');
