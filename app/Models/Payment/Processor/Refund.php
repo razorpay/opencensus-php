@@ -575,17 +575,20 @@ trait Refund
 
     protected function recordTransactionForRefund()
     {
-        $payment = $this->payment;
+        $this->repo->transaction(function()
+        {
+            $payment = $this->payment;
 
-        $this->repo->payment->lockForUpdate($payment->getKey());
+            $this->repo->payment->lockForUpdate($payment->getKey());
 
-        $this->createTransactionForRefund($this->refund, $payment);
+            $this->createTransactionForRefund($this->refund, $payment);
 
-        //
-        // This needs to be saved here because of the association with
-        // transaction which is set in the createTransactionForRefund function.
-        //
-        $this->repo->saveOrFail($this->refund);
+            //
+            // This needs to be saved here because of the association with
+            // transaction which is set in the createTransactionForRefund function.
+            //
+            $this->repo->saveOrFail($this->refund);
+        });
     }
 
     protected function recordTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
