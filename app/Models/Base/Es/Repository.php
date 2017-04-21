@@ -239,6 +239,8 @@ class Repository extends \Razorpay\Spine\Repository
 
         $esRequestParams = $this->buildQueryAndGetEsRequestParams($params);
 
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, $esRequestParams);
+
         $response = $this->esDao->search($esRequestParams);
 
         // Plucks the source fields if set, else ids and forms an uniform array
@@ -338,6 +340,8 @@ class Repository extends \Razorpay\Spine\Repository
 
             $params['body'][] = $document;
         }
+
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, $params);
 
         return $this->esDao->bulkUpdate($params);
     }
