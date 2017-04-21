@@ -50,7 +50,7 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        //TODO: Pass false as argument to remove backward compatbiity.
+        //TODO: Pass false as argument to remove backward compatibility.
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         return [$txn, $feesSplit];

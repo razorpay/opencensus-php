@@ -1022,15 +1022,21 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                 'gateway'       => get_called_class()
             ]);
 
-        $paymentStatus = $this->payment->getStatus();
-
-        if ($paymentStatus === Payment\Status::CAPTURED)
-        {
-            list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
-        }
-        elseif ($paymentStatus === Payment\Status::AUTHORIZED)
+        //
+        // We should always create a transaction if the payment comes in the recon file.
+        // This is needed because currently nodal and merchant transactions are tracked via
+        // a single transaction entity.
+        // If the merchant has not captured the payment, we should create the transaction WITHOUT
+        // the fees/service_tax.
+        // If the merchant has captured the payment, we should create the transaction WITH fee/service_tax.
+        //
+        if ($this->payment->hasBeenCaptured() === true)
         {
             list($txn, $feesSplit) = (new Transaction\Core)->createOrUpdateFromPaymentCaptured($this->payment);
+        }
+        else
+        {
+            list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
         }
 
         $this->repo->saveOrFail($txn);
@@ -1042,24 +1048,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
-        // TODO: Remove this check later
-        // This check is needed because the capture payment would fail
-        // for the payments which got authorized by old code, and got captured by new one
-        $existingFeesSplit = $this->repo->fee_breakup->fetchByTransactionId($txn->getId());
-
-        if ($existingFeesSplit->count() !== 0)
-        {
-            $this->trace->info(
-                TraceCode::FEES_BREAKUP_ALREADY_EXISTS,
-                [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
-                ]);
-
-            return;
-        }
-
         foreach ($feesSplit as $feeSplit)
         {
             $feeSplit->transaction()->associate($txn);
