@@ -1905,5 +1905,5 @@ ALTER TABLE workflow_steps
     ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;
 
 ALTER TABLE axis
-    ADD INDEX migs_command_index (vpc_Command),
-    ADD INDEX migs_merchant_ref_number_index (vpc_MerchTxnRef);
+    ADD INDEX axis_vpc_Command_index (vpc_Command),
+    ADD INDEX axis_vpc_MerchTxnRef_index (vpc_MerchTxnRef);
