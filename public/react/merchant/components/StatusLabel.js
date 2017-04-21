@@ -32,7 +32,15 @@ export const settlementStatusMap = {
   failed: 'bg-danger'
 }
 
+export const batchUploadStatusMap = {
+  created: 'bg-light',
+  processing: 'bg-info',
+  processed: 'bg-success',
+  failure: 'bg-danger',
+}
+
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap)
 export const OrderStatusLabel = StatusLabel(orderStatusMap)
 export const PaymentStatusLabel = StatusLabel(paymentStatusMap)
 export const SettlementStatusLabel = StatusLabel(settlementStatusMap)
+export const BatchUploadStatusLabel = StatusLabel(batchUploadStatusMap)

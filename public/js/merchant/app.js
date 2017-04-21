@@ -103,24 +103,6 @@ var app = angular.module('app', [
     }).state('app.payments.detail', {
       url: '/:id',
       templateUrl: 'tpl/app_payment_detail.html'
-    }).state('app.refunds', {
-      url: '/refunds',
-      template: '<div ui-view class="fade-in-down"></div>'
-    }).state('app.refunds.list', {
-      url: '/list',
-      templateUrl: 'tpl/app_refunds.html'
-    }).state('app.refunds.detail', {
-      url: '/:id',
-      templateUrl: 'tpl/app_refund_detail.html'
-    }).state('app.batch', {
-      url: '/batch',
-      template: '<div ui-view class="fade-in-down"></div>'
-    }).state('app.batch.upload', {
-      url: '/upload',
-      templateUrl: 'tpl/app_batch_upload.html'
-    }).state('app.batch.list', {
-      url: '/list',
-      templateUrl: 'tpl/app_batch_list.html'
     }).state('app.transactions', {
       url: '/transactions',
       template: '<div ui-view class="fade-in-down"></div>'
@@ -227,6 +209,27 @@ var app = angular.module('app', [
     }).state('app.config', {
       url: '/config',
       templateProvider: reactTemplateProvider('<config-details/>'),
+    }).state('app.refunds', {
+      url: '/refunds',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.refunds.list', {
+      url: '/list',
+      templateProvider: reactTemplateProvider('<refunds-list />')
+    }).state('app.refunds.detail', {
+      url: '/:id',
+      controller: ['$scope', '$stateParams', function($scope, $stateParams) {
+        $scope.id = $stateParams.id;
+      }],
+      templateProvider: reactTemplateProvider('<refund-details id="id" />')
+    }).state('app.batch', {
+      url: '/batch',
+      template: '<div ui-view class="fade-in-down"></div>'
+    }).state('app.batch.upload', {
+      url: '/upload',
+      templateProvider: reactTemplateProvider('<batch-upload />')
+    }).state('app.batch.list', {
+      url: '/list',
+      templateProvider: reactTemplateProvider('<batch-list />')
     })
 
       //Guest Routes

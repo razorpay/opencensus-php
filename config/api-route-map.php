@@ -112,16 +112,6 @@ return [
             'routeName' => 'post_refund'
         ],
 
-        // Refunds
-        'refund_fetch_multiple'             => [
-            'url'       => 'refunds',
-            'routeName' => 'refunds_fetch_multiple'
-        ],
-        'refund_fetch_by_id'                => [
-            'url'       => 'refunds/{id}',
-            'routeName' => 'refunds_fetch_single'
-        ],
-
         // Orders
         'order_fetch'                       => [
             'url'       => 'orders',
@@ -134,6 +124,16 @@ return [
         'order_payments'                    => [
             'url'       => 'orders/{id}/payments',
             'routeName' => 'get_order_payments'
+        ],
+
+        // Refunds
+        'refund_fetch'                      => [
+            'url'       => 'refunds',
+            'routeName' => 'get_refunds'
+        ],
+        'refund_fetch_by_id'                => [
+            'url'       => 'refunds/{id}',
+            'routeName' => 'get_refund'
         ],
 
         // Settlements
