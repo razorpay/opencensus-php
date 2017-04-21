@@ -12,7 +12,8 @@ export default class ShowWhen extends Component {
       );
     }
 
-    let roles = myRole ? myRole.split(' ') : notMyRole.split(' ');
+    let myRoles = myRole.split(' ');
+    let notMyRoles = notMyRole.split(' ');
     let user = this.props.user;
     let tags = (user && user.tags) || [];
     let userRole;
@@ -21,14 +22,8 @@ export default class ShowWhen extends Component {
       userRole = user.merchants[user.id].pivot.role;
     }
 
-    if (myRole) {
-      if (roles.indexOf(userRole) < 0) {
-        return null;
-      }
-    } else {
-      if (roles.indexOf(userRole) > -1) {
-        return null;
-      }
+    if ((myRoles.indexOf(userRole) === -1) || (notMyRoles.indexOf(userRole) !== -1)) {
+      return null;
     }
 
     if (featureEnabled && tags.indexOf(featureEnabled) === -1) {
