@@ -87,7 +87,7 @@ class Reconciler
         return $data;
     }
 
-    protected function processReconciliation($input): array
+    protected function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
 
@@ -99,7 +99,7 @@ class Reconciler
                     'message' => 'No file present'
                 ]);
 
-            return [];
+            return new Base\PublicCollection;
         }
 
         $data = $this->parseTextFile($reconcileFile);
@@ -127,7 +127,7 @@ class Reconciler
         return $response;
     }
 
-    protected function reconcile($data): array
+    protected function reconcile($data)
     {
         $collection = new Base\PublicCollection;
         $failures = new Base\PublicCollection;
@@ -186,7 +186,7 @@ class Reconciler
         return $response;
     }
 
-    protected function reconcileEntity($row): array
+    protected function reconcileEntity($row)
     {
         // reconciliation version
         $version = $row[Headings::VERSION] ?: FundTransferAttempt\Version::V1;
@@ -299,7 +299,7 @@ class Reconciler
         return $source;
     }
 
-    protected function parseDataFromRow($entity, $row): array
+    protected function parseDataFromRow($entity, $row)
     {
         $utr = null;
 
@@ -358,7 +358,7 @@ class Reconciler
         ];
     }
 
-    protected function loadEntityAndRelationsV1($row): array
+    protected function loadEntityAndRelationsV1($row)
     {
         $entityId = $row[Headings::PAYMENT_REF_NO];
 
@@ -398,7 +398,7 @@ class Reconciler
         ];
     }
 
-    protected function loadEntityAndRelationsV2($row): array
+    protected function loadEntityAndRelationsV2($row)
     {
         $entityId = $row[Headings::PAYMENT_REF_NO];
 
