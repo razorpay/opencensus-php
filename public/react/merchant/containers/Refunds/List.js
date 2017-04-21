@@ -25,10 +25,7 @@ export default class RefundsListContainer extends ListContainer {
             featureEnabled="Batchrefunds"
             myRole="owner manager operations admin finance"
           >
-            <a
-              class="btn btn-primary pull-right"
-              href="#/app/batch/upload"
-            >
+            <a class="btn btn-primary pull-right" href="#/app/batch/upload">
               Batch Refunds
             </a>
           </ShowWhen>

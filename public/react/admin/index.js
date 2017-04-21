@@ -1,13 +1,13 @@
-import 'rzp/utils/polyfills'
-import 'merchant/styles/layout.styl'
-import React, { Component } from 'react'
-import ReactDOM from 'react-dom'
-import { Provider } from 'react-redux'
-import NgRouterProvider from 'rzp/Providers/NgRouterProvider'
-import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider'
-import ModalDialog from 'rzp/ui/ModalDialog'
-import Notifications from 'rzp/ui/Notifications'
-import store from './store'
+import 'rzp/utils/polyfills';
+import 'merchant/styles/layout.styl';
+import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import NgRouterProvider from 'rzp/Providers/NgRouterProvider';
+import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
+import ModalDialog from 'rzp/ui/ModalDialog';
+import Notifications from 'rzp/ui/Notifications';
+import store from './store';
 
 // import './mocks/faker'
 // import WorkflowsListContainer from './containers/workflows'
@@ -19,10 +19,9 @@ import store from './store'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
 // import SubscriptionsNewContainer from './containers/Subscriptions/New'
 
-
 // This is required for ngReact. Remove this finally
-window.React = React
-window.ReactDOM = ReactDOM
+window.React = React;
+window.ReactDOM = ReactDOM;
 
 /*
  * Below is a transpiled version of
@@ -38,7 +37,7 @@ window.ReactDOM = ReactDOM
  */
 
 function contextProvider({ component, ngRouter, store, user, modeFactory }) {
-  return (props) => {
+  return props => {
     return React.createElement(
       Provider,
       { store },
@@ -57,27 +56,29 @@ function contextProvider({ component, ngRouter, store, user, modeFactory }) {
           )
         )
       )
-    )
-  }
+    );
+  };
 }
 
 function createNgDirective(directiveName, component, ...args) {
-
   app.directive(directiveName, [
     'reactDirective',
     '$state',
     'user',
     'modeFactory',
     (reactDirective, $state, user, modeFactory) => {
-      return reactDirective(contextProvider({
-        component,
-        ngRouter: $state,
-        store,
-        user,
-        modeFactory,
-      }), ...args)
-    }
-  ])
+      return reactDirective(
+        contextProvider({
+          component,
+          ngRouter: $state,
+          store,
+          user,
+          modeFactory,
+        }),
+        ...args
+      );
+    },
+  ]);
 }
 
 // createNgDirective('workflowsListDirective', WorkflowsListContainer)

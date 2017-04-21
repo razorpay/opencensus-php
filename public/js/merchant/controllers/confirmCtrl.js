@@ -7,7 +7,15 @@ app.controller('ConfirmCtrl', [
   '$timeout',
   'alertsFactory',
   'organization',
-  function ($scope, $http, $state, $stateParams, $timeout, alertsFactory, organization) {
+  function(
+    $scope,
+    $http,
+    $state,
+    $stateParams,
+    $timeout,
+    alertsFactory,
+    organization
+  ) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
@@ -18,11 +26,10 @@ app.controller('ConfirmCtrl', [
       $state.go('access.signin');
     }
 
-    organization.fetchCurrentOrg().then(function (data) {
+    organization.fetchCurrentOrg().then(function(data) {
       if (data.login_logo_url) {
         $scope.confirm_logo = data.login_logo_url;
-      }
-      else {
+      } else {
         $scope.confirm_logo = 'img/logo_black.png';
       }
     });
@@ -31,38 +38,39 @@ app.controller('ConfirmCtrl', [
 
     var request = $http({
       method: 'get',
-      url: '/user/confirm/' + token
+      url: '/user/confirm/' + token,
     });
 
-    request.success(function (data) {
-      $scope.alerts.resetAlerts();
-      if (data.success) {
-        $scope.success = true;
+    request
+      .success(function(data) {
+        $scope.alerts.resetAlerts();
+        if (data.success) {
+          $scope.success = true;
 
-        var dripPayload = {
-          email: data.data.email,
-          email_verified: true
+          var dripPayload = {
+            email: data.data.email,
+            email_verified: true,
+          };
+
+          $timeout(function() {
+            try {
+              // try-catch, since there could be tracker blocking scripts
+              _dcq.push(['identify', dripPayload]);
+            } catch (e) {}
+            $state.go('app.dashboard');
+          }, 3000);
+        } else {
+          angular.forEach(data.errors, function(error, key) {
+            $scope.alerts.addAlert('danger', error);
+          });
         }
+      })
+      .error(function() {
+        $scope.alerts.addAlert('danger', null, true);
+      });
 
-
-        $timeout(function () {
-          try {
-            // try-catch, since there could be tracker blocking scripts
-            _dcq.push(["identify", dripPayload]);
-          } catch (e) {}
-          $state.go('app.dashboard');
-        }, 3000)
-      } else {
-        angular.forEach(data.errors, function (error, key) {
-          $scope.alerts.addAlert('danger', error);
-        });
-      }
-    }).error(function () {
-      $scope.alerts.addAlert('danger', null, true);
-    });
-
-    organization.fetchCurrentOrg().then(function (data) {
+    organization.fetchCurrentOrg().then(function(data) {
       $scope.confirm_logo = data.login_logo_url || 'img/logo_black.png';
     });
-  }
+  },
 ]);

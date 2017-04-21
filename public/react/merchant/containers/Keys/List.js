@@ -1,84 +1,79 @@
-import React, { Component, PropTypes } from 'react'
-import { connect } from 'react-redux'
-import Alert from 'rzp/ui/Forms/Alert'
-import Header from 'rzp/ui/Header/Header'
+import React, { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
+import Alert from 'rzp/ui/Forms/Alert';
+import Header from 'rzp/ui/Header/Header';
 // import Role from 'merchant/components/Role'
-import KeysList from 'merchant/components/Keys/KeysList'
-import ListContainer from 'merchant/containers/ListContainer'
-import * as KeyActions from 'merchant/modules/keys'
-import * as ModalActions from 'rzp/modules/modals'
-import * as NotificationsActions from 'rzp/modules/notifications'
-import RollKey from './RollKey'
-import NewKey from './NewKey'
+import KeysList from 'merchant/components/Keys/KeysList';
+import ListContainer from 'merchant/containers/ListContainer';
+import * as KeyActions from 'merchant/modules/keys';
+import * as ModalActions from 'rzp/modules/modals';
+import * as NotificationsActions from 'rzp/modules/notifications';
+import RollKey from './RollKey';
+import NewKey from './NewKey';
 
 @connect(
-  (state) => {
+  state => {
     return {
       keys: state.keys,
-      session: state.session
-    }
+      session: state.session,
+    };
   },
   { ...KeyActions, ...ModalActions, ...NotificationsActions }
 )
-
-
 export default class KeysListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchKeys({
-      id: this.props.session.user.id
-    })
+      id: this.props.session.user.id,
+    });
   }
 
   showRollKeyModal = (params = null) => {
     this.props.openModal({
-      component: <RollKey
-        params={params}
-        merchantId={this.props.session.user.id}
-        generateKey={this.generateKey}
-      />
-    })
-  }
+      component: (
+        <RollKey
+          params={params}
+          merchantId={this.props.session.user.id}
+          generateKey={this.generateKey}
+        />
+      ),
+    });
+  };
 
-  showNewKeyModal = (key) => {
+  showNewKeyModal = key => {
     this.props.openModal({
-      component: <NewKey
-        apiKey={key}
-      />
-    })
-  }
+      component: <NewKey apiKey={key} />,
+    });
+  };
 
-  generateKey = (params) => {
-    return this.props.generateKey(params).then((response) => {
-      var key = response.new || response
+  generateKey = params => {
+    return this.props.generateKey(params).then(response => {
+      var key = response.new || response;
 
       this.props.showNotification({
         type: 'success',
         message: 'New Key Generated',
-        closeTimeout: 15000
-      })
-      this.props.closeModal()
-      this.showNewKeyModal(key)
-    })
-  }
+        closeTimeout: 15000,
+      });
+      this.props.closeModal();
+      this.showNewKeyModal(key);
+    });
+  };
 
   render() {
-    let { loading, keys } = this.props.keys
-    let mode = this.props.session.modeFormatted
-    let status = this.state.status
+    let { loading, keys } = this.props.keys;
+    let mode = this.props.session.modeFormatted;
+    let status = this.state.status;
 
     return (
-      <div class='react-root'>
-        <Header title='API Keys' />
-        <div class='content-wrapper'>
-          <div class='panel panel-default'>
-            <div class='panel-heading'>
+      <div class="react-root">
+        <Header title="API Keys" />
+        <div class="content-wrapper">
+          <div class="panel panel-default">
+            <div class="panel-heading">
               {`${mode} Keys`}
             </div>
 
-            <Alert
-              type={status.type}
-              message={status.message}
-            />
+            <Alert type={status.type} message={status.message} />
 
             <KeysList
               keys={keys}
@@ -91,6 +86,6 @@ export default class KeysListContainer extends ListContainer {
           </div>
         </div>
       </div>
-    )
+    );
   }
 }

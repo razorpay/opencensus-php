@@ -1,57 +1,52 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { reduxForm } from 'redux-form'
-import Modal from 'rzp/ui/Modal'
-import Header from 'rzp/ui/Header'
-import { fetchPlans } from 'merchant/modules/plans'
-import PlansList from 'merchant/components/Plans/PlansList'
-import PlanCreation from 'merchant/containers/Plans/New'
-import ModalContainer from 'merchant/containers/ModalContainer'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { reduxForm } from 'redux-form';
+import Modal from 'rzp/ui/Modal';
+import Header from 'rzp/ui/Header';
+import { fetchPlans } from 'merchant/modules/plans';
+import PlansList from 'merchant/components/Plans/PlansList';
+import PlanCreation from 'merchant/containers/Plans/New';
+import ModalContainer from 'merchant/containers/ModalContainer';
 
-@connect(
-  (state) => state.plans,
-  { fetchPlans }
-)
+@connect(state => state.plans, { fetchPlans })
 @reduxForm({
   form: 'newPlan',
 })
 export default class PlansListContainer extends ModalContainer {
   constructor() {
-    super(...arguments)
-    this.editPlan = ::this.editPlan
-    this.deletePlan = ::this.deletePlan
+    super(...arguments);
+    this.editPlan = ::this.editPlan;
+    this.deletePlan = ::this.deletePlan;
   }
 
   componentWillMount() {
-    this.props.fetchPlans()
+    this.props.fetchPlans();
   }
 
   editPlan(plan) {
-    this.props.initialize(plan)
-    this.openModal()
+    this.props.initialize(plan);
+    this.openModal();
   }
 
-  deletePlan() {
-
-  }
+  deletePlan() {}
 
   render() {
-    let { loading, plans } = this.props
+    let { loading, plans } = this.props;
 
     return (
       <div>
-        <Header title='Plans'>
+        <Header title="Plans">
           <button
-            class='pull-right btn btn-primary btn-rounded'
+            class="pull-right btn btn-primary btn-rounded"
             onClick={this.openModal}
           >
-            <i class='fa fa-plus'></i>
+            <i class="fa fa-plus" />
             <span>New Plan</span>
           </button>
         </Header>
 
-        <div class='content-wrapper'>
-          <div class='panel panel-default'>
+        <div class="content-wrapper">
+          <div class="panel panel-default">
             <PlansList
               plans={plans}
               isLoading={loading}
@@ -66,12 +61,9 @@ export default class PlansListContainer extends ModalContainer {
           onRequestClose={this.closeModal}
           closeTimeoutMS={300}
         >
-          <PlanCreation
-            onSave={this.closeModal}
-            closeModal={this.closeModal}
-          />
+          <PlanCreation onSave={this.closeModal} closeModal={this.closeModal} />
         </Modal>
       </div>
-    )
+    );
   }
 }

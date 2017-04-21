@@ -1,7 +1,4 @@
-import DropdownButton from './DropdownButton'
-import MenuItem from './MenuItem'
+import DropdownButton from './DropdownButton';
+import MenuItem from './MenuItem';
 
-export {
-  DropdownButton,
-  MenuItem
-}
+export { DropdownButton, MenuItem };

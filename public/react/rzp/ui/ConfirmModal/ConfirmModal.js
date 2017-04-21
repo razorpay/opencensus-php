@@ -1,17 +1,17 @@
-import { PropTypes } from 'react'
-import Modal from 'react-modal'
-import AsyncButton from 'react-async-button'
+import { PropTypes } from 'react';
+import Modal from 'react-modal';
+import AsyncButton from 'react-async-button';
 
 const ConfirmModal = (props, context) => {
   let confirmModelStyle = {
     overlay: Object.assign({}, Modal.defaultStyles.overlay, {
-      zIndex: 10000
+      zIndex: 10000,
     }),
     content: Object.assign({}, Modal.defaultStyles.content, {
-      width: '325px'
-    })
-  }
-  let { header, message } = props.options
+      width: '325px',
+    }),
+  };
+  let { header, message } = props.options;
 
   return (
     <div>
@@ -22,26 +22,26 @@ const ConfirmModal = (props, context) => {
         closeTimeoutMS={300}
         class={`Modal Modal--small Modal--confirm`}
       >
-        <div class='modal-header'>
-          <h3 class='modal-title'>
-            { typeof header === 'function' ? header() : (header || 'Alert') }
+        <div class="modal-header">
+          <h3 class="modal-title">
+            {typeof header === 'function' ? header() : header || 'Alert'}
           </h3>
         </div>
 
-        <div class='modal-body'>
-          { typeof message === 'function' ? message() : <p>{message}</p> }
+        <div class="modal-body">
+          {typeof message === 'function' ? message() : <p>{message}</p>}
 
-          <div class='Modal__actions'>
+          <div class="Modal__actions">
             <button
-              type='button'
-              class='btn btn-default'
+              type="button"
+              class="btn btn-default"
               onClick={props.onAbort}
             >
               {props.options.abortLabel}
             </button>
             <AsyncButton
-              type='button'
-              class='btn btn-primary'
+              type="button"
+              class="btn btn-primary"
               onClick={props.onAffirm}
               text={props.options.affirmativeLabel}
               pendingText={props.options.affirmativePendingLabel}
@@ -50,21 +50,20 @@ const ConfirmModal = (props, context) => {
         </div>
       </Modal>
     </div>
-  )
-}
+  );
+};
 
 ConfirmModal.defaultProps = {
   show: false,
   abortLabel: 'Cancel',
-  affirmativeLabel: 'OK'
-}
+  affirmativeLabel: 'OK',
+};
 
 ConfirmModal.propTypes = {
   show: PropTypes.bool.isRequired,
   options: PropTypes.object,
   onAbort: PropTypes.func,
-  onAffirm: PropTypes.func
-}
+  onAffirm: PropTypes.func,
+};
 
-
-export default ConfirmModal
+export default ConfirmModal;

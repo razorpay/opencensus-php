@@ -1,4 +1,4 @@
-import ajax from 'merchant/utils/ajax'
+import ajax from 'merchant/utils/ajax';
 
 // const WORKFLOWS_FETCH = 'WORKFLOWS_FETCH'
 
@@ -15,9 +15,9 @@ let initialState = {
   // loading: true,
   // workflows: [],
   // count: 0
-}
+};
 
-export default function (state = initialState, action) {
+export default function(state = initialState, action) {
   // switch(action.type) {
   //   case `${WORKFLOWS_FETCH}::PENDING`:
   //     return state.set('loading', true)
@@ -36,6 +36,6 @@ export default function (state = initialState, action) {
   //     })
 
   //   default:
-      return state
+  return state;
   // }
 }

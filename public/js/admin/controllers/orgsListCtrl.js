@@ -5,7 +5,7 @@ app.controller('OrgsListCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$modal',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+  function($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.organizations = [];
@@ -14,7 +14,7 @@ app.controller('OrgsListCtrl', [
     function findOrgIndexById(id) {
       var index = null;
 
-      $scope.organizations.forEach(function (v, i) {
+      $scope.organizations.forEach(function(v, i) {
         if (v.id === id) {
           index = i;
         }
@@ -24,33 +24,32 @@ app.controller('OrgsListCtrl', [
       return index;
     }
 
-
     /**
      * Actions
      */
 
     // Fetch the entire org list to show in a table
 
-    $scope.fetchOrgs = function () {
+    $scope.fetchOrgs = function() {
       var request = $http.get('/admin/generic', {
         params: {
-          route_name: 'org_get_multiple'
-        }
+          route_name: 'org_get_multiple',
+        },
       });
 
       /**
        * TODO: remove mocked data
        */
-      $scope.organizations = []
+      $scope.organizations = [];
       $scope.count = 0;
 
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
           $scope.organizations = data.data.items;
           $scope.count = data.data.count;
         }
       });
-    }
+    };
 
     $scope.fetchOrgs();
 
@@ -60,11 +59,11 @@ app.controller('OrgsListCtrl', [
           route_name: 'org_delete',
 
           url_params: {
-            '{id}': id
-          }
-        }
+            '{id}': id,
+          },
+        },
       });
-      request.success(function (data) {
+      request.success(function(data) {
         /* TODO: change this */
         if (data.success) {
           var index = findOrgIndexById(id);
@@ -79,5 +78,5 @@ app.controller('OrgsListCtrl', [
         }
       });
     };
-  }
-])
+  },
+]);

@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 //Pricing List controller
 app.controller('PricingsCtrl', [
   '$scope',
   '$http',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost) {
+  function($scope, $http, alertsFactory, transformRequestAsFormPost) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.pricing_plans = {};
     $scope.show_plan = {};
@@ -16,22 +16,22 @@ app.controller('PricingsCtrl', [
 
     var getDefaultRule = function() {
       return {
-        feature: "payment",
-        payment_method: "card",
-        payment_method_type: "",
-        payment_network: "",
-        payment_issuer: "",
-        international: "0",
-        amount_range_active: "0",
-        amount_range: "0-100000",
+        feature: 'payment',
+        payment_method: 'card',
+        payment_method_type: '',
+        payment_network: '',
+        payment_issuer: '',
+        international: '0',
+        amount_range_active: '0',
+        amount_range: '0-100000',
         amount_range_min: 0,
         amount_range_max: 0,
         percent_rate: 200,
-        fixed_rate: 0
+        fixed_rate: 0,
       };
     };
 
-    function getPayload (input) {
+    function getPayload(input) {
       var data = input;
       // This contains high/low and we don't send that
       delete data.amount_range;
@@ -44,15 +44,15 @@ app.controller('PricingsCtrl', [
 
     $scope.new_plan = $scope.new_rule = getDefaultRule();
 
-    $scope.createPlan = function () {
+    $scope.createPlan = function() {
       $scope.new_plan = getDefaultRule();
       $scope.show_plan = {};
       $scope.create_plan = true;
     };
 
-    var getNetworkList = function (method) {
+    var getNetworkList = function(method) {
       if ($scope.networks === null) {
-        return {"":"All"};
+        return { '': 'All' };
       }
 
       var networks = {};
@@ -71,114 +71,132 @@ app.controller('PricingsCtrl', [
           networks = $scope.networks[method];
       }
 
-      networks[""] = "All";
+      networks[''] = 'All';
       return networks;
     };
 
-    $scope.getNetworks = function () {
+    $scope.getNetworks = function() {
       var params = {
         route_name: 'pricing_supported_networks',
       };
 
       var request = $http.get('/admin/generic', {
-        params: params
+        params: params,
       });
 
-      request.success(function (data) {
-        if (data.success) {
-          $scope.networks = data.data;
-          setPaymentNetworkList('new_rule', 'card');
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.networks = data.data;
+            setPaymentNetworkList('new_rule', 'card');
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
     };
 
-    $scope.savePlan = function () {
-
+    $scope.savePlan = function() {
       var data = getPayload($scope.new_plan);
 
       var params = {
         route_name: 'pricing_create_plan',
-        body: data
+        body: data,
       };
 
       var request = $http({
         url: '/admin/generic',
         method: 'POST',
-        data: params
+        data: params,
       });
 
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Plan created successfully', true);
-          $scope.create_plan = false;
-          $scope.pricing_plans.push(data.data);
-          $scope.showPlan(data.data.id);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert(
+              'success',
+              'Plan created successfully',
+              true
+            );
+            $scope.create_plan = false;
+            $scope.pricing_plans.push(data.data);
+            $scope.showPlan(data.data.id);
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
     };
 
-    $scope.deletePricingPlanRule = function (ruleId)
-    {
+    $scope.deletePricingPlanRule = function(ruleId) {
       var planId = $scope.show_plan.id;
 
       var params = {
         route_name: 'pricing_delete_plan_rule',
         url_params: {
           '{planId}': planId,
-          '{ruleId}': ruleId
-        }
+          '{ruleId}': ruleId,
+        },
       };
 
       var request = $http({
         url: '/admin/generic',
         method: 'DELETE',
-        params: params
+        params: params,
       });
 
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Rule deleted successfully', true);
-          $scope.show_plan.rules =
-            $scope.show_plan.rules.filter(function(rule) {
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert(
+              'success',
+              'Rule deleted successfully',
+              true
+            );
+            $scope.show_plan.rules = $scope.show_plan.rules.filter(function(
+              rule
+            ) {
               return rule.id !== ruleId;
-            }
-          );
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+            });
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
     };
 
-    $scope.$watch('new_rule.amount_range+new_rule.amount_range_active', function() {
-      var range = getDefaultAmountRange($scope.new_rule);
-      $scope.new_rule.amount_range_min = range[0];
-      $scope.new_rule.amount_range_max = range[1];
-    });
+    $scope.$watch(
+      'new_rule.amount_range+new_rule.amount_range_active',
+      function() {
+        var range = getDefaultAmountRange($scope.new_rule);
+        $scope.new_rule.amount_range_min = range[0];
+        $scope.new_rule.amount_range_max = range[1];
+      }
+    );
 
-    $scope.$watch('new_plan.amount_range+new_plan.amount_range_active', function() {
-      var range = getDefaultAmountRange($scope.new_plan);
-      $scope.new_plan.amount_range_min = range[0];
-      $scope.new_plan.amount_range_max = range[1];
-    });
+    $scope.$watch(
+      'new_plan.amount_range+new_plan.amount_range_active',
+      function() {
+        var range = getDefaultAmountRange($scope.new_plan);
+        $scope.new_plan.amount_range_min = range[0];
+        $scope.new_plan.amount_range_max = range[1];
+      }
+    );
 
     // where is either new_rule or new_plan
     var setPaymentNetworkList = function(where) {
@@ -196,41 +214,42 @@ app.controller('PricingsCtrl', [
       setPaymentNetworkList('new_plan');
     });
 
-    $scope.saveRule = function () {
-
+    $scope.saveRule = function() {
       var data = getPayload($scope.new_rule);
       var plan_id = $scope.show_plan.id;
 
       var params = {
         route_name: 'pricing_add_plan_rule',
         url_params: {
-          '{id}': plan_id
+          '{id}': plan_id,
         },
-        body: data
+        body: data,
       };
 
       var request = $http({
         url: '/admin/generic',
         method: 'POST',
-        data: params
+        data: params,
       });
 
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success ', 'Rule added successfully', true);
-          $scope.show_plan.rules.push(data.data);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success ', 'Rule added successfully', true);
+            $scope.show_plan.rules.push(data.data);
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
     };
 
-    $scope.showPlan = function (id) {
+    $scope.showPlan = function(id) {
       if ($scope.show_plan.id == id) {
         $scope.show_plan = {};
         return;
@@ -239,15 +258,15 @@ app.controller('PricingsCtrl', [
       var params = {
         route_name: 'pricing_get_plan',
         url_params: {
-          '{id}': id
-        }
+          '{id}': id,
+        },
       };
 
       var request = $http.get('/admin/generic', {
-        params: params
+        params: params,
       });
 
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
           $scope.create_plan = false;
           $scope.show_plan = data.data;
@@ -257,14 +276,14 @@ app.controller('PricingsCtrl', [
 
     function generateTable() {
       var params = {
-        route_name: 'pricing_get_merchant_plans'
+        route_name: 'pricing_get_merchant_plans',
       };
 
       var request = $http.get('/admin/generic', {
-        params: params
+        params: params,
       });
 
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
           $scope.pricing_plans = data.data.items;
         }
@@ -275,19 +294,15 @@ app.controller('PricingsCtrl', [
      * Sets defaults ranges for now
      */
     function getDefaultAmountRange(input) {
-
       var range = [];
       if (input.amount_range == '0-200000') {
-        range = [0,200000];
-      }
-      else if (input.amount_range == '100000-200000') {
-        range = [100000,200000];
-      }
-      else if (input.amount_range == '200000-1000000000') {
-        range = [200000,1000000000];
-      }
-      else {
-        range = [0,100000];
+        range = [0, 200000];
+      } else if (input.amount_range == '100000-200000') {
+        range = [100000, 200000];
+      } else if (input.amount_range == '200000-1000000000') {
+        range = [200000, 1000000000];
+      } else {
+        range = [0, 100000];
       }
 
       return range;
@@ -295,5 +310,5 @@ app.controller('PricingsCtrl', [
 
     // We fetch the networks on Load
     $scope.getNetworks();
-  }
+  },
 ]);

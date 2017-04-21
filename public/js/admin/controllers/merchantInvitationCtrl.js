@@ -6,7 +6,14 @@ app.controller('MerchantInvitationCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   '$state',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, $state) {
+  function(
+    $scope,
+    $http,
+    alertsFactory,
+    transformRequestAsFormPost,
+    $modal,
+    $state
+  ) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {};
 
@@ -25,12 +32,12 @@ app.controller('MerchantInvitationCtrl', [
         route_name: 'org_fieldmap_get_by_entity',
 
         url_params: {
-          '{entity}' : 'admin_lead'
-        }
-      }
+          '{entity}': 'admin_lead',
+        },
+      },
     });
 
-    request.success(function (data) {
+    request.success(function(data) {
       if (data.success) {
         $scope.fields = data.data.fields;
 
@@ -45,39 +52,43 @@ app.controller('MerchantInvitationCtrl', [
     });
 
     $scope.inviteMerchant = function(merchant) {
-
       var request = $http({
         url: '/admin/generic',
 
         method: 'POST',
 
         params: {
-          route_name: 'admin_lead_create'
+          route_name: 'admin_lead_create',
         },
 
         data: {
-          body: merchant
-        }
+          body: merchant,
+        },
       });
 
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Invitation has been sent to ' +
-            merchant.contact_email , true);
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert(
+              'success',
+              'Invitation has been sent to ' + merchant.contact_email,
+              true
+            );
 
             // Redirect to invitations page
             $state.go('app.invitations.list');
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
 
       return request;
-    }
-  }
-])
+    };
+  },
+]);

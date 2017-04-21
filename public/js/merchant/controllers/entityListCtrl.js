@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 /**
  * Entities Listing Controller
  */
@@ -9,7 +9,7 @@ app.controller('EntityListCtrl', [
   '$state',
   'statusClass',
   '$modal',
-  function ($scope, $http, alertsFactory, $state, getStatusClass, $modal) {
+  function($scope, $http, alertsFactory, $state, getStatusClass, $modal) {
     //Intialise alerts and scope functions
     $scope.getStatusClass = getStatusClass;
     $scope.alerts = alertsFactory.getHandler();
@@ -19,7 +19,7 @@ app.controller('EntityListCtrl', [
       count: 0,
       countStart: 0,
       countEnd: 0,
-      skip: 0
+      skip: 0,
     };
 
     $scope.query = {
@@ -30,28 +30,28 @@ app.controller('EntityListCtrl', [
       amount: '',
       notes: '',
       receipt: '',
-      payment_id: ''
+      payment_id: '',
     };
 
-    $scope.generate = function (entity) {
+    $scope.generate = function(entity) {
       $scope.entity.type = entity;
       generateTable();
     };
 
-    $scope.next = function () {
+    $scope.next = function() {
       clear('id');
       $scope.entity.skip += $scope.query.count;
       generateTable();
     };
 
-    $scope.prev = function () {
+    $scope.prev = function() {
       clear('id');
       // Prevents double click issues so we don't go negative
       $scope.entity.skip = Math.max($scope.entity.skip - $scope.query.count, 0);
       generateTable();
     };
 
-    $scope.search = function () {
+    $scope.search = function() {
       clear('skip');
       generateTable();
     };
@@ -62,26 +62,24 @@ app.controller('EntityListCtrl', [
       generateTable();
     };
 
-    $scope.showSettlementBreakup = function (settlement_id) {
+    $scope.showSettlementBreakup = function(settlement_id) {
       $modal.open({
         templateUrl: 'settlementBreakupModalContent.html',
         controller: 'settlementBreakupModalCtrl',
         resolve: {
-          settlement_id: function () {
+          settlement_id: function() {
             return settlement_id;
           },
-          baseURL: function () {
+          baseURL: function() {
             return '/' + $scope.mode + '/' + $scope.entity.type + 's';
-          }
-        }
+          },
+        },
       });
     };
 
     function clear(field) {
-      if (field === 'id')
-        $scope.entity.id = '';
-      if (field === 'skip')
-        $scope.entity.skip = 0;
+      if (field === 'id') $scope.entity.id = '';
+      if (field === 'skip') $scope.entity.skip = 0;
     }
 
     function generateTable() {
@@ -117,9 +115,8 @@ app.controller('EntityListCtrl', [
       }
 
       if (q.amount !== '') {
-        q.amount = q.amount*100;
-      }
-      else {
+        q.amount = q.amount * 100;
+      } else {
         delete q.amount;
       }
 
@@ -130,72 +127,73 @@ app.controller('EntityListCtrl', [
       // Figure out the proper URL to hit if we are fetching just a single
       // entity or a collection
       if ($scope.entity.id === '') {
-        request = $http.get(baseURL, {params: q});
-      }
-      else {
+        request = $http.get(baseURL, { params: q });
+      } else {
         request = $http.get(baseURL + '/' + $scope.entity.id, {
-          params: q
+          params: q,
         });
       }
 
-      request.success(function (data) {
-        $scope.alerts.resetAlerts();
-        if (data.success) {
-          $scope.entity.items = data.data.items;
-          $scope.entity.count = data.data.count;
+      request
+        .success(function(data) {
+          $scope.alerts.resetAlerts();
+          if (data.success) {
+            $scope.entity.items = data.data.items;
+            $scope.entity.count = data.data.count;
 
-          $scope.entity.countStart = $scope.entity.skip + 1;
+            $scope.entity.countStart = $scope.entity.skip + 1;
 
-          if (data.data.count === 0) {
-            $scope.entity.countEnd = $scope.entity.countStart;
+            if (data.data.count === 0) {
+              $scope.entity.countEnd = $scope.entity.countStart;
+            } else {
+              $scope.entity.countEnd =
+                $scope.entity.countStart + $scope.entity.count - 1;
+            }
+
+            $scope.allowPrev = $scope.entity.countStart != 1;
+            $scope.allowNext = $scope.entity.count >= $scope.query.count;
+          } else {
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
           }
-          else {
-            $scope.entity.countEnd = $scope.entity.countStart + $scope.entity.count - 1;
-          }
-
-          $scope.allowPrev = $scope.entity.countStart != 1;
-          $scope.allowNext = $scope.entity.count >= $scope.query.count;
-        } else {
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
     }
-
 
     // For batch files
 
-    $scope.retry = function (batchId) {
+    $scope.retry = function(batchId) {
       $scope.alerts.resetAlerts();
 
       $http({
         method: 'POST',
-        url: '/'+$scope.mode+'/batches/'+batchId+'/retry'
-      }).then(function (response) {
-        // success
-        var data = response.data;
+        url: '/' + $scope.mode + '/batches/' + batchId + '/retry',
+      }).then(
+        function(response) {
+          // success
+          var data = response.data;
 
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Retry successful');
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Retry successful');
 
-          $scope.entity.items.forEach(function (item) {
-            if (item.id === batchId) {
-              item.status = data.data.status;
-            }
-          });
+            $scope.entity.items.forEach(function(item) {
+              if (item.id === batchId) {
+                item.status = data.data.status;
+              }
+            });
+          } else {
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        },
+        function() {
+          $scope.alerts.addAlert('danger', null, true);
         }
-        else {
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }, function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      );
     };
-
-  }
-])
+  },
+]);
