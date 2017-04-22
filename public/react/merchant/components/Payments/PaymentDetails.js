@@ -80,8 +80,9 @@ const keysNotShown = (entity) => {
     // If the entity has that key and its not currently shown
     if (
       entity.hasOwnProperty(key) &&
-      entity.__stashed__[key] &&
-      shownByDefault.indexOf(key) < 0
+      entity.__stashed__[key] !== undefined &&
+      shownByDefault.indexOf(key) < 0 &&
+      entity[key] !== null
     ) {
       keys.push(key);
     }
