@@ -21,6 +21,15 @@ export default ({label, value, entity = {}}) => {
     case 'amount':
       val = () => <Amount value={value} currency={currency} />
       break;
+    case 'id':
+      let entityName, urlAppendDetails = false, url
+      entityName = label.split('_')[0];
+      if (entityName === 'invoice' || entityName === 'order') {
+        urlAppendDetails = true;
+      }
+      url = `#/app/${entityName}s/${value}/${urlAppendDetails ? 'details' : ''}`
+      val = () => <a href={url} target='_blank'>{value}</a>
+
   }
 
   label = typeof label === 'function' ? label : humanize(label)

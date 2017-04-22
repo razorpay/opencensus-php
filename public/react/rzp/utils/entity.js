@@ -39,7 +39,8 @@ const validEntities = [
   'token',
   'transaction',
   'wallet',
-  'webhook'
+  'webhook',
+  'order'
 ]
 
 function isTimestamp(key) {
