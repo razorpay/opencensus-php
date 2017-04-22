@@ -281,6 +281,12 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements()
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->env === 'testing'))
+        {
+            return [true, null];
+        }
+
         $today = Carbon::today('Asia/Kolkata');
 
         if (Holidays::isWorkingDay($today) === false)
