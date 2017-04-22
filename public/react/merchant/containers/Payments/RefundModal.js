@@ -1,7 +1,7 @@
 import { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import * as NotificationsActions from 'rzp/modules/notifications'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
@@ -9,7 +9,7 @@ import Alert from 'rzp/ui/Forms/Alert'
 import Amount from 'rzp/ui/Amount'
 import { isBlank } from 'rzp/utils/rzp-utils'
 import { refundPayment, fetchPayment } from 'merchant/modules/payments/details'
-import { closeModal } from 'merchant/modules/modals'
+import { closeModal } from 'rzp/modules/modals'
 
 const amountValidation = (value, allValues, props) => {
   value = value || ''

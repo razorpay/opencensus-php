@@ -3,9 +3,9 @@ import { connect } from 'react-redux'
 import Header from 'rzp/ui/Header'
 import Amount from 'rzp/ui/Amount'
 import PaymentDetails from 'merchant/components/Payments/PaymentDetails'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import * as NotificationsActions from 'rzp/modules/notifications'
 import * as PaymentActions from 'merchant/modules/payments/details'
-import * as ModalActions from 'merchant/modules/modals'
+import * as ModalActions from 'rzp/modules/modals'
 import RefundModal from './RefundModal'
 
 @connect(
