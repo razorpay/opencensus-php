@@ -169,13 +169,6 @@ class Merchant extends Entity
         return $this->request('GET', self::PROXY_BALANCE_URL);
     }
 
-    public function generateBeneficiaryFile()
-    {
-        $relativeUrl = $this->getEntityUrl().'beneficiary/file';
-
-        return $this->request('GET', $relativeUrl);
-    }
-
     public function editCredits($params)
     {
         $relativeUrl = $this->getEntityUrl() . $this->id . '/credits';
@@ -201,35 +194,6 @@ class Merchant extends Entity
     public function fetchProxyBankAccount()
     {
         return $this->request('GET', self::BANK_ACCOUNT_URL);
-    }
-
-    public function addMerchantCredits($merchantId, $params)
-    {
-        // merchants/{id}/credits_log
-        $relativeUrl = $this->getEntityUrl().$merchantId.'/credits_log';
-
-        $res = $this->request('POST', $relativeUrl, $params);
-
-        return $res;
-    }
-
-    public function getMerchantCreditLogs()
-    {
-        // credits
-        $relativeUrl = 'credits';
-
-        $res = $this->request('GET', $relativeUrl)->toArray();
-
-        return $res;
-    }
-
-    public function deleteMerchantCredits($merchantId, $creditId)
-    {
-        $relativeUrl = $this->getEntityUrl().$merchantId.'/credits/'.$creditId;
-
-        $res = $this->request('DELETE', $relativeUrl)->toArray();
-
-        return $res;
     }
 
     public function setSchedule($merchantId, $params)

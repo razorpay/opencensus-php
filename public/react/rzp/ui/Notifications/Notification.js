@@ -1,59 +1,70 @@
-import { Component } from 'react'
+import { Component } from 'react';
 
 class Notification extends Component {
   constructor() {
-    super(...arguments)
-    this.close = ::this.close
+    super(...arguments);
+    this.close = ::this.close;
   }
 
   componentDidMount() {
     setTimeout(() => {
-      $(this.notificationEle).addClass('Notification__show')
-    }, 0)
+      $(this.notificationEle).addClass('Notification__show');
+    }, 0);
 
     this.timerId = setTimeout(() => {
-      this.close()
-    }, this.props.closeTimeout)
+      this.close();
+    }, this.props.closeTimeout);
+  }
+
+  componentWillUpdate(nextProps) {
+    if (nextProps.hidePrevious) {
+      clearTimeout(this.timerId);
+      this.close();
+    }
   }
 
   componentWillUnmount() {
-    this.close()
+    this.close();
   }
 
   close() {
     if (this.isClosed) {
-      return
+      return;
     }
 
-    $(this.notificationEle).removeClass('Notification__show')
-    this.isClosed = true
-    clearTimeout(this.timerId)
+    $(this.notificationEle).removeClass('Notification__show');
+    this.isClosed = true;
+    clearTimeout(this.timerId);
 
     setTimeout(() => {
-      this.props.onClose()
-    }, this.props.transitionTimeout)
+      this.props.onClose();
+    }, this.props.transitionTimeout);
   }
 
   render() {
-    let { type, message, showClose } = this.props
+    let { type, message, showClose, hidePrevious } = this.props;
+
+    if (hidePrevious) {
+      return null;
+    }
+
     return (
       <div
-        ref={(notificationEle) => { this.notificationEle = notificationEle }}
-        class={`Notification ${type === 'success' ? 'Notification--success' : 'Notification--error'}`}>
-        {
-          typeof message === 'function' ?
-            message() : Array.isArray(message) ?
-              <ul class='list-unstyled'>
-                {
-                  message.map((msg) => <li key={+new Date()}>{msg}</li>)
-                }
-              </ul> : message
-        }
-        {
-          showClose && <i class='fa fa-close' onClick={this.close}></i>
-        }
+        ref={notificationEle => {
+          this.notificationEle = notificationEle;
+        }}
+        class={`Notification ${type === 'success' ? 'Notification--success' : 'Notification--error'}`}
+      >
+        {typeof message === 'function'
+          ? message()
+          : Array.isArray(message)
+              ? <ul class="list-unstyled">
+                  {message.map((msg, idx) => <li key={idx}>{msg}</li>)}
+                </ul>
+              : message}
+        {showClose && <i class="fa fa-close" onClick={this.close} />}
       </div>
-    )
+    );
   }
 }
 
@@ -62,7 +73,7 @@ Notification.defaultProps = {
   showClose: true,
   closeTimeout: 5000,
   transitionTimeout: 300,
-  onClose: () => {}
-}
+  onClose: () => {},
+};
 
-export default Notification
+export default Notification;

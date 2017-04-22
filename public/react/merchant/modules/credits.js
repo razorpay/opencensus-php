@@ -1,40 +1,37 @@
-import ajax from 'merchant/utils/ajax'
-import { set, merge } from 'rzp/utils/immutable'
+import ajax from 'merchant/utils/ajax';
+import { set, merge } from 'rzp/utils/immutable';
 
-const FETCH_BALANCE_AND_CREDITS = 'FETCH_BALANCE_AND_CREDITS'
+const FETCH_BALANCE_AND_CREDITS = 'FETCH_BALANCE_AND_CREDITS';
 
 const getCreditsData = () => {
   var params = {
-    route_name: 'credits_fetch_multiple'
+    route_name: 'credits_fetch_multiple',
   };
 
   return ajax({
     url: '/user/generic',
     data: params,
-    appendModeInQueryParam: true
-  })
+    appendModeInQueryParam: true,
+  });
 };
 
 const fetchBalance = () => {
   var params = {
-    route_name: 'balance_fetch'
+    route_name: 'balance_fetch',
   };
 
   return ajax({
     url: '/user/generic',
     data: params,
-    appendModeInQueryParam: true
-  })
-}
+    appendModeInQueryParam: true,
+  });
+};
 
-export const fetchCreditBalance = ()=> {
-  return (dispatch) => {
+export const fetchCreditBalance = () => {
+  return dispatch => {
     return dispatch({
       type: FETCH_BALANCE_AND_CREDITS,
-      payload: Promise.all([
-        getCreditsData(),
-        fetchBalance()
-      ]).then((values) => {
+      payload: Promise.all([getCreditsData(), fetchBalance()]).then(values => {
         if (
           !values[0].success ||
           !values[1].success ||
@@ -43,10 +40,10 @@ export const fetchCreditBalance = ()=> {
           throw "Couldn't load credits data";
         }
         return values;
-      })
-    })
-  }
-}
+      }),
+    });
+  };
+};
 
 let initialState = {
   loading: true,
@@ -55,12 +52,12 @@ let initialState = {
   },
   balanceData: {},
   error: null,
-}
+};
 
-export default function (state = initialState, action) {
-  switch(action.type) {
+export default function(state = initialState, action) {
+  switch (action.type) {
     case `${FETCH_BALANCE_AND_CREDITS}::PENDING`:
-      return set(state, 'loading', true)
+      return set(state, 'loading', true);
 
     case `${FETCH_BALANCE_AND_CREDITS}::SUCCESS`:
       return merge(state, {
@@ -68,15 +65,15 @@ export default function (state = initialState, action) {
         creditsData: action.payload[0].data,
         balanceData: action.payload[1].data,
         error: null,
-      })
+      });
 
     case `${FETCH_BALANCE_AND_CREDITS}::ERROR`:
       return merge(state, {
         loading: false,
         error: action.payload.errors,
-      })
+      });
 
     default:
-      return state
+      return state;
   }
 }

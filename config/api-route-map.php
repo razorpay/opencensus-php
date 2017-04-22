@@ -38,6 +38,7 @@ return [
 
         // Permissions
         'permission_get_by_type'            => 'permissions/get/{type}',
+        'permission_get_roles'              => 'permissions/{id}/roles',
         'permission_get_multiple'           => 'orgs/{id}/permissions',
         'permission_create'                 => 'permissions',
         'permission_get'                    => 'permissions/{id}',
@@ -74,6 +75,11 @@ return [
         'workflow_get_actions_for_checker'  => 'w-manager/get-actions-for-checker',
         'action_checker_create'             => 'w-actions/{id}/checkers',
         'action_request_execute'            => 'w-actions/{id}/execute',
+        'workflow_action_close'             => 'w-actions/close/{id}',
+
+        // Admin Actions
+        // Create Schedule
+        'schedule_create'                   => 'schedules',
     ],
 
     // auth
@@ -106,16 +112,6 @@ return [
             'routeName' => 'post_refund'
         ],
 
-        // Refunds
-        'refund_fetch_multiple'             => [
-            'url'       => 'refunds',
-            'routeName' => 'refunds_fetch_multiple'
-        ],
-        'refund_fetch_by_id'                => [
-            'url'       => 'refunds/{id}',
-            'routeName' => 'refunds_fetch_single'
-        ],
-
         // Orders
         'order_fetch'                       => [
             'url'       => 'orders',
@@ -128,6 +124,16 @@ return [
         'order_payments'                    => [
             'url'       => 'orders/{id}/payments',
             'routeName' => 'get_order_payments'
+        ],
+
+        // Refunds
+        'refund_fetch'                      => [
+            'url'       => 'refunds',
+            'routeName' => 'get_refunds'
+        ],
+        'refund_fetch_by_id'                => [
+            'url'       => 'refunds/{id}',
+            'routeName' => 'get_refund'
         ],
 
         // Settlements
@@ -143,9 +149,6 @@ return [
             'url'       => 'settlements/{id}/details',
             'routeName' => 'settlements_get_detail'
         ],
-
-        // Credits
-        'credits_fetch_multiple'            => 'credits',
 
         // Balance
         'balance_fetch'                     => [
@@ -253,6 +256,12 @@ return [
     ],
 
     // auth
+    'admin_proxy' => [
+        // Credits
+        'credits_fetch_multiple'            => 'credits',
+    ],
+
+    // auth
     'internal' => [
         // Keys
         'merchant_fetch_keys'               => [
@@ -277,17 +286,28 @@ return [
         'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
         'pricing_supported_networks'        => 'pricing/networks',
 
-        // Actions
-        // EMI
+        // Admin Actions
+        // Add EMI Plan
         'emi_plan_add'                      => 'emi',
-
-        // IIN
+        // Add IIN Rule
         'iin_add'                           => 'iins',
-
         // Verify Payment
         'payment_verify'                    => 'payments/{id}/verify',
+        // Authorize Failed Payment
+        'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
+        // Generate Refunds Excel (Netbanking)
+        'refund_netbanking_generate_excel'  => 'refunds/netbanking/excel',
+        // Trigger Dummy Error
+        'dummy_critical_error'              => 'trigger/error',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
+    ],
+
+    // auth
+    'admin_internal' => [
+        // Credits
+        'credits_create'                    => 'merchants/{id}/credits_log',
+        'credits_delete'                    => 'merchants/{mid}/credits/{id}',
     ],
 ];

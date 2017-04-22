@@ -1,44 +1,43 @@
-import { Component } from 'react'
-import AsyncButton from 'react-async-button'
+import { Component } from 'react';
+import AsyncButton from 'react-async-button';
 
 export default class ListGroupToggler extends Component {
   constructor() {
-    super(...arguments)
+    super(...arguments);
     this.state = {
-      show: false
-    }
-    this.toggle = ::this.toggle
+      show: false,
+    };
+    this.toggle = ::this.toggle;
   }
 
   toggle() {
     this.setState({
-      show: !this.state.show
-    })
+      show: !this.state.show,
+    });
 
     if (!this.state.show && this.props.onToggleClick) {
-      return this.props.onToggleClick()
+      return this.props.onToggleClick();
     }
   }
 
   render() {
     return (
-      <div class='list-group-item no-flex'>
+      <div class="list-group-item no-flex">
         <span>{this.props.label}</span>
         <AsyncButton
-          class='btn btn-xs btn-default pull-right'
-          text='Show/Hide'
-          pendingText='Fetching...'
+          class="btn btn-xs btn-default pull-right"
+          text="Show/Hide"
+          pendingText="Fetching..."
           onClick={this.toggle}
         />
-        {
-          this.state.show ?
-          <div class='panel-body'>
-            <div class='list-group'>
-              {this.props.children}
+        {this.state.show
+          ? <div class="panel-body">
+              <div class="list-group">
+                {this.props.children}
+              </div>
             </div>
-          </div> : null
-        }
+          : null}
       </div>
-    )
+    );
   }
 }

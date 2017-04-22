@@ -78,22 +78,6 @@ class Admin extends Entity
         return $this->request('POST', $relativeUrl, $input);
     }
 
-    public function triggerError()
-    {
-        $relativeUrl = 'trigger/error';
-        $response = null;
-        try
-        {
-            $this->request('GET', $relativeUrl);
-        }
-        catch(\Razorpay\Api\Errors\ServerError $e)
-        {
-            return ['msg' => "Error triggered with msg {$e->getMessage()}"];
-        }
-
-        return false;
-    }
-
     public function makeReconciliateRequest($input)
     {
         // Makes a guzzle file request

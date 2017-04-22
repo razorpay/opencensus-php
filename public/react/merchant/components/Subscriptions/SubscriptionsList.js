@@ -1,11 +1,11 @@
-import TableLoader from 'rzp/ui/TableLoader'
-import EmptyTableRow from 'rzp/ui/EmptyTableRow'
-import SubscriptionStatus from './SubscriptionStatus'
-import Time from 'rzp/ui/Time'
-import { findBy } from 'rzp/utils/rzp-utils'
+import TableLoader from 'rzp/ui/TableLoader';
+import EmptyTableRow from 'rzp/ui/EmptyTableRow';
+import SubscriptionStatus from './SubscriptionStatus';
+import Time from 'rzp/ui/Time';
+import { findBy } from 'rzp/utils/rzp-utils';
 
 const SubscriptionListItem = ({ subscription, plans }) => {
-  let subscribedPlan = findBy(plans, 'id', subscription.plan_id) || {}
+  let subscribedPlan = findBy(plans, 'id', subscription.plan_id) || {};
   return (
     <tr>
       <td>{subscription.customer.name}</td>
@@ -19,31 +19,33 @@ const SubscriptionListItem = ({ subscription, plans }) => {
       <td>
         <Time value={subscription.charge_at} />
       </td>
-      <td class='text-right'>{subscription.amount}</td>
+      <td class="text-right">{subscription.amount}</td>
     </tr>
-  )
-}
+  );
+};
 
 export default ({ subscriptions, plans, isLoading }) => {
-  let tableRowComponent
+  let tableRowComponent;
 
   if (isLoading) {
-    tableRowComponent = <TableLoader colSpan='6' />
+    tableRowComponent = <TableLoader colSpan="6" />;
   } else if (subscriptions.length) {
-    tableRowComponent = subscriptions.map((subscription) =>
+    tableRowComponent = subscriptions.map(subscription => (
       <SubscriptionListItem
         key={subscription.id}
         subscription={subscription}
         plans={plans}
       />
-    )
+    ));
   } else {
-    tableRowComponent = <EmptyTableRow colSpan='6' message='No Subscriptions found!' />
+    tableRowComponent = (
+      <EmptyTableRow colSpan="6" message="No Subscriptions found!" />
+    );
   }
 
   return (
-    <div class='table-responsive'>
-      <table class='table'>
+    <div class="table-responsive">
+      <table class="table">
         <thead>
           <tr>
             <th>Customer Name</th>
@@ -51,7 +53,7 @@ export default ({ subscriptions, plans, isLoading }) => {
             <th>Plan Name</th>
             <th>Last billing date</th>
             <th>Next billing date</th>
-            <th class='text-right'>Amount (INR)</th>
+            <th class="text-right">Amount (INR)</th>
           </tr>
         </thead>
         <tbody>
@@ -59,5 +61,5 @@ export default ({ subscriptions, plans, isLoading }) => {
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};

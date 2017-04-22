@@ -29,9 +29,17 @@
         <span>Orders</span>
       </a>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp" ui-sref="app.refunds.list" ui-sref-active="active">
-      <a id="refundsNav" ui-sref="app.refunds.list" ui-sref-active="active">
-        <i class="fa fa-mail-reply icon text-warning-lter"></i>
+    <li
+      ng-show="merchant"
+      not-my-role="sellerapp"
+      ui-sref="app.refunds.list"
+      ng-class="{active: ('app.refunds.list' | includedByState) || ('app.refunds.detail' | includedByState)}"
+    >
+      <a id="refundsNav"
+        ui-sref="app.refunds.list"
+        ng-class="{active: ('app.refunds.list' | includedByState) || ('app.refunds.detail' | includedByState)}"
+      >
+        <i class="fa fa-mail-reply text-warning-lter"></i>
         <span>Refunds</span>
       </a>
     </li>
@@ -84,7 +92,7 @@
         <span>Reports</span>
       </a>
     </li>
-    <li ng-show="merchant && user.primaryOwner" ui-sref="app.teammanagement" ui-sref-active="active">
+    <li ng-show="merchant" my-role="owner" ui-sref="app.teammanagement" ui-sref-active="active">
       <a id="manageTeamNav" ui-sref="app.teammanagement" ui-sref-active="active">
         <i class="fa fa-users icon text-info-lter"></i>
         <b class="badge bg-success dk pull-right ng-binding">beta</b>

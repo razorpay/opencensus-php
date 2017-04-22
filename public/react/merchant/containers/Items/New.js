@@ -1,120 +1,113 @@
-import { Component, PropTypes } from 'react'
-import { connect } from 'react-redux'
-import { Field, reduxForm, formValueSelector } from 'redux-form'
-import AsyncButton from 'react-async-button'
-import InputField from 'rzp/ui/Forms/InputField'
-import Alert from 'rzp/ui/Forms/Alert'
-import ModalHeader from 'rzp/ui/ModalHeader'
-import { required } from 'rzp/utils/validators'
-import * as ItemActions from 'merchant/modules/items'
-import * as ModalActions from 'merchant/modules/modals'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import { Component, PropTypes } from 'react';
+import { connect } from 'react-redux';
+import { Field, reduxForm, formValueSelector } from 'redux-form';
+import AsyncButton from 'react-async-button';
+import InputField from 'rzp/ui/Forms/InputField';
+import Alert from 'rzp/ui/Forms/Alert';
+import ModalHeader from 'rzp/ui/ModalHeader';
+import { required } from 'rzp/utils/validators';
+import * as ItemActions from 'merchant/modules/items';
+import * as ModalActions from 'rzp/modules/modals';
+import * as NotificationsActions from 'rzp/modules/notifications';
 
-@connect(
-  null,
-  {
-    ...ItemActions,
-    ...ModalActions,
-    ...NotificationsActions,
-  }
-)
+@connect(null, {
+  ...ItemActions,
+  ...ModalActions,
+  ...NotificationsActions,
+})
 @reduxForm({
-  form: 'newItem'
+  form: 'newItem',
 })
 export default class AddItem extends Component {
   constructor() {
-    super(...arguments)
+    super(...arguments);
     this.state = {
-      errors: null
-    }
+      errors: null,
+    };
   }
 
   componentWillMount() {
     if (this.props.item) {
-      this.props.initialize(this.props.item)
+      this.props.initialize(this.props.item);
     }
   }
 
-  save = (props) => {
-    return this.props.saveItem(props).then((item) => {
-      this.props.onSave(item)
-      this.props.showNotification({
-        type: 'success',
-        message: 'Item saved successfully'
+  save = props => {
+    return this.props
+      .saveItem(props)
+      .then(item => {
+        this.props.onSave(item);
+        this.props.showNotification({
+          type: 'success',
+          message: 'Item saved successfully',
+        });
       })
-    }).catch((err) => {
-      this.setState({
-        errors: err.errors
-      })
-    })
-  }
+      .catch(err => {
+        this.setState({
+          errors: err.errors,
+        });
+      });
+  };
 
   render() {
-    const {
-      handleSubmit,
-      invalid,
-      item,
-    } = this.props
+    const { handleSubmit, invalid, item } = this.props;
 
     return (
       <div>
         <ModalHeader
-          title={ item && item.id ? 'Edit Item' : 'New Item' }
+          title={item && item.id ? 'Edit Item' : 'New Item'}
           onCloseClick={this.props.closeModal}
         />
 
-        <div class='modal-body'>
-          <Alert
-            type='error'
-            message={this.state.errors}
-          />
+        <div class="modal-body">
+          <Alert type="error" message={this.state.errors} />
 
           <form onSubmit={handleSubmit(this.save)}>
-            <div class='form-group'>
-              <label class='label-required'>Name</label>
+            <div class="form-group">
+              <label class="label-required">Name</label>
               <div>
                 <Field
-                  name='name'
+                  name="name"
                   component={InputField}
-                  class='form-control'
+                  class="form-control"
                   autoFocus={true}
                   validate={required()}
                 />
               </div>
             </div>
 
-            <div class='form-group'>
-              <label class='label-required'>Rate</label>
+            <div class="form-group">
+              <label class="label-required">Rate</label>
               <div>
-                <div class='input-group'>
-                  <span class='input-group-addon'>INR</span>
+                <div class="input-group">
+                  <span class="input-group-addon">INR</span>
                   <Field
-                    name='amountInINR'
+                    name="amountInINR"
                     component={InputField}
-                    class='form-control'
+                    class="form-control"
                     validate={required()}
                   />
                 </div>
               </div>
             </div>
 
-            <div class='form-group'>
+            <div class="form-group">
               <label>Description</label>
               <div>
                 <Field
-                  name='description'
-                  component='textarea'
-                  class='form-control'
+                  name="description"
+                  component="textarea"
+                  class="form-control"
                 />
               </div>
             </div>
 
-            <div class='Modal__actions'>
+            <div class="Modal__actions">
               <AsyncButton
-                type='submit'
-                class='btn btn-primary btn-block'
+                type="submit"
+                class="btn btn-primary btn-block"
                 text={this.props.saveLabel}
-                pendingText='Saving...'
+                pendingText="Saving..."
                 disabled={invalid}
                 onClick={handleSubmit(this.save)}
               />
@@ -122,11 +115,11 @@ export default class AddItem extends Component {
           </form>
         </div>
       </div>
-    )
+    );
   }
 }
 
 AddItem.defaultProps = {
   onSave: () => {},
-  saveLabel: 'Save'
-}
+  saveLabel: 'Save',
+};

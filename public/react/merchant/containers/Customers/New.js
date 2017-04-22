@@ -1,131 +1,122 @@
-import { Component } from 'react'
-import { connect } from 'react-redux'
-import { Field, reduxForm, formValueSelector } from 'redux-form'
-import AsyncButton from 'react-async-button'
-import InputField from 'rzp/ui/Forms/InputField'
-import ModalHeader from 'rzp/ui/ModalHeader'
-import Alert from 'rzp/ui/Forms/Alert'
-import { required, email, phone } from 'rzp/utils/validators'
-import * as CustomerActions from 'merchant/modules/customers'
-import * as ModalActions from 'merchant/modules/modals'
-import * as NotificationsActions from 'merchant/modules/notifications'
+import { Component } from 'react';
+import { connect } from 'react-redux';
+import { Field, reduxForm, formValueSelector } from 'redux-form';
+import AsyncButton from 'react-async-button';
+import InputField from 'rzp/ui/Forms/InputField';
+import ModalHeader from 'rzp/ui/ModalHeader';
+import Alert from 'rzp/ui/Forms/Alert';
+import { required, email, phone } from 'rzp/utils/validators';
+import * as CustomerActions from 'merchant/modules/customers';
+import * as ModalActions from 'rzp/modules/modals';
+import * as NotificationsActions from 'rzp/modules/notifications';
 
 function validate(values) {
-  let errors = {}
+  let errors = {};
 
   if (!values.email && !values.contact) {
-    errors._error = 'Please provide either email or contact'
+    errors._error = 'Please provide either email or contact';
   }
 
-  return errors
+  return errors;
 }
 
-@connect(
-  null,
-  {
-    ...CustomerActions,
-    ...ModalActions,
-    ...NotificationsActions,
-  }
-)
+@connect(null, {
+  ...CustomerActions,
+  ...ModalActions,
+  ...NotificationsActions,
+})
 @reduxForm({
   form: 'newCustomer',
-  validate
+  validate,
 })
 export default class AddCustomer extends Component {
   constructor() {
-    super(...arguments)
+    super(...arguments);
     this.state = {
-      errors: null
-    }
+      errors: null,
+    };
   }
 
   componentWillMount() {
     if (this.props.customer) {
-      this.props.initialize(this.props.customer)
+      this.props.initialize(this.props.customer);
     }
   }
 
-  save = (props) => {
-    return this.props.saveCustomer(props).then((customer) => {
-      this.props.onSave(customer)
-      this.props.showNotification({
-        type: 'success',
-        message: 'Customer saved successfully'
+  save = props => {
+    return this.props
+      .saveCustomer(props)
+      .then(customer => {
+        this.props.onSave(customer);
+        this.props.showNotification({
+          type: 'success',
+          message: 'Customer saved successfully',
+        });
       })
-    }).catch((err) => {
-      this.setState({
-        errors: err.errors
-      })
-    })
-  }
+      .catch(err => {
+        this.setState({
+          errors: err.errors,
+        });
+      });
+  };
 
   render() {
-    const {
-      handleSubmit,
-      invalid,
-      customer,
-    } = this.props
+    const { handleSubmit, invalid, customer } = this.props;
 
     return (
       <div>
         <ModalHeader
-          title={ customer && customer.id ? 'Edit Customer' : 'New Customer' }
+          title={customer && customer.id ? 'Edit Customer' : 'New Customer'}
           onCloseClick={this.props.closeModal}
         />
 
-        <div class='modal-body'>
-          <Alert
-            type='error'
-            message={this.state.errors}
-          />
+        <div class="modal-body">
+          <Alert type="error" message={this.state.errors} />
 
           <form onSubmit={handleSubmit(this.save)}>
-            <div class='form-group'>
+            <div class="form-group">
               <label>Name</label>
               <div>
                 <Field
-                  name='name'
+                  name="name"
                   component={InputField}
-                  class='form-control'
+                  class="form-control"
                   autoFocus={true}
                 />
               </div>
             </div>
 
-            <div class='help-block'>
+            <div class="help-block">
               One of these - <b>email</b> or <b>phone</b> is required.
             </div>
 
-            <div class='form-group'>
+            <div class="form-group">
               <label>Email</label>
               <div>
                 <Field
-                  name='email'
+                  name="email"
                   component={InputField}
-                  type='email'
-                  class='form-control'
+                  type="email"
+                  class="form-control"
                   validate={email('Please provide a valid email')}
                 />
               </div>
             </div>
 
-            <div class='form-group'>
+            <div class="form-group">
               <label>Contact No.</label>
               <div>
                 <Field
-                  name='contact'
+                  name="contact"
                   component={InputField}
-                  class='form-control'
-                  type='tel'
-                  validate={[
-                    phone('Invalid Contact')
-                  ]}
+                  class="form-control"
+                  type="tel"
+                  validate={[phone('Invalid Contact')]}
                 />
               </div>
             </div>
 
-{/*
+            {/*
             <div class='form-group'>
               <label>Address</label>
               <div>
@@ -138,12 +129,12 @@ export default class AddCustomer extends Component {
             </div>
 */}
 
-            <div class='Modal__actions'>
+            <div class="Modal__actions">
               <AsyncButton
-                type='submit'
-                class='btn btn-primary btn-block'
+                type="submit"
+                class="btn btn-primary btn-block"
                 text={this.props.saveLabel}
-                pendingText='Saving...'
+                pendingText="Saving..."
                 disabled={invalid}
                 onClick={handleSubmit(this.save)}
               />
@@ -151,11 +142,11 @@ export default class AddCustomer extends Component {
           </form>
         </div>
       </div>
-    )
+    );
   }
 }
 
 AddCustomer.defaultProps = {
   onSave: () => {},
-  saveLabel: 'Save'
-}
+  saveLabel: 'Save',
+};

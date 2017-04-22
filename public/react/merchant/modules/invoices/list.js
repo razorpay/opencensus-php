@@ -1,103 +1,108 @@
-import { set, merge, unshift, remove } from 'rzp/utils/immutable'
-import Invoice from 'merchant/models/Invoice'
+import { set, merge, unshift, remove } from 'rzp/utils/immutable';
+import Invoice from 'merchant/models/Invoice';
 
-export const INVOICES_FETCH = 'INVOICES_FETCH'
-export const INVOICE_CREATE = 'INVOICE_CREATE'
-export const INVOICE_EDIT = 'INVOICE_EDIT'
-export const INVOICE_DELETED = 'INVOICE_DELETED'
-export const HIGHLIGHT_INVOICE = 'HIGHLIGHT_INVOICE'
-export const REMOVE_HIGHLIGHT_INVOICE = 'REMOVE_HIGHLIGHT_INVOICE'
+export const INVOICES_FETCH = 'INVOICES_FETCH';
+export const INVOICE_CREATE = 'INVOICE_CREATE';
+export const INVOICE_EDIT = 'INVOICE_EDIT';
+export const INVOICE_DELETED = 'INVOICE_DELETED';
+export const HIGHLIGHT_INVOICE = 'HIGHLIGHT_INVOICE';
+export const REMOVE_HIGHLIGHT_INVOICE = 'REMOVE_HIGHLIGHT_INVOICE';
 
-export const fetchInvoices = (params) => {
-  return (dispatch) => {
-    let invoice = new Invoice()
+export const fetchInvoices = params => {
+  return dispatch => {
+    let invoice = new Invoice();
     return dispatch({
       type: INVOICES_FETCH,
-      payload: invoice.fetchAll(params)
-    })
-  }
-}
+      payload: invoice.fetchAll(params),
+    });
+  };
+};
 
-export const saveInvoice = (params) => {
-  return (dispatch) => {
-    let invoice = new Invoice(params)
+export const saveInvoice = params => {
+  return dispatch => {
+    let invoice = new Invoice(params);
     return dispatch({
       type: invoice.isNew ? INVOICE_CREATE : INVOICE_EDIT,
-      payload: invoice.save()
-    })
-  }
-}
+      payload: invoice.save(),
+    });
+  };
+};
 
-export const deleteInvoice = (params) => {
-  return (dispatch) => {
-    let invoice = new Invoice(params)
+export const deleteInvoice = params => {
+  return dispatch => {
+    let invoice = new Invoice(params);
     return invoice.delete().then(() => {
       dispatch({
         type: INVOICE_DELETED,
-        payload: invoice
-      })
-    })
-  }
-}
+        payload: invoice,
+      });
+    });
+  };
+};
 
-export const highLightInvoice = (invoiceId) => {
-  return (dispatch) => {
+export const highLightInvoice = invoiceId => {
+  return dispatch => {
     dispatch({
       type: HIGHLIGHT_INVOICE,
-      payload: invoiceId
-    })
+      payload: invoiceId,
+    });
 
     setTimeout(() => {
       dispatch({
-        type: REMOVE_HIGHLIGHT_INVOICE
-      })
-    }, 6000)
-  }
-}
+        type: REMOVE_HIGHLIGHT_INVOICE,
+      });
+    }, 6000);
+  };
+};
 
 let initialState = {
   loading: true,
   invoices: [],
   count: 0,
-  highLightInvoiceId: null
-}
+  highLightInvoiceId: null,
+};
 
-export default function (state = initialState, action) {
-  switch(action.type) {
+export default function(state = initialState, action) {
+  switch (action.type) {
     case `${INVOICES_FETCH}::PENDING`:
-      return set(state, 'loading', true)
+      return set(state, 'loading', true);
 
     case `${INVOICES_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
         invoices: action.payload.data.items,
         count: action.payload.data.count,
-      })
+      });
 
     case `${INVOICES_FETCH}::ERROR`:
       return merge(state, {
         loading: false,
-        error: action.error
-      })
+        error: action.error,
+      });
 
     case `${INVOICE_CREATE}::SUCCESS`:
-      return set(state, 'invoices', unshift(state.invoices, action.payload))
+      return set(state, 'invoices', unshift(state.invoices, action.payload));
 
     case `${INVOICE_EDIT}::SUCCESS`:
-      let invoiceIndex = state.invoices.findIndex((invoice) => invoice.id === action.payload.id)
-      return set(state, `invoices.${invoiceIndex}`, action.payload)
+      let invoiceIndex = state.invoices.findIndex(
+        invoice => invoice.id === action.payload.id
+      );
+      return set(state, `invoices.${invoiceIndex}`, action.payload);
 
     case INVOICE_DELETED:
-      var invoicesList = remove(state.invoices, (invoice) => invoice.id === action.payload.id)
-      return set(state, 'invoices', invoicesList)
+      var invoicesList = remove(
+        state.invoices,
+        invoice => invoice.id === action.payload.id
+      );
+      return set(state, 'invoices', invoicesList);
 
     case HIGHLIGHT_INVOICE:
-      return set(state, 'highLightInvoiceId', action.payload)
+      return set(state, 'highLightInvoiceId', action.payload);
 
     case REMOVE_HIGHLIGHT_INVOICE:
-      return set(state, 'highLightInvoiceId', null)
+      return set(state, 'highLightInvoiceId', null);
 
     default:
-      return state
+      return state;
   }
 }

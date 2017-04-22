@@ -8,7 +8,16 @@ app.controller('SigninCtrl', [
   'admin',
   'transformRequestAsFormPost',
   'organization',
-  function ($scope, $http, $state, $stateParams, alertsFactory, admin, transformRequestAsFormPost, organization) {
+  function(
+    $scope,
+    $http,
+    $state,
+    $stateParams,
+    alertsFactory,
+    admin,
+    transformRequestAsFormPost,
+    organization
+  ) {
     $scope.data = {};
     $scope.login_logo = '';
 
@@ -17,7 +26,7 @@ app.controller('SigninCtrl', [
     if ($stateParams.username) {
       $scope.data.username = $stateParams.username;
     }
-    $scope.submit = function ($valid) {
+    $scope.submit = function($valid) {
       if (!$valid) {
         $scope.alerts.addAlert('danger', 'Please fill all the fields', true);
         return false;
@@ -27,26 +36,28 @@ app.controller('SigninCtrl', [
         method: 'post',
         url: '/admin/signin',
         transformRequest: transformRequestAsFormPost,
-        data: $scope.data
+        data: $scope.data,
       });
-      request.success(function (data) {
-        if (data.success) {
-          admin.identity(true);
-          $state.go('app.dashboard');
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (error, key) {
-            $scope.alerts.addAlert('danger', error);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            admin.identity(true);
+            $state.go('app.dashboard');
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(error, key) {
+              $scope.alerts.addAlert('danger', error);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
     };
 
     // Change logo
-    organization.fetchCurrentOrg().then(function (data) {
+    organization.fetchCurrentOrg().then(function(data) {
       $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
     });
-  }
+  },
 ]);
