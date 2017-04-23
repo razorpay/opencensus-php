@@ -19,46 +19,49 @@ class TokenController extends Controller
     }
 
     /**
-     * POST /oauth/token/request
-     *
-     * Allows an application to request user authorization
-     * Returned with a request token
+     * GET /oauth/tokens
      */
-    public function requestToken()
+    public function getAllTokens()
     {
         $input = Request::all();
 
-        $result = $this->tokenService->newRequestToken($input);
+        $result = $this->tokenService->getAllTokens($input);
 
         return ApiResponse::json($result);
     }
 
     /**
-     * POST /oauth/token/access
-     *
-     * Allows an application to obtain access token
-     * in exchange of request token
+     * GET /oauth/tokens/{$id}
      */
-    public function accessToken()
+    public function getToken($id)
     {
         $input = Request::all();
 
-        $result = $this->tokenService->accessToken($input);
+        $result = $this->tokenService->getToken($id, $input);
 
         return ApiResponse::json($result);
     }
 
     /*
-     * POST oauth/token/revoke
-     *
-     * Allows an application to revoke an issued token
-     * Once invalidated, the new token may be issued via request api.
+     * PUT /oauth/tokens/{$id}
      */
-    public function revokeToken()
+    public function editToken($id)
     {
         $input = Request::all();
 
-        $result = $this->tokenService->revokeToken($input);
+        $result = $this->tokenService->editToken($id, $input);
+
+        return ApiResponse::json($result);
+    }
+
+    /*
+     * POST oauth/tokens/{$id}/revoke
+     */
+    public function revokeToken($id)
+    {
+        $input = Request::all();
+
+        $result = $this->tokenService->revokeToken($id, $input);
 
         return ApiResponse::json($result);
     }
