@@ -473,12 +473,17 @@ class Verify extends Base\Core
                 {
                     $this->trace->warning(
                         TraceCode::PAYMENT_VERIFY_ALREADY_AUTHORIZED,
-                        [
-                            'payment_id'    => $payment->getId(),
-                            'status'        => $payment->getStatus(),
-                            'verify_bucket' => $payment->getVerifyBucket(),
-                            'error_message' => $ex->getMessage(),
-                        ]);
+                        $this->getAuthExceptionTraceBody($payment, $ex)
+                    );
+
+                    return null;
+                }
+                catch (Exception\GatewayErrorException $ex)
+                {
+                    $this->trace->warning(
+                        TraceCode::GATEWAY_VERIFY_ERROR,
+                        $this->getAuthExceptionTraceBody($payment, $ex)
+                    );
 
                     return null;
                 }
@@ -517,6 +522,18 @@ class Verify extends Base\Core
             ]);
 
         return $result;
+    }
+
+    protected function getAuthExceptionTraceBody(
+        Payment\Entity $payment,
+        Exception\BaseException $ex)
+    {
+        return [
+            'payment_id'    => $payment->getId(),
+            'status'        => $payment->getStatus(),
+            'verify_bucket' => $payment->getVerifyBucket(),
+            'error_message' => $ex->getMessage(),
+        ];
     }
 
     protected function getPaymentStatusForFilter(string $filter)
