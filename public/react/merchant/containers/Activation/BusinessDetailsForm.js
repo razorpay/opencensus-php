@@ -7,7 +7,6 @@ import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required } from 'rzp/utils/validators';
-import ActivationWizardHOC from './ActivationWizardHOC';
 
 const selector = formValueSelector('activationBusinessDetails');
 @connect(state => {
@@ -20,7 +19,6 @@ const selector = formValueSelector('activationBusinessDetails');
     business_registered_pin: selector(state, 'business_registered_pin'),
   };
 }, null)
-@ActivationWizardHOC
 export default class BusinessDetailsForm extends Component {
   updateOperationalAddress = (event, newValue) => {
     setTimeout(() => {

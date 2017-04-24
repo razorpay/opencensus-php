@@ -4,9 +4,7 @@ import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required, email, phone } from 'rzp/utils/validators';
-import ActivationWizardHOC from './ActivationWizardHOC';
 
-@ActivationWizardHOC
 export default class ContactDetailsForm extends Component {
   render() {
     let { handleSubmit, save, saveAndNext } = this.props;

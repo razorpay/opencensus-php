@@ -3,9 +3,7 @@ import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
-import ActivationWizardHOC from './ActivationWizardHOC';
 
-@ActivationWizardHOC
 export default class DocumentsUploadForm extends Component {
   render() {
     let { saveFile, gotoTab } = this.props;

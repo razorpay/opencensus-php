@@ -5,7 +5,6 @@ import InputField from 'rzp/ui/Forms/InputField';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
-import ActivationWizardHOC from './ActivationWizardHOC';
 
 function verifyAccountNumber(value, allValues, props) {
   return value !== allValues.bank_account_number
@@ -13,7 +12,6 @@ function verifyAccountNumber(value, allValues, props) {
     : undefined;
 }
 
-@ActivationWizardHOC
 export default class BankDetailsForm extends Component {
   render() {
     let { handleSubmit, save, saveAndNext, gotoTab, data } = this.props;

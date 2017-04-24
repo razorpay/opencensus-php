@@ -2,10 +2,8 @@ import { Component } from 'react';
 import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
-import ActivationWizardHOC from './ActivationWizardHOC';
 import { required } from 'rzp/utils/validators';
 
-@ActivationWizardHOC
 export default class SubmitForm extends Component {
   render() {
     let { handleSubmit, save, gotoTab, invalid } = this.props;
