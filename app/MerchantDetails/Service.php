@@ -138,7 +138,7 @@ class Service extends Base\Service
 
         if ($user)
         {
-            $this->merchant = $user->currentMerchant;
+            $this->merchant = $user->currentMerchant();
 
             $this->user = $user;
         }

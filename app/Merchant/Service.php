@@ -35,11 +35,6 @@ class Service extends Base\Service
     public function __construct()
     {
         $this->currentUser = Auth::user();
-
-        if ($this->currentUser)
-        {
-            $this->currentMerchant = $this->currentUser->currentMerchant();
-        }
     }
 
     public static function register(User\Entity $user, array $data, $referer = false)
@@ -86,7 +81,7 @@ class Service extends Base\Service
      */
     public function registerSubMerchant(array $input)
     {
-        $currentMerchant = $this->currentMerchant;
+        $currentMerchant = $this->currentUser->currentMerchant();
 
         $isLinkedAccount = \Input::get('account') ?? false;
 
@@ -148,7 +143,8 @@ class Service extends Base\Service
 
     public function registerSubMerchantUser(array $input)
     {
-        $currentMerchant = $this->currentMerchant;
+        $currentMerchant = $this->currentUser->currentMerchant();
+
         $currentUser = User\Entity::getUserWithEmail($currentMerchant->email);
 
         $subMerchant = $this->fetch($input['id']);
@@ -631,7 +627,7 @@ class Service extends Base\Service
             return array(static::SELF_REMOVE_FORBIDDEN);
         }
 
-        $this->currentMerchant->users()->detach($userId);
+        $this->currentUser->currentMerchant()->users()->detach($userId);
 
         return $error;
     }
@@ -662,7 +658,7 @@ class Service extends Base\Service
             return [$error, null];
         }
 
-        $userToUpdate = $this->currentMerchant->users->find($userId);
+        $userToUpdate = $this->currentUser->currentMerchant()->users->find($userId);
 
         if (is_null($userToUpdate))
         {
@@ -672,12 +668,12 @@ class Service extends Base\Service
 
         $newRole = $input['role'];
         $userToUpdate->merchants()->updateExistingPivot(
-            $this->currentMerchant->id, [
+            $this->currentUser->currentMerchant()->id, [
                 'role' => $newRole
             ]
         );
 
-        (new User\Service)->updateMerchantUserMappingOnApi($userId, $this->currentMerchant->id, $input['role']);
+        (new User\Service)->updateMerchantUserMappingOnApi($userId, $this->currentUser->currentMerchant()->id, $input['role']);
 
         list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($this->currentUser);
 
@@ -761,7 +757,7 @@ class Service extends Base\Service
      */
     public function fetchBankAccount()
     {
-        $this->setApiCredentials($this->currentMerchant->id);
+        $this->setApiCredentials($this->currentUser->currentMerchant()->id);
         $error = $data = null;
 
         try

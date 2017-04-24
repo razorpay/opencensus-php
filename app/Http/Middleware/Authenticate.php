@@ -55,9 +55,11 @@ class Authenticate {
 				ApiRequest::addHeader('X-Dashboard-User-Id', $user->getAuthIdentifier());
 				ApiRequest::addHeader('X-Dashboard-User-Email', $user->email);
 
-				if ($user->currentMerchant)
+                $currentMerchant = $user->currentMerchant();
+
+				if ($currentMerchant !== null)
 				{
-					ApiRequest::addHeader('X-Dashboard-User-Role', $user->getUserRoleWithCurrentMerchant());
+					ApiRequest::addHeader('X-Dashboard-User-Role', $currentMerchant->role);
 				}
 
 				$routeName = $request->route()->getName();

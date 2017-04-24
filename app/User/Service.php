@@ -798,12 +798,7 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
-        list($error, $userDetails) = (new User\Service)->getUserFromApi($user->id);
-
-        if (empty($error) === false)
-        {
-            return [$error, $data];
-        }
+        $userDetails = $user->toArray();
 
         $this->getTags($userDetails);
 
@@ -896,7 +891,7 @@ class Service extends Base\Service
         $userDetails['merchants'] = $merchants;
     }
 
-    protected function loginOnApi(array $input)
+    public function loginOnApi(array $input)
     {
         $error = $response = [];
 
@@ -914,7 +909,7 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    protected function getUserFromApi($userId, array $input = [])
+    public function getUserFromApi($userId, array $input = [])
     {
         $error = $response = [];
 

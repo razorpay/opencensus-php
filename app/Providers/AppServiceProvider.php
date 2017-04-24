@@ -22,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
         $this->registerValidatorResolver();
 
         $this->registerCustomAuthProvider();
+
+        $this->registerCustomDashboardUserProvider();
     }
 
     protected function setupBlade()
@@ -53,6 +55,14 @@ class AppServiceProvider extends ServiceProvider
         Auth::extend('api', function($app, $name, array $config)
         {
             return new ApiGuard(Auth::createUserProvider($config['provider']), $app);
+        });
+    }
+
+    protected function registerCustomDashboardUserProvider()
+    {
+        Auth::provider('api_user', function($app, $config)
+        {
+            return new DashboardUserProvider($app, $config);
         });
     }
 
