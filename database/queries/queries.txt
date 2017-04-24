@@ -1913,3 +1913,6 @@ SET FOREIGN_KEY_CHECKS=0;
 ALTER TABLE fees_breakup
     ADD CONSTRAINT fees_breakup_pricing_rule_id_foreign FOREIGN KEY (pricing_rule_id) REFERENCES pricing(id);
 SET FOREIGN_KEY_CHECKS=1;
+
+ALTER TABLE permissions
+    ADD COLUMN enable_workflow TINYINT(1) NOT NULL DEFAULT 0 AFTER assignable;
