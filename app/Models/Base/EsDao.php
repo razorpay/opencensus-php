@@ -59,8 +59,6 @@ class EsDao
      * entities are indexed in one of them as a type.
      *
      * @param string $mode
-     *
-     * @return
      */
     public function setIndexName($mode)
     {

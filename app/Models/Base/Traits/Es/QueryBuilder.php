@@ -17,8 +17,6 @@ trait QueryBuilder
      * @param array  $query
      * @param string $field
      * @param string $value
-     *
-     * @return
      */
     public function buildQueryForFieldDefaultImpl(array & $query, string $field, string $value)
     {
@@ -37,10 +35,8 @@ trait QueryBuilder
     /**
      * Builds query for 'q' param. Ref Base\Es\Repository class.
      *
-     * @param string $query
+     * @param array $query
      * @param string $value
-     *
-     * @return
      */
     public function buildQueryForQ(array & $query, string $value)
     {

@@ -78,8 +78,6 @@ class Repository extends \Razorpay\Spine\Repository
      * Constructor
      *
      * @param string|null $entity
-     *
-     * @return
      */
     public function __construct(string $entity = null)
     {

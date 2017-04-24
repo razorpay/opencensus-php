@@ -426,8 +426,6 @@ class Repository extends \Razorpay\Spine\Repository
      * Needs to be called explicitly one time when intending to use. This cannot
      * be put in _construct of this class as it needs rzp.mode and that is not
      * set in few flows - tests etc.
-     *
-     * @return
      */
     public function setEsRepoIfExist()
     {
@@ -566,8 +564,6 @@ class Repository extends \Razorpay\Spine\Repository
      * @param Models\Base\PublicEntity $entity
      * @param string                   $action
      * @param array                    $dirty
-     *
-     * @return
      */
     protected function syncToEs(
         Models\Base\PublicEntity $entity,
