@@ -1209,7 +1209,9 @@ class BasicAuth
 
     protected function fetchAdminToken($token)
     {
-        $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
+        // Admin token check should always be done in the
+        // live mode (since we don't sync it in heimdall)
+        $this->adminToken = $this->repo->admin_token->connection(Mode::LIVE)->findOrFailToken($token);
 
         return $this->adminToken;
     }
