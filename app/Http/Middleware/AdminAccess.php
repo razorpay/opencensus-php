@@ -280,6 +280,12 @@ class AdminAccess
     {
         // TODO: Enforce there's no cycle in the graph (while creation/assigning)
 
+        // If the admin has access to all the merchants then just return true
+        if ($admin->canSeeAllMerchants())
+        {
+            return true;
+        }
+
         // 1. Get all the required groups and admins for the $admin
 
         // Get all groups and admins required to look into in case

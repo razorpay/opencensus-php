@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b9d2d1929e1b0ae75a27077710dbdbd8",
+    "content-hash": "0b9841a30b2981f2d0a99b26e8e628f8",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1037,31 +1037,30 @@
         },
         {
             "name": "elasticsearch/elasticsearch",
-            "version": "v5.2.0",
+            "version": "v2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/elastic/elasticsearch-php.git",
-                "reference": "dc57bbcd4be2c9061ebe5be59058ea8bdebc904e"
+                "reference": "12a400656e4cf4c231d83cb56af3f50a27dcde93"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/dc57bbcd4be2c9061ebe5be59058ea8bdebc904e",
-                "reference": "dc57bbcd4be2c9061ebe5be59058ea8bdebc904e",
+                "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/12a400656e4cf4c231d83cb56af3f50a27dcde93",
+                "reference": "12a400656e4cf4c231d83cb56af3f50a27dcde93",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/ringphp": "~1.0",
-                "php": "^5.6|^7.0",
+                "php": ">=5.4",
                 "psr/log": "~1.0"
             },
             "require-dev": {
                 "cpliakas/git-wrapper": "~1.0",
-                "doctrine/inflector": "^1.1",
                 "mockery/mockery": "0.9.4",
-                "phpunit/phpunit": "^4.7|^5.4",
+                "phpunit/phpunit": "~4.7",
                 "sami/sami": "~3.2",
-                "symfony/finder": "^2.8",
-                "symfony/yaml": "^2.8"
+                "symfony/yaml": "2.4.3 as 2.4.2",
+                "twig/twig": "1.*"
             },
             "suggest": {
                 "ext-curl": "*",
@@ -1088,7 +1087,7 @@
                 "elasticsearch",
                 "search"
             ],
-            "time": "2017-04-12T20:40:50+00:00"
+            "time": "2016-11-30T17:15:05+00:00"
         },
         {
             "name": "geoip2/geoip2",
@@ -4357,16 +4356,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "0.2.12",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "dcd12ff8552b2655d2852e57c5983fecad09cdd1"
+                "reference": "9181421c25d2f3c1b207a8f883a3e676f1ad1c6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/dcd12ff8552b2655d2852e57c5983fecad09cdd1",
-                "reference": "dcd12ff8552b2655d2852e57c5983fecad09cdd1",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/9181421c25d2f3c1b207a8f883a3e676f1ad1c6b",
+                "reference": "9181421c25d2f3c1b207a8f883a3e676f1ad1c6b",
                 "shasum": ""
             },
             "require": {
@@ -4400,7 +4399,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2017-03-27T10:04:48+00:00"
+            "time": "2017-04-12T10:00:13+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -4604,7 +4603,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-11-22 08:12:12"
+            "time": "2016-11-22T08:12:12+00:00"
         },
         {
             "name": "razorpay/upi-clients",
@@ -6295,12 +6294,12 @@
             "version": "0.9.9",
             "source": {
                 "type": "git",
-                "url": "https://github.com/mockery/mockery.git",
+                "url": "https://github.com/padraic/mockery.git",
                 "reference": "6fdb61243844dc924071d3404bb23994ea0b6856"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mockery/mockery/zipball/6fdb61243844dc924071d3404bb23994ea0b6856",
+                "url": "https://api.github.com/repos/padraic/mockery/zipball/6fdb61243844dc924071d3404bb23994ea0b6856",
                 "reference": "6fdb61243844dc924071d3404bb23994ea0b6856",
                 "shasum": ""
             },

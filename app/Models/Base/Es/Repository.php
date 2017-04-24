@@ -341,8 +341,6 @@ class Repository extends \Razorpay\Spine\Repository
             $params['body'][] = $document;
         }
 
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, $params);
-
         return $this->esDao->bulkUpdate($params);
     }
 
