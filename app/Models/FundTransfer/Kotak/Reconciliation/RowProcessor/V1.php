@@ -3,6 +3,8 @@
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\RowProcessor;
 
 use RZP\Models\FundTransfer\Attempt\Version;
+use RZP\Models\Payout;
+use RZP\Models\Settlement;
 
 class V1 extends Base
 {
@@ -15,9 +17,9 @@ class V1 extends Base
 
     protected function fetchEntities()
     {
-        if (strpos($entityId, Settlement\Entity::getSign(), 0) === 0)
+        if (strpos($this->reconEntityId, Settlement\Entity::getSign(), 0) === 0)
         {
-            Settlement\Entity::verifyIdAndStripSign($entityId);
+            Settlement\Entity::verifyIdAndStripSign($this->reconEntityId);
 
             $this->reconEntity = $this->repo
                                       ->settlement
@@ -25,9 +27,9 @@ class V1 extends Base
                                             $this->reconEntityId,
                                             ['merchant', 'transaction', 'batchFundTransfer']);
         }
-        else if(strpos($entityId, Payout\Entity::getSign(), 0) === 0)
+        else if(strpos($this->reconEntityId, Payout\Entity::getSign(), 0) === 0)
         {
-            Payout\Entity::verifyIdAndStripSign($entityId);
+            Payout\Entity::verifyIdAndStripSign($this->reconEntityId);
 
             $this->reconEntity = $this->repo
                                       ->payout

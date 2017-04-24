@@ -204,6 +204,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }
 
+    public function setProcessedCount($count)
+    {
+        $this->setAttribute(self::PROCESSED_COUNT, $count);
+    }
+
+    public function setProcessedAmount($amount)
+    {
+        $this->setAttribute(self::PROCESSED_AMOUNT, $amount);
+    }
+
     protected function getUrlsAttribute()
     {
         return json_decode($this->attributes[self::URLS], true);

@@ -7,10 +7,7 @@ use Illuminate\Support\Facades\App;
 
 use RZP\Constants\Entity;
 use RZP\Constants\Mode;
-use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Kotak\Headings;
-use RZP\Models\Payout;
-use RZP\Models\Settlement;
 
 class Base
 {

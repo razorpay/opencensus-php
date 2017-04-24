@@ -2,7 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\RowProcessor;
 
-use RZP\Models\FundTransfer\Attempt\Version;
+use RZP\Models\FundTransfer\Attempt;
 
 class V3 extends Base
 {
@@ -10,7 +10,7 @@ class V3 extends Base
     {
         parent::__construct($row);
 
-        $this->version = Version::V3;
+        $this->version = Attempt\Version::V3;
     }
 
     protected function fetchEntities()

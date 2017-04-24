@@ -3,23 +3,19 @@
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation;
 
 use Carbon\Carbon;
+use Excel;
+use Illuminate\Support\Facades\App;
+use Mail;
+
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Constants\MailTags;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Excel;
-use Mail;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\Merchant;
-use RZP\Models\Transaction;
-use RZP\Models\Payout;
-use RZP\Models\Settlement;
-use RZP\Constants\MailTags;
 use RZP\Models\Settlement\SlackNotification;
-
-use Illuminate\Support\Facades\App;
+use RZP\Trace\TraceCode;
 
 class Processor
 {
@@ -127,26 +123,24 @@ class Processor
         {
             foreach ($data as $row)
             {
-                $data = $this->reconcileEntity($row);
+                $entity = $this->reconcileEntity($row);
 
-                $entity = $data['entity'];
-
-                if ($data['entity'] === null)
+                if ($entity === null)
                 {
-                    $unprocessedFailedIds[] = $data['entity_id'] ?? 'null';
-
-                    continue;
-                }
-
-                $allEntities[] = $entity->getId();
-
-                if ($entity->isStatusFailed())
-                {
-                    $failureEntities[] = $entity->getId();
+                    $unprocessedFailedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
                 }
                 else
                 {
-                    $successEntities[] = $entity->getId();
+                    $allEntities[] = $entity->getId();
+
+                    if ($entity->isStatusFailed())
+                    {
+                        $failureEntities[] = $entity->getId();
+                    }
+                    else
+                    {
+                        $successEntities[] = $entity->getId();
+                    }
                 }
             }
 
@@ -167,8 +161,8 @@ class Processor
             foreach ($this->batchFundTransferStats as $batchId => $attrs)
             {
                 $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
-                $batchEntity->setProcessedCount();
-                $batchEntity->setProcessedAmount();
+                $batchEntity->setProcessedCount($attrs['processed_count']);
+                $batchEntity->setProcessedAmount($attrs['processed_amount']);
                 $batchEntity->saveOrFail();
             }
 
@@ -199,7 +193,7 @@ class Processor
         return $response;
     }
 
-    protected function reconcileEntity($row): array
+    protected function reconcileEntity($row)
     {
         $version = $this->getRowVersion($row);
 
@@ -210,6 +204,8 @@ class Processor
         $reconciledEntity = (new $classNamespace($row))->process($this->reconciledAt);
 
         $this->updateBatchFundTransferStats($reconciledEntity);
+
+        return $reconciledEntity;
     }
 
     protected function updateBatchFundTransferStats($reconciledEntity)
