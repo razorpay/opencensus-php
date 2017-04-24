@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
+        Entity::NAME                      => 'sometimes|string|max:25',
         Entity::PAYMENT_METHOD            => 'required|alpha|custom',
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes_if:payment_method,card|in:debit,credit',
         Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
