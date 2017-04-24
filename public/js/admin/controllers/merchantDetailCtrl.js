@@ -369,27 +369,6 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
-
-      $scope.enableMethod = function(method) {
-        var methods = {};
-        methods[method] = 1;
-
-        $scope.editMethods(
-          methods,
-          method + ' enabled for merchant successfully'
-        );
-      };
-
-      $scope.disableMethod = function(method) {
-        var methods = {};
-        methods[method] = 0;
-
-        $scope.editMethods(
-          methods,
-          method + ' disabled for merchant successfully'
-        );
-      };
-
       $scope.setReceiptEmail = function(value) {
         var editMerchant = { receipt_email_enabled: value };
         $scope.editMerchant(editMerchant);

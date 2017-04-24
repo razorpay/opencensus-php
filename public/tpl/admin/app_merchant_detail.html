@@ -68,12 +68,6 @@
           Edit Methods
           <i class="pull-right fa fa-money"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == false && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="enableMethod('card')">
-          Enable Card <i class="pull-right fa fa-credit-card-alt"></i>
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == true && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="disableMethod('card')">
-          Disable Card <i class="pull-right fa fa-credit-card-alt"></i>
-        </a>
         <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 0 && admin.permissions.indexOf('edit_merchant_enable_receipt') !== -1" ng-click="setReceiptEmail(1)">
           Enable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
