@@ -61,11 +61,13 @@ class Service extends Base\Service
         return $permission->toArrayPublic();
     }
 
-    public function getMultiplePermissions(string $orgId)
+    public function getMultiplePermissions(string $orgId, array $input)
     {
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $perms = $this->repo->permission->fetchAllByOrg($orgId);
+        $type = $input['type'] ?? null;
+
+        $perms = $this->repo->permission->fetchAllByOrg($orgId, $type);
 
         return $perms->toArrayPublic();
     }

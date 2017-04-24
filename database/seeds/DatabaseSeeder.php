@@ -503,6 +503,15 @@ class DatabaseSeeder extends Seeder
                 ]
             ]);
 
+            // for curl/postman testing purposes
+            DB::table(Table::ADMIN_TOKEN)->insert([
+                    'id'                  => '7gyptrWlOKu6z9',
+                    'admin_id'            => '6dLbNSpv5Ycccc',
+                    'token'               => '1234567',
+                    'created_at'          => time(),
+                    'updated_at'          => time(),
+            ]);
+
             DB::table(Table::ROLE)->insert([
                 // RZP
                 [
