@@ -4,8 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Pricing\Entity as Pricing;
+use RZP\Models\Transaction\Entity as Transaction;
 use RZP\Models\Transaction\FeeBreakup\Entity as FeeBreakup;
-use RZP\Models\Transaction;
 
 class CreateFeesBreakupTable extends Migration
 {
@@ -40,8 +41,13 @@ class CreateFeesBreakupTable extends Migration
             $table->integer(FeeBreakup::UPDATED_AT);
 
             $table->foreign(FeeBreakup::TRANSACTION_ID)
-                  ->references(Transaction\Entity::ID)
+                  ->references(Transaction::ID)
                   ->on(Table::TRANSACTION)
+                  ->on_delete('restrict');
+
+            $table->foreign(FeeBreakup::PRICING_RULE_ID)
+                  ->references(Pricing::ID)
+                  ->on(Table::PRICING)
                   ->on_delete('restrict');
 
             $table->unique([FeeBreakup::NAME, FeeBreakup::TRANSACTION_ID]);
@@ -58,6 +64,8 @@ class CreateFeesBreakupTable extends Migration
         Schema::table(Table::FEE_BREAKUP, function($table)
         {
             $table->dropForeign(Table::FEE_BREAKUP .'_' .FeeBreakup::TRANSACTION_ID .'_foreign');
+
+            $table->dropForeign(Table::FEE_BREAKUP .'_' .FeeBreakup::PRICING_RULE_ID .'_foreign');
 
             $table->dropUnique([FeeBreakup::NAME, FeeBreakup::TRANSACTION_ID]);
         });
