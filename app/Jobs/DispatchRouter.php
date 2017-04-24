@@ -3,35 +3,67 @@
 namespace RZP\Jobs;
 
 use Config;
+use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
-trait DispatchRouter
+class DispatchRouter extends Base\Core
 {
     use DispatchesJobs;
 
-    protected function dispatchOn(Job $job, array $configArray)
-    {
-        $this->setQueueConnectionAndName($job, $configArray);
+    /**
+     * These responds to the config class name that should be used,
+     * to fetch the config from config/queue.php
+     */
 
-        $this->dispatch($job);
+    const ES        = 'es';
+    const DASHBOARD = 'dashboard';
+    const WEBHOOK   = 'webhook';
+
+    protected $mock;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mock = Config::get('queue.mock');
     }
 
-    protected function setQueueConnectionAndName(Job $job, array $configArray)
+    public function dispatchOn(Job $job, string $configClass, array $configArray = [])
     {
-        //TODO : Remove it after tested on prod
-        if ($configArray[1] !== Mode::TEST)
+        //TODO : Add a usage link, making it more implicit to be used by other services
+        $this->setQueueConnectionAndName($job, $configClass, $configArray);
+
+        try
         {
-            return;
+            $this->dispatch($job);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                null,
+                [
+                    'config_class' => $configClass,
+                    'config_array' => $configArray,
+                ]);
+        }
+    }
+
+    protected function setQueueConnectionAndName(Job $job, string $configClass, array $configArray)
+    {
+        $queueNameConfig = 'queue.' . $configClass . '.' . $this->mode;
+
+        if (empty($configArray) === false)
+        {
+            $queueNameConfig .= '.' . implode($configArray, '.');
         }
 
-        $mock = Config::get('queue.mock');
+        $queueConnectionConfig = 'queue.' . $configClass . '.connection';
 
-        $queueNameConfig = 'queue.' . implode($configArray, '.');
-
-        $queueConnectionConfig = 'queue.' . $configArray[0] . '.connection';
-
-        if ($mock === true)
+        if ($this->mock === true)
         {
             $queueConnectionConfig = 'queue.default';
         }
@@ -39,6 +71,16 @@ trait DispatchRouter
         $queueName = Config::get($queueNameConfig);
 
         $queueConnection = Config::get($queueConnectionConfig);
+
+        if ($queueConnection === null)
+        {
+            $this->trace->critical(
+                TraceCode::QUEUE_INVALID_CONFIG,
+                [
+                    'queue_connection_config' => $queueConnectionConfig,
+                    'queue_name_config'       => $queueNameConfig,
+                ]);
+        }
 
         $job->onConnection($queueConnection)->onQueue($queueName);
     }

@@ -31,7 +31,8 @@ class Gateway extends Base\Gateway
         Status::SUCCESS    => Confirmation::YES,
         Status::FAILED     => Confirmation::NO,
         Status::REVERSED   => Confirmation::NO,
-        Status::IN_PROCESS => Confirmation::NO
+        Status::IN_PROCESS => Confirmation::NO,
+        Status::ERROR      => Confirmation::NO
     ];
 
     public function authorize(array $input)
@@ -325,6 +326,11 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseContent;
 
+        if (empty($content) === true)
+        {
+            return;
+        }
+
         $gatewayPayment = $verify->payment;
 
         $status = self::VERIFY_STATUS_TO_CALLBACK[$content[ResponseFields::STATUS]];
@@ -358,7 +364,7 @@ class Gateway extends Base\Gateway
 
         if (isset($xml['@attributes']) === false)
         {
-            return $xml;
+            return [];
         }
 
         return $xml['@attributes'];

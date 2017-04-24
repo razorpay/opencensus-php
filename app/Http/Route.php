@@ -414,6 +414,7 @@ final class Route
         'permission_get_multiple'                 => ['get',      'orgs/{orgId}/permissions',                       'OrganizationController@getMultiplePermissions'                     ],
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
+        'permission_get_roles'                    => ['get',      'permissions/{id}/roles',                         'OrganizationController@getRolesForPermission'                      ],
         'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
 
@@ -925,6 +926,7 @@ final class Route
         'permission_get_multiple',
         'permission_get_by_type',
         'permission_get',
+        'permission_get_roles',
         'permission_create',
         'permission_edit',
         'permission_delete',
@@ -959,7 +961,7 @@ final class Route
         'workflow_get_actions_by_maker',
     ];
 
-    public static $adminPermission = [
+    public static $routePermission = [
         'group_create'                     => [Permission::CREATE_GROUP],
         'admin_create'                     => [Permission::CREATE_ADMIN],
         'group_get'                        => [Permission::VIEW_GROUP],
@@ -992,6 +994,7 @@ final class Route
         'permission_get'                   => [Permission::GET_PERMISSION],
         'permission_get_multiple'          => [Permission::VIEW_ALL_PERMISSION],
         'permission_get_by_type'           => [Permission::EDIT_ORG],
+        'permission_get_roles'             => [Permission::VIEW_ROLE],
         'permission_delete'                => [Permission::DELETE_PERMISSION],
         'auditlog_search'                  => [Permission::VIEW_AUDITLOG],
         'admin_logout'                     => ['*'],
@@ -1027,6 +1030,9 @@ final class Route
         'workflow_action_states'           => ['*'],
         'workflow_action_details'          => ['*'],
         'workflow_action_get_multiple'     => ['*'],
+        'credits_fetch_multiple'           => [Permission::VIEW_MERCHANT_CREDITS_LOG],
+        'credits_create'                   => [Permission::ADD_MERCHANT_CREDITS],
+        'credits_delete'                   => [Permission::DELETE_MERCHANT_CREDITS],
     ];
 
     public static $direct = array(
@@ -1134,7 +1140,7 @@ final class Route
     public static $slaveRoutes = [
         // TODO: Uncomment this when slave variables issue is fixed.
         //'es_migrate_entity',
-        'reports_public_entity_file',
+        'payment_fetch_transaction',
     ];
 
     protected static $jsonpRoutes = array(
