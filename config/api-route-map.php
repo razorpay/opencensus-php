@@ -154,12 +154,6 @@ return [
             'routeName' => 'settlements_get_detail'
         ],
 
-        // Balance
-        'balance_fetch'                     => [
-            'url'       => 'balance',
-            'routeName' => 'balance_get'
-        ],
-
         // Webhooks
         'webhook_fetch_multiple'            => [
             'url'       => 'webhooks',
@@ -263,6 +257,12 @@ return [
     'admin_proxy' => [
         // Credits
         'credits_fetch_multiple'            => 'credits',
+
+        // Balance
+        'balance_fetch'                     => [
+            'url'       => 'balance',
+            'routeName' => 'balance_get'
+        ],
     ],
 
     // auth

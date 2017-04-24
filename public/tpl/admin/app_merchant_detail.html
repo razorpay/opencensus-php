@@ -444,6 +444,10 @@
             <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
             UPI
           </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.emi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.emi == true, 'fa-times text-danger': merchant.details.methods.emi == false}"></i></span>
+            EMI
+          </div>
         </div>
         <!-- <a href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.methods.paytm == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.paytm == true, 'fa-times text-danger':merchant.details.methods.paytm == false}"></i></span>
