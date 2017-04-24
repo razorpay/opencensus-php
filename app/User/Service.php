@@ -332,6 +332,8 @@ class Service extends Base\Service
         if ($merchant !== null)
         {
             (new Merchant\Service)->createMerchantOnApi($merchant->id);
+
+            $this->confirmUserOnApi($user->id);
         }
 
         return [null, ['email' => $user->email]];
@@ -795,7 +797,7 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
-        $userDetails = $user->toArray();
+        list($error, $userDetails) = $this->getUserFromApi($user->id);
 
         $this->getTags($userDetails);
 
