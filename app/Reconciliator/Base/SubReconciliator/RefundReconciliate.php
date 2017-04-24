@@ -229,10 +229,10 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
+        $refundId = $refund->getId();
+
         // Sets the corresponding payment for the refund.
         $this->payment = $this->refund->payment;
-
-        $refundId = $refund->getId();
 
         // If payment is not present, return. There's something wrong with this transaction.
         if (empty($this->payment) === true)
@@ -250,8 +250,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 'Corresponding payment for the refund not found in the DB.',
                 [
                     'refund_id' => $refundId,
-                ]
-            );
+                ]);
 
             //return null;
         }
@@ -463,6 +462,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * It is implemented in the child class.
      *
      * @param $refundId string
+     *
+     * @return null
      */
     protected function getGatewayRefund(string $refundId)
     {

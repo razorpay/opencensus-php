@@ -28,14 +28,14 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $refundId = $this->getRefundId($row);
 
-        $gatewayEntities = $this->repo->hdfc->findSuccessfulRefundByRefundId($refundId);
+        $gatewayEntity = $this->getGatewayRefund($refundId);
 
-        if ($gatewayEntities->count() === 0)
+        if ($gatewayEntity === null)
         {
             return null;
         }
 
-        $paymentId = $gatewayEntities->first()->getPaymentId();
+        $paymentId = $gatewayEntity->getPaymentId();
 
         return $paymentId;
     }
@@ -57,6 +57,11 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function getGatewayRefund(string $refundId)
     {
         $gatewayEntities = $this->repo->hdfc->findSuccessfulRefundByRefundId($refundId);
+
+        if ($gatewayEntities->count() === 0)
+        {
+            return null;
+        }
 
         $refundEntity = $gatewayEntities->first();
 
