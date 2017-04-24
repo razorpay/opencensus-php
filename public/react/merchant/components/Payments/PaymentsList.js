@@ -1,50 +1,38 @@
-import Time from 'rzp/ui/Time'
-import { PaymentStatusLabel } from 'merchant/components/StatusLabel'
-import TableBody from '../TableBody'
+import Time from 'rzp/ui/Time';
+import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
+import TableBody from '../TableBody';
 
 const PaymentsListItem = ({ payment, hasOrders, orders }) => {
   return (
     <tr>
       <td>
-        <a
-          target='_blank'
-          href={`#/app/payments/${payment.id}`}
-        >
+        <a target="_blank" href={`#/app/payments/${payment.id}`}>
           {payment.id}
         </a>
       </td>
-      {
-        hasOrders &&
-        <td>{orders[payment.id]}</td>
-      }
+      {hasOrders && <td>{orders[payment.id]}</td>}
       <td>{payment.currency}</td>
       <td>{payment.amountInINR}</td>
       <td>{payment.email}</td>
       <td>{payment.contact}</td>
       <td>
-        <Time
-          value={payment.created_at}
-          format='DD MMM YYYY, hh:mm:ss a'
-        />
+        <Time value={payment.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
       <td>
         <PaymentStatusLabel status={payment.status} />
       </td>
     </tr>
-  )
-}
+  );
+};
 
 export default ({ payments, isLoading, hasOrders, orders }) => {
   return (
-    <div class='table-responsive'>
-      <table class='table table-hover table-striped'>
+    <div class="table-responsive">
+      <table class="table table-hover table-striped">
         <thead>
           <tr>
             <th>Payment Id</th>
-            {
-              hasOrders &&
-              <th>Order Id</th>
-            }
+            {hasOrders && <th>Order Id</th>}
             <th>Currency</th>
             <th>Amount (INR)</th>
             <th>Customer Email</th>
@@ -57,20 +45,18 @@ export default ({ payments, isLoading, hasOrders, orders }) => {
           isLoading={isLoading}
           colSpan={7}
           rows={payments}
-          emptyTableMsg='No Payments found!'
+          emptyTableMsg="No Payments found!"
         >
-        {
-          payments.map((payment) =>
+          {payments.map(payment => (
             <PaymentsListItem
               key={payment.id}
               payment={payment}
               hasOrders={hasOrders}
               orders={orders}
             />
-          )
-        }
+          ))}
         </TableBody>
       </table>
     </div>
-  )
-}
+  );
+};
