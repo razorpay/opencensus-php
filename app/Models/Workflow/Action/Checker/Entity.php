@@ -113,7 +113,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::APPROVED);
     }
 
-    public function getStatus() : string
+    public function getStatus()
     {
         if (empty($this->isApproved()) === true)
         {

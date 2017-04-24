@@ -148,7 +148,7 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC' => 'HDFC Bank Ltd',
+                    'HDFC' => 'HDFC Bank',
                     'UTIB' => 'Axis Bank',
                 ],
                 'disabled' => [
