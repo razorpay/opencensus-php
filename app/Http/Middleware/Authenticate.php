@@ -5,26 +5,33 @@ namespace RZP\Http\Middleware;
 use Closure;
 use ApiResponse;
 use Illuminate\Foundation\Application;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Route;
 
 class Authenticate
 {
     /**
-     * The Guard implementation.
+     * Application instance
      *
-     * @var Guard
+     * @var Application
      */
     protected $app;
 
     /**
+     * @var BasicAuth
+     */
+    protected $ba;
+
+    /**
      * Create a new filter instance.
      *
-     * @param  Guard  $auth
-     * @return void
+     * @param Application $app
      */
     public function __construct(Application $app)
     {
         $this->app = $app;
+
+        $this->ba  = $this->app['basicauth'];
     }
 
     /**
@@ -39,46 +46,59 @@ class Authenticate
         $router = $this->app['router'];
 
         $route = $router->currentRouteName();
-        $ba = $this->app['basicauth'];
+
+        $ret = $this->authenticateBasicAuth($route);
+
+        if ($ret !== null)
+        {
+            return $ret;
+        }
+
+        return $next($request);
+    }
+
+    protected function authenticateBasicAuth(string $route)
+    {
+        $ba = $this->ba;
 
         $ba->init($this->app);
 
         $ret = null;
 
-        if (in_array($route, Route::DISABLED_ROUTES, true))
+        if (in_array($route, Route::DISABLED_ROUTES, true) === true)
         {
             return ApiResponse::routeDisabled();
         }
 
-        if (in_array($route, Route::$internal, true))
+        if (in_array($route, Route::$internal, true) === true)
         {
             $ret = $ba->appAuth();
         }
-        else if (in_array($route, Route::$private, true))
+        else if (in_array($route, Route::$private, true) === true)
         {
             $ret = $ba->privateAuth();
         }
-        else if (in_array($route, Route::$public, true))
+        else if (in_array($route, Route::$public, true) === true)
         {
             $ret = $ba->publicAuth();
         }
-        else if (in_array($route, Route::$publicCallback, true))
+        else if (in_array($route, Route::$publicCallback, true) === true)
         {
             $ret = $ba->publicCallbackAuth();
         }
-        else if (in_array($route, Route::$proxy, true))
+        else if (in_array($route, Route::$proxy, true) === true)
         {
             $ret = $ba->proxyAuth();
         }
-        else if (in_array($route, Route::$device, true))
+        else if (in_array($route, Route::$device, true) === true)
         {
             $ret = $ba->deviceAuth();
         }
-        else if (in_array($route, Route::$admin, true))
+        else if (in_array($route, Route::$admin, true) === true)
         {
             $ret = $ba->adminAuth();
         }
-        else if (in_array($route, Route::$direct, true))
+        else if (in_array($route, Route::$direct, true) === true)
         {
             ; // $ret = $ba->proxyAuth();
         }
@@ -92,13 +112,7 @@ class Authenticate
             return $ret;
         }
 
-        $ret = $ba->feature();
+        return $ba->feature();
 
-        if ($ret !== null)
-        {
-            return $ret;
-        }
-
-        return $next($request);
     }
 }
