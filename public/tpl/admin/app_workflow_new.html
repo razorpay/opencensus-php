@@ -45,7 +45,7 @@
         </div>
       </div>
       <div class="col-xs-8">
-        <div ng-repeat="(stepIndex, step) in steps" class="action-desc-panel panel panel-default">
+        <div ng-repeat="(stepIndex, step) in levels" class="action-desc-panel panel panel-default">
           <div class="panel-heading">
             Step {{stepIndex + 1}}
             <i class="delete-btn pull-right fa fa-times" ng-click="removeStep(stepIndex)" ng-if="!editLayout"></i>
@@ -53,8 +53,8 @@
           <div class="wrapper clearfix">
             <div class="m-b">Add a checker to approve the action. Select a role.</div>
             <div class="assignee-list m-b">
-
-              <div class="" ng-repeat="(roleIndex, role) in step">
+              <!-- Role Pills-->
+              <div class="" ng-repeat="(roleIndex, role) in step.steps">
                 <span class="assignee-row" >
                   <span class="assignee-label">{{roleNames[role.role_id]}} <i class="delete-btn fa fa-times m-l" ng-click="removeRoleFromStep(roleIndex, stepIndex)" ng-if="!editLayout"></i></span>
                   <span class="help-label m-l">Minimum approvals</span>
@@ -67,8 +67,8 @@
                   </div>
                 </span>
               </div>
-
             </div>
+            <!-- Role Selection -->
             <div ng-if="!editLayout" class="role-select2-container col-xs-6 row">
               <select class="select2 role-select2 " multiple="multiple" style="width: 100%" ng-model="roleSelect">
                 <option></option>

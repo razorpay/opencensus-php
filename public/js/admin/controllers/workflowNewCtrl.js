@@ -22,7 +22,7 @@ app.controller('WorkflowNewCtrl', [
     $scope.permissions = {};
     $scope.permissionsOptions = [];
     $scope.permissionsSelected = [];
-    $scope.steps = [];
+    $scope.levels = [];
     $scope.roles = [];
     $scope.roleNames = {};
     $scope.workflowName = '';
@@ -51,16 +51,21 @@ app.controller('WorkflowNewCtrl', [
       request.success(function(data) {
         if (data.success) {
           $scope.workflowName = data.data.name;
+
           for (var i = 0; i < data.data.permissions.length; i++) {
             $scope.permissionsSelected.push(data.data.permissions[i].id);
           }
-          for (var i = 0; i < data.data.steps.length; i++) {
-            var role_perm = data.data.steps[i];
-            $scope.steps[role_perm.level - 1] = $scope.steps[
-              role_perm.level - 1
-            ] || [];
-            $scope.steps[role_perm.level - 1].push(role_perm);
-          }
+
+          data.data.levels.forEach(function(level) {
+            $scope.levels[level.level - 1] = {
+              level: level.level,
+              op_type: level.op_type
+            };
+
+            if (level.steps && level.steps.length) {
+              $scope.levels[level.level - 1].steps  = level.steps || [];
+            }
+          });
         }
       });
     };
@@ -136,56 +141,62 @@ app.controller('WorkflowNewCtrl', [
         theme: 'classic',
         placeholder: 'Select a role',
       });
+
       $roleSelect.on('select2:select', function(e) {
         var data = e.params.data;
         var elem = e.params.data.element;
         var roleId = elem.getAttribute('data-role-id');
         var stepIndex = elem.getAttribute('data-step-index');
+
         if (
-          $scope.steps[stepIndex].filter(function(role) {
-            return role.role_id === roleId;
-          }).length === 0
+          !$scope.levels[stepIndex].steps.some(function(role){
+            return role.role_id === roleId
+          })
         ) {
-          $scope.steps[stepIndex].push({
+          $scope.levels[stepIndex].steps.push({
             role_id: roleId,
             reviewer_count: 1,
           });
         }
+
         $roleSelect.val(null).trigger('change');
       });
     };
 
     $scope.addStep = function() {
-      $scope.steps.push([]);
+      $scope.levels.push({
+        steps: [],
+        op_type: 'and'
+      });
+
       setTimeout(addRoleSelector, 0);
     };
 
     $scope.removeStep = function(stepIndex) {
-      $scope.steps.splice(stepIndex, 1);
+      $scope.levels.splice(stepIndex, 1);
     };
 
     $scope.removeRoleFromStep = function(roleIndex, stepIndex) {
-      var step = $scope.steps[stepIndex];
+      var step = $scope.levels[stepIndex].steps;
       step.splice(roleIndex, 1);
     };
 
     $scope.incReviewerCount = function(roleIndex, stepIndex) {
-      if ($scope.steps[stepIndex][roleIndex].reviewer_count >= 99) return;
-      $scope.steps[stepIndex][roleIndex].reviewer_count++;
+      if ($scope.levels[stepIndex].steps[roleIndex].reviewer_count >= 99) return;
+      $scope.levels[stepIndex].steps[roleIndex].reviewer_count++;
     };
 
     $scope.decReviewerCount = function(roleIndex, stepIndex) {
-      if ($scope.steps[stepIndex][roleIndex].reviewer_count <= 1) return;
-      $scope.steps[stepIndex][roleIndex].reviewer_count--;
+      if ($scope.levels[stepIndex].steps[roleIndex].reviewer_count <= 1) return;
+      $scope.levels[stepIndex].steps[roleIndex].reviewer_count--;
     };
 
     $scope.new_checker = null;
     $scope.createWorkflow = function() {
-      // console.log($scope.steps);
       $scope.alerts.resetAlerts();
       var valid = true;
       var payload = {
-        steps: [],
+        levels: [],
         org_id: $scope.admin.org_id,
       };
       if (!$scope.workflowName) {
@@ -201,12 +212,12 @@ app.controller('WorkflowNewCtrl', [
         );
       }
       payload.permissions = $scope.permissionsSelected.slice();
-      if (!$scope.steps.length) {
+      if (!$scope.levels.length) {
         valid = false;
         $scope.alerts.addAlert('danger', 'Please add atleast one step');
       }
-      for (var s_i = 0; s_i < $scope.steps.length; s_i++) {
-        var step = $scope.steps[s_i];
+      for (var s_i = 0; s_i < $scope.levels.length; s_i++) {
+        var step = $scope.levels[s_i].steps;
         if (!step.length) {
           $scope.alerts.addAlert(
             'danger',
@@ -215,14 +226,9 @@ app.controller('WorkflowNewCtrl', [
           valid = false;
           break;
         }
-        for (var r_i = 0; r_i < step.length; r_i++) {
-          var role_perm = {
-            level: s_i + 1,
-            role_id: step[r_i].role_id,
-            reviewer_count: step[r_i].reviewer_count,
-          };
-          payload.steps.push(role_perm);
-        }
+
+        $scope.levels[s_i].level = s_i + 1;
+        payload.levels.push($scope.levels[s_i]);
       }
       if (!valid) return;
 
@@ -300,10 +306,10 @@ app.controller('WorkflowNewCtrl', [
     $scope.filterItems = function(stepInd) {
       return function(role) {
         // Don't show option(role.id) being accessed if already added in the step
-        for (var key in $scope.steps[stepInd]) {
+        for (var key in $scope.levels[stepInd].steps) {
           if (
-            $scope.steps[stepInd].hasOwnProperty(key) &&
-            $scope.steps[stepInd][key].role_id === role.id
+            $scope.levels[stepInd].steps.hasOwnProperty(key) &&
+            $scope.levels[stepInd].steps[key].role_id === role.id
           ) {
             return false;
           }
