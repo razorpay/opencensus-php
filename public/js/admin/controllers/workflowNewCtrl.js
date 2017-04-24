@@ -51,6 +51,7 @@ app.controller('WorkflowNewCtrl', [
       request.success(function(data) {
         if (data.success) {
           $scope.workflowName = data.data.name;
+          $scope.isEditable = data.data.isEditable;
 
           for (var i = 0; i < data.data.permissions.length; i++) {
             $scope.permissionsSelected.push(data.data.permissions[i].id);
@@ -67,11 +68,18 @@ app.controller('WorkflowNewCtrl', [
             }
           });
         }
+
+        // Show warning message on top if user cannot edit
+        if (!$scope.isEditable) {
+          $scope.alerts.addAlert('warning', 'An action is pending corresponding to this workflow. You cannot edit this workflow right now.');
+        }
       });
     };
 
     if ($scope.editLayout) {
       fetchWorkflow($scope.workflowId);
+    } else {
+      $scope.isEditable = true;
     }
 
     var fetchPermissions = function() {
@@ -193,6 +201,10 @@ app.controller('WorkflowNewCtrl', [
 
     $scope.new_checker = null;
     $scope.createWorkflow = function() {
+      if (!$scope.isEditable) {
+        return;
+      }
+
       $scope.alerts.resetAlerts();
       var valid = true;
       var payload = {
@@ -260,6 +272,9 @@ app.controller('WorkflowNewCtrl', [
     };
 
     $scope.editWorkflow = function() {
+      if (!$scope.isEditable) {
+        return;
+      }
       $scope.alerts.resetAlerts();
       var valid = true;
       var payload = {};
