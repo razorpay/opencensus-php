@@ -267,6 +267,8 @@ app.controller('WorkflowNewCtrl', [
             { notify: false }
           );
           $scope.editLayout = true;
+        }  else {
+          $scope.alerts.addAlert('danger', 'Creating workflow failed: ' + data.errors.join(', '))
         }
       });
     };
@@ -314,6 +316,8 @@ app.controller('WorkflowNewCtrl', [
             'success',
             $scope.workflowName + ' - Workflow updated successfully'
           );
+        }  else {
+          $scope.alerts.addAlert('danger', 'Update failed: ' + data.errors.join(', '))
         }
       });
     };
