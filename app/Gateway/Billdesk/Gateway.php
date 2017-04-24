@@ -1090,7 +1090,7 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return bool
      */
-    public function verifyRefund2(array $input)
+    public function verifyRefund(array $input)
     {
         ;
     }

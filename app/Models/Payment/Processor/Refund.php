@@ -51,7 +51,7 @@ trait Refund
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
 
-    public function verifyRefund(Payment\Refund\Entity $refund)
+    public function verifyInternalRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
@@ -71,7 +71,7 @@ trait Refund
 
         $msg = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
-            $verify = $this->callGatewayForVerifyRefund($data);
+            $verify = $this->callGatewayForVerifyInternalRefund($data);
 
             // Flag indicating if this is a buggy case fix.
             $this->verifyRefundStatus = $verify;
@@ -174,7 +174,7 @@ trait Refund
      * by the gateway.
      *
      * */
-    public function verifyRefund2(Payment\Refund\Entity $refund)
+    public function verifyRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
@@ -182,7 +182,7 @@ trait Refund
 
         $gateway = $payment->getGateway();
 
-        Payment\Refund\Validator::validateVerifyRefund2Allowed($gateway);
+        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
@@ -191,7 +191,7 @@ trait Refund
             $data['card'] = $payment->card->toArray();
         }
 
-        $verifyRefund2Result = $this->callGatewayForVerifyRefund2($data);
+        $verifyRefund2Result = $this->callGatewayForVerifyRefund($data);
 
         return $verifyRefund2Result;
     }
@@ -392,19 +392,19 @@ trait Refund
         return $type;
     }
 
-    protected function callGatewayForVerifyRefund($data)
+    protected function callGatewayForVerifyInternalRefund($data)
     {
         $verifyRefundResult = null;
 
         try
         {
-            $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
+            $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_INTERNAL_REFUND, $data);
         }
         catch (Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
                     $e->getError(),
-                    TraceCode::PAYMENT_VERIFY_REFUND_FAILURE);
+                    TraceCode::PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE);
 
             throw $e;
         }
@@ -412,13 +412,13 @@ trait Refund
         return $verifyRefundResult;
     }
 
-    protected function callGatewayForVerifyRefund2($data)
+    protected function callGatewayForVerifyRefund($data)
     {
         $verifyRefund2Result = null;
 
         try
         {
-            $verifyRefund2Result = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND2, $data);
+            $verifyRefund2Result = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
         }
         catch (Exception\BaseException $e)
         {
@@ -713,7 +713,7 @@ trait Refund
 
         // true  if refunded
         // false if not refunded
-        $refundedOnGateway = $this->verifyRefund2($refund);
+        $refundedOnGateway = $this->verifyRefund($refund);
 
         if ($refundedOnGateway === false)
         {

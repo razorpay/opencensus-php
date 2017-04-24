@@ -238,10 +238,10 @@ class Gateway
      * @param array $input
      * @return bool
      */
-    public function verifyRefund2(array $input)
+    public function verifyRefund(array $input)
     {
         $this->input = $input;
-        $this->action = Action::VERIFY_REFUND2;
+        $this->action = Action::VERIFY_REFUND;
     }
 
     public function action(array $input, $action)

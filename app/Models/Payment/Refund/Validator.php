@@ -32,7 +32,7 @@ class Validator extends Base\Validator
         'notes'         => 'sometimes|notes'
     ];
 
-    protected static $verifyRefundGateways = [
+    protected static $verifyInternalRefundGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::AXIS_MIGS
     ];
@@ -113,9 +113,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function validateVerifyRefundAllowed(string $gateway)
+    public static function validateVerifyInternalRefundAllowed(string $gateway)
     {
-        if (in_array($gateway, self::$verifyRefundGateways, true) === false)
+        if (in_array($gateway, self::$verifyInternalRefundGateways, true) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
@@ -129,7 +129,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function validateVerifyRefund2Allowed(string $gateway)
+    public static function validateVerifyRefundAllowed(string $gateway)
     {
         if (in_array($gateway, Payment\Gateway::REFUND_RETRY_GATEWAYS, true) === false)
         {
