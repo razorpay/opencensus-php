@@ -28,7 +28,7 @@ export default class Payment extends GenericEntity {
     const Klass = this.constructor
 
     data.body = {
-      amount: this.amount,
+      amount: this.capturableAmount,
       currency: this.currency
     }
 
@@ -70,5 +70,16 @@ export default class Payment extends GenericEntity {
     })
     data.route_name = 'payment_fetch_card_details'
     return this.makeGenericAjaxCall({ data })
+  }
+
+  deserializeProperty(prop, value, allProps) {
+    let session = this.getSession();
+    this.capturableAmount = this.amount
+
+    if (prop === 'amount' && session.user.tags.indexOf('Feebearer') > -1) {
+      this.capturableAmount = allProps.amount - allProps.fee
+    }
+
+    return super.deserializeProperty(prop, value)
   }
 }

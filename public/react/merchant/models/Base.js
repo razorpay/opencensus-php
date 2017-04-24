@@ -75,7 +75,7 @@ export default class BaseModel {
    */
   deserialize(json) {
     for (let prop in json) {
-      this.deserializeProperty(prop, json[prop]);
+      this.deserializeProperty(prop, json[prop], json);
     }
 
     this.didDeserialize();
@@ -87,7 +87,7 @@ export default class BaseModel {
     Hook to handle your own deserialization logic.
     Make sure you return `super.deserializeProperty(prop, value)` on the overriding method
    */
-  deserializeProperty(prop, value) {
+  deserializeProperty(prop, value, allProps) {
     this[prop] = value;
   }
 

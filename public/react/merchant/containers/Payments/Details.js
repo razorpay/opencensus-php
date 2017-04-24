@@ -34,7 +34,7 @@ export default class PaymentDetailsContainer extends Component {
       header: 'Are you sure you want to capture this payment?',
       message: () => (
         <div class='text-semi-muted'>
-          <p>The payment amount is <b><Amount value={payment.amount} /></b></p>
+          <p>The payment amount is <b><Amount value={payment.capturableAmount} /></b></p>
         </div>
       ),
       affirmativeLabel: 'Yes, Capture',
