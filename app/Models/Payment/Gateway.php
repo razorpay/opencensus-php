@@ -95,12 +95,6 @@ class Gateway
         self::WALLET_JIOMONEY
     ];
 
-    const GATEWAY_ACQUIRERS = [
-        self::ACQUIRER_AXIS,
-        self::ACQUIRER_HDFC,
-        self::ACQUIRER_ICIC,
-    ];
-
     public static $channels = [
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
@@ -295,12 +289,13 @@ class Gateway
     );
 
     /**
+     * @deprecated
      * List of gateways for which we run verification checks for all
      * failed payments on a continuous basis.
      *
      * @var array
      */
-    public static $verifyEnabled = array(
+    public static $verifyEnabled = [
         self::AXIS_MIGS,
         self::BILLDESK,
         self::EBS,
@@ -324,7 +319,11 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::UPI_ICICI,
         self::UPI_IDFC,
-    );
+    ];
+
+    public static $verifyDisabled = [
+        self::WALLET_OPENWALLET
+    ];
 
     /**
      * List of gateways that support recurring payments

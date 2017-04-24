@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Workflow;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Constants\Table;
 use RZP\Models\Workflow\Base;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\Entity
 {
@@ -17,6 +18,7 @@ class Entity extends Base\Entity
 
     const PERMISSIONS = 'permissions';
     const STEPS       = 'steps';
+    const LEVELS      = 'levels';
 
     protected static $sign = 'workflow';
 
@@ -47,6 +49,11 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
         self::STEPS,
         self::PERMISSIONS,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ORG_ID,
     ];
 
     public function getName()
