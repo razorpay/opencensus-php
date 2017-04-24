@@ -1187,7 +1187,15 @@ app
       }
 
       function getMerchantFeatures() {
-        var request = $http.get('/admin/features/' + $scope.merchant.id);
+        var data = {
+          route_name: 'feature_get_multiple',
+          url_params: {
+            '{entityId}': $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
         request
           .success(function(data) {
             if (data.success) {

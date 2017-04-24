@@ -520,15 +520,6 @@ class Service extends Base\Service
         return [[], $data];
     }
 
-    public function fetchEntityFeatures($entityId)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->feature->getFeatures($entityId);
-
-        return [[], $response];
-    }
-
     public function fetchFullMerchantDetails($id)
     {
         $details = null;

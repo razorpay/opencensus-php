@@ -399,13 +399,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getEntityFeatures($entityId)
-    {
-        list($error, $data) = (new Admin\Service)->fetchEntityFeatures($entityId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getMerchantBanks($id)
     {
         $data = (new Admin\Service)->fetchMerchantBanks($id);

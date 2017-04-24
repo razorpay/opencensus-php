@@ -315,5 +315,7 @@ return [
         'credits_delete'                    => 'merchants/{mid}/credits/{id}',
 
         'merchant_put_payment_methods'      => 'merchants/{mid}/methods',
+
+        'feature_get_multiple'              => 'features/{entityId}',
     ],
 ];
