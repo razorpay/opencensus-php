@@ -88,10 +88,10 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        $roles = $this->repo->permission->getRolesForPermission($id);
+        $orgId = $this->app['basicauth']->getAdminOrgId();
 
-        Role\Entity::getSignedIdMultiple($roles);
+        $roles = $this->repo->role->getRolesForPermission($id, $orgId);
 
-        return $roles;
+        return $roles->toArrayPublic();
     }
 }

@@ -83,6 +83,10 @@ class TraceCode
     const PAYMENT_ANALYTICS_UNRECOGNIZED_DATA           = 'PAYMENT_ANALYTICS_UNRECOGNIZED_DATA';
     const PAYMENT_ANALYTICS_INCORRECT_DATA              = 'PAYMENT_ANALYTICS_INCORRECT_DATA';
     const TERMINAL_ANALYTICS_SAVE_FAILED                = 'TERMINAL_ANALYTICS_SAVE_FAILED';
+    const TERMINAL_CREATE_REQUEST                       = 'TERMINAL_CREATE_REQUEST';
+    const TERMINAL_REMOVE_FROM_MERCHANT                 = 'TERMINAL_REMOVE_FROM_MERCHANT';
+    const TERMINAL_COPY                                 = 'TERMINAL_COPY';
+    const TERMINAL_REASSIGN_MERCHANT                    = 'TERMINAL_REASSIGN_MERCHANT';
     const VERIFY_REFUND_TRANSACTION_CREATED             = 'VERIFY_REFUND_TRANSACTION_CREATED';
     const MANUAL_GATEWAY_REFUND_RESPONSE                = 'MANUAL_GATEWAY_REFUND_RESPONSE';
     const MANUAL_GATEWAY_CAPTURE_RESPONSE               = 'MANUAL_GATEWAY_CAPTURE_RESPONSE';
@@ -624,7 +628,12 @@ class TraceCode
     const REMOVE_GATEWAY_PRIORITY_REQUEST               = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const REDIS_DATA_FETCHED                            = 'REDIS_DATA_FETCHED';
 
-    // Trace codes for gateway
+// Trace codes for Merchant Reports
+
+    const REPORT_CREATE_REQUEST                         = 'REPORT_CREATE_REQUEST';
+    const REPORT_ENTITY_FETCH_REQUEST                   = 'REPORT_ENTITY_FETCH_REQUEST';
+
+// Trace codes for gateway
     const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
     const USER_EDIT                                     = 'USER_EDIT';
 

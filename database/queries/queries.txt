@@ -1904,3 +1904,16 @@ ALTER TABLE upi
 ALTER TABLE daily_settlements
     ADD COLUMN processed_amount bigint(20) unsigned NOT NULL AFTER amount,
     ADD COLUMN processed_count int(11) NOT NULL AFTER total_count;
+
+ALTER TABLE workflow_steps
+    ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;
+
+ALTER TABLE axis
+    ADD INDEX axis_vpc_Command_index (vpc_Command),
+    ADD INDEX axis_vpc_MerchTxnRef_index (vpc_MerchTxnRef);
+
+#PR 2989 Adds foreign key for pricing_rule_id in fees_breakup
+SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE fees_breakup
+    ADD CONSTRAINT fees_breakup_pricing_rule_id_foreign FOREIGN KEY (pricing_rule_id) REFERENCES pricing(id);
+SET FOREIGN_KEY_CHECKS=1;

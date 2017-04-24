@@ -39,8 +39,13 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
-        // Config to disable workflows mock
-        if ($this->config->get('heimdall.workflows.mock') === true)
+        // Disable workflows if:
+        // - It is mocked
+        // - There's no admin user in current context. This means
+        // that the route might be running under proxy/app without
+        // any admin context
+        if (($this->config->get('heimdall.workflows.mock') === true) or
+            ($this->ba->isAdmin() !== true))
         {
             return $next($request);
         }
@@ -151,7 +156,7 @@ class Workflow
 
     private function getRoutePermissions($routeName)
     {
-        $adminAuthRoutes = Route::$adminPermission;
+        $adminAuthRoutes = Route::$routePermission;
 
         if ((isset($adminAuthRoutes[$routeName]) === false) or
             (in_array(self::WILDCARD_PERMISSION, $adminAuthRoutes[$routeName], true) === true))

@@ -628,7 +628,8 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            if ($payment->getTransactionId() !== null)
+            if (($payment->getTransactionId() !== null) or
+                ($payment->isGatewayCaptured() === true))
             {
                 $this->refundOnGateway($data);
 

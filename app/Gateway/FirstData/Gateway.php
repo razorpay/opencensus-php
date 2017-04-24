@@ -207,9 +207,36 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->fill($attributes);
 
+        $this->runCallbackVerify($input);
+
         $this->repo->saveOrFail($gatewayPayment);
 
         $this->checkApprovalCode($gatewayPayment);
+
+        return $this->getCallbackResponseData($input);
+    }
+
+    protected function runCallbackVerify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $gatewayPayment = $this->getPaymentToVerify($verify);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->verifyPayment($verify);
+
+        if (($verify->gatewaySuccess === false) and
+            ($this->approval === true))
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.', null, [
+                    'expected' => $expectedPaymentId,
+                    'actual'   => $actualPaymentId
+                ]);
+        }
     }
 
     protected function getCallbackGatewayContent(array $input)
@@ -1404,7 +1431,7 @@ class Gateway extends Base\Gateway
 
     protected function getChance()
     {
-        if (self::$testChance === null)
+        if ($this->mock === false)
         {
             return 99;
 
