@@ -48,6 +48,7 @@ class Entity extends Base\Entity
         self::ADMIN_ID,
         self::ORG_ID,
         self::APPROVED,
+        self::CURRENT_LEVEL,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -69,6 +70,7 @@ class Entity extends Base\Entity
         self::ADMIN_ID,
         self::ORG_ID,
         self::APPROVED,
+        self::CURRENT_LEVEL,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -194,6 +196,8 @@ class Entity extends Base\Entity
 
             $data['workflow_steps'][] = $thisStep;
         }
+
+        unset($data['workflow']['steps']);
 
         return $data;
     }

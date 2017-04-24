@@ -117,7 +117,7 @@ trait HeimdallTrait
 
     public function getAssignablePermissions()
     {
-        $assignablePermissions = Config::get('heimdall.assignablePermissions');
+        $assignablePermissions = Config::get('heimdall.assignable_permissions');
 
         $permissions = [];
 
