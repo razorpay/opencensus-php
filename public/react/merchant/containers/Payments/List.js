@@ -17,6 +17,44 @@ export default class PaymentsListContainer extends ListContainer {
     return this.props.fetchPayments(params)
   }
 
+  getOrderId(payment) {
+    /* Merchant's custom defined order IDs */
+    let notes = payment.notes;
+    if (!Object.keys(notes).length) {
+      return null;
+    }
+    let validOrderIds = ['order_id', 'orderId'];
+    let orderIdSuffix = '_order_id';
+    for (let i = validOrderIds.length - 1; i >= 0; i--) {
+      let validOrderId = validOrderIds[i];
+      if (typeof notes[validOrderId] !== 'undefined') {
+        return notes[validOrderId];
+      }
+    }
+    // Now we try for suffixes
+    let suffixLength = orderIdSuffix.length;
+    for (let key in notes) {
+      let index = -1 * suffixLength;
+      let suffix = key.substr(index);
+      if (suffix === orderIdSuffix) {
+        return notes[key];
+      }
+    }
+    // We couldn't find anything in payments
+    return null;
+  }
+
+  componentWillReceiveProps({payments=[]}) {
+    this.state.orders = {};
+    for (var i = payments.length - 1; i >= 0; i--) {
+      var orderId = this.getOrderId(payments[i]);
+      if (orderId !== null) {
+        this.state.orders[payments[i].id] = orderId;
+      }
+    }
+    this.state.hasOrders = Object.keys(this.state.orders || {}).length > 0
+  }
+
   render() {
     let { loading, payments=[], error } = this.props
 
@@ -49,6 +87,8 @@ export default class PaymentsListContainer extends ListContainer {
             <PaymentsList
               payments={payments}
               isLoading={loading}
+              hasOrders={this.state.hasOrders}
+              orders={this.state.orders}
             />
 
             <Pager

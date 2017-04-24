@@ -76,6 +76,10 @@ export default class Payment extends GenericEntity {
     let session = this.getSession();
     this.capturableAmount = this.amount
 
+    if (prop === 'amount') {
+      this.amountInINR = getFixedINRAmount(value);
+    }
+
     if (prop === 'amount' && session.user.tags.indexOf('Feebearer') > -1) {
       this.capturableAmount = allProps.amount - allProps.fee
     }
