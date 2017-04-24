@@ -208,16 +208,16 @@ trait FileHandlerTrait
         $excel = Excel::create($name, function($excel) use ($data, $columnFormat, $sheetName)
         {
             $excel->sheet($sheetName, function($sheet) use ($data, $columnFormat)
+            {
+                // If a columnFormat variable is specified.
+                // Use it.
+                if (empty($columnFormat) === false)
                 {
-                    // If a columnFormat variable is specified.
-                    // Use it.
-                    if (empty($columnFormat) === false)
-                    {
-                        $sheet->setColumnFormat($columnFormat);
-                    }
+                    $sheet->setColumnFormat($columnFormat);
+                }
 
-                    $sheet->fromArray($data, null, 'A1', true, true);
-                });
+                $sheet->fromArray($data, null, 'A1', true, true);
+            });
         });
 
         $excel->getDefaultStyle()->getFont()->setName('Ubuntu Mono')->setSize(14);
@@ -464,7 +464,7 @@ trait FileHandlerTrait
 
         foreach ($data as $row)
         {
-            $txt .= implode($glue, array_values($row)) ;
+            $txt .= implode($glue, array_values($row));
 
             $count--;
 

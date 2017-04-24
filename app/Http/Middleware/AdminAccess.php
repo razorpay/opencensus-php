@@ -68,7 +68,7 @@ class AdminAccess
 
     private function getRoutePermissions(string $routeName)
     {
-        $adminAuthRoutes = Route::$adminPermission;
+        $adminAuthRoutes = Route::$routePermission;
 
         if (isset($adminAuthRoutes[$routeName]) === false)
         {
@@ -279,6 +279,12 @@ class AdminAccess
     private function groupCheck($admin, $merchant)
     {
         // TODO: Enforce there's no cycle in the graph (while creation/assigning)
+
+        // If the admin has access to all the merchants then just return true
+        if ($admin->canSeeAllMerchants())
+        {
+            return true;
+        }
 
         // 1. Get all the required groups and admins for the $admin
 

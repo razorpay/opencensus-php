@@ -30,6 +30,7 @@ class Entity
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
     const REFUND                = 'refund';
+    const REPORT                = 'report';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
@@ -134,6 +135,7 @@ class Entity
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
         self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
+        self::REPORT                => \RZP\Models\Report::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,
         self::CREDITS               => \RZP\Models\Merchant\Credits::class,
         self::METHODS               => \RZP\Models\Merchant\Methods::class,
@@ -231,14 +233,6 @@ class Entity
 
     protected static $syncedInLiveAndTest = [
         self::ORG,
-        self::ORG_HOSTNAME,
-        self::ORG_FIELD_MAP,
-        self::ROLE,
-        self::PERMISSION,
-        self::GROUP,
-        self::ADMIN,
-        self::ADMIN_TOKEN,
-        self::ADMIN_LEAD,
         self::IIN,
         self::FEATURE,
         self::METHODS,
@@ -247,12 +241,6 @@ class Entity
         self::MERCHANT,
         self::USER,
         self::SCHEDULE,
-        self::WORKFLOW,
-        self::WORKFLOW_STEP,
-        self::WORKFLOW_ACTION,
-        self::ACTION_CHECKER,
-        self::ACTION_STATE,
-        self::ACTION_COMMENT,
     ];
 
     public static function getEntityNamespace(string $entity)
