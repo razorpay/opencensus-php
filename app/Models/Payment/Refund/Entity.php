@@ -192,6 +192,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::AMOUNT];
     }
 
+    public function getRrn()
+    {
+        return $this->getAttribute(self::RRN);
+    }
+
     public function setGatewayRefunded($gatewayRefunded)
     {
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);

@@ -53,6 +53,11 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getRrn(array $row)
     {
+        if (empty($row[self::COLUMN_RRN]) === true)
+        {
+            return null;
+        }
+
         $rrn = $row[self::COLUMN_RRN];
 
         return $rrn;

@@ -415,7 +415,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     /**
      * Saves the Rrn number, if present in the refund entity
      *
-     * @param $row array
+     * @param $rowDetails array
      */
     protected function persistRefundRrn(array $rowDetails)
     {
@@ -427,6 +427,19 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $rrn = $rowDetails[BaseReconciliate::RRN];
 
         $refund = $this->refund;
+
+        if ($refund->getRrn() !== null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_RRN_ALREADY_PRESENT,
+                    'message'       => 'Rrn number for the refund entity is already present',
+                    'row'           => $rowDetails,
+                    'refundId'      => $refund->getId(),
+                ]);
+
+            return;
+        }
 
         $refund->setRrn($rrn);
 
@@ -444,8 +457,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * Getting the gatewayRefund associated with payment entity.
      * It is implemented in the child class.
      *
-     * NOTE: If this is being implemented in the child class,
-     * ensure that the relevant setters are implemented in the entity.
+     * @param $refundId string
      */
     protected function getGatewayRefund(string $refundId)
     {
@@ -460,7 +472,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected function persistGatewayRrn(array $rowDetails, PublicEntity $gatewayRefund)
     {
-        if (empty($rowDetails[BaseReconciliate::RRN]) === true)
+        if ((empty($rowDetails[BaseReconciliate::RRN]) === true)
+            or (is_null($gatewayRefund) === true))
         {
             return;
         }
@@ -470,6 +483,17 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $this->setRrnInGateway($rrn, $gatewayRefund);
     }
 
+    /**
+     * This function is implemented in the child class
+     * Every gateway has a different name mapped for "rrn"
+     * e.g. : hdfc calls it 'arn_no'
+     *
+     * If this is being implemented in child class,
+     * make sure, the corresponding setter is present in the gateway
+     *
+     * @param $rrn string
+     * @param $gatewayRefund PublicEntity
+     */
     protected function setRrnInGateway(string $rrn, PublicEntity $gatewayRefund)
     {
         return;
