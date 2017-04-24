@@ -1,10 +1,10 @@
-import moment from 'moment';
+import moment from "moment";
 
-export function titleCase(sentence = '') {
+export function titleCase(sentence = "") {
   return sentence
     .split(/\s+|_/)
-    .map(word => word.charAt(0).toUpperCase() + word.substr(1))
-    .join(' ');
+    .map(word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
+    .join(" ");
 }
 
 export function makeArray(obj) {
@@ -17,11 +17,11 @@ export function makeArray(obj) {
 export function isBlank(obj) {
   if (!obj) return !obj;
 
-  if (typeof obj === 'object') {
+  if (typeof obj === "object") {
     return !Object.keys(obj).length;
   }
 
-  if (typeof obj === 'string') {
+  if (typeof obj === "string") {
     obj = obj.trim();
   }
   return !obj;
@@ -58,7 +58,8 @@ export const pipe = (...funcs) => {
   };
 };
 
-export const normalizeDate = date => moment(date).format('D/M/Y');
+export const normalizeDate = date => moment(date).format("D/M/Y");
+export const formatFromNow = unixSeconds => moment(unixSeconds * 1e3).fromNow();
 
 export const normalizeBoolean = bool => {
   if (bool === undefined) {
@@ -83,3 +84,12 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
 };
 
 export const noop = () => {};
+
+export const colors = ["primary", "success", "info", "warn", "danger"];
+
+export const paymentStatusColor = {
+  captured: colors[1],
+  authorized: colors[2],
+  refunded: colors[3],
+  failed: colors[4],
+};
