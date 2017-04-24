@@ -148,4 +148,11 @@ class RefundController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postRefundRetry($id)
+    {
+        $data = $this->refund->retry($id);
+
+        return ApiResponse::json($data);
+    }
 }

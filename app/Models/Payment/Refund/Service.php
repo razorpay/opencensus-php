@@ -676,4 +676,21 @@ class Service extends Base\Service
 
         return $status;
     }
+
+    public function retry($id)
+    {
+        $refund = $this->fetch($id);
+
+        $payment = $refund->payment;
+
+        if (in_array($payment->getGateway(), Payment\Gateway::REFUND_RETRY_GATEWAYS, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway does not support refund verify', 'refund_id', $id);
+        }
+
+        $data = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
+
+        return $data;
+    }
 }
