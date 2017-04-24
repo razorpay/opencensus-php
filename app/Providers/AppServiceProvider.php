@@ -16,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
      * We return a 403 error if the Host is not present in this list.
      */
     const TRUSTED_HOSTS = [
-        '.*\.?razorpay.com$',
+        '^(.*\.)?razorpay\.com$',
     ];
 
     protected $defer = false;
