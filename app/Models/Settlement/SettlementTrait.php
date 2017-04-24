@@ -171,6 +171,8 @@ trait SettlementTrait
 
         $bankTransferAtpt->batchFundTransfer()->associate($this->batchFundTransfer);
 
+        $setl->batchFundTransfer()->associate($this->batchFundTransfer);
+
         $this->repo->saveOrFail($setl);
 
         $this->repo->saveOrFail($bankTransferAtpt);

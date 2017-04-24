@@ -95,11 +95,12 @@ class ReconciliationTest extends TestCase
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
         // Validate batch settlement entity
-        $this->fetchAndMatchBatchData('settlement');
+        $batchFundTransfer = $this->fetchAndMatchBatchData('settlement');
 
         //Validate settlement entity
         $settlement = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+        $this->assertEquals($batchFundTransfer['id'], $settlement['batch_fund_transfer_id']);
 
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -145,12 +146,18 @@ class ReconciliationTest extends TestCase
     public function testRetryRecon()
     {
         $settlement = $this->testReconciliationFailure();
+        $oldBatchFundTransferId = $settlement['batch_fund_transfer_id'];
 
         $content = $this->retryIntiateSettlements([$settlement['id']]);
 
         // Check settlement entities
         $setlAttempts = $this->getEntities('fund_transfer_attempt', [], true);
         $this->assertEquals(2, $setlAttempts['count']);
+
+        //Validate settlement entity
+        $settlement = $this->getLastEntity('settlement', true);
+        $this->assertNotNull($settlement['batch_fund_transfer_id']);
+        $this->assertNotEquals($oldBatchFundTransferId, $settlement['batch_fund_transfer_id']);
 
         $this->assertNotNull($content['kotak']['settlement_text_file']);
 

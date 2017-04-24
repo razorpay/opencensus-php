@@ -448,6 +448,9 @@ class SettlementTest extends TestCase
         $this->assertNotNull($batchFundTransfer['txt_file_id']);
         $this->assertNotNull($batchFundTransfer['excel_file_id']);
 
+        // Validate association of settlement with batch
+        $this->assertEquals($batchFundTransfer['id'], $setl['batch_fund_transfer_id']);
+
         // Validate fund_transfer_attempt entity
         $bta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($bta, 'matchSettlementAttempt');

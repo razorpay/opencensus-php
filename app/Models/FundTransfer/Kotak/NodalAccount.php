@@ -104,9 +104,9 @@ class NodalAccount
                 Headings::BENEFICIARY_CODE        => $ba->getBeneficiaryCode(),
                 Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
                 Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
-                Headings::MERCHANT_ID             => $merchant->getPublicId(),
+                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
                 Headings::PAYMENT_DETAILS_3       => $version,
-                Headings::BATCH_FUND_TRANSFER_ID  => $entity->getBatchFundTransferId(),
+                Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
             ];
 
             $array = $this->getAllFields($array);
@@ -160,9 +160,9 @@ class NodalAccount
                 Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
                 Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
                 Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYOUTS',
-                Headings::MERCHANT_ID             => $merchant->getPublicId(),
+                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
                 Headings::PAYMENT_DETAILS_3       => $ba->getId(),
-                Headings::BATCH_FUND_TRANSFER_ID  => $payout->getBatchFundTransferId(),
+                Headings::PAYMENT_DETAILS_4       => $payout->getBatchFundTransferId(),
             ];
 
             $array = $this->getAllFields($array);

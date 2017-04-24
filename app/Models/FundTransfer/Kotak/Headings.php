@@ -31,9 +31,9 @@ class Headings
     const DEBIT_NARRATION           = 'Debit_Narration';
     const CREDIT_NARRATION          = 'Credit_Narration';
     const PAYMENT_DETAILS_1         = 'Payment Details 1';
-    const MERCHANT_ID               = 'Payment Details 2';
+    const PAYMENT_DETAILS_2         = 'Payment Details 2';
     const PAYMENT_DETAILS_3         = 'Payment Details 3';
-    const BATCH_FUND_TRANSFER_ID    = 'Payment Details 4';
+    const PAYMENT_DETAILS_4         = 'Payment Details 4';
     const ENRICHMENT_1              = 'Enrichment_1';
     const ENRICHMENT_2              = 'Enrichment_2';
     const ENRICHMENT_3              = 'Enrichment_3';
@@ -90,9 +90,9 @@ class Headings
         self::DEBIT_NARRATION,
         self::CREDIT_NARRATION,
         self::PAYMENT_DETAILS_1,
-        self::MERCHANT_ID,
+        self::PAYMENT_DETAILS_2,
         self::PAYMENT_DETAILS_3,
-        self::BATCH_FUND_TRANSFER_ID,
+        self::PAYMENT_DETAILS_4,
         self::ENRICHMENT_1,
         self::ENRICHMENT_2,
         self::ENRICHMENT_3,
