@@ -14,6 +14,8 @@ class PermissionSeeder extends Seeder
 
     protected static $permissionIds;
 
+    protected static $enableWorkflowPermissions;
+
     public function __construct()
     {
         self::$permissions = Config::get('heimdall.permissions');
@@ -66,14 +68,23 @@ class PermissionSeeder extends Seeder
 
                     $index++;
 
-                    DB::table(Table::PERMISSION)->insert([
+                    $data = [
                         'id'          => $id,
                         'name'        => $permission,
                         'description' => $description,
                         'category'    => $category,
                         'created_at'  => time(),
                         'updated_at'  => time(),
-                    ]);
+                    ];
+
+                    // For trimmed down ones (like HDFC)
+                    if (isset($enableWorkflowPermissions[$category]) and
+                        isset($enableWorkflowPermissions[$category][$permission]))
+                    {
+                        $data['enable_workflow'] = 1;
+                    }
+
+                    DB::table(Table::PERMISSION)->insert($data);
 
                     DB::table(Table::PERMISSION_MAP)->insert([
                         [
@@ -118,14 +129,6 @@ class PermissionSeeder extends Seeder
                         ]);
                     }
 
-                    // For trimmed down ones (like HDFC)
-                    if (isset($enableWorkflowPermissions[$category]) and
-                        isset($enableWorkflowPermissions[$category][$permission]))
-                    {
-                        DB::table(Table::PERMISSION)
-                            ->where('id', $id)
-                            ->update(['enable_workflow' => 1]);
-                    }
                 }
             }
             // end of transaction

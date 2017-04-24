@@ -65,13 +65,7 @@ class Service extends Base\Service
     {
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $type = null;
-
-        if ((empty($input['type']) === false) and
-            ($input['type'] === 'workflow'))
-        {
-            $type = $input['type'];
-        }
+        $type = $input['type'] ?? null;
 
         $perms = $this->repo->permission->fetchAllByOrg($orgId, $type);
 

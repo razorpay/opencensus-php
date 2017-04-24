@@ -41,9 +41,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validatePermissions($attribute, $value)
+    public function validatePermissions(string $attribute, array $ids)
     {
-        $permissions = (new Permission\Repository)->retrieveByIds($value);
+        $permissions = (new Permission\Repository)->retrieveByIds($ids);
 
         $permissionsWithoutWorkflowEnable = [];
 
@@ -62,7 +62,7 @@ class Validator extends Base\Validator
         if ($permissionWithWorkflowEnable === false)
         {
             throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_WORKFLOW_DISABLED_PERMISSION_PASSED,
+                        ErrorCode::BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW,
                         $permissionsWithoutWorkflowEnable);
         }
     }
