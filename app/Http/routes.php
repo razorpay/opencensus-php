@@ -158,7 +158,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
         Route::get('/admin/merchant/list', 'AdminController@getMerchantList');
         Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
-        Route::get('/admin/merchant/{id}/balance', 'AdminController@getMerchantBalance');
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
         // This is the list of banks in netbanking
         Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
