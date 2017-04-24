@@ -5,8 +5,10 @@ namespace RZP\Http\Middleware;
 use Closure;
 use ApiResponse;
 use Illuminate\Foundation\Application;
+
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Route;
+use Razorpay\OAuth\OAuthServer;
 
 class Authenticate
 {
@@ -47,7 +49,22 @@ class Authenticate
 
         $route = $router->currentRouteName();
 
-        $ret = $this->authenticateBasicAuth($route);
+        // Check for disabled routes
+        if (in_array($route, Route::DISABLED_ROUTES, true) === true)
+        {
+            return ApiResponse::routeDisabled();
+        }
+
+        $bearerToken = $request->bearerToken();
+
+        if (empty($bearerToken) === false)
+        {
+            $ret = $this->authenticateBearerAuth($route);
+        }
+        else
+        {
+            $ret = $this->authenticateBasicAuth($route);
+        }
 
         if ($ret !== null)
         {
@@ -57,6 +74,12 @@ class Authenticate
         return $next($request);
     }
 
+    /**
+     * Authenticate the request with Basic auth
+     *
+     * @param string $route
+     * @return mixed
+     */
     protected function authenticateBasicAuth(string $route)
     {
         $ba = $this->ba;
@@ -64,11 +87,6 @@ class Authenticate
         $ba->init($this->app);
 
         $ret = null;
-
-        if (in_array($route, Route::DISABLED_ROUTES, true) === true)
-        {
-            return ApiResponse::routeDisabled();
-        }
 
         if (in_array($route, Route::$internal, true) === true)
         {
@@ -113,6 +131,19 @@ class Authenticate
         }
 
         return $ba->feature();
+    }
 
+    protected function authenticateBearerAuth(string $route)
+    {
+        //
+        // Only `private` auth endpoints may be accessed
+        // on OAuth
+        //
+        if (in_array($route, Route::$private, true) === false)
+        {
+            return ApiResponse::routeNotFound();
+        }
+
+        // TODO: OAuth access token flow
     }
 }
