@@ -501,10 +501,10 @@ final class Route
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
 
         // Oauth
-        'get_all_tokens'                          => ['get',      'oauth/tokens',                                   'TokenController@getAllTokens'                                      ],
-        'get_token'                               => ['get',      'oauth/tokens/{id}',                              'TokenController@getToken'                                          ],
-        'edit_token'                              => ['put',      'oauth/tokens/{id}',                              'TokenController@editToken'                                         ],
-        'revoke_token'                            => ['post',     'oauth/tokens/{id}/revoke',                       'TokenController@revokeToken'                                       ],
+        'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'TokenController@getAllTokens'                                      ],
+        'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'TokenController@getToken'                                          ],
+        'oauth_token_edit'                        => ['patch',      'oauth/tokens/{id}',                              'TokenController@editToken'                                         ],
+        'oauth_token_revoke'                      => ['put',     'oauth/tokens/{id}/revoke',                       'TokenController@revokeToken'                                       ],
     );
 
     public static $public = array(
@@ -894,10 +894,10 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
-        'get_all_tokens',
-        'get_token',
-        'edit_token',
-        'revoke_token',
+        'oauth_token_fetch_multiple',
+        'oauth_token_fetch',
+        'oauth_token_edit',
+        'oauth_token_revoke',
     );
 
     public static $admin = [

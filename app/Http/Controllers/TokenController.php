@@ -33,7 +33,7 @@ class TokenController extends Controller
     /**
      * GET /oauth/tokens/{$id}
      */
-    public function getToken($id)
+    public function getToken(string $id)
     {
         $input = Request::all();
 
@@ -43,9 +43,9 @@ class TokenController extends Controller
     }
 
     /*
-     * PUT /oauth/tokens/{$id}
+     * PATCH /oauth/tokens/{$id}
      */
-    public function editToken($id)
+    public function editToken(string $id)
     {
         $input = Request::all();
 
@@ -55,9 +55,9 @@ class TokenController extends Controller
     }
 
     /*
-     * POST oauth/tokens/{$id}/revoke
+     * PUT oauth/tokens/{$id}/revoke
      */
-    public function revokeToken($id)
+    public function revokeToken(string $id)
     {
         $input = Request::all();
 
