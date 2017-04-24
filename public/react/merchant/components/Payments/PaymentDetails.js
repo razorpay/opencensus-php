@@ -97,7 +97,8 @@ export default (props) => {
     card,
     refunds,
     isLoading,
-    statusMsg
+    statusMsg,
+    ngRouter
   } = props
 
   let otherKeys = keysNotShown(payment);
@@ -232,6 +233,7 @@ export default (props) => {
                       label={key}
                       value={payment[key]}
                       entity={payment}
+                      ngRouter={ngRouter}
                     />
                   )
                 }

@@ -14,7 +14,8 @@ import RefundModal from './RefundModal'
 )
 export default class PaymentDetailsContainer extends Component {
   static contextTypes = {
-    confirm: PropTypes.func
+    confirm: PropTypes.func,
+    ngRouter: PropTypes.object
   }
 
   componentWillMount() {
@@ -98,6 +99,7 @@ export default class PaymentDetailsContainer extends Component {
             onToggleRefundList={this.fetchRefunds}
             confirmCapture={this.confirmCapture}
             openRefundModal={this.openRefundModal}
+            ngRouter={this.context.ngRouter}
           />
         </div>
       </div>
