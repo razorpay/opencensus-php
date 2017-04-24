@@ -5,14 +5,14 @@ namespace App\Merchant;
 class GenericMerchant
 {
     /**
-     * All of the user's attributes.
+     * All of the merchant's attributes.
      *
      * @var array
      */
     protected $attributes;
 
     /**
-     * Create a new generic User object.
+     * Create a new generic merchant object.
      *
      * @param  array  $attributes
      * @return void
@@ -23,7 +23,7 @@ class GenericMerchant
     }
 
     /**
-     * Dynamically access the user's attributes.
+     * Dynamically access the merchant's attributes.
      *
      * @param  string  $key
      * @return mixed
@@ -34,7 +34,7 @@ class GenericMerchant
     }
 
     /**
-     * Dynamically set an attribute on the user.
+     * Dynamically set an attribute on the merchant.
      *
      * @param  string  $key
      * @param  mixed  $value
@@ -46,7 +46,7 @@ class GenericMerchant
     }
 
     /**
-     * Dynamically check if a value is set on the user.
+     * Dynamically check if a value is set on the merchant.
      *
      * @param  string  $key
      * @return bool
@@ -57,7 +57,7 @@ class GenericMerchant
     }
 
     /**
-     * Dynamically unset a value on the user.
+     * Dynamically unset a value on the merchant.
      *
      * @param  string  $key
      * @return void

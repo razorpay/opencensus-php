@@ -2,17 +2,15 @@
 namespace App\Http\Controllers;
 
 use Auth;
-use App\Http\AppResponse;
-use App\User;
-use App\MerchantDetails;
-use App\Merchant;
-use App\Lead;
-
 use Input;
+use App\Lead;
+use App\User;
+use App\Merchant;
+use App\MerchantDetails;
+use App\Http\AppResponse;
 
 class UserController extends Controller
 {
-
     protected $guard = 'users';
     /**
      * Returns the base template for angular.
@@ -37,7 +35,9 @@ class UserController extends Controller
     public function postRegister()
     {
         $input = Input::all();
+
         $data = null;
+
         $error = [];
 
         try
@@ -139,6 +139,8 @@ class UserController extends Controller
     }
 
     /**
+     * This method will not be used.
+     * Please use `getUserDetailsV2`
      * This is the one true method for all information
      * @return [type] [description]
      */

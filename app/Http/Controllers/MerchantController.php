@@ -1,15 +1,15 @@
 <?php
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Http\AppResponse;
+use App;
+use Auth;
+use Input;
+use App\Api;
 use App\Merchant;
 use App\MerchantDetails;
+use App\Http\AppResponse;
+use Illuminate\Http\Request;
 use App\Mailers\ContactFormMailer;
-use App\Api;
-use Input;
-use Auth;
-use App;
 
 class MerchantController extends Controller
 {
@@ -89,7 +89,7 @@ class MerchantController extends Controller
 
     public function getKeys($mode)
     {
-        $merchant = Auth::user()->currentMerchant;
+        $merchant = Auth::user()->currentMerchant();
 
         list($error, $keys) = (new Merchant\Service)->fetchKeysFromApi($merchant->id, $mode);
 
@@ -98,7 +98,7 @@ class MerchantController extends Controller
 
     public function postNewKey($mode)
     {
-        $merchant = Auth::user()->currentMerchant;
+        $merchant = Auth::user()->currentMerchant();
 
         list($error, $data) = (new Merchant\Service)->createKey($merchant->id, $mode);
 
@@ -180,6 +180,7 @@ class MerchantController extends Controller
     public function optionsContact()
     {
         $response = AppResponse::jsonResponse([]);
+
         $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
 
         return $response;
@@ -203,6 +204,7 @@ class MerchantController extends Controller
         (new ContactFormMailer)->with($input)->contact()->queue()->deliver();
 
         $response = AppResponse::jsonResponse([]);
+
         $response->header('Access-Control-Allow-Origin', 'https://razorpay.com');
 
         return $response;
@@ -240,7 +242,7 @@ class MerchantController extends Controller
      */
     public function getReferredMerchants()
     {
-        $id = Auth::user()->getCurrentMerchantId();
+        $id = Auth::user()->currentMerchant()->id;
 
         $data = (new Merchant\Service)->fetchReferredMerchants($id);
 
@@ -256,8 +258,7 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Merchant\Service)
-            ->registerSubMerchant($input);
+        list($error, $data) = (new Merchant\Service)->registerSubMerchant($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -270,16 +271,14 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Merchant\Service)
-            ->registerSubMerchantUser($input);
+        list($error, $data) = (new Merchant\Service)->registerSubMerchantUser($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
     public function getBankAccount()
     {
-        list($error, $data) = (new Merchant\Service)
-            ->fetchBankAccount();
+        list($error, $data) = (new Merchant\Service)->fetchBankAccount();
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -383,7 +382,7 @@ class MerchantController extends Controller
 
     public function postSignup()
     {
-        $id = Auth::user()->getCurrentMerchantId();
+        $id = Auth::user()->currentMerchant()->id;
 
         $input = Input::all();
 
@@ -394,7 +393,7 @@ class MerchantController extends Controller
 
     public function getSignup()
     {
-        $id = Auth::user()->getCurrentMerchantId();
+        $id = Auth::user()->currentMerchant()->id;
 
         $error = $data = [];
 

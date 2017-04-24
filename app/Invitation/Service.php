@@ -5,10 +5,10 @@ namespace App\Invitation;
 use Auth;
 use Mail;
 use App\Base;
-use App\Merchant;
 use App\User;
-use App\Invitation;
+use App\Merchant;
 use App\AdminLead;
+use App\Invitation;
 use App\Mailers\MiscMailer;
 
 class Service extends Base\Service
@@ -21,10 +21,7 @@ class Service extends Base\Service
 
     public function __construct()
     {
-        if ($user = Auth::user())
-        {
-            $this->loggedInUser = $user;
-        }
+        $this->loggedInUser = Auth::user();
     }
 
     /**
@@ -35,6 +32,7 @@ class Service extends Base\Service
     public function sendInvitation($input)
     {
         $errors = [];
+
         $data = null;
 
         $validation = (new Validator)->validateInput('sendInvitation', $input);
@@ -45,7 +43,7 @@ class Service extends Base\Service
         }
 
         // We need to change this to currentLoggedInMerchant later
-        $merchant = $this->loggedInUser->getOwnerMerchant();
+        $merchant = $this->loggedInUser->ownerMerchant();
 
         if ($merchant === false)
         {
@@ -102,7 +100,7 @@ class Service extends Base\Service
     {
         $error = array();
 
-        $invitation = $this->loggedInUser->currentMerchant->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
         if (! $invitation)
         {
@@ -125,7 +123,7 @@ class Service extends Base\Service
     {
         $error = [];
 
-        $invitation = $user->currentMerchant->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
         if (! $invitation)
         {
@@ -148,7 +146,7 @@ class Service extends Base\Service
      */
     public function acceptInvitationForUser($inviteId, $user)
     {
-        $invitation = $user->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
         if (! $invitation)
         {
@@ -178,7 +176,7 @@ class Service extends Base\Service
             $error[] = $validation->messages();
         }
 
-        $invitation = $user->currentMerchant()->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
         if (! $invitation)
         {
@@ -201,7 +199,7 @@ class Service extends Base\Service
      */
     public function rejectInvitationForUser($inviteId, $user)
     {
-        $invitation = $user->invitations()->find($inviteId);
+        $invitation = $this->getInvitationById($inviteId);
 
         if (! $invitation)
         {
@@ -261,8 +259,14 @@ class Service extends Base\Service
     {
         $mailer = new MiscMailer();
 
-        $mailer
-            ->sendMemberInvitationEmail($invitation, $this->loggedInUser->toArray())
-            ->queueAndDeliver();
+        $mailer->sendMemberInvitationEmail($invitation, $this->loggedInUser->toArray())
+               ->queueAndDeliver();
+    }
+
+    public function getInvitationById(string inviteId)
+    {
+        return Entity::select(['*'])
+                        ->where('id', $inviteId)
+                        ->get();
     }
 }

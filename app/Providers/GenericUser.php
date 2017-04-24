@@ -19,4 +19,16 @@ class GenericUser extends AuthGenericUser
 
         return new Merchant\GenericMerchant((array) $currentMerchant);
     }
+
+    public function ownerMerchant()
+    {
+        $ownerMerchant = (new User\Service)->getOwnerMerchant($this->attributes);
+
+        if ($ownerMerchant !== null)
+        {
+            return new Merchant\GenericMerchant((array) $currentMerchant);
+        }
+
+        return null;
+    }
 }

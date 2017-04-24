@@ -18,8 +18,9 @@ class Service extends Base\Service
 
         if ($loggedInUser)
         {
-            $this->merchantId = $loggedInUser->getCurrentMerchantId();
-            $this->merchant   = $loggedInUser->currentMerchant;
+            $this->merchant = $loggedInUser->currentMerchant();
+
+            $this->merchantId = $this->merchant->id;
         }
         else
         {

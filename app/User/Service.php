@@ -866,6 +866,21 @@ class Service extends Base\Service
         return $currentMerchant;
     }
 
+    public function getOwnerMerchant(array $userDetails)
+    {
+        $merchants = $userDetails['merchants'];
+
+        $currentMerchant = $this->getCurrentMerchant($userDetails);
+
+        $ownerMerchant = array_filter($merchants, function($merchant) use ($currentMerchant)
+            {
+                return (($merchant['id'] === $currentMerchant['id']) and
+                    ($merchant['role'] === 'owner'));
+            });
+
+        return $ownerMerchant;
+    }
+
     protected function getTags(array & $userDetails)
     {
         $merchants = $userDetails['merchants'];

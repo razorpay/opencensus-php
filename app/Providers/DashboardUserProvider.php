@@ -3,10 +3,7 @@
 namespace App\Providers;
 
 use App\User;
-use Illuminate\Support\Str;
 use Illuminate\Contracts\Auth\UserProvider;
-use Illuminate\Database\ConnectionInterface;
-use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 
 class DashboardUserProvider implements UserProvider
