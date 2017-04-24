@@ -10,21 +10,21 @@ class RefundReconciliate extends Base\RefundReconciliate
     const COLUMN_REFUND_ID          = 'merchant_ref_no';
     const COLUMN_REFUND_AMOUNT      = 'refunded';
 
-    protected function getRefundId(array $row)
+    protected function getRefundId($row)
     {
         $refundId = $row[self::COLUMN_REFUND_ID];
 
         return $refundId;
     }
 
-    protected function getPaymentId(array $row)
+    protected function getPaymentId($row)
     {
         $paymentId = $this->getRefundId($row);
 
         return $paymentId;
     }
 
-    protected function getRefundAmount(array $row)
+    protected function getRefundAmount($row)
     {
         $paymentAmount = floatval($row[self::COLUMN_REFUND_AMOUNT]) * 100;
 
