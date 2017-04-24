@@ -97,28 +97,24 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'tax_id'       => '00000000000001',
                     'created_at'   => time(),
                     'updated_at'   => time(),
-                    'deleted_at'   => null,
                 ],
                 [
                     'tax_group_id' => '00000000000001',
                     'tax_id'       => '00000000000002',
                     'created_at'   => time(),
                     'updated_at'   => time(),
-                    'deleted_at'   => null,
                 ],
                 [
                     'tax_group_id' => '00000000000002',
                     'tax_id'       => '00000000000001',
                     'created_at'   => time(),
                     'updated_at'   => time(),
-                    'deleted_at'   => null,
                 ],
                 [
                     'tax_group_id' => '00000000000002',
                     'tax_id'       => '00000000000004',
                     'created_at'   => time(),
                     'updated_at'   => time(),
-                    'deleted_at'   => null,
                 ],
             ]);
     }

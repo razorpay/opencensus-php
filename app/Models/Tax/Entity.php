@@ -67,6 +67,16 @@ class Entity extends Base\PublicEntity
 
     // Getters
 
+    public function getRateType()
+    {
+        return $this->getAttribute(self::RATE_TYPE);
+    }
+
+    public function getRate()
+    {
+        return $this->getAttribute(self::RATE);
+    }
+
     // Relations
 
     public function merchant()

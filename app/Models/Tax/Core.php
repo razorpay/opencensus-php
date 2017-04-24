@@ -21,6 +21,12 @@ class Core extends Base\Core
         return $group;
     }
 
+    // TODO:
+    // When making changes wrt taxes around items:
+    // - consider giving a warning in UI saying this will cascade to items
+    // - cascade(set null) delete to items
+    // (For both taxes and tax groups)
+
     public function update(Entity $group, array $input): Entity
     {
         $this->trace->info(

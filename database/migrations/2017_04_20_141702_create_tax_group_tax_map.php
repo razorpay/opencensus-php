@@ -29,12 +29,9 @@ class CreateTaxGroupTaxMap extends Migration
 
             $table->integer(PublicEntity::CREATED_AT);
             $table->integer(PublicEntity::UPDATED_AT);
-            $table->integer(PublicEntity::DELETED_AT)
-                  ->nullable();
 
             $table->index(PublicEntity::CREATED_AT);
             $table->index(PublicEntity::UPDATED_AT);
-            $table->index(PublicEntity::DELETED_AT);
 
             $table->unique([self::TAX_GROUP_ID, self::TAX_ID]);
         });
