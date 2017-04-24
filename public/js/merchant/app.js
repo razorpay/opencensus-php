@@ -167,7 +167,7 @@ var app = angular
           url: '/new',
           templateProvider: reactTemplateProvider('<invoices-new />'),
         })
-        .state('app.invoices.details', {
+        .state('app.invoices.detail', {
           url: '/:id/details',
           controller: [
             '$scope',
@@ -312,7 +312,7 @@ var app = angular
           url: '/list',
           templateProvider: reactTemplateProvider('<payments-list />'),
         })
-        .state('app.payments.details', {
+        .state('app.payments.detail', {
           url: '/:id',
           controller: [
             '$scope',
