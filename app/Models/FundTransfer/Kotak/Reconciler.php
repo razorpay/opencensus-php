@@ -118,9 +118,7 @@ class Reconciler
 
         if (empty($data) === true)
         {
-            $response =  [
-                'message' => 'no records to reconcile'
-            ];
+            $response = ['message' => 'no records to reconcile'];
         }
         else
         {
@@ -172,7 +170,10 @@ class Reconciler
             }
             foreach ($this->batchFundTransferStats as $batchId => $attrs)
             {
-                $this->repo->batch_fund_transfer->updateBatch($batchId, $attrs);
+                $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
+                $batchEntity->setProcessedCount();
+                $batchEntity->setProcessedAmount();
+                $batchEntity->saveOrFail();
             }
 
             $this->repo->commit();
@@ -298,7 +299,7 @@ class Reconciler
         }
 
         // Update source and child entities
-        if ($parsedData['version'] === 'V2')
+        if ($parsedData['version'] === 'V2' or $parsedData['version'] === 'V3')
         {
             foreach (self::CHILD_ATTRS as $type => $attr)
             {
@@ -333,24 +334,26 @@ class Reconciler
      */
     protected function parseDataFromRow(array $row): array
     {
-        $version = $row[Headings::VERSION] ?: FundTransferAttempt\Version::V1;
-        FundTransferAttempt\Version::validateVersion($version);
+        $version = FundTransferAttempt\Version::V1;
 
-        $statusCode = trim($row[Headings::STATUS_OF_TRANSACTION] ?? null);
-
-        $utr = null;
-
-        if ($statusCode === Status::PROCESSED)
+        if (($row[Headings::PAYMENT_DETAILS_3] !== null) and
+            ($row[Headings::PAYMENT_DETAILS_3] === FundTransferAttempt\Version::V3))
         {
-            $utr = trim($row['UTR number']);
-            $utr = ($utr === '') ? null : $utr;
+            $version = FundTransferAttempt\Version::V3;
         }
+        else if (($row[Headings::ENRICHMENT_2] !== null) and
+            ($row[Headings::ENRICHMENT_2] === FundTransferAttempt\Version::V2))
+        {
+            $version = FundTransferAttempt\Version::V2;
+        }
+
+        FundTransferAttempt\Version::validateVersion($version);
 
         return [
             'version' => $version,
             'payment_ref_no' => trim($row[Headings::PAYMENT_REF_NO] ?? null),
-            'utr' => $utr,
-            'bank_status_code' => $statusCode,
+            'utr' => trim($row['UTR number']),
+            'bank_status_code' => trim($row[Headings::STATUS_OF_TRANSACTION] ?? null),
             'remarks' => trim($row[Headings::REMARKS] ?? null),
             'payment_date' => trim($row[Headings::PAYMENT_DATE] ?? null),
             'date_time' => trim($row[Headings::DATE_TIME] ?? null),
@@ -413,6 +416,7 @@ class Reconciler
     protected function updateBatchFundTransferStats($batchId, $source)
     {
         if (isset($this->batchFundTransferStats[$batchId]) === false)
+
         {
             $this->batchFundTransferStats[$batchId] =
                 ['processed_count' => 1, 'processed_amount' => $source->getAmount()];

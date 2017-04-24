@@ -407,7 +407,7 @@ class SettlementTest extends TestCase
         $this->assertNotNull($setlResponse['kotak']['settlement_excel_file']);
 
         $setl = $this->getLastEntity('settlement', true);
-        $this->assertTestResponse($setl, 'fetchAndMatchSettlementForV2');
+        $this->assertTestResponse($setl, 'fetchAndMatchSettlement');
 
         // Validate settlement txn entity
         $setlTxn = $this->getLastEntity('transaction', true);
