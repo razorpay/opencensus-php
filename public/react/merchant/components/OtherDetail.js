@@ -27,7 +27,9 @@ export default ({ label, value, ngRouter, entity = {} }) => {
 
       url = ngRouter.href(`app.${entityName}s.detail`, { id: value });
 
-      val = () => <a href={url} target="_blank">{value}</a>;
+      if (url) {
+        val = () => <a href={url} target="_blank">{value}</a>;
+      }
   }
 
   label = typeof label === 'function' ? label : humanize(label);

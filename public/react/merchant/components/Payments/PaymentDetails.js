@@ -70,6 +70,11 @@ const shownByDefault = [
 
 const keysNotShown = entity => {
   var keys = [];
+
+  if (!entity.getPayload) {
+    return keys;
+  }
+
   for (var key in entity) {
     let payload = entity.getPayload();
     // If the entity has that key and its not currently shown

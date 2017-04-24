@@ -55,7 +55,9 @@ export const refundPayment = (payment, data) => {
 
 let initialState = {
   loading: true,
-  payment: {},
+  payment: {
+    notes: {},
+  },
   card: {
     loading: true,
     details: {},
