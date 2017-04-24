@@ -1035,6 +1035,7 @@ final class Route
         'credits_delete'                   => [Permission::DELETE_MERCHANT_CREDITS],
         'merchant_put_payment_methods'     => [Permission::EDIT_MERCHANT_METHODS],
         'balance_fetch'                    => [Permission::VIEW_MERCHANT_BALANCE],
+        'feature_get_multiple'             => [Permission::VIEW_MERCHANT_FEATURES],
     ];
 
     public static $direct = array(
