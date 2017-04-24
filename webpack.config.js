@@ -1,27 +1,27 @@
-'use strict';
+"use strict";
 
-const path = require('path');
-const webpack = require('webpack');
-const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
+const path = require("path");
+const webpack = require("webpack");
+const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 
 const webpackConfig = {
-  context: process.cwd() + '/public/react',
+  context: process.cwd() + "/public/react",
   resolve: {
     alias: {
-      moment: 'moment/min/moment.min.js',
-      react: path.resolve(__dirname, 'node_modules/react'),
-      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      moment: "moment/min/moment.min.js",
+      react: path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
     },
     modules: [
-      path.resolve(__dirname, 'node_modules'),
-      'web_modules',
-      path.resolve(__dirname, 'public/react'),
+      path.resolve(__dirname, "node_modules"),
+      "web_modules",
+      path.resolve(__dirname, "public/react"),
     ],
-    extensions: ['.js', '.jsx', '.styl'],
+    extensions: [".js", ".jsx", ".styl"],
   },
   module: {},
   externals: {
-    jquery: 'jQuery',
+    jquery: "jQuery",
   },
 };
 
@@ -29,16 +29,16 @@ const webpackConfig = {
 // Entry Points
 // ------------------------------------
 webpackConfig.entry = {
-  merchant: './merchant',
-  admin: './admin',
+  merchant: "./merchant",
+  admin: "./admin",
 };
 
 // ------------------------------------
 // Bundle Output
 // ------------------------------------
 webpackConfig.output = {
-  path: './public/react/dist',
-  filename: '[name]_react.js',
+  path: process.cwd() + "/public/react/dist",
+  filename: "[name]_react.js",
 };
 
 // ------------------------------------
@@ -47,21 +47,21 @@ webpackConfig.output = {
 webpackConfig.module.loaders = [
   {
     test: /\.(js|jsx)$/,
-    include: path.resolve(__dirname, 'public/react'),
-    loader: 'babel-loader',
+    include: path.resolve(__dirname, "public/react"),
+    loader: "babel-loader",
     query: {
       cacheDirectory: true,
       plugins: [
-        'react-html-attrs',
-        'transform-runtime',
-        'transform-decorators-legacy',
+        "react-html-attrs",
+        "transform-runtime",
+        "transform-decorators-legacy",
       ],
-      presets: ['es2015', 'react', 'stage-0'],
+      presets: ["es2015", "react", "stage-0"],
     },
   },
   {
     test: /\.styl$/,
-    loader: 'style-loader!css-loader?modules&localIdentName=[local]!stylus-loader?paths=/public/react',
+    loader: "style-loader!css-loader?modules&localIdentName=[local]!stylus-loader?paths=/public/react",
   },
 ];
 
@@ -72,7 +72,7 @@ webpackConfig.plugins = [
   new CaseSensitivePathsPlugin(),
 
   /* https://github.com/webpack/webpack/issues/3128 */
-  new webpack.IgnorePlugin(/(locale)/, /node_modules.+(momentjs)/),
+  new webpack.IgnorePlugin(/\.\/locale$/),
 ];
 
 module.exports = webpackConfig;
