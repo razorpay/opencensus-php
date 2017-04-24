@@ -620,8 +620,6 @@ trait Refund
             $this->validateMerchantBalance($refund);
         }
 
-        $refund->setStatus(Payment\Refund\Status::CREATED);
-
         $refund->batch()->associate($batch);
 
         $this->refund = $refund;
@@ -642,7 +640,7 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            $this->updateRefundAttemptInfo();
+            $this->refund->incrementAttempts();
 
             $this->repo->transaction(function() use ($data, $payment)
             {
@@ -719,7 +717,7 @@ trait Refund
 
         if ($refundedOnGateway === false)
         {
-            $this->updateRefundAttemptInfo();
+            $this->refund->incrementAttempts();
 
             $refundedOnGateway = $this->mutex->acquireAndRelease(
                 $payment->getId(),
@@ -738,13 +736,6 @@ trait Refund
         $this->repo->saveOrFail($this->refund);
 
         return $this->refund;
-    }
-
-    protected function updateRefundAttemptInfo()
-    {
-        $this->refund->incrementAttempts();
-
-        $this->repo->saveOrFail($this->refund);
     }
 
     protected function gatewaySupportsReversal($payment)

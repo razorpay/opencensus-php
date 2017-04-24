@@ -1912,5 +1912,5 @@ ALTER TABLE refunds
     ADD INDEX refunds_attempts_index (attempts),
     ADD INDEX refunds_created_at_index (created_at);
 
-# Post deployment query for updating status of all the refunds
+# Post deployment query for updating status of all the refunds #2673
 UPDATE refunds SET status = "processed" WHERE status is null;

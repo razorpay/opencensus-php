@@ -21,7 +21,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
-                    ->first();
+                    ->firstOrFail();
     }
 
     public function findByPaymentIdAndAction($paymentId, $action)
