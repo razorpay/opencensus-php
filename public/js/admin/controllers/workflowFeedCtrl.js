@@ -18,10 +18,18 @@ app
       $stateParams,
       admin
     ) {
+      $scope.allowFieldEdit = false;
       $scope.alerts = alertsFactory.getHandler();
 
       if (typeof $stateParams.action_id !== 'undefined') {
         $scope.action_id = $stateParams.action_id;
+      }
+
+      // Don't allow to edit title/desc if request is still opened
+      function updateEditFieldState() {
+        if (['open', 'approved'].indexOf($scope.action_details.state) !== -1) {
+          $scope.allowFieldEdit = true;
+        }
       }
 
       $scope.fetchDiff = function() {
@@ -183,6 +191,8 @@ app
               return !card.approved;
             });
           }
+
+          updateEditFieldState();
         });
       };
 
@@ -249,6 +259,8 @@ app
                   true
                 );
                 $scope.action_details.state = data.data.state; // Change state of request
+
+                updateEditFieldState();
               } else {
                 angular.forEach(data.errors, function(value, key) {
                   $scope.alerts.addAlert('danger', value);

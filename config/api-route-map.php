@@ -127,6 +127,10 @@ return [
         ],
 
         // Refunds
+        'refund_fetch_multiple'             => [
+            'url'       => 'refunds',
+            'routeName' => 'get_refunds'
+        ],
         'refund_fetch'                      => [
             'url'       => 'refunds',
             'routeName' => 'get_refunds'

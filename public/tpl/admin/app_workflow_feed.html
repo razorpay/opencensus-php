@@ -25,7 +25,7 @@
           </div>
           <div class="wrapper clearfix">
             <div class="heading-container h3 m-b">
-              <div class="title-text wrapper-sm" ng-click="setTitleActive();alerts.resetAlerts();" ng-show="!titleActive">
+              <div class="title-text wrapper-sm" ng-click="setTitleActive();alerts.resetAlerts();" ng-show="!titleActive" ng-if="action_details && allowFieldEdit">
                 <div class="bg-white"></div>
                 <span class="heading-text">
                   {{ action_details.title || "Click to add a title" }}
@@ -33,7 +33,9 @@
                 <span class="desc-edit-icon"><i class="fa fa-pencil"></i></span>
                 <div class="clearfix"></div>
               </div>
-              <div class="row title-highlight-container " ng-class="{'title-active': titleActive}">
+              <div class="row title-highlight-container "
+                   ng-class="{'title-active': titleActive}"
+                   ng-if="action_details && allowFieldEdit">
                 <div class="col-xs-12" style="padding: 0 7px;">
                   <div class="input-group input-group-lg">
                     <input type="text" class="form-control " id="title-input" aria-describedby="sizing-addon1" ng-model="action_details.title"> <!-- placeholder="Add a title" -->
@@ -50,8 +52,13 @@
                 </div>
               </div>
             </div>
+            <div class="heading-container h3 m-b" style="padding: 10px 0;" ng-show="!titleActive" ng-if="action_details && !allowFieldEdit">
+                <span class="heading-text">
+                  {{ action_details.title || 'No Title' }}
+                </span>
+            </div>
             <div class="border-bottom m-b"></div>
-            <div class="description" ng-class="{'desc-active': descActive}">
+            <div class="description" ng-class="{'desc-active': descActive}" ng-if="action_details && allowFieldEdit">
               <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>
               <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea"></textarea>
               <div class="desc-text wrapper-sm" ng-click="setDescActive();alerts.resetAlerts();" >
@@ -67,6 +74,12 @@
                 {{ action_details.description || "Click to add a description" }}
               </div> -->
               <div class="clearfix"></div>
+            </div>
+
+            <div class="description" style="padding: 10px 0;" ng-if="action_details && !allowFieldEdit">
+                <span class="">
+                  {{ action_details.description || "No description" }}
+                </span>
             </div>
             <div class="assignment-container ">
               <div class="strong assignee-heading m-t"><strong>Assigned to:</strong></div>
@@ -155,10 +168,10 @@
         <div ng-if="approverList && approverList.length">
         <div class="right-label m-b m-t">Approved by</div>
           <div class="assignee-list m-b">
-            <div class="">
-              <div class="assignee-label" ng-repeat="card in approverList">
+            <div>
+              <span class="assignee-label" ng-repeat="card in approverList">
                 {{card.admin_name}}
-              </div>
+              </span>
             </div>
           </div>
         </div>
@@ -166,10 +179,10 @@
         <div ng-if="rejectorList && rejectorList .length">
           <div class="right-label m-b m-t">Rejected by</div>
           <div class="assignee-list m-b">
-            <div class="">
-              <div class="assignee-label" ng-repeat="card in rejectorList ">
+            <div>
+              <span class="assignee-label" ng-repeat="card in rejectorList ">
                 {{card.admin_name}}
-              </div>
+              </span>
             </div>
           </div>
         </div>
