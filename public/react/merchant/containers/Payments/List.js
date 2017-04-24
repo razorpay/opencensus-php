@@ -1,13 +1,13 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import Pager from "rzp/ui/Pager";
-import Alert from "rzp/ui/Forms/Alert";
-import Header from "rzp/ui/Header";
-import PaymentsList from "merchant/components/Payments/PaymentsList";
-import ListContainer from "merchant/containers/ListContainer";
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import Pager from 'rzp/ui/Pager';
+import Alert from 'rzp/ui/Forms/Alert';
+import Header from 'rzp/ui/Header';
+import PaymentsList from 'merchant/components/Payments/PaymentsList';
+import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter
-  from "merchant/components/Payments/PaymentsListFilter";
-import { fetchPayments } from "merchant/modules/payments/list";
+  from 'merchant/components/Payments/PaymentsListFilter';
+import { fetchPayments } from 'merchant/modules/payments/list';
 
 @connect(state => state.payments, { fetchPayments })
 export default class PaymentsListContainer extends ListContainer {
@@ -26,11 +26,11 @@ export default class PaymentsListContainer extends ListContainer {
     if (!Object.keys(notes).length) {
       return null;
     }
-    let validOrderIds = ["order_id", "orderId"];
-    let orderIdSuffix = "_order_id";
+    let validOrderIds = ['order_id', 'orderId'];
+    let orderIdSuffix = '_order_id';
     for (let i = validOrderIds.length - 1; i >= 0; i--) {
       let validOrderId = validOrderIds[i];
-      if (typeof notes[validOrderId] !== "undefined") {
+      if (typeof notes[validOrderId] !== 'undefined') {
         return notes[validOrderId];
       }
     }

@@ -1,19 +1,19 @@
-import GenericEntity from "./GenericEntity";
-import Refund from "./Refund";
-import { getFixedINRAmount } from "rzp/utils/rzp-utils";
-import ajax from "merchant/utils/ajax";
-import { fetchPayment } from "merchant/modules/payments/details";
+import GenericEntity from './GenericEntity';
+import Refund from './Refund';
+import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
+import ajax from 'merchant/utils/ajax';
+import { fetchPayment } from 'merchant/modules/payments/details';
 
 export default class Payment extends GenericEntity {
-  listRouteName = "payment_fetch_multiple";
-  detailsRouteName = "payment_fetch_by_id";
+  listRouteName = 'payment_fetch_multiple';
+  detailsRouteName = 'payment_fetch_by_id';
 
   fetchRefunds() {
     let data = {};
     data.url_params = JSON.stringify({
-      "{id}": this.id,
+      '{id}': this.id,
     });
-    data.route_name = "payment_fetch_refunds";
+    data.route_name = 'payment_fetch_refunds';
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Refund().deserialize(item)
@@ -24,7 +24,7 @@ export default class Payment extends GenericEntity {
 
   capture() {
     let data = {};
-    const method = "post";
+    const method = 'post';
     const Klass = this.constructor;
 
     data.body = {
@@ -33,10 +33,10 @@ export default class Payment extends GenericEntity {
     };
 
     data.url_params = JSON.stringify({
-      "{id}": this.id,
+      '{id}': this.id,
     });
 
-    data.route_name = "payment_capture";
+    data.route_name = 'payment_capture';
     return this.makeGenericAjaxCall({ method, data }).then(response => {
       return new Klass(response.data);
     });
@@ -44,7 +44,7 @@ export default class Payment extends GenericEntity {
 
   refund(params) {
     let data = {};
-    const method = "post";
+    const method = 'post';
     const Klass = this.constructor;
 
     data.body = {
@@ -55,10 +55,10 @@ export default class Payment extends GenericEntity {
     };
 
     data.url_params = JSON.stringify({
-      "{id}": this.id,
+      '{id}': this.id,
     });
 
-    data.route_name = "payment_refund";
+    data.route_name = 'payment_refund';
     return this.makeGenericAjaxCall({ method, data });
   }
 
@@ -66,14 +66,14 @@ export default class Payment extends GenericEntity {
     let data = {};
     const Klass = this.constructor;
     data.url_params = JSON.stringify({
-      "{id}": this.id,
+      '{id}': this.id,
     });
-    data.route_name = "payment_fetch_card_details";
+    data.route_name = 'payment_fetch_card_details';
     return this.makeGenericAjaxCall({ data });
   }
 
   deserializeProperty(prop, value, allProps) {
-    if (prop === "amount") {
+    if (prop === 'amount') {
       this.amountInINR = getFixedINRAmount(value);
     }
 
@@ -84,7 +84,7 @@ export default class Payment extends GenericEntity {
     let session = this.getSession();
     this.capturableAmount = this.amount;
 
-    if (session.user.tags.indexOf("Feebearer") > -1) {
+    if (session.user.tags.indexOf('Feebearer') > -1) {
       this.capturableAmount = this.amount - this.fee;
     }
   }
