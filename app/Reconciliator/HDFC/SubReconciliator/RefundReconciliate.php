@@ -2,9 +2,9 @@
 
 namespace RZP\Reconciliator\HDFC;
 
+use RZP\Reconciliator\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Reconciliator\Base;
 use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
@@ -48,6 +48,8 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
 
         $rrn = $row[self::COLUMN_RRN];
+
+        $rrn = trim(str_replace("'", '', $rrn));
 
         return $rrn;
     }

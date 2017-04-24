@@ -450,6 +450,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
     {
         $gatewayRefund = $this->getGatewayRefund($this->refund->getId());
 
+        if (is_null($gatewayRefund) === true)
+        {
+            return;
+        }
+
         $this->persistGatewayRrn($rowDetails, $gatewayRefund);
     }
 
@@ -472,8 +477,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected function persistGatewayRrn(array $rowDetails, PublicEntity $gatewayRefund)
     {
-        if ((empty($rowDetails[BaseReconciliate::RRN]) === true)
-            or (is_null($gatewayRefund) === true))
+        if (empty($rowDetails[BaseReconciliate::RRN]) === true)
         {
             return;
         }
