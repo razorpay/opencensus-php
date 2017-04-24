@@ -49,11 +49,11 @@ export const unshift = (array, value) => {
 };
 
 export const push = (array, value) => {
-  return insertItem(array, array.length - 1, value)
-}
+  return insertItem(array, array.length - 1, value);
+};
 
 export const set = (state, prop, value) => {
-  let props = ('' + prop).split('.')
+  let props = ('' + prop).split('.');
   if (props.length === 1) {
     return simpleSet(state, prop, value);
   }

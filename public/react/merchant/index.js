@@ -3,7 +3,7 @@ import 'merchant/styles/layout.styl';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { Tabs } from 'react-tabs'
+import { Tabs } from 'react-tabs';
 import NgRouterProvider from 'rzp/Providers/NgRouterProvider';
 import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
 import ModalDialog from 'rzp/ui/ModalDialog';
@@ -31,7 +31,7 @@ import KeysListContainer from './containers/Keys/List';
 import CreditsContainer from './containers/Credits/List';
 import ReportsContainer from './containers/Reports';
 import TeamContainer from './containers/Team';
-import ActivationWizard from './containers/Activation'
+import ActivationWizard from './containers/Activation';
 import ConfigContainer from './containers/Configuration';
 
 import RefundsListContainer from './containers/Refunds/List';
@@ -50,7 +50,7 @@ import PaymentDetails from './containers/Payments/Details';
 window.React = React;
 window.ReactDOM = ReactDOM;
 
-Tabs.setUseDefaultStyles(false)
+Tabs.setUseDefaultStyles(false);
 
 /*
  * Below is a transpiled version of
@@ -65,7 +65,14 @@ Tabs.setUseDefaultStyles(false)
  *  2. https://facebook.github.io/react/docs/context.html
  */
 
-function contextProvider({ component, ngRouter, store, user, organization, modeFactory }) {
+function contextProvider({
+  component,
+  ngRouter,
+  store,
+  user,
+  organization,
+  modeFactory,
+}) {
   return props => {
     return React.createElement(
       Provider,
@@ -107,7 +114,7 @@ function createNgDirective(directiveName, component, ...args) {
           ngRouter: $state,
           store,
           user,
-        organization,
+          organization,
           modeFactory,
         }),
         ...args
@@ -136,7 +143,7 @@ createNgDirective('keysList', KeysListContainer);
 createNgDirective('addFunds', AddFundsContainer);
 createNgDirective('generateReport', ReportsContainer);
 createNgDirective('manageTeam', TeamContainer);
-createNgDirective('activationWizard', ActivationWizard)
+createNgDirective('activationWizard', ActivationWizard);
 
 createNgDirective('refundsList', RefundsListContainer);
 createNgDirective('refundDetails', RefundDetailsContainer, ['id']);

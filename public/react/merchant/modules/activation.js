@@ -1,25 +1,25 @@
-import ajax from 'merchant/utils/ajax'
-import { set, merge, push } from 'rzp/utils/immutable'
+import ajax from 'merchant/utils/ajax';
+import { set, merge, push } from 'rzp/utils/immutable';
 
-export const ACTIVATION_FETCH = 'ACTIVATION_FETCH'
-export const ACTIVATION_SAVE_STEP = 'ACTIVATION_SAVE_STEP'
-export const ACTIVATION_SAVE_FILE = 'ACTIVATION_SAVE_FILE'
-export const ACTIVATION_FORM_SUBMIT = 'ACTIVATION_FORM_SUBMIT'
+export const ACTIVATION_FETCH = 'ACTIVATION_FETCH';
+export const ACTIVATION_SAVE_STEP = 'ACTIVATION_SAVE_STEP';
+export const ACTIVATION_SAVE_FILE = 'ACTIVATION_SAVE_FILE';
+export const ACTIVATION_FORM_SUBMIT = 'ACTIVATION_FORM_SUBMIT';
 
 export const fetchActivationDetails = () => {
-  return (dispatch) => {
+  return dispatch => {
     return dispatch({
       type: ACTIVATION_FETCH,
       payload: ajax({
         url: '/activation/details',
         appendModeInURL: false,
-      })
-    })
-  }
-}
+      }),
+    });
+  };
+};
 
 export const saveStep = (step, data) => {
-  return (dispatch) => {
+  return dispatch => {
     return dispatch({
       type: ACTIVATION_SAVE_STEP,
       payload: ajax({
@@ -32,14 +32,14 @@ export const saveStep = (step, data) => {
         step,
         data,
       },
-    })
-  }
-}
+    });
+  };
+};
 
 export const saveFile = (file, fieldName) => {
-  return (dispatch) => {
-    let formData = new FormData()
-    formData.append(fieldName, file)
+  return dispatch => {
+    let formData = new FormData();
+    formData.append(fieldName, file);
 
     return dispatch({
       type: ACTIVATION_SAVE_FILE,
@@ -56,12 +56,12 @@ export const saveFile = (file, fieldName) => {
         fileName: file.name,
         step: 5,
       },
-    })
-  }
-}
+    });
+  };
+};
 
-export const submitForm = (data) => {
-  return (dispatch) => {
+export const submitForm = data => {
+  return dispatch => {
     return dispatch({
       type: ACTIVATION_FORM_SUBMIT,
       payload: ajax({
@@ -74,9 +74,9 @@ export const submitForm = (data) => {
         step: 6,
         data,
       },
-    })
-  }
-}
+    });
+  };
+};
 
 let initialState = {
   loading: true,
@@ -90,32 +90,32 @@ let initialState = {
     5: undefined,
     6: undefined,
   },
-  uploadedFiles: {}
-}
+  uploadedFiles: {},
+};
 
 export default function(state = initialState, action) {
-  let updatedSteps, uploadedFiles
+  let updatedSteps, uploadedFiles;
 
-  switch(action.type) {
+  switch (action.type) {
     case `${ACTIVATION_FETCH}::PENDING`:
-      return set(state, 'loading', true)
+      return set(state, 'loading', true);
 
     case `${ACTIVATION_FETCH}::SUCCESS`:
-      let data = action.payload.data
-      let stepsFinished = data.steps_finished
+      let data = action.payload.data;
+      let stepsFinished = data.steps_finished;
       let steps = Object.keys(initialState.steps).reduce((prev, key) => {
         if (stepsFinished.indexOf(+key) !== -1) {
-          prev[key] = 'success'
+          prev[key] = 'success';
         } else {
-          prev[key] = initialState.steps[key]
+          prev[key] = initialState.steps[key];
         }
-        return prev
-      }, {})
+        return prev;
+      }, {});
 
       uploadedFiles = (data.files || []).reduce((prev, key) => {
-        prev[key] = 'File Already Uploaded  ✔'
-        return prev
-      }, {})
+        prev[key] = 'File Already Uploaded  ✔';
+        return prev;
+      }, {});
 
       return merge(state, {
         loading: false,
@@ -123,42 +123,46 @@ export default function(state = initialState, action) {
         data,
         steps,
         uploadedFiles,
-      })
+      });
 
     case `${ACTIVATION_FETCH}::ERROR`:
       return merge(state, {
         loading: false,
         data: initialState.data,
         error: action.payload.errors,
-      })
+      });
 
     case `${ACTIVATION_SAVE_STEP}::SUCCESS`:
     case `${ACTIVATION_FORM_SUBMIT}::SUCCESS`:
-      updatedSteps = set(state.steps, action.extraArgs.step, 'success')
+      updatedSteps = set(state.steps, action.extraArgs.step, 'success');
       return merge(state, {
         steps: updatedSteps,
-        data: action.extraArgs.data
-      })
+        data: action.extraArgs.data,
+      });
 
     case `${ACTIVATION_SAVE_STEP}::ERROR`:
     case `${ACTIVATION_FORM_SUBMIT}::ERROR`:
-      updatedSteps = set(state.steps, action.extraArgs.step, 'error')
-      return set(state, 'steps', updatedSteps)
+      updatedSteps = set(state.steps, action.extraArgs.step, 'error');
+      return set(state, 'steps', updatedSteps);
 
     case `${ACTIVATION_SAVE_FILE}::SUCCESS`:
-      uploadedFiles = set(state.uploadedFiles, action.extraArgs.fieldName, action.extraArgs.fileName)
-      updatedSteps = state.steps
+      uploadedFiles = set(
+        state.uploadedFiles,
+        action.extraArgs.fieldName,
+        action.extraArgs.fileName
+      );
+      updatedSteps = state.steps;
 
       if (Object.keys(uploadedFiles).length === 4) {
-        updatedSteps = set(state.steps, action.extraArgs.step, 'success')
+        updatedSteps = set(state.steps, action.extraArgs.step, 'success');
       }
 
       return merge(state, {
         steps: updatedSteps,
         uploadedFiles,
-      })
+      });
 
     default:
-      return state
+      return state;
   }
 }

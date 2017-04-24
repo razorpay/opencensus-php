@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { Field } from "redux-form";
+import React, { Component } from 'react';
+import { Field } from 'redux-form';
 
 /*
     The native `fieldset` tag doesn't support `readonly` attrbute. Setting `disabled` on fieldset will disable the buttons inside the form too.
@@ -8,7 +8,7 @@ import { Field } from "redux-form";
     This component wrapper loops through its children & sets the `readonly` on its form elements
  */
 
-const InputTypes = ["input", "select", Field];
+const InputTypes = ['input', 'select', Field];
 
 export default class Fieldset extends Component {
   renderChildren(children) {

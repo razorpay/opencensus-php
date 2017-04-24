@@ -10,7 +10,7 @@ export default props => {
     ...otherProps
   } = props;
 
-  let InputComponent = tagName
+  let InputComponent = tagName;
 
   return (
     <div

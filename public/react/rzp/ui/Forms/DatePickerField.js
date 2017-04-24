@@ -29,8 +29,8 @@ export default class DatePickerField extends Component {
       ...otherProps
     } = this.props;
 
-    let dateFormatFn = outputDateFormat ? moment : moment.unix
-    let date = (input.value && dateFormatFn(input.value)) || null
+    let dateFormatFn = outputDateFormat ? moment : moment.unix;
+    let date = (input.value && dateFormatFn(input.value)) || null;
 
     return (
       <div
@@ -40,10 +40,13 @@ export default class DatePickerField extends Component {
           id={input.name}
           date={date}
           focused={focused}
-          initialVisibleMonth={ () => date ? moment(date, 'MM YYYY') : moment() }
+          initialVisibleMonth={() =>
+            (date ? moment(date, 'MM YYYY') : moment())}
           isOutsideRange={isOutsideRange}
           onDateChange={date => {
-            input.onChange(outputDateFormat ? date.format(outputDateFormat) : date.unix())
+            input.onChange(
+              outputDateFormat ? date.format(outputDateFormat) : date.unix()
+            );
             onDateChange(date);
           }}
           onFocusChange={this.handleFocusChange}
@@ -59,5 +62,5 @@ DatePickerField.defaultProps = {
   enableOutsideDays: true,
   displayFormat: 'DD MMM YYYY',
   onDateChange: () => {},
-  isOutsideRange: () => false
+  isOutsideRange: () => false,
 };

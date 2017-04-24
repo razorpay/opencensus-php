@@ -583,11 +583,11 @@ export default class InvoicesNewContainer extends Component {
                               component={DatePickerField}
                               class="form-control"
                               rightAlign={true}
-                              isOutsideRange={(day) => {
-                                let diff = (moment().diff(day, 'hours'))/24
-                                return !(diff <= 60 && diff >= 0)
+                              isOutsideRange={day => {
+                                let diff = moment().diff(day, 'hours') / 24;
+                                return !(diff <= 60 && diff >= 0);
                               }}
-                              normalizeValue={(value) => {
+                              normalizeValue={value => {
                                 if (value) {
                                   return moment
                                     .unix(value)

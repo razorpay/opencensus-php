@@ -16,7 +16,7 @@ class Alert extends Component {
       this.setState({
         close: false,
       });
-      window.scrollTo(0, 0)
+      window.scrollTo(0, 0);
     }
   }
 

@@ -12,31 +12,26 @@
 const BOOLS = {
   true: 1,
   false: 0,
-}
+};
 
-export default (props) => {
-  let {
-    input,
-    meta,
-    onChange,
-    ...otherProps
-  } = props
+export default props => {
+  let { input, meta, onChange, ...otherProps } = props;
 
   if (BOOLS[input.value] !== undefined) {
-    input.onChange(BOOLS[input.value])
+    input.onChange(BOOLS[input.value]);
   }
 
   return (
     <input
-      type='checkbox'
-      checked={ input.value ? true : false }
-      onChange={(event) => {
-        input.onChange(event.target.checked ? 1 : 0)
+      type="checkbox"
+      checked={input.value ? true : false}
+      onChange={event => {
+        input.onChange(event.target.checked ? 1 : 0);
         if (onChange) {
-          onChange(event)
+          onChange(event);
         }
       }}
       {...otherProps}
     />
-  )
-}
+  );
+};

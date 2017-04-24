@@ -76,14 +76,14 @@ export const normalizeBoolean = bool => {
 export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
 
 export const without = (source, keys) => {
-  keys = makeArray(keys)
+  keys = makeArray(keys);
   return Object.keys(source).reduce((prev, key) => {
     if (keys.indexOf(key) === -1) {
-      prev[key] = source[key]
+      prev[key] = source[key];
     }
-    return prev
-  }, {})
-}
+    return prev;
+  }, {});
+};
 export const objectDiff = (oldObj = {}, newObj = {}) => {
   return Object.keys(newObj).reduce((prev, key) => {
     let value = newObj[key];
