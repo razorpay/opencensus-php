@@ -53,8 +53,9 @@ class Entity extends Base\PublicEntity
     ];
 
     // TODO:
-    // - Get the other expand relater pr reviewed and merged,
-    //   post that following will work.
+    // - Post https://github.com/razorpay/api/pull/2994 is reviewed and moved
+    //   following($expands) will work.
+    //
     // - Remove $appends and getTaxesAttribute().
     // - Remove TAXES from visible.
 

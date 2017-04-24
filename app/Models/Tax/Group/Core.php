@@ -15,7 +15,8 @@ class Core extends Base\Core
 
         $group = (new Entity)->build($input);
 
-        // Id generation is needed for relationship associations in next lines.
+        // Id generation is needed for relationship associations
+        // processTaxIdsOfInput() method.
         $group->generateId();
 
         $group->merchant()->associate($merchant);
@@ -73,8 +74,5 @@ class Core extends Base\Core
         Tax\Entity::verifyIdAndStripSignMultiple($inputTaxIds);
 
         $group->taxes()->sync($inputTaxIds);
-
-        // TODO:
-        // - Softdeletes on n..n relationship is not working?
     }
 }

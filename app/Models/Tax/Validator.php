@@ -28,9 +28,23 @@ class Validator extends Base\Validator
         Entity::RATE,
     ];
 
+    /**
+     * Validates rate wrt to rate_type.
+     *
+     * @param array $input
+     *
+     * @return
+     *
+     * @throws LogicException
+     * @throws BadRequestValidationFailureException
+     */
     public function validateRate(array $input)
     {
         $tax = $this->entity;
+
+        // $rateType and $rate we get from either input or the entity itself
+        // to ensure that validation happened with combinations(create, update
+        // with rate,rate_type or both etc.) of use cases.
 
         $rateType = $input[Entity::RATE_TYPE] ?? $tax->getRateType();
 
@@ -56,7 +70,9 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validatePercentageRate(int $rate)
+    // Private methods
+
+    private function validatePercentageRate(int $rate)
     {
         if (($rate < 0) or ($rate > 10000))
         {
@@ -66,7 +82,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateFlatRate(int $rate)
+    private function validateFlatRate(int $rate)
     {
         // TODO:
         // - Limits?

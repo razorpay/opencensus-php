@@ -50,18 +50,5 @@ class TaxGroupTest extends TestCase
     public function testDeleteTaxGroup()
     {
         $this->startTest();
-
-        // Following asserts ensures that cascade=restrict is working fine
-
-        $groupsTaxIds = ['tax_00000000000001', 'tax_00000000000002'];
-
-        $taxEntities = $this->getEntities('tax', [], true);
-
-        $taxIdsInDb = array_values(array_column($taxEntities['items'], 'id'));
-
-        $this->assertEmpty(
-            array_diff($groupsTaxIds, $taxIdsInDb),
-            'Some/all of the tax ids associated with group got deleted with group.'
-        );
     }
 }
