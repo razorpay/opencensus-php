@@ -82,6 +82,7 @@ app.controller('WorkflowNewCtrl', [
       $scope.isEditable = true;
     }
 
+    // Fetch permissions list corresponding to type workflow
     var fetchPermissions = function() {
       var request = $http.get('/admin/generic', {
         ignoreErrors: true,
@@ -119,6 +120,7 @@ app.controller('WorkflowNewCtrl', [
       $permSelect.val(null).trigger('change');
     });
 
+    // Remove the selected permission
     $scope.deselectPermission = function(id) {
       var permIndex = $scope.permissionsSelected.indexOf(id);
       if (permIndex === -1) {
@@ -142,6 +144,7 @@ app.controller('WorkflowNewCtrl', [
         });
       });
 
+    // Initialize each new step with role selector picker input field
     var addRoleSelector = function(stepId) {
       var $roleSelect = $(
         $('.role-select2')[$('.role-select2').length - 1]
@@ -156,8 +159,9 @@ app.controller('WorkflowNewCtrl', [
         var roleId = elem.getAttribute('data-role-id');
         var stepIndex = elem.getAttribute('data-step-index');
 
+        // Check and add a role(step) in the corresponding level, if not present
         if (
-          !$scope.levels[stepIndex].steps.some(function(role){
+          !$scope.levels[stepIndex].steps.some(function(role) {
             return role.role_id === roleId
           })
         ) {
@@ -171,6 +175,7 @@ app.controller('WorkflowNewCtrl', [
       });
     };
 
+    // Add a new level and initialize with empty roles(steps)
     $scope.addStep = function() {
       $scope.levels.push({
         steps: [],
@@ -180,26 +185,32 @@ app.controller('WorkflowNewCtrl', [
       setTimeout(addRoleSelector, 0);
     };
 
+    // Remove corresponding level box
     $scope.removeStep = function(stepIndex) {
       $scope.levels.splice(stepIndex, 1);
     };
 
+    // Remove roles(step) from level
     $scope.removeRoleFromStep = function(roleIndex, stepIndex) {
       var step = $scope.levels[stepIndex].steps;
       step.splice(roleIndex, 1);
     };
 
+    // Increment count corresponding to the role
     $scope.incReviewerCount = function(roleIndex, stepIndex) {
       if ($scope.levels[stepIndex].steps[roleIndex].reviewer_count >= 99) return;
       $scope.levels[stepIndex].steps[roleIndex].reviewer_count++;
     };
 
+    // Decrement count corresponding to the role
     $scope.decReviewerCount = function(roleIndex, stepIndex) {
       if ($scope.levels[stepIndex].steps[roleIndex].reviewer_count <= 1) return;
       $scope.levels[stepIndex].steps[roleIndex].reviewer_count--;
     };
 
     $scope.new_checker = null;
+
+    // Request to Create a new workflow
     $scope.createWorkflow = function() {
       if (!$scope.isEditable) {
         return;
@@ -228,8 +239,11 @@ app.controller('WorkflowNewCtrl', [
         valid = false;
         $scope.alerts.addAlert('danger', 'Please add atleast one step');
       }
+      // Iterating all levels added by user - Null Role check and populate levels with level no.
       for (var s_i = 0; s_i < $scope.levels.length; s_i++) {
         var step = $scope.levels[s_i].steps;
+
+        // Each level must have atleast one role or else level must be removed by user
         if (!step.length) {
           $scope.alerts.addAlert(
             'danger',
@@ -273,6 +287,7 @@ app.controller('WorkflowNewCtrl', [
       });
     };
 
+    // Request to Edit a workflow if user is allowed
     $scope.editWorkflow = function() {
       if (!$scope.isEditable) {
         return;
@@ -280,12 +295,16 @@ app.controller('WorkflowNewCtrl', [
       $scope.alerts.resetAlerts();
       var valid = true;
       var payload = {};
+
+      // Check for empty workflow name
       if (!$scope.workflowName) {
         valid = false;
         $scope.alerts.addAlert('danger', 'Please enter workflow name');
       } else {
         payload.name = $scope.workflowName;
       }
+
+      // Check if no permissions selected
       if (!$scope.permissionsSelected.length) {
         valid = false;
         $scope.alerts.addAlert(
@@ -322,9 +341,11 @@ app.controller('WorkflowNewCtrl', [
       });
     };
 
+    // Filter roles(steps)if already added by the user in the corresponding level.
     $scope.filterItems = function(stepInd) {
       return function(role) {
-        // Don't show option(role.id) being accessed if already added in the step
+
+        // Iterate all roles(steps) of corresponding level to check if role id is present
         for (var key in $scope.levels[stepInd].steps) {
           if (
             $scope.levels[stepInd].steps.hasOwnProperty(key) &&
