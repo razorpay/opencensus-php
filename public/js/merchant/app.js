@@ -130,8 +130,8 @@ var app = angular
           url: '/:id',
           templateUrl: 'tpl/app_transaction_detail.html',
         })
-        .state('app.activation', {
-          url: '/activation',
+        .state('app.activationold', {
+          url: '/activationold',
           templateUrl: 'tpl/app_activation.html',
         })
         .state('app.referrals', {
