@@ -1,4 +1,4 @@
-import { objectDiff, isBlank } from 'rzp/utils/rzp-utils';
+import { objectDiff, isBlank } from "rzp/utils/rzp-utils";
 
 /*
   - Model-based approach makes it more handy to handle the serialization/deserialization of crud calls.
@@ -15,7 +15,7 @@ import { objectDiff, isBlank } from 'rzp/utils/rzp-utils';
 */
 
 export default class BaseModel {
-  resourceIdField = 'id';
+  resourceIdField = "id";
 
   constructor(props = {}) {
     Object.assign(this, props);
@@ -34,7 +34,7 @@ export default class BaseModel {
   }
 
   getResourceMethod() {
-    return this.isNew ? 'post' : 'patch';
+    return this.isNew ? "post" : "patch";
   }
 
   getResourceUrlAndMethod() {
@@ -45,7 +45,7 @@ export default class BaseModel {
     Returns JSON payload with only properties specified in `resourceFields`
   */
   serialize() {
-    let fields = typeof this.resourceFields === 'function'
+    let fields = typeof this.resourceFields === "function"
       ? this.resourceFields()
       : this.resourceFields;
     let serializedModel = {};
@@ -55,7 +55,7 @@ export default class BaseModel {
       serializedModel[prop] = this.serializeProperty(prop);
     }
 
-    if (this.getResourceMethod() === 'put') {
+    if (this.getResourceMethod() === "put") {
       return serializedModel;
     }
 
@@ -87,7 +87,7 @@ export default class BaseModel {
     Hook to handle your own deserialization logic.
     Make sure you return `super.deserializeProperty(prop, value)` on the overriding method
    */
-  deserializeProperty(prop, value, allProps) {
+  deserializeProperty(prop, value) {
     this[prop] = value;
   }
 
@@ -97,7 +97,7 @@ export default class BaseModel {
     }
   }
 
-  getPayload(){
+  getPayload() {
     return this.__stashed__;
   }
 
@@ -107,6 +107,6 @@ export default class BaseModel {
   didDeserialize() {}
 
   toString() {
-    return 'model';
+    return "model";
   }
 }
