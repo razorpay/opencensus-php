@@ -90,13 +90,4 @@ class Repository extends Base\Repository
                     ->orWhereNull(Entity::SERVICE_TAX)
                     ->get();
     }
-
-    public function updateBatch(string $batchId, array $updateAttributes)
-    {
-        Entity::verifyIdAndSilentlyStripSign($batchId);
-
-        $this->newQuery()
-             ->where(Entity::ID, '=', $batchId)
-             ->update($updateAttributes);
-    }
 }

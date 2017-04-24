@@ -33,8 +33,6 @@ class V2 extends Base
 
     protected function updateEntities()
     {
-        parent::updateEntities();
-
         $this->reconEntity->setUtr($this->parsedData['utr']);
         $this->reconEntity->setStatus($this->parsedData['status']);
         $this->reconEntity->setFailureReason($this->parsedData['failure_reason']);

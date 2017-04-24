@@ -52,7 +52,7 @@ class Base
 
         $this->fetchEntities();
 
-        $this->getEntityStatus();
+        $this->getReconciliationStatus();
 
         return $this->updateEntities();
     }
@@ -72,7 +72,7 @@ class Base
         $this->reconEntityId = $this->parsedData['payment_ref_no'];
     }
 
-    protected function getEntityStatus()
+    protected function getReconciliationStatus()
     {
         $recordDate = Carbon::createFromFormat('d-M-y', $this->parsedData['payment_date'], 'Asia/Kolkata');
 
@@ -108,16 +108,8 @@ class Base
             }
         }
 
-        $this->parsedData['failure_reason'] = $failureReason;
-
-        $this->parsedData['status'] = $status;
-    }
-
-    protected function updateEntities()
-    {
+        // Verify status
         $oldStatus = $this->reconEntity->getStatus();
-
-        $status = $this->parsedData['status'];
 
         $entityStatusClass = Entity::getEntityNamespace($this->reconEntity->getEntityName()) . '\\Status';
 
@@ -129,8 +121,12 @@ class Base
                 throw new Exception\BadRequestValidationFailureException(
                     'Old and new status not matching. ' .
                     'Old status: ' . $oldStatus . ' New status: ' . $status .
-                    'Entity Id: ' . $entity->getPublicId());
+                    'Entity Id: ' . $this->reconEntity->getPublicId());
             }
         }
+
+        $this->parsedData['failure_reason'] = $failureReason;
+
+        $this->parsedData['status'] = $status;
     }
 }
