@@ -163,7 +163,7 @@ class Gateway extends Base\Gateway
 
         $data = [
             RequestFields::VERIFY_PAYEE_ID => $this->getMerchantId(),
-            RequestFields::VERIFY_ITC      => strtoupper($input['payment']['id']),
+            RequestFields::VERIFY_ITC      => $this->getMerchantId(),
             RequestFields::VERIFY_PRN      => $input['payment']['id'],
             RequestFields::VERIFY_DATE     => $date,
             RequestFields::VERIFY_AMT      => $input['payment']['amount'] / 100,
@@ -216,7 +216,7 @@ class Gateway extends Base\Gateway
     {
         return [
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
-            RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
+            RequestFields::ITEM_CODE          => $this->getMerchantId(),
             RequestFields::AMOUNT             => $input['payment']['amount'] / 100
         ];
     }

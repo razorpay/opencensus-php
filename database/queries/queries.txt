@@ -1909,3 +1909,13 @@ ALTER TABLE refunds
 
 ALTER TABLE hdfc
     ADD COLUMN arn_no VARCHAR(50) AFTER avr;
+
+ALTER TABLE axis
+    ADD INDEX axis_vpc_Command_index (vpc_Command),
+    ADD INDEX axis_vpc_MerchTxnRef_index (vpc_MerchTxnRef);
+
+#PR 2989 Adds foreign key for pricing_rule_id in fees_breakup
+SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE fees_breakup
+    ADD CONSTRAINT fees_breakup_pricing_rule_id_foreign FOREIGN KEY (pricing_rule_id) REFERENCES pricing(id);
+SET FOREIGN_KEY_CHECKS=1;

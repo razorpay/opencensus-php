@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Workflow\Action;
 
-use RZP\Exception;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
@@ -281,6 +280,14 @@ class Core extends Base\Core
 
     public function edit(Entity $action, array $input)
     {
+        //
+        // Dashboard requirement is that we should not
+        // let admin edit action if the action is closed.
+        // Shift the check to Service.php if the check is
+        // a blocker for other functionality
+        //
+        $action->getValidator()->validateActionIsOpen($action);
+
         $action->edit($input);
 
         $this->repo->saveOrFail($action);
