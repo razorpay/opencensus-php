@@ -323,11 +323,7 @@ class Repository extends Base\Repository
         // Sample Query
         // SELECT *
         // FROM   `payments`
-        // WHERE  `gateway` IN ( 'axis_migs', 'billdesk', 'ebs', 'mobikwik',
-        //                      'paytm', 'hdfc', 'amex', 'netbanking_hdfc',
-        //                      'netbanking_kotak', 'wallet_payzapp', 'first_data',
-        //                      'cybersource', 'wallet_payumoney', 'wallet_airtelmoney',
-        //                      'wallet_olamoney', 'wallet_freecharge' )
+        // WHERE  `gateway` NOT IN ( 'wallet_openwallet' )
         //        AND `status` = 'failed'
         //        AND ( ( `verify_bucket` = '0' AND `created_at` < '1478023148' )
         //              OR ( `verify_bucket` = '1' AND `created_at` < '1478022368' )
