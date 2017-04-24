@@ -35,9 +35,23 @@ class Gateway extends Base\Gateway
         $content['vpc_SecureHash'] = $this->generateHash($content);
         $content['vpc_SecureHashType'] = strtoupper(HashAlgo::SHA256);
 
+        if ($this->isRecurringPaymentRequest($input) === true)
+        {
+            return $this->authorizeRecurring($content);
+        }
+
         $request = $this->getAuthRequestArray($content);
 
         return $request;
+    }
+
+    protected function authorizeRecurring(array $content)
+    {
+        $response = $this->postAmaTransactionRequestAndGetContent($content, $this->input);
+
+        // $this->traceGatewayResponse(
+            // TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE, $response);
+        sd($response);
     }
 
     public function callback(array $input)
@@ -612,6 +626,12 @@ class Gateway extends Base\Gateway
 //            'vpc_OrderInfo'             => 'testinfo',
         ];
 
+        if ($this->isRecurringPaymentRequest($input) === true)
+        {
+            $content['vpc_TxSourceSubType'] = 'RECURRING';
+            unset($content['vpc_CardSecurityCode']);
+        }
+
         $content = array_merge($attributes, $content);
 
         if (($this->mode === Mode::TEST) and
@@ -628,6 +648,18 @@ class Gateway extends Base\Gateway
     protected function addSubMerchantDetails(array & $content, array $input)
     {
         ;
+    }
+
+    // Check for recurring payment
+    protected function isRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['terminal']->isNon3DSRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getPaymentCaptureRequestContent($input, $payment)
