@@ -97,6 +97,10 @@ export default class BaseModel {
     }
   }
 
+  getPayload(){
+    return this.__stashed__;
+  }
+
   /*
     Hook to that gets invoked after the deserialization is done.
   */
