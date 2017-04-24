@@ -4,19 +4,19 @@ namespace App\Merchant;
 
 use Auth;
 use Hash;
-use Requests;
 use Queue;
-
+use Requests;
 use App\Base;
-use App\Merchant;
 use App\User;
+use App\Admin;
+use App\Merchant;
 use App\Invitation;
 use App\MerchantDetails;
 use App\Mailers\UserMailer;
-use App\Admin;
-use App\Exceptions\EntityNotFoundException;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
+use App\Exceptions\EntityNotFoundException;
+
 
 class Service extends Base\Service
 {
@@ -533,7 +533,7 @@ class Service extends Base\Service
 
     public function getInvoices($mode)
     {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
+        $merchantId = $this->currentUser->currentMerchant()->id;
 
         $this->setApiCredentials($merchantId, $mode);
 
@@ -553,17 +553,16 @@ class Service extends Base\Service
 
     public function createInvoice($mode, $input)
     {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
+        $merchantId = $this->currentUser->currentMerchant()->id;
 
         $this->setApiCredentials($merchantId, $mode);
 
         $errors = [];
+
         $data = null;
 
         try
         {
-            // This is just semantics
-            // completely equivalent to all() for now
             $data = $this->api->invoice->create($input)->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
@@ -578,7 +577,7 @@ class Service extends Base\Service
     {
         $errors = $data = [];
 
-        $merchantId = $this->currentUser->getCurrentMerchantId();
+        $merchantId = $this->currentUser->currentMerchant()->id;
 
         // Fetches keyId from api for given merchant
         list($errors, $data) = $this->fetchKeysFromApi($merchantId, $mode);
@@ -598,6 +597,7 @@ class Service extends Base\Service
         }
 
         $keyId = $data['items'][0]['id'];
+
         $this->setApiCredentialsForPublicAuth($keyId);
 
         try
@@ -632,7 +632,6 @@ class Service extends Base\Service
         return $error;
     }
 
-
     /**
      * Update a team member on the given merchant.
      *
@@ -663,10 +662,12 @@ class Service extends Base\Service
         if (is_null($userToUpdate))
         {
             $error[] = "The team member you are looking for doesn't exist";
+
             return [$error, null];
         }
 
         $newRole = $input['role'];
+
         $userToUpdate->merchants()->updateExistingPivot(
             $this->currentUser->currentMerchant()->id, [
                 'role' => $newRole
@@ -732,10 +733,10 @@ class Service extends Base\Service
      */
     protected function fixHexColor(array $input)
     {
-
         if (isset($input['brand_color']))
         {
             $color = $input['brand_color'];
+
             $len = strlen($color);
 
             if ($len === 7)
@@ -758,6 +759,7 @@ class Service extends Base\Service
     public function fetchBankAccount()
     {
         $this->setApiCredentials($this->currentUser->currentMerchant()->id);
+
         $error = $data = null;
 
         try

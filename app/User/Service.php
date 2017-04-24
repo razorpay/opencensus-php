@@ -2,29 +2,26 @@
 
 namespace App\User;
 
-use Carbon\Carbon;
-use Config;
 use DB;
-use DrewM\MailChimp\MailChimp;
 use Auth;
 use Hash;
 use Input;
+use Queue;
+use Config;
 use Session;
-
+use Requests;
 use App\Base;
-use App\Invitation;
-use App\Merchant;
-use App\MerchantDetails;
-use App\Session as SessionTable;
 use App\User;
 use App\Lead;
-use App\AdminLead;
 use App\Generic;
-
-use Queue;
-
-use Requests;
+use App\Merchant;
+use App\AdminLead;
+use Carbon\Carbon;
+use App\Invitation;
+use App\MerchantDetails;
 use App\Mailers\UserMailer;
+use DrewM\MailChimp\MailChimp;
+use App\Session as SessionTable;
 use Illuminate\Hashing\BcryptHasher;
 
 class Service extends Base\Service
