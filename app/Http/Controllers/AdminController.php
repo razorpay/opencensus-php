@@ -378,15 +378,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function postEditMethods($id)
-    {
-        $input = \Input::all();
-
-        $error = (new Admin\Service)->editMethods($id, $input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getLockMerchantDetails($id)
     {
         $error = (new Admin\Service)->lockMerchant($id);
@@ -406,20 +397,6 @@ class AdminController extends Controller
         list($error, $data) = (new Admin\Service)->fetchMerchantAndActivationDetails($id);
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getEntityFeatures($entityId)
-    {
-        list($error, $data) = (new Admin\Service)->fetchEntityFeatures($entityId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getMerchantBalance($id)
-    {
-        $data = (new Merchant\Service)->fetchMerchantBalance($id);
-
-        return AppResponse::jsonResponse([], $data);
     }
 
     public function getMerchantBanks($id)
