@@ -50,7 +50,11 @@ class Alert extends Component {
           class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
           style={{ paddingLeft: '15px' }}
         >
-          {msgs.map((msg, index) => <li key={index}>{JSON.stringify(msg)}</li>)}
+          {msgs.map((msg, index) => (
+            <li key={index}>
+              {typeof msg === 'string' ? msg : JSON.stringify(msg)}
+            </li>
+          ))}
         </ul>
       </div>
     );

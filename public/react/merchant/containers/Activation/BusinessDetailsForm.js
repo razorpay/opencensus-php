@@ -426,15 +426,16 @@ export default class BusinessDetailsForm extends Component {
           </div>
 
           <div class="form-group">
-            <label class="col-md-3 control-label">
+            <label class="col-md-3 control-label label-required">
               Expected average transaction value
             </label>
             <div class="col-md-9">
               <Field
                 name="transaction_value"
-                component="input"
+                component={InputField}
                 class="form-control"
                 placeholder="E.g. Average price of the commodities you sell"
+                validate={[required()]}
               />
             </div>
           </div>
