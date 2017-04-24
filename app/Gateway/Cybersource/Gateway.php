@@ -694,7 +694,9 @@ class Gateway extends Base\Gateway
             $this->repo->saveOrFail($gatewayPayment);
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR, $eciRaw, $desc);
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                $eciRaw,
+                $desc);
         }
 
         $this->eci = $eciRaw;
