@@ -145,8 +145,9 @@
     </div>
   </div>
   <div class="panel panel-default col-sm-6" >
-    <div class="panel-heading m-t m-b" ng-show="admin.permissions.indexOf('view_as_entity') !== -1">
-      Merchant: <strong>{{merchant.details.id}}</strong> (<a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})">View as Entity</a>)
+    <div class="panel-heading m-t m-b">
+      Merchant: <strong>{{merchant.details.id}}</strong>
+      <a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})" ng-show="admin.permissions.indexOf('view_as_entity') !== -1">(View as Entity)</a>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
