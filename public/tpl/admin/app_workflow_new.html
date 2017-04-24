@@ -51,6 +51,18 @@
             <i class="delete-btn pull-right fa fa-times" ng-click="removeStep(stepIndex)" ng-if="!editLayout"></i>
           </div>
           <div class="wrapper clearfix">
+
+            <!-- Operation Type -->
+            <span class="m-b" >Operation Type:</span>
+            <div class="optype-container">
+              <span ng-if="editLayout" class="solid-label">{{step.op_type}}</span>
+              <select class="form-control" style="width: 60px;" ng-model="step.op_type" ng-if="!editLayout">
+                <option value="and">AND</option>
+                <option value="or">OR</option>
+              </select>
+            </div>
+
+            <!-- Roles-->
             <div class="m-b">Add a checker to approve the action. Select a role.</div>
             <div class="assignee-list m-b">
               <!-- Role Pills-->
