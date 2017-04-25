@@ -2329,9 +2329,10 @@ class Service extends Base\Service
 
         $filePath = $file->getPathname();
         $fileName = $file->getFilename();
-        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $extension = $file->getClientOriginalExtension();
+        $mimeType = $file->getClientMimeType();
 
-        if ($extension !== '.png')
+        if ($extension !== 'png' and $mimeType !== 'image/png')
         {
             return ['Invalid file format. Please upload a file with PNG extension.', $data];
         }
