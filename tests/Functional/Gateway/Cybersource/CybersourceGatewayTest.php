@@ -347,9 +347,8 @@ class CybersourceGatewayTest extends TestCase
 
         $id = explode('_', $refund['id'], 2)[1];
 
-        $actualRefund = $response[$id];
+        $actualRefund = $this->getEntityById('refund', $id, true);
 
-        $this->assertEquals($id, $actualRefund['id']);
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);
         $this->assertEquals(2, $actualRefund['attempts']);
