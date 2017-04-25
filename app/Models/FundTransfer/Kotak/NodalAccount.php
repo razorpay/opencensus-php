@@ -103,12 +103,10 @@ class NodalAccount
                 Headings::BANK_CODE_INDICATOR     => 'M',
                 Headings::BENEFICIARY_CODE        => $ba->getBeneficiaryCode(),
                 Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
-                Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYMENT',
-                Headings::MERCHANT_ID             => $merchant->getPublicId(),
-                Headings::BANK_ACCOUNT_ID         => $ba->getId(),
-                Headings::BATCH_FUND_TRANSFER_ID  => $entity->getBatchFundTransferId(),
-                Headings::SOURCE_ID               => $source->getPublicId(),
-                Headings::VERSION                 => $version,
+                Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
+                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+                Headings::PAYMENT_DETAILS_3       => $version,
+                Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
             ];
 
             $array = $this->getAllFields($array);
@@ -159,12 +157,12 @@ class NodalAccount
                 Headings::BANK_CODE_INDICATOR     => 'M',
                 Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
                 Headings::IFSC_CODE               => $ba->getIfscCode(),
-                Headings::BENEFICIARY_ACC_NO       => $ba->getAccountNumber(),
+                Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
                 Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
                 Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYOUTS',
-                Headings::MERCHANT_ID             => $merchant->getPublicId(),
-                Headings::BANK_ACCOUNT_ID         => $ba->getId(),
-                Headings::BATCH_FUND_TRANSFER_ID  => $payout->getBatchFundTransferId(),
+                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+                Headings::PAYMENT_DETAILS_3       => $ba->getId(),
+                Headings::PAYMENT_DETAILS_4       => $payout->getBatchFundTransferId(),
             ];
 
             $array = $this->getAllFields($array);
@@ -201,7 +199,7 @@ class NodalAccount
 
         if ($entity instanceof Attempt\Entity)
         {
-            $version = Attempt\Version::V2;
+            $version = Attempt\Version::V3;
 
             $source = $entity->source;
 
