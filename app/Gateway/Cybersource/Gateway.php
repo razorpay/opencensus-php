@@ -239,37 +239,56 @@ class Gateway extends Base\Gateway
 
         $refundReplies = $this->fetchRefundGatewayReplyFromContent($content);
 
-        $status = Status::REFUNDED;
 
         foreach ($refundReplies as $refundReply)
         {
             if ((isset($refundReply[0][F::R_FLAG]) === true) and
                 ($refundReply[0][F::R_FLAG] === ReplyFlag::SOK))
             {
-                return false;
+                if (isset($refundReply[0]['@attributes'][F::NAME]) === true)
+                {
+                    if ($refundReply[0]['@attributes'][F::NAME] === 'ics_auth_reversal')
+                    {
+                        $status = Status::REVERSED;
+                    }
+                    else if ($refundReply[0]['@attributes'][F::NAME] === 'ics_credit')
+                    {
+                        $status = Status::REFUNDED;
+                    }
+
+                    $request = $refundReply[1];
+                }
+
+                $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+                if ($gatewayEntity !== null)
+                {
+                    $gatewayEntity->setStatus($status);
+
+                    $this->repo->saveOrFail($gatewayEntity);
+                }
+                else
+                {
+                    $attributes = $this->getRefundAttributesFromVerify($request);
+                    $attributes[E::STATUS] = $status;
+
+                    $this->createGatewayRefundEntity($attributes, $input);
+                }
+
+                return true;
             }
-            else if ((isset($refundReply[0]['@attributes'][F::NAME]) === true) and
-                     ($refundReply[0]['@attributes'][F::NAME] === 'ics_auth_reversal'))
-            {
-                $status = Status::REVERSED;
-            }
         }
 
-        $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+        return false;
+    }
 
-        if ($gatewayEntity !== null)
-        {
-            $gatewayEntity->setStatus($status);
-
-            $this->repo->saveOrFail($gatewayEntity);
-        }
-        else
-        {
-            throw new Exception\LogicException(
-                'Gateway entity should exist');
-        }
-
-        return true;
+    protected function getRefundAttributesFromVerify(array $request)
+    {
+        return [
+            E::REF           => $request[F::PAYMENT_DATA][F::PAYMENT_REQUEST_ID],
+            E::REASON_CODE   => 200,
+            E::RECEIVED      => true
+        ];
     }
 
     protected function sendRefundVerifyRequest($input)
