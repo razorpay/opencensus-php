@@ -298,39 +298,34 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
 
-        if ($orderId === null)
+        if ($orderId !== null)
         {
-            return $this->checkAndFillNonOrderOffers($merchant, $data);
+            $orderOffer = $offerCore->fetchForOrder($orderId, $merchant);
+
+            if ($orderOffer !== null)
+            {
+                // For offer applied on a particular order only enable methods eligible for the
+                // offer. Customer won't be able to select other payment methods
+                $this->updateMethodsToEnableOnCheckout($orderOffer, $data);
+
+                $data['offers'] = [
+                    $orderOffer->toArrayCheckout()
+                ];
+
+                return;
+            }
         }
 
-        $orderOffer = $offerCore->fetchForOrder($orderId, $merchant);
-
-        if ($orderOffer !== null)
-        {
-            // For offer applied on a particular order only enable methods eligible for the
-            // offer. Customer won't be able to select other payment methods
-            $this->updateMethodsToEnableOnCheckout($orderOffer, $data);
-
-            $data['offers'] = [
-                $orderOffer->toArrayCheckout()
-            ];
-
-            return;
-        }
-
-        return $this->checkAndFillNonOrderOffers($merchant, $data);
+        $this->checkAndFillNonOrderOffers($merchant, $data);
     }
 
     protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)
     {
         $nonOrderOffers = (new Offer\Core)->fetchMerchantOffersForCheckout($merchant);
 
-        if ($nonOrderOffers->isEmpty() === false)
+        foreach ($nonOrderOffers as $offer)
         {
-            foreach ($nonOrderOffers as $offer)
-            {
-                $data['offers'][] = $offer->toArrayCheckout();
-            }
+            $data['offers'][] = $offer->toArrayCheckout();
         }
     }
 
@@ -349,6 +344,7 @@ class Checkout
         switch ($method)
         {
             case Payment\Method::CARD:
+            case Payment\Method::EMI:
 
                 // For card offers only set card method to true
                 $data['methods']['card'] = true;
@@ -391,7 +387,11 @@ class Checkout
 
                 break;
 
+            // For other methods like UPI, we currently handle it here, by just
+            // enabling the particular method.
             default:
+                $data['methods'][$method] = true;
+
                 break;
         }
     }
