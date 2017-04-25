@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
+use Config;
 use DB;
 
 use RZP\Constants\Table;
@@ -20,7 +21,7 @@ class Org extends Base
 
     public function setUp()
     {
-        $this->fixtures->create('org:razorpay_organization');
+        $this->fixtures->create('org:razorpay_org');
     }
 
     public function createDefaultTestOrganization()
@@ -40,17 +41,21 @@ class Org extends Base
         return $org;
     }
 
-    public function createRazorpayOrganization()
+    public function createRazorpayOrg()
     {
         $now = Carbon::now()->timestamp;
 
+        $permissions = $this->fixtures->create(
+            'permission:default_permissions');
+
         // Default organisation to be used for tests
         $org = $this->fixtures->create('org', [
-            'id'    => self::RZP_ORG,
-            'email' => 'admin@razorpay.com',
-
+            'id'               => self::RZP_ORG,
+            'email'            => 'admin@razorpay.com',
             'cross_org_access' => true,
         ]);
+
+        $org->permissions()->attach($permissions);
 
         $this->fixtures->create('org_hostname', [
             'org_id'    => self::RZP_ORG,
@@ -71,7 +76,7 @@ class Org extends Base
         $adminRole = $this->fixtures->create('role', [
             'id'     => self::ADMIN_ROLE,
             'org_id' => self::RZP_ORG,
-            'name'   => 'SuperAdmin',
+            'name'   => Config::get('heimdall.default_role_name'),
         ]);
 
         $this->fixtures->create('role', [
@@ -80,29 +85,7 @@ class Org extends Base
             'name'   => 'Admin',
         ]);
 
-        $permissions = $this->fixtures->create('permission:default_permissions');
-
-        foreach ($permissions as $permission)
-        {
-            DB::table(Table::PERMISSION_MAP)->insert([
-                [
-                    'permission_id' => $permission->getId(),
-                    'entity_id'     => self::RZP_ORG,
-                    'entity_type'   => 'org',
-                ]
-            ]);
-        }
-
-        $liveAdminRole = clone $adminRole;
-        $testAdminRole = clone $adminRole;
-
-        $testAdminRole->permissions()->attach($permissions);
-
-        $this->onLive();
-
-        $liveAdminRole->permissions()->attach($permissions);
-
-        $this->fixtures->setDefaultConn();
+        $adminRole->permissions()->attach($permissions);
 
         $admin = $this->fixtures->create('admin', [
             'id'     => self::SUPER_ADMIN,
@@ -110,16 +93,7 @@ class Org extends Base
             'email'  => 'superadmin@razorpay.com'
         ]);
 
-        $liveAdmin = clone $admin;
-        $testAdmin = clone $admin;
-
-        $testAdmin->roles()->attach($testAdminRole);
-
-        $this->onLive();
-
-        $liveAdmin->roles()->attach($liveAdminRole);
-
-        $this->fixtures->setDefaultConn();
+        $admin->roles()->attach($adminRole);
 
         $this->fixtures->create('admin_token', [
             'admin_id'   => self::SUPER_ADMIN,

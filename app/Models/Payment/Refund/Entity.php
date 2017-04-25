@@ -169,6 +169,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getFormattedAmount()
+    {
+        $currency = $this->getCurrency();
+
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
+
+        $amount = number_format($this->getAmount() / $denominationFactor, 2);
+
+        return  $currency . ' ' . $amount;
+    }
+
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
@@ -256,7 +267,7 @@ class Entity extends Base\PublicEntity
         $data = parent::toArrayReport();
 
         $data[Payment\Entity::CONTACT] = $this->payment->getContact();
-        $data[Payment\Entity::EMAIL] = $this->payment->getEmail();
+        $data[Payment\Entity::EMAIL]   = $this->payment->getEmail();
 
         return $data;
     }
@@ -268,7 +279,7 @@ class Entity extends Base\PublicEntity
         if (($this->payment->isCard()) and
             ($this->payment->getConvertCurrency() === true))
         {
-            $data['amount'] = $this->getBaseAmount();
+            $data['amount']   = $this->getBaseAmount();
             $data['currency'] = Currency\Currency::INR;
         }
 

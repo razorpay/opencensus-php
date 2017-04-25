@@ -1060,6 +1060,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getFormattedAmount()
+    {
+        $currency = $this->getCurrency();
+
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
+
+        $amount = number_format($this->getAmount() / $denominationFactor, 2);
+
+        return  $currency . ' ' . $amount;
+    }
+
     public function getAmountPaidout()
     {
         return $this->getAttribute(self::AMOUNT_PAIDOUT);

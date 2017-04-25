@@ -26,7 +26,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
 
-
 class Service extends Base\Service
 {
     const ADMIN_PASSWORD_RESET_TOKEN_KEY = 'password_reset_token_org_%s_admin_%s';
@@ -35,8 +34,6 @@ class Service extends Base\Service
 
     public function authenticate(string $orgId, array $input)
     {
-        \Database\DefaultConnection::set('live');
-
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
         return $this->login($orgId, $input);

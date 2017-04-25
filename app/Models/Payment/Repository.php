@@ -289,10 +289,11 @@ class Repository extends Base\Repository
                         bool $random = true,
                         int $rowsToFetch = 100)
     {
-        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+        $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
 
         $query = $this->newQuery()
-                      ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
+                      ->whereNotNull(Payment\Entity::GATEWAY)
+                      ->whereNotIn(Payment\Entity::GATEWAY, $verifyDisabledGateways);
 
         if ($verifyStatus !== null)
         {
