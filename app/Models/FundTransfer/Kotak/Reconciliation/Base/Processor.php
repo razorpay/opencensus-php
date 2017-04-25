@@ -169,6 +169,11 @@ class Processor extends Base\Core
             return;
         }
 
+        if ($reconciledEntity->batchFundTransfer === null)
+        {
+            return;
+        }
+
         $batchId = $reconciledEntity->batchFundTransfer->getId();
 
         $amount = $reconciledEntity->getAmount();
