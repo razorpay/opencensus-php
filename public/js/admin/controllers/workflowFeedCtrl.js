@@ -18,7 +18,6 @@ app
       $stateParams,
       admin
     ) {
-      $scope.allowFieldEdit = false;
       $scope.alerts = alertsFactory.getHandler();
 
       if (typeof $stateParams.action_id !== 'undefined') {
@@ -27,6 +26,8 @@ app
 
       // Don't allow to edit title/desc if request is still opened
       function updateEditFieldState() {
+        $scope.allowFieldEdit = false;
+
         if (['open', 'approved'].indexOf($scope.action_details.state) !== -1) {
           $scope.allowFieldEdit = true;
         }
