@@ -263,6 +263,11 @@ class Gateway extends Base\Gateway
 
             $this->repo->saveOrFail($gatewayEntity);
         }
+        else
+        {
+            throw new Exception\LogicException(
+                'Gateway entity should exist');
+        }
 
         return true;
     }
