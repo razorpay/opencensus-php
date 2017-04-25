@@ -24,13 +24,4 @@ class Version
     //      2. Payment_details_1 - settlement_id
     //      3. Payment_details_3 - version
     const V3    = 'V3';
-
-    public static function validateVersion(string $version)
-    {
-        if (defined(__CLASS__.'::'. $version) === false)
-        {
-            throw new Exception\InvalidArgumentException(
-                'Not a valid FundTransferAttempt version: ' . $version);
-        }
-    }
 }

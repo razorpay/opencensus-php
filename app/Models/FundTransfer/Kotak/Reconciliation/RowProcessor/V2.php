@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\RowProcessor;
 
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\FundTransfer\Kotak\Headings;
 
 class V2 extends Base
 {
@@ -11,6 +12,17 @@ class V2 extends Base
         parent::__construct($row);
 
         $this->version = Attempt\Version::V2;
+    }
+
+    public static function isV2($row): bool
+    {
+        if (($row[Headings::ENRICHMENT_2] !== null) and
+            ($row[Headings::ENRICHMENT_2] === Attempt\Version::V2))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function fetchEntities()

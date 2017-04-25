@@ -247,18 +247,14 @@ class Processor
     {
         $version = FundTransferAttempt\Version::V1;
 
-        if (($row[Kotak\Headings::PAYMENT_DETAILS_3] !== null) and
-            ($row[Kotak\Headings::PAYMENT_DETAILS_3] === FundTransferAttempt\Version::V3))
-        {
-            $version = FundTransferAttempt\Version::V3;
-        }
-        else if (($row[Kotak\Headings::ENRICHMENT_2] !== null) and
-            ($row[Kotak\Headings::ENRICHMENT_2] === FundTransferAttempt\Version::V2))
+        if (RowProcessor\V2::isV2($row))
         {
             $version = FundTransferAttempt\Version::V2;
         }
-
-        FundTransferAttempt\Version::validateVersion($version);
+        else if (RowProcessor\V3::isV3($row))
+        {
+            $version = FundTransferAttempt\Version::V3;
+        }
 
         return $version;
     }
