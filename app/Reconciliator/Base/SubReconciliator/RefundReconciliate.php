@@ -427,20 +427,33 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $refund = $this->refund;
 
-        if (($refund->getRrn() !== null)
-            and ($refund->getRrn() !== $rrn))
+        if ($refund->getRrn() !== null)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_MISMATCH,
-                    'message'       => 'Rrn number for the refund entity is already present',
-                    'row'           => $rowDetails,
-                    'refund_id'     => $refund->getId(),
-                    'gateway'       => get_called_class(),
-                    'rrn'           => $refund->getRrn(),
-                ]);
+            $currentRrn = $refund->getRrn();
 
-            return;
+            // if the rrn in DB matches the rrn from row
+            // simply return
+            if ($currentRrn === $rrn)
+            {
+                return;
+            }
+
+            // if the rrn in DB doesn't match the rrn from row
+            // raise alert and return
+            else
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_MISMATCH,
+                        'message'       => 'Rrn number for the refund entity does not match',
+                        'row'           => $rowDetails,
+                        'refund_id'     => $refund->getId(),
+                        'gateway'       => get_called_class(),
+                        'refund_rrn'    => $refund->getRrn(),
+                    ]);
+
+                return;
+            }
         }
 
         $refund->setRrn($rrn);
