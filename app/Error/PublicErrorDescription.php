@@ -405,6 +405,7 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                           = 'The role and level combination should be unique';
     const BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED                    = 'Permissions associated with a workflow cannot be removed';
     const BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS                                = 'This combination of workflow permission and level already exists.';
+    const BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW                          = 'Some of the permissions passed cannot be used to create a workflow.';
     const BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS                       = 'Other actions on the entity are in progress.';
     const BAD_REQUEST_WORKFLOW_STEP_OP_MISMATCH                                 = 'The op type does not match with other steps in the same level';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED                        = 'An action can only be closed by maker';

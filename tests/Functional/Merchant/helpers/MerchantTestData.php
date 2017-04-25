@@ -812,8 +812,8 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC' => 'HDFC Bank Ltd',
-                    'ICIC' => 'ICICI Bank Ltd',
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
                 ],
                 'disabled' => [],
             ],
@@ -832,8 +832,8 @@ return [
             'content' => [
                 'enabled' => [],
                 'disabled' => [
-                    'HDFC' => 'HDFC Bank Ltd',
-                    'ICIC' => 'ICICI Bank Ltd',
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
                 ],
             ],
         ]
@@ -850,8 +850,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'HDFC' => 'HDFC Bank Ltd',
-                'ICIC' => 'ICICI Bank Ltd',
+                'HDFC' => 'HDFC Bank',
+                'ICIC' => 'ICICI Bank',
             ],
         ],
         'jsonp' => true
@@ -865,11 +865,11 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC' => 'HDFC Bank Ltd',
-                    'ICIC' => 'ICICI Bank Ltd',
+                    'HDFC' => 'HDFC Bank',
+                    'ICIC' => 'ICICI Bank',
                 ],
                 'disabled' => [
-                    'YESB' => 'Yes Bank Ltd',
+                    'YESB' => 'Yes Bank',
                     'VIJB' => 'Vijaya Bank',
                 ]
             ],
@@ -888,7 +888,7 @@ return [
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
 //                    'BARB' => 'Bank of Baroda',
-                    'YESB' => 'Yes Bank Ltd',
+                    'YESB' => 'Yes Bank',
                 ],
                 'wallet' => [
                     'paytm' => true,

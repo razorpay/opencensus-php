@@ -104,8 +104,6 @@ trait RepositoryUpdateTestAndLive
                 Config::set('database.default', Mode::TEST);
                 $testDetachedEntitiesCount = $testEntity->$relation()->detach($ids);
 
-                assert ($liveDetachedEntitiesCount === $testDetachedEntitiesCount);
-
                 return $changes;
             });
     }

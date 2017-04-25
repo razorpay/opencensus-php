@@ -43,18 +43,25 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAllByOrg(string $orgId)
+    public function fetchAllByOrg(string $orgId, string $type = null)
     {
         $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
 
         $pmTable = Table::PERMISSION_MAP;
 
-        return $this->newQuery()
-                    ->select(Table::PERMISSION . '.*')
-                    ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
-                    ->where($pmTable . '.entity_id', '=', $orgId)
-                    ->where($pmTable . '.entity_type', '=', 'org')
-                    ->get();
+        $query = $this->newQuery()
+                      ->select(Table::PERMISSION . '.*')
+                      ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
+                      ->where($pmTable . '.entity_id', '=', $orgId)
+                      ->where($pmTable . '.entity_type', '=', 'org');
+
+        if ((empty($type) === false) and
+            ($type === 'workflow'))
+        {
+            $query->where(Entity::ENABLE_WORKFLOW, '=', 1);
+        }
+
+        return $query->get();
     }
 
     public function retrieveIdsByNames(array $permissionNames)
