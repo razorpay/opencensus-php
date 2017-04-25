@@ -159,6 +159,25 @@ UPDATE terminals SET international = 1 WHERE gateway = 'sharp';
 UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7chy3i1qAAG9iW';
 UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7d3DLq0w58xHmc';
 
+## Data fix for NonAuthCapture Transactions (PR:2660)
+UPDATE transactions
+    JOIN payments
+    ON transactions.entity_id = payments.id
+    SET transactions.fee = 0,
+        transactions.service_tax = 0
+    WHERE payments.captured_at is null AND
+          transactions.fee > 0;
+
+DELETE FROM fees_breakup
+    WHERE transaction_id IN (
+        SELECT transactions.id
+            FROM transactions
+            JOIN payments
+            ON transactions.entity_id = payments.id
+            WHERE payments.captured_at is null AND
+                  transactions.fee > 0
+        );
+        
 UPDATE settlements
 SET attempts = (
     SELECT COUNT(id) FROM fund_transfer_attempts

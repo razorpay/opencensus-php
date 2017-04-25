@@ -1905,6 +1905,10 @@ ALTER TABLE daily_settlements
     ADD COLUMN processed_amount bigint(20) unsigned AFTER amount,
     ADD COLUMN processed_count int(11) AFTER total_count;
 
+# Query to add checkout_display flag to offers
+ALTER TABLE offers
+    ADD COLUMN checkout_display TINYINT(1) DEFAULT 0 NOT NULL AFTER block;
+
 ALTER TABLE workflow_steps
     ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;
 
@@ -1917,3 +1921,6 @@ SET FOREIGN_KEY_CHECKS=0;
 ALTER TABLE fees_breakup
     ADD CONSTRAINT fees_breakup_pricing_rule_id_foreign FOREIGN KEY (pricing_rule_id) REFERENCES pricing(id);
 SET FOREIGN_KEY_CHECKS=1;
+
+ALTER TABLE permissions
+    ADD COLUMN enable_workflow TINYINT(1) NOT NULL DEFAULT 0 AFTER assignable;

@@ -628,6 +628,10 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
+            //
+            // In some buggy cases, transaction is not created while
+            // capture has been successful on the gateway end.
+            //
             if (($payment->getTransactionId() !== null) or
                 ($payment->isGatewayCaptured() === true))
             {
