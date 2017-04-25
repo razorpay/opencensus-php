@@ -4,7 +4,6 @@ namespace RZP\Models\FundTransfer\Kotak\Reconciliation;
 
 use Carbon\Carbon;
 use Excel;
-use Illuminate\Support\Facades\App;
 use Mail;
 
 use RZP\Constants\Entity as EntityConstants;
@@ -17,7 +16,7 @@ use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\TraceCode;
 
-class Processor
+class Processor extends Base\Core
 {
     use Kotak\FileHandlerTrait;
 
@@ -38,21 +37,11 @@ class Processor
 
     protected $batchFundTransferStats = [];
 
-    protected $app;
-
-    protected $repo;
-
-    protected $trace;
-
     public function __construct()
     {
+        parent::__construct();
+
         $this->reconciledAt = time();
-
-        $this->app = App::getFacadeRoot();
-
-        $this->repo = $this->app['repo'];
-
-        $this->trace = $this->app['trace'];
 
         $this->mutex = $this->app['api.mutex'];
     }
@@ -79,9 +68,7 @@ class Processor
         {
             $this->trace->info(
                 TraceCode::MISC_TRACE_CODE,
-                [
-                    'message' => 'No file present'
-                ]);
+                ['message' => 'No file present']);
 
             return [];
         }
@@ -101,7 +88,7 @@ class Processor
             // update the format so that recon mail is appended to settlement mail
             $date = $date->format('d-m-Y');
 
-            $response = $this->reconcile($data);
+            $response = $this->startReconciliation($data);
 
             $this->storeReconciledFile($reconcileFile);
 
@@ -111,13 +98,11 @@ class Processor
         return $response;
     }
 
-    protected function reconcile($data): array
+    protected function startReconciliation($data): array
     {
-        $allEntities = $failureEntities = $successEntities = [];
+        $allEntities = $unprocessedIds = [];
 
         $this->repo->beginTransaction();
-
-        $unprocessedFailedIds = [];
 
         try
         {
@@ -127,37 +112,15 @@ class Processor
 
                 if ($entity === null)
                 {
-                    $unprocessedFailedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
+                    $unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
                 }
                 else
                 {
-                    $allEntities[] = $entity->getId();
-
-                    if ($entity->isStatusFailed())
-                    {
-                        $failureEntities[] = $entity->getId();
-                    }
-                    else
-                    {
-                        $successEntities[] = $entity->getId();
-                    }
+                    $allEntities[] = $entity;
                 }
             }
 
-            // Get distinct entity ids in all array.
-            // There will be duplicates in case of same day retry
-            // Ideally there shouldn't be duplicates in success, but we do a defensive unique
-            $allEntities = array_unique($allEntities);
-            $successEntities = array_unique($successEntities);
-            $failureEntities = array_unique($failureEntities);
-
-            // If multiple, let's say 2, attempts were made, on the same day for a settlement,
-            // the recon file would have both failure and success rows corresponding to each
-            // attempt. In this case the settlement corresponding to them would be part of
-            // both successEntities, and failureEntities. To avoid a false alarm for this
-            // settlement, we do this
-            $failureEntities = array_diff($failureEntities, $successEntities);
-
+            // Update batch stats post reconciliations
             foreach ($this->batchFundTransferStats as $batchId => $attrs)
             {
                 $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
@@ -177,31 +140,20 @@ class Processor
             throw $e;
         }
 
-        $failureIds = implode(',', $failureEntities);
+        $summary = $this->getSummary($unprocessedIds, $allEntities);
 
-        $processingFailedIds = implode(',', $unprocessedFailedIds);
+        (new SlackNotification)->success('setl_reconciliation', $summary);
 
-        $response = [
-            'total_count'               => count($allEntities),
-            'failures_count'            => count($failureEntities),
-            'failure ids'               => $failureIds,
-            'processing failed ids'     => $processingFailedIds,
-        ];
-
-        (new SlackNotification)->success('setl_reconciliation', $response);
-
-        return $response;
+        return $summary;
     }
 
     protected function reconcileEntity($row)
     {
-        $version = $this->getRowVersion($row);
+        $version = $this->getSettlementVersion($row);
 
-        $className = ucwords($version);
+        $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\RowProcessor\\' . ucwords($version);
 
-        $classNamespace = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\RowProcessor\\' . $className;
-
-        $reconciledEntity = (new $classNamespace($row))->process($this->reconciledAt);
+        $reconciledEntity = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
 
         $this->updateBatchFundTransferStats($reconciledEntity);
 
@@ -243,7 +195,7 @@ class Processor
      *
      * @return  Array   Parsed data
      */
-    protected function getRowVersion(array $row): string
+    protected function getSettlementVersion(array $row): string
     {
         $version = FundTransferAttempt\Version::V1;
 
@@ -257,6 +209,50 @@ class Processor
         }
 
         return $version;
+    }
+
+    protected function getSummary(array $unprocessedIds, array $allEntities): array
+    {
+        $failureEntityIds = $successEntityIds = $allEntityIds = [];
+
+        foreach ($allEntities as $entity)
+        {
+            $entityId = $entity->getId();
+
+            $allEntityIds[] = $entityId;
+
+            if ($entity->isStatusFailed())
+            {
+                $failureEntityIds[] = $entityId;
+            }
+            else
+            {
+                $successEntityIds[] = $entityId;
+            }
+        }
+
+        // Get distinct entity ids in all array.
+        // There will be duplicates in case of same day retry
+        // Ideally there shouldn't be duplicates in success, but we do a defensive unique
+        $allEntityIds = array_unique($allEntityIds);
+        $successEntityIds = array_unique($successEntityIds);
+        $failureEntityIds = array_unique($failureEntityIds);
+
+        // If multiple, let's say 2, attempts were made, on the same day for a settlement,
+        // the recon file would have both failure and success rows corresponding to each
+        // attempt. In this case the settlement corresponding to them would be part of
+        // both successEntities, and failureEntities. To avoid a false alarm for this
+        // settlement, we do this
+        $failureEntityIds = array_diff($failureEntityIds, $successEntityIds);
+
+        $summary = [
+            'total_count'               => count($allEntityIds),
+            'failures_count'            => count($failureEntityIds),
+            'failure ids'               => implode(',', $failureEntityIds),
+            'processing failed ids'     => implode(',', $unprocessedIds),
+        ];
+
+        return $summary;
     }
 
     protected function sendReconciliationMail($date, $response)
