@@ -636,8 +636,6 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            $this->refund->incrementAttempts();
-
             $this->repo->transaction(function() use ($data, $payment)
             {
                 $this->recordTransactionForRefund();
@@ -649,6 +647,8 @@ trait Refund
 
                 $this->refund->setGatewayRefunded($refunded);
             });
+
+            $this->refund->incrementAttempts();
 
             // We don't want the transaction to fail if this
             // save fails that's why keeping it outside.
@@ -744,9 +744,18 @@ trait Refund
 
     protected function updatePaymentRefunded()
     {
+        //
         // Indicates inverse of buggy case where
         // refund entity is already present
-        if ($this->verifyRefundStatus !== false)
+        // Need to check against false only, since
+        // it can be `null` also. In case of `null`
+        // or `true`, it should go to the else block.
+        //
+        if ($this->verifyRefundStatus === false)
+        {
+            ;
+        }
+        else
         {
             $amount = $this->refund->getAmount();
 
