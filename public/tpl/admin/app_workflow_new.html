@@ -68,7 +68,7 @@
               <!-- Role Pills-->
               <div class="" ng-repeat="(roleIndex, role) in step.steps">
                 <span class="assignee-row" >
-                  <span class="assignee-label">{{roleNames[role.role_id]}} <i class="delete-btn fa fa-times m-l" ng-click="removeRoleFromStep(roleIndex, stepIndex)" ng-if="!editLayout"></i></span>
+                  <span class="pills-label assignee-label">{{roleNames[role.role_id]}} <i class="delete-btn fa fa-times m-l" ng-click="removeRoleFromStep(roleIndex, stepIndex)" ng-if="!editLayout"></i></span>
                   <span class="help-label m-l">Minimum approvals</span>
                   <input ng-disabled="editLayout" ng-model="role.reviewer_count" type="text" ng-pattern="/^[0-9]{1,2}$/" class="form-control m-l reviewer-count"/>
                   <div ng-if="!editLayout" class="reviewer-count-inc-btn" ng-click="incReviewerCount(roleIndex, stepIndex)">

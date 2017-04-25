@@ -83,8 +83,28 @@
             </div>
             <div class="assignment-container ">
               <div class="strong assignee-heading m-t"><strong>Assigned to:</strong></div>
-              <div class="assignees-container m-b">
-                <span class="assignee-label" ng-repeat="step in action_details.workflow_steps">{{ step.role.name }}</span>
+
+              <div style="position: relative; margin: 16px 0;">
+                <div class="assignees-container m-b"
+                     ng-repeat="(index, level) in levels"
+                     ng-class="{ 'inactive': action_details.current_level != index }">
+
+                  <div class="level-element">
+                    <span class="tick-green" ng-if="index < action_details.current_level">
+                      <i class="glyphicon glyphicon-ok"/>
+                    </span>
+                    <div class="pills-label level-label" >STEP {{index}}</div>
+                    <div class="vertical-line" ng-if="totalLevels > index"></div>
+                    {{keys(levels).length}}
+                  </div>
+
+                  <div class="role-element">
+                    <div class="pills-label assignee-label" ng-repeat="role in level track by $index">
+                      {{ role }}
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
             <div class="border-bottom m-b"></div>
@@ -169,7 +189,7 @@
         <div class="right-label m-b m-t">Approved by</div>
           <div class="assignee-list m-b">
             <div>
-              <span class="assignee-label" ng-repeat="card in approverList">
+              <span class="pills-label assignee-label" ng-repeat="card in approverList">
                 {{card.admin_name}}
               </span>
             </div>
@@ -180,7 +200,7 @@
           <div class="right-label m-b m-t">Rejected by</div>
           <div class="assignee-list m-b">
             <div>
-              <span class="assignee-label" ng-repeat="card in rejectorList ">
+              <span class="pills-label assignee-label" ng-repeat="card in rejectorList ">
                 {{card.admin_name}}
               </span>
             </div>

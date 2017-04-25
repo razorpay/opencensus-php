@@ -191,6 +191,20 @@ app
             $scope.rejectorList = $scope.cards.filter(function(card) {
               return !card.approved;
             });
+
+            $scope.levels = {};
+            var steps = $scope.action_details.workflow_steps;
+
+            // Level(step) structure having roles names
+            for (var key in steps) {
+              if (!$scope.levels[steps[key].level]) {
+                $scope.levels[steps[key].level] = []
+              }
+              $scope.levels[steps[key].level].push(steps[key].role.name);
+            }
+
+            // To display vertical lines between steps
+            $scope.totalLevels = Object.keys($scope.levels).length;
           }
 
           updateEditFieldState();
