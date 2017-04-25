@@ -46,7 +46,7 @@ class RowProcessor extends Base\RowProcessor
         $this->reconEntity->setCmsRefNo($this->parsedData['cms_ref_no']);
         $this->reconEntity->saveOrFail();
 
-        $source = $reconEntity->source;
+        $source = $this->reconEntity->source;
         $source->setUtr($this->parsedData['utr']);
         $source->setFailureReason($this->parsedData['failure_reason']);
         $source->setStatus($this->parsedData['status']);

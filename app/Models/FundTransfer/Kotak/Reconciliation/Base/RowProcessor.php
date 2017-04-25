@@ -86,7 +86,7 @@ class RowProcessor extends BaseCore
             // processed and update only the utr
             if (($now < $tenPm) and ($this->env !== 'testing'))
             {
-                $status = $entity->getStatus();
+                $status = $this->reconEntity->getStatus();
             }
             else if ((empty($remarks) === true) or
                 (in_array($remarks, self::SUCCESS_STATUS) === true))
