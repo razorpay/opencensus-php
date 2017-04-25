@@ -624,6 +624,8 @@ class Gateway extends Base\Gateway
             'response'   => $content
         ]);
 
+        $this->updateGatewayPaymentResponse($refund, $content);
+
         if ($content[Fields::STATUS] !== Status::SUCCESS)
         {
             $code = $content[Fields::RESPONSE];
@@ -635,8 +637,6 @@ class Gateway extends Base\Gateway
                 $content[Fields::STATUS],
                 ResponseCode::getResponseMessage($code));
         }
-
-        $this->updateGatewayPaymentResponse($refund, $content);
     }
 
     protected function getRefundRequest(array $input)
