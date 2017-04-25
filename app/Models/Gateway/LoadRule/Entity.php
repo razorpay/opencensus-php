@@ -128,4 +128,17 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::INTERNATIONAL);
     }
+
+    public function getNormalizedLoad(int $totalLoad)
+    {
+        $load = ($this->getLoad() / $totalLoad) * self::MAX_LOAD;
+
+        return intval(number_format($load, 2, '.', ''));
+    }
+
+    //-----------------Setters----------------------
+    public function setLoad(int $load)
+    {
+        $this->setAttribute[self::LOAD] = $load;
+    }
 }

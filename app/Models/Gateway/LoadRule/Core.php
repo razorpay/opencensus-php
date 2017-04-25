@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\LoadRule;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Merchant\Account;
 
 class Core extends Base\Core
@@ -31,24 +32,11 @@ class Core extends Base\Core
 
     public function fetchApplicableRules(array $terminals, array $input)
     {
-        $merchantId = $input['merchant']->getId();
-
         $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
 
         $rules = $this->repo->gateway_load_rule->fetchApplicableRules($ruleFetchParams);
 
-        // We check if any merchant specific rules are present. If present we only deal with
-        // those rules as our rule set and discard any other rules
-        $merchantSpecificRules = $this->getMerchantSpecificRules($loadRules, $merchantId);
-
-        if ($merchantSpecificRules->isEmpty() === false)
-        {
-            $loadRules = $merchantSpecificRules;
-        }
-
-        // We now filter rules based on payment criteria to get collection of
-        // applicable rules for the particular payment
-        $applicableRules = (new Filter($rules, $input))->filter();
+        $applicableRules = (new Filter($input))->filter($rules);
 
         return $applicableRules;
     }
@@ -82,16 +70,6 @@ class Core extends Base\Core
        return $map;
     }
 
-    protected function getMerchantSpecificRules(Base\PublicCollection $rules, string $merchantId)
-    {
-        $merchantSpecificRules = $rules->filter(function ($rule) use ($merchantId)
-        {
-            return ($rule->getMerchantId() === $merchantId);
-        });
-
-        return $merchantSpecificRules;
-    }
-
     protected function getRuleFetchParams(array $terminals, array $input)
     {
         $payment = $input['payment'];
@@ -100,13 +78,6 @@ class Core extends Base\Core
 
         $gateways = $this->getTerminalGateways($terminals);
 
-        $card = null;
-
-        if ($payment->hasCard() === true)
-        {
-            $card = $payment->card;
-        }
-
         $params = [
             Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
             Entity::GATEWAY       => $gateways,
@@ -114,26 +85,49 @@ class Core extends Base\Core
             Entity::INTERNATIONAL => $payment->isInternational(),
         ];
 
+        $method = $payment->getMethod();
+
         // We include null in the list of possible values here for issuer, network etc
         // as we also want to fetch rules where thes attributes are set to null, as it
         // has a meaning of any/all.
-        if ($card !== null)
+        switch ($method)
         {
-            $params[Entity::CARD_TYPE] = [$card->getType(), null];
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
 
-            $params[Entity::NETWORK] = [$card->getNetworkCode(), null];
+                $this->fillCardDetails($params, $payment);
 
-            $params[Entity::ISSUER] = [$card->getIssuer(), null];
+                break;
+
+            case Payment\Method::NETBANKING:
+
+                $params[Entity::ISSUER] = [$payment->getBank(), null];
+
+                break;
+
+            case Payment\Method::WALLET:
+
+                $params[Entity::ISSUER] = [$payment->getWallet(), null];
+
+                break;
+
+            default:
+                // Not implemented for other methods as of now
+                break;
         }
-
-        if ($payment->isNetbanking() === true)
-        {
-            $params[Entity::ISSUER] = [$payment->getBank(), null];
-        }
-
-        // TODO: add cases for handling other methods like wallet, upi etc
 
         return $params;
+    }
+
+    protected function fillCardDetails(array & $params, Payment\Entity $payment)
+    {
+        $card = $payment->card;
+
+        $params[Entity::CARD_TYPE] = [$card->getType(), null];
+
+        $params[Entity::NETWORK] = [$card->getNetworkCode(), null];
+
+        $params[Entity::ISSUER] = [$card->getIssuer(), null];
     }
 
     protected function getTerminalGateways(array $terminals)
@@ -146,6 +140,26 @@ class Core extends Base\Core
         $gateways = array_values(array_unique($gateways));
 
         return $gateways;
+    }
+
+    public function checkAndBalanceLoads(Base\PublicCollection $rules)
+    {
+        $totalLoad = $rules->reduce(function ($carry, $rule)
+        {
+            $load = $rule->getLoad();
+
+            return $carry + $load;
+        });
+
+        if ($totalLoad > Entity::MAX_LOAD)
+        {
+            foreach ($rules as $rule)
+            {
+                $normalizedLoad = $rule->getNormalizedLoad($totalLoad);
+
+                $rule->setLoad($normalizedLoad);
+            }
+        }
     }
 
     protected function checkIfTotalLoadIsValid(Entity $rule, array $input)

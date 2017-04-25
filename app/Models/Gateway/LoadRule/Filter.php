@@ -12,8 +12,6 @@ class Filter extends Core
 
     protected $card;
 
-    protected $rules;
-
     const PROPERTIES = [
         Entity::CARD_TYPE,
         Entity::INTERNATIONAL,
@@ -21,10 +19,8 @@ class Filter extends Core
         Entity::ISSUER,
     ];
 
-    public function __construct(Base\PublicCollection $rules, array $input)
+    public function __construct(array $input)
     {
-        $this->rules = $rules;
-
         $this->merchant = $input['merchant'];
 
         $this->payment = $input['payment'];
@@ -39,9 +35,10 @@ class Filter extends Core
      * Filters rules by matching on the attributes defined in the PROPERTIES
      * array. Used to get the rules best matching the payment criteria
      *
+     * @param Base\PublicCollection Rules to apply filters on
      * @return Base\PublicCollection Collection of filtered rules
      */
-    public function filter()
+    public function filter(Base\PublicCollection $rules)
     {
         // We check if any merchant specific rules are present. If present we only deal with
         // those rules as our rule set and discard any other rules
@@ -49,14 +46,16 @@ class Filter extends Core
 
         if ($merchantSpecificRules->isEmpty() === false)
         {
-            $this->rules = $merchantSpecificRules;
+            $rules = $merchantSpecificRules;
         }
+
+        $filteredRules = new Base\PublicCollection;
 
         foreach (self::PROPERTIES as $filterProperty)
         {
             $filterFunction = $this->getFilterFunctionForProperty($filterProperty);
 
-            foreach ($this->rules as $rule)
+            foreach ($rules as $rule)
             {
                 if ($this->$filterFunction($rule) === true)
                 {
@@ -74,16 +73,16 @@ class Filter extends Core
             return $rule->getId();
         });
 
-        if ($filteredRules->isEmpty() === false)
-        {
-            return $filteredRules;
-        }
-
         // In case no rules satisfy the filter rule criteria, we retuen the set of
         // all rules as it may contain rules with the filter attribute value as null.
         // E.g a rule for card payments across all networks and issuers will be rejected
         // by above filters but is still eligible for a payment
-        return $this->rules;
+        if ($filteredRules->isEmpty() === true)
+        {
+            $filteredRules = $rules;
+        }
+
+        return $filteredRules;
     }
 
     protected function cardTypeFilter(Entity $rule)
@@ -143,11 +142,11 @@ class Filter extends Core
        return false;
     }
 
-    protected function getMerchantSpecificRules()
+    protected function getMerchantSpecificRules(Base\PublicCollection $rules)
     {
         $merchantId = $this->merchant->getId();
 
-        $merchantSpecificRules = $this->rules->filter(function ($rule) use ($merchantId)
+        $merchantSpecificRules = $rules->filter(function ($rule) use ($merchantId)
         {
             return ($rule->getMerchantId() === $merchantId);
         });

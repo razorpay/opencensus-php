@@ -29,12 +29,18 @@ trait Matcher
         return true;
     }
 
-    protected function compareGateway(Terminal\Entity $terminal)
+    protected function compareGateway(Terminal\Entity $terminal): bool
     {
         return ($terminal->getGateway() === $this->getGateway());
     }
 
-    protected function compareGatewayAcquirer(Terminal\Entity $terminal)
+    /**
+     * Compares terminal gateway acquirer to rule's gateway acquirer, also returns
+     * true if the rule's gateway acquirer is null, meaning all acquirers
+     * @param  Terminal\Entity $terminal [description]
+     * @return [type]                    [description]
+     */
+    protected function compareGatewayAcquirer(Terminal\Entity $terminal): bool
     {
         if ($terminal->getGatewayAcquirer() !== null)
         {

@@ -30,9 +30,9 @@ class TerminalLoadSorter extends Terminal\Sorter
             return $terminals;
         }
 
-        $merchantId = $input['merchant']->getId();
+        $loadRuleCore = new LoadRule\Core;
 
-        $applicableRules = (new LoadRule\Core)->fetchApplicableRules($terminals, $input);
+        $applicableRules = $loadRuleCore->fetchApplicableRules($terminals, $input);
 
         // If no rules are present for load sorting we return the terminals list as is
         if ($applicableRules->isEmpty() === true)
@@ -47,24 +47,32 @@ class TerminalLoadSorter extends Terminal\Sorter
         //      <rule_id> => [<terminal_ids>]
         // ]
         //
-        $ruleToTerminalsMap = (new LoadRule\Core)->matchTerminalsToRule($terminals, $applicableRules);
+        $ruleToTerminalsMap = $loadRuleCore->matchTerminalsToRule($terminals, $applicableRules);
 
+        // If no terminals are found matching the rules return the original set of
+        // terminals
         if (empty($ruleToTerminalsMap) === true)
         {
             return $terminals;
         }
 
-        // It can happen that the cumulative load across eligible terminaals
+        // Filter out rules for which we didn't get any matching terminals
+        $applicableRules = $applicableRules->filter(function ($rule) use ($ruleToTerminalsMap)
+        {
+            $selectedRuleIds = array_keys($ruleToTerminalsMap);
+
+            return (in_array($rule->getId(), $selectedRuleIds, true) === true);
+        });
+
+        // It can happen in certain cases that the total load across all rules
         // exceeds 10000. In that case, we normalize the load values
         // E.g Rule R1 - Load 7000
         // Rule R2 - Load 5000
         // After normalization relative load in probability space of 10000
         // will be R1 = 5833, R2 = 4166
-        $this->checkAndBalanceLoad($applicableRules);
+        $loadRuleCore->checkAndBalanceLoads($applicableRules);
 
         $chancePercent = $options->getChance();
-
-        $boostedTerminals = $this->getBoostedTerminalIds($ruleToTerminalsMap, $applicableRules, $chancePercent);
 
         $boostedTerminalIs = $this->getBoostedTerminals(
                                                         $ruleToTerminalsMap,
@@ -108,10 +116,5 @@ class TerminalLoadSorter extends Terminal\Sorter
                 return $terminals;
             }
         }
-    }
-
-    protected function checkAndBalanceLoad(Base\PublicCollection $applicableRules)
-    {
-        ;
     }
 }
