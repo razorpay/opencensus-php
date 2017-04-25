@@ -50,36 +50,10 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
+        //TODO: Pass false as argument to remove backward compatibility.
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
-        // $this->updateNodalBalance($txn);
-
-        $this->repo->balance->updateBalance($this->merchantBalance);
-
         return [$txn, $feesSplit];
-    }
-
-    public function updateOnCapture(Payment\Entity $payment)
-    {
-        $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
-
-        $settledAt = $this->getSettledAtTimestamp($payment);
-
-        $txn->setSettledAt($settledAt);
-
-        $this->updateCredits($txn, $payment);
-
-        $this->updateMerchantBalance($txn);
-
-        $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_UPDATE_TRANSACTION,
-            [
-                'payment_id'     => $payment->getId(),
-                'transaction_id' => $txn->getId(),
-            ]
-        );
-
-        return $txn;
     }
 
     /**
@@ -115,7 +89,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromPaymentCaptured(Payment\Entity $payment)
+    public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
@@ -189,17 +163,32 @@ class Core extends Base\Core
         return true;
     }
 
-    protected function txnCreationFromPaymentOperation($payment)
+    protected function txnCreationFromPaymentOperation(Payment\Entity $payment, bool $updateFees = true)
     {
         $txn = new Transaction\Entity;
-        $txn->generateId();
 
-        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment);
+        // Case 1: Non AuthCapture flow, a txn already exists with min data.
+        // Case 2: Auth-capture flow, we create a txn and associate merchant, payment with it.
+        if ($payment->hasTransaction() === true)
+        {
+            $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
+        }
+        else
+        {
+            $txn->generateId();
 
-        $txnData = array(
+            $txn->sourceAssociate($payment);
+
+            $txn->merchant()->associate($payment->merchant);
+        }
+
+        list($txn, $feesSplit) = $this->fillTxnFeesAndAmount($txn, $payment, $updateFees);
+
+        $txnData = [
             Transaction\Entity::TYPE            => Transaction\Type::PAYMENT,
             Transaction\Entity::CURRENCY        => Currency\Currency::INR,
-            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK);
+            Transaction\Entity::CHANNEL         => Transaction\Channel::KOTAK
+        ];
 
         if ($payment->getGateway() === Payment\Gateway::ATOM)
         {
@@ -208,21 +197,40 @@ class Core extends Base\Core
 
         $txn->fill($txnData);
 
-        $txn->sourceAssociate($payment);
-        $txn->merchant()->associate($payment->merchant);
-
         $this->trace->info(
             TraceCode::TRANSACTION_CREATED,
             [
-                'payment_id' => $payment->getId(),
+                'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId(),
             ]);
 
         return [$txn, $feesSplit];
     }
 
-    protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
+    protected function fillEmptyTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
     {
+        $amount = $payment->getBaseAmount();;
+
+        $values = [
+            Transaction\Entity::DEBIT               => 0,
+            Transaction\Entity::CREDIT              => 0,
+            Transaction\Entity::FEE                 => 0,
+            Transaction\Entity::SERVICE_TAX         => 0,
+            Transaction\Entity::AMOUNT              => $amount,
+        ];
+
+        $txn->fill($values);
+
+        return [$txn, null];
+    }
+
+    protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment, bool $updateFees = true)
+    {
+        if ($updateFees === false)
+        {
+            return $this->fillEmptyTxnFeesAndAmount($txn, $payment);
+        }
+
         $pricingRuleId = null;
 
         $merchant = $payment->merchant;
@@ -452,7 +460,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::PAYMENT_TRANSACTION_OLD,
                 [
-                    'payment_id' => $payment->getId(),
+                    'payment_id'      => $payment->getId(),
                     'payment_created' => Carbon::createFromTimestamp($payment->getCreatedAt())
                                                ->toDateTimeString()
                 ]
@@ -710,7 +718,7 @@ class Core extends Base\Core
 
         $payoutAmount = abs($amount + $fee);
 
-        $values = array(
+        $values = [
             Transaction\Entity::DEBIT               => $payoutAmount,
             Transaction\Entity::CREDIT              => 0,
             Transaction\Entity::CURRENCY            => 'INR',
@@ -725,7 +733,7 @@ class Core extends Base\Core
             Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
             Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
-        );
+        ];
 
         $txn->fillAndGenerateId($values);
 

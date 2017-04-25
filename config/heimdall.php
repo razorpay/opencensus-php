@@ -199,7 +199,7 @@ return [
     // trimmed down assignable permissions which an HDFC manager would have
     // This array must be a **strict** subset of the one above
 
-    'assignablePermissions' => [
+    'assignable_permissions' => [
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS    => 'View all merchants in merchant lists',
             Permission::VIEW_MERCHANT         => 'View a particular merchant details',
@@ -297,6 +297,78 @@ return [
             Permission::EDIT_WORKFLOW      => 'Edit Workflows',
             Permission::DELETE_WORKFLOW    => 'Delete Workflows',
             Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
+            Permission::CREATE_WORKFLOW    => 'Create a workflow',
+        ],
+    ],
+
+    'enable_workflow_permissions' => [
+        PermissionCategory::MERCHANT_DETAIL => [
+            Permission::DELETE_MERCHANT_FEATURES        => 'Delete a merchant feature',
+
+            Permission::CREATE_PRICING_PLAN             => '',
+            Permission::SET_PRICING_RULES               => '',
+            Permission::DELETE_PRICING_PLAN_RULES       => '',
+
+            Permission::CREATE_MERCHANT_LOCK            => '',
+            Permission::CREATE_MERCHANT_UNLOCK          => '',
+            Permission::EDIT_MERCHANT                   => '',
+            Permission::EDIT_ACTIVATE_MERCHANT          => '',
+            Permission::EDIT_MERCHANT_ENABLE_LIVE       => '',
+            Permission::EDIT_MERCHANT_DISABLE_LIVE      => '',
+            Permission::EDIT_MERCHANT_ARCHIVE           => '',
+            Permission::EDIT_MERCHANT_UNARCHIVE         => '',
+            Permission::EDIT_MERCHANT_SCREENSHOT        => '',
+
+            Permission::EDIT_MERCHANT_CONFIRM           => '',
+            Permission::EDIT_MERCHANT_LOCK_ACTIVATION   => '',
+            Permission::EDIT_MERCHANT_UNLOCK_ACTIVATION => '',
+            Permission::EDIT_MERCHANT_HOLD_FUNDS        => '',
+            Permission::EDIT_MERCHANT_RELEASE_FUNDS     => '',
+
+            Permission::EDIT_MERCHANT_EMAIL             => '',
+
+            Permission::CREATE_MERCHANT_INVITE          => '',
+            Permission::EDIT_MERCHANT_INVITE            => '',
+        ],
+
+        // UAM
+
+        // Roles
+        PermissionCategory::ROLE => [
+            Permission::CREATE_ROLE   => 'Create role',
+            Permission::EDIT_ROLE     => 'Edit role',
+            Permission::DELETE_ROLE   => 'Delete role',
+        ],
+
+        // Groups
+        PermissionCategory::GROUP => [
+            Permission::CREATE_GROUP      => 'Create group',
+            Permission::EDIT_GROUP        => 'Edit group',
+            Permission::DELETE_GROUP      => 'Delete group',
+            Permission::GROUP_GET_ALLOWED_GROUPS => 'Get allowed groups',
+        ],
+
+        // Admin
+        PermissionCategory::ADMIN => [
+            Permission::CREATE_ADMIN      => 'Create admin',
+            Permission::EDIT_ADMIN        => 'Edit admin',
+            Permission::DELETE_ADMIN      => 'Delete admin',
+        ],
+
+        // Permissions
+        PermissionCategory::PERMISSION => [
+            Permission::GET_PERMISSION      => 'Get Permission',
+        ],
+
+        // Invitations
+        PermissionCategory::INVITATION => [
+            Permission::CREATE_MERCHANT_INVITE      => 'Create Merchant Invite',
+            Permission::EDIT_MERCHANT_INVITE        => 'Edit Merchant Invite',
+        ],
+
+        PermissionCategory::WORKFLOW => [
+            Permission::EDIT_WORKFLOW      => 'Edit Workflows',
+            Permission::DELETE_WORKFLOW    => 'Delete Workflows',
             Permission::CREATE_WORKFLOW    => 'Create a workflow',
         ],
     ],
