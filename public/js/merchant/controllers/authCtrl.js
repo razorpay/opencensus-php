@@ -204,7 +204,7 @@ app.controller('AuthCtrl', [
           $scope.isLoggedIn = true;
           user.identity(true).then(function(data) {
             if (data.user.confirmed) {
-              $scope.goToDashboard(data.user.merchants[0].pivot.role)
+              $scope.goToDashboard(data.user.merchants[0].role)
             } else {
               hideSpinner();
               $state.transitionTo('access.pre_signup', {}, {
@@ -414,7 +414,7 @@ app.controller('AuthCtrl', [
             });
           } else {
             var userDetails = user.getIdentity();
-            var role = userDetails.merchants[userDetails.id].pivot.role;
+            var role = userDetails.merchants[userDetails.id].role;
             $scope.goToDashboard(role);
           }
         }
@@ -497,7 +497,7 @@ app.controller('AuthCtrl', [
           // check questions have been answered or not
           user.identity(true).then(function(userDetails) {
             if (user.isVerified() && user.isPreSignupDone()) {
-              var role = userDetails.merchants && userDetails.merchants[userDetails.id].pivot.role;
+              var role = userDetails.merchants && userDetails.merchants[userDetails.id].role;
               $scope.goToDashboard(role);
             } else {
               $scope.email_not_verified = false;

@@ -58,7 +58,7 @@ Route::group(['middleware' => ['web']], function () {
         // This returns all the needed information
         Route::get('/user', 'UserController@getUserDetailsV2');
         Route::get('/user2', 'UserController@getUserDetails');
-        Route::get('/user/details', 'UserController@getUserDetails');
+        Route::get('/user/details', 'UserController@getUserDetailsV2');
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
         Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
 

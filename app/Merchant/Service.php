@@ -449,18 +449,20 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    public function fetchKeysFromApi($merchant_id, $mode)
+    public function fetchKeysFromApi($merchantId, $mode)
     {
         $this->setApiCredentials(null, $mode);
+
         $error = $response = null;
 
         try
         {
-            $response = $this->api->merchant
-                ->fetch($merchant_id)
-                ->keys()
-                ->all()
-                ->toArray();
+            $response = $this->api
+                             ->merchant
+                             ->fetch($merchantId)
+                             ->keys()
+                             ->all()
+                             ->toArray();
         }
         catch(BadRequestError $e)
         {
@@ -470,27 +472,27 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    public function createKey($merchant_id, $mode)
+    public function createKey($merchantId, $mode)
     {
-        $errors = array();
-        $data = array();
+        $errors = $data = [];
 
         $this->setApiCredentials(null, $mode);
 
         try
         {
-            $data = $this->api->merchant
-                            ->fetch($merchant_id)
-                            ->keys()
-                            ->create()
-                            ->toArray();
+            $data = $this->api
+                         ->merchant
+                         ->fetch($merchantId)
+                         ->keys()
+                         ->create()
+                         ->toArray();
         }
         catch(BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
 
-        return array($errors, $data);
+        return [$errors, $data];
     }
 
     public function getUsersListWithInvites()
@@ -715,12 +717,35 @@ class Service extends Base\Service
 
     public function fetchReferredMerchants($merchantId)
     {
+        $error = $data = [];
+
         $tag = "ref-$merchantId";
 
-        return Merchant\Entity::select(['id', 'name', 'activated', 'created_at', 'email'])
-                              ->withAnyTag($tag)
-                              ->whereNull('suspended_at')
-                              ->get();
+        $this->setApiCredentials();
+
+        try
+        {
+            $merchant = $this->api->merchant->fetch($id)->toArray();
+        }
+        catch (BadRequestError $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        if (empty($error) === true)
+        {
+            $merchantTags = Merchant\Entity::select(['merchants.id'])
+                                    ->with('tagged')
+                                    ->where('merchants.id', $merchantId)
+                                    ->withAllTags($tags)
+                                    ->get()
+                                    ->toArray();
+
+            $data = array_merge($merchant, $merchantTags[$merchantId]);
+
+        }
+
+        return [$error, $data];
     }
 
     /**
