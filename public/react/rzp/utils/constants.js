@@ -17,6 +17,7 @@ export const states = {
   JH: 'Jharkhand',
   KA: 'Karnataka',
   KE: 'Kerala',
+  LD: 'Lakshadweep',
   MP: 'Madhya Pradesh',
   MH: 'Maharashtra',
   MA: 'Manipur',
