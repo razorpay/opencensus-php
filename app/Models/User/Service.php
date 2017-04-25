@@ -51,9 +51,7 @@ class Service extends Base\Service
 
     public function login(array $input): array
     {
-        $user = (new Core)->login($input);
-
-        return $user->toArrayPublic();
+        return (new Core)->login($input);
     }
 
     public function get(string $id, array $input): array

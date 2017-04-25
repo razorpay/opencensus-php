@@ -79,10 +79,10 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
         }
 
-        return $user;
+        return $this->get($user->getId());
     }
 
-    public function get(string $userId, array $input)
+    public function get(string $userId, array $input = [])
     {
         $user = $this->repo->user->findOrFail($userId);
 
