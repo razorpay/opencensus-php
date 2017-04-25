@@ -363,6 +363,9 @@ class Repository extends Base\Repository
         $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
         $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
 
+        // TODO: If the number of gateways exceeds by half of total,
+        // inverse the `whereIn` condition.
+
         return $this->newQuery()
                     ->select($attrs)
                     ->join($pTableName, $rPaymentId, '=', $pId)

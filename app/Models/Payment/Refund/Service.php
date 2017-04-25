@@ -661,11 +661,11 @@ class Service extends Base\Service
 
         foreach ($refunds as $refund)
         {
+            $refundId = $refund->getId();
+
             try
             {
                 $processor = $this->getNewProcessor($refund->merchant);
-
-                $refundId = $refund->getId();
 
                 $status[$refundId] = $processor->processRefundRetry($refund);
 
@@ -673,31 +673,44 @@ class Service extends Base\Service
             }
             catch (\Throwable $e)
             {
-                $this->trace->traceException($e, Trace::INFO, TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION, [
-                        'id' => $refundId
+                $this->trace->traceException(
+                    $e,
+                    Trace::DEBUG,
+                    TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION,
+                    [
+                        'refund_id' => $refundId,
+                        'refund_attempts' => $refund->getAttempts()
                     ]);
 
                 $failure++;
             }
         }
 
-        $this->trace->info(TraceCode::REFUND_RETRY_RESULT, $status);
-
-        return [
-            'successful' => $success,
-            'failure' => $failure,
-            'status' => $status
+        $summary = [
+            'successful'    => $success,
+            'failure'       => $failure,
+            'status'        => $status,
         ];
+
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_RESULT,
+            [
+                $status,
+                'summary' => $summary
+            ]);
+
+        return $summary;
     }
 
     public function retry($id)
     {
         $refund = $this->fetch($id);
 
-        $payment = $refund->payment;
+        $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
 
-        $data = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
-
-        return $data;
+        return [
+            'refund_id' => $id,
+            'status'    => $refundStatus
+        ];
     }
 }

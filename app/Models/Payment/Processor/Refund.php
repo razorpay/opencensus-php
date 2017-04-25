@@ -173,7 +173,11 @@ trait Refund
      * Identifies if the refund passed here was processed
      * by the gateway.
      *
-     * */
+     * @param Payment\Refund\Entity $refund
+     *
+     * @return bool
+     * @throws Exception\BadRequestException
+     */
     public function verifyRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
@@ -412,26 +416,17 @@ trait Refund
         return $verifyRefundResult;
     }
 
+    /**
+     * @param $data
+     *
+     * @return bool
+     * @throws Exception\LogicException
+     */
     protected function callGatewayForVerifyRefund($data)
     {
-        $verifyRefund2Result = null;
+        $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
 
-        try
-        {
-            $verifyRefund2Result = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
-        }
-        catch (Exception\BaseException $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_VERIFY_REFUND_FAILURE,
-                [
-                    'exception' => $e->getData(),
-                    'refund' => $data['refund']
-                ]);
-
-            throw $e;
-        }
-
-        return $verifyRefund2Result;
+        return $verifyRefundResult;
     }
 
     protected function callGatewayForAlreadyRefunded($data)
@@ -517,13 +512,13 @@ trait Refund
 
             if (($paymentId === '6pHu2RnPzTeI51') and ($refAmount === 784000))
             {
-                return;
+                return true;
             }
 
             // HDFC refund which got timed out on HDFC end, but was successful.
             if (($paymentId === '7V6tmkxLdC4xyd') and ($refAmount === 18500))
             {
-                return;
+                return true;
             }
 
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
@@ -737,7 +732,7 @@ trait Refund
 
         $this->repo->saveOrFail($this->refund);
 
-        return $this->refund;
+        return $this->refund->getStatus();
     }
 
     protected function gatewaySupportsReversal($payment)
