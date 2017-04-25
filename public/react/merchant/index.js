@@ -4,12 +4,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { Tabs } from 'react-tabs';
+import store from './store';
 import NgRouterProvider from 'rzp/Providers/NgRouterProvider';
 import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import SessionProvider from './SessionProvider';
-import store from './store';
 
 // import './mocks/faker'
 

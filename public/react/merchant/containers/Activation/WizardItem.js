@@ -5,6 +5,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import { without } from 'rzp/utils/rzp-utils';
 import { showNotification } from 'rzp/modules/notifications';
 import * as ActivationActions from 'merchant/modules/activation';
+import { fetchUser } from 'merchant/modules/session';
 
 import ContactDetailsForm from './ContactDetailsForm';
 import BusinessDetailsForm from './BusinessDetailsForm';
@@ -29,7 +30,7 @@ const FORM_COMPONENTS = {
       ...state.activation,
     };
   },
-  { ...ActivationActions, showNotification }
+  { ...ActivationActions, showNotification, fetchUser }
 )
 @reduxForm({
   destroyOnUnmount: false,
@@ -96,6 +97,7 @@ export default class WizardItem extends Component {
           type: 'success',
           message,
         });
+        this.updateActivationProgress();
       })
       .catch(err => {
         this.setState({
@@ -121,6 +123,7 @@ export default class WizardItem extends Component {
           type: 'success',
           message: 'File uploaded successfully',
         });
+        this.updateActivationProgress();
       })
       .catch(({ errors }) => {
         this.props.showNotification({
@@ -129,6 +132,13 @@ export default class WizardItem extends Component {
         });
       });
   };
+
+  updateActivationProgress() {
+    return this.props.fetchUser().then(response => {
+      // TODO: Remove this manual updation of activation progress once the nav is migrated to react
+      $('#activationNav b').text(`${response.data.activation_progress}%`);
+    });
+  }
 
   render() {
     let WizardForm = FORM_COMPONENTS[this.props.form];
