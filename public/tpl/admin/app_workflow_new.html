@@ -16,7 +16,7 @@
             Name your workflow
           </div>
           <div class="wrapper clearfix">
-            <input type="text" ng-model="workflowName" placeholder="Atleast 4 characters" class="form-control name-input wrapper-xs">
+            <input type="text" ng-model="workflowName" placeholder="Atleast 4 characters" class="form-control name-input wrapper-xs" ng-readonly="!isEditable">
           </div>
         </div>
         <div class="action-desc-panel panel panel-default">
@@ -24,7 +24,7 @@
             Actions List
           </div>
           <div class="wrapper clearfix">
-            <div class="workflow-select2-container m-b">
+            <div class="workflow-select2-container m-b" ng-show="isEditable">
               <select class="select2 workflow-select2 " multiple="multiple" style="width: 100%" ng-model="workflowSelect">
                 <option></option>
                 <option ng-repeat="(key, perm) in permissions" value="{{key}}">{{perm.name}}</option>
@@ -38,25 +38,37 @@
                 <div class="description pull-left col-xs-12 row truncate">
                   {{permissions[id].name}}
                 </div>
-                <i class="delete-btn pull-right fa fa-times" ng-click="deselectPermission(id)" ></i>
+                <i class="delete-btn pull-right fa fa-times" ng-click="deselectPermission(id)" ng-if="isEditable"></i>
               </div>
             </div>
           </div>
         </div>
       </div>
       <div class="col-xs-8">
-        <div ng-repeat="(stepIndex, step) in steps" class="action-desc-panel panel panel-default">
+        <div ng-repeat="(stepIndex, step) in levels" class="action-desc-panel panel panel-default">
           <div class="panel-heading">
             Step {{stepIndex + 1}}
             <i class="delete-btn pull-right fa fa-times" ng-click="removeStep(stepIndex)" ng-if="!editLayout"></i>
           </div>
           <div class="wrapper clearfix">
+
+            <!-- Operation Type -->
+            <span class="m-b" >Operation Type:</span>
+            <div class="optype-container">
+              <span ng-if="editLayout" class="solid-label">{{step.op_type}}</span>
+              <select class="form-control" style="width: 60px;" ng-model="step.op_type" ng-if="!editLayout">
+                <option value="and">AND</option>
+                <option value="or">OR</option>
+              </select>
+            </div>
+
+            <!-- Roles-->
             <div class="m-b">Add a checker to approve the action. Select a role.</div>
             <div class="assignee-list m-b">
-
-              <div class="" ng-repeat="(roleIndex, role) in step">
+              <!-- Role Pills-->
+              <div class="" ng-repeat="(roleIndex, role) in step.steps">
                 <span class="assignee-row" >
-                  <span class="assignee-label">{{roleNames[role.role_id]}} <i class="delete-btn fa fa-times m-l" ng-click="removeRoleFromStep(roleIndex, stepIndex)" ng-if="!editLayout"></i></span>
+                  <span class="pills-label assignee-label">{{roleNames[role.role_id]}} <i class="delete-btn fa fa-times m-l" ng-click="removeRoleFromStep(roleIndex, stepIndex)" ng-if="!editLayout"></i></span>
                   <span class="help-label m-l">Minimum approvals</span>
                   <input ng-disabled="editLayout" ng-model="role.reviewer_count" type="text" ng-pattern="/^[0-9]{1,2}$/" class="form-control m-l reviewer-count"/>
                   <div ng-if="!editLayout" class="reviewer-count-inc-btn" ng-click="incReviewerCount(roleIndex, stepIndex)">
@@ -67,8 +79,8 @@
                   </div>
                 </span>
               </div>
-
             </div>
+            <!-- Role Selection -->
             <div ng-if="!editLayout" class="role-select2-container col-xs-6 row">
               <select class="select2 role-select2 " multiple="multiple" style="width: 100%" ng-model="roleSelect">
                 <option></option>
@@ -77,13 +89,13 @@
             </div>
           </div>
         </div>
-        <button ng-disabled="editLayout" type="button" class="btn btn-default" ng-click="addStep()">
+        <button ng-disabled="!isEditable" type="button" class="btn btn-default" ng-click="addStep()">
           +  Add a Step
         </button>
-        <button type="button" ng-if="!editLayout" class="btn btn-info m-l save-btn" ng-click="createWorkflow()">
+        <button type="button" ng-if="!editLayout && isEditable" class="btn btn-info m-l save-btn" ng-click="createWorkflow()">
           Save Changes
         </button>
-        <button type="button" ng-if="editLayout" class="btn btn-info m-l save-btn" ng-click="editWorkflow()">
+        <button type="button" ng-if="editLayout && isEditable" class="btn btn-info m-l save-btn" ng-click="editWorkflow()">
           Save Changes
         </button>
       </div>

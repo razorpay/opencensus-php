@@ -16,6 +16,8 @@ class Service extends Base\Service
         $app = \App::getFacadeRoot();
 
         $this->trace = $app['trace'];
+
+        $this->adminUser = Auth::guard('api')->user();
     }
 
     // public function call(array $input, $route, $auth)
@@ -118,8 +120,8 @@ class Service extends Base\Service
         {
             $endpointUrl = $route['url'];
 
-            // Permission checker
-            if ( isset($route['routeName']) )
+            // Permission checker for merchant users
+            if ( isset($route['routeName']) && empty($this->adminUser) )
             {
                 $routeName = $route['routeName'];
 

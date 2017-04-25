@@ -431,14 +431,72 @@ a.highlight:hover, a.highlight:focus {
   .assignee-heading {
     margin-bottom: 4px
   }
-  .assignee-label {
-    background: #EBEBEB;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-weight: bold;
-    margin-right: 8px;
-    line-height: 36px;
+  .assignees-container {
+    margin-left: 28px;
+
+    .pills-label {
+      border-radius: 4px;
+      font-weight: bold;
+      padding: 4px 8px;
+      vertical-align: top;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .role-element {
+      display: table-cell;
+      max-width: 75%;
+
+      .assignee-label {
+        background: #EBEBEB;
+        margin-right: 12px;
+      }
+    }
+    .level-element {
+      display: table-cell;
+      position: relative;
+      width: 88px;
+
+      .level-label {
+        background: #fff;
+        border: 1px solid #e4e4e4;
+        text-transform: uppercase;
+        margin-right: 20px;
+        padding: 3px 7px;
+      }
+    }
+
+    &.inactive {
+      .role-element {
+        opacity: 0.6;
+      }
+      .level-element .level-label {
+        color: #9ba3a8;
+        border-color: #efefef;
+      }
+    }
   }
+  .vertical-line {
+    width: 2px;
+    height: 100%;
+    position: absolute;
+    left: 28px;
+    top: 28px;
+    border-left: 1px solid #e4e4e4;
+  }
+  .tick-green {
+    background-color: #16c116;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    font-size: 10px;
+    color: #fff;
+    position: absolute;
+    left: -28px;
+    top: 5px;
+  }
+
   .faded-text {
     color: #ccc;
   }
@@ -643,13 +701,23 @@ a.highlight:hover, a.highlight:focus {
       line-height: 12px;
     }
   }
+  .optype-container {
+    margin: 0 0 10px 10px;
+    display: inline-block;
+  }
+  .solid-label {
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .pills-label {
+    border-radius: 4px;
+    font-weight: bold;
+    padding: 4px 8px;
+    margin: 8px;
+  }
   .assignee-label {
     background: #EBEBEB;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-weight: bold;
-    margin-right: 8px;
-    line-height: 36px;
+    margin-right: 12px;
   }
   .help-label {
     font-size: 12px;

@@ -68,12 +68,6 @@
           Edit Methods
           <i class="pull-right fa fa-money"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == false && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="enableMethod('card')">
-          Enable Card <i class="pull-right fa fa-credit-card-alt"></i>
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == true && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="disableMethod('card')">
-          Disable Card <i class="pull-right fa fa-credit-card-alt"></i>
-        </a>
         <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 0 && admin.permissions.indexOf('edit_merchant_enable_receipt') !== -1" ng-click="setReceiptEmail(1)">
           Enable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
@@ -151,8 +145,9 @@
     </div>
   </div>
   <div class="panel panel-default col-sm-6" >
-    <div class="panel-heading m-t m-b" ng-show="admin.permissions.indexOf('view_as_entity') !== -1">
-      Merchant: <strong>{{merchant.details.id}}</strong> (<a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})">View as Entity</a>)
+    <div class="panel-heading m-t m-b">
+      Merchant: <strong>{{merchant.details.id}}</strong>
+      <a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})" ng-show="admin.permissions.indexOf('view_as_entity') !== -1">(View as Entity)</a>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -443,6 +438,10 @@
           <div class="list-group-item">
             <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
             UPI
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.emi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.emi == true, 'fa-times text-danger': merchant.details.methods.emi == false}"></i></span>
+            EMI
           </div>
         </div>
         <!-- <a href class="list-group-item">
