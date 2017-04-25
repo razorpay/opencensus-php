@@ -19,7 +19,7 @@ class FileDeleter
 
     protected $fileTypeMapping = array(
         'setl_initiate' => 'ReconciliationGenerator2',
-        'reconcile'     => 'Reconciliation\\Processor',
+        'reconcile'     => 'Reconciliation\\Base\\Processor',
         'return'        => 'ReturnTransactions');
 
     public function deleteFileIfExists($setlFileType)

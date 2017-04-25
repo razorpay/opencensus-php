@@ -1,23 +1,24 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Kotak\Reconciliation\RowProcessor;
+namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V3;
 
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Kotak\Headings;
+use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
-class V2 extends Base
+class RowProcessor extends Base\RowProcessor
 {
     public function __construct($row)
     {
         parent::__construct($row);
 
-        $this->version = Attempt\Version::V2;
+        $this->version = Attempt\Version::V3;
     }
 
-    public static function isV2($row): bool
+    public static function isV3($row): bool
     {
-        if (($row[Headings::ENRICHMENT_2] !== null) and
-            ($row[Headings::ENRICHMENT_2] === Attempt\Version::V2))
+        if (($row[Headings::PAYMENT_DETAILS_3] !== null) and
+            ($row[Headings::PAYMENT_DETAILS_3] === Attempt\Version::V3))
         {
             return true;
         }
@@ -27,15 +28,6 @@ class V2 extends Base
 
     protected function fetchEntities()
     {
-        $entityId = $parsedData['payment_ref_no'];
-
-        $entityId = str_replace(' ', '_', $entityId);
-
-        if (($entityId === '') and (strlen(trim((implode($parsedData)))) === 0))
-        {
-                return;
-        }
-
         $this->reconEntity = $this->repo
                                   ->fund_transfer_attempt
                                   ->findWithRelations(
@@ -54,7 +46,7 @@ class V2 extends Base
         $this->reconEntity->setCmsRefNo($this->parsedData['cms_ref_no']);
         $this->reconEntity->saveOrFail();
 
-        $source = $reconEntity->source;
+        $source = $this->reconEntity->source;
         $source->setUtr($this->parsedData['utr']);
         $source->setFailureReason($this->parsedData['failure_reason']);
         $source->setStatus($this->parsedData['status']);

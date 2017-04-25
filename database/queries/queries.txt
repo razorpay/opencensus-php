@@ -1902,8 +1902,8 @@ ALTER TABLE upi
     ADD INDEX upi_refund_id_index (refund_id);
 
 ALTER TABLE daily_settlements
-    ADD COLUMN processed_amount bigint(20) unsigned NOT NULL AFTER amount,
-    ADD COLUMN processed_count int(11) NOT NULL AFTER total_count;
+    ADD COLUMN processed_amount bigint(20) unsigned AFTER amount,
+    ADD COLUMN processed_count int(11) AFTER total_count;
 
 ALTER TABLE workflow_steps
     ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;

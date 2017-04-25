@@ -1,23 +1,24 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Kotak\Reconciliation\RowProcessor;
+namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V2;
 
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Kotak\Headings;
+use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
-class V3 extends Base
+class RowProcessor extends Base\RowProcessor
 {
     public function __construct($row)
     {
         parent::__construct($row);
 
-        $this->version = Attempt\Version::V3;
+        $this->version = Attempt\Version::V2;
     }
 
-    public static function isV3($row): bool
+    public static function isV2($row): bool
     {
-        if (($row[Headings::PAYMENT_DETAILS_3] !== null) and
-            ($row[Headings::PAYMENT_DETAILS_3] === Attempt\Version::V3))
+        if (($row[Headings::ENRICHMENT_2] !== null) and
+            ($row[Headings::ENRICHMENT_2] === Attempt\Version::V2))
         {
             return true;
         }
@@ -45,7 +46,7 @@ class V3 extends Base
         $this->reconEntity->setCmsRefNo($this->parsedData['cms_ref_no']);
         $this->reconEntity->saveOrFail();
 
-        $source = $this->reconEntity->source;
+        $source = $reconEntity->source;
         $source->setUtr($this->parsedData['utr']);
         $source->setFailureReason($this->parsedData['failure_reason']);
         $source->setStatus($this->parsedData['status']);

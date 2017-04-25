@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Kotak\Reconciliation\RowProcessor;
+namespace RZP\Models\FundTransfer\Kotak\Reconciliation;
 
 class Status
 {

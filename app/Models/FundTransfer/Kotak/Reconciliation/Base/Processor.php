@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Kotak\Reconciliation;
+namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
 use Carbon\Carbon;
 use Excel;
@@ -151,7 +151,7 @@ class Processor extends Base\Core
     {
         $version = $this->getSettlementVersion($row);
 
-        $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\RowProcessor\\' . ucwords($version);
+        $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\' . ucwords($version) . '\\RowProcessor';
 
         $reconciledEntity = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
 
@@ -199,11 +199,11 @@ class Processor extends Base\Core
     {
         $version = FundTransferAttempt\Version::V1;
 
-        if (RowProcessor\V2::isV2($row))
+        if (Kotak\Reconciliation\V2\RowProcessor::isV2($row) === true)
         {
             $version = FundTransferAttempt\Version::V2;
         }
-        else if (RowProcessor\V3::isV3($row))
+        else if (Kotak\Reconciliation\V3\RowProcessor::isV3($row) === true)
         {
             $version = FundTransferAttempt\Version::V3;
         }

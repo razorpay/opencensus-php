@@ -1,12 +1,13 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Kotak\Reconciliation\RowProcessor;
+namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V1;
 
 use RZP\Models\FundTransfer\Attempt\Version;
+use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 use RZP\Models\Payout;
 use RZP\Models\Settlement;
 
-class V1 extends Base
+class RowProcessor extends Base\RowProcessor
 {
     public function __construct($row)
     {

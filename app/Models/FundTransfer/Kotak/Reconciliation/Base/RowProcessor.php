@@ -1,25 +1,22 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Kotak\Reconciliation\RowProcessor;
+namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 
 use RZP\Constants\Entity;
-use RZP\Constants\Mode;
+use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Kotak\Headings;
+use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
 
-class Base
+class RowProcessor extends BaseCore
 {
     const SUCCESS_STATUS = [
         'Beneficiary Account Credited',
         'Account Debited',
         'Presented and Paid',
     ];
-
-    protected $repo;
-
-    protected $mode;
 
     protected $row;
 
@@ -35,13 +32,9 @@ class Base
 
     public function __construct($row)
     {
+        parent::__construct();
+
         $this->row = $row;
-
-        $this->mode = \BasicAuth::getMode();
-
-        $this->app = App::getFacadeRoot();
-
-        $this->repo = $this->app['repo'];
     }
 
     public function process($reconciledAt)
@@ -91,7 +84,7 @@ class Base
 
             // If current time is before 10 pm, dont mark the settlement as
             // processed and update only the utr
-            if (($now < $tenPm) and ($this->mode === Mode::LIVE))
+            if (($now < $tenPm) and ($this->env !== 'testing'))
             {
                 $status = $entity->getStatus();
             }
@@ -110,8 +103,6 @@ class Base
 
         // Verify status
         $oldStatus = $this->reconEntity->getStatus();
-
-        $entityStatusClass = Entity::getEntityNamespace($this->reconEntity->getEntityName()) . '\\Status';
 
         if ($oldStatus !== $status)
         {

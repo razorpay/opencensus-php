@@ -8,14 +8,14 @@ class Service extends Base\Service
 {
     public function reconcileSettlements($input)
     {
-        $data = (new Reconciliation\Processor)->process($input);
+        $data = (new Reconciliation\Base\Processor)->process($input);
 
         return $data;
     }
 
     public function reconcileH2HSettlements($input)
     {
-        $data = (new Reconciliation\Processor)->process($input);
+        $data = (new Reconciliation\Base\Processor)->process($input);
 
         return $data;
     }
