@@ -114,7 +114,7 @@ var app = angular
           template: '<div ui-view class="fade-in-down"></div>',
         })
         .state('app.merchants.list', {
-          url: '/list',
+          url: '/list/:type',
           templateUrl: 'tpl/admin/app_merchants.html',
         })
         .state('app.merchants.invite', {

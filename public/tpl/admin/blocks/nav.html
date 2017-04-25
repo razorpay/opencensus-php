@@ -9,7 +9,7 @@
     </a>
   </li>
   <li ng-if="admin.permissions && admin.permissions.indexOf('view_all_merchants') !== -1">
-    <a id="merchantsNav" ui-sref="app.merchants.list">
+    <a id="merchantsNav" ui-sref="app.merchants.list({ type: 'activated' })">
       <i class="fa fa-users icon text-warning-lter"></i>
       <span>Merchants</span>
     </a>
