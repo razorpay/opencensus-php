@@ -514,6 +514,12 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
+        $hash = $content[ResponseFields::HASH];
+
+        unset($content[ResponseFields::HASH]);
+
+        $this->verifyHash($hash, $content);
+
         $date = $this->getEpochTime(
             $content[ResponseFields::TRAN_DATE],
             DateFormat::TRAN_DATE_FORMAT);
@@ -532,10 +538,6 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
-
-        //TODO Temporary solution for checksum
-        $this->verifyPaymentInAuthorize($input, $content);
-
     }
 
     protected function verifyPaymentInAuthorize(array $input, array $content)
@@ -579,9 +581,39 @@ class Gateway extends Base\Gateway
         // Secret should only be accessed here.
         $secret = $this->getSecret();
 
-        $hashString = $hashString.'#'.$secret;
+        $hashString = $hashString . '#' . $secret;
 
         return hash(HashAlgo::SHA512, $hashString, false);
+    }
+
+    /**
+     * To verify the airtelmoney callback response
+     */
+    protected function verifyHash(string $actualHash, array $input)
+    {
+        $expectedHash = $this->getVerifyHashOfArray($input);
+
+        if (hash_equals($expectedHash, $actualHash) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed checksum verification');
+        }
+    }
+
+    public function getVerifyHashOfArray($content)
+    {
+        // Hash fields for authorize are different from response hash.
+        // AMT <-> TRAN_AMT etc.
+        $hashArray = [
+            $content[ResponseFields::MID],
+            $content[ResponseFields::TXN_REF_NO],
+            $content[ResponseFields::TRAN_AMT],
+            $content[ResponseFields::TRAN_DATE],
+        ];
+
+        $hashString = implode('#', $hashArray);
+
+        return $this->getHashOfString($hashString);
     }
 
     protected function getAuthRedirectRequestArray($input)

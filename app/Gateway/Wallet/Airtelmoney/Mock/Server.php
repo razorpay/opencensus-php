@@ -51,13 +51,15 @@ class Server extends Base\Mock\Server
                 ResponseFields::MSG        => self::DUMMY_MSG,
                 ResponseFields::MID        => $input[RequestFields::MID],
                 ResponseFields::TRAN_ID    => $this->getArtlTxnId(),
-                ResponseFields::TRAN_AMT   => $input[RequestFields::AMT],
+                ResponseFields::TRAN_AMT   => sprintf("%0.2f", $input[RequestFields::AMT]),
                 ResponseFields::TRAN_CUR   => 'INR',
                 ResponseFields::TRAN_DATE  => $this->getFormattedDate(
                     Carbon::now(),
                     DateFormat::TRAN_DATE_FORMAT),
                 ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
             ];
+
+            $queryArray[ResponseFields::HASH] = $this->generateHash($queryArray);
 
             $params = http_build_query($queryArray);
         }
@@ -180,5 +182,13 @@ class Server extends Base\Mock\Server
         $xml = new \SimpleXMLElement('<wallet/>');
         array_walk_recursive($content, array($xml, 'addChild'));
         return ($xml->asXML());
+    }
+
+    /**
+     * Response has to be hashed using getVerifyHashOfArray
+     */
+    protected function generateHash($content)
+    {
+        return $this->getGatewayInstance()->getVerifyHashOfArray($content);
     }
 }
