@@ -2,32 +2,76 @@
 
 namespace RZP\Services;
 
-use Swift_Mailer;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\Events\Dispatcher;
+use App;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use Illuminate\Mail\Mailer as LaravelMailer;
 
 class Mailer extends LaravelMailer
 {
-    protected $serviceName = 'mailer';
+    /**
+     * Add Extra logger on top of laravel Mailer
+     */
 
-    public function __construct(Factory $views,
-                                Swift_Mailer $swift,
-                                Dispatcher $events = null,
-                                string $serviceName = 'mailer')
+    const MAX_ALLOWED_ATTEMPTS = 5;
+
+    const RELEASE_WAIT_SECS = 120;
+
+    public function handleQueuedMessage($job, $data)
     {
-        parent::__construct($views, $swift, $events);
+        $app = App::getFacadeRoot();
 
-        $this->serviceName = $serviceName;
-    }
+        $trace = $app['trace'];
 
-    public function queue($view, array $data, $callback, $queue = null)
-    {
-        $callback = $this->buildQueueCallable($callback);
+        $mailData = $data['data'] ?? null;
 
-        return $this->queue->push(
-            $this->serviceName . '@handleQueuedMessage',
-            compact('view', 'data', 'callback'), $queue
+        $mailView = $data['view'] ?? null;
+
+        $trace->debug(
+            TraceCode::MAILER_JOB_RECEIVED,
+            [
+                'action'         => 'start',
+                'job_attempts'   => $job->attempts(),
+                'data'           => $mailData,
+                'view'           => $mailView
+            ]
+        );
+
+        try
+        {
+            parent::handleQueuedMessage($job, $data);
+        }
+        catch (\Throwable $e)
+        {
+            if ($job->attempts() > self::MAX_ALLOWED_ATTEMPTS)
+            {
+                $job->delete();
+            }
+            else
+            {
+                $job->release(self::RELEASE_WAIT_SECS);
+            }
+
+            $trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MAILER_JOB_ERROR,
+                [
+                    'job_attempts'   => $job->attempts(),
+                    'data'           => $mailData,
+                    'view'           => $mailView
+                ]
+            );
+        }
+
+        $trace->debug(
+            TraceCode::MAILER_JOB_RECEIVED,
+            [
+                'action'         => 'end',
+                'job_attempts'   => $job->attempts(),
+                'data'           => $mailData,
+                'view'           => $mailView
+            ]
         );
     }
 }
