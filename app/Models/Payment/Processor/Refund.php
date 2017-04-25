@@ -169,7 +169,7 @@ trait Refund
     }
 
     /**
-     * Calls verifyRefund2 on gateway.
+     * Calls verifyRefund on gateway.
      * Identifies if the refund passed here was processed
      * by the gateway.
      *
@@ -191,9 +191,9 @@ trait Refund
             $data['card'] = $payment->card->toArray();
         }
 
-        $verifyRefund2Result = $this->callGatewayForVerifyRefund($data);
+        $verifyRefundResult = $this->callGatewayForVerifyRefund($data);
 
-        return $verifyRefund2Result;
+        return $verifyRefundResult;
     }
 
     public function createGatewayRefundRecord(Payment\Refund\Entity $refund)

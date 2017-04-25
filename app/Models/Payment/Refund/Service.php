@@ -271,7 +271,7 @@ class Service extends Base\Service
 
             $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
 
-            $data[] = $this->getNewProcessor($merchant)->verifyRefund($refund);
+            $data[] = $this->getNewProcessor($merchant)->verifyInternalRefund($refund);
         }
 
         return $data;
