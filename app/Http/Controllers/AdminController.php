@@ -78,6 +78,15 @@ class AdminController extends Controller
         $input = Request::all();
     }
 
+    public function setConfigKeys()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Service)->setConfigKeys($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getScorecard()
     {
         $input = Request::all();

@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Admin;
 
+use Cache;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 
 class Service extends Base\Service
@@ -88,6 +90,37 @@ class Service extends Base\Service
         $mailer->setRecipient($input['lists']);
 
         return $mailer->send();
+    }
+
+    public function setConfigKeys(array $input): array
+    {
+        (new Validator)->validateInput('set_config_keys', $input);
+
+        $result = [];
+
+        foreach ($input as $key => $value)
+        {
+            $result[] = $this->setSingleConfigKey($key, $value);
+        }
+
+        return $result;
+    }
+
+    protected function setSingleConfigKey(string $key, string $newValue): array
+    {
+        $oldValue = Cache::get($key);
+
+        Cache::forever($key, $newValue);
+
+        $data = [
+            'key'       => $key,
+            'old_value' => $oldValue,
+            'new_value' => $newValue,
+        ];
+
+        $this->trace->info(TraceCode::ADMIN_CONFIG_KEY_SET, $data);
+
+        return $data;
     }
 
     public function processMailgunCallback($type, $input)
