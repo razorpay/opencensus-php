@@ -8,7 +8,7 @@ import { Field } from 'redux-form';
     This component wrapper loops through its children & sets the `readonly` on its form elements
  */
 
-const InputTypes = ['input', 'select', Field];
+const InputTypes = ['input', 'textarea', Field];
 
 export default class Fieldset extends Component {
   renderChildren(children) {

@@ -13,6 +13,10 @@ export const fetchActivationDetails = () => {
       payload: ajax({
         url: '/activation/details',
         appendModeInURL: false,
+      }).then(response => {
+        response.data.bank_account_number_confirmation =
+          response.data.bank_account_number;
+        return response;
       }),
     });
   };

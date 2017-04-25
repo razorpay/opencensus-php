@@ -323,6 +323,10 @@ var app = angular
           ],
           templateProvider: reactTemplateProvider('<payment-details id="id"/>'),
         })
+        .state('app.activation', {
+          url: '/activation',
+          templateProvider: reactTemplateProvider('<activation-wizard />'),
+        })
         //Guest Routes
         .state('access', {
           url: '/access',

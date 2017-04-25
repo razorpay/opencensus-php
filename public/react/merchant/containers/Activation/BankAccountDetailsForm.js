@@ -15,10 +15,11 @@ function verifyAccountNumber(value, allValues, props) {
 export default class BankDetailsForm extends Component {
   render() {
     let { handleSubmit, save, saveAndNext, gotoTab, data } = this.props;
+    let { locked, activated } = data;
 
     return (
       <form class="form-horizontal" onSubmit={handleSubmit(save)}>
-        <Fieldset readOnly={data.locked} disabled={data.activated}>
+        <Fieldset readOnly={locked} disabled={activated}>
           <div class="form-group">
             <label class="col-md-3 control-label label-required">
               Branch IFSC Code
@@ -173,6 +174,7 @@ export default class BankDetailsForm extends Component {
                 tagName="select"
                 class="form-control"
                 placeholder="Beneficiary Address State"
+                disabled={locked}
                 validate={[required()]}
               >
                 <option />

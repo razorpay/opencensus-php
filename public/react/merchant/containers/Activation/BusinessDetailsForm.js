@@ -47,10 +47,11 @@ export default class BusinessDetailsForm extends Component {
 
   render() {
     let { handleSubmit, save, saveAndNext, gotoTab } = this.props;
+    let locked = this.props.data.locked;
 
     return (
       <form class="form-horizontal" onSubmit={handleSubmit(saveAndNext)}>
-        <Fieldset readOnly={this.props.data.locked}>
+        <Fieldset readOnly={locked}>
           <div class="form-group">
             <label class="col-md-3 control-label label-required">
               Organisation Type
@@ -71,6 +72,7 @@ export default class BusinessDetailsForm extends Component {
                 tagName="select"
                 class="form-control"
                 autoFocus={true}
+                disabled={locked}
                 validate={[required()]}
               >
                 <option />
@@ -133,6 +135,7 @@ export default class BusinessDetailsForm extends Component {
                 <Field
                   name="business_international"
                   component={CheckboxField}
+                  disabled={locked}
                 />
                 <i />
               </label>
@@ -152,9 +155,10 @@ export default class BusinessDetailsForm extends Component {
             <div class="col-md-9">
               <Field
                 name="business_paymentdetails"
+                class="form-control"
                 component={InputField}
                 tagName="select"
-                class="form-control"
+                disabled={locked}
                 validate={[required()]}
               >
                 <option />
@@ -253,28 +257,30 @@ export default class BusinessDetailsForm extends Component {
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label">
-              Operational Address same as Registered Address
-            </label>
-            <div class="col-md-9 checkbox">
-              <label class="i-switch">
-                <Field
-                  name="or_same"
-                  component="input"
-                  type="checkbox"
-                  onChange={this.updateOperationalAddress}
-                />
-                <i />
-              </label>
-              <small class="help-block">
-                <i class="fa fa-info-circle" />
-                <span>
-                  Physical Verification might be performed at your operational address.
-                </span>
-              </small>
-            </div>
-          </div>
+          {!locked
+            ? <div class="form-group">
+                <label class="col-md-3 control-label">
+                  Operational Address same as Registered Address
+                </label>
+                <div class="col-md-9 checkbox">
+                  <label class="i-switch">
+                    <Field
+                      name="or_same"
+                      component="input"
+                      type="checkbox"
+                      onChange={this.updateOperationalAddress}
+                    />
+                    <i />
+                  </label>
+                  <small class="help-block">
+                    <i class="fa fa-info-circle" />
+                    <span>
+                      Physical Verification might be performed at your operational address.
+                    </span>
+                  </small>
+                </div>
+              </div>
+            : null}
 
           <fieldset disabled={this.props.or_same}>
             <div class="form-group">
@@ -349,6 +355,7 @@ export default class BusinessDetailsForm extends Component {
                 component={DatePickerField}
                 class="form-control"
                 outputDateFormat="YYYY-MM-DD"
+                disabled={locked}
                 isOutsideRange={day => {
                   return day.isAfter(moment());
                 }}
@@ -414,6 +421,7 @@ export default class BusinessDetailsForm extends Component {
                 component={InputField}
                 tagName="select"
                 class="form-control"
+                disabled={locked}
                 validate={[required()]}
               >
                 <option />
