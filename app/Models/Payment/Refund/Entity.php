@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const NOTES             = 'notes';
     const BATCH_ID          = 'batch_id';
     const GATEWAY_REFUNDED  = 'gateway_refunded';
+    const RRN               = 'rrn';
 
     protected static $sign = 'rfnd';
 
@@ -54,6 +55,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::BATCH_ID,
         self::GATEWAY_REFUNDED,
+        self::RRN,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -190,6 +192,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::AMOUNT];
     }
 
+    public function getRrn()
+    {
+        return $this->getAttribute(self::RRN);
+    }
+
     public function setGatewayRefunded($gatewayRefunded)
     {
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
@@ -223,6 +230,11 @@ class Entity extends Base\PublicEntity
     {
         $array[self::PAYMENT_ID] =
             Payment\Entity::getIdPrefix() . $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function setRrn(string $rrn)
+    {
+        $this->setAttribute(self::RRN, $rrn);
     }
 
     public function getGateway()
