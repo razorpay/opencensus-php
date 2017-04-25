@@ -68,13 +68,9 @@ class DashboardUserProvider implements UserProvider
 
             if (empty($error) === true)
             {
-                $this->app['session']->put('dashboard_user', $user['id']);
+                $this->app['session']->put('dashboard_user_payload', $user);
 
-                list($error, $userDetails) = (new User\Service)->getUserFromApi($user['id']);
-
-                $this->app['session']->put('dashboard_user_payload', $userDetails);
-
-                return $this->getGenericUser($userDetails);
+                return $this->getGenericUser($user);
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
