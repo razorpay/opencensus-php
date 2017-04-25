@@ -711,14 +711,15 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
+        $this->refund->incrementAttempts();
+        $this->repo->saveOrFail($this->refund);
+
         // true  if refunded
         // false if not refunded
         $refundedOnGateway = $this->verifyRefund($refund);
 
         if ($refundedOnGateway === false)
         {
-            $this->refund->incrementAttempts();
-
             $refundedOnGateway = $this->mutex->acquireAndRelease(
                 $payment->getId(),
                 function() use ($data, $payment)

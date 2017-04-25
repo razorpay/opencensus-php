@@ -174,14 +174,14 @@ class Gateway extends Base\Gateway
 
             $this->traceGatewayResponse(TraceCode::GATEWAY_REFUND_RESPONSE, $response, $input);
 
+            $gatewayAttributes = $this->getAttributeFromRefundResponse($input, $response);
+
+            $this->createGatewayRefundEntity($gatewayAttributes, $input);
+
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
                 $this->checkErrorsAndThrowException($response);
             }
-
-            $gatewayAttributes = $this->getAttributeFromRefundResponse($input, $response);
-
-            $this->createGatewayRefundEntity($gatewayAttributes, $input);
         }
         catch (SoapFault $exception)
         {
@@ -207,14 +207,14 @@ class Gateway extends Base\Gateway
             $this->traceGatewayResponse(
                 TraceCode::GATEWAY_REVERSE_RESPONSE, $response, $input);
 
+            $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
+
+            $this->createGatewayRefundEntity($gatewayAttributes, $input);
+
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
                 $this->checkErrorsAndThrowException($response);
             }
-
-            $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
-
-            $this->createGatewayRefundEntity($gatewayAttributes, $input);
         }
         catch (SoapFault $exception)
         {
@@ -239,6 +239,8 @@ class Gateway extends Base\Gateway
 
         $refundReplies = $this->fetchRefundGatewayReplyFromContent($content);
 
+        $status = Status::REFUNDED;
+
         foreach ($refundReplies as $refundReply)
         {
             if ((isset($refundReply[0][F::R_FLAG]) === true) and
@@ -246,6 +248,20 @@ class Gateway extends Base\Gateway
             {
                 return false;
             }
+            else if ((isset($refundReply[0]['@attributes'][F::NAME]) === true) and
+                     ($refundReply[0]['@attributes'][F::NAME] === 'ics_auth_reversal'))
+            {
+                $status = Status::REVERSED;
+            }
+        }
+
+        $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+        if ($gatewayEntity !== null)
+        {
+            $gatewayEntity->setStatus($status);
+
+            $this->repo->saveOrFail($gatewayEntity);
         }
 
         return true;
@@ -968,6 +984,11 @@ class Gateway extends Base\Gateway
             E::RECEIVED      => true
         ];
 
+        if ($response[F::REASON_CODE] !== Result::SUCCESS)
+        {
+            $attributes[E::STATUS] = Status::REFUND_FAILED;
+        }
+
         return $attributes;
     }
 
@@ -981,6 +1002,11 @@ class Gateway extends Base\Gateway
             E::STATUS             => Status::REVERSED,
             E::RECEIVED           => true
         ];
+
+        if ($response[F::REASON_CODE] !== Result::SUCCESS)
+        {
+            $attributes[E::STATUS] = Status::REVERSE_FAILED;
+        }
 
         return $attributes;
     }
