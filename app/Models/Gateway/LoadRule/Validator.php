@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::CARD_TYPE        => 'sometimes|filled|string|max:10',
         Entity::ISSUER           => 'sometimes|filled|string',
         Entity::NETWORK          => 'sometimes|filled|string|max:10',
-        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string|custom',
+        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
         Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
         Entity::LOAD             => 'required|integer|min:0|max:10000'
     ];

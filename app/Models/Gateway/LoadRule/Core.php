@@ -101,13 +101,13 @@ class Core extends Base\Core
 
             case Payment\Method::NETBANKING:
 
-                $params[Entity::ISSUER] = [$payment->getBank(), null];
+                $params[Entity::ISSUER] = $payment->getBank();
 
                 break;
 
             case Payment\Method::WALLET:
 
-                $params[Entity::ISSUER] = [$payment->getWallet(), null];
+                $params[Entity::ISSUER] = $payment->getWallet();
 
                 break;
 
@@ -123,11 +123,11 @@ class Core extends Base\Core
     {
         $card = $payment->card;
 
-        $params[Entity::CARD_TYPE] = [$card->getType(), null];
+        $params[Entity::CARD_TYPE] = $card->getType();
 
-        $params[Entity::NETWORK] = [$card->getNetworkCode(), null];
+        $params[Entity::NETWORK] = $card->getNetworkCode();
 
-        $params[Entity::ISSUER] = [$card->getIssuer(), null];
+        $params[Entity::ISSUER] = $card->getIssuer();
     }
 
     protected function getTerminalGateways(array $terminals)

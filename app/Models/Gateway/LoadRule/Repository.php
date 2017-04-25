@@ -21,16 +21,24 @@ class Repository extends Base\Repository
     ];
 
     /**
-     * Defines a map of keys on which to query for conflicting rules. The boolean
-     * value determines if we additionally need to check for null in the query
+     * Atributes on which to build select query on
      */
-    const QUERY_KEYS = [
-        Entity::MERCHANT_ID   => false,
-        Entity::METHOD        => false,
-        Entity::CARD_TYPE     => true,
-        Entity::NETWORK       => true,
-        Entity::ISSUER        => true,
-        Entity::INTERNATIONAL => false
+    const QUERY_ATTRIBUTES = [
+        Entity::MERCHANT_ID,
+        Entity::METHOD,
+        Entity::CARD_TYPE,
+        Entity::NETWORK,
+        Entity::ISSUER,
+        Entity::INTERNATIONAL,
+    ];
+
+    /**
+     * Attributes for which we also need to include null values in the where clause
+     */
+    const NULLABLE_ATTRIBUTES = [
+        Entity::CARD_TYPE,
+        Entity::NETWORK,
+        Entity::ISSUER
     ];
 
     public function findExistingRule(array $input)
@@ -42,21 +50,11 @@ class Repository extends Base\Repository
     {
         $params = [];
 
-        // For certain keys like network, issuer we also include null as a search attribute
-        // as it signifies any / all value for the attribute. For e.g 'null' network
-        // means that rule is applicable for all networks. So a rule with network VISA, may
-        // potentially conflict with this rule. So we form a query like
-        // WHERE <attribute> IN (null, <value>)
-        foreach (self::QUERY_KEYS as $key => $includeNull)
+        foreach (self::QUERY_ATTRIBUTES as $key)
         {
             if (empty($input[$key]) === false)
             {
                 $params[$key] = $input[$key];
-
-                if ($includeNull === true)
-                {
-                    $params[$key] = [$input[$key], null];
-                }
             }
         }
 
@@ -76,6 +74,17 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    /**
+     * Adds where clauses to the select query depending on the type of keys
+     * If the key is an array builds query like WHERE IN (<val1>, <val2>)
+     * If the key belongs to NULLABLE_ATTRIBUTES builds query like WHERE (key = val OR key IS NULL)
+     * This is required to handle cases where some rules can have null value for thse attributes
+     * signifying any/all hence we need to include these rules also
+     * In all other cases just adds simple where clause like WHERE key = valie
+     *
+     * @param  Querybuilder  $query  Query object
+     * @param  array  $params query params
+     */
     protected function buildSelectionQuery($query, array $params)
     {
         foreach ($params as $key => $value)
@@ -83,6 +92,14 @@ class Repository extends Base\Repository
             if (is_array($value) === true)
             {
                 $query->whereIn($key, $value);
+            }
+            else if (in_array($key, self::NULLABLE_ATTRIBUTES, true) === true)
+            {
+                $query->where(function ($query) use ($key, $value)
+                {
+                    $query->where($key, '=', $value)
+                          ->orWhereNull($key);
+                });
             }
             else
             {
