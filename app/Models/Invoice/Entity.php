@@ -255,6 +255,7 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::ENTITY,
         self::CUSTOMER_DETAILS,
+        self::LINE_ITEMS,
         self::PAYMENT_ID,
     ];
 
@@ -639,6 +640,18 @@ class Entity extends Base\PublicEntity
             self::CUSTOMER_CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
             self::CUSTOMER_ADDRESS         => null,
         ];
+    }
+
+    /**
+     * TODO: Remove this post expand pr is merged. Also remove from $appends.
+     *
+     * @return Base\PublicCollection
+     */
+    protected function getLineItemsAttribute()
+    {
+        $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
+
+        return $lineItems;
     }
 
     protected function getPaymentIdAttribute()

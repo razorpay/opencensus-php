@@ -28,7 +28,8 @@ class Repository extends Base\Repository
         Entity::CUSTOMER_EMAIL    => 'sometimes|email',
         Entity::NOTES             => 'sometimes|string|min:1|max:40',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
-        EsRepository::SEARCH_HITS => 'sometimes|boolean',
+        // TODO: Enable this once the expand pr is back merged.
+        // EsRepository::SEARCH_HITS => 'sometimes|boolean',
     ];
 
     protected $appFetchParamRules = [

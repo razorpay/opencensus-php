@@ -50,15 +50,6 @@ class Repository extends \Razorpay\Spine\Repository
      */
     protected $esRepo = null;
 
-    /**
-     * Holds list of relations to be loaded with newQuery() (find/fetch).
-     * Use like - repo->with([Entity::LINE_ITEMS])->fetch().
-     * Optimizes query in general by doing mysql IN() query.
-     *
-     * @var array
-     */
-    protected $relations = [];
-
     public function __construct()
     {
         parent::__construct();
@@ -98,43 +89,6 @@ class Repository extends \Razorpay\Spine\Repository
     public function findOrFailPublic($id, $columns = array('*'))
     {
         return $this->newQuery()->findOrFailPublic($id, $columns);
-    }
-
-    /**
-     * Sets relations property which gets used in newQuery to load relations
-     * optimally.
-     *
-     * @param array $relations
-     *
-     * @return self
-     */
-    public function with(array $relations): self
-    {
-        $this->relations = array_map(
-                                function ($v)
-                                {
-                                    return camel_case($v);
-                                },
-                                $relations);
-
-        return $this;
-    }
-
-    /**
-     * Overrides parent's method to use $relations attribute.
-     *
-     * @return BuilderEx
-     */
-    public function newQuery(): BuilderEx
-    {
-        $query = parent::newQuery();
-
-        if (empty($this->relations) === false)
-        {
-            $query->with($this->relations);
-        }
-
-        return $query;
     }
 
     public function findOrFailPublicWithRelations(
