@@ -75,6 +75,7 @@ app.controller('WorkflowNewCtrl', [
 
               $scope.levels[level.level - 1].steps  = level.steps;
             }
+            setTimeout(initRoleSelector, 0);
           });
         }
 
@@ -154,10 +155,9 @@ app.controller('WorkflowNewCtrl', [
       });
 
     // Initialize each new step with role selector picker input field
-    var addRoleSelector = function(stepId) {
-      var $roleSelect = $(
-        $('.role-select2')[$('.role-select2').length - 1]
-      ).select2({
+    var addRoleSelector = function(roleSelector) {
+      var $roleSelect = roleSelector;
+      $roleSelect.select2({
         theme: 'classic',
         placeholder: 'Select a role',
       });
@@ -184,6 +184,21 @@ app.controller('WorkflowNewCtrl', [
       });
     };
 
+    // Init role selector for all existing levels in the view
+    function initRoleSelector() {
+      var $roleSelect = $('.role-select2');
+      addRoleSelector($roleSelect);
+    }
+
+    // Attach role selector to the newly added level
+    function attachRoleSelector() {
+      var $roleSelect = $(
+        $('.role-select2')[$('.role-select2').length - 1]
+      );
+
+      addRoleSelector($roleSelect);
+    }
+
     // Add a new level and initialize with empty roles(steps)
     $scope.addStep = function() {
       $scope.levels.push({
@@ -191,7 +206,7 @@ app.controller('WorkflowNewCtrl', [
         op_type: 'and'
       });
 
-      setTimeout(addRoleSelector, 0);
+      setTimeout(attachRoleSelector, 0);
     };
 
     // Remove corresponding level box
