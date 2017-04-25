@@ -27,12 +27,15 @@ class EmiFile extends Base\Core
         $this->mail = \Mail::getFacadeRoot();
     }
 
-    public function generate($input)
+    public function generate($input, $email = null)
     {
         $emiData = $this->getEmiData($input);
 
         $emiFile = $this->writeEmiFile($emiData);
 
+        // Reset email if required
+        $this->resetEmail($email);
+        s($this->emailIdsToSendTo);
         $this->sendEmiFile($emiFile['path']);
 
         $this->trace->info(
@@ -41,6 +44,14 @@ class EmiFile extends Base\Core
         );
 
         return $emiFile['url'];
+    }
+
+    protected function resetEmail($email)
+    {
+        if (empty($email) === false)
+        {
+            $this->emailIdsToSendTo = [$email];
+        }
     }
 
     protected function getCardNumber($card)
