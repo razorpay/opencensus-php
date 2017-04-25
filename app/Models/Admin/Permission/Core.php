@@ -44,7 +44,7 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($permission);
 
-            if (empty($input[Entity::ORGS]) === false)
+            if (isset($input[Entity::ORGS]) === true)
             {
                 $assignedOrgs = $permission->orgs()->getRelatedIds()->toArray();
 
