@@ -9,8 +9,6 @@ use RZP\Models\Merchant\Account;
 
 class Core extends Base\Core
 {
-    use Matcher;
-
     public function create(array $input)
     {
         $loadRule = (new Entity)->build($input);
@@ -22,6 +20,8 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_GATEWAY_LOAD_RULE_EXISTS);
         }
 
+        // Checks if there are any potential conflicting rules and throws exception
+        // if sum of all loads of such conflicting cases is above 10000
         $this->checkIfTotalLoadIsValid($loadRule, $input);
 
         $this->repo->saveOrFail($loadRule);
@@ -35,7 +35,7 @@ class Core extends Base\Core
 
         $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
 
-        $loadRules = $this->repo->gateway_load_rule->fetchApplicableRules($ruleFetchParams);
+        $rules = $this->repo->gateway_load_rule->fetchApplicableRules($ruleFetchParams);
 
         // We check if any merchant specific rules are present. If present we only deal with
         // those rules as our rule set and discard any other rules
@@ -48,33 +48,48 @@ class Core extends Base\Core
 
         // We now filter rules based on payment criteria to get collection of
         // applicable rules for the particular payment
-        $applicableRules = (new Filter)->filter($loadRules, $input);
+        $applicableRules = (new Filter($rules, $input))->filter();
 
         return $applicableRules;
     }
 
-    public function matchTerminalToRule(Base\PublicCollection $terminals, Base\PublicCollection $rules)
+    /**
+     * Matches terminals to a rule based on comparing terminal attributes to terminal
+     * related rule attributes. Returns a map, mapping rule id's to terminals like
+     * [
+     *     <rule_id> => [<terminal_ids>]
+     * ]
+     *
+     * @param  Base\PublicCollection $terminals collection of available terminals
+     * @param  Base\PublicCollection $rules     collection of applicable rules
+     * @return array                            map of rule_id => terminals
+     */
+    public function matchTerminalsToRule(Base\PublicCollection $terminals, Base\PublicCollection $rules)
     {
-        $terminalLoadMap = [];
+       $map = [];
 
-        foreach ($terminals as $terminal)
-        {
-            $rule = $this->getMatchingRuleForTerminal($terminal, $rules);
-
-            if ($rule !== null)
+       foreach ($rules as $rule)
+       {
+            foreach ($terminals as $terminal)
             {
-                $terminalId = $terminal->getId();
-
-                $terminalLoadMap[$terminalId] = $rule->getLoad();
+                if ($rule->matches($terminal) === true)
+                {
+                    $map[$rule->getId()][] = $terminal;
+                }
             }
-        }
+       }
 
-        return $terminalLoadMap;
+       return $map;
     }
 
-    protected function getRuleMatchingTerminal(Terminal\Entity $terminal, Base\PublicCollection $rules)
+    protected function getMerchantSpecificRules(Base\PublicCollection $rules, string $merchantId)
     {
+        $merchantSpecificRules = $rules->filter(function ($rule) use ($merchantId)
+        {
+            return ($rule->getMerchantId() === $merchantId);
+        });
 
+        return $merchantSpecificRules;
     }
 
     protected function getRuleFetchParams(array $terminals, array $input)
@@ -83,6 +98,8 @@ class Core extends Base\Core
 
         $merchant = $input['merchant'];
 
+        $gateways = $this->getTerminalGateways($terminals);
+
         $card = null;
 
         if ($payment->hasCard() === true)
@@ -90,39 +107,31 @@ class Core extends Base\Core
             $card = $payment->card;
         }
 
-        $params = [];
+        $params = [
+            Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
+            Entity::GATEWAY       => $gateways,
+            Entity::METHOD        => $payment->getMethod(),
+            Entity::INTERNATIONAL => $payment->isInternational(),
+        ];
 
-        $params[Entity::METHOD] = $payment->getMethod();
-
-        $gateways = $this->getTerminalGateways($terminals);
-
-        $params[Entity::GATEWAY] = $gateways;
-
-        $params[Entity::MERCHANT_ID] = [$merchant->getId(), Account::SHARED_ACCOUNT];
-
-        if ($payment->isInternational() === true)
-        {
-            $params[Entity::INTERNATIONAL] = true;
-        }
-
+        // We include null in the list of possible values here for issuer, network etc
+        // as we also want to fetch rules where thes attributes are set to null, as it
+        // has a meaning of any/all.
         if ($card !== null)
         {
-            $params[Entity::CARD_TYPE] = [$card->getType(), Entity::ALL];
+            $params[Entity::CARD_TYPE] = [$card->getType(), null];
 
-            $params[Entity::NETWORK] = [$card->getNetworkCode(), Entity::ALL];
+            $params[Entity::NETWORK] = [$card->getNetworkCode(), null];
 
-            $params[Entity::ISSUER] = [Entity::ALL];
-
-            if ($card->getIssuer() !== null)
-            {
-                $params[Entity::ISSUER][] = $card->getIssuer();
-            }
+            $params[Entity::ISSUER] = [$card->getIssuer(), null];
         }
 
         if ($payment->isNetbanking() === true)
         {
-            $params[Entity::ISSUER] = [Entity::ALL, $payment->getBank()];
+            $params[Entity::ISSUER] = [$payment->getBank(), null];
         }
+
+        // TODO: add cases for handling other methods like wallet, upi etc
 
         return $params;
     }
@@ -141,9 +150,9 @@ class Core extends Base\Core
 
     protected function checkIfTotalLoadIsValid(Entity $rule, array $input)
     {
-        $matchingRules = $this->repo->gateway_load_rule->fetchMatchingRules($input);
+        $conflictingRules = $this->repo->gateway_load_rule->fetchConflictingRules($input);
 
-        $totalLoad = $matchingRules->reduce(function ($carry, $rule)
+        $totalLoad = $conflictingRules->reduce(function ($carry, $rule)
         {
             $load = $rule->getLoad();
 

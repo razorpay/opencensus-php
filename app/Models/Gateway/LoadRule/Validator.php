@@ -19,11 +19,10 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
         Entity::METHOD           => 'required|string|max:30',
         Entity::CARD_TYPE        => 'sometimes|filled|string|max:10',
+        Entity::ISSUER           => 'sometimes|filled|string',
         Entity::NETWORK          => 'sometimes|filled|string|max:10',
-        Entity::CATEGORY         => 'sometimes|filled|string|max:4',
         Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string|custom',
         Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
-        Entity::ISSUER           => 'sometimes|filled|string',
         Entity::LOAD             => 'required|integer|min:0|max:10000'
     ];
 
@@ -31,7 +30,8 @@ class Validator extends Base\Validator
         Entity::METHOD,
         Entity::CARD_TYPE,
         Entity::ISSUER,
-        Entity::NETWORK
+        Entity::NETWORK,
+        Entity::GATEWAY_ACQUIRER,
     ];
 
     public function validateGateway(string $attribute, string $gateway)
@@ -43,9 +43,25 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateGatewayAcquirer(string $attribute, string $gatewayAcquirer)
+    public function validateGatewayAcquirer(array $input)
     {
-        if (Gateway::isValidGatewayAcquirer($gatewayAcquirer) === false)
+        $gateway = $input[Entity::GATEWAY];
+
+        $gatewayAcquirer = $input[Entity::GATEWAY_ACQUIRER] ?? null;
+
+        if (empty($gatewayAcquirer) === true)
+        {
+            return;
+        }
+
+        if (isset(Gateway::GATEWAY_ACQUIRERS[$gateway]) === false)
+        {
+            return;
+        }
+
+        $validAcquirersForGateway = Gateway::GATEWAY_ACQUIRERS[$gateway];
+
+        if (Gateway::isValidAcquirerForGateway($gatewayAcquirer, $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                         $gatewayAcquirer . ' is not a valid gateway acquirer');
@@ -75,14 +91,14 @@ class Validator extends Base\Validator
     {
         $method = $input[Entity::METHOD];
 
+        if (empty($input[Entity::CARD_TYPE]) === true)
+        {
+            return;
+        }
+
         if (in_array($method, [Method::CARD, Method::EMI], true) === true)
         {
             $cardType = $input[Entity::CARD_TYPE];
-
-            if ($cardType === Entity::ALL)
-            {
-                return;
-            }
 
             if (Card\Type::isValidType($cardType) === false)
             {
@@ -94,7 +110,7 @@ class Validator extends Base\Validator
 
     public function validateIssuer(array $input)
     {
-        $issuer = $input[Entity::ISSUER];
+        $issuer = $input[Entity::ISSUER] ?? null;
 
         $method = $input[Entity::METHOD];
 
@@ -129,7 +145,7 @@ class Validator extends Base\Validator
 
     protected function validateCardIssuer(string $method, string $issuer = null)
     {
-        if ($issuer === Entity::ALL)
+        if ($issuer === null)
         {
             return;
         }
@@ -143,12 +159,12 @@ class Validator extends Base\Validator
 
     protected function validateNetbankingIssuer(string $gateway, string $method, string $issuer = null)
     {
-        if ($issuer === Entity::ALL)
+        if ($issuer === null)
         {
-            if (in_array($gateway, Netbanking::$netbankingGateways, true) === true)
+            if (in_array($gateway, Gateway::$netbankingGateways, true) === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    "issuer can be all only for shared netbanking gateways");
+                    "issuer can be null only for shared netbanking gateways");
             }
         }
 
@@ -184,17 +200,9 @@ class Validator extends Base\Validator
 
         $gateway = $input[Entity::GATEWAY];
 
-        // For methods apart from card / emi network can be empty
-        if (in_array($method, [Method::CARD, Method::EMI], true) === false)
-        {
-            if (empty($network) === true)
-            {
-                return;
-            }
-        }
-
-        // Return if netowrk is ALL for card payment method
-        if ($network === Entity::ALL)
+        // Don't validate if method is not card/emi or if network is null
+        if ((in_array($method, [Method::CARD, Method::EMI], true) === false) or
+            ($network === null))
         {
             return;
         }

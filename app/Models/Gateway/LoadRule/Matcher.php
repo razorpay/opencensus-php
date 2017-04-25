@@ -7,43 +7,45 @@ use RZP\Models\Terminal;
 
 trait Matcher
 {
-    protected function getMatchingRuleForTerminal(Terminal\Entity $terminal, Base\PublicCollection $rules)
+    /**
+     * Evaluates if a rule's terminal related attributes match those of
+     * given terminal
+     *
+     * @param  Terminal\Entity $terminal Terminal entity to compare against
+     * @return bool whether rule matches terminal
+     */
+    public function matches(Terminal\Entity $terminal): bool
     {
-        foreach ($rules as $rule)
+        foreach (self::COMARISON_KEYS as $key)
         {
-            // We compare terminal with rule for each comparison key. If all
-            // comparisons are true we return the rule, else we return null
-            foreach (Entity::COMPARISON_KEYS as $key)
+            $comparisonFunction = $this->getComparisonFunction($key);
+
+            if ($this->$comparisonFunction($terminal) === false)
             {
-                $comparisonFunction = $this->getComparisonFunction($key);
-
-                if ($this->$comparisonFunction($terminal, $rule) === false)
-                {
-                    return null;
-                }
+                return false;
             }
-
-            return $rule;
-        }
-    }
-
-    protected function compareGateway(Terminal\Entity $terminal, Entity $rule)
-    {
-        return ($terminal->getGateway() === $rule->getGateway());
-    }
-
-    protected function compareGatewayAcquirer(Terminal\Entity $terminal, Entity $rule)
-    {
-        if ($terminal->getGatewayAcquirer() !== null)
-        {
-            return (($terminal->getGatewayAcquirer() === $rule->getGatewayAcquirer()) or
-                    ($rule->getGatewayAcquirer() === Entity::ALL));
         }
 
         return true;
     }
 
-    protected function compareInternational(Terminal\Entity $terminal, Entity $rule)
+    protected function compareGateway(Terminal\Entity $terminal)
+    {
+        return ($terminal->getGateway() === $this->getGateway());
+    }
+
+    protected function compareGatewayAcquirer(Terminal\Entity $terminal)
+    {
+        if ($terminal->getGatewayAcquirer() !== null)
+        {
+            return (($terminal->getGatewayAcquirer() === $this->getGatewayAcquirer()) or
+                    ($this->getGatewayAcquirer() === null));
+        }
+
+        return true;
+    }
+
+    protected function compareInternational(Terminal\Entity $terminal)
     {
         return ($terminal->isInternational() === $rule->isInternational());
     }

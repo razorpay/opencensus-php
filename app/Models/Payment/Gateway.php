@@ -470,6 +470,13 @@ class Gateway
         return in_array($gatewayAcquirer, self::GATEWAY_ACQUIRERS, true);
     }
 
+    public static function isValidAcquirerForGateway(string $gatewayAcquirer, string $gateway): bool
+    {
+        $validAcquirersForGateway = self::GATEWAY_ACQUIRERS[$gateway];
+
+        return in_array($gatewayAcquirer, $validAcquirersForGateway, true);
+    }
+
     public static function getGatewayForWallet($wallet)
     {
         return self::$walletToGatewayMap[$wallet];

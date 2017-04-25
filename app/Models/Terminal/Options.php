@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Terminal;
 
+use RZP\Models\Gateway\LoadRule;
+
 class Options
 {
     const FAILED = 'failed';
@@ -42,7 +44,7 @@ class Options
 
         if ($chance === null)
         {
-            $this->chance = rand(0, 100);
+            $this->chance = rand(0, LoadRule\Entity::MAX_LOAD);
             return;
         }
 

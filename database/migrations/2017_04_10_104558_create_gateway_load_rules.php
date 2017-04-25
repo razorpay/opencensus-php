@@ -27,9 +27,6 @@ class CreateGatewayLoadRules extends Migration
 
             $table->string(LoadRule::MERCHANT_ID, LoadRule::ID_LENGTH);
 
-            $table->char(LoadRule::CATEGORY, LoadRule::LENGTHS[LoadRule::CATEGORY])
-                    ->nullable();
-
             $table->string(LoadRule::GATEWAY_ACQUIRER)
                     ->nullable();
 

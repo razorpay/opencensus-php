@@ -14,12 +14,11 @@ class Filter extends Core
 
     protected $rules;
 
-    // TODO: Skipping category for now in merchant filter
     const PROPERTIES = [
         Entity::CARD_TYPE,
+        Entity::INTERNATIONAL,
         Entity::NETWORK,
         Entity::ISSUER,
-        Entity::INTERNATIONAL,
     ];
 
     public function __construct(Base\PublicCollection $rules, array $input)
@@ -36,9 +35,22 @@ class Filter extends Core
         }
     }
 
+    /**
+     * Filters rules by matching on the attributes defined in the PROPERTIES
+     * array. Used to get the rules best matching the payment criteria
+     *
+     * @return Base\PublicCollection Collection of filtered rules
+     */
     public function filter()
     {
-        $filteredRules = $this->rules;
+        // We check if any merchant specific rules are present. If present we only deal with
+        // those rules as our rule set and discard any other rules
+        $merchantSpecificRules = $this->getMerchantSpecificRules();
+
+        if ($merchantSpecificRules->isEmpty() === false)
+        {
+            $this->rules = $merchantSpecificRules;
+        }
 
         foreach (self::PROPERTIES as $filterProperty)
         {
@@ -53,9 +65,10 @@ class Filter extends Core
             }
         }
 
-        // It may happen that a single rule gets pushed multiple times when we
-        // pass the rules through above filters. Running a unique check to remove
-        // duplicate rules
+        // In some cases, it can happen that a particular rule satisfies multiple filters
+        // For e.g a rule for card_type = credit and network = VISA satisfies both card_type
+        // and network filters for a VISA credit card payment and hence gets puhed to
+        // filtered rules. We run a unique check to remove such duplicates
         $filteredRules = $filteredRules->unique(function ($rule)
         {
             return $rule->getId();
@@ -66,8 +79,10 @@ class Filter extends Core
             return $filteredRules;
         }
 
-        // If there are no rules satisfying the filter criteria, we return the set
-        // of all rules, as they can contain attributes with value ALL
+        // In case no rules satisfy the filter rule criteria, we retuen the set of
+        // all rules as it may contain rules with the filter attribute value as null.
+        // E.g a rule for card payments across all networks and issuers will be rejected
+        // by above filters but is still eligible for a payment
         return $this->rules;
     }
 
@@ -104,6 +119,9 @@ class Filter extends Core
             case Payment\Method::NETBANKING:
                 return ($this->payment->getBank() === $rule->getIssuer());
 
+            case Payment\Method::WALLET:
+                return ($this->payment->getWallet() === $rule->getIssuer());
+
             default:
                 return true;
         }
@@ -111,9 +129,10 @@ class Filter extends Core
 
     protected function internationalFilter(Entity $rule)
     {
+        // Don't filter if method is not card or emi
        if ($this->payment->isMethodCardOrEmi() === false)
        {
-        return true;
+            return true;
        }
 
        if ($this->payment->isInternational() === true)
@@ -122,6 +141,18 @@ class Filter extends Core
        }
 
        return false;
+    }
+
+    protected function getMerchantSpecificRules()
+    {
+        $merchantId = $this->merchant->getId();
+
+        $merchantSpecificRules = $this->rules->filter(function ($rule) use ($merchantId)
+        {
+            return ($rule->getMerchantId() === $merchantId);
+        });
+
+        return $merchantSpecificRules;
     }
 
     protected function getFilterFunctionForProperty(string $property)
