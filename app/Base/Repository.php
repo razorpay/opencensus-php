@@ -21,6 +21,12 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Delay in making es job available for queue consumer.
      * Value is in seconds.
+     *
+     * We need delay to not fall in a case where a set of saveOrFail() are
+     * wrapped in a transaction and the transaction is taking time. Meanwhile
+     * saveOrFail() has triggered es sync via queue and queue receives the job
+     * and attempts to get the entity by id(which is not committed yet, transaction
+     * in progress).
      */
     const ES_JOB_DELAY = 3;
 

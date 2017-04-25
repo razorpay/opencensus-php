@@ -82,6 +82,12 @@ class EsSync extends Job implements ShouldQueue
     }
 
     /**
+     * We can't do initializes following services(repo, traces etc) as part of
+     * constructor as Job instance tries to serialize(custom way) the object
+     * after construction and sends to queue. And during serialization these objects
+     * fail(repo, traces etc) as they have lots of other references etc.
+     * Also not a good practice to make queue message heavy.
+     *
      * - Initializes instance variables: core, trace etc.
      * - Sets application mode, database connection based on the mode.
      * - Validates event
@@ -91,12 +97,6 @@ class EsSync extends Job implements ShouldQueue
      */
     private function init()
     {
-        // - Gets App facade
-        // - Sets App's mode
-        // - Sets database's mode
-        // - Initializes other needed services
-        // - Sets repo and es repo for the entity
-
         $app = App::getFacadeRoot();
 
         $app['rzp.mode'] = $this->mode;

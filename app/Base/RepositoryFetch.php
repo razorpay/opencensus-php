@@ -223,7 +223,7 @@ trait RepositoryFetch
         // If the not all the ids from es are found in mysql, just raise an error.
         if (count($ids) !== $entities->count())
         {
-            $this->trace->error(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
+            $this->trace->critical(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
         }
 
         return $entities;
