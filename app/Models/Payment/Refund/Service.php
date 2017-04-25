@@ -639,20 +639,15 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function retryFailedRefunds(array $input = [])
+    public function retryFailedRefunds()
     {
-        $this->trace->info(TraceCode::REFUND_RETRY_INITIATED, $input);
+        $this->trace->info(TraceCode::REFUND_RETRY_INITIATED);
 
         $gateways = Payment\Gateway::REFUND_RETRY_GATEWAYS;
 
         $status = [];
 
-        $attempts = $input['attempts'] ?? self::MAX_REFUND_RETRY_ATTEMPTS;
-
-        if (isset($input['gateway']) === true)
-        {
-            Validator::validateVerifyRefundAllowed($input['gateway']);
-        }
+        $attempts = self::MAX_REFUND_RETRY_ATTEMPTS;
 
         //
         // Every combination of gateway / refund needs to be processed
