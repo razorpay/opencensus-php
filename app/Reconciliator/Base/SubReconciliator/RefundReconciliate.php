@@ -86,10 +86,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
         {
             $this->runPreReconciledAtCheckRecon($rowDetails);
 
-            $this->persistRefundRrn($rowDetails);
-
-            $this->persistGatewayData($rowDetails);
-
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
             if ($reconciled === true)
@@ -158,6 +154,10 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function runPreReconciledAtCheckRecon($rowDetails)
     {
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
+
+        $this->persistRefundRrn($rowDetails);
+
+        $this->persistGatewayData($rowDetails);
     }
 
     protected function validateRefundDetails(array $row)
@@ -427,14 +427,17 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $refund = $this->refund;
 
-        if ($refund->getRrn() !== null)
+        if (($refund->getRrn() !== null)
+            and ($refund->getRrn() !== $rrn))
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::RECON_RRN_ALREADY_PRESENT,
+                    'trace_code'    => TraceCode::RECON_MISMATCH,
                     'message'       => 'Rrn number for the refund entity is already present',
                     'row'           => $rowDetails,
-                    'refundId'      => $refund->getId(),
+                    'refund_id'     => $refund->getId(),
+                    'gateway'       => get_called_class(),
+                    'rrn'           => $refund->getRrn(),
                 ]);
 
             return;
@@ -449,7 +452,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     {
         $gatewayRefund = $this->getGatewayRefund($this->refund->getId());
 
-        if (is_null($gatewayRefund) === true)
+        if ($gatewayRefund === null)
         {
             return;
         }
