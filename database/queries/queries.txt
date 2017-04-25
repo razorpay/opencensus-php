@@ -1908,6 +1908,14 @@ ALTER TABLE offers
 ALTER TABLE workflow_steps
     ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;
 
+# Rrn column for refunds
+ALTER TABLE refunds
+    ADD COLUMN rrn VARCHAR(255) AFTER gateway_refunded;
+
+# arn_no column for hdfc
+ALTER TABLE hdfc
+    ADD COLUMN arn_no VARCHAR(255) AFTER avr;
+
 ALTER TABLE axis
     ADD INDEX axis_vpc_Command_index (vpc_Command),
     ADD INDEX axis_vpc_MerchTxnRef_index (vpc_MerchTxnRef);
