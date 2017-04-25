@@ -1033,6 +1033,9 @@ final class Route
         'credits_fetch_multiple'           => [Permission::VIEW_MERCHANT_CREDITS_LOG],
         'credits_create'                   => [Permission::ADD_MERCHANT_CREDITS],
         'credits_delete'                   => [Permission::DELETE_MERCHANT_CREDITS],
+        'merchant_put_payment_methods'     => [Permission::EDIT_MERCHANT_METHODS],
+        'balance_fetch'                    => [Permission::VIEW_MERCHANT_BALANCE],
+        'feature_get_multiple'             => [Permission::VIEW_MERCHANT_FEATURES],
     ];
 
     public static $direct = array(

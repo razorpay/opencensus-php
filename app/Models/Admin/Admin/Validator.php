@@ -68,6 +68,12 @@ class Validator extends Base\Validator
         Entity::PASSWORD              => 'required'
     ];
 
+    protected static $passwordAuthRules = [
+        Entity::USERNAME              => 'required|alpha_dash|between:3,50',
+        Entity::PASSWORD              => 'required|string|confirmed',
+        Entity::PASSWORD_CONFIRMATION => 'required',
+    ];
+
     protected static $resetRules = [
         Entity::EMAIL                 => 'required|email|max:255',
         Entity::PASSWORD              => 'required|string|confirmed',

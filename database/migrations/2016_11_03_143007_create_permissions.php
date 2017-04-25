@@ -32,6 +32,9 @@ class CreatePermissions extends Migration
             $table->boolean(Permission::ASSIGNABLE)
                   ->default(0);
 
+            $table->boolean(Permission::ENABLE_WORKFLOW)
+                  ->default(0);
+
             $table->integer(Permission::CREATED_AT);
             $table->integer(Permission::UPDATED_AT);
 
