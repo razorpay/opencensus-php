@@ -21,6 +21,8 @@ import configReducer from 'merchant/modules/config';
 import refundsReducer from 'merchant/modules/refunds/list';
 import refundReducer from 'merchant/modules/refunds/details';
 import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
+import paymentsReducer from 'merchant/modules/payments/list';
+import paymentReducer from 'merchant/modules/payments/details';
 
 export default combineReducers({
   form: formReducer,
@@ -35,6 +37,8 @@ export default combineReducers({
   items: itemsReducer,
   orders: ordersReducer,
   order: orderReducer,
+  payments: paymentsReducer,
+  payment: paymentReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
   webhooks: webhooksReducer,

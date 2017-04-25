@@ -45,12 +45,12 @@
     </li>
     <li ng-show="merchant"
       ui-sref="app.invoices.list"
-      ng-class="{active: ('app.invoices.list' | includedByState) || ('app.invoices.details' | includedByState) || ('app.invoices.new' | includedByState) || ('app.invoices.edit' | includedByState)}"
+      ng-class="{active: ('app.invoices.list' | includedByState) || ('app.invoices.detail' | includedByState) || ('app.invoices.new' | includedByState) || ('app.invoices.edit' | includedByState)}"
     >
       <a
         id="invoicesNav"
         ui-sref="app.invoices.list"
-        ng-class="{active: ('app.invoices.list' | includedByState) || ('app.invoices.details' | includedByState) || ('app.invoices.new' | includedByState) || ('app.invoices.edit' | includedByState)}"
+        ng-class="{active: ('app.invoices.list' | includedByState) || ('app.invoices.detail' | includedByState) || ('app.invoices.new' | includedByState) || ('app.invoices.edit' | includedByState)}"
       >
         <i class="fa fa-money text-primary-lter"></i>
         <span>Invoices</span>

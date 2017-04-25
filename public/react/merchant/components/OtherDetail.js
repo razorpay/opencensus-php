@@ -1,0 +1,38 @@
+import { getType } from 'rzp/utils/entity';
+import { humanize } from 'rzp/utils/rzp-utils';
+import Amount from 'rzp/ui/Amount';
+import Time from 'rzp/ui/Time';
+import DetailRow from './DetailRow';
+
+export default ({ label, value, ngRouter, entity = {} }) => {
+  let type = getType(label, value);
+  let currency = entity.currency || 'INR';
+  let val = value;
+
+  switch (type) {
+    case 'timestamp':
+      val = () => <Time value={value} format="DD MMM YYYY, hh:mm:ss a" />;
+      break;
+
+    case 'amount_inr':
+      val = () => <Amount value={value} />;
+      break;
+
+    case 'amount':
+      val = () => <Amount value={value} currency={currency} />;
+      break;
+    case 'id':
+      let entityName, url;
+      entityName = label.split('_')[0];
+
+      url = ngRouter.href(`app.${entityName}s.detail`, { id: value });
+
+      if (url) {
+        val = () => <a href={url} target="_blank">{value}</a>;
+      }
+  }
+
+  label = typeof label === 'function' ? label : humanize(label);
+
+  return <DetailRow label={label} value={val} />;
+};

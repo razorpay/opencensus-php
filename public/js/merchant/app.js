@@ -118,18 +118,6 @@ var app = angular
           url: '/dashboard',
           templateUrl: 'tpl/app_dashboard.html',
         })
-        .state('app.payments', {
-          url: '/payments',
-          template: '<div ui-view class="fade-in-down"></div>',
-        })
-        .state('app.payments.list', {
-          url: '/list',
-          templateUrl: 'tpl/app_payments.html',
-        })
-        .state('app.payments.detail', {
-          url: '/:id',
-          templateUrl: 'tpl/app_payment_detail.html',
-        })
         .state('app.transactions', {
           url: '/transactions',
           template: '<div ui-view class="fade-in-down"></div>',
@@ -159,7 +147,6 @@ var app = angular
           templateUrl: 'tpl/app_accounts.html',
         })
         // React
-
         .state('app.invoices', {
           url: '/invoices',
           templateUrl: 'tpl/app_invoices.html',
@@ -180,7 +167,7 @@ var app = angular
           url: '/new',
           templateProvider: reactTemplateProvider('<invoices-new />'),
         })
-        .state('app.invoices.details', {
+        .state('app.invoices.detail', {
           url: '/:id/details',
           controller: [
             '$scope',
@@ -316,6 +303,25 @@ var app = angular
         .state('app.batch.list', {
           url: '/list',
           templateProvider: reactTemplateProvider('<batch-list />'),
+        })
+        .state('app.payments', {
+          url: '/payments',
+          template: '<div ui-view class="fade-in-down"></div>',
+        })
+        .state('app.payments.list', {
+          url: '/list',
+          templateProvider: reactTemplateProvider('<payments-list />'),
+        })
+        .state('app.payments.detail', {
+          url: '/:id',
+          controller: [
+            '$scope',
+            '$stateParams',
+            function($scope, $stateParams) {
+              $scope.id = $stateParams.id;
+            },
+          ],
+          templateProvider: reactTemplateProvider('<payment-details id="id"/>'),
         })
         //Guest Routes
         .state('access', {
