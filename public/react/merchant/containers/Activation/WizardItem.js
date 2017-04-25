@@ -23,9 +23,25 @@ const FORM_COMPONENTS = {
   activationSubmitForm: SubmitForm,
 };
 
+// ====
+// Heimdall specific
+// ====
 @connect(
   state => {
+    let session = state.session;
+    let { data, ...otherProps } = state.activation;
+    let initialValues = { ...data };
+
+    if (session.org.custom_code === 'hdfc') {
+      initialValues.bank_branch_ifsc = initialValues.bank_branch_ifsc || 'HDFC';
+      initialValues.bank_account_type =
+        initialValues.bank_account_type || 'Current';
+    }
+
     return {
+      initialValues: {
+        ...initialValues,
+      },
       session: state.session,
       ...state.activation,
     };
@@ -34,35 +50,13 @@ const FORM_COMPONENTS = {
 )
 @reduxForm({
   destroyOnUnmount: false,
+  enableReinitialize: true,
+  keepDirtyOnReinitialize: true,
 })
 export default class WizardItem extends Component {
   state = {
     errors: null,
   };
-
-  componentWillMount() {
-    let data = {
-      ...this.props.data,
-    };
-
-    // ====
-    // Heimdall specific
-    // ====
-
-    if (this.props.session.org.custom_code === 'org') {
-      if (!data.bank_branch_ifsc) {
-        data.bank_branch_ifsc = 'HDFC';
-      }
-
-      if (!data.bank_account_type) {
-        data.bank_account_type = 'Current';
-      }
-    }
-
-    if (!this.props.initialized) {
-      this.props.initialize(data);
-    }
-  }
 
   _save = props => {
     let step = this.props.step;
