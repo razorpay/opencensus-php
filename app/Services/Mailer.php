@@ -26,6 +26,7 @@ class Mailer extends LaravelMailer
         $trace->debug(
             TraceCode::MAILER_JOB_RECEIVED,
             [
+                'action'         => 'start',
                 'job_attempts'   => $job->attempts(),
             ]
         );
@@ -54,5 +55,13 @@ class Mailer extends LaravelMailer
                 ]
             );
         }
+
+        $trace->debug(
+            TraceCode::MAILER_JOB_RECEIVED,
+            [
+                'action'         => 'end',
+                'job_attempts'   => $job->attempts(),
+            ]
+        );
     }
 }
