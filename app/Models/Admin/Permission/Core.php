@@ -31,6 +31,10 @@ class Core extends Base\Core
             }
         });
 
+        $permission = $this->repo->permission
+                                 ->findOrFailPublicWithRelations(
+                                     $permission->getId(), ['orgs']);
+
         return $permission;
     }
 
@@ -73,6 +77,10 @@ class Core extends Base\Core
                 }
             }
         });
+
+        $permission = $this->repo->permission
+                                 ->findOrFailPublicWithRelations(
+                                     $permission->getId(), ['orgs']);
 
         return $permission;
     }
