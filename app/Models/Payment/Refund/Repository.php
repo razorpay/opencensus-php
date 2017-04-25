@@ -371,6 +371,7 @@ class Repository extends Base\Repository
                     ->whereIn($pGateway, $gateways)
                     ->with(['payment','payment.terminal'])
                     ->limit(50)
+                    ->inRandomOrder()
                     ->get();
     }
 }
