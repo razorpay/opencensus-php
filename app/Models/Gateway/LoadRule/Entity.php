@@ -38,7 +38,6 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
-        self::NETWORK_CATEGORY,
     ];
 
     protected $entity = 'gateway_load_rule';
@@ -58,7 +57,6 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
-        self::CATEGORY,
         self::ISSUER,
         self::LOAD,
     ];
@@ -71,7 +69,6 @@ class Entity extends Base\PublicEntity
         self::CARD_TYPE,
         self::NETWORK,
         self::ISSUER,
-        self::CATEGORY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
         self::LOAD,
@@ -87,7 +84,6 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::CARD_TYPE,
         self::NETWORK,
-        self::CATEGORY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
         self::ISSUER,

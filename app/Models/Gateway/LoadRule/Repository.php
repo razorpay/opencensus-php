@@ -13,7 +13,6 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID      => 'sometimes|alpha_num|size:14',
         Entity::METHOD           => 'sometimes|string',
         Entity::CARD_TYPE        => 'sometimes|string',
-        Entity::NETWORK_CATEGORY => 'sometimes|string|max:4',
         Entity::GATEWAY_ACQUIRER => 'sometimes|string',
         Entity::NETWORK          => 'sometimes|string',
         Entity::INTERNATIONAL    => 'sometimes|boolean',

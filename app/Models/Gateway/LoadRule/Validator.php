@@ -218,7 +218,7 @@ class Validator extends Base\Validator
         $cardNetWorks = Gateway::$cardNetworkMap[$gateway];
 
         if (($method === Method::CARD) and
-            (in_array($network, $cardNetWork, true) === false))
+            (in_array($network, $cardNetWorks, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 $network . ' is not a valid network for gateway ' . $gateway);
