@@ -636,7 +636,6 @@ class TraceCode
     const REPORT_ENTITY_FETCH_REQUEST                   = 'REPORT_ENTITY_FETCH_REQUEST';
 
 // Trace codes for gateway
-    const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
     const USER_EDIT                                     = 'USER_EDIT';
 
     protected static $messages = array(
