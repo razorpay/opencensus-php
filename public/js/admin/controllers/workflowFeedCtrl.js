@@ -18,7 +18,6 @@ app
       $stateParams,
       admin
     ) {
-      $scope.allowFieldEdit = false;
       $scope.alerts = alertsFactory.getHandler();
 
       if (typeof $stateParams.action_id !== 'undefined') {
@@ -27,6 +26,8 @@ app
 
       // Don't allow to edit title/desc if request is still opened
       function updateEditFieldState() {
+        $scope.allowFieldEdit = false;
+
         if (['open', 'approved'].indexOf($scope.action_details.state) !== -1) {
           $scope.allowFieldEdit = true;
         }
@@ -190,6 +191,20 @@ app
             $scope.rejectorList = $scope.cards.filter(function(card) {
               return !card.approved;
             });
+
+            $scope.levels = {};
+            var steps = $scope.action_details.workflow_steps;
+
+            // Level(step) structure having roles names
+            for (var key in steps) {
+              if (!$scope.levels[steps[key].level]) {
+                $scope.levels[steps[key].level] = []
+              }
+              $scope.levels[steps[key].level].push(steps[key].role.name);
+            }
+
+            // To display vertical lines between steps
+            $scope.totalLevels = Object.keys($scope.levels).length;
           }
 
           updateEditFieldState();
