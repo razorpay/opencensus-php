@@ -783,7 +783,9 @@ class Service extends Base\Service
      */
     public function fetchBankAccount()
     {
-        $this->setApiCredentials($this->currentUser->currentMerchant()->id);
+        $merchantId = $this->currentUser->currentMerchant()->id;
+
+        $this->setApiCredentials($merchantId);
 
         $error = $data = null;
 

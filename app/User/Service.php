@@ -17,6 +17,7 @@ use App\Generic;
 use App\Merchant;
 use App\AdminLead;
 use Carbon\Carbon;
+use App\Providers;
 use App\Invitation;
 use App\MerchantDetails;
 use App\Mailers\UserMailer;
@@ -28,6 +29,13 @@ class Service extends Base\Service
 {
     const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
     const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
+
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->app = $app;
+    }
 
     protected function getRef(array &$input)
     {
@@ -632,11 +640,11 @@ class Service extends Base\Service
             return [['Email or password is invalid.'], null];
         }
 
-        $userArray['password'] = (new BcryptHasher)->make($input['password']);
-
-        $userEntity = new Entity($userArray);
+        $userEntity = new Providers\GenericUser($userArray);
 
         Auth::login($userEntity, false);
+
+        $this->app['session']->put('dashboard_user_payload', $userArray);
 
         if (empty($error))
         {
@@ -850,10 +858,21 @@ class Service extends Base\Service
 
         if ($sessionMerchantId !== null)
         {
-            $currentMerchant = array_filter($merchants, function($merchant) use ($sessionMerchantId)
+            $currentMerchants = array_filter($merchants, function($merchant) use ($sessionMerchantId)
             {
                 return ($merchant['id'] === $sessionMerchantId);
-            })[0];
+            });
+
+            if (empty($currentMerchants) === true)
+            {
+                $currentMerchant = $merchants[0];
+
+                Session::put('current_merchant_id', $currentMerchant['id']);
+            }
+            else
+            {
+                $currentMerchant = $currentMerchants[0];
+            }
         }
         else
         {

@@ -1181,10 +1181,11 @@ class Service extends Base\Service
 
         try
         {
-            $ba = $this->api->merchant
-                ->setId($merchantId)
-                ->fetchBankAccount()
-                ->toArray();
+            $ba = $this->api
+                       ->merchant
+                       ->setId($merchantId)
+                       ->fetchBankAccount()
+                       ->toArray();
 
             return [null, $ba];
         }
