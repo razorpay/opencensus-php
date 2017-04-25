@@ -232,18 +232,6 @@ class Gateway
         $this->action = Action::VERIFY;
     }
 
-    /**
-     * Calls gateway to verify if a refund has
-     * been successfully performed or not.
-     * @param array $input
-     * @return bool
-     */
-    public function verifyRefund(array $input)
-    {
-        $this->input = $input;
-        $this->action = Action::VERIFY_REFUND;
-    }
-
     public function action(array $input, $action)
     {
         $this->action = $action;

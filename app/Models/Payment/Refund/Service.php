@@ -657,18 +657,37 @@ class Service extends Base\Service
         //
         $refunds = $this->repo->refund->fetchRefundsByGatewayAndAttempts($gateways, $attempts);
 
+        $success = $failure = 0;
+
         foreach ($refunds as $refund)
         {
-            $processor = $this->getNewProcessor($refund->merchant);
+            try
+            {
+                $processor = $this->getNewProcessor($refund->merchant);
 
-            $refundId = $refund->getId();
+                $refundId = $refund->getId();
 
-            $status[$refundId] = $processor->processRefundRetry($refund);
+                $status[$refundId] = $processor->processRefundRetry($refund);
+
+                $success++;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, Trace::INFO, TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION, [
+                        'id' => $refundId
+                    ]);
+
+                $failure++;
+            }
         }
 
         $this->trace->info(TraceCode::REFUND_RETRY_RESULT, $status);
 
-        return $status;
+        return [
+            'successful' => $success,
+            'failure' => $failure,
+            'status' => $status
+        ];
     }
 
     public function retry($id)

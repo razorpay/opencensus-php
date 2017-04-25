@@ -422,12 +422,13 @@ trait Refund
         }
         catch (Exception\BaseException $e)
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_VERIFY_REFUND_FAILURE,
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_VERIFY_REFUND_FAILURE,
                 [
                     'exception' => $e->getData(),
                     'refund' => $data['refund']
                 ]);
+
+            throw $e;
         }
 
         return $verifyRefund2Result;
