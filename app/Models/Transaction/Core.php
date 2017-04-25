@@ -550,7 +550,7 @@ class Core extends Base\Core
             case Payment\Status::REFUNDED:
                 $gateway = $payment->getGateway();
 
-                Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
+                Payment\Refund\Validator::validateVerifyInternalRefundAllowed($gateway);
 
                 //$this->updateNodalBalance($txn);
 

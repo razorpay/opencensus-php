@@ -59,7 +59,7 @@ trait Refund
 
         $gateway = $payment->getGateway();
 
-        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
+        Payment\Refund\Validator::validateVerifyInternalRefundAllowed($gateway);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 

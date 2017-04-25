@@ -129,12 +129,17 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function validateVerifyRefundAllowed(string $gateway)
+    public static function validateVerifyRefundAllowed($gateways)
     {
-        if (in_array($gateway, Payment\Gateway::REFUND_RETRY_GATEWAYS, true) === false)
+        $gateways = (array) $gateways;
+
+        foreach ($gateways as $gateway)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_GATEWAY, 'gateway', $gateway);
+            if (in_array($gateway, Payment\Gateway::REFUND_RETRY_GATEWAYS, true) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_GATEWAY, 'gateway', $gateway);
+            }
         }
     }
 

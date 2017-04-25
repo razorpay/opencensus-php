@@ -649,10 +649,9 @@ class Service extends Base\Service
 
         $attempts = $input['attempts'] ?? self::MAX_REFUND_RETRY_ATTEMPTS;
 
-        if ((isset($input['gateway']) === true) and
-            (in_array($input['gateway'], Payment\Gateway::REFUND_RETRY_GATEWAYS, true) === true))
+        if (isset($input['gateway']) === true)
         {
-            $gateways = [$input['gateway']];
+            Validator::validateVerifyRefundAllowed($input['gateway']);
         }
 
         //
@@ -682,12 +681,6 @@ class Service extends Base\Service
         $refund = $this->fetch($id);
 
         $payment = $refund->payment;
-
-        if (in_array($payment->getGateway(), Payment\Gateway::REFUND_RETRY_GATEWAYS, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Gateway does not support refund verify', 'refund_id', $id);
-        }
 
         $data = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
 
