@@ -15,7 +15,7 @@ class Entity extends Base\Entity
     const DESCRIPTION       = 'description';
     const CATEGORY          = 'category';
     const ASSIGNABLE        = 'assignable';
-    const ENABLE_WORKFLOW   = 'enable_workflow';
+    const WORKFLOW_ORGS     = 'workflow_orgs';
 
     // We sync the new permission with orgs
     const ORGS = 'orgs';
@@ -36,7 +36,6 @@ class Entity extends Base\Entity
         self::DESCRIPTION,
         self::CATEGORY,
         self::ASSIGNABLE,
-        self::ENABLE_WORKFLOW,
     ];
 
     protected $public = [
@@ -45,8 +44,8 @@ class Entity extends Base\Entity
         self::DESCRIPTION,
         self::CATEGORY,
         self::ASSIGNABLE,
-        self::ENABLE_WORKFLOW,
         self::ORGS,
+        self::WORKFLOW_ORGS,
     ];
 
     protected $visible = [
@@ -55,12 +54,11 @@ class Entity extends Base\Entity
         self::DESCRIPTION,
         self::CATEGORY,
         self::ASSIGNABLE,
-        self::ENABLE_WORKFLOW,
+        self::WORKFLOW_ORGS,
     ];
 
     protected $casts = [
         self::ASSIGNABLE        => 'bool',
-        self::ENABLE_WORKFLOW   => 'bool',
     ];
 
     protected static function boot()
@@ -97,8 +95,9 @@ class Entity extends Base\Entity
         return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSIONS);
     }
 
-    public function canEnableWorkflow()
+    public function setWorkflowOrgs($orgs)
     {
-        return ($this->getAttribute(self::ENABLE_WORKFLOW) === true);
+        $this->attributes[Entity::WORKFLOW_ORGS] = $orgs;
     }
+
 }
