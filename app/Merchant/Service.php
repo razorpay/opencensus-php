@@ -626,10 +626,12 @@ class Service extends Base\Service
 
         if ($userId === $this->currentUser->id)
         {
-            return array(static::SELF_REMOVE_FORBIDDEN);
+            return [static::SELF_REMOVE_FORBIDDEN];
         }
 
         $this->currentUser->currentMerchant()->users()->detach($userId);
+
+        (new User\Service)->detachMerchantUserOnApi($userId, $this->currentUser->currentMerchant()->id);
 
         return $error;
     }

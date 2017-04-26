@@ -216,7 +216,6 @@ class Service extends Base\Service
         return $response;
     }
 
-
     public function attachMerchantUserOnApi($userId, $merchantId, $role)
     {
         $this->setApiCredentials();
@@ -235,11 +234,11 @@ class Service extends Base\Service
         $response = $this->api->user->updateMapping($userId, $data);
     }
 
-    public function detachMerchantUserOnApi($userId, $merchantId, $role)
+    public function detachMerchantUserOnApi($userId, $merchantId)
     {
         $this->setApiCredentials();
 
-        $data = ['role' => $role, 'merchant_id' => $merchantId];
+        $data = ['merchant_id' => $merchantId];
 
         $response = $this->api->user->detach($userId, $data);
     }
