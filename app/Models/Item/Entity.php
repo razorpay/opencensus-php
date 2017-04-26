@@ -6,6 +6,7 @@ use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Tax;
 
 class Entity extends Base\PublicEntity
 {
@@ -18,6 +19,10 @@ class Entity extends Base\PublicEntity
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
     const TYPE                  = 'type';
+    const UNIT                  = 'unit';
+    const TAX_INCLUSIVE         = 'tax_inclusive';
+    const TAX_ID                = 'tax_id';
+    const TAX_GROUP_ID          = 'tax_group_id';
     const DELETED_AT            = 'deleted_at';
 
     /**
@@ -38,6 +43,10 @@ class Entity extends Base\PublicEntity
         self::ACTIVE        => 1,
         self::DESCRIPTION   => null,
         self::TYPE          => Type::INVOICE,
+        self::UNIT          => null,
+        self::TAX_INCLUSIVE => false,
+        self::TAX_ID        => null,
+        self::TAX_GROUP_ID  => null,
     ];
 
     protected $visible = [
@@ -50,6 +59,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::TYPE,
+        self::UNIT,
+        self::TAX_INCLUSIVE,
+        self::TAX_ID,
+        self::TAX_GROUP_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -63,6 +76,12 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::TYPE,
+        self::UNIT,
+        self::TAX_INCLUSIVE,
+        self::TAX_ID,
+        self::TAX_GROUP_ID,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $fillable = [
@@ -72,11 +91,21 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::TYPE,
+        self::UNIT,
+        self::TAX_INCLUSIVE,
     ];
 
     protected $casts = [
-        self::ACTIVE    => 'bool',
-        self::AMOUNT    => 'int',
+        self::ACTIVE        => 'bool',
+        self::AMOUNT        => 'int',
+        self::TAX_INCLUSIVE => 'bool',
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::TAX_ID,
+        self::TAX_GROUP_ID,
     ];
 
     // -------------------------- Getters --------------------------
@@ -106,6 +135,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function isTaxInclusive()
+    {
+        return $this->getAttribute(self::TAX_INCLUSIVE);
+    }
+
+    public function getTaxId()
+    {
+        return $this->getAttribute(self::TAX_ID);
+    }
+
+    public function getTaxGroupId()
+    {
+        return $this->getAttribute(self::TAX_GROUP_ID);
+    }
+
     public function isActive()
     {
         return ($this->getAttribute(self::ACTIVE) === true);
@@ -117,6 +161,22 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------- End Getters --------------------------
+
+    // Public setters
+
+    public function setPublicTaxIdAttribute(array & $output)
+    {
+        $taxId = $this->getAttribute(self::TAX_ID);
+
+        $output[self::TAX_ID] = Tax\Entity::getSignedIdOrNull($taxId);
+    }
+
+    public function setPublicTaxGroupIdAttribute(array & $output)
+    {
+        $taxGroupId = $this->getAttribute(self::TAX_GROUP_ID);
+
+        $output[self::TAX_GROUP_ID] = Tax\Group\Entity::getSignedIdOrNull($taxGroupId);
+    }
 
     // -------------------- Relations ---------------------------
 
@@ -133,6 +193,16 @@ class Entity extends Base\PublicEntity
     public function addons()
     {
         return $this->hasMany('RZP\Models\Plan\Subscription\Addon\Entity');
+    }
+
+    public function tax()
+    {
+        return $this->belongsTo('RZP\Models\Tax\Entity');
+    }
+
+    public function taxGroup()
+    {
+        return $this->belongsTo('RZP\Models\Tax\Group\Entity');
     }
 
     // -------------------- End Relations -----------------------

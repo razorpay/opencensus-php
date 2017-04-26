@@ -27,12 +27,14 @@ class Core extends Base\Core
 
         $item->merchant()->associate($merchant);
 
+        $this->handleTaxeInputs($item, $input, $merchant);
+
         $this->repo->saveOrFail($item);
 
         return $item;
     }
 
-    public function update(Entity $item, array $input)
+    public function update(Entity $item, array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
             TraceCode::ITEM_UPDATE_REQUEST,
@@ -42,6 +44,8 @@ class Core extends Base\Core
             ]);
 
         $item->edit($input);
+
+        $this->handleTaxeInputs($item, $input, $merchant);
 
         $this->repo->saveOrFail($item);
 
@@ -82,5 +86,44 @@ class Core extends Base\Core
         }
 
         return $item;
+    }
+
+    private function handleTaxeInputs(
+        Entity $item,
+        array $input,
+        Merchant\Entity $merchant)
+    {
+        // Handles tax_id
+
+        $taxId = $input[Entity::TAX_ID] ?? null;
+
+        if (empty($taxId))
+        {
+            $item->tax()->dissociate();
+        }
+        else
+        {
+            $tax = $this->repo->tax
+                              ->findByPublicIdAndMerchant($taxId, $merchant);
+
+            $item->tax()->associate($tax);
+        }
+
+        // Handles tax_group_id
+
+        $taxGroupId = $input[Entity::TAX_GROUP_ID] ?? null;
+
+        if (empty($taxGroupId))
+        {
+            $item->taxGroup()->dissociate();
+        }
+        else
+        {
+            $taxGroup = $this->repo->tax_group
+                                   ->findByPublicIdAndMerchant(
+                                        $taxGroupId, $merchant);
+
+            $item->taxGroup()->associate($taxGroup);
+        }
     }
 }

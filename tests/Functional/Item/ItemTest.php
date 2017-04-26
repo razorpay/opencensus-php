@@ -2,15 +2,14 @@
 
 namespace RZP\Tests\Functional\Item;
 
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-
-use Carbon\Carbon;
-use Mockery;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class ItemTest extends TestCase
 {
-    use PaymentTrait;
+    use RequestResponseFlowTrait;
+
+    use \Illuminate\Foundation\Testing\DatabaseMigrations;
 
     // TODO: Test case for items created for 1 entity should
     // not be editable by other entities.
@@ -24,6 +23,8 @@ class ItemTest extends TestCase
         $this->fixtures->merchant->addFeatures(['invoice']);
 
         $this->ba->proxyAuth();
+
+        $this->seed('TaxGroupAndTaxSeeder');
     }
 
     public function testCreateItem()
@@ -33,6 +34,21 @@ class ItemTest extends TestCase
         $item = $this->getLastEntity('item', true);
 
         $this->assertEquals($item['id'], $response['id']);
+    }
+
+    public function testCreateItemWithTaxId()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateItemWithTaxGroupId()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateItemWithBothTaxIdAndTaxGroupId()
+    {
+        $this->startTest();
     }
 
     public function testGetItem()
@@ -57,6 +73,34 @@ class ItemTest extends TestCase
         $this->startTest();
 
         $this->assertResponseWithLastEntity('item', __FUNCTION__);
+    }
+
+    public function testUpdateItemWithNewTaxId()
+    {
+        $this->fixtures->create('item', ['tax_id' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateItemWithNewTaxGroupId()
+    {
+        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateItemWithTaxIdWhenTaxGroupIdExists()
+    {
+        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testUpdateItemWithTaxIdAndRemoveTaxGroupId()
+    {
+        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+
+        $this->startTest();
     }
 
     public function testDeleteItem()

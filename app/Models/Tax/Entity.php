@@ -83,4 +83,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
+
+    public function items()
+    {
+        return $this->belongsToMany('RZP\Models\Item\Entity');
+    }
 }

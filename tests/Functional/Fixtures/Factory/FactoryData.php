@@ -305,13 +305,17 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Item\Entity::class, [
-            'id' => '1000000000item',
-            'merchant_id' => '10000000000000',
-            'name' => 'Some item name',
-            'description' => 'Some item description',
-            'type' => 'invoice',
-            'amount' => 100000,
-            'currency' => 'INR',
+            'id'            => '1000000000item',
+            'merchant_id'   => '10000000000000',
+            'name'          => 'Some item name',
+            'description'   => 'Some item description',
+            'type'          => 'invoice',
+            'amount'        => 100000,
+            'currency'      => 'INR',
+            'unit'          => null,
+            'tax_inclusive' => false,
+            'tax_id'        => null,
+            'tax_group_id'  => null,
         ]);
 
         $factory(\RZP\Models\Invoice\Entity::class, [

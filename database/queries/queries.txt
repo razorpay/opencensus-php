@@ -2019,3 +2019,16 @@ ALTER TABLE payments
     ADD COLUMN approval_code VARCHAR(10) NULL AFTER terminal_id,
     ADD COLUMN reference1 VARCHAR NULL AFTER approval_code,
     ADD COLUMN reference2 VARCHAR NULL AFTER reference1;
+
+# Pre deployment of item_level_changes_wrt_taxes
+
+ALTER TABLE items ADD COLUMN unit varchar(512) DEFAULT NULL;
+ALTER TABLE items ADD COLUMN tax_inclusive tinyint(4) NOT NULL DEFAULT 0;
+ALTER TABLE items ADD COLUMN tax_id char(14) DEFAULT NULL;
+ALTER TABLE items ADD COLUMN tax_group_id char(14) DEFAULT NULL;
+
+ALTER TABLE items ADD CONSTRAINT items_tax_group_id_foreign FOREIGN KEY (tax_group_id) REFERENCES tax_groups(id) ON DELETE SET NULL;
+ALTER TABLE items ADD CONSTRAINT items_tax_id_foreign FOREIGN KEY (tax_id) REFERENCES taxes(id) ON DELETE SET NULL;
+
+ALTER TABLE items ADD INDEX items_tax_group_id_foreign (tax_group_id);
+ALTER TABLE items ADD INDEX items_tax_id_foreign (tax_id);

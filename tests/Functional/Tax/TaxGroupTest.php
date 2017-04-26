@@ -51,4 +51,8 @@ class TaxGroupTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testDeleteTaxGroupAndCacadeNullInItem()
+    {
+    }
 }
