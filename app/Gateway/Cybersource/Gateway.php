@@ -228,8 +228,11 @@ class Gateway extends Base\Gateway
      *
      * true  if refunded
      * false if not refunded
+     *
      * @param array $input
+     *
      * @return bool
+     * @throws Exception\LogicException
      */
     public function verifyRefund(array $input)
     {
@@ -255,7 +258,11 @@ class Gateway extends Base\Gateway
                 else
                 {
                     throw new Exception\LogicException(
-                        'Unexpected status');
+                        'Unexpected status',
+                        null,
+                        [
+                            'received_status' => $refundReply[0]['@attributes'][F::NAME]
+                        ]);
                 }
 
                 $responseRequest = $refundReply[1];

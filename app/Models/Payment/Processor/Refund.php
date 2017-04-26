@@ -692,7 +692,7 @@ trait Refund
      *
      * @param Payment\Refund\Entity $refund
      *
-     * @return
+     * @return string
      */
     public function processRefundRetry(Payment\Refund\Entity $refund)
     {
