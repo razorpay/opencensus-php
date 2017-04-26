@@ -28,30 +28,20 @@ class DailyFiles extends Base\DailyFiles
             'total'   => $claimData['count'] + $refundData['count'],
         ];
 
-        $claimsFile = [
-            'url'  => $claimData['signed_url'],
-            'name' => basename($claimData['local_file_path']),
-        ];
-
-        $refundsFile = [
-            'url'  => $refundData['signed_url'],
-            'name' => basename($refundData['local_file_path']),
-        ];
-
         // Send the mail only when there is at least 1 claim or refund
         if ($amount['claims'] + $amount['refunds'] > 0)
         {
             $this->sendMail(
                 $amount,
-                $claimsFile,
-                $refundsFile,
+                $claimData['signed_url'],
+                $refundData['signed_url'],
                 $count,
                 $email);
         }
 
         return [
             'refunds' => $refundData['local_file_path'],
-            'claims'  => $claimData['local_file_path']
+            'claims' => $claimData['local_file_path']
         ];
     }
 
@@ -86,14 +76,12 @@ class DailyFiles extends Base\DailyFiles
 
             if (empty($data['claimsFile']) === false)
             {
-                $message->attach($data['claimsFile']['url'])
-                        ->setFilename($data['claimsFile']['name']);;
+                $message->attach($data['claimsFile']);
             }
 
             if (empty($data['refundsFile']) === false)
             {
-                $message->attach($data['refundsFile']['url'])
-                        ->setFilename($data['refundsFile']['name']);;
+                $message->attach($data['refundsFile']);
             }
 
             $headers = $message->getHeaders();
