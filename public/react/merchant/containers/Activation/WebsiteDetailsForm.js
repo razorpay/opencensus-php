@@ -7,7 +7,7 @@ import { required } from 'rzp/utils/validators';
 
 export default class WebsiteDetailsForm extends Component {
   render() {
-    let { handleSubmit, save, saveAndNext, gotoTab } = this.props;
+    let { handleSubmit, save, saveAndNext, goBack } = this.props;
 
     return (
       <form class="form-horizontal" onSubmit={handleSubmit(saveAndNext)}>
@@ -178,7 +178,7 @@ export default class WebsiteDetailsForm extends Component {
                   type="button"
                   class="btn btn-default pull-left"
                   text="Back"
-                  onClick={() => gotoTab(2)}
+                  onClick={goBack}
                 />
 
                 <AsyncButton

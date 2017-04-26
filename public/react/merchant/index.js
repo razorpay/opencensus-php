@@ -38,9 +38,9 @@ import RefundsListContainer from './containers/Refunds/List';
 import RefundDetailsContainer from './containers/Refunds/Details';
 import BatchUploadContainer from './containers/Refunds/BatchUpload';
 import BatchListContainer from './containers/Refunds/BatchList';
-
 import PaymentsList from './containers/Payments/List';
 import PaymentDetails from './containers/Payments/Details';
+import AccountsListContainer from './containers/Accounts/List';
 
 // import PlansListContainer from './containers/Plans/List'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
@@ -151,6 +151,7 @@ createNgDirective('batchList', BatchListContainer);
 createNgDirective('batchUpload', BatchUploadContainer);
 createNgDirective('paymentsList', PaymentsList);
 createNgDirective('paymentDetails', PaymentDetails, ['id']);
+createNgDirective('accountsList', AccountsListContainer);
 
 // createNgDirective('subscriptionsList', SubscriptionsListContainer)
 // createNgDirective('subscriptionsNew', SubscriptionsNewContainer)

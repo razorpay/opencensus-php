@@ -6,12 +6,12 @@ export const ACTIVATION_SAVE_STEP = 'ACTIVATION_SAVE_STEP';
 export const ACTIVATION_SAVE_FILE = 'ACTIVATION_SAVE_FILE';
 export const ACTIVATION_FORM_SUBMIT = 'ACTIVATION_FORM_SUBMIT';
 
-export const fetchActivationDetails = () => {
+export const fetchActivationDetails = (accountId = '') => {
   return dispatch => {
     return dispatch({
       type: ACTIVATION_FETCH,
       payload: ajax({
-        url: '/activation/details',
+        url: `/activation/details/${accountId}`,
         appendModeInURL: false,
       }).then(response => {
         response.data.bank_account_number_confirmation =
@@ -22,12 +22,12 @@ export const fetchActivationDetails = () => {
   };
 };
 
-export const saveStep = (step, data) => {
+export const saveStep = ({ step, data, accountId = '' }) => {
   return dispatch => {
     return dispatch({
       type: ACTIVATION_SAVE_STEP,
       payload: ajax({
-        url: `/activation/save/step/${step}`,
+        url: `/activation/save/step/${step}/${accountId}`,
         method: 'post',
         appendModeInURL: false,
         data,
@@ -40,7 +40,7 @@ export const saveStep = (step, data) => {
   };
 };
 
-export const saveFile = (file, fieldName) => {
+export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
   return dispatch => {
     let formData = new FormData();
     formData.append(fieldName, file);
@@ -48,7 +48,7 @@ export const saveFile = (file, fieldName) => {
     return dispatch({
       type: ACTIVATION_SAVE_FILE,
       payload: ajax({
-        url: '/activation/save/file',
+        url: `/activation/save/file/${accountId}`,
         method: 'post',
         data: formData,
         processData: false,
@@ -56,26 +56,26 @@ export const saveFile = (file, fieldName) => {
         appendModeInURL: false,
       }),
       extraArgs: {
-        fieldName,
         fileName: file.name,
-        step: 5,
+        fieldName,
+        step,
       },
     });
   };
 };
 
-export const submitForm = data => {
+export const submitForm = ({ step, data, accountId = '' }) => {
   return dispatch => {
     return dispatch({
       type: ACTIVATION_FORM_SUBMIT,
       payload: ajax({
-        url: '/activation',
+        url: `/activation/${accountId}`,
         method: 'post',
         appendModeInURL: false,
         data,
       }),
       extraArgs: {
-        step: 6,
+        step,
         data,
       },
     });
@@ -156,8 +156,9 @@ export default function(state = initialState, action) {
         action.extraArgs.fileName
       );
       updatedSteps = state.steps;
+      let maxUploads = action.extraArgs.step === 4 ? 4 : 2;
 
-      if (Object.keys(uploadedFiles).length === 4) {
+      if (Object.keys(uploadedFiles).length === maxUploads) {
         updatedSteps = set(state.steps, action.extraArgs.step, 'success');
       }
 

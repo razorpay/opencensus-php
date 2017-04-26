@@ -46,7 +46,7 @@ export default class BusinessDetailsForm extends Component {
   };
 
   render() {
-    let { handleSubmit, save, saveAndNext, gotoTab } = this.props;
+    let { handleSubmit, save, saveAndNext, goBack, accountId } = this.props;
     let locked = this.props.data.locked;
 
     return (
@@ -57,7 +57,8 @@ export default class BusinessDetailsForm extends Component {
               Organisation Type
             </label>
             <div class="col-md-9">
-              {this.props.business_type === '2' &&
+              {!accountId &&
+                this.props.business_type === '2' &&
                 <div class="alert alert-warning">
                   We may not be able to support individuals as of now. Get in touch with
                   {' '}
@@ -105,279 +106,283 @@ export default class BusinessDetailsForm extends Component {
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Billing Label
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="business_dba"
-                component={InputField}
-                class="form-control"
-                placeholder="Acme Watches"
-                validate={[required()]}
-              />
-              <small class="help-block">
-                <i class="fa fa-info-circle" />
-                <span>
-                  This is the brand name that the customers are familiar with.
-                </span>
-              </small>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              International Payments Required?
-            </label>
-            <div class="col-md-9 checkbox">
-              <label class="i-switch">
-                <Field
-                  name="business_international"
-                  component={CheckboxField}
-                  disabled={locked}
-                />
-                <i />
-              </label>
-              <small class="help-block">
-                <i class="fa fa-info-circle" />
-                <span>
-                  Please note that applications for international transactions take longer time to process.
-                </span>
-              </small>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Payments Accepted for:
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="business_paymentdetails"
-                class="form-control"
-                component={InputField}
-                tagName="select"
-                disabled={locked}
-                validate={[required()]}
-              >
-                <option />
-                <option value="B2B">Business to Business (B2B)</option>
-                <option value="B2C">Business to Consumer (B2C)</option>
-                <option value="B2B+B2C">Both B2B and B2C</option>
-              </Field>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Business Model
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="business_model"
-                component={InputField}
-                tagName="textarea"
-                class="form-control"
-                placeholder="Business Model"
-                maxLength={255}
-                validate={[required()]}
-              />
-              <small class="help-block">
-                <i class="fa fa-info-circle" />
-                <span>
-                  Please give a brief explanation of your business model and future plans (Essential for startups)
-                </span>
-              </small>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Registered Address
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="business_registered_address"
-                component={InputField}
-                tagName="textarea"
-                class="form-control"
-                placeholder="Registered Address"
-                onChange={this.updateOperationalAddress}
-                validate={[required()]}
-              />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Registration Address State
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="business_registered_state"
-                component={InputField}
-                class="form-control"
-                placeholder="Registered Address State"
-                onChange={this.updateOperationalAddress}
-                validate={[required()]}
-              />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Registered Address City
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="business_registered_city"
-                component={InputField}
-                class="form-control"
-                placeholder="Registered Address City"
-                onChange={this.updateOperationalAddress}
-                validate={[required()]}
-              />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Registered Address Pincode
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="business_registered_pin"
-                component={InputField}
-                class="form-control"
-                placeholder="Registered Address Pincode"
-                onChange={this.updateOperationalAddress}
-                validate={[required()]}
-              />
-            </div>
-          </div>
-
-          {!locked
-            ? <div class="form-group">
-                <label class="col-md-3 control-label">
-                  Operational Address same as Registered Address
-                </label>
-                <div class="col-md-9 checkbox">
-                  <label class="i-switch">
-                    <Field
-                      name="or_same"
-                      component="input"
-                      type="checkbox"
-                      onChange={this.updateOperationalAddress}
-                    />
-                    <i />
+          {accountId
+            ? null
+            : <div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Billing Label
                   </label>
-                  <small class="help-block">
-                    <i class="fa fa-info-circle" />
-                    <span>
-                      Physical Verification might be performed at your operational address.
-                    </span>
-                  </small>
+                  <div class="col-md-9">
+                    <Field
+                      name="business_dba"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="Acme Watches"
+                      validate={[required()]}
+                    />
+                    <small class="help-block">
+                      <i class="fa fa-info-circle" />
+                      <span>
+                        This is the brand name that the customers are familiar with.
+                      </span>
+                    </small>
+                  </div>
                 </div>
-              </div>
-            : null}
 
-          <fieldset disabled={this.props.or_same}>
-            <div class="form-group">
-              <label class="col-md-3 control-label label-required">
-                Operational Address
-              </label>
-              <div class="col-md-9">
-                <Field
-                  name="business_operation_address"
-                  component={InputField}
-                  tagName="textarea"
-                  class="form-control"
-                  placeholder="Operational Address"
-                  validate={[required()]}
-                />
-              </div>
-            </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    International Payments Required?
+                  </label>
+                  <div class="col-md-9 checkbox">
+                    <label class="i-switch">
+                      <Field
+                        name="business_international"
+                        component={CheckboxField}
+                        disabled={locked}
+                      />
+                      <i />
+                    </label>
+                    <small class="help-block">
+                      <i class="fa fa-info-circle" />
+                      <span>
+                        Please note that applications for international transactions take longer time to process.
+                      </span>
+                    </small>
+                  </div>
+                </div>
 
-            <div class="form-group">
-              <label class="col-md-3 control-label label-required">
-                Operational Address State
-              </label>
-              <div class="col-md-9">
-                <Field
-                  name="business_operation_state"
-                  component={InputField}
-                  class="form-control"
-                  placeholder="Operational Address State"
-                  validate={[required()]}
-                />
-              </div>
-            </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Payments Accepted for:
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="business_paymentdetails"
+                      class="form-control"
+                      component={InputField}
+                      tagName="select"
+                      disabled={locked}
+                      validate={[required()]}
+                    >
+                      <option />
+                      <option value="B2B">Business to Business (B2B)</option>
+                      <option value="B2C">Business to Consumer (B2C)</option>
+                      <option value="B2B+B2C">Both B2B and B2C</option>
+                    </Field>
+                  </div>
+                </div>
 
-            <div class="form-group">
-              <label class="col-md-3 control-label label-required">
-                Operational Address City
-              </label>
-              <div class="col-md-9">
-                <Field
-                  name="business_operation_city"
-                  component={InputField}
-                  class="form-control"
-                  placeholder="Operational Address City"
-                  validate={[required()]}
-                />
-              </div>
-            </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Business Model
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="business_model"
+                      component={InputField}
+                      tagName="textarea"
+                      class="form-control"
+                      placeholder="Business Model"
+                      maxLength={255}
+                      validate={[required()]}
+                    />
+                    <small class="help-block">
+                      <i class="fa fa-info-circle" />
+                      <span>
+                        Please give a brief explanation of your business model and future plans (Essential for startups)
+                      </span>
+                    </small>
+                  </div>
+                </div>
 
-            <div class="form-group">
-              <label class="col-md-3 control-label label-required">
-                Operational Address Pincode
-              </label>
-              <div class="col-md-9">
-                <Field
-                  name="business_operation_pin"
-                  component={InputField}
-                  class="form-control"
-                  placeholder="Operational Address Pincode"
-                  validate={[required()]}
-                />
-              </div>
-            </div>
-          </fieldset>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Registered Address
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="business_registered_address"
+                      component={InputField}
+                      tagName="textarea"
+                      class="form-control"
+                      placeholder="Registered Address"
+                      onChange={this.updateOperationalAddress}
+                      validate={[required()]}
+                    />
+                  </div>
+                </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Date of Establishment
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="business_doe"
-                component={DatePickerField}
-                class="form-control"
-                outputDateFormat="YYYY-MM-DD"
-                disabled={locked}
-                isOutsideRange={day => {
-                  return day.isAfter(moment());
-                }}
-              />
-            </div>
-          </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Registration Address State
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="business_registered_state"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="Registered Address State"
+                      onChange={this.updateOperationalAddress}
+                      validate={[required()]}
+                    />
+                  </div>
+                </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label">Company CIN</label>
-            <div class="col-md-9">
-              <Field
-                name="company_cin"
-                component="input"
-                class="form-control"
-                placeholder="Company CIN"
-              />
-              <small class="help-block">
-                <i class="fa fa-info-circle" />
-                <span>Mandatory for Companies</span>
-              </small>
-            </div>
-          </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Registered Address City
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="business_registered_city"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="Registered Address City"
+                      onChange={this.updateOperationalAddress}
+                      validate={[required()]}
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Registered Address Pincode
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="business_registered_pin"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="Registered Address Pincode"
+                      onChange={this.updateOperationalAddress}
+                      validate={[required()]}
+                    />
+                  </div>
+                </div>
+
+                {!locked
+                  ? <div class="form-group">
+                      <label class="col-md-3 control-label">
+                        Operational Address same as Registered Address
+                      </label>
+                      <div class="col-md-9 checkbox">
+                        <label class="i-switch">
+                          <Field
+                            name="or_same"
+                            component="input"
+                            type="checkbox"
+                            onChange={this.updateOperationalAddress}
+                          />
+                          <i />
+                        </label>
+                        <small class="help-block">
+                          <i class="fa fa-info-circle" />
+                          <span>
+                            Physical Verification might be performed at your operational address.
+                          </span>
+                        </small>
+                      </div>
+                    </div>
+                  : null}
+
+                <fieldset disabled={this.props.or_same}>
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_address"
+                        component={InputField}
+                        tagName="textarea"
+                        class="form-control"
+                        placeholder="Operational Address"
+                        validate={[required()]}
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address State
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_state"
+                        component={InputField}
+                        class="form-control"
+                        placeholder="Operational Address State"
+                        validate={[required()]}
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address City
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_city"
+                        component={InputField}
+                        class="form-control"
+                        placeholder="Operational Address City"
+                        validate={[required()]}
+                      />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address Pincode
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_pin"
+                        component={InputField}
+                        class="form-control"
+                        placeholder="Operational Address Pincode"
+                        validate={[required()]}
+                      />
+                    </div>
+                  </div>
+                </fieldset>
+
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Date of Establishment
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="business_doe"
+                      component={DatePickerField}
+                      class="form-control"
+                      outputDateFormat="YYYY-MM-DD"
+                      disabled={locked}
+                      isOutsideRange={day => {
+                        return day.isAfter(moment());
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-md-3 control-label">Company CIN</label>
+                  <div class="col-md-9">
+                    <Field
+                      name="company_cin"
+                      component="input"
+                      class="form-control"
+                      placeholder="Company CIN"
+                    />
+                    <small class="help-block">
+                      <i class="fa fa-info-circle" />
+                      <span>Mandatory for Companies</span>
+                    </small>
+                  </div>
+                </div>
+              </div>}
 
           <div class="form-group">
             <label class="col-md-3 control-label">Company PAN</label>
@@ -388,69 +393,76 @@ export default class BusinessDetailsForm extends Component {
                 class="form-control"
                 placeholder="Company PAN"
               />
-              <small class="help-block">
-                <i class="fa fa-info-circle" />
-                <span>Mandatory for Companies</span>
-              </small>
+              {accountId
+                ? null
+                : <small class="help-block">
+                    <i class="fa fa-info-circle" />
+                    <span>Mandatory for Companies</span>
+                  </small>}
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label">Name on PAN Card</label>
-            <div class="col-md-9">
-              <Field
-                name="company_pan_name"
-                component="input"
-                class="form-control"
-                placeholder="Name on PAN (provided above)"
-              />
-              <small class="help-block">
-                <i class="fa fa-info-circle" />
-                <span>Mandatory for Companies</span>
-              </small>
-            </div>
-          </div>
+          {accountId
+            ? null
+            : <div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label">Name on PAN Card</label>
+                  <div class="col-md-9">
+                    <Field
+                      name="company_pan_name"
+                      component="input"
+                      class="form-control"
+                      placeholder="Name on PAN (provided above)"
+                    />
+                    <small class="help-block">
+                      <i class="fa fa-info-circle" />
+                      <span>Mandatory for Companies</span>
+                    </small>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Expected annual transaction volume (INR)
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="transaction_volume"
+                      component={InputField}
+                      tagName="select"
+                      class="form-control"
+                      disabled={locked}
+                      validate={[required()]}
+                    >
+                      <option />
+                      <option value="1">&lt; 1 Lakh</option>
+                      <option value="2">1 to 10 lakh</option>
+                      <option value="3">10 Lakh to 1 Crore</option>
+                      <option value="4">&gt; 1 Crore</option>
+                    </Field>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Expected average transaction value
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="transaction_value"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="E.g. Average price of the commodities you sell"
+                      validate={[required()]}
+                    />
+                  </div>
+                </div>
+              </div>}
 
           <div class="form-group">
             <label class="col-md-3 control-label label-required">
-              Expected annual transaction volume (INR)
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="transaction_volume"
-                component={InputField}
-                tagName="select"
-                class="form-control"
-                disabled={locked}
-                validate={[required()]}
-              >
-                <option />
-                <option value="1">&lt; 1 Lakh</option>
-                <option value="2">1 to 10 lakh</option>
-                <option value="3">10 Lakh to 1 Crore</option>
-                <option value="4">&gt; 1 Crore</option>
-              </Field>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Expected average transaction value
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="transaction_value"
-                component={InputField}
-                class="form-control"
-                placeholder="E.g. Average price of the commodities you sell"
-                validate={[required()]}
-              />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              PAN of any 1 authorised signatory/promoter/director
+              {accountId
+                ? 'Promoter/Individual PAN'
+                : 'PAN of any 1 authorised signatory/promoter/director'}
             </label>
             <div class="col-md-9">
               <Field
@@ -463,30 +475,34 @@ export default class BusinessDetailsForm extends Component {
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Name on PAN Card
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="promoter_pan_name"
-                component={InputField}
-                class="form-control"
-                placeholder="Name on PAN Card"
-                validate={[required()]}
-              />
-            </div>
-          </div>
+          {accountId
+            ? null
+            : <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  Name on PAN Card
+                </label>
+                <div class="col-md-9">
+                  <Field
+                    name="promoter_pan_name"
+                    component={InputField}
+                    class="form-control"
+                    placeholder="Name on PAN Card"
+                    validate={[required()]}
+                  />
+                </div>
+              </div>}
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
               <div class="btn-toolbar">
-                <AsyncButton
-                  type="button"
-                  class="btn btn-default pull-left"
-                  text="Back"
-                  onClick={() => gotoTab(1)}
-                />
+                {accountId
+                  ? null
+                  : <AsyncButton
+                      type="button"
+                      class="btn btn-default pull-left"
+                      text="Back"
+                      onClick={goBack}
+                    />}
 
                 <AsyncButton
                   class="btn btn-primary pull-right"
