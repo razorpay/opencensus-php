@@ -30,4 +30,22 @@ class Repository extends Base\Repository
                     ->where('merchant_users.role', '=', Entity::OWNER)
                     ->get();
     }
+
+    public function getUsersForMerchant(string $merchantId)
+    {
+        $query = $this->newQuery()
+                      ->select(Entity::ID,
+                               Entity::NAME,
+                               Entity::EMAIL,
+                               Entity::CONTACT_MOBILE,
+                               'users.created_at',
+                               'merchant_users.role'
+                        )
+                      ->join(Table::MERCHANT_USERS, Entity::ID, '=', 'merchant_users.user_id')
+                      ->where('merchant_users.merchant_id', '=', $merchantId);
+
+        return $query->orderBy(Entity::NAME, 'asc')
+                     ->get();
+    }
+
 }

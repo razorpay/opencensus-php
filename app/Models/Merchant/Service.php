@@ -838,6 +838,13 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getUsers(string $merchantId)
+    {
+        $merchants = (new Merchant\Core)->getUsers($merchantId);
+
+        return $merchants;
+    }
+
     /**
      * Gets the feature names to be added. A feature needs to be added to merchant
      * only if the value in input is equal to the default value of the feature

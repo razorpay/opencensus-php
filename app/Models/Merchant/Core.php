@@ -198,6 +198,13 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
+    public function getUsers(string $merchantId)
+    {
+        $users = $this->repo->user->getUsersForMerchant($merchantId);
+
+        return $users;
+    }
+
     /**
      * Save merchant entity and notify on slack
      *

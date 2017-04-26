@@ -663,4 +663,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getUsers($id)
+    {
+        $data = (new Merchant\Service)->getUsers($id);
+
+        return ApiResponse::json($data);
+    }
 }
