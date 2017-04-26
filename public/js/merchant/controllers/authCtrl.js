@@ -215,9 +215,7 @@ app
         showSpinner();
         request.success(function(data) {
           if (data.success) {
-            $scope.signup.merchantData.account_type = $scope.signup.data.invitation
-              ? 'team_member' : 'merchant';
-
+            $scope.signup.account_type = $scope.signup.data.invitation ? 'team_member' : 'merchant';
             trackDrip('account_created');
             pushToDrip();
             $scope.isLoggedIn = true;
@@ -365,7 +363,6 @@ app
             'business_name',
             'contact_mobile',
             'contact_name',
-            'account_type',
           ];
           keys.forEach(function(key) {
             if ($scope.signup.merchantData[key]) {
@@ -374,6 +371,7 @@ app
                 : $scope.signup.merchantData[key];
             }
           });
+          if ($scope.signup.account_type) data.account_type = $scope.signup.account_type
           data.source = $location.search().utm_source || document.referrer;
 
           for (var key in data) {
