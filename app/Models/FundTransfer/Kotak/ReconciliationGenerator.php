@@ -6,9 +6,13 @@ use App;
 use Carbon\Carbon;
 use Excel;
 use RZP\Exception;
+use RZP\Models\FileStore\Accessor;
+use RZP\Models\FundTransfer;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use Illuminate\Http\UploadedFile;
 
 /**
  * This class is used to handle generation of settlement reconciliation
@@ -30,10 +34,59 @@ class ReconciliationGenerator
 
         $this->trace = $this->app['trace'];
 
+        $this->repo = $this->app['repo'];
+
         if ($this->mode !== 'test')
         {
             throw new Exception\LogicException('Only test mode allowed');
         }
+    }
+
+    public function reconcileSettlementsInTestMode($input)
+    {
+        $startTimestamp = Carbon::today("Asia/Kolkata")->timestamp;
+
+        $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->timestamp - 1;
+
+        $nonReconciledAttempts = $this->repo
+                                      ->fund_transfer_attempt
+                                      ->getAttemptsBetweenTimestampsWithStatus(
+                                            $startTimestamp,
+                                            $endTimestamp,
+                                            FundTransfer\Attempt\Status::PENDING_RECONCILIATION);
+
+        // get batch id of all above attempts
+        $batchIds = $nonReconciledAttempts->pluck(FundTransfer\Attempt\Entity::BATCH_FUND_TRANSFER_ID)
+                                          ->toArray();
+
+        // non-reconciled batches
+        $nonReconciledBatches = $this->repo->batch_fund_transfer->findManyByPublicIds($batchIds);
+
+        // for above batch ids, get the txt file ids
+        $setlFileIds = $nonReconciledBatches->pluck(FundTransfer\Batch\Entity::TXT_FILE_ID)
+                                            ->toArray();
+
+        // read one txt file from s3 at a time and generate recon file
+        $response = [];
+
+        foreach ($setlFileIds as $fileId)
+        {
+            $fileAccessor = (new Accessor)->id($fileId);
+
+            $filePath = $fileAccessor->getFile();
+
+            $file = new UploadedFile($filePath, basename($filePath));
+
+            $reconFile = $this->generateReconcileFile(['file' => $file]);
+
+            $file = new UploadedFile($reconFile, basename($reconFile));
+
+            $data = (new Settlement\Service)->reconcileH2HSettlements(['file' => $file]);
+
+            $response[] = $data;
+        }
+
+        return $response;
     }
 
     public function generateReconcileFile($input)
