@@ -38,7 +38,10 @@ trait Refund
         return $refund;
     }
 
-    public function createRefundOnApiFromRecon(Payment\Entity $payment, string $refundId, int $refundAmount)
+    public function createRefundOnApiFromRecon(
+        Payment\Entity $payment,
+        string $refundId,
+        int $refundAmount)
     {
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
@@ -926,7 +929,10 @@ trait Refund
         $this->notifyDashboard('refund', $this->refund);
     }
 
-    protected function createRefundOnApiSeparately(Payment\Entity $payment, string $refundId, int $refundAmount)
+    protected function createRefundOnApiSeparately(
+        Payment\Entity $payment,
+        string $refundId,
+        int $refundAmount)
     {
         if ($payment->transaction === null)
         {
@@ -934,7 +940,9 @@ trait Refund
                 'Transaction expected but not present for payment: ' . $payment->getId());
         }
 
-        $input = ['amount' => $refundAmount];
+        $input = [
+            'amount' => $refundAmount
+        ];
 
         $refund = $this->buildRefundEntity($payment, $input);
 

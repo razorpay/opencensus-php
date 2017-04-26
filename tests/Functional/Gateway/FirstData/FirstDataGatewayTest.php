@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Gateway\FirstData;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\FirstData\Gateway;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FirstDataGatewayTest extends TestCase
@@ -25,8 +24,6 @@ class FirstDataGatewayTest extends TestCase
         $this->gateway = 'first_data';
 
         $this->payment = $this->getDefaultPaymentArray();
-
-        Gateway::setTestChance(4);
     }
 
     public function testRecurringPayment()

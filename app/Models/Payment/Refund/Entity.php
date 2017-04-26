@@ -24,6 +24,8 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID    = 'transaction_id';
     const BATCH_ID          = 'batch_id';
 
+    const GATEWAY_REFUNDED  = 'gateway_refunded';
+    const RRN               = 'rrn';
     const ATTEMPTS          = 'attempts';
     const LAST_ATTEMPTED_AT = 'last_attempted_at';
 
@@ -59,6 +61,8 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::TRANSACTION_ID,
         self::BATCH_ID,
+        self::GATEWAY_REFUNDED,
+        self::RRN,
         self::ATTEMPTS,
         self::LAST_ATTEMPTED_AT,
         self::CREATED_AT,
@@ -212,6 +216,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ATTEMPTS);
     }
 
+    public function getRrn()
+    {
+        return $this->getAttribute(self::RRN);
+    }
+
     public function setGatewayRefunded($gatewayRefunded)
     {
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
@@ -264,6 +273,11 @@ class Entity extends Base\PublicEntity
     {
         $array[self::PAYMENT_ID] =
             Payment\Entity::getIdPrefix() . $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function setRrn(string $rrn)
+    {
+        $this->setAttribute(self::RRN, $rrn);
     }
 
     public function getGateway()

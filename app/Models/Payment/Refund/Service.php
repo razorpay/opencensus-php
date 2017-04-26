@@ -49,6 +49,8 @@ class Service extends Base\Service
 
         $method = $input[Payment\Entity::METHOD];
 
+        $email = $input['email'] ?? null;
+
         switch ($method)
         {
             case Payment\Method::NETBANKING:
@@ -105,12 +107,12 @@ class Service extends Base\Service
         {
             foreach ($gateways as $gatewayCode => $gateway)
             {
-                $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
+                $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email);
             }
         }
         else
         {
-            $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
+            $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email);
         }
 
         $this->trace->info(
@@ -127,20 +129,22 @@ class Service extends Base\Service
         return $returnValue;
     }
 
-    protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
+    protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email = null)
     {
-        // Handling netbanking kotak using seperate file.
+        // Handling claims file netbanking banks using daily files.
         if ((in_array($gatewayCode, Payment\Gateway::$claimsFileToBank)) and
             ($type === Payment\Entity::BANK))
         {
             $class = $this->getDailyFilesNamespace($gatewayCode);
 
-            $result = (new $class($gatewayCode))->generate($from, $to);
+            $result = (new $class($gatewayCode))->generate($from, $to, $email);
 
             return $result;
         }
         else
         {
+            // TODO : Implement send email feature for other netbanking gateways.
+            // Implemented for Daily file gateways.
             $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                                             $type, $gatewayCode, $from, $to, $gateway);
 

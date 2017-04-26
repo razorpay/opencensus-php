@@ -48,6 +48,9 @@ class CreateOffers extends Migration
             $table->tinyInteger(Offer::BLOCK)
                   ->default(1);
 
+            $table->tinyInteger(Offer::CHECKOUT_DISPLAY)
+                    ->default(0);
+
             $table->string(Offer::TYPE, 15)
                   ->default(Offer::DEFERRED);
 
@@ -98,6 +101,8 @@ class CreateOffers extends Migration
             $table->index(Offer::ENDS_AT);
 
             $table->index(Offer::ACTIVE);
+
+            $table->index(Offer::CHECKOUT_DISPLAY);
 
             $table->foreign(Offer::MERCHANT_ID)
                   ->references(Merchant::ID)
