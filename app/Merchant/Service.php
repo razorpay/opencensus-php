@@ -661,7 +661,7 @@ class Service extends Base\Service
             return [$error, null];
         }
 
-        $users = $this->getUserOfMerhantFromApi($this-currentUser->currentMerchant()->id);
+        $users = $this->getUserOfMerhantFromApi($this->currentUser->currentMerchant()->id);
 
         $updatedUser = array_filter($users, function($user) use ($userId)
         {
