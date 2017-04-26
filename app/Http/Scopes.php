@@ -2,7 +2,7 @@
 
 namespace RZP\Http;
 
-class Scope
+class Scopes
 {
     protected static $scopes = [
         'transfer_create'                   => ['transfers.write']
@@ -27,9 +27,21 @@ class Scope
         return $scopes;
     }
 
-    public function checkScopesOnRoute(string $route)
+    public function checkAnyScopesOnRoute(array $tokenScopes, string $route)
     {
-        // TODO
+        $definedScopes = $this->getScopesForRoute($route);
+
+
+    }
+
+    public static function parseScope(string $scope)
+    {
+        $scopesParts = explode('.', $scope);
+
+        return [
+            'entity'    => $scopesParts[0],
+            'operation' => $scopesParts[1]
+        ];
     }
 
     /**
@@ -47,11 +59,11 @@ class Scope
 
         if ($routeParams[0] === 'get')
         {
-            $defaultScopes[] = 'all.read';
+            $defaultScopes[] = 'read_only';
         }
         else
         {
-            $defaultScopes[] = 'all.write';
+            $defaultScopes[] = 'write_only';
         }
 
         return $defaultScopes;
