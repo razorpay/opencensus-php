@@ -19,7 +19,6 @@ class Entity extends Base\PublicEntity
     const CURRENCY          = 'currency';
     const BASE_AMOUNT       = 'base_amount';
     const STATUS            = 'status';
-    const GATEWAY_REFUNDED  = 'gateway_refunded';
     const NOTES             = 'notes';
     const TRANSACTION_ID    = 'transaction_id';
     const BATCH_ID          = 'batch_id';
