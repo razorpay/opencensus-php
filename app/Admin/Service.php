@@ -2200,7 +2200,10 @@ class Service extends Base\Service
 
         list($error, $data) = $genericService->call('GET', $requestConfig);
 
-        $this->setOrgInCache($data);
+        if (empty($error))
+        {
+            $this->setOrgInCache($data);
+        }
 
         return [$error, $data];
     }
