@@ -707,6 +707,11 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
+        if ($refund->isProcessed() === true)
+        {
+            return Payment\Refund\Status::PROCESSED;
+        }
+
         $this->refund->incrementAttempts();
         $this->repo->saveOrFail($this->refund);
 

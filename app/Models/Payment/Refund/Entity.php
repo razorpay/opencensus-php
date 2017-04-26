@@ -177,7 +177,7 @@ class Entity extends Base\PublicEntity
 
         $amount = number_format($this->getAmount() / $denominationFactor, 2);
 
-        return  $currency . ' ' . $amount;
+        return $currency . ' ' . $amount;
     }
 
     public function getPaymentId()
@@ -188,6 +188,11 @@ class Entity extends Base\PublicEntity
     public function isGatewayRefunded()
     {
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
+    }
+
+    public function isProcessed()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::PROCESSED);
     }
 
     public function getTransactionId()
