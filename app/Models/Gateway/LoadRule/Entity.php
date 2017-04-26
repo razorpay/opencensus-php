@@ -110,6 +110,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NETWORK);
     }
 
+    public function getIssuer()
+    {
+        return $this->getAttribute(self::ISSUER);
+    }
+
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);

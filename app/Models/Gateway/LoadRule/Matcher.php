@@ -16,7 +16,7 @@ trait Matcher
      */
     public function matches(Terminal\Entity $terminal): bool
     {
-        foreach (self::COMARISON_KEYS as $key)
+        foreach (self::COMPARISON_KEYS as $key)
         {
             $comparisonFunction = $this->getComparisonFunction($key);
 
@@ -53,7 +53,7 @@ trait Matcher
 
     protected function compareInternational(Terminal\Entity $terminal)
     {
-        return ($terminal->isInternational() === $rule->isInternational());
+        return ($terminal->isInternational() === $this->isInternational());
     }
 
     protected function getComparisonFunction(string $key)

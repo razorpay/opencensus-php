@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\LoadRule;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 
 class Filter extends Core
 {
@@ -42,7 +43,7 @@ class Filter extends Core
     {
         // We check if any merchant specific rules are present. If present we only deal with
         // those rules as our rule set and discard any other rules
-        $merchantSpecificRules = $this->getMerchantSpecificRules();
+        $merchantSpecificRules = $this->getMerchantSpecificRules($rules);
 
         if ($merchantSpecificRules->isEmpty() === false)
         {

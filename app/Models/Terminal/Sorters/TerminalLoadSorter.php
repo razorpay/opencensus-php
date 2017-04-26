@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
+use RZP\Models\Base;
 use RZP\Models\Gateway\LoadRule;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
@@ -74,7 +75,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         $chancePercent = $options->getChance();
 
-        $boostedTerminalIs = $this->getBoostedTerminals(
+        $boostedTerminals = $this->getBoostedTerminals(
                                                         $ruleToTerminalsMap,
                                                         $applicableRules,
                                                         $chancePercent);
@@ -100,12 +101,14 @@ class TerminalLoadSorter extends Terminal\Sorter
     {
         $totalLoad = 0;
 
-        foreach ($rule as $ruleId => $terminals)
+        foreach ($ruleToTerminalsMap as $ruleId => $terminals)
         {
-            $rule = $applicableRules->search(function ($item) use ($ruleId)
+            $index = $applicableRules->search(function ($item) use ($ruleId)
             {
                 return ($item->getId() === $ruleId);
             });
+
+            $rule = $applicableRules->get($index);
 
             $load = $rule->getLoad();
 

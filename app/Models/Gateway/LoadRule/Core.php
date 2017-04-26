@@ -52,7 +52,7 @@ class Core extends Base\Core
      * @param  Base\PublicCollection $rules     collection of applicable rules
      * @return array                            map of rule_id => terminals
      */
-    public function matchTerminalsToRule(Base\PublicCollection $terminals, Base\PublicCollection $rules)
+    public function matchTerminalsToRule(array $terminals, Base\PublicCollection $rules)
     {
        $map = [];
 
