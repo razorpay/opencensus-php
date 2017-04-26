@@ -109,7 +109,7 @@ class NodalAccount
                 Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
             ];
 
-            $array = self::getAllFields($array);
+            $array = $this->getAllFields($array);
 
             $textDataArray = $array;
             $textDataArray['Amount'] = (string) $amount;
@@ -165,7 +165,7 @@ class NodalAccount
                 Headings::PAYMENT_DETAILS_4       => $payout->getBatchFundTransferId(),
             ];
 
-            $array = self::getAllFields($array);
+            $array = $this->getAllFields($array);
 
             $textDataArray = $array;
 
@@ -178,7 +178,7 @@ class NodalAccount
 
         $txt = $this->generateText($textData);
 
-        $name = self::getH2HFileName();
+        $name = $this->getH2HFileName();
 
         $urlText = $this->writeToTextFileH2H($name, $txt);
 
@@ -253,18 +253,18 @@ class NodalAccount
         $this->summary[$type]['count']++;
     }
 
-    protected static function getEmptyArray()
+    protected function getEmptyArray()
     {
-        $headings = self::getHeadings();
+        $headings = $this->getHeadings();
 
         $count = count($headings);
 
         return array_combine($headings, array_fill(0, $count, null));
     }
 
-    public static function getAllFields($partialValues)
+    protected function getAllFields($partialValues)
     {
-        $dict = self::getEmptyArray();
+        $dict = $this->getEmptyArray();
 
         foreach ($partialValues as $key => $value)
         {
@@ -277,7 +277,7 @@ class NodalAccount
     protected function createSettlementFiles($excelData, $textData, bool $h2h): array
     {
         // Create excel file
-        $excelFile = (new FileStore\Creator())->name(self::getFileToWriteNameWithoutExt())
+        $excelFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
                                               ->content($excelData)
                                               ->extension(FileStore\Format::XLSX)
                                               ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
@@ -294,7 +294,7 @@ class NodalAccount
                 'mode'  => '33188',
             ];
 
-            $textFile = (new FileStore\Creator())->name('kotak/outgoing/' . self::getH2HFileNameWithoutExt())
+            $textFile = (new FileStore\Creator())->name('kotak/outgoing/' . $this->getH2HFileNameWithoutExt())
                                                  ->content($textData)
                                                  ->extension(FileStore\Format::TXT)
                                                  ->type(FileStore\Type::FUND_TRANSFER_H2H)
