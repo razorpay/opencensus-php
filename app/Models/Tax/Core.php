@@ -12,13 +12,13 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::TAX_CREATE_REQUEST, $input);
 
-        $group = (new Entity)->build($input);
+        $tax = (new Entity)->build($input);
 
-        $group->merchant()->associate($merchant);
+        $tax->merchant()->associate($merchant);
 
-        $this->repo->saveOrFail($group);
+        $this->repo->saveOrFail($tax);
 
-        return $group;
+        return $tax;
     }
 
     // TODO:
@@ -27,30 +27,30 @@ class Core extends Base\Core
     // - cascade(set null) delete to items
     // (For both taxes and tax groups)
 
-    public function update(Entity $group, array $input): Entity
+    public function update(Entity $tax, array $input): Entity
     {
         $this->trace->info(
             TraceCode::TAX_UPDATE_REQUEST,
             [
-                'id'    => $group->getId(),
+                'id'    => $tax->getId(),
                 'input' => $input,
             ]);
 
-        $group->edit($input);
+        $tax->edit($input);
 
-        $this->repo->saveOrFail($group);
+        $this->repo->saveOrFail($tax);
 
-        return $group;
+        return $tax;
     }
 
-    public function delete(Entity $group)
+    public function delete(Entity $tax)
     {
         $this->trace->info(
             TraceCode::TAX_DELETE_REQUEST,
             [
-                'id' => $group->getId(),
+                'id' => $tax->getId(),
             ]);
 
-        return $this->repo->tax_group->deleteOrFail($group);
+        return $this->repo->tax->deleteOrFail($tax);
     }
 }

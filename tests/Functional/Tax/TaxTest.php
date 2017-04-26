@@ -69,8 +69,8 @@ class TaxTest extends TestCase
 
         $this->startTest();
 
-        $item = $this->getLastEntity('tax', true);
+        $tax = $this->getLastEntity('tax', true);
 
-        $this->assertEmpty($item);
+        $this->assertEmpty($tax);
     }
 }
