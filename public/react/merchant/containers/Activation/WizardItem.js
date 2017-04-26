@@ -33,7 +33,6 @@ const FORM_COMPONENTS = {
     let initialValues = { ...data };
 
     if (session.org.custom_code === 'hdfc') {
-      initialValues.bank_branch_ifsc = initialValues.bank_branch_ifsc || 'HDFC';
       initialValues.bank_account_type =
         initialValues.bank_account_type || 'Current';
     }
