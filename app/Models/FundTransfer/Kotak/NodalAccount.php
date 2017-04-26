@@ -388,7 +388,7 @@ class NodalAccount
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y-H-i-s');
 
-        $mode = \BasicAuth::getMode();
+        $mode = $this->getMode();
 
         return static::$fileToWriteName.'_'.$mode.'_'.$time;
     }
@@ -396,7 +396,7 @@ class NodalAccount
     // @codingStandardsIgnoreStart
     protected function getH2HFileName()
     {
-        $name = self::getH2HFileNameWithoutExt() . '.txt';
+        $name = $this->getH2HFileNameWithoutExt() . '.txt';
 
         return $name;
     }
