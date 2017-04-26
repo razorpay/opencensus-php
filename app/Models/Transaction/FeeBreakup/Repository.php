@@ -20,8 +20,8 @@ class Repository extends Base\Repository
     public function fetchFeesBreakupForInvoice($merchantId, $from, $to)
     {
         $feeBreakupAmount = $this->manager
-                                ->fee_breakup
-                                ->getAttributeWithTableName(Entity::AMOUNT);
+                                 ->fee_breakup
+                                 ->getAttributeWithTableName(Entity::AMOUNT);
 
         $feeBreakupTransactionId = $this->manager
                                         ->fee_breakup
@@ -56,16 +56,25 @@ class Repository extends Base\Repository
                            ->getAttributeWithTableName(Payment\Entity::CAPTURED_AT);
 
         $feesBreakup = $this->newQuery()
-                       ->selectRaw(Entity::NAME . ','.
+                            ->selectRaw(Entity::NAME . ','.
                                 'SUM(' .$feeBreakupAmount .') AS sum')
-                       ->join(Table::TRANSACTION, $feeBreakupTransactionId, '=', $transactionId)
-                       ->join(Table::PAYMENT, $entityId, '=', $paymentId)
-                       ->where($transactionMerchantId, $merchantId)
-                       ->where($type, 'payment')
-                       ->whereNotNull($capturedAt)
-                       ->whereBetween($transactionCreatedAt, [$from, $to])
-                       ->groupBy(Entity::NAME)
-                       ->get();
+                            ->join(Table::TRANSACTION, $feeBreakupTransactionId, '=', $transactionId)
+                            ->join(Table::PAYMENT, $entityId, '=', $paymentId)
+                            ->where($transactionMerchantId, $merchantId)
+                            ->where($type, 'payment')
+                            ->whereNotNull($capturedAt)
+                            ->whereBetween($transactionCreatedAt, [$from, $to])
+                            ->groupBy(Entity::NAME)
+                            ->get();
+
+        return $feesBreakup;
+    }
+
+    public function fetchByTransactionId(string $transactionId)
+    {
+        $feesBreakup = $this->newQuery()
+                            ->where(Entity::TRANSACTION_ID, $transactionId)
+                            ->get();
 
         return $feesBreakup;
     }

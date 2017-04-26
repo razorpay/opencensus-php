@@ -25,7 +25,7 @@ class ClaimsFile extends Base\RefundFile
 
     public function generate($input)
     {
-        list($txt, $totalAmount) = $this->getClaimsData($input);
+        list($txt, $totalAmount, $count) = $this->getClaimsData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -38,12 +38,23 @@ class ClaimsFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        return [$totalAmount, $file['local_file_path']];
+        $signedFileUrl = $creator->getSignedUrl('1440')['url'];
+
+        $data = [
+            'total_amount'    => $totalAmount,
+            'count'           => $count,
+            'signed_url'      => $signedFileUrl,
+            'local_file_path' => $file['local_file_path']
+        ];
+
+        return $data;
     }
 
     protected function getClaimsData(array $input)
     {
         $totalAmount = 0;
+
+        $count = 0;
 
         foreach ($input['data'] as $row)
         {
@@ -62,13 +73,15 @@ class ClaimsFile extends Base\RefundFile
             ];
 
             $totalAmount += $row['payment']['amount'] / 100;
+
+            $count += 1;
         }
 
         $initialLine = $this->getInitialLine();
 
         $txt = $this->getTextData($data, $initialLine);
 
-        return [$txt, $totalAmount];
+        return [$txt, $totalAmount, $count];
     }
 
     protected function getTextData($data, $prependLine = '')
