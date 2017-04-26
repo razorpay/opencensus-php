@@ -704,7 +704,7 @@ class Service extends Base\Service
 
     public function retry($id)
     {
-        $refund = $this->retrieveById($id);
+        $refund = $this->repo->refund->findByPublicId($id);
 
         $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
 
@@ -712,14 +712,5 @@ class Service extends Base\Service
             'refund_id' => $id,
             'status'    => $refundStatus
         ];
-    }
-
-    public function retrieveById($id)
-    {
-        Refund\Entity::verifyIdAndStripSign($id);
-
-        $refund = $this->repo->refund->findOrFail($id);
-
-        return $refund;
     }
 }

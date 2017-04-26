@@ -707,7 +707,7 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
-        if ($refund->isProcessed() === true)
+        if ($refund->hasBeenProcessed() === true)
         {
             return Payment\Refund\Status::PROCESSED;
         }
