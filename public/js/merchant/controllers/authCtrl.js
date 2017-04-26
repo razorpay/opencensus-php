@@ -215,6 +215,11 @@ app
         showSpinner();
         request.success(function(data) {
           if (data.success) {
+            $scope.signup.merchantData.account_type = $scope.signup.data.invitation
+              ? 'team_member' : 'merchant';
+
+            trackDrip('account_created');
+            pushToDrip();
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               if (data.user.confirmed) {
@@ -277,6 +282,7 @@ app
         request.success(function(data) {
           hideSpinner();
           if (data.success) {
+            trackDrip('signup_flow_completed');
             pushToDrip();
             // if verification is already done, go to dashboard (call /user again to check)
             user.identity(true).then(function(userDetails) {
@@ -334,9 +340,17 @@ app
         }
       }
 
+      var trackDrip = function (action) {
+        if (!action) return;
+        if (location.host !== 'dashboard.razorpay.com') return;
+        try {
+          _dcq.push(["track", action])
+        } catch (e){}
+      }
+
       var pushToDrip = (function() {
         var dataSent = {};
-        return function() {
+        return function(tag) {
           // send only on production
           if (location.host !== 'dashboard.razorpay.com') {
             return;
@@ -351,6 +365,7 @@ app
             'business_name',
             'contact_mobile',
             'contact_name',
+            'account_type',
           ];
           keys.forEach(function(key) {
             if ($scope.signup.merchantData[key]) {
@@ -371,6 +386,9 @@ app
           if (!payload.email) {
             return;
           }
+          if (tag) {
+            payload.tags = [tag]
+          }
           try {
             /* global _dcq */
             // try-catch, since there could be tracker blocking scripts
@@ -380,7 +398,7 @@ app
       })();
 
       // creates Drip lead if email present in params
-      pushToDrip();
+      pushToDrip('email_only');
 
       $scope.goToSigninLayout = function() {
         $scope.goToSignupStep(0); // reset signup step
