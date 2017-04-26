@@ -496,6 +496,7 @@ final class Route
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
+        'user_confirm_by_token'                   => ['put',      'users/confirm_user_by_token',                    'UserController@confirmUserByToken'                                 ],
         'user_edit'                               => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
         'user_fetch'                              => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
@@ -822,6 +823,7 @@ final class Route
         'schedule_migration',
         'internal_dummy_account_test',
         'user_create',
+        'user_confirm_by_token',
         'user_edit',
         'user_fetch',
         'user_confirm',

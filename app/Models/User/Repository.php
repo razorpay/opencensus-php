@@ -23,6 +23,13 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function findByToken(string $token)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CONFIRM_TOKEN, '=', $token)
+                    ->firstOrFailPublic();
+    }
+
     public function getOwners(string $merchantId)
     {
         return $this->newQuery()

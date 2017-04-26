@@ -31,6 +31,13 @@ class Service extends Base\Service
         return $user->toArrayPublic();
     }
 
+    public function confirmUserByToken(array $input): array
+    {
+        $user = (new Core)->confirmUserByToken($input);
+
+        return $user->toArrayPublic();
+    }
+
     public function changePassword(string $id, array $input): array
     {
         $user = $this->repo->user->findOrFailPublic($id);

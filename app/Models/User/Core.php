@@ -45,6 +45,13 @@ class Core extends Base\Core
         return $user;
     }
 
+    public function confirmUserByToken(array $input)
+    {
+        $user = $this->repo->user->findByToken($input[Entity::CONFIRM_TOKEN]);
+
+        return $this->confirm($user);
+    }
+
     public function changePassword(Entity $user, array $input)
     {
         $user->edit($input, 'change_password');

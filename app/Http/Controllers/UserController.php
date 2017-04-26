@@ -18,7 +18,7 @@ class UserController extends Controller
 
     public function editUser(string $id)
     {
-    	$input = Request::all();
+        $input = Request::all();
 
         $data = (new User\Service)->edit($id, $input);
 
@@ -28,6 +28,15 @@ class UserController extends Controller
     public function confirmUser(string $id)
     {
         $data = (new User\Service)->confirm($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function confirmUserByToken()
+    {
+        $input = Request::all();
+
+        $data = (new User\Service)->confirmUserByToken($input);
 
         return ApiResponse::json($data);
     }
