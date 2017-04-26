@@ -7,7 +7,7 @@ use ApiResponse;
 
 use Razorpay\OAuth\Token\Service as TokenService;
 
-class TokenController extends Controller
+class OAuthTokenController extends Controller
 {
     protected $tokenService;
 
@@ -15,13 +15,12 @@ class TokenController extends Controller
     {
         parent::__construct();
 
+        $this->merchant = $this->app['basicauth']->getMerchant();
+
         $this->tokenService = new TokenService;
     }
 
-    /**
-     * GET /oauth/tokens
-     */
-    public function getAllTokens()
+    public function getTokens()
     {
         $input = Request::all();
 
@@ -30,9 +29,6 @@ class TokenController extends Controller
         return ApiResponse::json($result);
     }
 
-    /**
-     * GET /oauth/tokens/{$id}
-     */
     public function getToken(string $id)
     {
         $input = Request::all();
@@ -42,10 +38,7 @@ class TokenController extends Controller
         return ApiResponse::json($result);
     }
 
-    /*
-     * PATCH /oauth/tokens/{$id}
-     */
-    public function editToken(string $id)
+    public function udpateToken(string $id)
     {
         $input = Request::all();
 
@@ -54,9 +47,6 @@ class TokenController extends Controller
         return ApiResponse::json($result);
     }
 
-    /*
-     * PUT oauth/tokens/{$id}/revoke
-     */
     public function revokeToken(string $id)
     {
         $input = Request::all();

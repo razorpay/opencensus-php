@@ -501,10 +501,10 @@ final class Route
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
 
         // Oauth
-        'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'TokenController@getAllTokens'                                      ],
-        'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'TokenController@getToken'                                          ],
-        'oauth_token_edit'                        => ['patch',      'oauth/tokens/{id}',                              'TokenController@editToken'                                         ],
-        'oauth_token_revoke'                      => ['put',     'oauth/tokens/{id}/revoke',                       'TokenController@revokeToken'                                       ],
+        'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getTokens'                                         ],
+        'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@geToken'                                           ],
+        'oauth_token_edit'                        => ['patch',    'oauth/tokens/{id}',                              'OAuthTokenController@updateToken'                                       ],
+        'oauth_token_revoke'                      => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revokeToken'                                       ],
     );
 
     public static $public = array(
