@@ -12,8 +12,8 @@ app.controller('EmailLogsCtrl', [
     $scope.emailLogs = [];
 
     $scope.fetchEmailLogs = function() {
-      var query = { ascending: 'no' };
-      if ($scope.event) {
+      var query = { ascending: 'no', event: 'delivered OR failed OR rejected' };
+      if ($scope.event && $scope.event.length !== 0) {
         query.event = $scope.event;
       }
       if ($scope.recipient) {
