@@ -359,6 +359,42 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
     }
 
+    public function testGatewayVerifyRefundVerifyFailure()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockRefundTimeout('processor');
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->mockServerContentFunction(function(&$xml, $action) use ($refund)
+        {
+            if ($action === 'refund')
+            {
+               throw new \SoapFault('HTTP', 'Random SoapFault Exception');
+            }
+        });
+
+        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $response = $this->retryFailedRefunds();
+
+        $id = explode('_', $refund['id'], 2)[1];
+
+        $actualRefund = $this->getEntityById('refund', $id, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('failed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(false, $actualRefund['gateway_refunded']);
+    }
+
     public function testGatewayVerifyRefundFailure()
     {
         $payment = $this->doAuthAndCapturePayment();
