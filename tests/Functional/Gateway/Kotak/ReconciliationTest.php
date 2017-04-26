@@ -380,13 +380,11 @@ class ReconciliationTest extends TestCase
                 Kotak\Headings::AMOUNT                  => 122,
                 Kotak\Headings::BANK_CODE_INDICATOR     => 'M',
                 Kotak\Headings::BENEFICIARY_CODE        => 'mock_beneficiary_code',
-                Kotak\Headings::CREDIT_NARRATION        => 'mock_credit_narration',
-                Kotak\Headings::PAYMENT_DETAILS_1       => 'mock_details',
-                Kotak\Headings::MERCHANT_ID             => $merchant->getPublicId(),
-                Kotak\Headings::BANK_ACCOUNT_ID         => random_integer(10),
-                Kotak\Headings::BATCH_FUND_TRANSFER_ID  => $batchTransferEntity->getId(),
-                Kotak\Headings::SOURCE_ID               => $settlement->getPublicId(),
-                Kotak\Headings::VERSION                 => 'V2',
+                Kotak\Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+                Kotak\Headings::PAYMENT_DETAILS_1       => $settlement->getId(),
+                Kotak\Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+                Kotak\Headings::PAYMENT_DETAILS_3       => 'V3',
+                Kotak\Headings::PAYMENT_DETAILS_4       => $batchTransferEntity->getId(),
             ];
 
             $array = Kotak\NodalAccount::getAllFields($array);

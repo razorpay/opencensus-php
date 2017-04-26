@@ -186,7 +186,7 @@ final class FactoryData
             'source_type' => 'settlement',
             'status' => 'created',
             'channel' => 'kotak',
-            'version' => 'V2',
+            'version' => 'V3',
         ]);
 
         $factory(\RZP\Models\FundTransfer\Batch\Entity::class, [
