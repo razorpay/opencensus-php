@@ -59,11 +59,6 @@ class EsClient
         return [$res];
     }
 
-    public function search(array $params)
-    {
-        return $this->client->search($params);
-    }
-
     public function explain(array $params)
     {
         return $this->client->explain($params);
@@ -109,6 +104,26 @@ class EsClient
         return $this->client->bulk($params);
     }
 
+    public function search(array $params)
+    {
+        if ($this->esMock === true)
+        {
+            return ['hits' => ['hits' => []]];
+        }
+
+        return $this->client->search($params);
+    }
+
+    public function indexExists(array $params)
+    {
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
+        return $this->client->indices()->exists($params);
+    }
+
     public function searchNotes($params)
     {
         // If ES mock is set to true.
@@ -146,11 +161,21 @@ class EsClient
 
     public function delete($params)
     {
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
         return $this->client->delete($params);
     }
 
     public function createIndex($params)
     {
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
         return $this->client->indices()->create($params);
     }
 

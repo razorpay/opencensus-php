@@ -356,4 +356,59 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FORBIDDEN,
         ],
     ],
+
+    // ----------------------------------------------------------------------
+    // Expectations for ES
+
+    'testListInvoiceWithUserIdHeaderEsExpectedSearchParams' => [
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'term' => [
+                                'user_id' => [
+                                    'value' =>'10000000UserId',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testListInvoiceWithUserIdHeaderEsExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000000invoice'
+                ],
+                [
+                    '_id' => '1000001invoice',
+                ]
+            ],
+        ],
+    ],
+
+    // ----------------------------------------------------------------------
 ];

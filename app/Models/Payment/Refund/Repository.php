@@ -32,10 +32,6 @@ class Repository extends Base\Repository
         Entity::STATUS          => 'sometimes|string|max:30',
     );
 
-    protected $esWhitelistedParams = [
-        Entity::NOTES
-    ];
-
     protected $signedIds = [
         Entity::BATCH_ID,
         Entity::PAYMENT_ID,
