@@ -6,11 +6,12 @@ import { required } from 'rzp/utils/validators';
 
 export default class SubmitForm extends Component {
   render() {
-    let { handleSubmit, save, gotoTab, invalid } = this.props;
+    let { handleSubmit, save, goBack, invalid } = this.props;
+    let { locked, submitted } = this.props.data;
 
     return (
       <form class="form-horizontal" onSubmit={handleSubmit(save)}>
-        <Fieldset disabled={this.props.data.locked}>
+        <Fieldset disabled={locked}>
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
               <div class="checkbox submit-form">
@@ -67,14 +68,14 @@ export default class SubmitForm extends Component {
                   type="button"
                   class="btn btn-default pull-left"
                   text="Back"
-                  onClick={() => gotoTab(1)}
+                  onClick={goBack}
                 />
 
                 <AsyncButton
                   class="btn btn-primary"
                   text="Click here to Submit"
                   pendingText="Submitting..."
-                  disabled={invalid}
+                  disabled={submitted || invalid}
                   onClick={handleSubmit(save)}
                 />
               </div>
