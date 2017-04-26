@@ -353,20 +353,39 @@ class Service extends Base\Service
      */
     public function confirm($token)
     {
-        $user = User\Entity::getUserForConfirmation($token);
+        list($error, $response) = $this->confirmUserByTokenOnApi($token);
 
-        if ($user === null)
+        if (empty($error) === false)
         {
             return [[static::INVALID_CONFIRMATION_TOKEN], []];
         }
 
-        $user->confirm();
+        $user = User\Entity::getUserForConfirmation($token);
 
-        $this->confirmUserOnApi($user->id);
+        $user->confirm();
 
         $this->subscribeToMailingList($user);
 
         return [null, ['email' => $user->email]];
+    }
+
+    public function confirmUserByTokenOnApi($token)
+    {
+        $this->setApiCredentials();
+
+        $data = ['confirm_token' => $token];
+
+        $error = $response = [];
+        try
+        {
+            $response = $this->api->user->confirmByToken($data);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 
     public function confirmUserOnApi($userId)
