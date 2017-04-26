@@ -36,9 +36,9 @@ class ClaimsFile extends Base\RefundFile
             FileStore\Type::AXIS_NETBANKING_CLAIMS
         );
 
-        $file = $creator->get();
+        $file = $creator->getSignedUrl();
 
-        return [$totalAmount, $file['local_file_path']];
+        return [$totalAmount, $file['url']];
     }
 
     protected function getClaimsData(array $input)

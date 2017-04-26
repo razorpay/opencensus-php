@@ -37,9 +37,9 @@ class RefundFile extends Base\RefundFile
             FileStore\Type::AXIS_NETBANKING_REFUND
         );
 
-        $file = $creator->get();
+        $file = $creator->getSignedUrl();
 
-        return [$totalAmount, $file['local_file_path']];
+        return [$totalAmount, $file['url']];
     }
 
     protected function getRefundData(array $input)
