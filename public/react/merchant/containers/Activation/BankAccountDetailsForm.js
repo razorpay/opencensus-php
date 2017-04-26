@@ -14,7 +14,14 @@ function verifyAccountNumber(value, allValues, props) {
 
 export default class BankDetailsForm extends Component {
   render() {
-    let { handleSubmit, save, saveAndNext, gotoTab, data } = this.props;
+    let {
+      handleSubmit,
+      save,
+      saveAndNext,
+      goBack,
+      data,
+      accountId,
+    } = this.props;
     let { locked, activated } = data;
 
     return (
@@ -102,105 +109,109 @@ export default class BankDetailsForm extends Component {
             </div>
           </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Beneficiary Address Line 1
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="bank_beneficiary_address1"
-                component={InputField}
-                tagName="textarea"
-                class="form-control"
-                placeholder="Beneficiary Address Line 1"
-                validate={[required()]}
-              />
-            </div>
-          </div>
+          {accountId
+            ? null
+            : <div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Beneficiary Address Line 1
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="bank_beneficiary_address1"
+                      component={InputField}
+                      tagName="textarea"
+                      class="form-control"
+                      placeholder="Beneficiary Address Line 1"
+                      validate={[required()]}
+                    />
+                  </div>
+                </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label">
-              Beneficiary Address Line 2
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="bank_beneficiary_address2"
-                component={InputField}
-                tagName="textarea"
-                class="form-control"
-                placeholder="Beneficiary Address Line 2"
-              />
-            </div>
-          </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label">
+                    Beneficiary Address Line 2
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="bank_beneficiary_address2"
+                      component={InputField}
+                      tagName="textarea"
+                      class="form-control"
+                      placeholder="Beneficiary Address Line 2"
+                    />
+                  </div>
+                </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label">
-              Beneficiary Address Line 3
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="bank_beneficiary_address3"
-                component={InputField}
-                tagName="textarea"
-                class="form-control"
-                placeholder="Beneficiary Address Line 3"
-              />
-            </div>
-          </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label">
+                    Beneficiary Address Line 3
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="bank_beneficiary_address3"
+                      component={InputField}
+                      tagName="textarea"
+                      class="form-control"
+                      placeholder="Beneficiary Address Line 3"
+                    />
+                  </div>
+                </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Beneficiary Address City
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="bank_beneficiary_city"
-                component={InputField}
-                class="form-control"
-                placeholder="Beneficiary Address City"
-                validate={[required()]}
-              />
-            </div>
-          </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Beneficiary Address City
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="bank_beneficiary_city"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="Beneficiary Address City"
+                      validate={[required()]}
+                    />
+                  </div>
+                </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Beneficiary Address State
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="bank_beneficiary_state"
-                component={InputField}
-                tagName="select"
-                class="form-control"
-                placeholder="Beneficiary Address State"
-                disabled={locked}
-                validate={[required()]}
-              >
-                <option />
-                {Object.keys(states).map(stateCode => (
-                  <option value={stateCode} key={stateCode}>
-                    {states[stateCode]}
-                  </option>
-                ))}
-              </Field>
-            </div>
-          </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Beneficiary Address State
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="bank_beneficiary_state"
+                      component={InputField}
+                      tagName="select"
+                      class="form-control"
+                      placeholder="Beneficiary Address State"
+                      disabled={locked}
+                      validate={[required()]}
+                    >
+                      <option />
+                      {Object.keys(states).map(stateCode => (
+                        <option value={stateCode} key={stateCode}>
+                          {states[stateCode]}
+                        </option>
+                      ))}
+                    </Field>
+                  </div>
+                </div>
 
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              Beneficiary Address Pincode
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="bank_beneficiary_pin"
-                component={InputField}
-                class="form-control"
-                placeholder="Beneficiary Address Pincode"
-                validate={[required()]}
-              />
-            </div>
-          </div>
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
+                    Beneficiary Address Pincode
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="bank_beneficiary_pin"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="Beneficiary Address Pincode"
+                      validate={[required()]}
+                    />
+                  </div>
+                </div>
+              </div>}
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
@@ -209,7 +220,7 @@ export default class BankDetailsForm extends Component {
                   type="button"
                   class="btn btn-default pull-left"
                   text="Back"
-                  onClick={() => gotoTab(2)}
+                  onClick={goBack}
                 />
 
                 <AsyncButton
