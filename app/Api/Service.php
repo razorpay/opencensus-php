@@ -206,6 +206,7 @@ class Service extends Base\Service
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
+
             $data = $this->api->payment
                                 ->fetch($id)
                                 ->capture($input)

@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\AppResponse;
-
-use Input;
-use Password;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Lang;
 use DB;
 use Hash;
-use App\Merchant;
-use App\Generic;
-use App\Admin;
+use Input;
+use Password;
 use App\User;
+use App\Admin;
+use App\Generic;
+use App\Merchant;
+use App\Http\AppResponse;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\Response;
 
 class PasswordController extends Controller
 {

@@ -678,7 +678,7 @@ class Service extends Base\Service
     {
         $user = Auth::user();
 
-        if ($user->currentMerchant and $user->currentMerchant->isTestAccount())
+        if ($user->currentMerchant() and $user->currentMerchant()->isTestAccount())
         {
             return [["Password change forbidden on this account"], null];
         }
@@ -782,7 +782,7 @@ class Service extends Base\Service
 
         $error = (new User\Validator)->validateInput('upgrade', $input)->messages();
 
-        if (! empty($error))
+        if (empty($error) === true)
         {
             return [$error, null];
         }
@@ -802,6 +802,8 @@ class Service extends Base\Service
             (new Merchant\Service)->createMerchantOnApi($data['id']);
 
             $user->confirm();
+
+            $this->confirmUserOnApi($user->id);
 
             $this->subscribeToMailingList($user);
         }

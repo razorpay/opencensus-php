@@ -1,22 +1,20 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Http\AppResponse;
-use App\Http\SlackResponse;
-
-use App\Admin;
-use App\Admin\Entity;
-use App\Merchant;
-
 use App;
 use Auth;
-use Input;
-use Config;
-use OAuthFacade;
-use Redirect;
-use Cache;
-use Session;
 use View;
+use Input;
+use Cache;
+use Config;
+use Session;
+use Redirect;
+use App\Admin;
+use OAuthFacade;
+use App\Merchant;
+use App\Admin\Entity;
+use App\Http\AppResponse;
+use App\Http\SlackResponse;
 
 class AdminController extends Controller
 {

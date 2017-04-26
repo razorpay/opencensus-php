@@ -100,8 +100,7 @@ class Service extends Base\Service
             }
         }
 
-        $error = (new Merchant\Validator)
-                    ->validateInput('create_submerchant', $input)->messages();
+        $error = (new Merchant\Validator)->validateInput('create_submerchant', $input)->messages();
 
         if (empty($error))
         {
