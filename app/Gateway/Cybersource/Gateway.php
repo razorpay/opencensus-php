@@ -239,7 +239,6 @@ class Gateway extends Base\Gateway
 
         $refundReplies = $this->fetchRefundGatewayReplyFromContent($content);
 
-
         foreach ($refundReplies as $refundReply)
         {
             if ((isset($refundReply[0][F::R_FLAG]) === true) and
@@ -255,8 +254,13 @@ class Gateway extends Base\Gateway
                     {
                         $status = Status::REFUNDED;
                     }
+                    else
+                    {
+                        throw new Exception\LogicException(
+                            'Unexpected status');
+                    }
 
-                    $request = $refundReply[1];
+                    $responseRequest = $refundReply[1];
                 }
 
                 $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
@@ -269,7 +273,12 @@ class Gateway extends Base\Gateway
                 }
                 else
                 {
-                    $attributes = $this->getRefundAttributesFromVerify($request);
+                    //
+                    // Else condition is needed for the case where refund request fails
+                    // at the soap level. In that case, we don't create a gateway refund
+                    // entity.
+                    //
+                    $attributes = $this->getRefundAttributesFromVerify($responseRequest);
                     $attributes[E::STATUS] = $status;
 
                     $this->createGatewayRefundEntity($attributes, $input);

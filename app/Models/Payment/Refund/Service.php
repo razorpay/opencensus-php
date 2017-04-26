@@ -671,7 +671,7 @@ class Service extends Base\Service
 
                 $success++;
             }
-            catch (Exception\BaseException $e)
+            catch (\Throwable $e)
             {
                 $this->trace->traceException(
                     $e,

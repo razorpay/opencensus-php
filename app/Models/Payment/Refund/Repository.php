@@ -10,6 +10,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Constants\Table;
+use Carbon\Carbon;
 
 class Repository extends Base\Repository
 {
@@ -359,9 +360,12 @@ class Repository extends Base\Repository
         $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
         $rAttempts = $this->getAttributeWithTableName(Refund\Entity::ATTEMPTS);
         $rStatus = $this->getAttributeWithTableName(Refund\Entity::STATUS);
+        $rLastAttemptedAt = $this->getAttributeWithTableName(Refund\Entity::LAST_ATTEMPTED_AT);
 
         $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
         $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+
+        $timeLimit = Carbon::now('Asia/Kolkata')->subMinutes(30)->timestamp;
 
         // TODO: If the number of gateways exceeds by half of total,
         // inverse the `whereIn` condition.
@@ -372,6 +376,7 @@ class Repository extends Base\Repository
                     ->where($rAttempts, '<', $attempts)
                     ->where($rStatus, '=', Refund\Status::FAILED)
                     ->whereIn($pGateway, $gateways)
+                    ->where($rLastAttemptedAt, '<', $timeLimit)
                     ->with(['payment','payment.terminal'])
                     ->limit(50)
                     ->inRandomOrder()
