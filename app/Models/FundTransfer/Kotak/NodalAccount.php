@@ -384,7 +384,7 @@ class NodalAccount
         });
     }
 
-    public static function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt()
     {
         $time = Carbon::now('Asia/Kolkata')->format('d-m-Y-H-i-s');
 
@@ -394,14 +394,14 @@ class NodalAccount
     }
 
     // @codingStandardsIgnoreStart
-    public static function getH2HFileName()
+    protected function getH2HFileName()
     {
         $name = self::getH2HFileNameWithoutExt() . '.txt';
 
         return $name;
     }
 
-    public static function getH2HFileNameWithoutExt()
+    protected function getH2HFileNameWithoutExt()
     {
         $name = 'RAZORNODAL_'. Carbon::now('Asia/Kolkata')->format('dmYHis');
 

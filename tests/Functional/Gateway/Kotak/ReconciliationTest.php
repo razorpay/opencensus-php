@@ -301,6 +301,7 @@ class ReconciliationTest extends TestCase
         $ftas = $this->getEntities('fund_transfer_attempt', [], true);
 
         $attemptsWithUtr = $attemptsWithoutUtr = 0;
+
         // s($ftas);
         foreach ($ftas['items'] as $attempt)
         {
@@ -328,6 +329,8 @@ class ReconciliationTest extends TestCase
         $merchant = $this->fixtures->create('merchant');
         $merchantId = $merchant->getId();
 
+        $bankAccount = $this->fixtures->create('bank_account', ['entity_id' => $merchantId]);
+
         // Create settlements
         $settlements = $this->fixtures->times($settlementCount)->create(
             'settlement',
@@ -347,7 +350,8 @@ class ReconciliationTest extends TestCase
             ]);
 
         // Create fund transfer attempts
-        $textData = [];
+        $textData = $allAttempts = [];
+
         foreach ($settlements as $settlement)
         {
             // Create transaction
@@ -370,39 +374,11 @@ class ReconciliationTest extends TestCase
                 ]
             );
 
-            $array = [
-                Kotak\Headings::CLIENT_CODE             => 'mock_client_code',
-                Kotak\Headings::PRODUCT_CODE            => 'mock_product_code',
-                Kotak\Headings::PAYMENT_TYPE            => 'mock_type',
-                Kotak\Headings::PAYMENT_REF_NO          => $fta->getId(),
-                Kotak\Headings::PAYMENT_DATE            => Carbon::today('Asia/Kolkata')->format('d/m/Y'),
-                Kotak\Headings::DR_AC_NO                => 'mock_account_number',
-                Kotak\Headings::AMOUNT                  => 122,
-                Kotak\Headings::BANK_CODE_INDICATOR     => 'M',
-                Kotak\Headings::BENEFICIARY_CODE        => 'mock_beneficiary_code',
-                Kotak\Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
-                Kotak\Headings::PAYMENT_DETAILS_1       => $settlement->getId(),
-                Kotak\Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                Kotak\Headings::PAYMENT_DETAILS_3       => 'V3',
-                Kotak\Headings::PAYMENT_DETAILS_4       => $batchTransferEntity->getId(),
-            ];
-
-            $array = Kotak\NodalAccount::getAllFields($array);
-
-            $textDataArray = $array;
-            $textDataArray['Amount'] = (string) $settlement->getAmount() / 100;
-
-            array_push($textData, $textDataArray);
+            $allAttempts[] = $fta;
         }
 
-        $txt = $this->generateText($textData);
-
-        $textFile = (new FileStore\Creator())
-                        ->name('kotak/outgoing/' . Kotak\NodalAccount::getH2HFileNameWithoutExt())
-                        ->content($txt)
-                        ->extension(FileStore\Format::TXT)
-                        ->type(FileStore\Type::FUND_TRANSFER_H2H)
-                        ->save();
+        list($textFile, $excelFile) = (new Kotak\NodalAccount)->generateSettlementFile(
+                                                                        $allAttempts, false);
 
         // Update batch with generated settlement file id
         $batchTransferEntity->setTxtFileId(($textFile->get())['id']);
