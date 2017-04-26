@@ -244,24 +244,21 @@ class Gateway extends Base\Gateway
             if ((isset($refundReply[0][F::R_FLAG]) === true) and
                 ($refundReply[0][F::R_FLAG] === ReplyFlag::SOK))
             {
-                if (isset($refundReply[0]['@attributes'][F::NAME]) === true)
+                if ($refundReply[0]['@attributes'][F::NAME] === 'ics_auth_reversal')
                 {
-                    if ($refundReply[0]['@attributes'][F::NAME] === 'ics_auth_reversal')
-                    {
-                        $status = Status::REVERSED;
-                    }
-                    else if ($refundReply[0]['@attributes'][F::NAME] === 'ics_credit')
-                    {
-                        $status = Status::REFUNDED;
-                    }
-                    else
-                    {
-                        throw new Exception\LogicException(
-                            'Unexpected status');
-                    }
-
-                    $responseRequest = $refundReply[1];
+                    $status = Status::REVERSED;
                 }
+                else if ($refundReply[0]['@attributes'][F::NAME] === 'ics_credit')
+                {
+                    $status = Status::REFUNDED;
+                }
+                else
+                {
+                    throw new Exception\LogicException(
+                        'Unexpected status');
+                }
+
+                $responseRequest = $refundReply[1];
 
                 $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
 
