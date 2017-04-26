@@ -11,7 +11,7 @@ import ContactDetailsForm from './ContactDetailsForm';
 import BusinessDetailsForm from './BusinessDetailsForm';
 import WebsiteDetailsForm from './WebsiteDetailsForm';
 import BankAccountDetailsForm from './BankAccountDetailsForm';
-import DocumentUploadForm from './DocumentUploadForm';
+import DocumentsUploadForm from './DocumentsUploadForm';
 import SubmitForm from './SubmitForm';
 
 const FORM_COMPONENTS = {
@@ -19,7 +19,7 @@ const FORM_COMPONENTS = {
   activationBusinessDetails: BusinessDetailsForm,
   activationWebsiteDetails: WebsiteDetailsForm,
   activationBankAccounts: BankAccountDetailsForm,
-  activationDocumentUpload: DocumentUploadForm,
+  activationDocumentUpload: DocumentsUploadForm,
   activationSubmitForm: SubmitForm,
 };
 

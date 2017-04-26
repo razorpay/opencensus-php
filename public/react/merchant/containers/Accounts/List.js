@@ -83,7 +83,16 @@ export default class AccountsListContainer extends ListContainer {
 
     return (
       <div class="react-root">
-        <Header title="Marketplace Accounts" />
+        <Header title="Marketplace Accounts">
+          <a
+            class="pull-right"
+            href="https://docs.razorpay.com/v1/page/marketplace"
+            target="_blank"
+          >
+            Marketplace APIs Documentation &nbsp;
+            <i class="fa fa-external-link" />
+          </a>
+        </Header>
 
         <div class="content-wrapper">
           <div class="panel panel-default">

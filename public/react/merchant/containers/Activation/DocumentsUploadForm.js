@@ -86,7 +86,23 @@ export default class DocumentsUploadForm extends Component {
           </div>
 
           {accountId
-            ? null
+            ? <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  PAN Card
+                </label>
+                <div class="col-md-9">
+                  <span class="help-block">
+                    Promoter/Individual PAN Card.
+                  </span>
+                  <FileUploadInputButton
+                    accept="image/jpeg,image/png,application/pdf,application/x-pdf"
+                    uploadedFileName={files.promoter_pan_proof}
+                    onChange={event => {
+                      return saveFile(event, 'promoter_pan_proof');
+                    }}
+                  />
+                </div>
+              </div>
             : <div class="form-group">
                 <label class="col-md-3 control-label label-required">
                   Authorised Signatory Address Proof
@@ -105,26 +121,6 @@ export default class DocumentsUploadForm extends Component {
                   />
                 </div>
               </div>}
-
-          {accountId
-            ? <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  PAN Card
-                </label>
-                <div class="col-md-9">
-                  <span class="help-block">
-                    Promoter/Individual PAN Card.
-                  </span>
-                  <FileUploadInputButton
-                    accept="image/jpeg,image/png,application/pdf,application/x-pdf"
-                    uploadedFileName={files.promoter_pan_proof}
-                    onChange={event => {
-                      return saveFile(event, 'promoter_pan_proof');
-                    }}
-                  />
-                </div>
-              </div>
-            : null}
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
