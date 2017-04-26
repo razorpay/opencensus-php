@@ -9,7 +9,7 @@ use RZP\Models\FileStore;
 
 class ClaimsFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'IConnect_Claims_RAZORPAY';
+    protected static $fileToWriteName = 'IConnect_Claim_RAZORPAY';
 
     const EMAIL_BODY = 'Please forward the Axis Netbanking claims file to the operations team';
 
@@ -55,9 +55,9 @@ class ClaimsFile extends Base\RefundFile
                 $row['terminal']['gateway_merchant_id'],
                 Constants::PAYEE_NAME,
                 $row['gateway']['bank_payment_id'],
-                strtoupper($row['payment']['id']),
+                $row['terminal']['gateway_merchant_id'],
                 $row['payment']['id'],
-                number_format($row['payment']['amount'] /100, 2, '.', ''),
+                number_format($row['payment']['amount'] / 100, 2, '.', ''),
                 $date
             ];
 

@@ -61,11 +61,13 @@ class Service extends Base\Service
         return $permission->toArrayPublic();
     }
 
-    public function getMultiplePermissions(string $orgId)
+    public function getMultiplePermissions(string $orgId, array $input)
     {
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $perms = $this->repo->permission->fetchAllByOrg($orgId);
+        $type = $input['type'] ?? null;
+
+        $perms = $this->repo->permission->fetchAllByOrg($orgId, $type);
 
         return $perms->toArrayPublic();
     }
@@ -88,10 +90,10 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        $roles = $this->repo->permission->getRolesForPermission($id);
+        $orgId = $this->app['basicauth']->getAdminOrgId();
 
-        Role\Entity::getSignedIdMultiple($roles);
+        $roles = $this->repo->role->getRolesForPermission($id, $orgId);
 
-        return $roles;
+        return $roles->toArrayPublic();
     }
 }

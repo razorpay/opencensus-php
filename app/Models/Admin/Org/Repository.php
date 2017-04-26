@@ -5,9 +5,12 @@ namespace RZP\Models\Admin\Org;
 use Carbon\Carbon;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Models\Admin\Base;
+use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
 {
+    use RepositoryUpdateTestAndLive;
+
     protected $entity = 'org';
 
     protected $merchantIdRequiredForMultipleFetch = false;

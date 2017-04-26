@@ -434,12 +434,13 @@ trait Capture
             // This could be actually misleading.
             // We are creating a transaction even if the payment
             // is in refunded state.
-
-            list($txn, $feesSplit) = $txnCore->createFromPaymentAuthorized($payment);
+            list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
             $this->repo->saveOrFail($txn);
+
             $this->repo->saveOrFail($payment);
 
+            //TODO: Saving feesplit for backward compatibility
             $this->saveFeeDetails($txn, $feesSplit);
 
             $this->tracePaymentInfo(TraceCode::TRANSACTION_CREATED_IN_VERIFY_CAPTURE);
@@ -551,18 +552,9 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $auth = ($payment->hasTransaction() === false);
-
         $feesSplit = new PublicCollection;
 
-        if ($auth === true)
-        {
-            list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
-        }
-        else
-        {
-            $txn = $txnCore->updateOnCapture($payment);
-        }
+        list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
         $payment->setServiceTax($txn->getServiceTax());
 
@@ -573,6 +565,7 @@ trait Capture
         }
 
         $this->repo->saveOrFail($txn);
+
         $this->repo->saveOrFail($payment);
 
         $this->saveFeeDetails($txn, $feesSplit);

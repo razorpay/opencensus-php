@@ -963,7 +963,7 @@ final class Route
         'workflow_get_actions_by_maker',
     ];
 
-    public static $adminPermission = [
+    public static $routePermission = [
         'group_create'                     => [Permission::CREATE_GROUP],
         'admin_create'                     => [Permission::CREATE_ADMIN],
         'group_get'                        => [Permission::VIEW_GROUP],
@@ -1032,6 +1032,12 @@ final class Route
         'workflow_action_states'           => ['*'],
         'workflow_action_details'          => ['*'],
         'workflow_action_get_multiple'     => ['*'],
+        'credits_fetch_multiple'           => [Permission::VIEW_MERCHANT_CREDITS_LOG],
+        'credits_create'                   => [Permission::ADD_MERCHANT_CREDITS],
+        'credits_delete'                   => [Permission::DELETE_MERCHANT_CREDITS],
+        'merchant_put_payment_methods'     => [Permission::EDIT_MERCHANT_METHODS],
+        'balance_fetch'                    => [Permission::VIEW_MERCHANT_BALANCE],
+        'feature_get_multiple'             => [Permission::VIEW_MERCHANT_FEATURES],
     ];
 
     public static $direct = array(
@@ -1140,7 +1146,7 @@ final class Route
     public static $slaveRoutes = [
         // TODO: Uncomment this when slave variables issue is fixed.
         //'es_migrate_entity',
-        'reports_public_entity_file',
+        'payment_fetch_transaction',
     ];
 
     protected static $jsonpRoutes = array(

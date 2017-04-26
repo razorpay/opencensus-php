@@ -8,7 +8,7 @@ use RZP\Gateway\Netbanking\Base;
 class DailyFiles extends Base\DailyFiles
 {
 
-    public function generate($from, $to)
+    public function generate($from, $to, $email = null)
     {
         // Since Kotak TPV requires entries for separate pool accounts in a
         // separate mail we will have to send them separately
@@ -18,7 +18,7 @@ class DailyFiles extends Base\DailyFiles
 
         foreach ($tpvType as $tpv)
         {
-            $files[] = $this->generateMail($from, $to, $tpv);
+            $files[] = $this->generateMail($from, $to, $tpv, $email);
         }
 
         return [
@@ -33,7 +33,7 @@ class DailyFiles extends Base\DailyFiles
                 ];
     }
 
-    public function generateMail($from, $to, $tpvEnabled = false)
+    public function generateMail($from, $to, $tpvEnabled = false, $email = null)
     {
         list($refundAmount, $refundsFile) = $this->getRefundsDataForTpv($from, $to, $tpvEnabled);
 
@@ -47,7 +47,7 @@ class DailyFiles extends Base\DailyFiles
         // Send the mail only when there is at least 1 claim or refund
         if ($amount['claims'] + $amount['refunds'] > 0)
         {
-            $this->sendMail($amount, $claimsFile, $refundsFile);
+            $this->sendMail($amount, $claimsFile, $refundsFile, $email);
         }
 
         return ['refunds' => $refundsFile, 'claims' => $claimsFile];

@@ -105,9 +105,23 @@ class ReconciliationGenerator
 
         $data = $this->parseTextFile($setlFile);
 
-        $data = $this->addNewFields($data, $generateFailedReconciliations);
+        // Modify data to replicate Kotak bug
+        // As per the bug, Kotak does the following on reading settlement file
+        $modifiedData = [];
 
-        $txt = $this->generateText($data);
+        foreach ($data as $row)
+        {
+            $row[Headings::PAYMENT_DETAILS_4] = $row[Headings::PAYMENT_DETAILS_3];
+            $row[Headings::PAYMENT_DETAILS_3] = $row[Headings::PAYMENT_DETAILS_2];
+            $row[Headings::PAYMENT_DETAILS_2] = $row[Headings::PAYMENT_DETAILS_1];
+            $row[Headings::PAYMENT_DETAILS_1] = '';
+
+            $modifiedData[] = $row;
+        }
+
+        $modifiedData = $this->addNewFields($modifiedData, $generateFailedReconciliations);
+
+        $txt = $this->generateText($modifiedData);
 
         $file = $this->writeToTextFile($txt);
 

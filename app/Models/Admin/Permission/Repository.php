@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Admin\Permission;
 
-use DB;
-
 use RZP\Models\Admin\Base;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Permission;
@@ -45,18 +43,25 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchAllByOrg(string $orgId)
+    public function fetchAllByOrg(string $orgId, string $type = null)
     {
         $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
 
         $pmTable = Table::PERMISSION_MAP;
 
-        return $this->newQuery()
-                    ->select(Table::PERMISSION . '.*')
-                    ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
-                    ->where($pmTable . '.entity_id', '=', $orgId)
-                    ->where($pmTable . '.entity_type', '=', 'org')
-                    ->get();
+        $query = $this->newQuery()
+                      ->select(Table::PERMISSION . '.*')
+                      ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
+                      ->where($pmTable . '.entity_id', '=', $orgId)
+                      ->where($pmTable . '.entity_type', '=', 'org');
+
+        if ((empty($type) === false) and
+            ($type === 'workflow'))
+        {
+            $query->where(Entity::ENABLE_WORKFLOW, '=', 1);
+        }
+
+        return $query->get();
     }
 
     public function retrieveIdsByNames(array $permissionNames)
@@ -85,15 +90,5 @@ class Repository extends Base\Repository
                     ->where($pmTable . '.entity_type', '=', 'org')
                     ->whereIn(Entity::NAME, $permissionNames)
                     ->get(['id']);
-    }
-
-    public function getRolesForPermission(string $id)
-    {
-        $roleIds = DB::table(Table::PERMISSION_MAP)
-                        ->where('permission_id', '=', $id)
-                        ->where('entity_type', '=', 'role')
-                        ->pluck('entity_id');
-
-        return $roleIds;
     }
 }

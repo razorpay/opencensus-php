@@ -14,11 +14,15 @@ class PermissionSeeder extends Seeder
 
     protected static $permissionIds;
 
+    protected static $enableWorkflowPermissions;
+
     public function __construct()
     {
         self::$permissions = Config::get('heimdall.permissions');
 
-        self::$assignablePermissions = Config::get('heimdall.assignablePermissions');
+        self::$assignablePermissions = Config::get('heimdall.assignable_permissions');
+
+        self::$enableWorkflowPermissions = Config::get('heimdall.enable_workflow_permissions');
     }
 
     /**
@@ -41,7 +45,9 @@ class PermissionSeeder extends Seeder
 
         $assignablePermissions = self::$assignablePermissions;
 
-        DB::transaction(function() use ($permissions, $assignablePermissions)
+        $enableWorkflowPermissions = self::$enableWorkflowPermissions;
+
+        DB::transaction(function() use ($permissions, $assignablePermissions, $enableWorkflowPermissions)
         {
             $index = 0;
 
@@ -62,14 +68,23 @@ class PermissionSeeder extends Seeder
 
                     $index++;
 
-                    DB::table(Table::PERMISSION)->insert([
+                    $data = [
                         'id'          => $id,
                         'name'        => $permission,
                         'description' => $description,
                         'category'    => $category,
                         'created_at'  => time(),
                         'updated_at'  => time(),
-                    ]);
+                    ];
+
+                    // For trimmed down ones (like HDFC)
+                    if (isset($enableWorkflowPermissions[$category]) and
+                        isset($enableWorkflowPermissions[$category][$permission]))
+                    {
+                        $data['enable_workflow'] = 1;
+                    }
+
+                    DB::table(Table::PERMISSION)->insert($data);
 
                     DB::table(Table::PERMISSION_MAP)->insert([
                         [
@@ -113,6 +128,7 @@ class PermissionSeeder extends Seeder
                             ]
                         ]);
                     }
+
                 }
             }
             // end of transaction

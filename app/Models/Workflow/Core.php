@@ -33,13 +33,9 @@ class Core extends Base\Core
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
             // 3. Create its steps
-            foreach ($input[Entity::STEPS] as $step)
+            foreach ($input[Entity::LEVELS] as $level)
             {
-                $step[Step\Entity::WORKFLOW_ID] = $workflow->getId();
-
-                Role\Entity::verifyIdAndSilentlyStripSign($step[Step\Entity::ROLE_ID]);
-
-                (new Step\Core)->create($step);
+                $step = $this->createStepsForWorkflow($level, $workflow);
             }
         });
 
@@ -51,6 +47,26 @@ class Core extends Base\Core
                                    $id, $orgId, ['steps', 'permissions']);
 
         return $workflow;
+    }
+
+    protected function createStepsForWorkflow(array $level, Entity $workflow)
+    {
+        $steps = $level[Entity::STEPS];
+
+        foreach ($steps as $step)
+        {
+            $data = [
+                Step\Entity::WORKFLOW_ID => $workflow->getId(),
+                Step\Entity::LEVEL       => $level[Step\Entity::LEVEL],
+                Step\Entity::OP_TYPE     => $level[Step\Entity::OP_TYPE],
+            ];
+
+            $step = array_merge($step, $data);
+
+            Role\Entity::verifyIdAndSilentlyStripSign($step[Step\Entity::ROLE_ID]);
+
+            (new Step\Core)->create($step);
+        }
     }
 
     public function update(Entity $workflow, array $input)
@@ -69,17 +85,17 @@ class Core extends Base\Core
 
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
-            if (empty($input[Entity::STEPS]) === false)
+            // If levels are passed to the edit function, delete the old steps
+            // and create the new ones. Dashboard finds it harder to update the
+            // existing entitites
+            if (empty($input[Entity::LEVELS]) === false)
             {
                 $workflow->steps()->delete();
 
-                foreach ($input[Entity::STEPS] as $step)
+                // 3. Create its steps
+                foreach ($input[Entity::LEVELS] as $level)
                 {
-                    $step[Step\Entity::WORKFLOW_ID] = $workflow->getId();
-
-                    Role\Entity::verifyIdAndSilentlyStripSign($step[Step\Entity::ROLE_ID]);
-
-                    (new Step\Core)->create($step);
+                    $step = $this->createStepsForWorkflow($level, $workflow);
                 }
             }
         });
