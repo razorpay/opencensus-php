@@ -18,7 +18,6 @@ use App\MerchantDetails;
 use App\Session as SessionTable;
 use App\User;
 use App\Lead;
-use App\AdminLead;
 use App\Generic;
 
 use Queue;
