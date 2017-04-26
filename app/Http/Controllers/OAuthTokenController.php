@@ -9,7 +9,15 @@ use Razorpay\OAuth\Token\Service as TokenService;
 
 class OAuthTokenController extends Controller
 {
+    /**
+     * @var TokenService
+     */
     protected $tokenService;
+
+    /**
+     * @var \RZP\Models\Merchant\Entity
+     */
+    protected $merchant;
 
     public function __construct()
     {
@@ -24,6 +32,13 @@ class OAuthTokenController extends Controller
     {
         $input = Request::all();
 
+        //
+        // OAuth Services are sent a single array of data
+        // This is to allow for simple .proto definitions
+        // when we move the OAuth module to a gRPC implementation
+        //
+        $input['merchant_id'] = $this->merchant->getId();
+
         $result = $this->tokenService->getAllTokens($input);
 
         return ApiResponse::json($result);
@@ -33,7 +48,11 @@ class OAuthTokenController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->tokenService->getToken($id, $input);
+        $input['id'] = $id;
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        $result = $this->tokenService->getToken($input);
 
         return ApiResponse::json($result);
     }
@@ -42,7 +61,11 @@ class OAuthTokenController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->tokenService->editToken($id, $input);
+        $input['id'] = $id;
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        $result = $this->tokenService->editToken($input);
 
         return ApiResponse::json($result);
     }
@@ -51,7 +74,11 @@ class OAuthTokenController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->tokenService->revokeToken($id, $input);
+        $input['id'] = $id;
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        $result = $this->tokenService->revokeToken($input);
 
         return ApiResponse::json($result);
     }
