@@ -13,7 +13,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME        => 'required|string|max:150',
         Entity::ORG_ID      => 'required|string|size:14',
-        Entity::PERMISSIONS => 'required|array|custom',
+        Entity::PERMISSIONS => 'required|array',
         Entity::LEVELS      => 'required|array',
     ];
 
@@ -41,29 +41,23 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validatePermissions(string $attribute, array $ids)
+    public function validatePermissionsForOrg(
+        string $orgId,
+        array $permissions)
     {
-        $permissions = (new Permission\Repository)->retrieveByIds($ids);
+        $permsWithWorkflowEnabled = (new Permission\Repository)->getPermissionsWithWorkflowEnabled($orgId);
 
-        $permissionsWithoutWorkflowEnable = [];
+        $permIds = array_map(function($permission){
+            return $permission['id'];
+        }, $permsWithWorkflowEnabled->toArray());
 
-        $permissionWithWorkflowEnable = true;
+        $diffPerms = array_diff($permissions, $permIds);
 
-        foreach ($permissions as $permission)
-        {
-            if ($permission->canEnableWorkflow() === false)
-            {
-                $permissionWithWorkflowEnable = false;
-
-                $permissionsWithoutWorkflowEnable[] = $permission;
-            }
-        }
-
-        if ($permissionWithWorkflowEnable === false)
+        if (empty($diffPerms) === false)
         {
             throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW,
-                        $permissionsWithoutWorkflowEnable);
+                        $diffPerms);
         }
     }
 }
