@@ -13,7 +13,8 @@ class Mailer extends LaravelMailer
      * Add Extra logger on top of laravel Mailer
      */
 
-    const MAX_ALLOWED_ATTEMPTS = 5;
+    #TODO : decrease the number of attempts after daily files are fixed
+    const MAX_ALLOWED_ATTEMPTS = 50;
 
     const RELEASE_WAIT_SECS = 120;
 
