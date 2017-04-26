@@ -5,14 +5,16 @@ namespace RZP\Reconciliator\HDFC;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicEntity;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID = 'merchant_trackid';
-    const COLUMN_REFUND_AMOUNT = 'domestic_amt';
+    const COLUMN_REFUND_ID      = 'merchant_trackid';
+    const COLUMN_REFUND_AMOUNT  = 'domestic_amt';
+    const COLUMN_RRN            = 'arn_no';
 
     protected function getRefundId(array $row)
     {
@@ -26,6 +28,34 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $refundId = $this->getRefundId($row);
 
+        $gatewayEntity = $this->getGatewayRefund($refundId);
+
+        if ($gatewayEntity === null)
+        {
+            return null;
+        }
+
+        $paymentId = $gatewayEntity->getPaymentId();
+
+        return $paymentId;
+    }
+
+    protected function getRrn(array $row)
+    {
+        if (empty($row[self::COLUMN_RRN]) === true)
+        {
+            return null;
+        }
+
+        $rrn = $row[self::COLUMN_RRN];
+
+        $rrn = trim(str_replace("'", '', $rrn));
+
+        return $rrn;
+    }
+
+    protected function getGatewayRefund(string $refundId)
+    {
         $gatewayEntities = $this->repo->hdfc->findSuccessfulRefundByRefundId($refundId);
 
         if ($gatewayEntities->count() === 0)
@@ -33,8 +63,13 @@ class RefundReconciliate extends Base\RefundReconciliate
             return null;
         }
 
-        $paymentId = $gatewayEntities->first()->getPaymentId();
+        $refundEntity = $gatewayEntities->first();
 
-        return $paymentId;
+        return $refundEntity;
+    }
+
+    protected function setRrnInGateway(string $rrn, PublicEntity $gatewayRefund)
+    {
+        $gatewayRefund->setArnNo($rrn);
     }
 }

@@ -46,6 +46,9 @@ class CreateRefunds extends Migration
                   ->unique()
                   ->nullable();
 
+            $table->string(Refund::RRN)
+                  ->nullable();
+
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
 

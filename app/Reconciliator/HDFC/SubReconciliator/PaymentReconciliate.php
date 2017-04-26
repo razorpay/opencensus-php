@@ -207,7 +207,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             return null;
         }
 
-        $columnIssuer = strtolower($row[self::COLUMN_PAYMENT_ID]);
+        $columnIssuer = strtolower($row[self::COLUMN_ISSUER]);
         $columnIssuer = trim(str_replace("'", '', $columnIssuer));
 
         if (strpos($columnIssuer, 'onus') !== false)

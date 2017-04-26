@@ -608,12 +608,6 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        if (($input['payment']['merchant_id'] !== '10000000000000') and
-            ($input['payment']['merchant_id'] !== '2aTeFCKTYWwfrF'))
-        {
-            return;
-        }
-
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $refund = $this->createGatewayRefundEntity($attributes);
@@ -630,6 +624,8 @@ class Gateway extends Base\Gateway
             'response'   => $content
         ]);
 
+        $this->updateGatewayPaymentResponse($refund, $content);
+
         if ($content[Fields::STATUS] !== Status::SUCCESS)
         {
             $code = $content[Fields::RESPONSE];
@@ -641,8 +637,6 @@ class Gateway extends Base\Gateway
                 $content[Fields::STATUS],
                 ResponseCode::getResponseMessage($code));
         }
-
-        $this->updateGatewayPaymentResponse($refund, $content);
     }
 
     protected function getRefundRequest(array $input)
@@ -663,9 +657,9 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_TRAN_ID                => $refund['id'],
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
-            Fields::PAYEE_VA                        => $payment['vpa'],
+            Fields::PAYEE_VA                        => strtolower($payment['vpa']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
-            Fields::ONLINE_REFUND                   => 'Y',
+            Fields::ONLINE_REFUND                   => 'N',
         ];
 
         $content = $this->transformRequestArrayToContent($data);
