@@ -689,17 +689,25 @@ class Service extends Base\Service
      * @param  string  $merchantId
      * @return \Illuminate\Http\Response
      */
-    public function switchCurrentMerchantForUser($merchantId, User\Entity $user)
+    public function switchCurrentMerchantForUser($merchantId, Providers\GenericUser $user)
     {
-        $merchant = $user->merchants()->find($merchantId);
+        list($error, $userDetails) = $this->getUserFromApi($user->id);
 
-        if($merchant)
+        $merchants = $userDetails['merchants'];
+
+        $currentMerchants = array_filter($merchants, function($merchant) use ($merchantId)
+            {
+                return ($merchant['id'] === $merchantId);
+            });
+
+        if (empty($currentMerchants) === false)
         {
-            $user->switchToMerchant($merchant);
-            return array();
+            Session::put('current_merchant_id', $currentMerchants[0]->id);
+
+            return [];
         }
 
-        return array("Couldn't find the merchant you are looking for.");
+        return ["Couldn't find the merchant you are looking for."];
     }
 
     /**

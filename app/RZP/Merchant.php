@@ -252,4 +252,11 @@ class Merchant extends Entity
 
         return [ $error, $response ];
     }
+
+    public function getUsers($merchantId)
+    {
+        $relativeUrl = $this->getEntityUrl().$merchantId.'/users';
+
+        return $this->request('GET', $relativeUrl);
+    }
 }

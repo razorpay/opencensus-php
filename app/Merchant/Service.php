@@ -643,11 +643,12 @@ class Service extends Base\Service
      */
     public function updateTeamMemberForOwner($userId, $input)
     {
-        $error = array();
+        $error = [];
 
         if ($userId === $this->currentUser->id)
         {
             $error[] = "You cannot change your role.";
+
             return [$error, null];
         }
 
@@ -656,12 +657,18 @@ class Service extends Base\Service
         if ($validator->fails())
         {
             $error = $validator->messages();
+
             return [$error, null];
         }
 
-        $userToUpdate = $this->currentUser->currentMerchant()->users->find($userId);
+        $users = $this->getUserOfMerhantFromApi($this-currentUser->currentMerchant()->id);
 
-        if (is_null($userToUpdate))
+        $updatedUser = array_filter($users, function($user) use ($userId)
+        {
+            return ($users['id'] === $userId);
+        });
+
+        if (empty($updatedUser) === true)
         {
             $error[] = "The team member you are looking for doesn't exist";
 
@@ -678,7 +685,14 @@ class Service extends Base\Service
 
         (new User\Service)->updateMerchantUserMappingOnApi($userId, $this->currentUser->currentMerchant()->id, $input['role']);
 
-        list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($this->currentUser);
+        $merchant = $this->currentUser->getOwnerMerchant();
+
+        if ($merchant === null)
+        {
+            $error = ["We couldn't find the merchant you are looking for."];
+
+            return [$error, null];
+        }
 
         return [$error, $merchant];
     }
@@ -863,5 +877,23 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function getUserOfMerhantFromApi($merchantId)
+    {
+        $error = $response = [];
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->merchant->getUsers($merchantId)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 }

@@ -98,11 +98,11 @@ class Service extends Base\Service
      */
     public function resendInvitationForUser($inviteId)
     {
-        $error = array();
+        $error = [];
 
         $invitation = $this->getInvitationById($inviteId);
 
-        if (! $invitation)
+        if ($invitation === null)
         {
             $error[] = static::INVALID_INVITE;
 
