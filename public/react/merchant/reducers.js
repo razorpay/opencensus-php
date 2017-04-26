@@ -18,6 +18,7 @@ import keysReducer from 'merchant/modules/keys';
 import creditsReducer from 'merchant/modules/credits';
 import teamReducer from 'merchant/modules/team';
 import configReducer from 'merchant/modules/config';
+import activationReducer from 'merchant/modules/activation';
 import refundsReducer from 'merchant/modules/refunds/list';
 import refundReducer from 'merchant/modules/refunds/details';
 import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
@@ -46,6 +47,7 @@ export default combineReducers({
   credits: creditsReducer,
   team: teamReducer,
   config: configReducer,
+  activation: activationReducer,
   credits: creditsReducer,
   refunds: refundsReducer,
   refund: refundReducer,

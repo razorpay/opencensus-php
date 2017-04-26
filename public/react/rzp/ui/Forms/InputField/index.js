@@ -10,14 +10,13 @@ export default props => {
     ...otherProps
   } = props;
 
+  let InputComponent = tagName;
+
   return (
     <div
       class={`InputField ${submitFailed && error ? 'InputField--error' : ''}`}
     >
-      {tagName === 'textarea'
-        ? <textarea {...input} {...otherProps} />
-        : <input {...input} {...otherProps} />}
-
+      <InputComponent {...input} {...otherProps} />
       {showInlineErrorText &&
         submitFailed &&
         error &&
