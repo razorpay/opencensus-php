@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
@@ -518,6 +519,7 @@ class Gateway extends Base\Gateway
 
         $hashContent = [
             ResponseFields::MID        => $content[ResponseFields::MID],
+            ResponseFields::TRAN_ID    => $content[ResponseFields::TRAN_ID],
             ResponseFields::TXN_REF_NO => $content[ResponseFields::TXN_REF_NO],
             ResponseFields::TRAN_AMT   => $content[ResponseFields::TRAN_AMT],
             ResponseFields::TRAN_DATE  => $content[ResponseFields::TRAN_DATE],
@@ -610,7 +612,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::SU          => $input['callbackUrl'],
             RequestFields::FU          => $input['callbackUrl'],
-            RequestFields::CUR         => 'INR',
+            RequestFields::CUR         => Currency::INR,
             RequestFields::CUST_MOBILE => $this->getFormattedContact($payment['contact']),
             RequestFields::CUST_EMAIL  => $payment['email'],
             RequestFields::END_MID     => $this->getEndMerchantId($input['terminal']),

@@ -49,12 +49,12 @@ class Server extends Base\Mock\Server
                 ResponseFields::STATUS     => Status::SUCCESS,
                 ResponseFields::CODE       => ResponseCode::SUCCESS_CODE,
                 ResponseFields::MSG        => self::DUMMY_MSG,
-                ResponseFields::TRAN_ID    => $this->getArtlTxnId(),
                 ResponseFields::TRAN_CUR   => 'INR',
             ];
 
             $hashContent = [
                 ResponseFields::MID        => $input[RequestFields::MID],
+                ResponseFields::TRAN_ID    => $this->getArtlTxnId(),
                 ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
                 ResponseFields::TRAN_AMT   => sprintf('%0.2f', $input[RequestFields::AMT]),
                 ResponseFields::TRAN_DATE  => $this->getFormattedDate(
