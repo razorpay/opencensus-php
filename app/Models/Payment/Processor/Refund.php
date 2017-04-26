@@ -190,11 +190,6 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
-        if ($payment->isMethodCardOrEmi())
-        {
-            $data['card'] = $payment->card->toArray();
-        }
-
         $verifyRefundResult = $this->callGatewayForVerifyRefund($data);
 
         return $verifyRefundResult;
