@@ -4,17 +4,8 @@ app.controller('PermissionDetailCtrl', [
   'alertsFactory',
   '$stateParams',
   '$state',
-  'transformRequestAsFormPost',
   'utils',
-  function(
-    $scope,
-    $http,
-    alertsFactory,
-    $stateParams,
-    $state,
-    transformRequestAsFormPost,
-    utils
-  ) {
+  function($scope, $http, alertsFactory, $stateParams, $state, utils) {
     $scope.select_all = false;
     $scope.selected_organizations = {};
 
@@ -118,6 +109,7 @@ app.controller('PermissionDetailCtrl', [
       if (permission.id) {
         var data = {
           route_name: 'permission_edit',
+          content_type: 'application/json',
           url_params: {
             '{id}': $scope.permission.id,
           },
@@ -129,7 +121,6 @@ app.controller('PermissionDetailCtrl', [
           method: 'put',
           url: '/admin/generic',
           data: data,
-          transformRequest: transformRequestAsFormPost,
         });
       } else {
         // add
@@ -142,7 +133,6 @@ app.controller('PermissionDetailCtrl', [
           method: 'post',
           url: '/admin/generic',
           data: data,
-          transformRequest: transformRequestAsFormPost,
         });
       }
 
