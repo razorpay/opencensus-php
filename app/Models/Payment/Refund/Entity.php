@@ -79,6 +79,8 @@ class Entity extends Base\PublicEntity
         self::NOTES             => [],
         self::STATUS            => Status::CREATED,
         self::GATEWAY_REFUNDED  => null,
+        self::ATTEMPTS          => null,
+        self::LAST_ATTEMPTED_AT => null,
     ];
 
     protected $casts = [
@@ -190,7 +192,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
     }
 
-    public function hasBeenProcessed()
+    public function isProcessed()
     {
         return ($this->getAttribute(self::STATUS) === Status::PROCESSED);
     }

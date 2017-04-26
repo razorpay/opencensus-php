@@ -349,7 +349,9 @@ class Repository extends Base\Repository
     {
         //
         // Select * from refunds join payments on refunds.payment_id = payments.id
-        // where payments.gateway = $gateway and refunds.attempts = $attempt
+        // where payments.gateway IN ($gateway) and refunds.attempts > $attempt and
+        // refunds.last_attempted_at < $timeLimit and refunds.status != "failed"
+        // order by rand() limit 50
         //
 
         $attrs = $this->getAttributeWithTableName('*');

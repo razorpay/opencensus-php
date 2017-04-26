@@ -5,7 +5,6 @@ namespace RZP\Models\Payment\Refund;
 use Config;
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
