@@ -26,6 +26,8 @@
             <select class="form-control" name="event" ng-model="event" ng-init="event=''">
               <option value="">All</option>
               <option value="delivered">Delivered</option>
+              <option value="opened">Opened</option>
+              <option value="clicked">Clicked</option>
               <option value="failed">Failed</option>
               <option value="rejected">Rejected</option>
             </select>
@@ -33,19 +35,26 @@
           <button class="btn btn-default btn-md" style="margin-top: 20px" type="button" ng-click="fetchEmailLogs()" busy="...">Search</button>
       </div>
       <div>
-        <table ui-jq="footable" data-page="false" class="table-responsive table b-t b-light">
+      <div class="table-responsive">
+        <table ui-jq="footable" data-page="false" class="merchants-table footable-loaded footable table-responsive table b-t b-light">
           <thead>
             <tr>
+              <th>Event</th>
               <th>Recepient</th>
-              <th>Subject / Failure Reason</th>
+              <th>Subject</th>
+              <th>Failure Reason</th>
               <th>Tags</th>
+              <th>URL</th>
               <th data-type="numeric">Timestamp</th>
           </thead>
           <tbody>
-            <tr ng-repeat="row in emailLogs" ng-class="{ 'danger' : row.event == 'failed' }">
-              <td>{{row.recipient}}</td>
-              <td>{{row.event == 'failed' ? row['delivery-status'].message : row.message.headers.subject}}</td>
+            <tr ng-repeat="row in emailLogs" ng-class="{ 'danger' : row.event == 'failed' || row.event == 'rejected' }">
+              <td>{{row.event}}</td>
+              <td style="word-wrap:break-word;word-break:break-word;">{{row.recipient}}</td>
+              <td>{{row.message.headers.subject}}</td>
+              <td>{{row['delivery-status'].description}}</td>
               <td><span ng-repeat="tag in row.tags">{{tag}}{{$last ? '' : ', '}}</span></td>
+              <td style="word-wrap:break-word;word-break:break-word;">{{row.url}}</td>
               <td>{{row.timestamp*1000 | date: 'medium'}}</td>
             </tr>
             <tr ng-show="emailLogs.length == 0">
@@ -53,6 +62,7 @@
             </tr>
           </tbody>
         </table>
+      </div
       </div>
     </div>
   </div>
