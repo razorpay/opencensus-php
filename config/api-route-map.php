@@ -306,6 +306,9 @@ return [
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
+
+        // Get Org details by hostname (for heimdall specifics)
+        'org_get_by_hostname'               => 'orgs/hostname/{hostname}',
     ],
 
     // auth

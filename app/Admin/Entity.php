@@ -3,7 +3,6 @@
 namespace App\Admin;
 
 use App\Base;
-use App\AdminLead;
 
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Foundation\Auth\Access\Authorizable;

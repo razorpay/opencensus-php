@@ -2188,20 +2188,19 @@ class Service extends Base\Service
 
     public function getOrg($domain)
     {
-        $error = $data = null;
+        $requestConfig = [
+            'route_name' => 'org_get_by_hostname',
 
-        $this->setApiCredentials();
+            'url_params' => [
+                '{hostname}' => $domain
+            ]
+        ];
 
-        try
-        {
-            $data = $this->api->org->fetchByDomain($domain)->toArray();
+        $genericService = new Generic\Service;
 
-            $this->setOrgInCache($data);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
+        list($error, $data) = $genericService->call('GET', $requestConfig);
+
+        $this->setOrgInCache($data);
 
         return [$error, $data];
     }
