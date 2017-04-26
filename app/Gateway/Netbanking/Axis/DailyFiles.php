@@ -10,11 +10,6 @@ class DailyFiles extends Base\DailyFiles
 {
     protected $emailIdsToSendTo = 'axis.netbanking.refunds@razorpay.com';
 
-    public function __construct($bankCode)
-    {
-        parent::__construct($bankCode);
-    }
-
     public function generate($from, $to, $email = null)
     {
         list($refundAmount, $refundsFile) = $this->getRefundsData($from, $to);
