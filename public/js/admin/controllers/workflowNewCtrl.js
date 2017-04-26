@@ -64,8 +64,18 @@ app.controller('WorkflowNewCtrl', [
             };
 
             if (level.steps && level.steps.length) {
-              $scope.levels[level.level - 1].steps  = level.steps || [];
+
+              // For each role(step), keep only role_id and reviewer_count properties
+              for (var index in level.steps) {
+                level.steps[index] = {
+                  role_id: level.steps[index].role_id,
+                  reviewer_count: level.steps[index].reviewer_count
+                };
+              }
+
+              $scope.levels[level.level - 1].steps  = level.steps;
             }
+            setTimeout(initRoleSelector, 0);
           });
         }
 
@@ -145,10 +155,9 @@ app.controller('WorkflowNewCtrl', [
       });
 
     // Initialize each new step with role selector picker input field
-    var addRoleSelector = function(stepId) {
-      var $roleSelect = $(
-        $('.role-select2')[$('.role-select2').length - 1]
-      ).select2({
+    var addRoleSelector = function(roleSelector) {
+      var $roleSelect = roleSelector;
+      $roleSelect.select2({
         theme: 'classic',
         placeholder: 'Select a role',
       });
@@ -175,6 +184,21 @@ app.controller('WorkflowNewCtrl', [
       });
     };
 
+    // Init role selector for all existing levels in the view
+    function initRoleSelector() {
+      var $roleSelect = $('.role-select2');
+      addRoleSelector($roleSelect);
+    }
+
+    // Attach role selector to the newly added level
+    function attachRoleSelector() {
+      var $roleSelect = $(
+        $('.role-select2')[$('.role-select2').length - 1]
+      );
+
+      addRoleSelector($roleSelect);
+    }
+
     // Add a new level and initialize with empty roles(steps)
     $scope.addStep = function() {
       $scope.levels.push({
@@ -182,7 +206,7 @@ app.controller('WorkflowNewCtrl', [
         op_type: 'and'
       });
 
-      setTimeout(addRoleSelector, 0);
+      setTimeout(attachRoleSelector, 0);
     };
 
     // Remove corresponding level box
@@ -209,6 +233,30 @@ app.controller('WorkflowNewCtrl', [
     };
 
     $scope.new_checker = null;
+
+    // Iterating all levels currently added in view - Null Role check and populate levels with level no.
+    function checkIfLevelsValid(payload) {
+      var valid = true;
+
+      for (var s_i = 0; s_i < $scope.levels.length; s_i++) {
+        var steps = $scope.levels[s_i].steps;
+
+        // Each level must have atleast one role or else level must be removed by user
+        if (!steps.length) {
+          $scope.alerts.addAlert(
+            'danger',
+            'Please add atleast one role to all the steps'
+          );
+          valid = false;
+          break;
+        }
+
+        $scope.levels[s_i].level = s_i + 1;
+        payload.levels.push($scope.levels[s_i]);
+      }
+
+      return valid;
+    }
 
     // Request to Create a new workflow
     $scope.createWorkflow = function() {
@@ -239,23 +287,9 @@ app.controller('WorkflowNewCtrl', [
         valid = false;
         $scope.alerts.addAlert('danger', 'Please add atleast one step');
       }
-      // Iterating all levels added by user - Null Role check and populate levels with level no.
-      for (var s_i = 0; s_i < $scope.levels.length; s_i++) {
-        var step = $scope.levels[s_i].steps;
 
-        // Each level must have atleast one role or else level must be removed by user
-        if (!step.length) {
-          $scope.alerts.addAlert(
-            'danger',
-            'Please add atleast one role to all the steps'
-          );
-          valid = false;
-          break;
-        }
+      valid = checkIfLevelsValid(payload);
 
-        $scope.levels[s_i].level = s_i + 1;
-        payload.levels.push($scope.levels[s_i]);
-      }
       if (!valid) return;
 
       var request = $http({
@@ -281,6 +315,7 @@ app.controller('WorkflowNewCtrl', [
             { notify: false }
           );
           $scope.editLayout = true;
+          $scope.workflowId = data.data.id; // Update workflow id once flow is created.
         }  else {
           $scope.alerts.addAlert('danger', 'Creating workflow failed: ' + data.errors.join(', '))
         }
@@ -294,7 +329,9 @@ app.controller('WorkflowNewCtrl', [
       }
       $scope.alerts.resetAlerts();
       var valid = true;
-      var payload = {};
+      var payload = {
+        levels: []
+      };
 
       // Check for empty workflow name
       if (!$scope.workflowName) {
@@ -314,6 +351,10 @@ app.controller('WorkflowNewCtrl', [
       } else {
         payload.permissions = $scope.permissionsSelected.slice();
       }
+
+      // Check if no levels selected
+      valid = checkIfLevelsValid(payload);
+
       if (!valid) return;
 
       var request = $http({
