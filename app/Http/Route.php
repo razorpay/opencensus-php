@@ -499,6 +499,12 @@ final class Route
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
+
+        // OAuth routes
+        'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getTokens'                                         ],
+        'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@geToken'                                           ],
+        'oauth_token_edit'                        => ['patch',    'oauth/tokens/{id}',                              'OAuthTokenController@updateToken'                                       ],
+        'oauth_token_revoke'                      => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revokeToken'                                       ],
     );
 
     public static $public = array(
@@ -888,6 +894,10 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'oauth_token_fetch_multiple',
+        'oauth_token_fetch',
+        'oauth_token_edit',
+        'oauth_token_revoke',
     );
 
     public static $admin = [
