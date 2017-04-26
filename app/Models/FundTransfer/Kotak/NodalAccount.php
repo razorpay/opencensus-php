@@ -255,7 +255,7 @@ class NodalAccount
 
     protected function getEmptyArray()
     {
-        $headings = $this->getHeadings();
+        $headings = self::getHeadings();
 
         $count = count($headings);
 
