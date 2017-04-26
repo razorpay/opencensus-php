@@ -1919,11 +1919,11 @@ ALTER TABLE permissions
 
 ALTER TABLE refunds
     ADD COLUMN status VARCHAR(255) NULL AFTER base_amount,
-    ADD COLUMN attempts TINYINT(1) NOT NULL DEFAULT 1 AFTER transaction_id,
+    ADD COLUMN attempts TINYINT(1) NULL AFTER transaction_id,
     ADD COLUMN last_attempted_at INT NULL DEFAULT NULL AFTER attempts,
     ADD INDEX refunds_status_index (status),
     ADD INDEX refunds_attempts_index (attempts),
     ADD INDEX refunds_created_at_index (created_at);
 
 # Post deployment query for updating status of all the refunds #2673
-UPDATE refunds SET status = "processed" WHERE status is null;
+UPDATE refunds SET status = "processed", attempts = 1, last_attempted_at = created_at WHERE status is null;
