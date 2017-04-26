@@ -22,6 +22,21 @@ class RowProcessor extends Base\RowProcessor
         {
             return true;
         }
+        else if (($row[Headings::PAYMENT_DETAILS_4] !== null) and
+            ($row[Headings::PAYMENT_DETAILS_4] === Attempt\Version::V3))
+        {
+            //
+            // This condition is added as a workaround for a bug at Kotak's end.
+            // The bug is that Kotak doesn't read the details sent under PAYMENT_DETAILS_4.
+            // Also it tracks -
+            //      PAYMENT_DETAILS_1 as PAYMENT_DETAILS_2
+            //      PAYMENT_DETAILS_2 as PAYMENT_DETAILS_3
+            //      PAYMENT_DETAILS_3 as PAYMENT_DETAILS_4
+            // Hence even though we send version information in PAYMENT_DETAILS_3,
+            // we are trying to read it from PAYMENT_DETAILS_4 here.
+            //
+            return true;
+        }
 
         return false;
     }
