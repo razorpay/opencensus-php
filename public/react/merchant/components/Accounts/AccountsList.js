@@ -1,4 +1,5 @@
 import Time from 'rzp/ui/Time';
+import CheckIcon from 'rzp/ui/CheckIcon';
 import TableBody from '../TableBody';
 
 const AccountsListItem = ({ account, canHighlightRow, onEdit }) => {
@@ -14,9 +15,7 @@ const AccountsListItem = ({ account, canHighlightRow, onEdit }) => {
       </td>
       <td>
         <span data-tip={account.activated ? 'Activated' : 'Not Activated'}>
-          {account.activated
-            ? <i class="fa fa-check text-success" />
-            : <i class="fa fa-times text-danger" />}
+          <CheckIcon value={account.activated} />
         </span>
       </td>
       <td>

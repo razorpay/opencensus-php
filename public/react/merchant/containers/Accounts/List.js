@@ -5,7 +5,7 @@ import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import AccountsList from 'merchant/components/Accounts/AccountsList';
 import AccountCreation from 'merchant/containers/Accounts/New';
-import AccountDetails from 'merchant/containers/Accounts/AccountDetails';
+import AccountDetails from 'merchant/containers/Accounts/Details';
 import AccountsListFilter
   from 'merchant/components/Accounts/AccountsListFilter';
 import ListContainer from 'merchant/containers/ListContainer';
