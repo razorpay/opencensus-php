@@ -22,6 +22,8 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    const CHECKSUM_ATTRIBUTE = ResponseFields::HASH;
+
     protected $canRunOtpFlow = false;
 
     protected $topup = false;
@@ -514,11 +516,15 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        $hash = $content[ResponseFields::HASH];
+        $hashContent = [
+            ResponseFields::MID        => $content[ResponseFields::MID],
+            ResponseFields::TXN_REF_NO => $content[ResponseFields::TXN_REF_NO],
+            ResponseFields::TRAN_AMT   => $content[ResponseFields::TRAN_AMT],
+            ResponseFields::TRAN_DATE  => $content[ResponseFields::TRAN_DATE],
+            ResponseFields::HASH       => $content[ResponseFields::HASH],
+        ];
 
-        unset($content[ResponseFields::HASH]);
-
-        $this->verifyHash($hash, $content);
+        $this->verifySecureHash($hashContent);
 
         $date = $this->getEpochTime(
             $content[ResponseFields::TRAN_DATE],
@@ -586,36 +592,6 @@ class Gateway extends Base\Gateway
         return hash(HashAlgo::SHA512, $hashString, false);
     }
 
-    /**
-     * To verify the airtelmoney callback response
-     */
-    protected function verifyHash(string $actualHash, array $input)
-    {
-        $expectedHash = $this->getVerifyHashOfArray($input);
-
-        if (hash_equals($expectedHash, $actualHash) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Failed checksum verification');
-        }
-    }
-
-    public function getVerifyHashOfArray($content)
-    {
-        // Hash fields for authorize are different from response hash.
-        // AMT <-> TRAN_AMT etc.
-        $hashArray = [
-            $content[ResponseFields::MID],
-            $content[ResponseFields::TXN_REF_NO],
-            $content[ResponseFields::TRAN_AMT],
-            $content[ResponseFields::TRAN_DATE],
-        ];
-
-        $hashString = implode('#', $hashArray);
-
-        return $this->getHashOfString($hashString);
-    }
-
     protected function getAuthRedirectRequestArray($input)
     {
         $payment = $input['payment'];
@@ -624,34 +600,34 @@ class Gateway extends Base\Gateway
             $payment['created_at'],
             DateFormat::REQUEST_DATE_FORMAT);
 
-        $content = [
+        $hashContent = [
             RequestFields::MID         => $this->getMerchantId(),
             RequestFields::TXN_REF_NO  => $payment['id'],
+            RequestFields::AMT         => ($input['payment']['amount'] / 100),
+            RequestFields::DATE        => $date,
+        ];
+
+        $content = [
             RequestFields::SU          => $input['callbackUrl'],
             RequestFields::FU          => $input['callbackUrl'],
-            RequestFields::AMT         => ($input['payment']['amount'] / 100),
             RequestFields::CUR         => 'INR',
-            RequestFields::DATE        => $date,
             RequestFields::CUST_MOBILE => $this->getFormattedContact($payment['contact']),
             RequestFields::CUST_EMAIL  => $payment['email'],
             RequestFields::END_MID     => $this->getEndMerchantId($input['terminal']),
         ];
 
-        $content[RequestFields::HASH] = $this->getHashOfArray($content);
+        $content = array_merge($content, $hashContent);
+
+        $content[RequestFields::HASH] = $this->getHashOfArray($hashContent);
 
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getStringToHash($content, $glue = '')
+    protected function getHashOfArray($content)
     {
-        $hashArray = [
-            $content['MID'],
-            $content['TXN_REF_NO'],
-            $content['AMT'],
-            $content['DATE'],
-        ];
+        $str = $this->getStringToHash($content, '#');
 
-        return implode('#', $hashArray);
+        return $this->getHashOfString($str);
     }
 
     protected function getRefundRequestArray(array $input)

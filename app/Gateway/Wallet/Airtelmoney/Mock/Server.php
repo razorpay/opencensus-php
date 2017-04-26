@@ -32,36 +32,40 @@ class Server extends Base\Mock\Server
         {
             $redirectUrl = $input[RequestFields::FU];
 
-            $queryArray = [
+            $content = [
                 ResponseFields::STATUS     => Status::FAILED,
                 ResponseFields::CODE       => '902',
                 ResponseFields::MSG        => ResponseCode::getResponseMessage('902'),
                 ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
             ];
 
-            $params = http_build_query($queryArray);
+            $params = http_build_query($content);
         }
         else
         {
             $redirectUrl = $input[RequestFields::SU];
 
-            $queryArray = [
+            $content = [
                 ResponseFields::STATUS     => Status::SUCCESS,
                 ResponseFields::CODE       => ResponseCode::SUCCESS_CODE,
                 ResponseFields::MSG        => self::DUMMY_MSG,
-                ResponseFields::MID        => $input[RequestFields::MID],
                 ResponseFields::TRAN_ID    => $this->getArtlTxnId(),
-                ResponseFields::TRAN_AMT   => sprintf("%0.2f", $input[RequestFields::AMT]),
                 ResponseFields::TRAN_CUR   => 'INR',
-                ResponseFields::TRAN_DATE  => $this->getFormattedDate(
-                    Carbon::now(),
-                    DateFormat::TRAN_DATE_FORMAT),
-                ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
             ];
 
-            $queryArray[ResponseFields::HASH] = $this->generateHash($queryArray);
+            $hashContent = [
+                ResponseFields::MID        => $input[RequestFields::MID],
+                ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
+                ResponseFields::TRAN_AMT   => sprintf('%0.2f', $input[RequestFields::AMT]),
+                ResponseFields::TRAN_DATE  => $this->getFormattedDate(
+                    Carbon::now(), DateFormat::TRAN_DATE_FORMAT),
+            ];
 
-            $params = http_build_query($queryArray);
+            $content = array_merge($content, $hashContent);
+
+            $content[ResponseFields::HASH] = $this->generateHash($hashContent);
+
+            $params = http_build_query($content);
         }
 
         return \Redirect::to($redirectUrl.'?'.$params);
@@ -182,13 +186,5 @@ class Server extends Base\Mock\Server
         $xml = new \SimpleXMLElement('<wallet/>');
         array_walk_recursive($content, array($xml, 'addChild'));
         return ($xml->asXML());
-    }
-
-    /**
-     * Response has to be hashed using getVerifyHashOfArray
-     */
-    protected function generateHash($content)
-    {
-        return $this->getGatewayInstance()->getVerifyHashOfArray($content);
     }
 }
