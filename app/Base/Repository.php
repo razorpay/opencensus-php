@@ -6,7 +6,7 @@ use DB;
 use Illuminate\Support\Facades\App;
 
 use RZP\Models;
-use RZP\Models\Base\Es\Repository as EsRepository;
+use RZP\Models\Base\EsRepository;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Constants\Entity as E;

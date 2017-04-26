@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use RZP\Exception\LogicException;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\Es;
+use RZP\Models\Base;
 
 /**
  * Es sync job class.
@@ -70,13 +70,13 @@ class EsSync extends Job implements ShouldQueue
             // If it's logical error or maximum number of retries has happened
             // just delete the job, else retry the job after a wait.
             if (($e instanceof LogicException) or
-                ($this->attempts() > Es\Repository::MAX_JOB_ATTEMPTS))
+                ($this->attempts() > Base\EsRepository::MAX_JOB_ATTEMPTS))
             {
                 $this->delete();
             }
             else
             {
-                $this->release(Es\Repository::JOB_RELEASE_WAIT);
+                $this->release(Base\EsRepository::JOB_RELEASE_WAIT);
             }
         }
     }
@@ -123,8 +123,8 @@ class EsSync extends Job implements ShouldQueue
     {
         switch ($this->action)
         {
-            case Es\Repository::CREATE:
-            case Es\Repository::UPDATE:
+            case Base\EsRepository::CREATE:
+            case Base\EsRepository::UPDATE:
 
                 $document = $this->repo->findForIndexing($this->id);
 
@@ -132,7 +132,7 @@ class EsSync extends Job implements ShouldQueue
 
                 break;
 
-            case Es\Repository::DELETE:
+            case Base\EsRepository::DELETE:
 
                 $this->esRepo->deleteDocument($this->id);
 

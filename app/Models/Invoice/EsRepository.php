@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Invoice;
 
-use RZP\Models\Base\Es;
+use RZP\Models\Base;
 
-class EsRepository extends Es\Repository
+class EsRepository extends Base\EsRepository
 {
     protected $fields = [
         Entity::ID,

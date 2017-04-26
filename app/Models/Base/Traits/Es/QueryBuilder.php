@@ -33,7 +33,7 @@ trait QueryBuilder
     }
 
     /**
-     * Builds query for 'q' param. Ref Base\Es\Repository class.
+     * Builds query for 'q' param. Ref Base\EsRepository class.
      *
      * @param array $query
      * @param string $value

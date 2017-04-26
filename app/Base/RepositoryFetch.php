@@ -10,7 +10,7 @@ use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Base\Es\Repository as EsRepository;
+use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 
 trait RepositoryFetch

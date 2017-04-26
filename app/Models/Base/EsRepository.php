@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Base\Es;
+namespace RZP\Models\Base;
 
 use App;
 use RZP\Exception;
@@ -9,7 +9,7 @@ use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
-class Repository extends \Razorpay\Spine\Repository
+class EsRepository extends \Razorpay\Spine\Repository
 {
     use Base\Traits\Es\QueryBuilder;
 
