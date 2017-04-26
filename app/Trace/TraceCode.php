@@ -639,6 +639,14 @@ class TraceCode
     const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
     const USER_EDIT                                     = 'USER_EDIT';
 
+// Trace codes for gateway load rules
+    const GATEWAY_LOAD_RULE_CREATE_REQUEST              = 'GATEWAY_LOAD_RULE_CREATE_REQUEST';
+    const GATEWAY_LOAD_RULE_CONFLCT                     = 'GATEWAY_LOAD_RULE_CONFLCT';
+    const GATEWAY_LOAD_RULE_DELETE_REQUEST              = 'GATEWAY_LOAD_RULE_DELETE_REQUEST';
+    const GATEWAY_LOAD_RULE_UPDATE_REQUEST              = 'GATEWAY_LOAD_RULE_UPDATE_REQUEST';
+    const GATEWAY_LOAD_RULES_POST_FILTER                = 'GATEWAY_LOAD_RULES_POST_FILTER';
+    const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS        = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

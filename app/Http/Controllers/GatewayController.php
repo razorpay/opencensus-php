@@ -400,4 +400,13 @@ class GatewayController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateGatewayLoadRule(LoadRule\Service $service, string $id)
+    {
+        $input = Request::all();
+
+        $data = $service->update($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

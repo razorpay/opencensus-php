@@ -26,6 +26,10 @@ class Validator extends Base\Validator
         Entity::LOAD             => 'required|integer|min:0|max:10000'
     ];
 
+    protected static $editRules = [
+        Entity::LOAD => 'sometimes|filled|integer|min:0|max:10000'
+    ];
+
     protected static $createValidators = [
         Entity::METHOD,
         Entity::CARD_TYPE,

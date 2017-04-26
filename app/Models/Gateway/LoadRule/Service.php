@@ -29,9 +29,22 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
+        $this->trace->info(
+            TraceCode::GATEWAY_LOAD_RULE_DELETE_REQUEST,
+            [
+                'id' => $id,
+            ]);
+
         $loadRule = $this->repo->gateway_load_rule->findOrFailPublic($id);
 
         $this->repo->deleteOrFail($loadRule);
+
+        return $loadRule->toArrayAdmin();
+    }
+
+    public function update(string $id, array $input)
+    {
+        $loadRule = (new Core)->update($id, $input);
 
         return $loadRule->toArrayAdmin();
     }

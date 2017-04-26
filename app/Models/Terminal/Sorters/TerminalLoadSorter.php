@@ -31,9 +31,12 @@ class TerminalLoadSorter extends Terminal\Sorter
             return $terminals;
         }
 
+        // TODO: Temporarily setting verbose to true here
+        $verbose = true;
+
         $loadRuleCore = new LoadRule\Core;
 
-        $applicableRules = $loadRuleCore->fetchApplicableRules($terminals, $input);
+        $applicableRules = $loadRuleCore->fetchApplicableRules($terminals, $input, $verbose);
 
         // If no rules are present for load sorting we return the terminals list as is
         if ($applicableRules->isEmpty() === true)
@@ -48,7 +51,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         //      <rule_id> => [<terminal_ids>]
         // ]
         //
-        $ruleToTerminalsMap = $loadRuleCore->matchTerminalsToRule($terminals, $applicableRules);
+        $ruleToTerminalsMap = $loadRuleCore->matchTerminalsToRule($terminals, $applicableRules, $verbose);
 
         // If no terminals are found matching the rules return the original set of
         // terminals
@@ -78,7 +81,8 @@ class TerminalLoadSorter extends Terminal\Sorter
         $boostedTerminals = $this->getBoostedTerminals(
                                                         $ruleToTerminalsMap,
                                                         $applicableRules,
-                                                        $chancePercent);
+                                                        $chancePercent,
+                                                        $verbose);
 
         // If no terminals are boosted as per the random selection return the set
         // of all terminals
@@ -97,7 +101,8 @@ class TerminalLoadSorter extends Terminal\Sorter
     protected function getBoostedTerminals(
                                             array $ruleToTerminalsMap,
                                             Base\PublicCollection $applicableRules,
-                                            int $chancePercent)
+                                            int $chancePercent,
+                                            bool $verbose = false)
     {
         $totalLoad = 0;
 
@@ -116,8 +121,31 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             if ($totalLoad >= $chancePercent)
             {
+                $this->traceBoostedTerminals($terminals, $chancePercent, $verbose);
+
                 return $terminals;
             }
+        }
+    }
+
+    protected function traceBoostedTerminals(array $terminals, int $chancePercent, bool $verbose = false)
+    {
+        if ($verbose === true)
+        {
+            $traceData = [];
+
+            $traceData['chance_percent'] = $chancePercent;
+
+            $terminalIds = [];
+
+            foreach ($terminals as $terminal)
+            {
+                $terminalIds[] = $terminal->getId();
+            }
+
+            $traceData['boosted_terminals'] = $boostedTerminals;
+
+            $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS, $traceData);
         }
     }
 }

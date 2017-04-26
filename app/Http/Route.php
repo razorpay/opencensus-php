@@ -344,6 +344,7 @@ final class Route
         'gateway_create_load_rule'                => ['post',     'gateway/load_rules',                             'GatewayController@createGatewayLoadRule'                           ],
         'gateway_fetch_load_rules'                => ['get',      'gateway/load_rules',                             'GatewayController@fetchGatewayLoadRules'                           ],
         'gateway_find_load_rule_by_id'            => ['get',      'gateway/load_rules/{id}',                        'GatewayController@findGatewayLoadRule'                             ],
+        'gateway_update_load_rule'                => ['patch',    'gateway/load_rules/{id}',                        'GatewayController@updateGatewayLoadRule'                           ],
         'gateway_delete_load_rule'                => ['delete',   'gateway/load_rules/{id}',                        'GatewayController@deleteGatewayLoadRule'                           ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
@@ -831,6 +832,7 @@ final class Route
         'gateway_create_load_rule',
         'gateway_fetch_load_rules',
         'gateway_find_load_rule_by_id',
+        'gateway_update_load_rule',
         'gateway_delete_load_rule',
     );
 
