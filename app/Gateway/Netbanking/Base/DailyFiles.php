@@ -22,6 +22,8 @@ class DailyFiles
     //                 is 86400
     const SECONDS_PER_DAY = 86400;
 
+    protected $emailIdsToSendTo = 'settlements@razorpay.com';
+
     public function __construct($bankCode)
     {
         $this->mail = Mail::getFacadeRoot();
@@ -37,7 +39,7 @@ class DailyFiles
         $this->bankCode = $bankCode;
     }
 
-    public function generate($from, $to)
+    public function generate($from, $to, $email = null)
     {
         list($refundAmount, $refundsFile) = $this->getRefundsData($from, $to);
 
@@ -51,7 +53,7 @@ class DailyFiles
         // Send the mail only when there is at least 1 claim or refund
         if ($amount['claims'] + $amount['refunds'] > 0)
         {
-            $this->sendMail($amount, $claimsFile, $refundsFile);
+            $this->sendMail($amount, $claimsFile, $refundsFile, $email);
         }
 
         return ['refunds' => $refundsFile, 'claims' => $claimsFile];
@@ -128,7 +130,7 @@ class DailyFiles
         return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
-    protected function sendMail($amount, $claimsFile, $refundsFile)
+    protected function sendMail($amount, $claimsFile, $refundsFile, $email = null)
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
@@ -143,10 +145,10 @@ class DailyFiles
 
         $view = 'emails.admin.' . lcfirst($bankName) . '_refunds';
 
-        $this->mail->queue($view, $data, function($message) use ($data, $bankName)
-        {
-            $emails = ['settlements@razorpay.com'];
+        $emails = $this->getEmailsToSendTo($email);
 
+        $this->mail->queue($view, $data, function($message) use ($data, $bankName, $emails)
+        {
             $message->from('settlement@razorpay.com', $bankName . ' Netbanking Refunds');
 
             $message->subject($data['subject']);
@@ -174,5 +176,17 @@ class DailyFiles
     protected function getBankName()
     {
         return ucfirst(explode('_', $this->gateway)[1]);
+    }
+
+    protected function getEmailsToSendTo($email = null)
+    {
+        $returnEmail = $this->emailIdsToSendTo;
+
+        if (empty($email) === false)
+        {
+            $returnEmail = $email;
+        }
+
+        return [$returnEmail];
     }
 }

@@ -20,7 +20,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::NAME        => 'sometimes|string|max:150',
         Entity::PERMISSIONS => 'sometimes|array|custom',
-        Entity::STEPS       => 'sometimes|array',
+        Entity::LEVELS      => 'sometimes|array',
         Entity::ORG_ID      => 'sometimes|string|size:14',
     ];
 

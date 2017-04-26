@@ -8,7 +8,9 @@ use RZP\Gateway\Netbanking\Base;
 
 class DailyFiles extends Base\DailyFiles
 {
-    public function generate($from, $to)
+    protected $emailIdsToSendTo = 'axis.netbanking.refunds@razorpay.com';
+
+    public function generate($from, $to, $email = null)
     {
         list($refundAmount, $refundsFile) = $this->getRefundsData($from, $to);
 
@@ -30,13 +32,13 @@ class DailyFiles extends Base\DailyFiles
         // Send the mail only when there is at least 1 claim or refund
         if ($amount['claims'] + $amount['refunds'] > 0)
         {
-            $this->sendMail($amount, $claimsFile, $refundsFile, $count);
+            $this->sendMail($amount, $claimsFile, $refundsFile, $count, $email);
         }
 
         return ['refunds' => $refundsFile, 'claims' => $claimsFile];
     }
 
-    protected function sendMail($amount, $claimsFile, $refundsFile, $count=[])
+    protected function sendMail($amount, $claimsFile, $refundsFile, $count=[], $email = null)
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
@@ -55,10 +57,10 @@ class DailyFiles extends Base\DailyFiles
 
         $view = 'emails.admin.' . lcfirst($bankName) . '_refunds';
 
-        $this->mail->queue($view, $data, function($message) use ($data, $bankName)
-        {
-            $emails = ['axis.netbanking.refunds@razorpay.com'];
+        $emails = $this->getEmailsToSendTo($email);
 
+        $this->mail->queue($view, $data, function($message) use ($data, $bankName, $emails)
+        {
             $message->from('refunds@razorpay.com', $bankName . ' Netbanking Refunds');
 
             $message->subject($data['subject']);

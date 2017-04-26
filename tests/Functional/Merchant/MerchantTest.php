@@ -651,23 +651,39 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
-    public function testGetCheckoutPreferencesWithOffer()
+    public function testGetCheckoutPreferencesWithNonOrderRelatedOffer()
     {
-        $this->markTestSkipped('Skipping till new offers changes are merged');
-
         $this->ba->publicAuth();
 
-        $offer = $this->fixtures->offer->createCardOffer();
+        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
 
-        $content = $this->startTest();
+        $offer = $this->fixtures->create('offer:wallet', [
+                'checkout_display' => true,
+                'display_text'     => 'Some display text',
+                'terms'            => 'Some terms',
+                'starts_at'        => $startsAt,
+            ]);
 
-        $countCardOffers = count($content['offers']['card']['items']);
+        $this->startTest();
+    }
 
-        $countWalletOffers = count($content['offers']['wallet']['items']);
+    public function testGetCheckoutPreferencesWithOrderRelatedOffer()
+    {
+        $this->ba->publicAuth();
 
-        $this->assertEquals(1, $countCardOffers);
+        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
 
-        $this->assertEquals(0, $countWalletOffers);
+        $offer = $this->fixtures->create('offer:card', [
+                'display_text' => 'Some display text',
+                'terms'        => 'Some terms',
+                'starts_at'    => $startsAt
+            ]);
+
+        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+        $this->startTest();
     }
 
     public function testGetCheckoutRouteWithSavedLocal()
