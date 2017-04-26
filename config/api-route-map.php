@@ -5,41 +5,41 @@ return [
     'admin' => [
         'org_create'                        => 'orgs',
         'org_get_multiple'                  => 'orgs',
-        'org_get'                           => 'orgs/{id}',
-        'org_edit'                          => 'orgs/{id}',
-        'org_delete'                        => 'orgs/{id}',
+        'org_get'                           => 'orgs/{orgId}',
+        'org_edit'                          => 'orgs/{orgId}',
+        'org_delete'                        => 'orgs/{orgId}',
 
         // Roles
-        'role_get_multiple'                 => 'orgs/{id}/roles',
-        'role_get'                          => 'orgs/{id}/roles/{roleId}',
-        'role_create'                       => 'orgs/{id}/roles',
-        'role_delete'                       => 'orgs/{id}/roles/{roleId}',
-        'role_edit'                         => 'orgs/{id}/roles/{roleId}',
+        'role_get_multiple'                 => 'orgs/{orgId}/roles',
+        'role_get'                          => 'orgs/{orgId}/roles/{roleId}',
+        'role_create'                       => 'orgs/{orgId}/roles',
+        'role_delete'                       => 'orgs/{orgId}/roles/{roleId}',
+        'role_edit'                         => 'orgs/{orgId}/roles/{roleId}',
 
         // Groups
-        'group_get_multiple'                => 'orgs/{id}/groups',
-        'group_create'                      => 'orgs/{id}/groups',
-        'group_get'                         => 'orgs/{id}/groups/{groupId}',
-        'group_admins_create'               => 'orgs/{id}/groups/{groupId}/admins',
-        'group_delete'                      => 'orgs/{id}/groups/{groupId}',
-        'edit_group'                        => 'orgs/{id}/groups/{groupId}',
-        'group_get_allowed_groups'          => 'orgs/{id}/groups/{groupId}/allowed_groups',
+        'group_get_multiple'                => 'orgs/{orgId}/groups',
+        'group_create'                      => 'orgs/{orgId}/groups',
+        'group_get'                         => 'orgs/{orgId}/groups/{groupId}',
+        'group_admins_create'               => 'orgs/{orgId}/groups/{groupId}/admins',
+        'group_delete'                      => 'orgs/{orgId}/groups/{groupId}',
+        'edit_group'                        => 'orgs/{orgId}/groups/{groupId}',
+        'group_get_allowed_groups'          => 'orgs/{orgId}/groups/{groupId}/allowed_groups',
 
         // Admins
-        'admin_get'                         => 'orgs/{id}/admins/{adminId}',
-        'admin_get_multiple'                => 'orgs/{id}/admins',
-        'admin_edit'                        => 'orgs/{id}/admins/{adminId}',
-        'admin_delete'                      => 'orgs/{id}/admins/{adminId}',
-        'admin_create'                      => 'orgs/{id}/admins',
-        'admin_get_app_auth'                => 'orgs/{id}/current_admin',
+        'admin_get'                         => 'orgs/{orgId}/admins/{adminId}',
+        'admin_get_multiple'                => 'orgs/{orgId}/admins',
+        'admin_edit'                        => 'orgs/{orgId}/admins/{adminId}',
+        'admin_delete'                      => 'orgs/{orgId}/admins/{adminId}',
+        'admin_create'                      => 'orgs/{orgId}/admins',
+        'admin_get_app_auth'                => 'orgs/{orgId}/current_admin',
 
         // AuditLog
-        'auditlog_search'                    => 'orgs/{id}/auditlog/search',
+        'auditlog_search'                    => 'orgs/{orgId}/auditlog/search',
 
         // Permissions
         'permission_get_by_type'            => 'permissions/get/{type}',
         'permission_get_roles'              => 'permissions/{id}/roles',
-        'permission_get_multiple'           => 'orgs/{id}/permissions',
+        'permission_get_multiple'           => 'orgs/{orgId}/permissions',
         'permission_create'                 => 'permissions',
         'permission_get'                    => 'permissions/{id}',
         'permission_edit'                   => 'permissions/{id}',
@@ -53,15 +53,15 @@ return [
         'org_fieldmap_create'               => 'orgs/{orgId}/field-map',
         'org_fieldmap_edit'                 => 'orgs/{orgId}/field-map/{id}',
         'org_fieldmap_delete'               => 'orgs/{orgId}/field-map/{id}',
-        'org_fieldmap_get_by_entity'        => 'orgs/{id}/field-map/entity/{entity}',
+        'org_fieldmap_get_by_entity'        => 'orgs/{orgId}/field-map/entity/{entity}',
 
-        'admin_lead_create'                 => 'orgs/{id}/admin-lead',
-        'admin_lead_get_multiple'           => 'orgs/{id}/admin-lead',
+        'admin_lead_create'                 => 'orgs/{orgId}/admin-lead',
+        'admin_lead_get_multiple'           => 'orgs/{orgId}/admin-lead',
         'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
 
         // Workflows
 
-        'workflow_get_multiple'             => 'orgs/{id}/workflows',
+        'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
         'workflow_create'                   => 'workflows',
         'workflow_get'                      => 'workflows/{id}',
         'workflow_update'                   => 'workflows/{id}',
@@ -306,6 +306,9 @@ return [
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
+
+        // Get Org details by hostname (for heimdall specifics)
+        'org_get_by_hostname'               => 'orgs/hostname/{hostname}',
     ],
 
     // auth
