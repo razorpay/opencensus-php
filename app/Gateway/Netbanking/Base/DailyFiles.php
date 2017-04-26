@@ -68,12 +68,7 @@ class DailyFiles
 
         if ($count == 0)
         {
-            return [
-                'total_amount'   => 0,
-                'count'          => 0,
-                'signed_url'     => '',
-                'local_file_path' => '',
-            ];
+            return [0, ''];
         }
 
         $data = [];
@@ -113,12 +108,7 @@ class DailyFiles
 
         if ($claims->count() === 0)
         {
-            return [
-                'total_amount'   => 0,
-                'count'          => 0,
-                'signed_url'     => '',
-                'local_file_path' => '',
-            ];
+            return [0, ''];
         }
 
         $data = [];

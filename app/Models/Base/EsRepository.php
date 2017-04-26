@@ -339,7 +339,16 @@ class EsRepository extends \Razorpay\Spine\Repository
             $params['body'][] = $document;
         }
 
-        return $this->esDao->bulkUpdate($params);
+        $res = $this->esDao->bulkUpdate($params);
+
+        $this->trace->debug(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'params' => $params,
+                'res'    => $res,
+            ]);
+
+        return $res;
     }
 
     /**
