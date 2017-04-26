@@ -341,7 +341,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $res = $this->esDao->bulkUpdate($params);
 
-        $error = $res['error'] ?? true;
+        $error = $res['errors'] ?? true;
 
         if ($error === true)
         {
