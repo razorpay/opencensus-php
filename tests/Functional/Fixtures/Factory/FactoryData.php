@@ -194,6 +194,8 @@ final class FactoryData
             'date' => Carbon::today('Asia/Kolkata')->timestamp,
             'channel' => 'kotak',
             'amount' => $faker->randomNumber(4),
+            'processed_amount' => 0,
+            'processed_count' => 0,
             'fees' => $faker->randomNumber(2),
             'api_fee' => $faker->randomNumber(2),
             'gateway_fee' => $faker->randomNumber(2),
