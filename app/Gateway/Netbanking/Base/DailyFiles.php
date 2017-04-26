@@ -22,7 +22,7 @@ class DailyFiles
     //                 is 86400
     const SECONDS_PER_DAY = 86400;
 
-    protected $emailIdsToSendTo;
+    protected $emailIdsToSendTo = 'settlements@razorpay.com';
 
     public function __construct($bankCode)
     {
@@ -35,8 +35,6 @@ class DailyFiles
         $this->mode = $this->app['basicauth']->getMode();
 
         $this->gateway = Payment\Gateway::$netbankingToGatewayMap[$bankCode];
-
-        $this->emailIdsToSendTo = 'settlements@razorpay.com';
 
         $this->bankCode = $bankCode;
     }

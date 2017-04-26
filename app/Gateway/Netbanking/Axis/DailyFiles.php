@@ -8,11 +8,11 @@ use RZP\Gateway\Netbanking\Base;
 
 class DailyFiles extends Base\DailyFiles
 {
+    protected $emailIdsToSendTo = 'axis.netbanking.refunds@razorpay.com';
+
     public function __construct($bankCode)
     {
         parent::__construct($bankCode);
-
-        $this->emailIdsToSendTo = 'axis.netbanking.refunds@razorpay.com';
     }
 
     public function generate($from, $to, $email = null)

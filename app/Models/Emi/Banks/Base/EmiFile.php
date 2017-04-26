@@ -35,7 +35,7 @@ class EmiFile extends Base\Core
 
         // Reset email if required
         $this->resetEmail($email);
-        s($this->emailIdsToSendTo);
+
         $this->sendEmiFile($emiFile['path']);
 
         $this->trace->info(
