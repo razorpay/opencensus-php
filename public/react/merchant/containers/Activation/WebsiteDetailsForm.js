@@ -9,6 +9,11 @@ export default class WebsiteDetailsForm extends Component {
   render() {
     let { handleSubmit, save, saveAndNext, gotoTab } = this.props;
 
+    /**
+     * All template documents mentioned in this file are at
+     * https://drive.google.com/drive/u/1/folders/0B1MTSXtR53PfRGNucF82WEdMQkk
+     */
+
     return (
       <form class="form-horizontal" onSubmit={handleSubmit(saveAndNext)}>
         <Fieldset readOnly={this.props.data.locked}>
@@ -18,7 +23,7 @@ export default class WebsiteDetailsForm extends Component {
             </label>
             <div class="col-md-9">
               <span class="help-block">
-                Example: http://www.website.com/
+                Example: http://www.example.com/
               </span>
 
               <Field
@@ -37,7 +42,7 @@ export default class WebsiteDetailsForm extends Component {
             </label>
             <div class="col-md-9">
               <span class="help-block">
-                Example: http://www.website.com/aboutus.html
+                Example: http://www.example.com/aboutus.html
               </span>
 
               <Field
@@ -55,7 +60,7 @@ export default class WebsiteDetailsForm extends Component {
             </label>
             <div class="col-md-9">
               <span class="help-block">
-                Example: http://www.website.com/contact.html
+                Example: http://www.example.com/contact.html
               </span>
 
               <Field
@@ -76,12 +81,12 @@ export default class WebsiteDetailsForm extends Component {
                 Download a &nbsp;
                 <a
                   class="highlight"
-                  href="https://docs.google.com/document/d/1MpaLoEbx5-cmTB3qfbDadhjsuNCkEA2j13H2ZGx3PAk/edit?usp=sharing"
+                  href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
                   target="_blank"
                 >
                   template here
                 </a>
-                . Example: http://www.website.com/privacy.html
+                . Example: http://www.example.com/privacy.html
               </span>
 
               <Field
@@ -107,7 +112,7 @@ export default class WebsiteDetailsForm extends Component {
                 >
                   template here
                 </a>
-                . Example: http://www.website.com/terms.html
+                . Example: http://www.example.com/terms.html
               </span>
 
               <Field
@@ -128,12 +133,12 @@ export default class WebsiteDetailsForm extends Component {
                 Download a &nbsp;
                 <a
                   class="highlight"
-                  href="https://docs.google.com/document/d/1zOrg11NPYSMCxa3KwkOnfPxKRkllzXBdocEQsQN10TM/edit?usp=sharing"
+                  href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
                   target="_blank"
                 >
                   template here
                 </a>
-                . Example: http://www.website.com/refund.html
+                . Example: http://www.example.com/refund.html
               </span>
 
               <Field
@@ -159,7 +164,7 @@ export default class WebsiteDetailsForm extends Component {
                 >
                   template here
                 </a>
-                . Example: http://www.website.com/pricing.html
+                . Example: http://www.example.com/pricing.html
               </span>
 
               <Field
