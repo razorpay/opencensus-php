@@ -11,8 +11,8 @@ namespace RZP\Models\Base\Traits\Es;
 trait QueryBuilder
 {
     /**
-     * Default query construct for given field and value. We use term query with
-     * a boost of 2. We give boost 2 for all term queries as it'll be exact match.
+     * Default query construct for given field and value. We use match query with
+     * a boost of 2 as we're matching against a particular field.
      *
      * @param array  $query
      * @param string $field
@@ -21,9 +21,9 @@ trait QueryBuilder
     public function buildQueryForFieldDefaultImpl(array & $query, string $field, string $value)
     {
         $clause = [
-            'term' => [
+            'match' => [
                 $field => [
-                    'value' => $value,
+                    'query' => $value,
                     'boost' => 2,
                 ],
             ],
@@ -41,7 +41,8 @@ trait QueryBuilder
     public function buildQueryForQ(array & $query, string $value)
     {
         // - Boost given for 'q' is 1 to lower it's contribution when there are more
-        //   exact matches when used in combination with other term queries.
+        //   matches by exact fields(eg. receipt, description etc) when used in
+        //   combination with other
         // - It's a multi match query as given query is run against a set of fields
         //   (defined in $queryFields). Also we use type 'best_fields' (default).
         //   Ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
@@ -83,6 +84,10 @@ trait QueryBuilder
         // we must use filter to filter out all results for a given merchant id
         // on top of which other queries/search are run. Filter queries are cached
         // so it's fast too.
+        //
+        // Also notice that here we're using 'term' query. Ie. because we don't
+        // want to do any analysis when searching for merchant_id unlike other
+        // fields.
 
         $filter = [
             'term' => [
