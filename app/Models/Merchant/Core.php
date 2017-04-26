@@ -2,20 +2,20 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Models\BankAccount;
-use RZP\Models\Feature;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Pricing;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Terminal;
-use RZP\Exception;
-use RZP\Models\Admin\Action;
-
 use Config;
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\Feature;
+use RZP\Constants\Mode;
+use RZP\Models\Pricing;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
+use RZP\Models\BankAccount;
+use RZP\Models\Admin\Action;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Core extends Base\Core
 {
@@ -201,6 +201,13 @@ class Core extends Base\Core
     public function getUsers(string $merchantId)
     {
         $users = $this->repo->user->getUsersForMerchant($merchantId);
+
+        foreach ($users as $user)
+        {
+            $user[User\Entity::CONFIRMED] = ($user[User\Entity::CONFIRM_TOKEN] === null);
+
+            unset($user[User\Entity::CONFIRM_TOKEN]);
+        }
 
         return $users;
     }

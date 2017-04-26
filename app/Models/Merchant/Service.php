@@ -2,33 +2,33 @@
 
 namespace RZP\Models\Merchant;
 
-use Carbon\Carbon;
-use Config;
-use Mail;
 use DB;
-use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
+use Mail;
+use Config;
 use RZP\Exception;
-use RZP\Models\BankAccount;
-use RZP\Models\Base;
+use Carbon\Carbon;
 use RZP\Models\Emi;
 use RZP\Models\Key;
+use RZP\Models\Base;
 use RZP\Models\User;
-use RZP\Models\Merchant;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
+use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Schedule;
-use RZP\Models\Settlement\Holidays;
-use RZP\Models\Terminal;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Schedule;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Models\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Constants\MailTags;
+use RZP\Models\BankAccount;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Webhook;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Service extends Base\Service
 {

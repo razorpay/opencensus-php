@@ -2,17 +2,17 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
-use RZP\Error\ErrorCode;
+use ApiResponse;
 use RZP\Exception;
-use RZP\Constants\Entity as E;
 use RZP\Models\Key;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Credits;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Terminal;
 use RZP\Models\Report;
+use RZP\Models\Terminal;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Credits;
 
 class MerchantController extends Controller
 {
