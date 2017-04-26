@@ -16,7 +16,7 @@ class Service extends Base\Service
         }
 
         // Orgs for which workflows have to be enabled
-        if (empty($input[Entity::WORKFLOW_ORGS] === false))
+        if (empty($input[Entity::WORKFLOW_ORGS]) === false)
         {
             Org\Entity::verifyIdAndStripSignMultiple(
                 $input[Entity::WORKFLOW_ORGS]);
@@ -37,6 +37,10 @@ class Service extends Base\Service
                            ->permission
                            ->findByPublicIdWithRelations(
                                $permissionId, $relations);
+
+        $workflowOrgs = $this->core()->getOrgsWithWorkflow($permission);
+
+        $permission->setWorkflowOrgs($workflowOrgs);
 
         return $permission->toArrayPublic();
     }
@@ -62,7 +66,7 @@ class Service extends Base\Service
         }
 
         // Orgs for which workflows have to be enabled
-        if (empty($input[Entity::WORKFLOW_ORGS] === false))
+        if (empty($input[Entity::WORKFLOW_ORGS]) === false)
         {
             Org\Entity::verifyIdAndStripSignMultiple(
                 $input[Entity::WORKFLOW_ORGS]);

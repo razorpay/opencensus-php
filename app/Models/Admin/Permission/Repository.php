@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Admin\Permission;
 
+use DB;
+
 use RZP\Models\Admin\Base;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
@@ -94,31 +96,6 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Get all the orgs with enable_workflow=1 for the permission
-     */
-    public function getOrgsWithWorkflowEnabled(string $permissionId)
-    {
-        $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
-
-        $orgDao = $this->manager->org;
-
-        $orgAttrs = $orgDao->getAttributeWithTableName('*');
-        $orgId = $orgDao->getAttributeWithTableName(Org\Entity::ID);
-        $orgTable = Table::ORG;
-
-        $pmTable = Table::PERMISSION_MAP;
-
-        return $this->newQuery()
-                    ->select($orgAttrs)
-                    ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
-                    ->join($orgTable, $orgId, '=', $pmTable . '.entity_id')
-                    ->where($pid, '=', $permissionId)
-                    ->where($pmTable . '.entity_type', '=', 'org')
-                    ->where($pmTable . '.enable_workflow', '=', 1)
-                    ->get();
-    }
-
-    /**
      * Enable workflows for orgs which are assigned to a permission
      * Worklows can only be enabled for orgs if the permission is assigned to
      * it
@@ -132,13 +109,11 @@ class Repository extends Base\Repository
 
         $pmTable = Table::PERMISSION_MAP;
 
-        return $this->newQuery()
-                    ->select($orgAttrs)
-                    ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
-                    ->where($pid, '=', $permissionId)
-                    ->where($pmTable . '.entity_type', '=', 'org')
-                    ->whereIn($pmTable . '.entity_id', '=', $orgIds)
-                    ->update($pmTable . '.enable_workflow', '=', $enabled);
+        DB::table(Table::PERMISSION_MAP)
+                ->where('permission_id', '=', $permissionId)
+                ->where('entity_type', '=', 'org')
+                ->whereIn('entity_id', $orgIds)
+                ->update(['enable_workflow' => $enabled]);
     }
 
     public function getPermissionsWithWorkflowEnabled(string $orgId)

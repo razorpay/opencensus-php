@@ -13,7 +13,6 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION      => 'sometimes|string|max:255',
         Entity::CATEGORY         => 'required|string|max:255',
         Entity::ASSIGNABLE       => 'sometimes|bool',
-        Entity::ENABLE_WORKFLOW  => 'sometimes|bool',
         Entity::ORGS             => 'sometimes|array',
         Entity::WORKFLOW_ORGS    => 'sometimes|array',
     ];
@@ -23,7 +22,6 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION      => 'sometimes|string|max:255',
         Entity::CATEGORY         => 'sometimes|string|max:255',
         Entity::ASSIGNABLE       => 'sometimes|bool',
-        Entity::ENABLE_WORKFLOW  => 'sometimes|bool',
         Entity::ORGS             => 'sometimes|array',
         Entity::WORKFLOW_ORGS    => 'sometimes|array',
     ];
@@ -34,6 +32,11 @@ class Validator extends Base\Validator
 
     public function validateWorkflowOrgs(array $input)
     {
+        if (empty($input[Entity::WORKFLOW_ORGS]) === true)
+        {
+            return;
+        }
+
         $orgs = $input[Entity::ORGS];
         $workflowOrgs = $input[Entity::WORKFLOW_ORGS];
 

@@ -30,7 +30,7 @@ class Core extends Base\Core
                 }
             }
 
-            if (empty($input[Entity::WORKFLOW_ORGS] === false))
+            if (empty($input[Entity::WORKFLOW_ORGS]) === false)
             {
                 $this->enableWorkflowForOrgs(
                     $permission, $input[Entity::WORKFLOW_ORGS]);
@@ -41,7 +41,9 @@ class Core extends Base\Core
                                  ->findOrFailPublicWithRelations(
                                      $permission->getId(), ['orgs']);
 
-        $permission->setWorkflowOrgs($this->getWorkflowForOrgs());
+        $workflowOrgs = $this->getOrgsWithWorkflow($permission);
+
+        $permission->setWorkflowOrgs($workflowOrgs);
 
         return $permission;
     }
@@ -59,7 +61,10 @@ class Core extends Base\Core
             if (isset($input[Entity::ORGS]) === true)
             {
                 $this->toggleAssignableOrgs($permission, $input);
+            }
 
+            if (isset($input[Entity::WORKFLOW_ORGS]) === true)
+            {
                 $this->toggleWorkflowsOnPermission($permission, $input);
             }
         });
@@ -68,7 +73,9 @@ class Core extends Base\Core
                                  ->findOrFailPublicWithRelations(
                                      $permission->getId(), ['orgs']);
 
-        $permission->setWorkflowOrgs($this->getWorkflowForOrgs());
+        $workflowOrgs = $this->getOrgsWithWorkflow($permission);
+
+        $permission->setWorkflowOrgs($workflowOrgs);
 
         return $permission;
     }
@@ -86,7 +93,7 @@ class Core extends Base\Core
     {
         $permId = $permission->getId();
 
-        $orgs = $this->repo->permission
+        $orgs = $this->repo->org
                            ->getOrgsWithWorkflowEnabled($permId);
 
         return $orgs;
