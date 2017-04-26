@@ -62,6 +62,7 @@ class CreateRefunds extends Migration
             $table->index(Refund::GATEWAY_REFUNDED);
             $table->index(Refund::ATTEMPTS);
             $table->index(Refund::CREATED_AT);
+            $table->index(Refund::LAST_ATTEMPTED_AT);
 
             $table->foreign(Refund::MERCHANT_ID)
                   ->references(Merchant::ID)

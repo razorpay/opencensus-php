@@ -1923,7 +1923,8 @@ ALTER TABLE refunds
     ADD COLUMN last_attempted_at INT NULL DEFAULT NULL AFTER attempts,
     ADD INDEX refunds_status_index (status),
     ADD INDEX refunds_attempts_index (attempts),
-    ADD INDEX refunds_created_at_index (created_at);
+    ADD INDEX refunds_created_at_index (created_at),;
+    ADD INDEX refunds_last_attempted_at_index (last_attempted_at);
 
 # Post deployment query for updating status of all the refunds #2673
 UPDATE refunds SET status = "processed", attempts = 1, last_attempted_at = created_at WHERE status is null;
