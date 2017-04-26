@@ -54,5 +54,14 @@ class TaxGroupTest extends TestCase
 
     public function testDeleteTaxGroupAndCacadeNullInItem()
     {
+        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testDeleteTaxGroup'];
+
+        $this->startTest();
+
+        $item = $this->getLastEntity('item', true);;
+
+        $this->assertNull($item['tax_group_id']);
     }
 }

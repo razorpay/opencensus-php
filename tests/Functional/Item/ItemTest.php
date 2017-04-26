@@ -101,6 +101,8 @@ class ItemTest extends TestCase
         $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
 
         $this->startTest();
+
+        $this->assertResponseWithLastEntity('item', __FUNCTION__);
     }
 
     public function testDeleteItem()

@@ -47,6 +47,14 @@ class Validator extends Base\Validator
         Type::checkType($value);
     }
 
+    /**
+     * Validates inputs when either(or both) of tax_id, tax_group_id is sent.
+     * It ensures that an item is only getting associated either a tax_id or a
+     * tax_group_id.
+     *
+     * @param array $input
+     *
+     */
     public function validateTaxInputs(array $input)
     {
         $taxId = array_key_exists(Entity::TAX_ID, $input) ?

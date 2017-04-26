@@ -86,8 +86,6 @@ class TaxTest extends TestCase
 
         $item = $this->getLastEntity('item', true);;
 
-        sd($item);
-
         $this->assertNull($item['tax_id']);
     }
 }

@@ -48,6 +48,8 @@ class CreateTaxes extends Migration
                   ->onDelete('restrict');
         });
 
+        // This needs to be done here because migrations are run in order of
+        // timestamps and taxes table gets created after items.
         Schema::table(Table::ITEM, function(Blueprint $table)
         {
             $table->foreign(Item\Entity::TAX_ID)

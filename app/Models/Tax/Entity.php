@@ -86,6 +86,6 @@ class Entity extends Base\PublicEntity
 
     public function items()
     {
-        return $this->belongsToMany('RZP\Models\Item\Entity');
+        return $this->hasMany('RZP\Models\Item\Entity');
     }
 }

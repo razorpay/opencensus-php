@@ -27,7 +27,7 @@ class Core extends Base\Core
 
         $item->merchant()->associate($merchant);
 
-        $this->handleTaxeInputs($item, $input, $merchant);
+        $this->handleTaxInputs($item, $input, $merchant);
 
         $this->repo->saveOrFail($item);
 
@@ -45,7 +45,7 @@ class Core extends Base\Core
 
         $item->edit($input);
 
-        $this->handleTaxeInputs($item, $input, $merchant);
+        $this->handleTaxInputs($item, $input, $merchant);
 
         $this->repo->saveOrFail($item);
 
@@ -88,7 +88,17 @@ class Core extends Base\Core
         return $item;
     }
 
-    private function handleTaxeInputs(
+    /**
+     * Handles tax inputs. Item's API can receive tax_id and(or) tax_group_id.
+     * This method consumes those keys and associate/dissociate relations as
+     * needed.
+     *
+     * @param Entity          $item
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     */
+    private function handleTaxInputs(
         Entity $item,
         array $input,
         Merchant\Entity $merchant)
