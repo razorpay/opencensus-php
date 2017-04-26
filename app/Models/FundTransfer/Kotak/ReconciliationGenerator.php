@@ -44,7 +44,9 @@ class ReconciliationGenerator
 
     public function reconcileSettlementsInTestMode($input)
     {
-        list($startTimestamp, $endTimestamp) = $this->getReconcileTimestamps();
+        $startTimestamp = Carbon::today("Asia/Kolkata")->timestamp;
+
+        $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->timestamp - 1;
 
         $nonReconciledAttempts = $this->repo
                                       ->fund_transfer_attempt
@@ -159,37 +161,5 @@ class ReconciliationGenerator
         }
 
         return $data;
-    }
-
-    /**
-     * Gets timestamps of settlement that need to be reconciled
-     *
-     * If yesterday was a working day
-     *      start timestamp = Start of today
-     * Else find the last working day
-     *      start timestamp = beginning of the day post the last working day
-     *
-     * @return Array of timestamps [$startTimestamp, $endTimestamp]
-     */
-    protected function getReconcileTimestamps(): array
-    {
-        $today = Carbon::today('Asia/Kolkata');
-
-        $endTimestamp = Carbon::tomorrow('Asia/Kolkata')->timestamp - 1;
-
-        $yesterday = Carbon::yesterday('Asia/Kolkata');
-
-        $lastWorkingDay = Settlement\Holidays::getPreviousWorkingDay($today);
-
-        if ($lastWorkingDay === $yesterday)
-        {
-            $startTimestamp = $today->timestamp;
-        }
-        else
-        {
-            $startTimestamp = $lastWorkingDay->timestamp + 1;
-        }
-
-        return [$startTimestamp, $endTimestamp];
     }
 }
