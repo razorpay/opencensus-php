@@ -8,7 +8,7 @@ use Illuminate\Foundation\Application;
 
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Route;
-use Razorpay\OAuth\OAuthServer;
+use RZP\Http\OAuth;
 
 class Authenticate
 {
@@ -59,7 +59,7 @@ class Authenticate
 
         if (empty($bearerToken) === false)
         {
-            $ret = $this->authenticateBearerAuth($route);
+            $ret = $this->authenticateBearerAuth($route, $bearerToken);
         }
         else
         {
@@ -125,15 +125,10 @@ class Authenticate
             $ret = ApiResponse::routeNotFound();
         }
 
-        if ($ret !== null)
-        {
-            return $ret;
-        }
-
-        return $ba->feature();
+        return $ret;
     }
 
-    protected function authenticateBearerAuth(string $route)
+    protected function authenticateBearerAuth(string $route, string $bearerToken)
     {
         //
         // Only `private` auth endpoints may be accessed
@@ -144,6 +139,8 @@ class Authenticate
             return ApiResponse::routeNotFound();
         }
 
-        // TODO: OAuth access token flow
+        $oauth = new OAuth;
+
+        $merchantId = $oauth->resolveToken($bearerToken);
     }
 }
