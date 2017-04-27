@@ -25,12 +25,12 @@ class Validator extends Base\Validator
 
     protected static $validateCustomerRules = [
         RequestFields::CHANNEL_ID    => 'required|numeric|in:11',
-        RequestFields::REQUEST_ID    => 'required|string|size:32',
+        RequestFields::REQUEST_ID    => 'required|string|size:13',
         RequestFields::MOBILE_NUMBER => 'required|string|size:10'
     ];
 
     protected static $pgSendOTPRules = [
-        RequestFields::REQUEST_ID     => 'required|string|size:32',
+        RequestFields::REQUEST_ID     => 'required|string|size:13',
         RequestFields::CHANNEL_ID     => 'required|numeric|in:11',
         RequestFields::ENTITY_TYPE_ID => 'required|numeric|in:80',
         RequestFields::MOBILE_NUMBER  => 'required|string|size:10'

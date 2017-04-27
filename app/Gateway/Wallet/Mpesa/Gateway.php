@@ -256,7 +256,7 @@ class Gateway extends Base\Gateway
             [
                 'gateway'    => $this->gateway,
                 'response'   => $response,
-                'payment_id' => $input['payment']['id'],
+                'payment_id' => $this->input['payment']['id'],
             ]);
 
         $content = $response[ResponseFields::VALIDATE_CUSTOMER];
@@ -344,7 +344,7 @@ class Gateway extends Base\Gateway
     {
         $data = [
             RequestFields::CHANNEL_ID    => Constants::CHANNEL_ID,
-            RequestFields::REQUEST_ID    => gen_uuid(),
+            RequestFields::REQUEST_ID    => uniqid(),
             RequestFields::MOBILE_NUMBER => $this->getFormattedPhoneNo(),
         ];
 
@@ -354,7 +354,7 @@ class Gateway extends Base\Gateway
     protected function getOtpGenerateData()
     {
         $data = [
-            RequestFields::REQUEST_ID     => gen_uuid(),
+            RequestFields::REQUEST_ID     => uniqid(),
             RequestFields::CHANNEL_ID     => Constants::CHANNEL_ID,
             RequestFields::ENTITY_TYPE_ID => Constants::ENTITY_TYPE_ID,
             RequestFields::MOBILE_NUMBER  => $this->getFormattedPhoneNo()
