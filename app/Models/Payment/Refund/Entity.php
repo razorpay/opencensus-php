@@ -18,11 +18,15 @@ class Entity extends Base\PublicEntity
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
     const BASE_AMOUNT       = 'base_amount';
-    const TRANSACTION_ID    = 'transaction_id';
+    const STATUS            = 'status';
     const NOTES             = 'notes';
+    const TRANSACTION_ID    = 'transaction_id';
     const BATCH_ID          = 'batch_id';
+
     const GATEWAY_REFUNDED  = 'gateway_refunded';
     const RRN               = 'rrn';
+    const ATTEMPTS          = 'attempts';
+    const LAST_ATTEMPTED_AT = 'last_attempted_at';
 
     protected static $sign = 'rfnd';
 
@@ -51,11 +55,15 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::BASE_AMOUNT,
-        self::TRANSACTION_ID,
+        self::STATUS,
+        self::GATEWAY_REFUNDED,
         self::NOTES,
+        self::TRANSACTION_ID,
         self::BATCH_ID,
         self::GATEWAY_REFUNDED,
         self::RRN,
+        self::ATTEMPTS,
+        self::LAST_ATTEMPTED_AT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -72,10 +80,15 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::NOTES             => [],
+        self::STATUS            => Status::CREATED,
         self::GATEWAY_REFUNDED  => null,
+        self::ATTEMPTS          => null,
+        self::LAST_ATTEMPTED_AT => null,
     ];
 
     protected $casts = [
+        self::AMOUNT           => 'int',
+        self::BASE_AMOUNT      => 'int',
         self::GATEWAY_REFUNDED => 'bool',
     ];
 
@@ -169,7 +182,7 @@ class Entity extends Base\PublicEntity
 
         $amount = number_format($this->getAmount() / $denominationFactor, 2);
 
-        return  $currency . ' ' . $amount;
+        return $currency . ' ' . $amount;
     }
 
     public function getPaymentId()
@@ -182,14 +195,24 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
     }
 
+    public function isProcessed()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::PROCESSED);
+    }
+
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
     }
 
-    public function getAmountAttribute()
+    public function getStatus()
     {
-        return (int) $this->attributes[self::AMOUNT];
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getAttempts()
+    {
+        return $this->getAttribute(self::ATTEMPTS);
     }
 
     public function getRrn()
@@ -200,6 +223,11 @@ class Entity extends Base\PublicEntity
     public function setGatewayRefunded($gatewayRefunded)
     {
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
+    }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
     }
 
     public function setBaseAmount()
@@ -224,6 +252,20 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
+    }
+
+    public function incrementAttempts()
+    {
+        $attempts = $this->getAttribute(self::ATTEMPTS);
+
+        $this->setAttribute(self::ATTEMPTS, $attempts + 1);
+
+        $this->setAttribute(self::LAST_ATTEMPTED_AT, $this->freshTimestamp());
+    }
+
+    public function setLastAttemptedAt()
+    {
+        $this->setAttribute(self::LAST_ATTEMPTED_AT, $this->freshTimestamp());
     }
 
     public function setPublicPaymentIdAttribute(array & $array)

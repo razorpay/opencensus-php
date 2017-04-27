@@ -244,17 +244,16 @@ class HdfcGatewayTest extends TestCase
 
         $this->hdfcPaymentFailedDueToDeniedByRisk();
 
-        $this->makeRequestAndCatchException(
-            function () use ($payment)
-            {
-                $this->refundPayment($payment['id']);
-            });
+        $this->makeRequestAndCatchException(function () use ($payment)
+        {
+            $this->refundPayment($payment['id']);
+        });
 
         $hdfc = $this->getLastEntity('hdfc', true);
         $this->assertTestResponse($hdfc);
 
         $payment = $this->getLastPayment();
-        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals('refunded', $payment['status']);
     }
 
     public function testPaymentFailWithFailureResultCode()

@@ -95,6 +95,18 @@ class Gateway
         self::WALLET_JIOMONEY
     ];
 
+    /**
+     * List of gateways that we wish to attempt this with.
+     * This should eventually cover all API based refund
+     * gateways.
+     *
+     * These gateways should have verifyRefund2 implemented.
+     * and be allowed to perform it.
+     * */
+    const REFUND_RETRY_GATEWAYS = [
+        Payment\Gateway::CYBERSOURCE,
+    ];
+
     public static $channels = [
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
