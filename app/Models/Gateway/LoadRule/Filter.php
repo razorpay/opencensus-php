@@ -43,8 +43,6 @@ class Filter extends Core
             $rules = $merchantSpecificRules;
         }
 
-        $filteredRules = new Base\PublicCollection;
-
         foreach (Entity::FILTER_ATTRIBUTES as $filterProperty)
         {
             $rules = $rules->filter(function ($rule) use ($filterProperty)
@@ -67,7 +65,7 @@ class Filter extends Core
             });
         }
 
-        return $filteredRules;
+        return $rules;
     }
 
     protected function cardTypeFilter(Entity $rule)
