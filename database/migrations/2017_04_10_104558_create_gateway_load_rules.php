@@ -54,6 +54,22 @@ class CreateGatewayLoadRules extends Migration
             $table->integer(LoadRule::DELETED_AT)
                     ->nullable();
 
+            $table->index(LoadRule::GATEWAY);
+
+            $table->index(LoadRule::GATEWAY_ACQUIRER);
+
+            $table->index(LoadRule::INTERNATIONAL);
+
+            $table->index(LoadRule::NETWORK);
+
+            $table->index(LoadRule::METHOD);
+
+            $table->index(LoadRule::CARD_TYPE);
+
+            $table->index(LoadRule::ISSUER);
+
+            $table->index(LoadRule::DELETED_AT);
+
             $table->foreign(LoadRule::MERCHANT_ID)
                     ->references(Merchant::ID)
                     ->on(Table::MERCHANT)
