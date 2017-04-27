@@ -156,11 +156,11 @@ class Service extends Base\Service
         }
 
         // Check if the route is for an orgs/... related API call
-        $pos = strpos($route, 'orgs');
+        $pos = strpos($route, '{orgId}');
 
-        if ($pos === 0 and !isset($urlParams['{id}']))
+        if ($pos !== false and !isset($urlParams['{orgId}']))
         {
-            $urlParams['{id}'] = Auth::guard('api')->user()->org_id;
+            $urlParams['{orgId}'] = Auth::guard('api')->user()->org_id;
         }
 
         if (! empty($urlParams))

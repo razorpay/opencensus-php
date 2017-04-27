@@ -130,8 +130,8 @@ var app = angular
           url: '/:id',
           templateUrl: 'tpl/app_transaction_detail.html',
         })
-        .state('app.activation', {
-          url: '/activation',
+        .state('app.activationold', {
+          url: '/activationold',
           templateUrl: 'tpl/app_activation.html',
         })
         .state('app.referrals', {
@@ -142,8 +142,8 @@ var app = angular
           url: '/profile',
           templateUrl: 'tpl/app_profile.html',
         })
-        .state('app.accounts', {
-          url: '/accounts',
+        .state('app.accountsold', {
+          url: '/accountsold',
           templateUrl: 'tpl/app_accounts.html',
         })
         // React
@@ -322,6 +322,14 @@ var app = angular
             },
           ],
           templateProvider: reactTemplateProvider('<payment-details id="id"/>'),
+        })
+        .state('app.activation', {
+          url: '/activation',
+          templateProvider: reactTemplateProvider('<activation-wizard />'),
+        })
+        .state('app.accounts', {
+          url: '/accounts',
+          templateProvider: reactTemplateProvider('<accounts-list />'),
         })
         //Guest Routes
         .state('access', {

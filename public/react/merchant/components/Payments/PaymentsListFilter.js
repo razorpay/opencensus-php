@@ -12,7 +12,7 @@ export default props => {
       <div class="form-group list-filter-item">
         <label>Filter:</label>
         <Field name="status" component="select" class="form-control input-sm">
-          <option value="all">All Payments</option>
+          <option value="">All</option>
           <option value="authorized">Authorized</option>
           <option value="captured">Captured</option>
           <option value="refunded">Refunded</option>

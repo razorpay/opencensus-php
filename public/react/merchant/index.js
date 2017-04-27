@@ -3,12 +3,13 @@ import 'merchant/styles/layout.styl';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
+import { Tabs } from 'react-tabs';
+import store from './store';
 import NgRouterProvider from 'rzp/Providers/NgRouterProvider';
 import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 import SessionProvider from './SessionProvider';
-import store from './store';
 
 // import './mocks/faker'
 
@@ -30,16 +31,16 @@ import KeysListContainer from './containers/Keys/List';
 import CreditsContainer from './containers/Credits/List';
 import ReportsContainer from './containers/Reports';
 import TeamContainer from './containers/Team';
-
+import ActivationWizard from './containers/Activation';
 import ConfigContainer from './containers/Configuration';
 
 import RefundsListContainer from './containers/Refunds/List';
 import RefundDetailsContainer from './containers/Refunds/Details';
 import BatchUploadContainer from './containers/Refunds/BatchUpload';
 import BatchListContainer from './containers/Refunds/BatchList';
-
 import PaymentsList from './containers/Payments/List';
 import PaymentDetails from './containers/Payments/Details';
+import AccountsListContainer from './containers/Accounts/List';
 
 // import PlansListContainer from './containers/Plans/List'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
@@ -48,6 +49,8 @@ import PaymentDetails from './containers/Payments/Details';
 // This is required for ngReact. Remove this finally
 window.React = React;
 window.ReactDOM = ReactDOM;
+
+Tabs.setUseDefaultStyles(false);
 
 /*
  * Below is a transpiled version of
@@ -62,7 +65,14 @@ window.ReactDOM = ReactDOM;
  *  2. https://facebook.github.io/react/docs/context.html
  */
 
-function contextProvider({ component, ngRouter, store, user, modeFactory }) {
+function contextProvider({
+  component,
+  ngRouter,
+  store,
+  user,
+  organization,
+  modeFactory,
+}) {
   return props => {
     return React.createElement(
       Provider,
@@ -72,7 +82,7 @@ function contextProvider({ component, ngRouter, store, user, modeFactory }) {
         { ngRouter },
         React.createElement(
           SessionProvider,
-          { user, modeFactory },
+          { user, organization, modeFactory },
           React.createElement(
             ConfirmModalProvider,
             null,
@@ -95,14 +105,16 @@ function createNgDirective(directiveName, component, ...args) {
     'reactDirective',
     '$state',
     'user',
+    'organization',
     'modeFactory',
-    (reactDirective, $state, user, modeFactory) => {
+    (reactDirective, $state, user, organization, modeFactory) => {
       return reactDirective(
         contextProvider({
           component,
           ngRouter: $state,
           store,
           user,
+          organization,
           modeFactory,
         }),
         ...args
@@ -131,6 +143,7 @@ createNgDirective('keysList', KeysListContainer);
 createNgDirective('addFunds', AddFundsContainer);
 createNgDirective('generateReport', ReportsContainer);
 createNgDirective('manageTeam', TeamContainer);
+createNgDirective('activationWizard', ActivationWizard);
 
 createNgDirective('refundsList', RefundsListContainer);
 createNgDirective('refundDetails', RefundDetailsContainer, ['id']);
@@ -138,6 +151,7 @@ createNgDirective('batchList', BatchListContainer);
 createNgDirective('batchUpload', BatchUploadContainer);
 createNgDirective('paymentsList', PaymentsList);
 createNgDirective('paymentDetails', PaymentDetails, ['id']);
+createNgDirective('accountsList', AccountsListContainer);
 
 // createNgDirective('subscriptionsList', SubscriptionsListContainer)
 // createNgDirective('subscriptionsNew', SubscriptionsNewContainer)
