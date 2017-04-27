@@ -37,7 +37,7 @@ class Validator extends Base\Validator
         Entity::SUPERVISOR_CODE       => 'required|string',
         Entity::LOCATION_CODE         => 'required|string',
         Entity::EMPLOYEE_CODE         => 'required|string',
-        Entity::ROLES                 => 'sometimes|array',
+        Entity::ROLES                 => 'sometimes|array|filled',
         Entity::MERCHANTS             => 'sometimes|array',
         Entity::GROUPS                => 'sometimes|array',
         Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
