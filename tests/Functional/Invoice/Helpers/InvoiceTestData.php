@@ -2794,9 +2794,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'receipt' => [
-                                    'value' =>'00000000000002',
+                                    'query' =>'00000000000002',
                                     'boost' => 2,
                                 ],
                             ],
@@ -2841,9 +2841,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'customer_name' => [
-                                    'value' =>'tes',
+                                    'query' =>'tes',
                                     'boost' => 2,
                                 ],
                             ],
@@ -2954,9 +2954,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'customer_name' => [
-                                    'value' =>'tes',
+                                    'query' =>'tes',
                                     'boost' => 2,
                                 ],
                             ],

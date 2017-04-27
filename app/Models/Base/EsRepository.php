@@ -341,12 +341,17 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $res = $this->esDao->bulkUpdate($params);
 
-        $this->trace->debug(
-            TraceCode::MISC_TRACE_CODE,
-            [
-                'params' => $params,
-                'res'    => $res,
-            ]);
+        $error = $res['errors'] ?? true;
+
+        if ($error === true)
+        {
+            $this->trace->debug(
+                TraceCode::ES_BULK_UPDATE_FAILED,
+                [
+                    'params' => $params,
+                    'res'    => $res,
+                ]);
+        }
 
         return $res;
     }

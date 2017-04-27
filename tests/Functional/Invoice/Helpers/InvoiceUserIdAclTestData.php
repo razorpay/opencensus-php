@@ -371,9 +371,9 @@ return [
                 'bool' => [
                     'must' => [
                         [
-                            'term' => [
+                            'match' => [
                                 'user_id' => [
-                                    'value' =>'10000000UserId',
+                                    'query' =>'10000000UserId',
                                     'boost' => 2,
                                 ],
                             ],
