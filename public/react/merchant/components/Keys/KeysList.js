@@ -1,11 +1,11 @@
-import TableBody from '../TableBody'
-import Time from 'rzp/ui/Time'
-import Key from 'merchant/models/Key'
+import TableBody from '../TableBody';
+import Time from 'rzp/ui/Time';
+import Key from 'merchant/models/Key';
 // import RegenerateKey from 'merchant/models/Key'
 
-const KeysListItem = (props) => {
-  let mode = props.mode
-  let { id, created_at, expired_at } = props.apiKey
+const KeysListItem = props => {
+  let mode = props.mode;
+  let { id, created_at, expired_at } = props.apiKey;
   return (
     <tr>
       <td>
@@ -15,47 +15,47 @@ const KeysListItem = (props) => {
         <Time value={created_at} format={'MMM Do, YYYY hh:mm:ss A'} />
       </td>
       <td>
-        {
-          expired_at ?
-          <Time value={expired_at} format={'MMM Do, YYYY hh:mm:ss A'} /> :
-          'Never'
-        }
+        {expired_at
+          ? <Time value={expired_at} format={'MMM Do, YYYY hh:mm:ss A'} />
+          : 'Never'}
       </td>
       <td>
-        {
-          expired_at ? 'None' :
-          <div class='row-action'>
-            <button class='btn btn-xs btn-primary' onClick={() => {
-              props.showRollKeyModal({id})
-            }}>
-              <i class='fa fa-refresh'></i>
-              <span>Regenerate {mode} Key</span>
-            </button>
-          </div>
-        }
+        {expired_at
+          ? 'None'
+          : <div class="row-action">
+              <button
+                class="btn btn-xs btn-primary"
+                onClick={() => {
+                  props.showRollKeyModal({ id });
+                }}
+              >
+                <i class="fa fa-refresh" />
+                <span>Regenerate {mode} Key</span>
+              </button>
+            </div>}
       </td>
     </tr>
-  )
-}
+  );
+};
 
-export default (props) => {
+export default props => {
   let {
     mode,
     keys,
     isLoading,
     merchantId,
     showRollKeyModal = () => {},
-    generateKey = () => {}
-  } = props
+    generateKey = () => {},
+  } = props;
 
   let params = {
-    merchantId: merchantId
-  }
+    merchantId: merchantId,
+  };
 
   return (
     <div>
-      <div class='table-responsive'>
-        <table class='table table-hover'>
+      <div class="table-responsive">
+        <table class="table table-hover">
           <thead>
             <tr>
               <th>Key Id</th>
@@ -70,30 +70,30 @@ export default (props) => {
             rows={keys}
             emptyTableRow={
               <tr>
-                <td class='text-center empty-table' colSpan={4}>
-                  <button class='btn btn-primary' onClick={() =>{
-                      generateKey(params)
-                    }
-                  }>
+                <td class="text-center empty-table" colSpan={4}>
+                  <button
+                    class="btn btn-primary"
+                    onClick={() => {
+                      generateKey(params);
+                    }}
+                  >
                     Generate {mode} Key
                   </button>
                 </td>
               </tr>
             }
           >
-            {
-              keys.map((key) =>
-                <KeysListItem
-                  key={key.id}
-                  apiKey={key}
-                  mode={mode}
-                  showRollKeyModal={showRollKeyModal}
-                />
-              )
-            }
+            {keys.map(key => (
+              <KeysListItem
+                key={key.id}
+                apiKey={key}
+                mode={mode}
+                showRollKeyModal={showRollKeyModal}
+              />
+            ))}
           </TableBody>
         </table>
       </div>
     </div>
-  )
-}
+  );
+};

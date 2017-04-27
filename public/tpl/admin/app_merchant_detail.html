@@ -68,12 +68,6 @@
           Edit Methods
           <i class="pull-right fa fa-money"></i>
         </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == false && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="enableMethod('card')">
-          Enable Card <i class="pull-right fa fa-credit-card-alt"></i>
-        </a>
-        <a href class="list-group-item" ng-show="merchant.details.methods.card == true && admin.permissions.indexOf('edit_merchant_methods') !== -1" ng-click="disableMethod('card')">
-          Disable Card <i class="pull-right fa fa-credit-card-alt"></i>
-        </a>
         <a href class="list-group-item" ng-show="merchant.details.receipt_email_enabled == 0 && admin.permissions.indexOf('edit_merchant_enable_receipt') !== -1" ng-click="setReceiptEmail(1)">
           Enable Receipt Email <i class="pull-right fa fa-envelope"></i>
         </a>
@@ -151,8 +145,9 @@
     </div>
   </div>
   <div class="panel panel-default col-sm-6" >
-    <div class="panel-heading m-t m-b" ng-show="admin.permissions.indexOf('view_as_entity') !== -1">
-      Merchant: <strong>{{merchant.details.id}}</strong> (<a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})">View as Entity</a>)
+    <div class="panel-heading m-t m-b">
+      Merchant: <strong>{{merchant.details.id}}</strong>
+      <a ui-sref="app.entitiesdetail({type:'merchant', id: merchant.details.id, mode: 'live'})" ng-show="admin.permissions.indexOf('view_as_entity') !== -1">(View as Entity)</a>
     </div>
     <div class="text-center m-t">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
@@ -366,18 +361,27 @@
         </div>
         <div class="list-group-item" ng-init="isScheduleCollapsed = false">
           <span class="pull-right">
-            <button class="btn btn-default btn-xs pull-right"  ng-click="isScheduleCollapsed = !isScheduleCollapsed" ng-hide="scheduleKeys.length == 0" >Show/Hide</button>
-            <span ng-show="scheduleKeys.length == 0">
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isScheduleCollapsed = !isScheduleCollapsed" ng-hide="merchant.schedule_tasks.items.length == 0" >Show/Hide</button>
+            <span ng-show="merchant.schedule_tasks.items.length == 0">
                 No Schedule Assigned
             </span>
           </span>
           Settlement Schedule
         </div>
         <div ng-init="isScheduleCollapsed = true" collapse="isScheduleCollapsed" class="panel-body">
-          <div class="list-group-item" ng-repeat="key in scheduleKeys">
-            <span class="pull-right">{{displayValue(key, merchant.schedule[key])}}</span>
-            {{key|titlecase}}
-          </div>
+          <table class="table table-striped b-light horz-scroll">
+            <thead>
+                <th ng-repeat="key in scheduleKeys">{{key|titlecase}}</th>
+            </thead>
+            <tbody>
+              <tr ng-repeat="task in merchant.schedule_tasks.items">
+                <td ng-repeat="key in scheduleKeys">
+                    <a ng-if="key === 'schedule_id'" target="_blank" ui-sref="app.entitiesdetail({type:'schedule', id: task[key], mode: 'live'})">{{displayValue(key, task[key])}}</a>
+                    <span ng-if="key !== 'schedule_id'">{{displayValue(key, task[key])}}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <div class="list-group-item" ng-init="isMethodsCollapsed = false">
           <span class="pull-right">
@@ -434,6 +438,10 @@
           <div class="list-group-item">
             <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
             UPI
+          </div>
+          <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.emi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.emi == true, 'fa-times text-danger': merchant.details.methods.emi == false}"></i></span>
+            EMI
           </div>
         </div>
         <!-- <a href class="list-group-item">
@@ -669,9 +677,19 @@
   <div class="modal-body schedule-modal">
     <form class="form-horizontal">
       <div class="form-group">
+        <label class="col-lg-2 control-label">Type</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="type" ng-model="type" ng-options="id as name for (name, id) in type_list" ng-init="type='settlement'">
+          </select>
+        </div>
         <label class="col-lg-2 control-label">Schedules</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="schedule_id" ng-model="schedule_id" ng-options="id as name for (id, name) in schedule_list">
+          </select>
+        </div>
+        <label class="col-lg-2 control-label">Method</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="method" ng-model="method" ng-options="method as (method | methodtoname) for method in methods" ng-init="method=null">
           </select>
         </div>
       </div>
@@ -681,7 +699,7 @@
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(schedule_id)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(type, schedule_id, method)">OK</button>
   </div>
 </script>
 

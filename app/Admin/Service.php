@@ -517,15 +517,6 @@ class Service extends Base\Service
         return [[], $data];
     }
 
-    public function fetchEntityFeatures($entityId)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->feature->getFeatures($entityId);
-
-        return [[], $response];
-    }
-
     public function fetchFullMerchantDetails($id)
     {
         $details = null;
@@ -541,14 +532,13 @@ class Service extends Base\Service
 
         $pricingPlan = $this->fetchMerchantPricing($id);
 
-        $schedule = !empty($details['settlement_schedule_id']) ?
-                    $this->fetchMerchantScheduleById($details['settlement_schedule_id']) : null;
+        $scheduleTasks = $this->fetchMerchantSchedule($id);
 
         $data = array(
                     'details' => $details,
                     'terminals' => $terminal,
                     'pricing_plan' => $pricingPlan,
-                    'schedule' => $schedule);
+                    'schedule_tasks' => $scheduleTasks);
 
         return [$error, $data];
     }
@@ -1129,11 +1119,11 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function fetchMerchantScheduleById($id)
+    public function fetchMerchantSchedule($id)
     {
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, 'live');
 
-        $response = $this->api->schedule->fetch($id)->toArray();
+        $response = $this->api->admin->fetchMultipleEntities('schedule_task', ['merchant_id' => $id])->toArray();
 
         return $response;
     }
@@ -1495,32 +1485,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    /**
-     * Edits the merchant's methods
-     *
-     * @param  string $id      Merchant Id
-     * @param  array $methods Array containing methods
-     *                        with values 0/1
-     * @return array $error
-     */
-    public function editMethods($id, $methods)
-    {
-        $error = [];
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $this->api->merchant->fetch($id)->editMethods($methods);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage()];
-        }
-
-        return $error;
-    }
-
     public function fetchPricingPlan($id)
     {
         $errors = array();
@@ -1590,22 +1554,6 @@ class Service extends Base\Service
         return array($error, $response);
     }
 
-    /**
-     * Sends a redirect the the file
-     */
-    public function getBeneficiaryFile($input)
-    {
-        $error = (new Validator)->validateInput('get_beneficiary', $input)->messages();
-
-        if (empty($error))
-        {
-            $date = \Input::get('date', date('Y-m-d'));
-            return [null, $this->getBeneficiaryFileUrl($date)];
-        }
-
-        return [$error, null];
-    }
-
     public function getUploadedFile($id)
     {
         $error = null;
@@ -1631,23 +1579,6 @@ class Service extends Base\Service
         }
 
         return array($error, $url);
-    }
-
-    /**
-     * Returns a pre-authed S3 URL to download beneficiary file
-     * @param  Date $date date in Y-m-d format (with leading zeroes)
-     * @return String URL
-     */
-    protected function getBeneficiaryFileUrl($date)
-    {
-        $s3 = $this->getS3Client();
-
-        $beneficiaryBucket = Config::get('aws::config.buckets')['beneficiary'];
-        $filename = $date.'.xls';
-
-        return $s3->getObjectUrl($beneficiaryBucket, $filename, '+2 minutes', [
-            'https'     => true
-        ]);
     }
 
     /**
@@ -1787,27 +1718,6 @@ class Service extends Base\Service
         {
             return [null, $this->api->admin->sendNewsletter($input)
                 ->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    public function triggerError()
-    {
-        $this->setApiCredentials();
-        try
-        {
-            $errorMsg = $this->api->admin->triggerError();
-            if($errorMsg)
-            {
-                return [null, $errorMsg];
-            }
-            else
-            {
-                return ['Error not triggered', null];
-            }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -2272,82 +2182,23 @@ class Service extends Base\Service
         return $minimal_payment;
     }
 
-    // ----- Credits -----
-
-    public function getMerchantCreditsLog($merchantId, $mode)
-    {
-        $error = $data = null;
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        try
-        {
-            $data = $this->api->merchant->getMerchantCreditLogs();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function addMerchantCredits($merchantId, $input)
-    {
-        $error = $data = null;
-
-        $this->setApiCredentials(null, $input['mode']);
-
-        unset($input['mode']);
-
-        try
-        {
-            $data = $this->api->merchant->addMerchantCredits($merchantId, $input)->toArray();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function deleteMerchantCredit($merchantId, $creditId, $input)
-    {
-        $error = $data = null;
-
-        $this->setApiCredentials(null, $input['mode']);
-
-        unset($input['mode']);
-
-        try
-        {
-            $data = $this->api->merchant->deleteMerchantCredits($merchantId, $creditId);
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-
     public function getOrg($domain)
     {
-        $error = $data = null;
+        $requestConfig = [
+            'route_name' => 'org_get_by_hostname',
 
-        $this->setApiCredentials();
+            'url_params' => [
+                '{hostname}' => $domain
+            ]
+        ];
 
-        try
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('GET', $requestConfig);
+
+        if (empty($error))
         {
-            $data = $this->api->org->fetchByDomain($domain)->toArray();
-
             $this->setOrgInCache($data);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
         }
 
         return [$error, $data];
@@ -2476,9 +2327,10 @@ class Service extends Base\Service
 
         $filePath = $file->getPathname();
         $fileName = $file->getFilename();
-        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $extension = $file->getClientOriginalExtension();
+        $mimeType = $file->getClientMimeType();
 
-        if ($extension !== '.png')
+        if ($extension !== 'png' and $mimeType !== 'image/png')
         {
             return ['Invalid file format. Please upload a file with PNG extension.', $data];
         }
@@ -2552,5 +2404,53 @@ class Service extends Base\Service
         }
 
         return $error;
+    }
+
+    public function getEmailLogs($input)
+    {
+        $error = $data = null;
+
+        try
+        {
+            $data = (new Admin\Mailgun)->getLogs($input);
+        }
+        catch (\Exception $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function getEmailBounce($email)
+    {
+        $error = $data = null;
+
+        try
+        {
+            $data = (new Admin\Mailgun)->getBounce($email);
+        }
+        catch (\Exception $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
+
+    public function deleteEmailBounce($email)
+    {
+        $error = $data = null;
+
+        try
+        {
+            $data = (new Admin\Mailgun)->deleteBounce($email);
+        }
+        catch (\Exception $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
     }
 }

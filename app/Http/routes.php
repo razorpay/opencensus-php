@@ -159,12 +159,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
         Route::get('/admin/merchant/list', 'AdminController@getMerchantList');
         Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
-        Route::get('/admin/merchant/{id}/balance', 'AdminController@getMerchantBalance');
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
         // This is the list of banks in netbanking
         Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
 
-        Route::get('/admin/features/{entityId}', 'AdminController@getEntityFeatures');
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
         Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature')
                 ->name('admin_delete_features');
@@ -178,7 +176,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/admin/activity/{id}', 'AdminController@deleteAdminActivity');
 
         Route::get('/admin/merchant/{id}/hdfc_excel', 'AdminController@getMerchantHdfcExcel');
-        Route::get('/admin/beneficiary/dl', 'AdminController@getBeneficiaryFile');
         Route::get('/admin/file/{fileId}', 'AdminController@getUploadedFile');
         Route::get('/admin/merchant/{id}/screenshot', 'AdminController@getMerchantScreenshot');
 
@@ -211,15 +208,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
         Route::get('/admin/merchant/{id}/suspend', 'AdminController@getMerchantSuspend');
         Route::get('/admin/merchant/{id}/unsuspend', 'AdminController@getMerchantUnsuspend');
-        Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
         Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
         Route::post('/admin/merchants/{id}/international', 'AdminController@postSetMerchantInternational');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
         Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
-        Route::get('/admin/merchant/{id}/credits_log', 'AdminController@getMerchantCreditsLog');
-        Route::post('/admin/merchant/{id}/credits/add', 'AdminController@addMerchantCredits');
-        Route::delete('/admin/merchant/{id}/credit/{cid}', 'AdminController@deleteMerchantCredit');
 
         // Creevey Related routes
         Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
@@ -243,8 +236,6 @@ Route::group(['middleware' => ['web']], function () {
                 ->name('admin_payment_capture');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
-        // Admin Main Actions, mostly initiated from the Actions screen
-        Route::post('/admin/trigger/error', 'AdminController@triggerError');
         // Newsletter
         Route::post('/admin/newsletter/test', 'AdminController@postSendTestNewsletter');
         Route::post('/admin/newsletter/mail', 'AdminController@postSendNewsletter');
@@ -296,6 +287,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('admin/get_current');
 
         Route::get('/admin/emaillogs', 'AdminController@getEmailLogs')->name('email_logs_get');
+        Route::get('/admin/emailbounces/{email}', 'AdminController@getEmailBounce')->name('email_bounce_get');
+        Route::delete('/admin/emailbounces/{email}', 'AdminController@deleteEmailBounce')->name('email_bounce_delete');
     });
 });
 

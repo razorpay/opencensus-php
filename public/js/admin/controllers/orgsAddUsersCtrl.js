@@ -8,7 +8,16 @@ app.controller('OrgsAddUsersCtrl', [
   'organization',
   '$stateParams',
   '$state',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams, $state) {
+  function(
+    $scope,
+    $http,
+    alertsFactory,
+    transformRequestAsFormPost,
+    $modal,
+    organization,
+    $stateParams,
+    $state
+  ) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.obBug = {};
 
@@ -22,12 +31,12 @@ app.controller('OrgsAddUsersCtrl', [
         route_name: 'org_fieldmap_get_by_entity',
 
         url_params: {
-          '{entity}' : 'admin'
-        }
-      }
+          '{entity}': 'admin',
+        },
+      },
     });
 
-    request.success(function (data) {
+    request.success(function(data) {
       if (data.success) {
         $scope.fields = data.data.fields;
       }
@@ -40,9 +49,9 @@ app.controller('OrgsAddUsersCtrl', [
           route_name: 'admin_get',
 
           url_params: {
-            '{adminId}' : id
-          }
-        }
+            '{adminId}': id,
+          },
+        },
       });
 
       request.success(function(data) {
@@ -51,15 +60,15 @@ app.controller('OrgsAddUsersCtrl', [
           var userGroups = user.groups || [];
           var userRole = user.roles && user.roles[0] && user.roles[0].id;
 
-          userGroups.map(function(group){
+          userGroups.map(function(group) {
             $scope.selected_groups[group.id] = true;
           });
 
           $scope.obBug.role = userRole;
           $scope.user = user;
         }
-      })
-    }
+      });
+    };
 
     $scope.user = {};
     $scope.selected_groups = [];
@@ -69,17 +78,17 @@ app.controller('OrgsAddUsersCtrl', [
     organization.fetchRoles().then(function(roles) {
       $scope.roles = {};
 
-      angular.forEach(roles, function (role) {
+      angular.forEach(roles, function(role) {
         $scope.roles[role.id] = role.name;
       });
     });
 
-    organization.fetchGroups().then(function (groups) {
+    organization.fetchGroups().then(function(groups) {
       $scope.groups = groups;
     });
 
     if ($stateParams.id) {
-      $scope.fetchUser($stateParams.id)
+      $scope.fetchUser($stateParams.id);
     }
 
     $scope.selectAll = function() {
@@ -89,10 +98,10 @@ app.controller('OrgsAddUsersCtrl', [
         return;
       }
 
-      $scope.groups.map(function(group){
+      $scope.groups.map(function(group) {
         $scope.selected_groups[group.id] = true;
       });
-    }
+    };
 
     $scope.editUser = function(user) {
       var data = {};
@@ -107,51 +116,52 @@ app.controller('OrgsAddUsersCtrl', [
         disabled: user.disabled + 0,
         roles: getSelectedRoles(),
         groups: getSelectedGroups(),
-        allow_all_merchants: user.allow_all_merchants ? "1" : "0"
+        allow_all_merchants: user.allow_all_merchants ? '1' : '0',
       };
 
       // send only those fields expected by field map
       data.body = Object.keys(data.body)
-                        .filter(function (key) {
-                          return $scope.fields.indexOf(key) !== -1 ? true : false;
-                        })
-                        .reduce(function (ob, key) {
-                          ob[key] = data.body[key];
+        .filter(function(key) {
+          return $scope.fields.indexOf(key) !== -1 ? true : false;
+        })
+        .reduce(function(ob, key) {
+          ob[key] = data.body[key];
 
-                          return ob;
-                        }, {});
+          return ob;
+        }, {});
 
       var request = $http.put('/admin/generic', data, {
         params: {
           route_name: 'admin_edit',
 
           url_params: {
-            '{adminId}': user.id
-          }
-        }
+            '{adminId}': user.id,
+          },
+        },
       });
 
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
           if (data.data.workflow_id) {
-            $state.go('app.workflows.actions.detail', {action_id: data.data.id});
-          }
-          else {
+            $state.go('app.workflows.actions.detail', {
+              action_id: data.data.id,
+            });
+          } else {
             $scope.alerts.addAlert('success', 'User updated', true);
           }
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function(value, key) {
             $scope.alerts.addAlert('danger', value);
           });
         }
       });
 
       return request;
-    }
+    };
 
     function getSelectedGroups() {
-      var groups = []
+      var groups = [];
       for (var key in $scope.selected_groups) {
         if ($scope.selected_groups.hasOwnProperty(key)) {
           if ($scope.selected_groups[key]) {
@@ -159,7 +169,7 @@ app.controller('OrgsAddUsersCtrl', [
           }
         }
       }
-      return groups
+      return groups;
     }
 
     function getSelectedRoles() {
@@ -174,7 +184,7 @@ app.controller('OrgsAddUsersCtrl', [
 
     $scope.save = function(user) {
       if (user.id) {
-        return $scope.editUser(user)
+        return $scope.editUser(user);
       }
 
       var body = user;
@@ -188,28 +198,34 @@ app.controller('OrgsAddUsersCtrl', [
           route_name: 'admin_create',
         },
         data: {
-          body: body
-        }
+          body: body,
+        },
       });
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Admin created successfully.', true);
-          $state.go('app.users.edit', {id: data.data.id});
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert(
+              'success',
+              'Admin created successfully.',
+              true
+            );
+            $state.go('app.users.edit', { id: data.data.id });
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
 
       return request;
-    }
+    };
 
     /**
      * Actions
      */
-  }
-])
+  },
+]);

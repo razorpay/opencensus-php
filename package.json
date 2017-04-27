@@ -1,7 +1,6 @@
 {
   "name": "dashboard",
-  "version": "0.2.0",
-  "author": "Abhishek Das",
+  "author": "Team Razorpay",
   "private": true,
   "devDependencies": {
     "babel-core": "^6.23.1",
@@ -22,7 +21,10 @@
     "gulp-rev": "^7.1.2",
     "gulp-stylus": "^2.6.0",
     "gulp-uglify": "^2.0.1",
+    "husky": "^0.13.3",
     "lazypipe": "^1.0.1",
+    "lint-staged": "^3.4.0",
+    "prettier": "^1.2.2",
     "run-sequence": "^1.2.2",
     "style-loader": "^0.13.1",
     "stylus-loader": "^2.5.0",
@@ -44,11 +46,22 @@
     "react-power-select": "^0.0.9",
     "react-redux": "^5.0.2",
     "react-simple-dropdown": "^2.0.0",
+    "react-tabs": "^0.8.2",
     "react-tether": "^0.5.5",
     "react-time": "^4.2.0",
     "redux": "^3.6.0",
     "redux-form": "^6.5.0",
     "redux-thunk": "^2.2.0",
     "through2": "^2.0.3"
+  },
+  "scripts": {
+    "precommit": "lint-staged",
+    "prettier": "./node_modules/.bin/prettier"
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier --write --single-quote --trailing-comma es5",
+      "git add"
+    ]
   }
 }

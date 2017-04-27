@@ -5,7 +5,9 @@ if (!Array.prototype.findIndex) {
     value: function(predicate) {
       'use strict';
       if (this == null) {
-        throw new TypeError('Array.prototype.findIndex called on null or undefined');
+        throw new TypeError(
+          'Array.prototype.findIndex called on null or undefined'
+        );
       }
       if (typeof predicate !== 'function') {
         throw new TypeError('predicate must be a function');
@@ -25,6 +27,6 @@ if (!Array.prototype.findIndex) {
     },
     enumerable: false,
     configurable: false,
-    writable: false
+    writable: false,
   });
 }

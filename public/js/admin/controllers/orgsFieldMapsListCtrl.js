@@ -5,7 +5,13 @@ app.controller('OrgsFieldMapsListCtrl', [
   'alertsFactory',
   '$stateParams',
   'transformRequestAsFormPost',
-  function ($scope, $http, alertsFactory, $stateParams, transformRequestAsFormPost) {
+  function(
+    $scope,
+    $http,
+    alertsFactory,
+    $stateParams,
+    transformRequestAsFormPost
+  ) {
     $scope.alerts = alertsFactory.getHandler();
 
     var orgId = $stateParams.id;
@@ -16,7 +22,7 @@ app.controller('OrgsFieldMapsListCtrl', [
     function findOrgIndexById(id) {
       var index = null;
 
-      $scope.orgFieldMaps.forEach(function (v, i) {
+      $scope.orgFieldMaps.forEach(function(v, i) {
         if (v.id === id) {
           index = i;
         }
@@ -27,28 +33,28 @@ app.controller('OrgsFieldMapsListCtrl', [
     }
 
     // Fetch the entire fieldmaps list of an org to show in a table
-    $scope.fetchOrgFieldMaps = function () {
+    $scope.fetchOrgFieldMaps = function() {
       var data = {
         route_name: 'org_fieldmap_get_multiple',
         url_params: {
-          '{orgId}' : orgId
-        }
+          '{orgId}': orgId,
+        },
       };
 
       var request = $http.get('/admin/generic', {
-        params: data
+        params: data,
       });
 
-      $scope.orgFieldMaps = []
+      $scope.orgFieldMaps = [];
       $scope.count = 0;
 
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
           $scope.orgFieldMaps = data.data.items;
           $scope.count = data.data.count;
         }
       });
-    }
+    };
 
     $scope.fetchOrgFieldMaps();
 
@@ -57,13 +63,13 @@ app.controller('OrgsFieldMapsListCtrl', [
         route_name: 'org_fieldmap_delete',
         url_params: {
           '{orgId}': orgId,
-          '{id}': id
-        }
+          '{id}': id,
+        },
       };
       var request = $http.delete('/admin/generic', {
-        params: data
+        params: data,
       });
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
           var index = findOrgIndexById(id);
 
@@ -77,5 +83,5 @@ app.controller('OrgsFieldMapsListCtrl', [
         }
       });
     };
-  }
-])
+  },
+]);

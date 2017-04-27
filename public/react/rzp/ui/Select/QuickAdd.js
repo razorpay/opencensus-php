@@ -1,33 +1,33 @@
-import { PropTypes } from 'react'
+import { PropTypes } from 'react';
 
 const QuickAdd = ({ select, label, appendSearchTerm, onClick }) => {
   return (
     <div
-      class='quick-create'
+      class="quick-create"
       onClick={() => {
-        onClick(select)
-        select.close()
+        onClick(select);
+        select.close();
       }}
     >
-      <i class='fa fa-plus'></i>
+      <i class="fa fa-plus" />
       <span>
-        { label }
-        { appendSearchTerm && select.searchTerm && ` ${select.searchTerm}...` }
+        {label}
+        {appendSearchTerm && select.searchTerm && ` ${select.searchTerm}...`}
       </span>
     </div>
-  )
-}
+  );
+};
 
 QuickAdd.defaultProps = {
   label: 'Add New',
   appendSearchTerm: false,
-  onClick: () => {}
-}
+  onClick: () => {},
+};
 
 QuickAdd.propTypes = {
   label: PropTypes.string,
   appendSearchTerm: PropTypes.bool,
-  onClick: PropTypes.func
-}
+  onClick: PropTypes.func,
+};
 
-export default QuickAdd
+export default QuickAdd;

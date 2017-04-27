@@ -7,44 +7,47 @@ angular
     '$window',
     '$document',
     '$rootScope',
-    function googleGrecaptchaService($q, $window, $document, $rootScope){
+    function googleGrecaptchaService($q, $window, $document, $rootScope) {
       var deferred = $q.defer();
 
-      $window.recaptchaOnloadCallback = function (){
-        $rootScope.$apply(function (){
+      $window.recaptchaOnloadCallback = function() {
+        $rootScope.$apply(function() {
           deferred.resolve();
         });
       };
 
       var s = $document[0].createElement('script');
-      s.src = 'https://www.google.com/recaptcha/api.js?onload=recaptchaOnloadCallback&render=explicit';
+      s.src =
+        'https://www.google.com/recaptcha/api.js?onload=recaptchaOnloadCallback&render=explicit';
       $document[0].body.appendChild(s);
 
       return deferred.promise;
-    }])
-  .provider('noCAPTCHA', function noCaptchaProvider(){
-    var siteKey,
-      theme;
+    },
+  ])
+  .provider('noCAPTCHA', function noCaptchaProvider() {
+    var siteKey, theme;
 
-    this.setSiteKey = function (_siteKey){
+    this.setSiteKey = function(_siteKey) {
       siteKey = _siteKey;
     };
 
-    this.setTheme = function (_theme){
+    this.setTheme = function(_theme) {
       theme = _theme;
     };
 
-    this.$get = [function noCaptchaFactory(){
-      return {
-        theme: theme,
-        siteKey: siteKey
-      }
-    }];
+    this.$get = [
+      function noCaptchaFactory() {
+        return {
+          theme: theme,
+          siteKey: siteKey,
+        };
+      },
+    ];
   })
   .directive('noCaptcha', [
     'noCAPTCHA',
     'googleGrecaptcha',
-    function (noCaptcha, googleGrecaptcha){
+    function(noCaptcha, googleGrecaptcha) {
       /**
        * Removes all .pls-container elements
        *
@@ -56,10 +59,12 @@ angular
        *
        * Discussion: https://groups.google.com/forum/#!topic/recaptcha/miaW9qdVIgA
        */
-      var removePLSContainers = function(){
+      var removePLSContainers = function() {
         // remove pls-containers
-        var plsContainers = $document[0].getElementsByClassName('pls-container');
-        for(var i = 0; i < plsContainers.length; i++){
+        var plsContainers = $document[0].getElementsByClassName(
+          'pls-container'
+        );
+        for (var i = 0; i < plsContainers.length; i++) {
           var parent = plsContainers[i].parentNode;
           while (parent.firstChild) {
             parent.removeChild(parent.firstChild);
@@ -74,10 +79,10 @@ angular
           siteKey: '@',
           theme: '@',
           control: '=?',
-          expiredCallback: '=?'
+          expiredCallback: '=?',
         },
         replace: true,
-        link: function (scope, element){
+        link: function(scope, element) {
           scope.control = scope.control || {};
 
           var widgetId;
@@ -87,39 +92,43 @@ angular
           grecaptchaCreateParameters = {
             sitekey: scope.siteKey || noCaptcha.siteKey,
             theme: scope.theme || noCaptcha.theme,
-            callback: function (r){
-              scope.$apply(function (){
+            callback: function(r) {
+              scope.$apply(function() {
                 scope.gRecaptchaResponse = r;
               });
             },
-            'expired-callback': function (){
-              if(scope.expiredCallback && typeof (scope.expiredCallback) === 'function') {
-                scope.$apply(function (){
+            'expired-callback': function() {
+              if (
+                scope.expiredCallback &&
+                typeof scope.expiredCallback === 'function'
+              ) {
+                scope.$apply(function() {
                   scope.expiredCallback();
                 });
               }
-            }
+            },
           };
 
-          if(!grecaptchaCreateParameters.sitekey) {
+          if (!grecaptchaCreateParameters.sitekey) {
             throw new Error('Site Key is required');
           }
 
-          googleGrecaptcha.then(function (){
+          googleGrecaptcha.then(function() {
             widgetId = grecaptcha.render(
               element[0],
               grecaptchaCreateParameters
             );
-            control.reset = function (){
+            control.reset = function() {
               grecaptcha.reset(widgetId);
               scope.gRecaptchaResponse = null;
             };
           });
 
-          scope.$on('$destroy', function (){
+          scope.$on('$destroy', function() {
             grecaptcha.reset(widgetId);
             removePLSContainers();
           });
-        }
+        },
       };
-    }]);
+    },
+  ]);

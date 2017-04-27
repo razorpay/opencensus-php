@@ -156,9 +156,7 @@ class Service extends Base\Service
         {
             if ($merchantDetails['can_submit'] === true)
             {
-                $merchantDetails['steps_finished'] = json_encode($steps);
-
-                $merchantDetails['activation_progress'] = 100;
+                $merchantDetails['steps_finished'] = $steps;
             }
             else
             {
@@ -170,9 +168,7 @@ class Service extends Base\Service
 
                     $finishedSteps = array_values(array_diff($steps, $unfinishedSteps));
 
-                    $merchantDetails['steps_finished'] = json_encode($finishedSteps);
-
-                    $merchantDetails['activation_progress'] = intval(count($finishedSteps) * 100/ 5);
+                    $merchantDetails['steps_finished'] = $finishedSteps;
                 }
             }
         }
@@ -585,7 +581,8 @@ class Service extends Base\Service
     {
         $stepsList = array_values($this->getFieldsToStepMap());
 
-        return array_unique($stepsList);
+
+        return array_values(array_unique($stepsList));
     }
 
     /**

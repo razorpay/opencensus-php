@@ -1,13 +1,13 @@
-import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { Field, reduxForm, formValueSelector } from 'redux-form'
-import { titleCase } from 'rzp/utils/rzp-utils'
-import AsyncButton from 'react-async-button'
-import Header from 'rzp/ui/Header'
-import moment from 'moment'
-import ajax from 'merchant/utils/ajax'
-import { generateReport } from 'merchant/modules/reports'
-import * as NotificationsActions from 'rzp/modules/notifications'
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { titleCase } from 'rzp/utils/rzp-utils';
+import AsyncButton from 'react-async-button';
+import Header from 'rzp/ui/Header';
+import moment from 'moment';
+import ajax from 'merchant/utils/ajax';
+import { generateReport } from 'merchant/modules/reports';
+import * as NotificationsActions from 'rzp/modules/notifications';
 
 let now = moment();
 let currentMonth = now.month();
@@ -21,17 +21,17 @@ function numberOfDays(month, year) {
 const selector = formValueSelector('generateReports');
 
 @connect(
-  (state) => {
+  state => {
     return {
       mode: state.session.mode,
       user: state.session.user,
       entity: selector(state, 'entity'),
       type: selector(state, 'type'),
       month: selector(state, 'month'),
-      year: selector(state, 'year')
-    }
+      year: selector(state, 'year'),
+    };
   },
-  {generateReport, ...NotificationsActions}
+  { generateReport, ...NotificationsActions }
 )
 @reduxForm({
   form: 'generateReports',
@@ -40,29 +40,25 @@ const selector = formValueSelector('generateReports');
     type: 'monthly',
     month: currentMonth,
     year: currentYear,
-    day: currentDate
-  }
+    day: currentDate,
+  },
 })
 export default class ReportsContainer extends Component {
-
-  prepareGenerateReport = (values)=> {
-    let {
-      entity,
-      type,
-      month,
-      year,
-      day
-    } = values;
+  prepareGenerateReport = values => {
+    let { entity, type, month, year, day } = values;
 
     let data = {
       month,
-      year
-    }
+      year,
+    };
 
     if (entity === 'invoice') {
       return Promise.resolve(
-        window.open(`/${this.props.mode}/reports/invoice?year=${year}&month=${month}`, '_blank')
-      )
+        window.open(
+          `/${this.props.mode}/reports/invoice?year=${year}&month=${month}`,
+          '_blank'
+        )
+      );
     }
 
     if (type === 'daily') {
@@ -72,53 +68,46 @@ export default class ReportsContainer extends Component {
     var ajaxParams = {
       url: '/reports/' + entity,
       data: data,
-    }
+    };
 
     if (entity === 'broking') {
       ajaxParams.headers = {
-        Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      }
+        Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      };
     }
 
-    return this.props.generateReport(ajaxParams)
-      .then((data)=> {
+    return this.props
+      .generateReport(ajaxParams)
+      .then(data => {
         this.props.showNotification({
           type: 'success',
-          message: 'Your report will download shortly'
-        })
+          message: 'Your report will download shortly',
+        });
 
         if (entity === 'broking') {
           var blob = new Blob([data], {
-            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-          })
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          });
           return saveAs(blob, 'broking_report.xlsx');
         }
 
         location.href = data.data.url;
       })
-      .catch((e)=> {
+      .catch(e => {
         this.props.showNotification({
           type: 'error',
-          message: 'No data found for given time range'
-        })
-      })
-  }
+          message: 'No data found for given time range',
+        });
+      });
+  };
 
   render() {
-    let {
-      entity,
-      type,
-      mode,
-      month,
-      year,
-      user,
-      handleSubmit
-    } = this.props;
+    let { entity, type, mode, month, year, user, handleSubmit } = this.props;
 
     return (
-      <div class='react-root'>
-        <Header title='Download Reports' />
-        <div class='content-wrapper'>
+      <div class="react-root">
+        <Header title="Download Reports" />
+        <div class="content-wrapper">
           <div class="panel panel-default panel-form col-sm-8 col-sm-offset-2">
             <div class="panel-heading">
               Download Report - {titleCase(mode)} Mode
@@ -132,27 +121,24 @@ export default class ReportsContainer extends Component {
                     <option value="order">Order</option>
                     <option value="settlement">Settlement</option>
                     <option value="transaction">Combined</option>
-                    {user.tags.indexOf('Broking_Report') === -1 || (
-                      <option value="broking">Broking Report</option>
-                    )}
+                    {user.tags.indexOf('Broking_Report') === -1 ||
+                      <option value="broking">Broking Report</option>}
                     <option value="invoice">Monthly Invoice</option>
-                    {user.tags.indexOf('Marketplace') === -1 || (
-                      <optgroup label='Marketplace'>
+                    {user.tags.indexOf('Marketplace') === -1 ||
+                      <optgroup label="Marketplace">
                         <option value="transfer">Transfer</option>
                         <option value="reversal">Reversal</option>
-                      </optgroup>
-                    )}
+                      </optgroup>}
                   </Field>
                 </div>
 
-                {entity === 'invoice' || (
+                {entity === 'invoice' ||
                   <div class="col-sm-2">
                     <Field name="type" class="form-control" component="select">
                       <option value="daily">Daily</option>
                       <option value="monthly">Monthly</option>
                     </Field>
-                  </div>
-                )}
+                  </div>}
 
                 <div class="col-sm-2">
                   <Field name="year" class="form-control" component="select">
@@ -164,21 +150,29 @@ export default class ReportsContainer extends Component {
 
                 <div class="col-sm-3">
                   <Field name="month" class="form-control" component="select">
-                    {moment.months().map((name, index)=> {
-                      return <option value={index+1} key={index}>{name}</option>
+                    {moment.months().map((name, index) => {
+                      return (
+                        <option value={index + 1} key={index}>{name}</option>
+                      );
                     })}
                   </Field>
                 </div>
 
-                {type === 'daily' && (
+                {type === 'daily' &&
                   <div class="col-sm-2">
                     <Field name="day" class="form-control" component="select">
-                      {Array.from(Array(numberOfDays(month, year)), ((undef, index)=> {
-                        return <option value={index+1} key={index}>{index+1}</option>
-                      }))}
+                      {Array.from(
+                        Array(numberOfDays(month, year)),
+                        (undef, index) => {
+                          return (
+                            <option value={index + 1} key={index}>
+                              {index + 1}
+                            </option>
+                          );
+                        }
+                      )}
                     </Field>
-                  </div>
-                )}
+                  </div>}
 
               </div>
               <AsyncButton
@@ -186,8 +180,7 @@ export default class ReportsContainer extends Component {
                 onClick={handleSubmit(this.prepareGenerateReport)}
                 text="Download Report"
                 pendingText="Generating..."
-              >
-              </AsyncButton>
+              />
             </div>
             <footer class="panel-footer">
               <div class="text-center">
@@ -202,6 +195,6 @@ export default class ReportsContainer extends Component {
           </div>
         </div>
       </div>
-    )
+    );
   }
 }

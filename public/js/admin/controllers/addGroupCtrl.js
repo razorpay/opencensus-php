@@ -7,7 +7,16 @@ app.controller('AddGroupCtrl', [
   'organization',
   '$stateParams',
   '$state',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams, $state) {
+  function(
+    $scope,
+    $http,
+    alertsFactory,
+    transformRequestAsFormPost,
+    $modal,
+    organization,
+    $stateParams,
+    $state
+  ) {
     $scope.alerts = alertsFactory.getHandler();
 
     // $scope.users = organization.fetchUsers();
@@ -26,27 +35,26 @@ app.controller('AddGroupCtrl', [
     var group_id = $stateParams.id;
 
     if (group_id) {
-      $scope.fillParentList = function () {
-        organization.fetchAllowedGroups(group_id).then(function (groups) {
+      $scope.fillParentList = function() {
+        organization.fetchAllowedGroups(group_id).then(function(groups) {
           $scope.groups = groups;
 
-          setTimeout(function () {
+          setTimeout(function() {
             $('.select2').select2({
-              placeholder: 'Select a Parent Group'
+              placeholder: 'Select a Parent Group',
             });
           }, 100);
         });
       };
 
       $scope.fillParentList();
-    }
-    else {
-      organization.fetchGroups().then(function (groups) {
+    } else {
+      organization.fetchGroups().then(function(groups) {
         $scope.groups = groups;
 
-        setTimeout(function () {
+        setTimeout(function() {
           $('.select2').select2({
-            placeholder: 'Select a Parent Group'
+            placeholder: 'Select a Parent Group',
           });
         }, 100);
       });
@@ -54,7 +62,7 @@ app.controller('AddGroupCtrl', [
 
     if (group_id) {
       // Get group details
-      $scope.getGroupDetails = function () {
+      $scope.getGroupDetails = function() {
         $scope.group_id = group_id;
 
         var request = $http({
@@ -66,12 +74,12 @@ app.controller('AddGroupCtrl', [
             route_name: 'group_get',
 
             url_params: {
-              '{groupId}' : group_id
-            }
-          }
+              '{groupId}': group_id,
+            },
+          },
         });
 
-        request.success(function (data) {
+        request.success(function(data) {
           if (data.success) {
             $scope.group = {
               name: data.data.name,
@@ -80,7 +88,7 @@ app.controller('AddGroupCtrl', [
               sub_groups: data.data.sub_groups,
             };
 
-            data.data.parents.forEach(function (group) {
+            data.data.parents.forEach(function(group) {
               $scope.selected_groups[group.id] = true;
             });
           }
@@ -89,7 +97,6 @@ app.controller('AddGroupCtrl', [
 
       $scope.getGroupDetails();
     }
-
 
     /**
      * Actions
@@ -102,12 +109,12 @@ app.controller('AddGroupCtrl', [
         return;
       }
 
-      $scope.groups.map(function(group){
+      $scope.groups.map(function(group) {
         $scope.selected_groups[group.id] = true;
       });
-    }
+    };
 
-    $scope.save = function (group) {
+    $scope.save = function(group) {
       var body = angular.extend({}, group);
       var request;
 
@@ -140,66 +147,68 @@ app.controller('AddGroupCtrl', [
             route_name: 'edit_group',
 
             url_params: {
-              '{groupId}' : $scope.group_id
-            }
+              '{groupId}': $scope.group_id,
+            },
           },
           data: {
-            body: body
-          }
+            body: body,
+          },
         });
-      }
-      else {
+      } else {
         // Create
 
         request = $http({
           url: '/admin/generic',
           method: 'POST',
           params: {
-            route_name: 'group_create'
+            route_name: 'group_create',
           },
           data: {
-            body: body
-          }
+            body: body,
+          },
         });
       }
 
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Group saved', true);
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Group saved', true);
 
-          // Some success tasks that needs to be done
+            // Some success tasks that needs to be done
 
-          // 1. Reset select2
-          // Seems like a bad hack, should get better with react transition
-          $scope.new_parent_group = undefined;
-          $('.select2').select2({
-            placeholder: 'Select a Parent Group', allowClear: true
-          });
+            // 1. Reset select2
+            // Seems like a bad hack, should get better with react transition
+            $scope.new_parent_group = undefined;
+            $('.select2').select2({
+              placeholder: 'Select a Parent Group',
+              allowClear: true,
+            });
 
-          if ($scope.group_id) {
-            // 2. Update Parent Group list
-            if ($scope.getGroupDetails) {
-              $scope.getGroupDetails();
+            if ($scope.group_id) {
+              // 2. Update Parent Group list
+              if ($scope.getGroupDetails) {
+                $scope.getGroupDetails();
+              }
+
+              // 3. Update allowed/eligible parent list
+              if ($scope.fillParentList()) {
+                $scope.fillParentList();
+              }
             }
+            $state.go('app.groups.edit', { id: data.data.id });
+          } else {
+            $scope.alerts.resetAlerts();
 
-            // 3. Update allowed/eligible parent list
-            if ($scope.fillParentList()) {
-              $scope.fillParentList();
-            }
+            angular.forEach(data.errors, function(value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
           }
-          $state.go('app.groups.edit', {id: data.data.id});
-        } else {
-          $scope.alerts.resetAlerts();
-
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
 
       return request;
-    }
-  }
-])
+    };
+  },
+]);

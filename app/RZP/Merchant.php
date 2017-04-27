@@ -77,16 +77,6 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl);
     }
 
-    /**
-     * Changes Payment methods for merchant
-     */
-    public function editMethods($params)
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/methods';
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
-
     public function edit($params)
     {
         $relativeUrl = $this->getEntityUrl().$this->id;
@@ -194,35 +184,6 @@ class Merchant extends Entity
     public function fetchProxyBankAccount()
     {
         return $this->request('GET', self::BANK_ACCOUNT_URL);
-    }
-
-    public function addMerchantCredits($merchantId, $params)
-    {
-        // merchants/{id}/credits_log
-        $relativeUrl = $this->getEntityUrl().$merchantId.'/credits_log';
-
-        $res = $this->request('POST', $relativeUrl, $params);
-
-        return $res;
-    }
-
-    public function getMerchantCreditLogs()
-    {
-        // credits
-        $relativeUrl = 'credits';
-
-        $res = $this->request('GET', $relativeUrl)->toArray();
-
-        return $res;
-    }
-
-    public function deleteMerchantCredits($merchantId, $creditId)
-    {
-        $relativeUrl = $this->getEntityUrl().$merchantId.'/credits/'.$creditId;
-
-        $res = $this->request('DELETE', $relativeUrl)->toArray();
-
-        return $res;
     }
 
     public function setSchedule($merchantId, $params)

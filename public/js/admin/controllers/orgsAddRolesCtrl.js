@@ -7,8 +7,16 @@ app.controller('OrgsAddRolesCtrl', [
   'organization',
   '$stateParams',
   '$state',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams, $state) {
-
+  function(
+    $scope,
+    $http,
+    alertsFactory,
+    transformRequestAsFormPost,
+    $modal,
+    organization,
+    $stateParams,
+    $state
+  ) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.permissions = organization.fetchPermissions();
     $scope.role = {};
@@ -30,12 +38,12 @@ app.controller('OrgsAddRolesCtrl', [
           route_name: 'role_get',
 
           url_params: {
-            '{roleId}' : role_id
-          }
-        }
+            '{roleId}': role_id,
+          },
+        },
       });
 
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
           $scope.role = {
             name: data.data.name,
@@ -43,7 +51,7 @@ app.controller('OrgsAddRolesCtrl', [
             id: data.data.id,
           };
 
-          data.data.permissions.forEach(function (permission) {
+          data.data.permissions.forEach(function(permission) {
             $scope.selected_permissions[permission.id] = true;
           });
         }
@@ -61,12 +69,12 @@ app.controller('OrgsAddRolesCtrl', [
         return;
       }
 
-      $scope.permissions.map(function(perm){
+      $scope.permissions.map(function(perm) {
         $scope.selected_permissions[perm.id] = true;
       });
     };
 
-    $scope.save = function (role) {
+    $scope.save = function(role) {
       var body = jQuery.extend(true, {}, role);
 
       body.permissions = [];
@@ -76,11 +84,9 @@ app.controller('OrgsAddRolesCtrl', [
 
       for (var key in $scope.selected_permissions) {
         if ($scope.selected_permissions.hasOwnProperty(key)) {
-
           if ($scope.selected_permissions[key]) {
             body.permissions.push(key);
           }
-
         }
       }
 
@@ -89,52 +95,52 @@ app.controller('OrgsAddRolesCtrl', [
 
       if (roleId) {
         var data = {
-          body: body
+          body: body,
         };
 
         var request = $http.put('/admin/generic', data, {
           params: {
             route_name: 'role_edit',
             url_params: {
-              '{roleId}': roleId
-            }
+              '{roleId}': roleId,
+            },
           },
-          transformRequest: transformRequestAsFormPost
+          transformRequest: transformRequestAsFormPost,
         });
-      }
-      else {
+      } else {
         // Request for creating
         var request = $http({
           url: '/admin/generic',
           method: 'POST',
           params: {
-            route_name: 'role_create'
+            route_name: 'role_create',
           },
           data: {
-            body: body
-          }
+            body: body,
+          },
         });
       }
 
-      request.success(function (data) {
+      request
+        .success(function(data) {
           if (data.success) {
             $scope.alerts.addAlert('success', 'Role saved', true);
-            $state.go('app.roles.edit', {id: data.data.id});
+            $state.go('app.roles.edit', { id: data.data.id });
           } else {
             $scope.alerts.resetAlerts();
 
-            angular.forEach(data.errors, function (value, key) {
+            angular.forEach(data.errors, function(value, key) {
               $scope.alerts.addAlert('danger', value);
             });
           }
-      }).error(function(errors) {
-        $scope.alerts.resetAlerts();
+        })
+        .error(function(errors) {
+          $scope.alerts.resetAlerts();
 
-        angular.forEach(errors, function (value, key) {
-          $scope.alerts.addAlert('danger', value);
+          angular.forEach(errors, function(value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
         });
-      });
     };
-
-  }
+  },
 ]);

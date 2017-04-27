@@ -7,7 +7,6 @@ use Mail;
 use App\Base;
 use App\User;
 use App\Merchant;
-use App\AdminLead;
 use App\Invitation;
 use App\Mailers\MiscMailer;
 
@@ -220,10 +219,6 @@ class Service extends Base\Service
         $error = array();
 
         $invitation = (new Invitation\Entity)->where('token', $invitationToken)->first();
-        if ($invitation === null)
-        {
-            $invitation = (new AdminLead\Entity)->where('token', $invitationToken)->first();
-        }
 
         if ($invitation)
         {
