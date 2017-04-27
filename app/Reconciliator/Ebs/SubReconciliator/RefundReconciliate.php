@@ -8,7 +8,9 @@ class RefundReconciliate extends Base\RefundReconciliate
 {
     // ----- Row header names -----
     const COLUMN_REFUND_ID          = 'merchant_ref_no';
+
     const COLUMN_REFUND_AMOUNT      = 'refunded';
+    const COLUMN_DEBIT_AMOUNT       = 'debit';
 
     protected function getRefundId($row)
     {
@@ -26,7 +28,17 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getRefundAmount($row)
     {
-        $paymentAmount = floatval($row[self::COLUMN_REFUND_AMOUNT]) * 100;
+        if (isset($row[self::COLUMN_REFUND_AMOUNT]) === true)
+        {
+            $refundColumnVal = $row[self::COLUMN_REFUND_AMOUNT];
+        }
+
+        elseif (isset($row[self::COLUMN_DEBIT_AMOUNT]) === true)
+        {
+            $refundColumnVal = $row[self::COLUMN_DEBIT_AMOUNT];
+        }
+
+        $paymentAmount = floatval($refundColumnVal) * 100;
 
         return abs($paymentAmount);
     }

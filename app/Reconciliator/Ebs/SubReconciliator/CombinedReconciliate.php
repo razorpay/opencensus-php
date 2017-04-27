@@ -9,24 +9,88 @@ class CombinedReconciliate extends Base\CombinedReconciliate
 {
     // ----- Row header names -----
 
-    const REFUND_TXN_COLUMN     = 'refunded';
+    const REFUND_TXN_CLM     = 'refunded';
+    const CAPTURE_TXN_CLM    = 'captured';
 
-    const CAPTURE_TXN_COLUMN    = 'captured';
+    const TXN_TYPE_COLUMN       = 'particular';
+    const TXN_REFUND            = 'refunded';              // refund
+    const TXN_PAYMENT           = 'captured';              // payment
 
     /**
-     * Goes through every row to determine
-     * if the recon type is refund or payment
+     * We get two types of excels for EBS recon
+     * Since we do not know what kind of file it would be
+     * we will have to run checks for both kind of files
      *
      * @param $row array
      * @return string
      */
     protected function getReconciliationTypeForRow(array $row)
     {
-        if ($row[self::REFUND_TXN_COLUMN] !== 0.0)
+        // This indicated the file is frome email
+        if (isset($row[self::TXN_TYPE_COLUMN]) === true)
+        {
+            return $this->getTypeForRowEmail($row);
+        }
+
+        return $this->getTypeForRowWebsite($row);
+    }
+
+    /**
+     * For the file generated from EBS website
+     *
+     * We need to check whether the refund column === 0.0
+     * In case, refund column is not null, it is a refund recon
+     * In all other cases, it is a payment recon
+     *
+     * In a refund-type txn, the capture_txn_clm is not null
+     * Hence, we cannot have a check on 'capture_txn_clm'
+     *
+     * @param $row array
+     * @return string
+     */
+    protected function getTypeForRowWebsite(array $row) : string
+    {
+        if ((array_key_exists(self::REFUND_TXN_CLM, $row) === false) and
+            (array_key_exists(self::CAPTURE_TXN_CLM, $row) === false))
+        {
+            return;
+        }
+
+        if ($row[self::REFUND_TXN_CLM] !== 0.0)
         {
             return BaseReconciliate::REFUND;
         }
 
-        return BaseReconciliate::PAYMENT;
+        elseif ($row[self::CAPTURE_TXN_CLM] !== 0.0)
+        {
+            return BaseReconciliate::PAYMENT;
+        }
+    }
+
+    /**
+     * For the file generated from email.
+     *
+     * Here, we get a column 'Particular',
+     * whose value is 'captured' or 'refunded'
+     *
+     * Captured => Payment
+     * Refunded => Refund
+     *
+     * @param $row array
+     * @return string
+     */
+    protected function getTypeForRowEmail(array $row) : string
+    {
+        $txnType = strtolower($row[self::TXN_TYPE_COLUMN]);
+
+        if ($txnType === self::TXN_CREDIT)
+        {
+            return BaseReconciliate::PAYMENT;
+        }
+
+        elseif ($txnType === self::TXN_DEBIT)
+        {
+            return BaseReconciliate::REFUND;
+        }
     }
 }

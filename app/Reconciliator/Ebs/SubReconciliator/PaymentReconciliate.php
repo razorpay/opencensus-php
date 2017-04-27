@@ -10,9 +10,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_FEE                = 'tdr';
     const COLUMN_SERVICE_TAX        = 'service_tax';
     const COLUMN_PAYMENT_ID         = 'merchant_ref_no';
-    const COLUMN_PAYMENT_AMOUNT     = 'captured';
-    const COLUMN_GATEWAY_PAYMENT_ID = 'paymentid';
     const COLUMN_BANK_REFERENCE_NO  = 'bank_reference';
+
+    const COLUMN_PAYMENT_AMOUNT     = 'captured';           // website
+    const COLUMN_CREDIT_AMOUNT      = 'credit';             // email
 
     /**
      * Gets payment_id from row data
@@ -28,14 +29,29 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     }
 
     /**
-     * Gets amount captured
+     * Gets amount captured.
+     *
+     * Since we get two type of sheets,
+     * both have different column headers for payment amount.
+     * We need to check which one of them is set
+     * and get the payment amount accordingly.
      *
      * @param $row array
      * @return $paymentAmount integer
      */
     protected function getGatewayPaymentAmount($row)
     {
-        $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
+        if (isset($row[self::COLUMN_PAYMENT_AMOUNT]) === true)
+        {
+            $paymentColumnVal = $row[self::COLUMN_PAYMENT_AMOUNT];
+        }
+
+        elseif (isset($row[self::COLUMN_CREDIT_AMOUNT]) === true)
+        {
+            $paymentColumnVal = $row[self::COLUMN_CREDIT_AMOUNT];
+        }
+
+        $paymentAmount = floatval($paymentColumnVal) * 100;
 
         return abs($paymentAmount);
     }
@@ -49,6 +65,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getGatewayServiceTax($row)
     {
         // Convert service tax into paise
+        // todo : check for KKC, other taxes
         $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
 
         return abs(round($serviceTax));
