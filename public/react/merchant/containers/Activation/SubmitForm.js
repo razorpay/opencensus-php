@@ -1,9 +1,11 @@
 import { Component } from 'react';
+import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required } from 'rzp/utils/validators';
 
+@connect(state => state.session, null)
 export default class SubmitForm extends Component {
   render() {
     let { handleSubmit, save, goBack, invalid } = this.props;
@@ -60,6 +62,18 @@ export default class SubmitForm extends Component {
               </div>
             </div>
           </div>
+
+          {this.props.session.org.custom_code === 'hdfc'
+            ? <div class="form-group">
+                <div class="col-md-offset-3 col-md-9">
+                  <strong>Note:</strong>
+                  {' '}
+                  This solution is a joint initiative between HDFC Bank Ltd. and Razorpay.
+                  <br />
+                  Your primary relationship will be maintained with HDFC Bank Ltd.
+                </div>
+              </div>
+            : null}
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
