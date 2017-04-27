@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -53,6 +54,37 @@ class HdfcGatewayTest extends TestCase
             $this->testData['testHdfcPaymentEntity'], $payment);
     }
 
+    public function testTamparedPayment()
+    {
+        $payment = $this->doAuthPayment();
+
+        $id = Payment::verifyIdAndSilentlyStripSign($payment['razorpay_payment_id']);
+
+        $this->mockServerContentFunction(function (& $content, $action) use ($id)
+        {
+            if ($action === 'authorize')
+            {
+                $content['trackid'] = $id;
+            }
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function()
+        {
+            $payment = $this->getDefaultPaymentArray();
+            $payment['card'] = [
+                'name' => 'card holder',
+                'number' => '4012001037167778',
+                'expiry_month' => 1,
+                'expiry_year' => 2099,
+                'cvv' => '123'
+            ];
+
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testInternationalUSDPaymentOnApi()
     {
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
@@ -85,7 +117,7 @@ class HdfcGatewayTest extends TestCase
         $this->assertArraySelectiveEquals(
             $this->testData['testHdfcUSDPaymentEntity'], $gatewayPayment);
 
-        $this->refundPayment($payment['id'], $payment['amount']/2);
+        $this->refundPayment($payment['id'], $payment['amount'] / 2);
     }
 
     public function testMaestroCard()
