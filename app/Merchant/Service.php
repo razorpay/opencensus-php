@@ -85,16 +85,24 @@ class Service extends Base\Service
 
         $isLinkedAccount = (bool) (\Input::get('account') ?? false);
 
+        $tags = Merchant\Entity::select(['merchants.id'])
+                                ->with('tagged')
+                                ->whereIn('merchants.id', $currentMerchant->id)
+                                ->get()
+                                ->toArray();
+
+        $tagNames = $tags[0]['tags'];
+
         if ($isLinkedAccount === true)
         {
-            if ($currentMerchant->isMarketplace() === false)
+            if (in_array('Marketplace', $tagNames) === false)
             {
                 return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
             }
         }
         else
         {
-            if ($currentMerchant->isAggregator() === false)
+            if (in_array('Aggregator', $tagNames) === false)
             {
                 return [[self::SUBMERCHANT_NOT_ALLOWED], null];
             }
@@ -130,6 +138,9 @@ class Service extends Base\Service
             {
                 // Finally attach the current user to the new user's team
                 $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+
+                (new User\Service)->attachMerchantUserOnApi($this-currentUser->id, $merchant->id, 'owner');
+
             }
 
             return [null, $merchant->toArray()];
