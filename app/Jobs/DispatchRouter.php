@@ -18,6 +18,7 @@ class DispatchRouter extends Base\Core
      */
 
     const ES        = 'es';
+    const ES_V2     = 'es_v2';
     const DASHBOARD = 'dashboard';
     const WEBHOOK   = 'webhook';
 

@@ -65,10 +65,6 @@ class Repository extends Base\Repository
         Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
     ];
 
-    protected $esWhitelistedParams = [
-        Entity::NOTES
-    ];
-
     protected $signedIds = [
         Entity::ORDER_ID,
         Entity::INVOICE_ID,

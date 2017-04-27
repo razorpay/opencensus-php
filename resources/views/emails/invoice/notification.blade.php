@@ -4,7 +4,7 @@
         $themeBgColor = $merchant['brand_color'];
         $themeFontColor = $merchant['brand_text_color'];
         $themed = 'background-color: ' . $themeBgColor . '; color: ' . $merchant['brand_text_color'] . ';';
-        $is_test_mode = isset($is_test_mode) ?: false;
+        $is_test_mode = $is_test_mode ?? false;
     @endphp
   
   </p>

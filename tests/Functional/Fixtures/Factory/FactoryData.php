@@ -153,7 +153,7 @@ final class FactoryData
             'id' => $faker->uniqueid,
             'entity_id' => $faker->uniqueid,
             'type' => 'payment',
-            'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
+            // 'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
             'amount' => $faker->randomNumber,
             'fee' => $faker->randomNumber,
             'pricing_rule_id' => null,
@@ -164,27 +164,43 @@ final class FactoryData
             'gateway_fee' => null,
             'on_hold'   => 0,
             'gratis' => false,
-            'channel' => 'kotak'
+            'channel' => 'kotak',
+            'settled' => 0,
         ]);
 
         $factory(\RZP\Models\Settlement\Entity::class, [
             'id' => $faker->uniqueid,
             'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
-            'amount' => $faker->randomNumber,
+            'amount' => $faker->randomNumber(4),
             'status' => 'created',
-            'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
+            // 'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
+            'fees' => $faker->randomNumber(2),
             'channel' => 'kotak',
-            'utr' => $faker->randomNumber(8),
             'failure_reason' => null,
             'return_utr' => null,
         ]);
 
         $factory(\RZP\Models\FundTransfer\Attempt\Entity::class, [
             'id' => $faker->uniqueid,
-            'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
-            'entity_type' => 'settlement',
+            // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
+            'source_type' => 'settlement',
+            'status' => 'created',
             'channel' => 'kotak',
-            'version' => 'V2',
+            'version' => 'V3',
+        ]);
+
+        $factory(\RZP\Models\FundTransfer\Batch\Entity::class, [
+            'id' => $faker->uniqueid,
+            'date' => Carbon::today('Asia/Kolkata')->timestamp,
+            'channel' => 'kotak',
+            'amount' => $faker->randomNumber(4),
+            'processed_amount' => 0,
+            'processed_count' => 0,
+            'fees' => $faker->randomNumber(2),
+            'api_fee' => $faker->randomNumber(2),
+            'gateway_fee' => $faker->randomNumber(2),
+            'urls' => $faker->sentence,
+            'initiated_at' => Carbon::today('Asia/Kolkata')->timestamp + 10,
         ]);
 
         $factory(\RZP\Models\Adjustment\Entity::class, [

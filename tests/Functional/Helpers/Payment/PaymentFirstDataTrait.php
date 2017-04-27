@@ -16,9 +16,7 @@ trait PaymentFirstDataTrait
 
         if ($mock)
         {
-            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
-
-            return $this->submitPaymentCallbackRequest($request);
+            $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
         }
 
         return $this->submitPaymentCallbackRedirect($url);

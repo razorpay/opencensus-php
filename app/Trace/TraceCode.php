@@ -194,6 +194,9 @@ class TraceCode
     const INVOICE_NEW_CUSTOMER                          = 'INVOICE_NEW_CUSTOMER';
     const INVOICE_ACTION_JOB_RECEIVED                   = 'INVOICE_ACTION_JOB_RECEIVED';
     const INVOICE_ACTION_JOB_HANDLED                    = 'INVOICE_ACTION_JOB_HANDLED';
+
+    const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
+    const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
     const INVOICE_ACTION_JOB_ERROR                      = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
@@ -337,6 +340,7 @@ class TraceCode
     const GATEWAY_PAYMENT_REQUEST                   = 'GATEWAY_PAYMENT_REQUEST';
     const GATEWAY_PAYMENT_RESPONSE                  = 'GATEWAY_PAYMENT_RESPONSE';
     const GATEWAY_PAYMENT_ERROR                     = 'GATEWAY_PAYMENT_ERROR';
+    const GATEWAY_VERIFY_ERROR                      = 'GATEWAY_VERIFY_ERROR';
     const GATEWAY_REFUND_ERROR                      = 'GATEWAY_REFUND_ERROR';
     const GATEWAY_REFUND_RESPONSE                   = 'GATEWAY_REFUND_RESPONSE';
     const GATEWAY_REFUND_REQUEST                    = 'GATEWAY_REFUND_REQUEST';
@@ -477,15 +481,19 @@ class TraceCode
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
+    // ES related trace codes
     const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
     const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
     const ES_SETTINGS_RESPONSE                      = 'ES_SETTINGS_RESPONSE';
     const ES_GET_NOTES_QUERY_AND_RESPONSE           = 'ES_GET_NOTES_QUERY_AND_RESPONSE';
     const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';
     const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
+    const ES_SYNC_FAILED                            = 'ES_SYNC_FAILED';
+    const ES_SYNC_REQUEST                           = 'ES_SYNC_REQUEST';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
     const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
+    const ES_MYSQL_RESULTS_MISMATCH                 = 'ES_MYSQL_RESULTS_MISMATCH';
 
     const RECON_ALERT                               = 'RECON_ALERT';
     const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';
@@ -636,7 +644,6 @@ class TraceCode
     const REPORT_ENTITY_FETCH_REQUEST                   = 'REPORT_ENTITY_FETCH_REQUEST';
 
 // Trace codes for gateway
-    const FIRST_DATA_PARES_MISSING                      = 'FIRST_DATA_PARES_MISSING';
     const USER_EDIT                                     = 'USER_EDIT';
 
 // Trace codes for gateway load rules

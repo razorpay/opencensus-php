@@ -31,6 +31,10 @@ class Core extends Base\Core
             }
         });
 
+        $permission = $this->repo->permission
+                                 ->findOrFailPublicWithRelations(
+                                     $permission->getId(), ['orgs']);
+
         return $permission;
     }
 
@@ -44,7 +48,7 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($permission);
 
-            if (empty($input[Entity::ORGS]) === false)
+            if (isset($input[Entity::ORGS]) === true)
             {
                 $assignedOrgs = $permission->orgs()->getRelatedIds()->toArray();
 
@@ -73,6 +77,10 @@ class Core extends Base\Core
                 }
             }
         });
+
+        $permission = $this->repo->permission
+                                 ->findOrFailPublicWithRelations(
+                                     $permission->getId(), ['orgs']);
 
         return $permission;
     }
