@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Admin\Permission;
 
+use DB;
+
 use RZP\Models\Admin\Base;
 use RZP\Constants\Table;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
 
 class Repository extends Base\Repository
@@ -90,5 +93,39 @@ class Repository extends Base\Repository
                     ->where($pmTable . '.entity_type', '=', 'org')
                     ->whereIn(Entity::NAME, $permissionNames)
                     ->get(['id']);
+    }
+
+    /**
+     * Enable workflows for orgs which are assigned to a permission
+     * Worklows can only be enabled for orgs if the permission is assigned to
+     * it
+     */
+    public function toggleWorkflowOnPermissionForOrgs(
+        string $permissionId,
+        array $orgIds,
+        bool $enabled)
+    {
+        DB::table(Table::PERMISSION_MAP)
+                ->where('permission_id', '=', $permissionId)
+                ->where('entity_type', '=', 'org')
+                ->whereIn('entity_id', $orgIds)
+                ->update(['enable_workflow' => $enabled]);
+    }
+
+    public function getPermissionsWithWorkflowEnabled(string $orgId)
+    {
+        $attributes = $this->getAttributeWithTableName('*');
+
+        $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
+
+        $pmTable = Table::PERMISSION_MAP;
+
+        return $this->newQuery()
+                    ->select($attributes)
+                    ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
+                    ->where($pmTable . '.entity_type', '=', 'org')
+                    ->where($pmTable . '.entity_id', '=', $orgId)
+                    ->where($pmTable . '.enable_workflow', '=', 1)
+                    ->get();
     }
 }

@@ -1932,3 +1932,7 @@ SET FOREIGN_KEY_CHECKS=1;
 
 ALTER TABLE permissions
     ADD COLUMN enable_workflow TINYINT(1) NOT NULL DEFAULT 0 AFTER assignable;
+
+ALTER TABLE permissions DROP COLUMN  `enable_workflow`;
+
+ALTER TABLE permission_map ADD COLUMN `enable_workflow` boolean DEFAULT 0 NOT NULL AFTER entity_type;
