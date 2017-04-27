@@ -680,8 +680,7 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        list($error, $response) = (new Admin\Service)
-            ->tagMerchant($merchantId, $input);
+        list($error, $response) = (new Admin\Service)->tagMerchant($merchantId, $input);
 
         return AppResponse::jsonResponse($error, $response);
 
@@ -715,8 +714,7 @@ class AdminController extends Controller
 
     public function getMerchantTags($merchantId)
     {
-        list($error, $response) = (new Admin\Service)
-            ->getMerchantTags($merchantId);
+        list($error, $response) = (new Admin\Service)->getMerchantTags($merchantId);
 
         return AppResponse::jsonResponse($error, $response);
     }

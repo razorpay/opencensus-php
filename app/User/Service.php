@@ -716,13 +716,13 @@ class Service extends Base\Service
         $merchants = $userDetails['merchants'];
 
         $currentMerchants = array_filter($merchants, function($merchant) use ($merchantId)
-            {
-                return ($merchant['id'] === $merchantId);
-            });
+        {
+            return ($merchant['id'] === $merchantId);
+        });
 
         if (empty($currentMerchants) === false)
         {
-            Session::put('current_merchant_id', $currentMerchants[0]->id);
+            Session::put('current_merchant_id', $currentMerchants[0]['id']);
 
             return [];
         }
@@ -837,6 +837,11 @@ class Service extends Base\Service
 
         list($error, $userDetails) = $this->getUserFromApi($user->id);
 
+        if (empty($error) === false)
+        {
+            return [$error, $data];
+        }
+
         $this->getTags($userDetails);
 
         $merchants = $userDetails['merchants'];
@@ -931,6 +936,11 @@ class Service extends Base\Service
 
     protected function getTags(array & $userDetails)
     {
+        if (empty($userDetails) === true)
+        {
+            return;
+        }
+
         $merchants = $userDetails['merchants'];
 
         $merchantIds = array_column($merchants, 'id');
