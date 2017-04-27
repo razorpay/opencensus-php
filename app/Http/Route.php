@@ -203,6 +203,7 @@ final class Route
         'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
+        'setl_reconcile_test'                     => ['post',     'settlements/reconcile/test',                     'SettlementController@postReconcileInTestMode'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
         'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                       'SettlementController@postH2HSettlementReconcile'                   ],
         'setl_return_generate'                    => ['post',     'settlements/return/generate',                    'SettlementController@postSettlementReturnGenerate'                 ],
@@ -710,6 +711,7 @@ final class Route
         'setl_reconcile',
         'setl_reconcile_h2h',
         'setl_reconcile_generate',
+        'setl_reconcile_test',
         'setl_return_generate',
         'setl_return',
         'setl_edit',
@@ -1030,6 +1032,12 @@ final class Route
         'workflow_action_states'           => ['*'],
         'workflow_action_details'          => ['*'],
         'workflow_action_get_multiple'     => ['*'],
+        'credits_fetch_multiple'           => [Permission::VIEW_MERCHANT_CREDITS_LOG],
+        'credits_create'                   => [Permission::ADD_MERCHANT_CREDITS],
+        'credits_delete'                   => [Permission::DELETE_MERCHANT_CREDITS],
+        'merchant_put_payment_methods'     => [Permission::EDIT_MERCHANT_METHODS],
+        'balance_fetch'                    => [Permission::VIEW_MERCHANT_BALANCE],
+        'feature_get_multiple'             => [Permission::VIEW_MERCHANT_FEATURES],
     ];
 
     public static $direct = array(
@@ -1074,6 +1082,7 @@ final class Route
             'setl_initiate',
             'payout_initiate',
             'setl_reconcile_generate',
+            'setl_reconcile_test',
             'setl_return_generate',
             'payment_auth_notify',
             'payment_timeout',

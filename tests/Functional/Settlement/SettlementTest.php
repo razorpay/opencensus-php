@@ -407,7 +407,7 @@ class SettlementTest extends TestCase
         $this->assertNotNull($setlResponse['kotak']['settlement_excel_file']);
 
         $setl = $this->getLastEntity('settlement', true);
-        $this->assertTestResponse($setl, 'fetchAndMatchSettlementForV2');
+        $this->assertTestResponse($setl, 'fetchAndMatchSettlement');
 
         // Validate settlement txn entity
         $setlTxn = $this->getLastEntity('transaction', true);
@@ -447,6 +447,9 @@ class SettlementTest extends TestCase
         $this->assertNull($batchFundTransfer['reconciled_at']);
         $this->assertNotNull($batchFundTransfer['txt_file_id']);
         $this->assertNotNull($batchFundTransfer['excel_file_id']);
+
+        // Validate association of settlement with batch
+        $this->assertEquals($batchFundTransfer['id'], $setl['batch_fund_transfer_id']);
 
         // Validate fund_transfer_attempt entity
         $bta = $this->getLastEntity('fund_transfer_attempt', true);

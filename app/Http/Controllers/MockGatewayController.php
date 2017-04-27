@@ -124,10 +124,9 @@ class MockGatewayController extends Controller
 
         $server = $this->gateway->server('first_data');
 
-        $data = $server->authenticate($input);
+        $url = $server->authorize($input);
 
-        return View::make('gateway.callbackReturnUrl')
-                    ->with('data', ['request' => $data]);
+        return Redirect::to($url);
     }
 
     public function postAxisGeniusPayment()

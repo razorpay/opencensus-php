@@ -137,14 +137,14 @@ class Holidays
      * @param Carbon\Carbon $date input date
      * @return Carbon\Carbon $date Next working date
      */
-    public static function getNextWorkingDay($date, $ignoreBankHolidays = false)
+    public static function getNextWorkingDay($date, $ignoreBankHolidays = false): Carbon
     {
         $countDays = 1;
 
         return self::getNthWorkingDayFrom($date, $countDays, $ignoreBankHolidays);
     }
 
-    public static function getPreviousWorkingDay($date)
+    public static function getPreviousWorkingDay($date): Carbon
     {
         $prevDay = $date->copy()->subDay();
 
@@ -158,7 +158,7 @@ class Holidays
 
     public static function getNthWorkingDayFrom($date,
                                                 $countDays,
-                                                $ignoreBankHolidays = false)
+                                                $ignoreBankHolidays = false): Carbon
     {
         $workingDay = $date->copy()->hour(0)->minute(0)->second(0);
 
@@ -183,7 +183,7 @@ class Holidays
      * @param Carbon\Carbon $date
      * @return boolean
      */
-    public static function isWorkingDay($date, $ignoreBankHolidays = false)
+    public static function isWorkingDay($date, $ignoreBankHolidays = false): bool
     {
         if (($ignoreBankHolidays === false) and
             (self::isSpecifiedBankHoliday($date)))
@@ -213,7 +213,7 @@ class Holidays
      * @param  Carbon\Carbon $toDate
      * @return $holidays - All holidays between days
      */
-    public static function getSpecifiedBankHolidaysBetween($fromDate, $toDate)
+    public static function getSpecifiedBankHolidaysBetween($fromDate, $toDate): array
     {
         // fromDate should be less than or equal to (lte) than toDate
         assertTrue($fromDate->lte($toDate));
@@ -240,7 +240,7 @@ class Holidays
         return $holidays;
     }
 
-    public static function isSpecifiedBankHoliday($date)
+    public static function isSpecifiedBankHoliday($date): bool
     {
         $year = $date->year;
         $month = $date->month;
@@ -260,9 +260,9 @@ class Holidays
      * Private function to get reason for a holiday
      *
      * @param  Carbon\Carbon $date
-     * @return boolean
+     * @return String
      */
-    protected static function getReasonForBankHoliday($date)
+    protected static function getReasonForBankHoliday($date): string
     {
         return self::$holidays[$date->year][$date->month][$date->day];
     }
@@ -275,7 +275,7 @@ class Holidays
      * @param Carbon\Carbon $day Any Carbon Day
      * @return boolean
      */
-    public static function isWorkingSaturday($day)
+    public static function isWorkingSaturday($day): bool
     {
         assertTrue($day->dayOfWeek === Carbon::SATURDAY);
 
@@ -291,7 +291,7 @@ class Holidays
      * @param Carbon\Carbon $date
      * @return Carbon\Carbon $date
      */
-    public static function getNextSettlementHoliday($date)
+    public static function getNextSettlementHoliday($date): Carbon
     {
         $year = $date->year;
         $month = $date->month;
@@ -335,7 +335,7 @@ class Holidays
         }
     }
 
-    protected static function getDateToCompareWith($year, $month, $date)
+    protected static function getDateToCompareWith($year, $month, $date): Carbon
     {
         return Carbon::now('Asia/Kolkata')->setDate($year, $month, $date)
                                           ->hour(0)

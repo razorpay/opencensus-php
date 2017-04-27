@@ -48,6 +48,7 @@ class Entity extends Base\Entity
         self::ADMIN_ID,
         self::ORG_ID,
         self::APPROVED,
+        self::CURRENT_LEVEL,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -69,6 +70,7 @@ class Entity extends Base\Entity
         self::ADMIN_ID,
         self::ORG_ID,
         self::APPROVED,
+        self::CURRENT_LEVEL,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -195,6 +197,22 @@ class Entity extends Base\Entity
             $data['workflow_steps'][] = $thisStep;
         }
 
+        unset($data['workflow']['steps']);
+
         return $data;
+    }
+
+    public function isOpen()
+    {
+        $state = $this->getState();
+
+        return (in_array($state, State\Entity::OPEN_STATES, true) === true);
+    }
+
+    public function isClosed()
+    {
+        $state = $this->getState();
+
+        return (in_array($state, State\Entity::CLOSED_STATES, true) === true);
     }
 }

@@ -26,7 +26,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
 
-
 class Service extends Base\Service
 {
     const ADMIN_PASSWORD_RESET_TOKEN_KEY = 'password_reset_token_org_%s_admin_%s';
@@ -35,8 +34,6 @@ class Service extends Base\Service
 
     public function authenticate(string $orgId, array $input)
     {
-        \Database\DefaultConnection::set('live');
-
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
         return $this->login($orgId, $input);
@@ -512,6 +509,13 @@ class Service extends Base\Service
 
             foreach ($adminGroups as $group)
             {
+                // Adding the current group as children as well so that when we
+                // fetch merchant for each children group it also does the same
+                // for the groups to which the admin directly belongs. Otherwise
+                // the merchants will only be fetched for the children groups
+                // and not children + directly belonging groups.
+                $childrenGroups[] = $group;
+
                 $groupChildren = (new Group\Service)->getChildrenHierarchy($orgId, $group['id']);
 
                 $childrenGroups = array_merge($childrenGroups, $groupChildren);

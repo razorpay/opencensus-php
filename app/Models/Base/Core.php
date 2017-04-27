@@ -35,6 +35,13 @@ class Core
      */
     protected $mode;
 
+    /**
+     * Environment - production/testing/beta
+     *
+     * @var String
+     */
+    protected $env;
+
     protected $merchant;
 
     public function __construct()
@@ -45,6 +52,8 @@ class Core
         {
             $this->mode = $this->app['rzp.mode'];
         }
+
+        $this->env = $this->app['env'];
 
         $this->trace = $this->app['trace'];
 

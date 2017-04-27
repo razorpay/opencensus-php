@@ -51,6 +51,15 @@ class EsDao
         $this->es->setHeimdallESClient([$heimdallHost]);
     }
 
+    /**
+     * @deprecated
+     *
+     * Sets index name.
+     * We only have two indexes, one for each mode. And all the notes of different
+     * entities are indexed in one of them as a type.
+     *
+     * @param string $mode
+     */
     public function setIndexName($mode)
     {
         if (empty($mode) === true)
@@ -66,6 +75,26 @@ class EsDao
         }
 
         $this->indexName = $this->config->get('database.es_index')[$mode];
+    }
+
+    public function setIndexNameByValue(string $indexName)
+    {
+        $this->indexName = $indexName;
+    }
+
+    public function bulkUpdate(array $params)
+    {
+        return $this->es->bulkUpdate($params);
+    }
+
+    public function delete(array $params)
+    {
+        $this->es->delete($params);
+    }
+
+    public function search(array $params)
+    {
+        return $this->es->search($params);
     }
 
     /**
@@ -320,7 +349,7 @@ class EsDao
         }
     }
 
-    public function search($indexName, $typeName, $id)
+    public function searchByIndexTypeAndActionId($indexName, $typeName, $id)
     {
         $params = [
             'index' => $indexName,

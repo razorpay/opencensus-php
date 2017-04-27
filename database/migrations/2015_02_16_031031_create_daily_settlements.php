@@ -34,6 +34,9 @@ class CreateDailySettlements extends Migration
             $table->bigInteger(BatchFundTransfer::AMOUNT)
                   ->unsigned();
 
+            $table->bigInteger(BatchFundTransfer::PROCESSED_AMOUNT)
+                  ->unsigned();
+
             $table->integer(BatchFundTransfer::FEES);
 
             $table->integer(BatchFundTransfer::SERVICE_TAX)
@@ -45,6 +48,8 @@ class CreateDailySettlements extends Migration
             $table->integer(BatchFundTransfer::GATEWAY_FEE);
 
             $table->integer(BatchFundTransfer::TOTAL_COUNT);
+
+            $table->integer(BatchFundTransfer::PROCESSED_COUNT);
 
             $table->integer(BatchFundTransfer::TRANSACTION_COUNT);
 

@@ -102,7 +102,7 @@ deploy:
       - script:
           name: create commit.txt
           code: git rev-parse HEAD > public/commit.txt
-      - nhuray/aws-code-deploy:
+      - razorpay/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
           region: $AWS_REGION
@@ -115,3 +115,8 @@ deploy:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - script:
+         name: post_deploy_notifier
+         code: |
+            python scripts/post_deploy_notifier.py
+

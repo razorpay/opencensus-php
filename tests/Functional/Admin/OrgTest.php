@@ -203,4 +203,14 @@ class OrgTest extends TestCase
 
         $this->startTest();
     }
+
+    // Test for an exception
+    public function testCreateWithoutPassword()
+    {
+        $permIds = $this->getAssignablePermissionsByIds();
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
+
+        $this->startTest();
+    }
 }
