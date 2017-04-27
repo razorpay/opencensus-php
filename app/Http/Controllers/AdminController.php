@@ -252,8 +252,10 @@ class AdminController extends Controller
     {
         $error = (new Admin\Service)->loginUsingPrimaryOwner($id);
 
-        if(empty($error) === false)
+        if (empty($error) === false)
+        {
             return AppResponse::jsonResponse($error);
+        }
 
         return redirect('/');
     }
@@ -264,7 +266,6 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
-
 
     public function getMerchantTerminal($id)
     {

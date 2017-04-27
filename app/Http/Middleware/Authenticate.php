@@ -1,8 +1,8 @@
 <?php namespace App\Http\Middleware;
 
 use Auth;
-use Closure;
 use Gate;
+use Closure;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
 

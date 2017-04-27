@@ -2,40 +2,36 @@
 
 namespace App\Admin;
 
-use App\Admin;
+use Auth;
+use Hash;
+use Uuid;
+use Cache;
+use Trace;
+use Queue;
+use Crypt;
+use Config;
+use Session;
+use Requests;
 use App\Base;
+use App\User;
+use App\Admin;
+use App\Generic;
 use App\Merchant;
+use App\Schedules;
+use Carbon\Carbon;
+use App\Transaction;
+use UAParser\Parser;
 use App\MerchantDetails;
 use App\Trace\TraceCode;
-use App\Transaction;
-use App\User;
 use App\Mailers\MiscMailer;
-use App\Session as SessionTable;
 use App\Providers\ApiGuard;
-use App\Schedules;
-use App\Generic;
-
-use Auth;
-use Config;
-use Hash;
-use Requests;
-use Queue;
-use Session;
-use Crypt;
-use Cache;
-use Uuid;
-use Trace;
-
+use App\Session as SessionTable;
 use Aws\Laravel\AwsFacade as AWS;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\App as App;
-
-use Razorpay\Api\Errors\BadRequestError as BadRequestError;
-use App\Transaction\Service as TransactionService;
-use Razorpay\Api\Errors\Error as ApiError;
 use Razorpay\Api\Request as ApiRequest;
-
-use UAParser\Parser;
+use Razorpay\Api\Errors\Error as ApiError;
+use Illuminate\Support\Facades\App as App;
+use App\Transaction\Service as TransactionService;
+use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 
 class Service extends Base\Service
 {
@@ -248,6 +244,7 @@ class Service extends Base\Service
         if ($ownerUser)
         {
             $user = Auth::guard('user')->loginUsingId($ownerUser->id);
+
             (new User\Service)->switchCurrentMerchantForUser($merchant_id, $user);
         }
         else
@@ -305,7 +302,7 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return array($error, []);
+        return [$error, []];
     }
 
     public function listMerchants($input)
@@ -512,10 +509,10 @@ class Service extends Base\Service
 
         $activationDetails = (new MerchantDetails\Service)->getActivationFiles($id);
 
-        $data = array(
+        $data = [
             'activation' => $activationDetails,
             'merchant'   => $details
-        );
+        ];
 
         return [[], $data];
     }
@@ -539,6 +536,7 @@ class Service extends Base\Service
         {
             $details = $this->fetchMerchantDetails($id);
         }
+
         $terminal = $this->fetchMerchantTerminal($id);
 
         $pricingPlan = $this->fetchMerchantPricing($id);
@@ -557,62 +555,59 @@ class Service extends Base\Service
 
     public function fetchMerchantDetails($id)
     {
-        $merchant = Merchant\Entity::findOrSoftFail($id);
+        $response = [];
 
         $this->setApiCredentials();
 
         try
         {
-            $data = $this->api->merchant->fetch($id)->toArray();
-        }
-        catch (BadRequestError $e)
-        {
-            $merchant = $merchant->toArray();
-            $merchant['confirmed'] = false;
-            return $merchant;
-        }
+            $merchant = $this->api->merchant->fetch($id)->toArray();
 
-        $parentId = $data['parent_id'] ?? null;
+            $parentId = $data['parent_id'] ?? null;
 
-        // If parent_id is set, the merchant is a linked account under Marketplace
-        // and are marked confirmed, without email confirmation
-        if ($parentId !== null)
-        {
-            $data['confirmed'] = true;
-        }
-        else
-        {
-            try
-            {
-                $data['confirmed'] = ($merchant->primaryOwner()->getConfirmToken() === null);
-            }
-            catch (\Exception $e)
+            // If parent_id is set, the merchant is a linked account under Marketplace
+            // and are marked confirmed, without email confirmation
+            if ($parentId !== null)
             {
                 $data['confirmed'] = true;
             }
+            else
+            {
+                $users = $this->api->merchant->getUsers($id)->toArray();
+
+                $confirmedPrimaryOwner = array_filter($users, function($user)
+                {
+                    return (($user['role'] === 'owner') and
+                            ($user['confirmed'] === true));
+                });
+
+                data['confirmed'] = (empty($confirmedPrimaryOwner) === false);
+            }
+
+            $tags = Merchant\Entity::select(['merchants.id'])
+                                    ->with('tagged')
+                                    ->where('merchants.id', $id)
+                                    ->get()
+                                    ->toArray();
+
+            $merchant = array_merge($merchant, $tags[$id]);
+
+            $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
+
+            $data['merchant_details'] = $merchantDetail;
+
+            $response = [
+                'archived_at'         => $merchant['archived_at'],
+                'suspended_at'        => $merchant['suspended_at'],
+                'steps_finished'      => $merchantDetail['steps_finished'],
+                'locked'              => $merchantDetail['locked'],
+                'submitted'           => $merchantDetail['submitted'],
+                'tags'                => $merchant['tags'],
+                'submitted_at'        => $merchantDetail['submitted_at'],
+                'activated_dashboard' => $merchant['activated']
+            ] + $data;
         }
-
-        $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
-
-        $data['merchant_details'] = $merchantDetail;
-
-        $merchant = $merchant->toArray();
-
-        // @todo This is failing tests on wercker, fix
-        // $merchant = Merchant\Entity::findorfail($id);
-        // Merchant\Validator::checkAPIMatch($merchant, $response);
-
-        $response = [
-            'archived_at'         => $merchant['archived_at'],
-            'suspended_at'        => $merchant['suspended_at'],
-            'steps_finished'      => $merchantDetail['steps_finished'],
-            'locked'              => $merchantDetail['locked'],
-            'submitted'           => $merchantDetail['submitted'],
-            'tags'                => $merchant['tags'],
-            'submitted_at'        => $merchantDetail['submitted_at'],
-            'activated_dashboard' => $merchant['activated'],
-            'referrer'            => $merchant['referrer'],
-        ] + $data;
+        catch (BadRequestError $e){}
 
         return $response;
     }
