@@ -45,9 +45,17 @@ class Core extends Base\Core
         return $user;
     }
 
-    public function confirmUserByToken(array $input)
+    public function confirmUserByData(array $input)
     {
-        $user = $this->repo->user->findByToken($input[Entity::CONFIRM_TOKEN]);
+        // need to validate if it is only a confirm_token or an email
+        if (isset($input[Entity::CONFIRM_TOKEN]))
+        {
+            $user = $this->repo->user->findByToken($input[Entity::CONFIRM_TOKEN]);
+        }
+        else
+        {
+            $user = $this->repo->user->findByEmail($input[Entity::EMAIL]);
+        }
 
         return $this->confirm($user);
     }

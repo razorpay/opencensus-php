@@ -31,9 +31,9 @@ class Service extends Base\Service
         return $user->toArrayPublic();
     }
 
-    public function confirmUserByToken(array $input): array
+    public function confirmUserByData(array $input): array
     {
-        $user = (new Core)->confirmUserByToken($input);
+        $user = (new Core)->confirmUserByData($input);
 
         return $user->toArrayPublic();
     }

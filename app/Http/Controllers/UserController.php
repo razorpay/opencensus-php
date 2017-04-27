@@ -32,11 +32,11 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function confirmUserByToken()
+    public function confirmUserByData()
     {
         $input = Request::all();
 
-        $data = (new User\Service)->confirmUserByToken($input);
+        $data = (new User\Service)->confirmUserByData($input);
 
         return ApiResponse::json($data);
     }
