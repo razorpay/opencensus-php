@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Kotak;
 
 use AWS;
+use App;
 use Excel;
 use Config;
 use RZP\Trace\Trace;
@@ -764,7 +765,9 @@ trait FileHandlerTrait
 
     protected function getMode()
     {
-        $mode = \BasicAuth::getMode();
+        $app = App::getFacadeRoot();
+
+        $mode = $app['basicauth']->getMode();
 
         return $mode;
     }
