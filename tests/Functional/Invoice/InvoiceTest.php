@@ -11,6 +11,7 @@ use Mockery;
 
 class InvoiceTest extends TestCase
 {
+    use InvoiceTestTrait;
     use PaymentTrait;
 
     public function setUp()
@@ -370,6 +371,34 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceAndAssertEsSync()
+    {
+        $esMock = $this->createEsMock(['bulkUpdate']);
+
+        //
+        // For the first time, it will createIndex as indexExists will return false.
+        // Asserting all of it.
+        //
+
+        $expected = $this->getExpectedUpsertIndexParams();
+
+        $esMock->expects($this->once())
+               ->method('bulkUpdate')
+               ->with(
+                    $this->callback(
+                        function ($actual) use ($expected)
+                        {
+                            $this->assertArraySelectiveEquals($expected, $actual);
+
+                            $this->assertNotEmpty($actual['body'][0]['index']['_id']);
+                            $this->assertNotEmpty($actual['body'][1]['id']);
+
+                            return true;
+                        }));
+
+        $this->startTest();
+    }
+
 
 
     // ------------------------------------------------------------
@@ -515,6 +544,51 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateInvoiceAndAssertEsSync()
+    {
+        $invoice = $this->createDraftInvoice();
+
+        $esMock = $this->createEsMock(['bulkUpdate']);
+
+        $expected = $this->getExpectedUpsertIndexParams(
+            [
+                'id'      => $invoice->getId(),
+                'receipt' => 'inv_receipt_0001',
+                'terms'   => 'Updated terms & conditions',
+            ]);
+
+        $esMock->expects($this->once())
+               ->method('bulkUpdate')
+               ->with(
+                    $this->callback(
+                        function ($actual) use ($expected)
+                        {
+                            $this->assertArraySelectiveEquals($expected, $actual);
+
+                            return true;
+                        }));
+
+        $this->startTest();
+    }
+
+    public function testUpdateInvoiceAndAssertEsNoSync()
+    {
+        //
+        // Case:
+        // When dirtied fields are not in index, es sync must not happen
+        // unnecessarily.
+        //
+
+        $invoice = $this->createDraftInvoice();
+
+        $esMock = $this->createEsMock(['bulkUpdate']);
+
+        $esMock->expects($this->never())
+               ->method('bulkUpdate');
+
+        $this->startTest();
+    }
+
     public function testIssueInvoiceWithAmountAndDesc()
     {
         $this->fixtures->create(
@@ -612,6 +686,26 @@ class InvoiceTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice');
         $this->assertNotNull($invoice);
+    }
+
+    public function testDeleteInvoiceAndAssertEsSync()
+    {
+        $this->createDraftInvoice();
+
+        $esMock = $this->createEsMock(['delete']);
+
+        $esMock->expects($this->once())
+               ->method('delete')
+               ->with(
+                    [
+                        'index' => 'invoice_test',
+                        'type'  => 'invoice_test',
+                        'id'    => '1000000invoice',
+                    ]);
+
+        $testData = $this->testData['testDeleteInvoice'];
+
+        $this->startTest($testData);
     }
 
     public function testAddLineItemToInvoice()
@@ -962,23 +1056,28 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceByReceipt()
     {
-        $this->createOrder();
+        $order = $this->fixtures->create('order');
 
-        $this->fixtures->create('invoice');
-        $this->fixtures->create(
-            'invoice',
+        $this->createIssuedInvoice(
             [
-                'id'      => '1000001invoice',
-                'receipt' => '00000000000001',
-            ]
-        );
-        $this->fixtures->create(
-            'invoice',
+                'id'       => '1000001invoice',
+                'order_id' => $order->getId(),
+                'receipt'  => '00000000000001'
+            ]);
+
+        $order = $this->fixtures->create('order');
+
+        $this->createIssuedInvoice(
             [
-                'id'      => '1000002invoice',
-                'receipt' => '00000000000002',
-            ]
-        );
+                'id'       => '1000002invoice',
+                'order_id' => $order->getId(),
+                'receipt'  => '00000000000002'
+            ]);
+
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
 
         $this->startTest();
     }
@@ -1031,6 +1130,80 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
     }
+
+    // -------------------------------------------------------------------------
+    // Following tests asserts working of es fetch in various cases.
+    //
+
+    public function testGetMultipleInvoicesOnlyEsFields()
+    {
+        $this->createManyInvoicesForFetchTests();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByQ()
+    {
+        $this->createManyInvoicesForFetchTests();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesOnlyMysqlFields()
+    {
+        $this->createDraftInvoice([
+                'id'      => '1000000invoice',
+                'user_id' => '1000000000user',
+                'type'    => 'link',
+            ]);
+
+        $this->createDraftInvoice([
+                'id'   => '1000001invoice',
+                'type' => 'link',
+            ]);
+
+        $this->createDraftInvoice([
+                'id'      => '1000002invoice',
+                'user_id' => '1000000000user',
+                'type'    => 'invoice',
+            ]);
+
+
+        $esMock = $this->createEsMock(['search']);
+
+        $esMock->expects($this->never())
+               ->method('search');
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesMixedFields()
+    {
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesSearchHitsOnly()
+    {
+        $this->markTestSkipped(
+            'Temporarily disabled, waiting for one other pr
+            which handles eager loading of relations to go out.');
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    // -------------------------------------------------------------------------
 
     public function testGetInvoicesOfCapturedPaymentId()
     {
@@ -1345,25 +1518,6 @@ class InvoiceTest extends TestCase
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
     }
 
-    protected function createDraftInvoice(array $overrideWith = [])
-    {
-        $this->fixtures->create(
-            'invoice',
-            array_merge(
-                [
-                    'type'         => 'invoice',
-                    'status'       => 'draft',
-                    'order_id'     => null,
-                    'short_url'    => null,
-                    'amount'       => null,
-                    'sms_status'   => 'pending',
-                    'email_status' => 'pending',
-                ],
-                $overrideWith
-            )
-        );
-    }
-
     protected function createOrder(array $overrideWith = [])
     {
         $order = $this->fixtures
@@ -1422,5 +1576,74 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->create('item', ['id' => '1000000002item']);
         $this->fixtures->create('line_item', ['id' => '100002lineitem', 'item_id' => '1000000002item']);
+    }
+
+    protected function setEsMockSearchExpectations($callee, $esMock)
+    {
+        $expectedSearchParams = $this->testData["{$callee}ExpectedSearchParams"];
+        $expectedSearchRes    = $this->testData["{$callee}ExpectedSearchResponse"];
+
+        $esMock->expects($this->once())
+               ->method('search')
+               ->with($expectedSearchParams)
+               ->willReturn($expectedSearchRes);
+    }
+
+    protected function createManyInvoicesForFetchTests()
+    {
+        $this->createDraftInvoice(
+            [
+                'id'    => '1000000invoice',
+                'notes' => [
+                    'extra' => 'Extra Information in notes key!!',
+                    'ref'   => 'Sample Reference Number',
+                ]
+            ]);
+
+        $this->createDraftInvoice(
+            [
+                'id'    => '1000001invoice',
+                'terms' => 'Random terms and conditions',
+            ]);
+
+        // $this->createDraftInvoice(
+        //     [
+        //         'id' => '1000002invoice',
+        //     ]);
+
+        // $this->createDraftInvoice(
+        //     [
+        //         'id' => '1000003invoice',
+        //     ]);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->createDraftInvoice(
+            [
+                'id'          => '1000004invoice',
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        // $this->createDraftInvoice(
+        //     [
+        //         'id' => '1000005invoice',
+        //     ]);
+
+        $order = $this->createOrder();
+
+        $this->createIssuedInvoice(
+            [
+                'id'       => '1000006invoice',
+                'order_id' => $order->getId(),
+            ]);
+
+        $order = $this->createOrder(['id' => '100000001order']);
+
+        $this->createIssuedInvoice(
+            [
+                'id'       => '1000007invoice',
+                'order_id' => $order->getId(),
+            ]);
+
     }
 }

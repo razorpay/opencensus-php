@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Offer;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Card\IIN;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Models\Card\IIN;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -117,6 +117,15 @@ class Core extends Base\Core
         $offer = $order->getOfferIfExists();
 
         return $offer;
+    }
+
+    public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)
+    {
+        $merchantId = $merchant->getId();
+
+        $offers = $this->repo->offer->fetchMerchantOffersForCheckout($merchantId);
+
+        return $offers;
     }
 
     public function fetchSharedOffers()

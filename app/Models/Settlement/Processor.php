@@ -99,6 +99,8 @@ class Processor extends Base\Core
 
             foreach ($channels as $channel)
             {
+                $this->batchFundTransfer = null;
+
                 list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel);
 
                 $response[$channel] = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel);

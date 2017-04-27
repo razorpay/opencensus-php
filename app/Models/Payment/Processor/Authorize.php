@@ -1850,11 +1850,11 @@ trait Authorize
                 $payment->setGatewayCaptured(true);
 
                 // Also sets the transaction association with the payment.
-
                 list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
                 $this->repo->saveOrFail($txn);
 
+                //TODO: This is for backward compatibility
                 $this->saveFeeDetails($txn, $feesSplit);
             }
 

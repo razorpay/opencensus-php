@@ -29,10 +29,6 @@ class Repository extends Base\Repository
         Entity::NOTES           => 'sometimes|string|max:500',
     );
 
-    protected $esWhitelistedParams = [
-        Entity::NOTES
-    ];
-
     protected $signedIds = [
         Entity::PAYMENT_ID
     ];
