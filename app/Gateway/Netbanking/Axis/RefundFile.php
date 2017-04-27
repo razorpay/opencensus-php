@@ -13,6 +13,11 @@ class RefundFile extends Base\RefundFile
 
     const EMAIL_BODY = 'Please forward the Axis Netbanking refunds file to the operations team';
 
+    /**
+     * Minutes for which Signed Url is valid
+     */
+    const SIGNED_URL_DURATION = '1440';
+
     protected static $headers = [
         'Payee id', // pid
         'Payee name', // RAZORPAY
@@ -39,7 +44,7 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        $signedFileUrl = $creator->getSignedUrl('1440')['url'];
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
         $data = [
             'total_amount'    => $totalAmount,
