@@ -15,6 +15,8 @@ class Entity extends Base\Entity
     const DESCRIPTION       = 'description';
     const CATEGORY          = 'category';
     const ASSIGNABLE        = 'assignable';
+
+    // Input field
     const WORKFLOW_ORGS     = 'workflow_orgs';
 
     // We sync the new permission with orgs

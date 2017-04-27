@@ -72,6 +72,15 @@ class Repository extends Base\Repository
 
         $pmTable = Table::PERMISSION_MAP;
 
+        /*
+            SELECT o.*
+            FROM orgs o
+            JOIN permission_map pm ON o.id = pm.entity_id
+            WHERE pm.permission_id = $permissionId
+                AND pm.entity_type = 'org'
+                AND pm.enable_workflow = 1
+        */
+
         return $this->newQuery()
                     ->select($orgAttrs)
                     ->join($pmTable, $orgId, '=', $pmTable . '.entity_id')

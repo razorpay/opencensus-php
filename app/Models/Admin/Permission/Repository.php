@@ -105,10 +105,6 @@ class Repository extends Base\Repository
         array $orgIds,
         bool $enabled)
     {
-        $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
-
-        $pmTable = Table::PERMISSION_MAP;
-
         DB::table(Table::PERMISSION_MAP)
                 ->where('permission_id', '=', $permissionId)
                 ->where('entity_type', '=', 'org')
