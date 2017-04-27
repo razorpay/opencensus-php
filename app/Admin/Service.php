@@ -2188,19 +2188,21 @@ class Service extends Base\Service
 
     public function getOrg($domain)
     {
-        $error = $data = null;
+        $requestConfig = [
+            'route_name' => 'org_get_by_hostname',
 
-        $this->setApiCredentials();
+            'url_params' => [
+                '{hostname}' => $domain
+            ]
+        ];
 
-        try
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('GET', $requestConfig);
+
+        if (empty($error))
         {
-            $data = $this->api->org->fetchByDomain($domain)->toArray();
-
             $this->setOrgInCache($data);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
         }
 
         return [$error, $data];
@@ -2329,9 +2331,10 @@ class Service extends Base\Service
 
         $filePath = $file->getPathname();
         $fileName = $file->getFilename();
-        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $extension = $file->getClientOriginalExtension();
+        $mimeType = $file->getClientMimeType();
 
-        if ($extension !== '.png')
+        if ($extension !== 'png' and $mimeType !== 'image/png')
         {
             return ['Invalid file format. Please upload a file with PNG extension.', $data];
         }

@@ -6,6 +6,7 @@
 @import 'react-power-select/dist/react-power-select.css';
 @import 'react-simple-dropdown/styles/Dropdown.css';
 @import './invoice'
+@import './activation'
 
 .react-root {
   ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
@@ -30,6 +31,18 @@
     font-size: 20px;
   }
 
+  a {
+    color: #337ab7;
+  }
+
+  .alert {
+    border-radius: 0;
+
+    > ul > li {
+      line-height: 2;
+    }
+  }
+
   input[type='color'] {
     padding: 0 3px;
   }
@@ -37,10 +50,6 @@
 
 .content-wrapper {
   padding: 30px 20px;
-
-  a {
-    color: #337ab7;
-  }
 }
 
 // React Modal Style Overrides
@@ -82,6 +91,11 @@ body.ReactModal__Body--open {
   &--before-close {
     opacity: 0;
   }
+}
+
+.Modal .modal-body > .alert-dismissable {
+  margin-left: -24px;
+  margin-right: -24px;
 }
 
 // React Tooltip
@@ -173,8 +187,17 @@ body.ReactModal__Body--open {
   width: 100%;
 }
 
+.DateInput--disabled {
+  background-color: #eee;
+}
+
 .DateInput__display-text {
   color: #aaa;
+  font-size: 12px;
+}
+
+.DateInput__display-text--disabled {
+  font-style: normal;
 }
 
 .DateInput__display-text--focused {

@@ -43,9 +43,10 @@ angular
               );
               break;
 
-            case 'baroda':
+            case 'bob':
               theme.apply(
                 angular.extend(baseTheme, {
+                  navBg: '#FF5D27',
                   primary: '#F04E00',
                 })
               );
