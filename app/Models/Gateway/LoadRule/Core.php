@@ -17,6 +17,10 @@ class Core extends Base\Core
 
         $loadRule = (new Entity)->build($input);
 
+        // Unsetting load here as it is not required to check for conflicting rules
+        unset($input[Entity::LOAD]);
+
+        // Checks if there is already a rule defined with the exact same criteria
         $existingRule = $this->repo->gateway_load_rule->findExistingRule($input);
 
         if ($existingRule !== null)
@@ -36,24 +40,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($loadRule);
 
         return $loadRule;
-    }
-
-    public function fetchApplicableRules(array $terminals, array $input, bool $verbose = false)
-    {
-        $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
-
-        $rules = $this->repo->gateway_load_rule->fetchApplicableRules($ruleFetchParams);
-
-        $applicableRules = (new Filter($input))->filter($rules);
-
-        if ($verbose === true)
-        {
-            $this->trace->info(
-                TraceCode::GATEWAY_LOAD_RULES_POST_FILTER,
-                $applicableRules->pluck(Entity::ID));
-        }
-
-        return $applicableRules;
     }
 
     public function update(string $id, array $input)
@@ -77,6 +63,34 @@ class Core extends Base\Core
     }
 
     /**
+     * Fetches rules from db and filters them as per payment criteria during
+     * terminal selection
+     *
+     * @param  array        $terminals Set of all terminals
+     * @param  array        $input     Array containing payment, merchant enttties
+     * @param  bool         $verbose
+     * @return PublicCollection collection of applicable rules
+     */
+    public function fetchApplicableRules(array $terminals, array $input, bool $verbose = false): Base\PublicCollection
+    {
+        $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
+
+        $rules = $this->repo->gateway_load_rule->fetchApplicableRules($ruleFetchParams);
+
+        $applicableRules = (new Filter($input))->filter($rules);
+
+        if ($verbose === true)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_LOAD_RULES_POST_FILTER,
+                $applicableRules->pluck(Entity::ID));
+        }
+
+        return $applicableRules;
+    }
+
+
+    /**
      * Matches terminals to a rule based on comparing terminal attributes to terminal
      * related rule attributes. Returns a map, mapping rule id's to terminals like
      * [
@@ -87,7 +101,7 @@ class Core extends Base\Core
      * @param  Base\PublicCollection $rules     collection of applicable rules
      * @return array                            map of rule_id => terminals
      */
-    public function matchTerminalsToRule(array $terminals, Base\PublicCollection $rules, bool $verbose = true)
+    public function matchTerminalsToRule(array $terminals, Base\PublicCollection $rules, bool $verbose = true): array
     {
        $map = [];
 
@@ -107,7 +121,15 @@ class Core extends Base\Core
        return $map;
     }
 
-    protected function getRuleFetchParams(array $terminals, array $input)
+    /**
+     * Forms the query param array for fetching rules from db during terminal
+     * selction
+     *
+     * @param  array  $terminals set of all terminals
+     * @param  array  $input     payment related input
+     * @return array             array of parameters on which to build db query
+     */
+    protected function getRuleFetchParams(array $terminals, array $input): array
     {
         $payment = $input['payment'];
 
@@ -167,7 +189,7 @@ class Core extends Base\Core
         $params[Entity::ISSUER] = $card->getIssuer();
     }
 
-    protected function getTerminalGateways(array $terminals)
+    protected function getTerminalGateways(array $terminals): array
     {
         $gateways = array_map(function ($terminal)
         {
@@ -179,25 +201,25 @@ class Core extends Base\Core
         return $gateways;
     }
 
-    public function checkAndBalanceLoads(Base\PublicCollection $rules)
-    {
-        $totalLoad = $rules->reduce(function ($carry, $rule)
-        {
-            $load = $rule->getLoad();
+    // public function checkAndBalanceLoads(Base\PublicCollection $rules)
+    // {
+    //     $totalLoad = $rules->reduce(function ($carry, $rule)
+    //     {
+    //         $load = $rule->getLoad();
 
-            return $carry + $load;
-        });
+    //         return $carry + $load;
+    //     });
 
-        if ($totalLoad > Entity::MAX_LOAD)
-        {
-            foreach ($rules as $rule)
-            {
-                $normalizedLoad = $rule->getNormalizedLoad($totalLoad);
+    //     if ($totalLoad > Entity::MAX_LOAD)
+    //     {
+    //         foreach ($rules as $rule)
+    //         {
+    //             $normalizedLoad = $rule->getNormalizedLoad($totalLoad);
 
-                $rule->setLoad($normalizedLoad);
-            }
-        }
-    }
+    //             $rule->setLoad($normalizedLoad);
+    //         }
+    //     }
+    // }
 
     protected function checkIfTotalLoadIsValid(Entity $rule, array $input)
     {

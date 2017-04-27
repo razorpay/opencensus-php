@@ -68,13 +68,15 @@ class TerminalLoadSorter extends Terminal\Sorter
             return (in_array($rule->getId(), $selectedRuleIds, true) === true);
         });
 
+        // TODO: Discuss on this once, don't think it is required as we are already
+        // having strict checks during rule creation which should not allow such cases
         // It can happen in certain cases that the total load across all rules
         // exceeds 10000. In that case, we normalize the load values
         // E.g Rule R1 - Load 7000
         // Rule R2 - Load 5000
         // After normalization relative load in probability space of 10000
         // will be R1 = 5833, R2 = 4166
-        $loadRuleCore->checkAndBalanceLoads($applicableRules);
+        // $loadRuleCore->checkAndBalanceLoads($applicableRules);
 
         $chancePercent = $options->getChance();
 

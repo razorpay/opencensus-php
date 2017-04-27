@@ -17,28 +17,6 @@ class Repository extends Base\Repository
         Entity::NETWORK          => 'sometimes|string',
         Entity::INTERNATIONAL    => 'sometimes|boolean',
         Entity::ISSUER           => 'sometimes|string',
-        Entity::LOAD             => 'sometimes|integer|min:0|max:10000'
-    ];
-
-    /**
-     * Atributes on which to build select query on
-     */
-    const QUERY_ATTRIBUTES = [
-        Entity::MERCHANT_ID,
-        Entity::METHOD,
-        Entity::CARD_TYPE,
-        Entity::NETWORK,
-        Entity::ISSUER,
-        Entity::INTERNATIONAL,
-    ];
-
-    /**
-     * Attributes for which we also need to include null values in the where clause
-     */
-    const NULLABLE_ATTRIBUTES = [
-        Entity::CARD_TYPE,
-        Entity::NETWORK,
-        Entity::ISSUER
     ];
 
     public function findExistingRule(array $input)
@@ -50,7 +28,7 @@ class Repository extends Base\Repository
     {
         $params = [];
 
-        foreach (self::QUERY_ATTRIBUTES as $key)
+        foreach (Entity::QUERY_ATTRIBUTES as $key)
         {
             if (empty($input[$key]) === false)
             {
@@ -93,7 +71,7 @@ class Repository extends Base\Repository
             {
                 $query->whereIn($key, $value);
             }
-            else if (in_array($key, self::NULLABLE_ATTRIBUTES, true) === true)
+            else if (in_array($key, Entity::NULLABLE_ATTRIBUTES, true) === true)
             {
                 $query->where(function ($query) use ($key, $value)
                 {

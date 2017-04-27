@@ -11,7 +11,6 @@ use RZP\Models\Terminal;
 
 class Entity extends Base\PublicEntity
 {
-    use Matcher;
     use SoftDeletes;
 
     const GATEWAY          = 'gateway';
@@ -27,6 +26,9 @@ class Entity extends Base\PublicEntity
 
     const MAX_LOAD = 10000;
 
+    /**
+     * Attributes which have a length constraint in database
+     */
     const LENGTHS = [
         self::GATEWAY   => 50,
         self::NETWORK   => 10,
@@ -34,9 +36,46 @@ class Entity extends Base\PublicEntity
         self::CARD_TYPE => 10,
     ];
 
-    const COMPARISON_KEYS = [
+    /**
+     * Attributes used for comparing terminal to rule
+     */
+    const COMPARISON_ATTRIBUTES = [
         self::GATEWAY,
         self::GATEWAY_ACQUIRER,
+        self::INTERNATIONAL,
+    ];
+
+    /**
+     * Attributes used for filtering rules based on payment
+     * related criteria
+     */
+    const FILTER_ATTRIBUTES = [
+        self::CARD_TYPE,
+        self::INTERNATIONAL,
+        self::NETWORK,
+        self::ISSUER,
+    ];
+
+    /**
+     * Attributes for which the value can be null, signifying any/all values
+     * are acceptable for comparison
+     */
+    const NULLABLE_ATTRIBUTES = [
+        self::CARD_TYPE,
+        self::NETWORK,
+        self::ISSUER,
+        self::GATEWAY_ACQUIRER,
+    ];
+
+    /**
+     * Attributes used for fetching rules matching these keys from database
+     */
+    const QUERY_ATTRIBUTES = [
+        self::MERCHANT_ID,
+        self::METHOD,
+        self::CARD_TYPE,
+        self::NETWORK,
+        self::ISSUER,
         self::INTERNATIONAL,
     ];
 
@@ -141,5 +180,40 @@ class Entity extends Base\PublicEntity
     public function setLoad(int $load)
     {
         $this->setAttribute[self::LOAD] = $load;
+    }
+
+    //----------------Setters End-------------------
+
+    /**
+     * Evaluates if a rule's terminal related attributes match those of
+     * given terminal
+     *
+     * @param  Terminal\Entity $terminal Terminal entity to compare against
+     * @return bool whether rule matches terminal
+     */
+    public function matches(Terminal\Entity $terminal): bool
+    {
+        foreach (self::COMPARISON_ATTRIBUTES as $key)
+        {
+            // For certain attributes like gateway_acquirer, null means all, hence
+            // we don't match if the value for these attributes is null
+            if ((in_array($key, self::NULLABLE_ATTRIBUTES, true) === true) and
+                    $this->getAttribute($key) === null)
+            {
+                continue;
+            }
+
+            if ($this->match($key, $terminal) === false)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected function match(string $key, Terminal\Entity $terminal): bool
+    {
+        return ($this->getAttribute($key) === $terminal->getAttribute($key));
     }
 }

@@ -16,11 +16,17 @@ trait Matcher
      */
     public function matches(Terminal\Entity $terminal): bool
     {
-        foreach (self::COMPARISON_KEYS as $key)
+        foreach (self::COMPARISON_ATTRIBUTES as $key)
         {
-            $comparisonFunction = $this->getComparisonFunction($key);
+            // For certain attributes like gateway_acquirer, null means all, hence
+            // we don't match if the value for these attributes is null
+            if ((in_array($key, self::NULLABLE_ATTRIBUTES, true) === true) and
+                    $this->getAttribute($key) === null)
+            {
+                continue;
+            }
 
-            if ($this->$comparisonFunction($terminal) === false)
+            if ($this->match($key, $terminal) === false)
             {
                 return false;
             }
@@ -29,35 +35,8 @@ trait Matcher
         return true;
     }
 
-    protected function compareGateway(Terminal\Entity $terminal): bool
+    protected function match(string $key, Terminal\Entity $terminal): bool
     {
-        return ($terminal->getGateway() === $this->getGateway());
-    }
-
-    /**
-     * Compares terminal gateway acquirer to rule's gateway acquirer, also returns
-     * true if the rule's gateway acquirer is null, meaning all acquirers
-     * @param  Terminal\Entity $terminal [description]
-     * @return [type]                    [description]
-     */
-    protected function compareGatewayAcquirer(Terminal\Entity $terminal): bool
-    {
-        if ($terminal->getGatewayAcquirer() !== null)
-        {
-            return (($terminal->getGatewayAcquirer() === $this->getGatewayAcquirer()) or
-                    ($this->getGatewayAcquirer() === null));
-        }
-
-        return true;
-    }
-
-    protected function compareInternational(Terminal\Entity $terminal)
-    {
-        return ($terminal->isInternational() === $this->isInternational());
-    }
-
-    protected function getComparisonFunction(string $key)
-    {
-        return 'compare' . studly_case($key);
+        return ($this->getAttribute($key) === $terminal->getAttribute($key));
     }
 }

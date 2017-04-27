@@ -142,8 +142,16 @@ class Validator extends Base\Validator
                 break;
 
             default:
+
+                // For certain methods like UPI there is no concept of issuer, so
+                // we don't validate if issuer is null
+                if ($issuer === null)
+                {
+                    return;
+                }
+
                 throw new Exception\BadRequestValidationFailureException(
-                    'Method ' . $method . ' is not supported');
+                    'Issuer ' . $issuer . ' for method ' . $method . ' is not supported');
         }
     }
 

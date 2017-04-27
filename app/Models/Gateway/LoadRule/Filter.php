@@ -13,13 +13,6 @@ class Filter extends Core
 
     protected $card;
 
-    const PROPERTIES = [
-        Entity::CARD_TYPE,
-        Entity::INTERNATIONAL,
-        Entity::NETWORK,
-        Entity::ISSUER,
-    ];
-
     public function __construct(array $input)
     {
         $this->merchant = $input['merchant'];
@@ -52,35 +45,26 @@ class Filter extends Core
 
         $filteredRules = new Base\PublicCollection;
 
-        foreach (self::PROPERTIES as $filterProperty)
+        foreach (Entity::FILTER_ATTRIBUTES as $filterProperty)
         {
-            $filterFunction = $this->getFilterFunctionForProperty($filterProperty);
-
-            foreach ($rules as $rule)
+            $rules = $rules->filter(function ($rule) use ($filterProperty)
             {
-                if ($this->$filterFunction($rule) === true)
+                $filterFunction = $this->getFilterFunctionForProperty($filterProperty);
+
+                $result = $this->$filterFunction($rule);
+
+                // For certain attributes, the value can be null, meaning that any/all values are
+                // acceptable. In those cases the filter passes if the attribute value is null
+                if ($result === false)
                 {
-                    $filteredRules->push($rule);
+                    if (in_array($filterProperty, Entity::NULLABLE_ATTRIBUTES, true) === true)
+                    {
+                        return ($rule->getAttribute($filterProperty) === null);
+                    }
                 }
-            }
-        }
 
-        // In some cases, it can happen that a particular rule satisfies multiple filters
-        // For e.g a rule for card_type = credit and network = VISA satisfies both card_type
-        // and network filters for a VISA credit card payment and hence gets puhed to
-        // filtered rules. We run a unique check to remove such duplicates
-        $filteredRules = $filteredRules->unique(function ($rule)
-        {
-            return $rule->getId();
-        });
-
-        // In case no rules satisfy the filter rule criteria, we retuen the set of
-        // all rules as it may contain rules with the filter attribute value as null.
-        // E.g a rule for card payments across all networks and issuers will be rejected
-        // by above filters but is still eligible for a payment
-        if ($filteredRules->isEmpty() === true)
-        {
-            $filteredRules = $rules;
+                return $result;
+            });
         }
 
         return $filteredRules;
