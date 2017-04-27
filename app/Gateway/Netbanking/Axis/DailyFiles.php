@@ -86,14 +86,12 @@ class DailyFiles extends Base\DailyFiles
 
             if (empty($data['claimsFile']) === false)
             {
-                $message->attach($data['claimsFile']['url'])
-                        ->setFilename($data['claimsFile']['name']);;
+                $message->attach($data['claimsFile']['url'], ['as' => $data['claimsFile']['name']]);
             }
 
             if (empty($data['refundsFile']) === false)
             {
-                $message->attach($data['refundsFile']['url'])
-                        ->setFilename($data['refundsFile']['name']);;
+                $message->attach($data['refundsFile']['url'], ['as' => $data['refundsFile']['name']]);
             }
 
             $headers = $message->getHeaders();
