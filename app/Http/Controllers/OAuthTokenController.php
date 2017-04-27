@@ -57,7 +57,7 @@ class OAuthTokenController extends Controller
         return ApiResponse::json($result);
     }
 
-    public function udpateToken(string $id)
+    public function updateToken(string $id)
     {
         $input = Request::all();
 
