@@ -318,12 +318,15 @@ class Service extends Base\Service
      */
     public function confirmUserByEmail($email)
     {
-        $user = User\Entity::where('email', $email)->first();
+        $confirm_data = ['email' => $email];
+        list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
 
-        if ($user === null)
+        if (empty($error) === false)
         {
             return [['Email is invalid.'], []];
         }
+
+        $user = User\Entity::where('email', $email)->first();
 
         $user->confirm();
 
@@ -352,7 +355,8 @@ class Service extends Base\Service
      */
     public function confirm($token)
     {
-        list($error, $response) = $this->confirmUserByTokenOnApi($token);
+        $confirm_data = ['confirm_token' => $token];
+        list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
 
         if (empty($error) === false)
         {
@@ -368,16 +372,14 @@ class Service extends Base\Service
         return [null, ['email' => $user->email]];
     }
 
-    public function confirmUserByTokenOnApi($token)
+    public function confirmUserByDataOnApi($data)
     {
         $this->setApiCredentials();
-
-        $data = ['confirm_token' => $token];
 
         $error = $response = [];
         try
         {
-            $response = $this->api->user->confirmByToken($data);
+            $response = $this->api->user->confirmByData($data);
         }
         catch (\Exception $e)
         {

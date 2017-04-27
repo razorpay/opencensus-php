@@ -51,9 +51,9 @@ class User extends Entity
         return $this->request('PUT', $relativeUrl);
     }
 
-    public function confirmByToken($params)
+    public function confirmByData($params)
     {
-        $relativeUrl = $this->getEntityUrl().'confirm_user_by_token';
+        $relativeUrl = $this->getEntityUrl().'confirm_user_by_data';
 
         return $this->request('PUT', $relativeUrl, $params);
     }
