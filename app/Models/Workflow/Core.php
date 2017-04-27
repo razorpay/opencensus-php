@@ -19,6 +19,9 @@ class Core extends Base\Core
         $workflow->getValidator()->validatePermissionHasOneWorkflow(
             $input[Entity::PERMISSIONS]);
 
+        $workflow->getValidator()->validatePermissionsForOrg(
+            $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
+
         $workflow->build($input);
 
         // $minLevel = $this->getMinLevelFromSteps($input[Entity::STEPS]);
@@ -76,6 +79,9 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
         }
+
+        $workflow->getValidator()->validatePermissionsForOrg(
+            $workflow->getOrgId(), $input[Entity::PERMISSIONS]);
 
         $workflow->edit($input);
 
