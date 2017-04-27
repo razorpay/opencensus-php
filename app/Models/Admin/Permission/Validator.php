@@ -3,6 +3,8 @@
 namespace RZP\Models\Admin\Permission;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -11,8 +13,8 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION      => 'sometimes|string|max:255',
         Entity::CATEGORY         => 'required|string|max:255',
         Entity::ASSIGNABLE       => 'sometimes|bool',
-        Entity::ENABLE_WORKFLOW  => 'sometimes|bool',
         Entity::ORGS             => 'sometimes|array',
+        Entity::WORKFLOW_ORGS    => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -20,7 +22,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION      => 'sometimes|string|max:255',
         Entity::CATEGORY         => 'sometimes|string|max:255',
         Entity::ASSIGNABLE       => 'sometimes|bool',
-        Entity::ENABLE_WORKFLOW  => 'sometimes|bool',
         Entity::ORGS             => 'sometimes|array',
+        Entity::WORKFLOW_ORGS    => 'sometimes|array',
     ];
 }
