@@ -278,7 +278,7 @@ class Inferno
 
             $msgPrefix = 'Client error: ';
 
-            $this->traceWebhookResponse($msgPrefix, $response);
+            $this->traceWebhookResponse($webhook, $msgPrefix, $response);
 
             return false;
         }
@@ -288,7 +288,7 @@ class Inferno
 
             $msgPrefix = 'Server error: ';
 
-            $this->traceWebhookResponse($msgPrefix, $response);
+            $this->traceWebhookResponse($webhook, $msgPrefix, $response);
 
             return false;
         }
@@ -298,7 +298,7 @@ class Inferno
 
             $msgPrefix = 'Some error occurred: ';
 
-            $this->traceWebhookResponse($msgPrefix, $response);
+            $this->traceWebhookResponse($webhook, $msgPrefix, $response);
 
             return false;
         }
@@ -306,7 +306,7 @@ class Inferno
         {
             $msgPrefix = 'No response received due to network issues';
 
-            $this->traceWebhookResponse($msgPrefix);
+            $this->traceWebhookResponse($webhook, $msgPrefix);
 
             return false;
         }
@@ -314,7 +314,7 @@ class Inferno
         {
             $msgPrefix = 'The request is invalid';
 
-            $this->traceWebhookResponse($msgPrefix);
+            $this->traceWebhookResponse($webhook, $msgPrefix);
 
             return false;
         }
@@ -322,7 +322,7 @@ class Inferno
         {
             $msgPrefix = 'something unexpected happened';
 
-            $this->traceWebhookResponse($msgPrefix);
+            $this->traceWebhookResponse($webhook, $msgPrefix);
 
             return false;
         }
@@ -344,13 +344,13 @@ class Inferno
         {
             $msgPrefix = '';
 
-            $this->traceWebhookResponse($msgPrefix, $response);
+            $this->traceWebhookResponse($webhook, $msgPrefix, $response);
         }
 
         return $success;
     }
 
-    protected function traceWebhookResponse($msgPrefix = '', $response = null)
+    protected function traceWebhookResponse($webhook, $msgPrefix = '', $response = null)
     {
         $webhookData = [
             'webhook_id'        => $webhook->getId(),
