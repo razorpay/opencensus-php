@@ -218,9 +218,12 @@ class RawApiRequest
         // We just pass the body as it is
         else
         {
+            // Setting the body before the content type is important.
+            // Why? Check setContentType function
+
             $this->params['body'] = $this->input['body'] ?? Input::get('body', '');
 
-            $this->setContentType('application/x-www-form-urlencoded');
+            $this->setContentType();
         }
     }
 
