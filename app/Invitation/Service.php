@@ -238,7 +238,9 @@ class Service extends Base\Service
      */
     public function getPendingInvitationsForUser()
     {
-        $invitations = $this->loggedInUser->invitations()->with('merchant')->get();
+        $user = User\Entity::find($this->loggedInUser->id);
+
+        $invitations = $user->invitations()->with('merchant')->get();
 
         foreach ($invitations as $invite)
         {
@@ -258,7 +260,7 @@ class Service extends Base\Service
                ->queueAndDeliver();
     }
 
-    public function getInvitationById(string inviteId)
+    public function getInvitationById(string $inviteId)
     {
         return Entity::select(['*'])
                         ->where('id', $inviteId)
