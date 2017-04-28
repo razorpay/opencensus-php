@@ -143,4 +143,32 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED);
         }
     }
+
+    public function validatePasswordAuthType(
+        string $authType,
+        array $input)
+    {
+        if ($authType !== Org\AuthType::PASSWORD)
+        {
+            return;
+        }
+
+        $keys = [
+            Entity::USERNAME,
+            Entity::PASSWORD,
+            Entity::PASSWORD_CONFIRMATION,
+        ];
+
+        $adminInput = [];
+
+        foreach ($input as $key => $value)
+        {
+            if (in_array($key, $keys, true) === true)
+            {
+                $adminInput[$key] = $input[$key];
+            }
+        }
+
+        $this->validateInput('password_auth', $adminInput);
+    }
 }
