@@ -42,6 +42,37 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
   content: $supportkit-text;
 }
 
+.dynamic-tooltip {
+  padding: 5px 10px;
+  position: absolute;
+  border-radius: 4px;
+  color: #fff;
+  background-color: #000;
+  z-index: 200;
+  animation: fadeIn 0.5s;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    width: 0;
+    height: 0;
+    transform: translate(0, 50%);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 10px solid #000;
+  }
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 .list-group-item pre {
 	font-family: Menlo, Monaco, "Ubuntu Mono", Consolas, "Courier New", monospace;
 	letter-spacing: 0.0625em;
