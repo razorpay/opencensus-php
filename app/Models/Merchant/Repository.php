@@ -388,6 +388,10 @@ class Repository extends Base\Repository
 
     protected function modifyQuery($query, array $input)
     {
+        $submittedAt = $this->manager
+                            ->merchant_detail
+                            ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
+
         switch (true)
         {
             case (empty($input['suspended']) === false):
