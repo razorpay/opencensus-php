@@ -269,57 +269,44 @@ class Inferno
         {
             $response = $this->makeRequest($request);
         }
-        catch (ClientErrorException $e)
+        catch (Exception $e)
         {
-            $response = $e->getResponse();
+            $response = null;
 
-            $this->errorMessage = 'Client error: '. $response->getReasonPhrase();
+            if ($e instanceof ClientErrorException)
+            {
+                $response = $e->getResponse();
+
+                $this->errorMessage = 'Client error: '. $response->getReasonPhrase();
+
+            }
+            else if ($e instanceof ServerErrorException)
+            {
+                $response = $e->getResponse();
+
+                $this->errorMessage = 'Server error: '. $response->getReasonPhrase();
+            }
+            else if ($e instanceof HttpException)
+            {
+                $response = $e->getResponse();
+
+                $this->errorMessage = 'Some error occurred: '. $response->getReasonPhrase();
+            }
+            else
+            {
+                $this->errorMessage = 'Some error occured: Unknown';
+            }
+
+            $responseData = $this->getStatusCodeAndHeaders($response);
+
+            $webhookData = [
+                'webhook_id'        => $webhook->getId(),
+                'merchant_id'       => $webhook->merchant->getId()
+            ];
 
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
-                [
-                    'webhook_id'        => $webhook->getId(),
-                    'merchant_id'       => $webhook->merchant->getId(),
-                    'exception'         => $this->errorMessage,
-                    'response_code'     => $response->getStatusCode(),
-                    'response_headers'  => $response->getHeaders()
-                ]);
-
-            return false;
-        }
-        catch (ServerErrorException $e)
-        {
-            $response = $e->getResponse();
-
-            $this->errorMessage = 'Server error: '. $response->getReasonPhrase();
-
-            $this->trace->info(
-                TraceCode::WEBHOOK_RESPONSE_FAILURE,
-                [
-                    'webhook_id'        => $webhook->getId(),
-                    'merchant_id'       => $webhook->merchant->getId(),
-                    'exception'         => $this->errorMessage,
-                    'response_code'     => $response->getStatusCode(),
-                    'response_headers'  => $response->getHeaders()
-                ]);
-
-            return false;
-        }
-        catch (HttpException $e)
-        {
-            $response = $e->getResponse();
-
-            $this->errorMessage = 'Some error occurred: '. $response->getReasonPhrase();
-
-            $this->trace->info(
-                TraceCode::WEBHOOK_RESPONSE_FAILURE,
-                [
-                    'webhook_id'        => $webhook->getId(),
-                    'merchant_id'       => $webhook->merchant->getId(),
-                    'exception'         => $this->errorMessage,
-                    'response_code'     => $response->getStatusCode(),
-                    'response_headers'  => $response->getHeaders()
-                ]);
+                $webhookData + $responseData);
 
             return false;
         }
@@ -354,6 +341,26 @@ class Inferno
         }
 
         return $success;
+    }
+
+    protected function getStatusCodeAndHeaders($response = null)
+    {
+        $data = [
+            'status_code' => '',
+            'headers'     => [],
+        ];
+
+        if ($response !== null)
+        {
+            $data = [
+                'status_code' => $response->getStatusCode(),
+                'headers'     => $response->getHeaders(),
+            ];
+        }
+
+        $data['exception'] = $this->errorMessage;
+
+        return $data;
     }
 
     protected function getRequestArray($event, $webhook)
