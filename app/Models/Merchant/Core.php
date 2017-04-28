@@ -118,6 +118,12 @@ class Core extends Base\Core
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
+        $this->saveAndNotify($merchant);
+
+        // Groups have to be saved separately
+        //
+        // Also since we're doing a fetch again it's better we save
+        // the previous version of $merchant entity first and then fetch it.
         if (isset($input['groups']) === true)
         {
             $this->repo->sync($merchant, 'groups', $input['groups']);
@@ -128,8 +134,6 @@ class Core extends Base\Core
                              ->merchant
                              ->findOrFailPublicWithRelations($merchant->getId(), ['groups']);
         }
-
-        $this->saveAndNotify($merchant);
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,

@@ -174,14 +174,14 @@ class Gateway extends Base\Gateway
 
             $this->traceGatewayResponse(TraceCode::GATEWAY_REFUND_RESPONSE, $response, $input);
 
+            $gatewayAttributes = $this->getAttributeFromRefundResponse($input, $response);
+
+            $this->createGatewayRefundEntity($gatewayAttributes, $input);
+
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
                 $this->checkErrorsAndThrowException($response);
             }
-
-            $gatewayAttributes = $this->getAttributeFromRefundResponse($input, $response);
-
-            $this->createGatewayRefundEntity($gatewayAttributes, $input);
         }
         catch (SoapFault $exception)
         {
@@ -207,19 +207,126 @@ class Gateway extends Base\Gateway
             $this->traceGatewayResponse(
                 TraceCode::GATEWAY_REVERSE_RESPONSE, $response, $input);
 
+            $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
+
+            $this->createGatewayRefundEntity($gatewayAttributes, $input);
+
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
                 $this->checkErrorsAndThrowException($response);
             }
-
-            $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
-
-            $this->createGatewayRefundEntity($gatewayAttributes, $input);
         }
         catch (SoapFault $exception)
         {
             $this->handleSoapFault($exception, 'Reverse failed');
         }
+    }
+
+    /**
+     * Calls gateway to verify if a refund has
+     * been successfully performed or not.
+     *
+     * true  if refunded
+     * false if not refunded
+     *
+     * @param array $input
+     *
+     * @return bool
+     * @throws Exception\LogicException
+     */
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $content = $this->sendRefundVerifyRequest($input);
+
+        $refundReplies = $this->fetchRefundGatewayReplyFromContent($content);
+
+        foreach ($refundReplies as $refundReply)
+        {
+            if ((isset($refundReply[0][F::R_FLAG]) === true) and
+                ($refundReply[0][F::R_FLAG] === ReplyFlag::SOK))
+            {
+                if ($refundReply[0]['@attributes'][F::NAME] === 'ics_auth_reversal')
+                {
+                    $status = Status::REVERSED;
+                }
+                else if ($refundReply[0]['@attributes'][F::NAME] === 'ics_credit')
+                {
+                    $status = Status::REFUNDED;
+                }
+                else
+                {
+                    throw new Exception\LogicException(
+                        'Unexpected status',
+                        null,
+                        [
+                            'received_status' => $refundReply[0]['@attributes'][F::NAME]
+                        ]);
+                }
+
+                $responseRequest = $refundReply[1];
+
+                $gatewayEntity = $this->repo->findByRefundId($input['refund']['id']);
+
+                if ($gatewayEntity !== null)
+                {
+                    $gatewayEntity->setStatus($status);
+
+                    $this->repo->saveOrFail($gatewayEntity);
+                }
+                else
+                {
+                    //
+                    // Else condition is needed for the case where refund request fails
+                    // at the soap level. In that case, we don't create a gateway refund
+                    // entity.
+                    //
+                    $attributes = $this->getRefundAttributesFromVerify($responseRequest);
+                    $attributes[E::STATUS] = $status;
+
+                    $this->createGatewayRefundEntity($attributes, $input);
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function getRefundAttributesFromVerify(array $request)
+    {
+        return [
+            E::REF           => $request[F::PAYMENT_DATA][F::PAYMENT_REQUEST_ID],
+            E::REASON_CODE   => 200,
+            E::RECEIVED      => true
+        ];
+    }
+
+    protected function sendRefundVerifyRequest($input)
+    {
+        $request = $this->getRefundVerifyRequestContent($input);
+
+        $this->traceGatewayRequest(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            $request,
+            $input);
+
+        $this->setCybersourceCredentials($request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayResponse(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            $response->body,
+            $input);
+
+        $this->response = $response;
+
+        $content = $this->xmlToArray($response->body);
+
+        return $content;
     }
 
     public function verify(array $input)
@@ -275,8 +382,25 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestContent(array $input)
     {
-        $targetDate = Carbon::createFromTimestamp($input['payment']['created_at'], 'UTC')
-                                ->format('Ymd');
+        return $this->getVerifyRequestContent($input, 'payment');
+    }
+
+    protected function getRefundVerifyRequestContent(array $input)
+    {
+        $request = $this->getVerifyRequestContent($input, 'refund');
+
+        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'UTC')
+                            ->format('Ymd');
+
+        $request['content'][F::TARGET_DATE] = $targetDate;
+
+        return $request;
+    }
+
+    protected function getVerifyRequestContent(array $input, $entity)
+    {
+        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'UTC')
+                            ->format('Ymd');
 
         $content = [
             F::TYPE                      => 'transaction',
@@ -284,7 +408,7 @@ class Gateway extends Base\Gateway
             F::MERCHANT_ID               => $this->getMerchantID($input['terminal']),
             F::TARGET_DATE               => $targetDate,
             F::VERSION_NUMBER            => '1.90',
-            F::MERCHANT_REFERENCE_NUMBER => $input['payment']['id'],
+            F::MERCHANT_REFERENCE_NUMBER => $input[$entity]['id'],
         ];
 
         $request = $this->getStandardRequestArray($content);
@@ -299,7 +423,7 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        list($authReply, $requestContent) = $this->fetchAuthorizeReplyFromContent($content);
+        list($authReply, $requestContent) = $this->fetchPaymentGatewayReplyFromContent($content);
 
         // Payment is failed when ics_auth is not present
         if ((isset($authReply[F::R_FLAG]) === false) or
@@ -364,9 +488,21 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function fetchAuthorizeReplyFromContent($content)
+    protected function fetchRefundGatewayReplyFromContent($content)
+    {
+        return $this->fetchGatewayReplyFromContent($content, ['ics_credit', 'ics_auth_reversal']);
+    }
+
+    protected function fetchPaymentGatewayReplyFromContent($content)
+    {
+        return $this->fetchGatewayReplyFromContent($content, ['ics_auth'])[0];
+    }
+
+    protected function fetchGatewayReplyFromContent($content, array $types)
     {
         $requests = $content[F::REQUESTS][F::REQUEST] ?? null;
+
+        $response = null;
 
         if ($requests !== null)
         {
@@ -386,15 +522,15 @@ class Gateway extends Base\Gateway
 
                 foreach($applicationReplies as $applicationReply)
                 {
-                    if ($applicationReply['@attributes'][F::NAME] === 'ics_auth')
+                    if (in_array($applicationReply['@attributes'][F::NAME], $types, true))
                     {
-                        return [$applicationReply, $request];
+                        $response[] = [$applicationReply, $request];
                     }
                 }
             }
         }
 
-        return [[], []];
+        return $response ?: [[[], []]];
     }
 
     /**
@@ -885,6 +1021,11 @@ class Gateway extends Base\Gateway
             E::RECEIVED      => true
         ];
 
+        if ($response[F::REASON_CODE] !== Result::SUCCESS)
+        {
+            $attributes[E::STATUS] = Status::REFUND_FAILED;
+        }
+
         return $attributes;
     }
 
@@ -898,6 +1039,11 @@ class Gateway extends Base\Gateway
             E::STATUS             => Status::REVERSED,
             E::RECEIVED           => true
         ];
+
+        if ($response[F::REASON_CODE] !== Result::SUCCESS)
+        {
+            $attributes[E::STATUS] = Status::REVERSE_FAILED;
+        }
 
         return $attributes;
     }
