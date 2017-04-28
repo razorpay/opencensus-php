@@ -115,14 +115,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getGatewayFee($row)
     {
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = floatval($row[self::COLUMN_FEE]) * 100;
+        $fee = abs(floatval($row[self::COLUMN_FEE])) * 100;
 
         // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);
 
         $fee += $serviceTax;
 
-        return abs(round($fee));
+        return round($fee);
 
     }
 
