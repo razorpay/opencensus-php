@@ -1095,6 +1095,13 @@ class BasicAuth
         $this->app['rzp.mode'] = $mode;
     }
 
+    public function setMerchant(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->merchant = $merchant;
+    }
+
     protected function setType($type)
     {
         $this->type = $type;
