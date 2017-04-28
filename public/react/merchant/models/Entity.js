@@ -16,7 +16,7 @@ export default class Entity extends Base {
   */
   fetchAll(params = {}) {
     const Klass = this.constructor;
-    let { id, ...data } = params;
+    let { id, appendModeInURL, appendModeInQueryParam, ...data } = params;
 
     if (id) {
       return this.fetch(id, data).then(response => {
@@ -28,7 +28,11 @@ export default class Entity extends Base {
       });
     }
 
-    return ajax(this.resourceUrl, { data }).then(response => {
+    return ajax(this.resourceUrl, {
+      appendModeInURL,
+      appendModeInQueryParam,
+      data,
+    }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Klass().deserialize(item)
       );
