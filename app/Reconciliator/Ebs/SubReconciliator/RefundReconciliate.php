@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\Ebs;
 
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
+use RZP\Exception\ReconciliationException;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
