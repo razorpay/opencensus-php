@@ -81,6 +81,11 @@ app.controller('OrgsAddUsersCtrl', [
       angular.forEach(roles, function(role) {
         $scope.roles[role.id] = role.name;
       });
+
+      // Auto select 1st option in roles list in create mode
+      if (!$stateParams.id && Object.keys($scope.roles).length) {
+        $scope.obBug.role = Object.keys($scope.roles)[0];
+      }
     });
 
     organization.fetchGroups().then(function(groups) {
