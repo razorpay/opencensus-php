@@ -178,6 +178,8 @@ class AdminTest extends TestCase
 
     public function testDeleteAllRolesAdmin()
     {
+        $this->markTestSkipped();
+
         $admin = $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID => $this->orgId,
         ]);
