@@ -482,6 +482,19 @@ trait Authorize
             ($payment->isSecondRecurring() === true))
         {
             $this->verifyPrivateAuth();
+
+            $this->verifyAggregatorIfApplicable($merchant);
+        }
+    }
+
+    protected function verifyAggregatorIfApplicable(Merchant\Entity $merchant)
+    {
+        // Zoho requires its merchant to use this route only through Zoho itself
+        // We need to check if merchant is sending the request himself, without Zoho
+        // This is temporary, will be removed when OAuth comes through
+        if ($merchant->isFeatureEnabled(Feature\Constants::ZOHO) === true)
+        {
+            (new Feature\Validator)->validateZoho($this->request);
         }
     }
 

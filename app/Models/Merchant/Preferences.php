@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Merchant;
 
+use Config;
 use RZP\Models\Payment\Gateway;
+use Symfony\Component\HttpFoundation\HeaderBag as Headers;
 
 class Preferences
 {
@@ -39,4 +41,13 @@ class Preferences
             Gateway::CYBERSOURCE,
         ],
     ];
+
+    const X_AGGREGATOR_HEADER = 'x-aggregator';
+
+    public static function checkZohoHeaders(Headers $headers)
+    {
+        $expectedHeader = Config::get('applications.zoho.header');
+
+        return ($expectedHeader === $headers->get(self::X_AGGREGATOR_HEADER));
+    }
 }
