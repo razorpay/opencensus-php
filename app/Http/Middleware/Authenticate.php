@@ -55,6 +55,8 @@ class Authenticate
             return ApiResponse::routeDisabled();
         }
 
+        $this->ba->init($this->app);
+
         $bearerToken = $request->bearerToken();
 
         //
@@ -88,8 +90,6 @@ class Authenticate
     protected function authenticateBasicAuth(string $route)
     {
         $ba = $this->ba;
-
-        $ba->init($this->app);
 
         $ret = null;
 
@@ -147,5 +147,11 @@ class Authenticate
         $oauth = new OAuth;
 
         $merchantId = $oauth->resolveToken($bearerToken);
+
+        //
+        // Set merchant for the current request
+        // TODO: Move this to a common auth class
+        //
+        $this->ba->setMerchant($merchantId);
     }
 }
