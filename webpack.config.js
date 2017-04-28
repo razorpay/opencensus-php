@@ -30,6 +30,7 @@ const webpackConfig = {
 // ------------------------------------
 webpackConfig.entry = {
   merchant: './merchant',
+  merchant_new: './merchant/index_new',
   admin: './admin',
 };
 

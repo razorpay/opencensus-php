@@ -65,6 +65,20 @@ gulp.task('css', () => {
     .pipe(gulp.dest('public/css/generated'));
 });
 
+gulp.task('cssnew', () => {
+  gulp
+    .src('public/react/merchant/styles/app.styl')
+    .pipe(plumber({ errorHandler: handleError }))
+    .pipe(
+      stylus({
+        include: 'node_modules',
+        'include css': true,
+        use: [bootstrap()],
+      })
+    )
+    .pipe(gulp.dest('public/css/generated/new'));
+});
+
 gulp.task('css:prod', () => {
   return gulp
     .src('public/css/style.styl')
@@ -123,6 +137,10 @@ const concatJs = lazypipe().pipe(concatMulti, {
   ],
 
   'js/generated/merchant_react.js': ['public/react/dist/merchant_react.js'],
+  'js/generated/merchant_new_react.js': [
+    'public/js/jquery/jquery-2.1.4.min.js',
+    'public/react/dist/merchant_new_react.js',
+  ],
 
   'js/generated/admin_react.js': ['public/react/dist/admin_react.js'],
 
@@ -162,7 +180,7 @@ gulp.task('tmpl', () => {
 });
 
 gulp.task('dev', () => {
-  run('compileThemes', ['css', 'js'], 'tmpl');
+  run('compileThemes', ['css', 'cssnew', 'js'], 'tmpl');
 });
 
 gulp.task('reactRevReplace', () => {
@@ -261,6 +279,7 @@ gulp.task('dev:webpack', ['dev:setENV'], cb => {
 
 gulp.task('watch:full', ['dev:webpack'], () => {
   gulp.watch('public/css/*.styl', ['css']);
+  gulp.watch('public/react/styles/*.styl', ['cssnew']);
   gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
   gulp.watch(
     [
