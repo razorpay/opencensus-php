@@ -269,7 +269,7 @@ class Inferno
         {
             $response = $this->makeRequest($request);
         }
-        catch (Exception $e)
+        catch (\Throwable $e)
         {
             $response = null;
 
