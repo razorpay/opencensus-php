@@ -38,7 +38,7 @@ class ClaimsFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        $signedFileUrl = $creator->getSignedUrl('1440')['url'];
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
         $data = [
             'total_amount'    => $totalAmount,

@@ -13,11 +13,6 @@ class RefundFile extends Base\RefundFile
 
     const EMAIL_BODY = 'Please forward the Axis Netbanking refunds file to the operations team';
 
-    /**
-     * Minutes for which Signed Url is valid
-     */
-    const SIGNED_URL_DURATION = '1440';
-
     protected static $headers = [
         'Payee id', // pid
         'Payee name', // RAZORPAY
