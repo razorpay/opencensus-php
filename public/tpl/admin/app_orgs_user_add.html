@@ -14,6 +14,7 @@
     </div>
     <div class="panel-body b-b b-light" ng-if="fields">
       <form class="form-horizontal form-validation">
+        <!--Name-->
         <div class="form-group" ng-if="fields.indexOf('name') !== -1">
           <label class="col-lg-2 control-label">Full Name</label>
           <div class="col-lg-10" >
@@ -27,12 +28,14 @@
             <span class="help-block">Required to login to user panel.</span>
           </div>
         </div>
+        <!--Email-->
         <div class="form-group" ng-show="!user.id" ng-if="fields.indexOf('email') !== -1">
           <label class="col-lg-2 control-label">Email</label>
           <div class="col-lg-10" >
             <input type="email" class="form-control m-b" name="email" ng-model="user.email" />
           </div>
         </div>
+        <!--Password-->
         <div class="form-group" ng-show="!user.id" ng-if="fields.indexOf('password') !== -1">
           <label class="col-lg-2 control-label">Password</label>
           <div class="col-lg-10" >
@@ -45,6 +48,7 @@
             <input type="password" class="form-control m-b" name="password_confirmation" ng-model="user.password_confirmation" />
           </div>
         </div>
+        <!--Employee Code-->
         <div class="form-group" ng-if="fields.indexOf('employee_code') !== -1">
           <label class="col-lg-2 control-label">Employee Code</label>
           <div class="col-lg-10" >
@@ -75,6 +79,7 @@
             <input type="text" class="form-control m-b" name="supervisor_code" ng-model="user.supervisor_code" />
           </div>
         </div>
+        <!--Allow Merchant Flag-->
         <div class="form-group" ng-if="fields.indexOf('allow_all_merchants') !== -1">
           <label class="col-lg-2 control-label">Allow all Merchants</label>
           <div class="col-lg-10">
@@ -85,7 +90,7 @@
             </div>
           </div>
         </div>
-
+        <!--Disabled Flag-->
         <div class="form-group" ng-if="fields.indexOf('disabled') !== -1" ng-show="user.id">
           <label class="col-lg-2 control-label">Disabled</label>
           <div class="col-lg-10">
@@ -96,15 +101,16 @@
             </div>
           </div>
         </div>
-
+        <!--Role-->
         <div class="form-group" ng-if="fields.indexOf('roles') !== -1">
           <label class="col-lg-2 control-label">Role</label>
           <div class="col-lg-10" >
             <select class="form-control m-b" ng-model="obBug.role">
-               <option ng-repeat="(key, value) in roles" value='{{key}}'>{{value}}</option>
+               <option ng-repeat="(key, value) in roles" ng-selected = "obBug.role === key" value='{{key}}'>{{value}}</option>
             </select>
           </div>
         </div>
+        <!--Groups-->
         <div class="form-group" ng-if="fields.indexOf('groups') !== -1">
           <div class="col-lg-2 text-right">Groups</div>
           <div class="col-lg-10 scrollable-table">
@@ -128,6 +134,7 @@
             </table>
           </div>
         </div>
+        <!--Action Btn-->
         <div class="panel-footer">
           <div class="center col-lg-2">
             <button class="btn btn-primary panel-ok col-lg-12" async-btn-click="save(user)">Save</button>

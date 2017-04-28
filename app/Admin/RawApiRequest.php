@@ -158,9 +158,16 @@ class RawApiRequest
      */
     protected function setContentType($default = 'application/x-www-form-urlencoded')
     {
+        $contentType = Input::get('content_type', $default);
+
+        if ($contentType === "application/json")
+        {
+            $this->params['body'] = json_encode($this->params['body']);
+        }
+
         // The content type header might be missing and in those cases
         // We let guzzle figure it out.
-        $this->params['headers']['Content-Type'] = Input::get('content_type', $default);
+        $this->params['headers']['Content-Type'] = $contentType;
     }
 
     /**
@@ -211,9 +218,12 @@ class RawApiRequest
         // We just pass the body as it is
         else
         {
-            $this->setContentType('application/x-www-form-urlencoded');
+            // Setting the body before the content type is important.
+            // Why? Check setContentType function
 
             $this->params['body'] = $this->input['body'] ?? Input::get('body', '');
+
+            $this->setContentType();
         }
     }
 

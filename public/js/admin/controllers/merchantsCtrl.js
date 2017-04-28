@@ -2,12 +2,15 @@
 app.controller('MerchantsCtrl', [
   '$scope',
   '$http',
-  function($scope, $http) {
+  '$state',
+  '$stateParams',
+  function($scope, $http, $state, $stateParams) {
+    $scope.merchant_type_request = $stateParams.type;
     $scope.merchants = {};
     $scope.count = 0;
 
     $scope.regenerate = function() {
-      $scope.merchant_type = '1';
+      $scope.merchant_type_request = $scope.merchant_type_request ? $scope.merchant_type_request : 'activated';
       $scope.sub_accounts = {
         all: false,
         id: '',
@@ -18,28 +21,28 @@ app.controller('MerchantsCtrl', [
 
     $scope.filter = function() {
       var query = {};
-      switch ($scope.merchant_type) {
-        case '1':
+      switch ($scope.merchant_type_request) {
+        case 'activated':
           query.activated = 1;
           break;
 
-        case '2':
+        case 'notactivated':
           query.activated = 0;
           break;
 
-        case '3':
+        case 'pending':
           query.pending = 1;
           break;
 
-        case '5':
+        case 'dead':
           query.dead = 1;
           break;
 
-        case '6':
+        case 'archived':
           query.archived = 1;
           break;
 
-        case '7':
+        case 'suspended':
           query.suspended = 1;
           break;
       }
@@ -65,6 +68,10 @@ app.controller('MerchantsCtrl', [
     };
 
     $scope.regenerate();
+
+    $scope.changeMerchantTypeUrl = function () {
+      $state.go('app.merchants.list', { type: $scope.merchant_type_request });
+    };
 
     function generate(query) {
       var url = '/admin/merchant/list';
