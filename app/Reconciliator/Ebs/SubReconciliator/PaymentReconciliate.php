@@ -123,7 +123,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $fee += $serviceTax;
 
         return round($fee);
-
     }
 
     protected function getReferenceNumber($row)
