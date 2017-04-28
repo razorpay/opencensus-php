@@ -743,35 +743,12 @@ class Service extends Base\Service
 
     public function fetchReferredMerchants($merchantId)
     {
-        $error = $data = [];
-
         $tag = "ref-$merchantId";
 
-        $this->setApiCredentials();
-
-        try
-        {
-            $merchant = $this->api->merchant->fetch($id)->toArray();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        if (empty($error) === true)
-        {
-            $merchantTags = Merchant\Entity::select(['merchants.id'])
-                                    ->with('tagged')
-                                    ->where('merchants.id', $merchantId)
-                                    ->withAllTags($tags)
-                                    ->get()
-                                    ->toArray();
-
-            $data = array_merge($merchant, $merchantTags[$merchantId]);
-
-        }
-
-        return [$error, $data];
+        return Merchant\Entity::select(['id', 'name', 'activated', 'created_at', 'email'])
+                              ->withAnyTag($tag)
+                              ->whereNull('suspended_at')
+                              ->get();
     }
 
     /**

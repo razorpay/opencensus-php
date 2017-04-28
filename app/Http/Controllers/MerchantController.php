@@ -243,9 +243,9 @@ class MerchantController extends Controller
     {
         $id = Auth::user()->currentMerchant()->id;
 
-        list($error, $data) = (new Merchant\Service)->fetchReferredMerchants($id);
+        $data = (new Merchant\Service)->fetchReferredMerchants($id);
 
-        return AppResponse::jsonResponse($error, $data);
+        return AppResponse::jsonResponse([], $data);
     }
 
     /**
