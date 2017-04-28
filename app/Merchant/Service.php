@@ -83,11 +83,13 @@ class Service extends Base\Service
     {
         $currentMerchant = $this->currentUser->currentMerchant();
 
+        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
+
         $isLinkedAccount = (bool) (\Input::get('account') ?? false);
 
         $tags = Merchant\Entity::select(['merchants.id'])
                                 ->with('tagged')
-                                ->whereIn('merchants.id', $currentMerchant->id)
+                                ->where('merchants.id', $currentMerchant->id)
                                 ->get()
                                 ->toArray();
 
@@ -137,10 +139,9 @@ class Service extends Base\Service
             if ($isLinkedAccount === false)
             {
                 // Finally attach the current user to the new user's team
-                $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+                User\Entity::find($this->currentUser->id)->merchants()->attach([$merchant->id], ['role' => 'owner']);
 
                 (new User\Service)->attachMerchantUserOnApi($this->currentUser->id, $merchant->id, 'owner');
-
             }
 
             return [null, $merchant->toArray()];
