@@ -142,8 +142,8 @@ var app = angular
           url: '/profile',
           templateUrl: 'tpl/app_profile.html',
         })
-        .state('app.accounts', {
-          url: '/accounts',
+        .state('app.accountsold', {
+          url: '/accountsold',
           templateUrl: 'tpl/app_accounts.html',
         })
         // React
@@ -326,6 +326,10 @@ var app = angular
         .state('app.activation', {
           url: '/activation',
           templateProvider: reactTemplateProvider('<activation-wizard />'),
+        })
+        .state('app.accounts', {
+          url: '/accounts',
+          templateProvider: reactTemplateProvider('<accounts-list />'),
         })
         //Guest Routes
         .state('access', {
