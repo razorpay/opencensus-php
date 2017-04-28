@@ -675,15 +675,12 @@ app
           });
       };
       $scope.archiveMerchant = function() {
-        var params = {
-          action: 'archive'
-        };
         var data = {
           route_name: 'merchant_action',
           url_params: {
             '{id}' : $scope.merchant.id
           },
-          body: params
+          body: {action: 'archive'}
         };
         var request = $http({
           method: 'put',
@@ -711,15 +708,12 @@ app
           });
       };
       $scope.unarchiveMerchant = function() {
-        var params = {
-          action: 'unarchive'
-        };
         var data = {
           route_name: 'merchant_action',
           url_params: {
             '{id}' : $scope.merchant.id
           },
-          body: params
+          body: {action: 'unarchive'}
         };
         var request = $http({
           method: 'put',
@@ -748,15 +742,12 @@ app
       };
 
       $scope.suspendMerchant = function() {
-        var params = {
-          action: 'suspend'
-        };
         var data = {
           route_name: 'merchant_action',
           url_params: {
             '{id}' : $scope.merchant.id
           },
-          body: params
+          body: {action: 'suspend'}
         };
         var request = $http({
           method: 'put',
@@ -785,15 +776,12 @@ app
       };
 
       $scope.unsuspendMerchant = function() {
-        var params = {
-          action: 'unsuspend'
-        };
         var data = {
           route_name: 'merchant_action',
           url_params: {
             '{id}' : $scope.merchant.id
           },
-          body: params
+          body: {action: 'unsuspend'}
         };
         var request = $http({
           method: 'put',
