@@ -3,17 +3,19 @@
 namespace RZP\Reconciliator\Ebs;
 
 use RZP\Reconciliator\Base;
+use RZP\Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     // ----- Row header names -----
     const COLUMN_FEE                = 'tdr';
-    const COLUMN_SERVICE_TAX        = 'service_tax';
+    const COLUMN_KK_CESS            = 'krishi_kalyan_cess';
+    const COLUMN_SB_CESS            = 'swachh_bharat_cess';
     const COLUMN_PAYMENT_ID         = 'merchant_ref_no';
+    const COLUMN_SERVICE_TAX        = 'service_tax';
     const COLUMN_BANK_REFERENCE_NO  = 'bank_reference';
 
-    const COLUMN_PAYMENT_AMOUNT     = 'captured';           // website
-    const COLUMN_CREDIT_AMOUNT      = 'credit';             // email
+    const COLUMN_PAYMENT_AMOUNT     = ['captured', 'credit'];
 
     /**
      * Gets payment_id from row data
@@ -41,17 +43,31 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayPaymentAmount($row)
     {
-        if (isset($row[self::COLUMN_PAYMENT_AMOUNT]) === true)
+        $columnPaymentAmount = null;
+
+        foreach (self::COLUMN_PAYMENT_AMOUNT as $cpa)
         {
-            $paymentColumnVal = $row[self::COLUMN_PAYMENT_AMOUNT];
+            if (isset($row[$cpa]) === true)
+            {
+                $columnPaymentAmount = $cpa;
+                break;
+            }
         }
 
-        elseif (isset($row[self::COLUMN_CREDIT_AMOUNT]) === true)
+        if ($columnPaymentAmount === null)
         {
-            $paymentColumnVal = $row[self::COLUMN_CREDIT_AMOUNT];
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_FAILURE,
+                    'message'         => 'Unable to get payment amount!',
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+
+            throw new ReconciliationException('Unable to get payment amount for EBS from the recon file.');
         }
 
-        $paymentAmount = floatval($paymentColumnVal) * 100;
+        $paymentAmount = floatval($row[$columnPaymentAmount]) * 100;
 
         return abs($paymentAmount);
     }
@@ -59,14 +75,32 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /**
      * Gets service tax levied by EBS
      *
+     * Some files have KKC & SBC tax given separately
+     * If they are present separately,
+     * it means it's not added to the service tax.
+     *
      * @param $row array
      * @return $serviceTax float
      */
     protected function getGatewayServiceTax($row)
     {
         // Convert service tax into paise
-        // todo : check for KKC, other taxes
         $serviceTax = floatval($row[self::COLUMN_SERVICE_TAX]) * 100;
+
+        // Check for SB & KK Cess
+        if (isset($row[self::COLUMN_SB_CESS]) === true)
+        {
+            $sbCess = floatval($row[self::COLUMN_SB_CESS]) * 100;
+
+            $serviceTax += $sbCess;
+        }
+
+        if (isset($row[self::COLUMN_KK_CESS]) === true)
+        {
+            $kkCess = floatval($row[self::COLUMN_KK_CESS]) * 100;
+
+            $serviceTax += $kkCess;
+        }
 
         return abs(round($serviceTax));
     }
