@@ -49,7 +49,7 @@ angular
             .success(function(data) {
               try {
                 dataLayer.push({
-                  merchant_id: data.data.merchants[0].pivot.merchant_id,
+                  merchant_id: data.data.merchants[0].id,
                 });
               } catch (e) {}
               _identity = data.data;
@@ -861,7 +861,8 @@ angular
           // includes base_amount and base_amount_refunded
           return 'amount_inr';
         } else if (
-          key.substr(-6) === 'amount' || key.substr(0, 7) === 'amount_'
+          key.substr(-6) === 'amount' ||
+          key.substr(0, 7) === 'amount_'
         ) {
           return 'amount';
         } else if (isId(key)) {

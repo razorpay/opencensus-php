@@ -155,7 +155,6 @@ class MerchantController extends Controller
         else
         {
             $error = $service->checkUploads();
-
         }
 
         return AppResponse::jsonResponse($error);

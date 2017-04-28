@@ -20,7 +20,7 @@ import {
 export default class EditUser extends Component {
   componentWillMount() {
     this.props.initialize({
-      role: this.props.user.pivot.role,
+      role: this.props.user.role,
     });
   }
 
