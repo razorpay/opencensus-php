@@ -28,8 +28,7 @@ class OAuth
     public function resolveToken(string $token) : string
     {
         $response = $this->server->authenticateWithBearerToken($token);
-
-        $scopes = $response['scopes'];
+        $scopes = (array) $response['scopes'];
 
         $merchantId = $response['merchant_id'];
 
@@ -42,10 +41,7 @@ class OAuth
     {
         // check if current route has access for scopes
 
-
         // Save scopes so endpoints can check against it, if needed
         $this->ba->withScopes($scopes);
-
-
     }
 }
