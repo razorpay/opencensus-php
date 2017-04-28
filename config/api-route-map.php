@@ -1,13 +1,17 @@
 <?php
 
+// We use {orgId} when frontend is not supposed to pass it
+// and resolve (on the backend) automagically.
+
 return [
     // auth
     'admin' => [
         'org_create'                        => 'orgs',
         'org_get_multiple'                  => 'orgs',
-        'org_get'                           => 'orgs/{orgId}',
-        'org_edit'                          => 'orgs/{orgId}',
-        'org_delete'                        => 'orgs/{orgId}',
+        // this should not be {orgId}
+        'org_get'                           => 'orgs/{id}',
+        'org_edit'                          => 'orgs/{id}',
+        'org_delete'                        => 'orgs/{id}',
 
         // Roles
         'role_get_multiple'                 => 'orgs/{orgId}/roles',
