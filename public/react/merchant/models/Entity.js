@@ -1,5 +1,6 @@
 import Base from './Base';
 import ajax from 'merchant/utils/ajax';
+import store from 'merchant/store';
 
 /*
   Abstrace class for most CRUD entities. The base Entity has methods like
@@ -58,5 +59,9 @@ export default class Entity extends Base {
       url: this.getResourceUrl(),
       method: 'delete',
     });
+  }
+
+  getSession() {
+    return store.getState().session;
   }
 }
