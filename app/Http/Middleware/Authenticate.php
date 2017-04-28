@@ -57,6 +57,11 @@ class Authenticate
 
         $bearerToken = $request->bearerToken();
 
+        //
+        // If the request was sent with Bearer auth,
+        // authenticate with the token, else go for the
+        // old flow
+        //
         if (empty($bearerToken) === false)
         {
             $ret = $this->authenticateBearerAuth($route, $bearerToken);
