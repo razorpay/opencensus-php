@@ -27,5 +27,5 @@ export default (url, params = {}) => {
 
 // Replaces consecutive & trailing slashes from the URL
 const normalizeUrl = url => {
-  return url.replace(/\/+/g, '/').replace(/\/$/, '');
+  return url.replace(/([^:]\/)\/+/g, '$1').replace(/\/$/, '');
 };
