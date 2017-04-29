@@ -7,7 +7,6 @@ use Config;
 use Mockery;
 use Mail;
 
-use RZP\Mail\Settlement\KotakReconciliation as KotakReconciliationMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
@@ -17,6 +16,7 @@ use RZP\Models\FileStore;
 use RZP\Models\Merchant\Account;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\FundTransfer\Kotak;
+use RZP\Mail\Settlement\KotakReconciliation as KotakReconciliationMail;
 
 class ReconciliationTest extends TestCase
 {
