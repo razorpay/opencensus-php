@@ -14,23 +14,23 @@ final class FactoryData
     public static function defineEntityFactories($factory, $faker)
     {
         $factory(\RZP\Models\Merchant\Entity::class, [
-            'id' => $faker->uniqueid,
-            'org_id' => '100000razorpay',
-            'parent_id' => null,
-            'name' => $faker->word,
-            'email' => $faker->email,
-            'activated' => 0,
-            'live' => 0,
-            'pricing_plan_id' => null,
-            'international' => 0,
-            'website' => $faker->url,
-            'billing_label' => $faker->word,
-            'category' => 1100,
+            'id'                       => $faker->uniqueid,
+            'org_id'                   => '100000razorpay',
+            'parent_id'                => null,
+            'name'                     => $faker->word,
+            'email'                    => $faker->email,
+            'activated'                => 0,
+            'live'                     => 0,
+            'pricing_plan_id'          => null,
+            'international'            => 0,
+            'website'                  => $faker->url,
+            'billing_label'            => $faker->word,
+            'category'                 => 1100,
             'transaction_report_email' => ['test@razorpay.com'],
-            'receipt_email_enabled' => true,
-            'settlement_schedule' => 3,
-            'fee_bearer' => \RZP\Models\Merchant\FeeBearer::PLATFORM,
-            'risk_rating' => 3,
+            'receipt_email_enabled'    => true,
+            'settlement_schedule'      => 3,
+            'fee_bearer'               => \RZP\Models\Merchant\FeeBearer::PLATFORM,
+            'risk_rating'              => 3,
         ]);
 
         $factory(\RZP\Models\Terminal\Entity::class, [
@@ -41,6 +41,7 @@ final class FactoryData
             'shared'                    => 1,
             'currency'                  => 'INR',
             'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => $faker->word,
             'gateway_terminal_id'       => $faker->word,
             'gateway_terminal_password' => null,
@@ -49,28 +50,28 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
-            'id' => $faker->uniqueid,
-            'balance' => 0,
+            'id'                        => $faker->uniqueid,
+            'balance'                   => 0,
         ]);
 
         $factory(\RZP\Models\BankAccount\Entity::class, [
-            'id' => $faker->uniqueid,
-            'merchant_id' => '10000000000000',
-            'entity_id'   => '10000000000000',
-            'type' => 'merchant',
-            'ifsc_code' => 'RZPB0000000',
-            'account_number' => 10010101011,
-            'beneficiary_name' => 'random_name',
-            'beneficiary_address1' => 'address1',
-            'beneficiary_address2' => 'address2',
-            'beneficiary_address3' => 'address3',
-            'beneficiary_address4' => 'address4',
-            'beneficiary_city' => 'new delhi',
-            'beneficiary_state' => 'DE',
-            'beneficiary_country' => 'IN',
-            'beneficiary_email' => 'random@email.com',
-            'beneficiary_mobile' => 9988776655,
-            'beneficiary_pin' => 100000,
+            'id'                        => $faker->uniqueid,
+            'merchant_id'               => '10000000000000',
+            'entity_id'                 => '10000000000000',
+            'type'                      => 'merchant',
+            'ifsc_code'                 => 'RZPB0000000',
+            'account_number'            => 10010101011,
+            'beneficiary_name'          => 'random_name',
+            'beneficiary_address1'      => 'address1',
+            'beneficiary_address2'      => 'address2',
+            'beneficiary_address3'      => 'address3',
+            'beneficiary_address4'      => 'address4',
+            'beneficiary_city'          => 'new delhi',
+            'beneficiary_state'         => 'DE',
+            'beneficiary_country'       => 'IN',
+            'beneficiary_email'         => 'random@email.com',
+            'beneficiary_mobile'        => 9988776655,
+            'beneficiary_pin'           => 100000,
         ]);
 
         $factory(\RZP\Models\Card\Entity::class, [
@@ -152,7 +153,7 @@ final class FactoryData
             'id' => $faker->uniqueid,
             'entity_id' => $faker->uniqueid,
             'type' => 'payment',
-            'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
+            // 'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
             'amount' => $faker->randomNumber,
             'fee' => $faker->randomNumber,
             'pricing_rule_id' => null,
@@ -163,27 +164,43 @@ final class FactoryData
             'gateway_fee' => null,
             'on_hold'   => 0,
             'gratis' => false,
-            'channel' => 'kotak'
+            'channel' => 'kotak',
+            'settled' => 0,
         ]);
 
         $factory(\RZP\Models\Settlement\Entity::class, [
             'id' => $faker->uniqueid,
             'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
-            'amount' => $faker->randomNumber,
+            'amount' => $faker->randomNumber(4),
             'status' => 'created',
-            'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
+            // 'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
+            'fees' => $faker->randomNumber(2),
             'channel' => 'kotak',
-            'utr' => $faker->randomNumber(8),
             'failure_reason' => null,
             'return_utr' => null,
         ]);
 
         $factory(\RZP\Models\FundTransfer\Attempt\Entity::class, [
             'id' => $faker->uniqueid,
-            'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
-            'entity_type' => 'settlement',
+            // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
+            'source_type' => 'settlement',
+            'status' => 'created',
             'channel' => 'kotak',
-            'version' => 'V2',
+            'version' => 'V3',
+        ]);
+
+        $factory(\RZP\Models\FundTransfer\Batch\Entity::class, [
+            'id' => $faker->uniqueid,
+            'date' => Carbon::today('Asia/Kolkata')->timestamp,
+            'channel' => 'kotak',
+            'amount' => $faker->randomNumber(4),
+            'processed_amount' => 0,
+            'processed_count' => 0,
+            'fees' => $faker->randomNumber(2),
+            'api_fee' => $faker->randomNumber(2),
+            'gateway_fee' => $faker->randomNumber(2),
+            'urls' => $faker->sentence,
+            'initiated_at' => Carbon::today('Asia/Kolkata')->timestamp + 10,
         ]);
 
         $factory(\RZP\Models\Adjustment\Entity::class, [
@@ -414,6 +431,10 @@ final class FactoryData
             'auth_type'     => 'password',
         ]);
 
+        $factory(\RZP\Models\Admin\Org\FieldMap\Entity::class, [
+            'id'            => $faker->uniqueid,
+        ]);
+
         $factory(\RZP\Models\Admin\Org\Hostname\Entity::class, [
             'id'            => $faker->uniqueid,
             'org_id'        => $faker->uniqueid,
@@ -587,6 +608,17 @@ final class FactoryData
             'delay'             => 3,
             'hour'              => 5,
             'next_run'          => 1451586600,
+        ]);
+
+        $factory(\RZP\Models\Schedule\Task\Entity::class, [
+            'id'                => $faker->randomNumber(6),
+            'merchant_id'       => '10000000000000',
+            'entity_id'         => '10000000000000',
+            'entity_type'       => 'merchant',
+            'type'              => 'settlement',
+            'method'            => null,
+            'schedule_id'       => 'factory:RZP\Models\Schedule\Entity',
+            'next_run_at'       => 1451604600,
         ]);
     }
 }

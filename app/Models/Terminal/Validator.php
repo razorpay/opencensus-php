@@ -30,7 +30,8 @@ class Validator extends Base\Validator
         Entity::UPI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
-        Entity::RECURRING                   => 'sometimes|in:0,2',
+        Entity::RECURRING                   => 'sometimes|integer|max:7',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
@@ -43,10 +44,15 @@ class Validator extends Base\Validator
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::FIRST_DATA,
     ];
 
     protected static $createValidators = [
-        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY, Entity::CURRENCY,
+        Entity::GATEWAY,
+        Entity::EMI,
+        Entity::NETWORK_CATEGORY,
+        Entity::CURRENCY,
+        Entity::GATEWAY_ACQUIRER,
     ];
 
     protected static $reassignRules = [
@@ -59,6 +65,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'required|integer|digits:8',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|max:15',
         Entity::EMI                         => 'sometimes|boolean',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
     ];
@@ -89,9 +96,11 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string|min:5',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string|min:5',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
+        Entity::RECURRING                   => 'sometimes|integer|max:7',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
-        Entity::CURRENCY                    => 'sometimes|alpha|size:3'
+        Entity::CURRENCY                    => 'sometimes|alpha|size:3',
     ];
 
     protected static $amexTerminalRules = [
@@ -103,6 +112,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 
     protected static $axisMigsTerminalRules = [
@@ -112,6 +122,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 
     protected static $cybersourceTerminalRules = [
@@ -120,8 +131,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:50',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string|max:20',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
-        Entity::GATEWAY_ACQUIRER            => 'required|string',
-        Entity::RECURRING                   => 'sometimes|in:0,1,2',
+        Entity::RECURRING                   => 'sometimes|integer|max:7',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
     ];
 
@@ -130,6 +141,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 
     protected static $billdeskEditTerminalRules = [
@@ -142,12 +154,19 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY                     => 'sometimes|in:hdfc',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+        Entity::INTERNATIONAL               => 'sometimes|boolean',
+    ];
+
+    protected static $firstDataEditTerminalRules = [
+        Entity::INTERNATIONAL => 'sometimes|boolean',
+        Entity::RECURRING     => 'sometimes|integer|max:7',
     ];
 
     protected static $cybersourceEditTerminalRules = [
         Entity::GATEWAY_RECON_PASSWORD => 'sometimes|alpha_num',
         Entity::GATEWAY                => 'sometimes|in:cybersource',
         Entity::CARD                   => 'sometimes|boolean|in:1',
+        Entity::INTERNATIONAL          => 'sometimes|boolean',
     ];
 
     protected static $upiIciciEditTerminalRules = [
@@ -216,6 +235,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string'
     ];
 
+    protected static $netbankingFederalTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_federal',
+    ];
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -232,7 +255,8 @@ class Validator extends Base\Validator
             $input['merchant_id'],
             $input['category'],
             $input['tpv'],
-            $input[Entity::NETWORK_CATEGORY]);
+            $input[Entity::NETWORK_CATEGORY],
+            $input[Entity::GATEWAY_ACQUIRER]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -271,6 +295,27 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+        }
+    }
+
+    protected function validateGatewayAcquirer(array $input)
+    {
+        $gateway = $input[Entity::GATEWAY];
+
+        // Don't validate acquirer if it's not a gateway which needs acquirer
+        if (isset(Payment\Gateway::GATEWAY_ACQUIRERS[$gateway]) === false)
+        {
+            return;
+        }
+
+        $gatewayAcquirer = $input[Entity::GATEWAY_ACQUIRER];
+
+        $validGatewayAcquirers = Payment\Gateway::GATEWAY_ACQUIRERS[$gateway];
+
+        if (in_array($gatewayAcquirer, $validGatewayAcquirers, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $gatewayAcquirer . ' is not a valid acquirer for ' . $gateway);
         }
     }
 

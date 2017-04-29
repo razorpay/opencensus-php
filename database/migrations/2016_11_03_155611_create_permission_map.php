@@ -24,6 +24,9 @@ class CreatePermissionMap extends Migration
 
             $table->string('entity_type', 10); // org or roles
 
+            $table->boolean('enable_workflow')
+                  ->default(0);
+
             $table->unique(['permission_id', 'entity_id']);
         });
     }

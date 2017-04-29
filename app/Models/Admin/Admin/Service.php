@@ -18,6 +18,7 @@ use RZP\Exception;
 use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Base;
@@ -25,7 +26,6 @@ use RZP\Models\Base\EsDao;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\MailTags;
-
 
 class Service extends Base\Service
 {
@@ -35,8 +35,6 @@ class Service extends Base\Service
 
     public function authenticate(string $orgId, array $input)
     {
-        \Database\DefaultConnection::set('live');
-
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
         return $this->login($orgId, $input);
@@ -262,6 +260,17 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findByPublicId($orgId);
 
+        if (empty($input[Entity::ROLES]) === false)
+        {
+            Role\Entity::verifyIdAndStripSignMultiple($input[Entity::ROLES]);
+        }
+
+        if (empty($input[Entity::GROUPS]) === false)
+        {
+            Group\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::GROUPS]);
+        }
+
         $admin = $this->core()->create($org, $input);
 
         $this->sendAdminCreateEmail($admin, $input);
@@ -383,6 +392,17 @@ class Service extends Base\Service
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
+        if (empty($input[Entity::ROLES]) === false)
+        {
+            Role\Entity::verifyIdAndStripSignMultiple($input[Entity::ROLES]);
+        }
+
+        if (empty($input[Entity::GROUPS]) === false)
+        {
+            Group\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::GROUPS]);
+        }
+
         // making impromptu changes to make editAdmin work on appAuth
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
@@ -404,7 +424,8 @@ class Service extends Base\Service
         // of his org
         if ($admin->canSeeAllMerchants())
         {
-            $merchants = $this->repo->merchant->fetchMerchantsByOrgId($admin->org->id)->toArray();
+            $merchants = $this->repo->merchant->fetchMerchantsByOrgId(
+                $admin->org->id)->toArray();
 
             $merchantIds = array_column($merchants, 'id');
         }
@@ -423,6 +444,13 @@ class Service extends Base\Service
 
             foreach ($adminGroups as $group)
             {
+                // Adding the current group as children as well so that when we
+                // fetch merchant for each children group it also does the same
+                // for the groups to which the admin directly belongs. Otherwise
+                // the merchants will only be fetched for the children groups
+                // and not children + directly belonging groups.
+                $childrenGroups[] = $group;
+
                 $groupChildren = (new Group\Service)->getChildrenHierarchy($orgId, $group['id']);
 
                 $childrenGroups = array_merge($childrenGroups, $groupChildren);

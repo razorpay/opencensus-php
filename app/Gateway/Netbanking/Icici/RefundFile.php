@@ -30,7 +30,7 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        $data = $this->getRefundData($input);
+        list($totalAmount, $data) = $this->getRefundData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -43,8 +43,14 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
+
         $fileData = [
+            'subject'   => 'Icici Netbanking refunds file for ' . $today,
             'file_path' => $file['local_file_path'],
+            'count'     => count($data),
+            'amount'    => number_format($totalAmount, 2, '.', ''),
+            'date'      => $today
         ];
 
         $this->sendRefundEmail($fileData);
@@ -54,6 +60,8 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
+        $totalAmount = 0;
+
         foreach ($input['data'] as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
@@ -71,9 +79,11 @@ class RefundFile extends Base\RefundFile
                 RefundFileFields::REFUND_MODE        => 'C',
                 RefundFileFields::REMARKS            => '',
             ];
+
+            $totalAmount += $row['refund']['amount'] / 100;
         }
 
-        return $data;
+        return [$totalAmount, $data];
     }
 
     protected function sendRefundEmail($fileData = [])

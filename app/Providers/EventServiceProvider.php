@@ -24,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
         'RZP\Events\AuditLogEntry' => [
             'RZP\Listeners\AuditLogListener',
         ],
+        'RZP\Events\DifferEvent' => [
+            'RZP\Listeners\DifferEventListener',
+        ],
     ];
 
     /**

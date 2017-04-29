@@ -14,8 +14,8 @@ class Constants extends Base\Constants
     const WALLET_PAYUMONEY   = 'WALLET_PAYUMONEY';
 
     const RECIPIENT_EMAILS_MAP = [
-        self::NETBANKING_HDFC    => ['Directpay.Refunds@hdfcbank.com','settlements@razorpay.com'],
-        self::NETBANKING_ICICI   => ['settlements@razorpay.com'],
+        self::NETBANKING_HDFC    => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
+        self::NETBANKING_ICICI   => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
         self::UPI_ICICI          => ['settlements@razorpay.com'],
         self::WALLET_AIRTELMONEY => ['settlements@razorpay.com'],
         self::WALLET_PAYUMONEY   => ['settlements@razorpay.com']

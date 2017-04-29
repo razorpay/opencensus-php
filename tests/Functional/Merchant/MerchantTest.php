@@ -2,15 +2,17 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-use Carbon\Carbon;
+use DB;
 use Mail;
-
+use Carbon\Carbon;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Mail\Banking\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -19,6 +21,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
+    use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
 
@@ -666,23 +669,39 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
-    public function testGetCheckoutPreferencesWithOffer()
+    public function testGetCheckoutPreferencesWithNonOrderRelatedOffer()
     {
-        $this->markTestSkipped('Skipping till new offers changes are merged');
-
         $this->ba->publicAuth();
 
-        $offer = $this->fixtures->offer->createCardOffer();
+        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
 
-        $content = $this->startTest();
+        $offer = $this->fixtures->create('offer:wallet', [
+                'checkout_display' => true,
+                'display_text'     => 'Some display text',
+                'terms'            => 'Some terms',
+                'starts_at'        => $startsAt,
+            ]);
 
-        $countCardOffers = count($content['offers']['card']['items']);
+        $this->startTest();
+    }
 
-        $countWalletOffers = count($content['offers']['wallet']['items']);
+    public function testGetCheckoutPreferencesWithOrderRelatedOffer()
+    {
+        $this->ba->publicAuth();
 
-        $this->assertEquals(1, $countCardOffers);
+        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
 
-        $this->assertEquals(0, $countWalletOffers);
+        $offer = $this->fixtures->create('offer:card', [
+                'display_text' => 'Some display text',
+                'terms'        => 'Some terms',
+                'starts_at'    => $startsAt
+            ]);
+
+        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+        $this->startTest();
     }
 
     public function testGetCheckoutRouteWithSavedLocal()
@@ -891,17 +910,18 @@ class MerchantTest extends TestCase
     protected function createMerchant()
     {
         $id = '1X4hRFHFx4UiXt';
-        $merchant = array(
+
+        $merchant = [
             'id'    => $id,
             'name'  => 'Tester 2',
             'email' => 'liveandtest@localhost.com'
-        );
+        ];
 
-        $request = array(
+        $request = [
             'content' => $merchant,
             'url' => '/merchants',
             'method' => 'POST'
-        );
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -1058,4 +1078,54 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testScheduleTaskMigration()
+    {
+        $this->ba->appAuth();
+
+        $merchant = $this->createMerchant();
+
+        $this->startTest();
+
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+
+        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
+        $this->assertEquals(NULL , $scheduleTask['method']);
+
+        $this->ba->appAuthLive();
+
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+
+        $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
+        $this->assertEquals(NULL , $scheduleTask['method']);
+    }
+
+    public function testCreateMerchantWithAdmin()
+    {
+        $adminId = 'admin_' . Org::SUPER_ADMIN;
+
+        $id = '1X4hRFHFx4UiXt';
+
+        $merchant = [
+            'id'       => $id,
+            'name'     => 'Tester 2',
+            'email'    => 'liveandtest@localhost.com',
+            'admin_id' => $adminId,
+        ];
+
+        $request = [
+            'content' => $merchant,
+            'url'     => '/merchants',
+            'method'  => 'POST'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $row = DB::table('merchant_map')
+                   ->where('merchant_id', '=', $content['id'])
+                   ->where('entity_id', '=', Org::SUPER_ADMIN)
+                   ->where('entity_type', '=', 'admin')
+                   ->first();
+
+        $this->assertNotNull($row);
+    }
 }

@@ -25,10 +25,6 @@ class Repository extends Base\Repository
         Entity::ACCOUNT_NUMBER  => 'sometimes|string|max:50|min:5',
     ];
 
-    protected $esWhitelistedParams = [
-        Entity::NOTES
-    ];
-
     public function fetchForPayment($payment)
     {
         if ($payment->hasRelation('order'))

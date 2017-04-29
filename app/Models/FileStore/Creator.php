@@ -28,6 +28,13 @@ class Creator extends Base\Core
     protected $localFile;
 
     /**
+     * Local file path
+     *
+     * @var string localFilePath
+     */
+    protected $localFilePath;
+
+    /**
      * Delimiter used in file
      *
      * @var string delimiter
@@ -138,6 +145,20 @@ class Creator extends Base\Core
     public function localFile($file)
     {
         $this->localFile = $file;
+
+        return $this;
+    }
+
+    /**
+     * Set the Local file Path
+     *
+     * @param string $filePath Local File Path
+     *
+     * @return Creator object
+     */
+    public function localFilePath(string $filePath)
+    {
+        $this->localFilePath = $filePath;
 
         return $this;
     }
@@ -294,16 +315,27 @@ class Creator extends Base\Core
     {
         $this->validateBeforeSave();
 
-        if ($this->localFile === null)
+        if ($this->localFile !== null)
         {
-            $this->writeToLocalFile();
+            $this->filePath = $this->localFile->getPathname();
+
+            $this->mime($this->localFile->getMimeType());
+        }
+        else if ($this->localFilePath !== null)
+        {
+            $this->filePath = $this->localFilePath;
+
+            if ($this->file->getMime() === null)
+            {
+                throw new Exception\LogicException('Mime Type is not Set');
+            }
         }
         else
         {
-            $this->filePath = $this->localFile->getPathname();
-        }
+            $this->writeToLocalFile();
 
-        $this->mime($this->localFile->getMimeType());
+            $this->mime($this->localFile->getMimeType());
+        }
 
         $this->validateBeforeUpload();
 
@@ -323,13 +355,45 @@ class Creator extends Base\Core
      *
      * @return array
      */
-    public function get()
+    public function get(): array
     {
         $data = $this->file->toArrayPublic();
 
         $data['local_file_path'] = $this->getFullFilePath();
 
         return $data;
+    }
+
+    /**
+     * Returns signed url and id of File Entity
+     *
+     * @return array
+     */
+    public function getSignedUrl($duration = '15')
+    {
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(),
+            $this->env);
+
+        $url = $this->storageHandler->getSignedUrl($bucketConfig, $this->file->getLocation(), $duration);
+
+        return [
+            'id'  => $this->file->getId(),
+            'url' => $url,
+        ];
+    }
+
+    /**
+     * Returns unsigned url
+     *
+     * @return string
+     */
+    public function getUrl(): string
+    {
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(), $this->env);
+
+        return $this->storageHandler->getUrl($bucketConfig, $this->file->location);
     }
 
     /**

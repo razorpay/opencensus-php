@@ -152,6 +152,8 @@ class NetbankingKotakGatewayTest extends TestCase
 
         $content = $this->generateRefundsExcelForNB('KKBK');
 
+        $this->setUpMailMock();
+
         foreach (['tpv', 'nonTpv'] as $fileType)
         {
             $this->checkDailyFilesContent($content, $fileType);
@@ -179,6 +181,31 @@ class NetbankingKotakGatewayTest extends TestCase
 
             return true;
         });
+
+        // @note: Commented during move to 5.4
+        // // Mail catch with amount and refund everywhere
+        // Mail::shouldReceive('queue')
+        //       ->twice()
+        //       ->with(
+        //             Mockery::any(),
+        //             Mockery::on(function ($data)
+        //             {
+        //                 $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+
+        //                 $testData = array(
+        //                     'subject' => 'Kotak Netbanking claims and refund files for '.$date,
+        //                     'amount' => [
+        //                         'claims' => 1500,
+        //                         'refunds' => 500,
+        //                         'total' => 1000,
+        //                     ]);
+
+        //                 $this->assertArraySelectiveEquals($testData, $data);
+
+        //                 return true;
+        //             }),
+        //             Mockery::any()
+        //         );
     }
 
     protected function checkDailyFilesContent($content, $fileType)
@@ -260,10 +287,14 @@ class NetbankingKotakGatewayTest extends TestCase
     protected function getTpvAndNonTpvPayments($payments)
     {
         $tpvPayments = array_filter($payments['items'], function($payment)
-                        { return $payment['terminal_id'] === 'TpvNbKotakTmnl'; });
+        {
+                return $payment['terminal_id'] === 'TpvNbKotakTmnl';
+        });
 
         $nonTpvPayments = array_filter($payments['items'], function($payment)
-                        { return $payment['terminal_id'] === 'DrctNbKtkTrmnl'; });
+        {
+                return $payment['terminal_id'] === 'DrctNbKtkTrmnl';
+        });
 
         $tpvPayments = array_values($tpvPayments);
 

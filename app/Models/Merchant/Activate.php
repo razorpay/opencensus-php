@@ -65,7 +65,7 @@ class Activate extends Base\Core
             TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
             ['merchant_id' => $merchant->getId()]);
 
-        $this->app['drip']->sendDripMerchantInfo(Merchant\Action::ACTIVATED, $merchant);
+        $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
 
         $this->sendActivationEmail($merchant, $plan);
 

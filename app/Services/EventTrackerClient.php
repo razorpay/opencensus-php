@@ -405,15 +405,13 @@ class EventTrackerClient extends Base\Core
      */
     protected function fetchPaymentAnalytics()
     {
-        $paymentId = $this->payment->getId();
+        $pa = $this->payment->analytics;
 
         // Return if no analytics entity for payment
-        if (count($this->payment->analytics()) === 0)
+        if ($pa === null)
         {
             return;
         }
-
-        $pa = $this->repo->payment_analytics->findForLatestPayment($paymentId);
 
         $analytics = [];
 

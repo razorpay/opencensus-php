@@ -44,7 +44,7 @@ class FileProcessor
     // This map should have all the extensions mentioned in Validator::ACCEPTED_EXTENSIONS_MAP
     const FILE_TYPES_MAPPINGS     = [
         self::EXCEL => ['xls', 'xlsx', 'xlsb'],
-        self::CSV   => ['txt', 'csv', 'text']
+        self::CSV   => ['txt', 'csv', 'text', 'rpt']
     ];
 
     /******************************

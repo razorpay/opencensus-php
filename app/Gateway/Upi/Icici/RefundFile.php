@@ -73,10 +73,17 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
+        $data = [];
+
         $fileName = $this->getFileToWriteName(FileStore\Format::CSV);
 
         foreach ($input['data'] as $row)
         {
+            if (isset($row['gateway']) === false)
+            {
+                continue;
+            }
+
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('Y-m-d');
 

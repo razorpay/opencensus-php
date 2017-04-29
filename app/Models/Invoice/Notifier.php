@@ -234,6 +234,107 @@ class Notifier extends Base\Core
 
     // -------------------------------------------------------------------
 
+    protected function dispatchMail(string $template, array $data, $callback = null)
+    {
+        Mail::send($template, $data, function($message) use ($data, $callback)
+        {
+            $message->from('invoices@razorpay.com', $data['merchant']['name']);
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
+            $message->subject($data['subject']);
+
+            $message->to($data['invoice']['customer']['email']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $data['invoice']['id']);
+
+            $headers->addTextHeader(MailTags::HEADER, $data['label']);
+
+            if ($callback !== null) call_user_func($callback, $message);
+        });
+    }
+
+    protected function getInvoiceIssuedMailPayload()
+    {
+        return $this->getInvoiceMailPayload(__FUNCTION__);
+    }
+
+    protected function getInvoiceExpiredMailPayload()
+    {
+        return $this->getInvoiceMailPayload(__FUNCTION__);
+    }
+
+    protected function getInvoiceExpiringMailPayload()
+    {
+        return $this->getInvoiceMailPayload(__FUNCTION__);
+    }
+
+    public function getInvoicePaidMailPayload()
+    {
+        return $this->getInvoiceMailPayload();
+    }
+
+    /**
+     * Gets invoice payload common to all above events: issued, expired, paid etc.
+     *
+     * @param string|null $callee - Callee method name, used to construct subject of the mail.
+     *
+     * @return array
+     */
+    protected function getInvoiceMailPayload(string $callee = null)
+    {
+        $id = $this->invoice->getPublicId();
+
+        $viewPayload = (new ViewDataSerializer($this->invoice))->get();
+
+        $invoiceDashboardPath = $this->invoice->getDashboardPath();
+
+        $extraInvoicePayload = [
+            'type_label'    => $this->invoice->getTypeLabel(),
+            'pdf_url'       => url("v1/invoices/$id/pdf"),
+            'dashboard_url' => $this->dashboardUrl . $invoiceDashboardPath,
+        ];
+
+        $viewPayload['invoice'] += $extraInvoicePayload;
+
+        $label = $this->getLabel($this->invoice->getType());
+        $viewPayload['label'] = $label;
+
+        //
+        // In one of the case callee is null - getInvoicePaidMailPayload.
+        // That method is used from Notify.php's flow. And subject construction
+        // is done there in this particular flow. We might(later) consider
+        // moving invoice's payment notifications here too.
+        //
+        if ($callee !== null)
+        {
+            $subject = $this->getInvoiceMailSubject($callee, $viewPayload['merchant']['name']);
+
+            $viewPayload['subject'] = $subject;
+        }
+
+        return $viewPayload;
+    }
+
+    protected function getInvoiceMailSubject(string $callee, string $merchantName)
+    {
+        if (in_array($callee, array_keys($this->mailSubjectTemplates), true) === false)
+        {
+            throw new Exception\LogicException("No templates found for callee: $callee");
+        }
+
+        $type = $this->invoice->getType();
+
+        return sprintf($this->mailSubjectTemplates[$callee][$type], $merchantName);
+    }
+
+    protected function getLabel($type)
+    {
+        return self::MAIL_TAG_MAP[$type] ?? MailTags::INVOICE;
+    }
+
     public function sendNotificationsInBulk()
     {
         $smsIssuedInvoices   = $this->repo

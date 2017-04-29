@@ -70,6 +70,8 @@ class CreateAxisGateway extends Migration
             $table->index('amex');
             $table->index('vpc_ReceiptNo');
             $table->index('vpc_3DSstatus');
+            $table->index('vpc_Command');
+            $table->index('vpc_MerchTxnRef');
 
             $table->foreign('payment_id')
                   ->references('id')

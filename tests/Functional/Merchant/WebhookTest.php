@@ -14,9 +14,10 @@ use Http\Discovery\MessageFactoryDiscovery;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Webhook\Inferno;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\RequestInterface;
 use Http\Discovery\HttpClientDiscovery;
 use Http\Discovery\Strategy\MockClientStrategy;
-
+use Http\Client\Common\Exception\ClientErrorException;
 
 class WebhookTest extends TestCase
 {
@@ -325,6 +326,30 @@ class WebhookTest extends TestCase
         $this->doAuthPayment();
     }
 
+    public function testExceptionOnWebhookFire()
+    {
+        $webhook = $this->createWebhook(['secret' => 'test_secret']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoMakeRequest(function ($request) use ($testData, $webhook)
+        {
+            $response = $this->getStandardWebhookResponse('400');
+
+            $requestObj = $this->getStandardWebhookRequest($request);
+
+            throw new ClientErrorException('Bad Request', $requestObj, $response);
+        });
+
+        $inferno = $this->app['webhook.inferno'];
+
+        $inferno->shouldReceive('sendEmail')
+                ->with(Mockery::type('object'),'failure')
+                ->andReturn(false);
+
+        $this->doAuthPayment();
+    }
+
     public function testWebhookDeactivation()
     {
         $webhook = $this->createWebhook();
@@ -510,5 +535,16 @@ class WebhookTest extends TestCase
         $response->success = $success;
 
         return $response;
+    }
+
+    protected function getStandardWebhookRequest(array $requestData): RequestInterface
+    {
+        $request = new \GuzzleHttp\Psr7\Request(
+            $requestData['method'],
+            $requestData['url'],
+            $requestData['headers'],
+            $requestData['content']);
+
+        return $request;
     }
 }

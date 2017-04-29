@@ -374,6 +374,8 @@ class RefundTest extends TestCase
 
     public function testCreateMissingRefundTransaction()
     {
+        $this->markTestSkipped('Transactions are getting created now');
+
         $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
 
         $payment = $this->fixtures->create(

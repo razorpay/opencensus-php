@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const SCHEDULED_AT             = 'scheduled_at';
     const ISSUED_AT                = 'issued_at';
     const PAID_AT                  = 'paid_at';
+    const CANCELLED_AT             = 'cancelled_at';
     const EXPIRED_AT               = 'expired_at';
     const EXPIRE_BY                = 'expire_by';
     const EMAIL_STATUS             = 'email_status';
@@ -96,6 +97,7 @@ class Entity extends Base\PublicEntity
         'create',
         'update',
         'delete',
+        'cancelInvoice',
         'expireInvoice',
         'sendNotification',
         'addLineItems',
@@ -117,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::DATE                     => null,
         self::ISSUED_AT                => null,
         self::PAID_AT                  => null,
+        self::CANCELLED_AT             => null,
         self::EXPIRED_AT               => null,
         self::RECEIPT                  => null,
         self::DESCRIPTION              => null,
@@ -144,7 +147,6 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::STATUS,
-        self::EXPIRE_BY,
     ];
 
     // Fields that can be inserted by ->fill() directly
@@ -189,6 +191,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::ISSUED_AT,
         self::PAID_AT,
+        self::CANCELLED_AT,
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
         self::SMS_STATUS,
@@ -228,6 +231,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRE_BY,
         self::ISSUED_AT,
         self::PAID_AT,
+        self::CANCELLED_AT,
         self::EXPIRED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
@@ -370,9 +374,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function getReceipt()
+    {
+        return $this->getAttribute(self::RECEIPT);
+    }
+
     public function getReceiptElsePublicId()
     {
-        $receipt = $this->getAttribute(self::RECEIPT);
+        $receipt = $this->getReceipt();
 
         if ($receipt !== null)
         {
@@ -430,6 +439,11 @@ class Entity extends Base\PublicEntity
     public function isPaid()
     {
         return ($this->getStatus() === Status::PAID);
+    }
+
+    public function isCancelled()
+    {
+        return ($this->getStatus() === Status::CANCELLED);
     }
 
     public function isExpired()
@@ -588,26 +602,51 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    /**
+     * @deprecated
+     *
+     * Sets expire_by's default value at the time of issue of invoices.
+     * Gets called from Generator->issueInvoice() method.
+     *
+     */
+    public function setDefaultExpireByIfNotAlreadySet()
+    {
+        if ($this->getExpireBy() !== null)
+        {
+            return;
+        }
+
+        $expireBy = Carbon::now('Asia/Kolkata')
+                          ->addDays(self::DEFAULT_EXPIRY_DAYS)
+                          ->timestamp;
+
+        $this->setAttribute(self::EXPIRE_BY, $expireBy);
+    }
+
     // -------------------------------------- End Setters --------------------------------------
 
     // -------------------------------------- Accessors --------------------------------------
 
     /**
-     * DEPRECATED, WILL BE REMOVED.
-     * Replaced with setPublicCustomerAttribute method.
+     * @deprecated Replaced with setPublicCustomerAttribute method.
      *
      * @return array
      */
     protected function getCustomerDetailsAttribute()
     {
         return [
-            self::CUSTOMER_NAME            => $this->attributes[self::CUSTOMER_NAME],
-            self::CUSTOMER_EMAIL           => $this->attributes[self::CUSTOMER_EMAIL],
-            self::CUSTOMER_CONTACT         => $this->attributes[self::CUSTOMER_CONTACT],
+            self::CUSTOMER_NAME            => $this->getAttribute(self::CUSTOMER_NAME),
+            self::CUSTOMER_EMAIL           => $this->getAttribute(self::CUSTOMER_EMAIL),
+            self::CUSTOMER_CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
             self::CUSTOMER_ADDRESS         => null,
         ];
     }
 
+    /**
+     * TODO: Remove this post expand pr is merged. Also remove from $appends.
+     *
+     * @return Base\PublicCollection
+     */
     protected function getLineItemsAttribute()
     {
         $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
@@ -654,9 +693,9 @@ class Entity extends Base\PublicEntity
     protected function setPublicCustomerAttribute(array & $array)
     {
         $array[self::CUSTOMER] = [
-            Customer\Entity::NAME    => $this->attributes[self::CUSTOMER_NAME],
-            Customer\Entity::EMAIL   => $this->attributes[self::CUSTOMER_EMAIL],
-            Customer\Entity::CONTACT => $this->attributes[self::CUSTOMER_CONTACT],
+            Customer\Entity::NAME    => $this->getAttribute(self::CUSTOMER_NAME),
+            Customer\Entity::EMAIL   => $this->getAttribute(self::CUSTOMER_EMAIL),
+            Customer\Entity::CONTACT => $this->getAttribute(self::CUSTOMER_CONTACT),
         ];
 
         if ($this->hasCustomerBillingAddress() === true)
@@ -740,22 +779,6 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::DUE_BY, $dueBy);
-    }
-
-    public function generateExpireBy($input)
-    {
-        if (isset($input[self::EXPIRE_BY]))
-        {
-            $expireBy = $input[self::EXPIRE_BY];
-        }
-        else
-        {
-            $expireBy = Carbon::now('Asia/Kolkata')
-                              ->addDays(self::DEFAULT_EXPIRY_DAYS)
-                              ->timestamp;
-        }
-
-        $this->setAttribute(self::EXPIRE_BY, $expireBy);
     }
 
     public function generateScheduledAt($input)

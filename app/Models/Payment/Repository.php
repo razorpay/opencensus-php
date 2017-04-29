@@ -65,10 +65,6 @@ class Repository extends Base\Repository
         Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
     ];
 
-    protected $esWhitelistedParams = [
-        Entity::NOTES
-    ];
-
     protected $signedIds = [
         Entity::ORDER_ID,
         Entity::INVOICE_ID,
@@ -289,10 +285,11 @@ class Repository extends Base\Repository
                         bool $random = true,
                         int $rowsToFetch = 100)
     {
-        $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
+        $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
 
         $query = $this->newQuery()
-                      ->whereIn(Payment\Entity::GATEWAY, $verifyEnabledGateways);
+                      ->whereNotNull(Payment\Entity::GATEWAY)
+                      ->whereNotIn(Payment\Entity::GATEWAY, $verifyDisabledGateways);
 
         if ($verifyStatus !== null)
         {
@@ -322,11 +319,7 @@ class Repository extends Base\Repository
         // Sample Query
         // SELECT *
         // FROM   `payments`
-        // WHERE  `gateway` IN ( 'axis_migs', 'billdesk', 'ebs', 'mobikwik',
-        //                      'paytm', 'hdfc', 'amex', 'netbanking_hdfc',
-        //                      'netbanking_kotak', 'wallet_payzapp', 'first_data',
-        //                      'cybersource', 'wallet_payumoney', 'wallet_airtelmoney',
-        //                      'wallet_olamoney', 'wallet_freecharge' )
+        // WHERE  `gateway` NOT IN ( 'wallet_openwallet' )
         //        AND `status` = 'failed'
         //        AND ( ( `verify_bucket` = '0' AND `created_at` < '1478023148' )
         //              OR ( `verify_bucket` = '1' AND `created_at` < '1478022368' )
@@ -520,6 +513,25 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * Fetches all payments for on hold flag update with on_hold_until
+     * timestamp earlier than timestamp parameter.
+     *
+     * @param int $timestamp
+     * @return Base\PublicCollection
+     */
+    public function getPaymentsOnHoldBeforeTimestamp(int $timestamp) : Base\PublicCollection
+    {
+        $data = $this->newQuery()
+                     ->where(Payment\Entity::ON_HOLD, true)
+                     ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
+                     ->with('transfer')
+                     ->limit(500)
+                     ->get();
+
+        return $data;
+    }
+
     protected function addQueryParamBank($query, $params)
     {
         if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
@@ -681,7 +693,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(60)
+                    ->limit(75)
                     ->get();
     }
 
@@ -708,7 +720,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(60)
+                    ->limit(75)
                     ->get();
     }
 

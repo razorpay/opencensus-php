@@ -168,6 +168,9 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForNB('UTIB');
 
+        // @note: Commented during move to 5.4
+        // $this->checkMailQueue();
+
         $this->checkRefundTextData($data);
 
         $this->checkMailQueue();
@@ -179,7 +182,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $payments = $this->createPaymentsToClaim();
 
-        $data = $this->generateRefundsExcelForNB('UTIB');
+        $data = $this->generateRefundsExcelForNb('UTIB');
 
         $this->checkEmptyRefundTextData($data);
 
@@ -254,7 +257,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['status'], 'Y');
+        $this->assertEquals('Y', $gatewayPayment['status']);
     }
 
     protected function createPaymentsToClaim()

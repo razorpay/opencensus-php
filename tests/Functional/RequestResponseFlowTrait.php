@@ -12,7 +12,7 @@ trait RequestResponseFlowTrait
     use EntityFetchTrait;
 
     /**
-     * Auths a payment & tests it is corrrectly done
+     * Auths a payment & tests it is correctly done
      */
     public function runRequestResponseFlow($data, Closure $closure = null)
     {
@@ -236,6 +236,16 @@ trait RequestResponseFlowTrait
             $request['server'] += $this->transformHeadersToServerVars($accountHeader);
         }
 
+        if ($this->ba->isAdminAuth() === true)
+        {
+            $adminHeaders = $this->ba->getAdminHeaders();
+
+            if (empty($adminHeaders) === false)
+            {
+                $request['server'] += $this->transformHeadersToServerVars($adminHeaders);
+            }
+        }
+
         /**
          * This is the function signature
          *
@@ -278,8 +288,7 @@ trait RequestResponseFlowTrait
             return $closure();
         }
         catch (\Exception $e)
-        {
-            ;
+        {;
             // throw $e;
         }
     }

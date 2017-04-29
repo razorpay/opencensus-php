@@ -54,6 +54,9 @@ class Merchant
         // Update Settlement Entity
         $this->updateSettlementEntity();
 
+        // Increment attempts in settlements
+        $this->setl->incrementAttempts();
+
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();
 
@@ -308,11 +311,15 @@ class Merchant
     {
         $setl = (new Settlement\Entity)->generateId();
 
-        $setl->setAmount($this->amount);
-        $setl->setStatus(Status::CREATED);
-        $setl->setFees($this->fee);
-        $setl->setServiceTax($this->serviceTax);
-        $setl->setChannel($this->channel);
+        $input = [
+            Settlement\Entity::AMOUNT       => $this->amount,
+            Settlement\Entity::STATUS       => Status::CREATED,
+            Settlement\Entity::FEES         => $this->fee,
+            Settlement\Entity::SERVICE_TAX  => $this->serviceTax,
+            Settlement\Entity::CHANNEL      => $this->channel,
+        ];
+
+        $setl = $setl->build($input);
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
@@ -345,7 +352,7 @@ class Merchant
 
         $values = [
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
-            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V2,
+            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
         ];
 

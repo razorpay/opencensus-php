@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
+        Entity::NAME                      => 'sometimes|string|max:25',
         Entity::PAYMENT_METHOD            => 'required|alpha|custom',
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes_if:payment_method,card|in:debit,credit',
         Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
@@ -38,9 +38,11 @@ class Validator extends Base\Validator
         Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
         Entity::PROCESSING_TIME           => 'sometimes|integer',
         Entity::TYPE                      => 'sometimes|in:instant,deferred',
+        Entity::CHECKOUT_DISPLAY          => 'sometimes|boolean',
         Entity::STARTS_AT                 => 'sometimes|epoch',
         Entity::ENDS_AT                   => 'required|epoch',
         Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
+        Entity::ERROR_MESSAGE             => 'sometimes|string|max:255',
         Entity::TERMS                     => 'required|string'
     ];
 
@@ -49,6 +51,7 @@ class Validator extends Base\Validator
         Entity::IINS                      => 'sometimes|array',
         Entity::ACTIVE                    => 'sometimes|in:0',
         Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
+        Entity::ERROR_MESSAGE             => 'sometimes|string|max:255',
         Entity::TERMS                     => 'sometimes|string'
     ];
 

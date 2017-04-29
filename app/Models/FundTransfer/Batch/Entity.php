@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Batch;
 
 use RZP\Models\Base;
+use RZP\Models\FileStore\Entity as FileStore;
 use Carbon\Carbon;
 
 /**
@@ -14,21 +15,25 @@ use Carbon\Carbon;
  */
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
-    const DATE              = 'date';
-    const TYPE              = 'type';
-    const CHANNEL           = 'channel';
-    const AMOUNT            = 'amount';
-    const FEES              = 'fees';
-    const API_FEE           = 'api_fee';
-    const GATEWAY_FEE       = 'gateway_fee';
-    const TOTAL_COUNT       = 'total_count';
-    const TRANSACTION_COUNT = 'transaction_count';
-    const SERVICE_TAX       = 'service_tax';
-    const URLS              = 'urls';
-    const INITIATED_AT      = 'initiated_at';
-    const RECONCILED_AT     = 'reconciled_at';
-    const RETURNED_AT       = 'returned_at';
+    const ID                    = 'id';
+    const DATE                  = 'date';
+    const TYPE                  = 'type';
+    const CHANNEL               = 'channel';
+    const AMOUNT                = 'amount';
+    const PROCESSED_AMOUNT      = 'processed_amount';
+    const FEES                  = 'fees';
+    const API_FEE               = 'api_fee';
+    const GATEWAY_FEE           = 'gateway_fee';
+    const TOTAL_COUNT           = 'total_count';
+    const PROCESSED_COUNT       = 'processed_count';
+    const TRANSACTION_COUNT     = 'transaction_count';
+    const SERVICE_TAX           = 'service_tax';
+    const URLS                  = 'urls';
+    const INITIATED_AT          = 'initiated_at';
+    const TXT_FILE_ID           = 'txt_file_id';
+    const EXCEL_FILE_ID         = 'excel_file_id';
+    const RECONCILED_AT         = 'reconciled_at';
+    const RETURNED_AT           = 'returned_at';
 
     protected $entity = 'batch_fund_transfer';
 
@@ -40,14 +45,18 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::CHANNEL,
         self::AMOUNT,
+        self::PROCESSED_AMOUNT,
         self::FEES,
         self::TOTAL_COUNT,
+        self::PROCESSED_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
         self::INITIATED_AT,
         self::API_FEE,
         self::GATEWAY_FEE,
         self::URLS,
+        self::TXT_FILE_ID,
+        self::EXCEL_FILE_ID,
     );
 
     protected $public = array(
@@ -57,14 +66,18 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::CHANNEL,
         self::AMOUNT,
+        self::PROCESSED_AMOUNT,
         self::FEES,
         self::API_FEE,
         self::GATEWAY_FEE,
         self::TOTAL_COUNT,
+        self::PROCESSED_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
         self::URLS,
         self::INITIATED_AT,
+        self::TXT_FILE_ID,
+        self::EXCEL_FILE_ID,
         self::RECONCILED_AT,
         self::RETURNED_AT,
         self::CREATED_AT,
@@ -88,15 +101,22 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT            => 'int',
-        self::FEES              => 'int',
-        self::DATE              => 'int',
-        self::SERVICE_TAX       => 'int',
-        self::API_FEE           => 'int',
-        self::GATEWAY_FEE       => 'int',
-        self::INITIATED_AT      => 'int',
-        self::TOTAL_COUNT       => 'int',
-        self::TRANSACTION_COUNT => 'int',
+        self::AMOUNT                => 'int',
+        self::PROCESSED_AMOUNT      => 'int',
+        self::FEES                  => 'int',
+        self::DATE                  => 'int',
+        self::SERVICE_TAX           => 'int',
+        self::API_FEE               => 'int',
+        self::GATEWAY_FEE           => 'int',
+        self::INITIATED_AT          => 'int',
+        self::TOTAL_COUNT           => 'int',
+        self::PROCESSED_COUNT       => 'int',
+        self::TRANSACTION_COUNT     => 'int',
+    ];
+
+    protected $defaults = [
+        self::PROCESSED_AMOUNT   => 0,
+        self::PROCESSED_COUNT    => 0,
     ];
 
     protected function generateDate($input)
@@ -162,6 +182,16 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute('urls', $urls);
     }
 
+    public function setTxtFileId($id)
+    {
+        $this->setAttribute(self::TXT_FILE_ID, $id);
+    }
+
+    public function setExcelFileId($id)
+    {
+        $this->setAttribute(self::EXCEL_FILE_ID, $id);
+    }
+
     public function setFees($fees)
     {
         $this->setAttribute(self::FEES, $fees);
@@ -174,6 +204,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }
 
+    public function setProcessedCount($count)
+    {
+        $this->setAttribute(self::PROCESSED_COUNT, $count);
+    }
+
+    public function setProcessedAmount($amount)
+    {
+        $this->setAttribute(self::PROCESSED_AMOUNT, $amount);
+    }
+
     protected function getUrlsAttribute()
     {
         return json_decode($this->attributes[self::URLS], true);
@@ -184,5 +224,25 @@ class Entity extends Base\PublicEntity
         $urls = json_encode($urls);
 
         $this->attributes[self::URLS] = $urls;
+    }
+
+    protected function setTxtFileIdAttribute($id)
+    {
+        if ($id === null)
+        {
+            return;
+        }
+
+        $this->attributes[self::TXT_FILE_ID] = FileStore::verifyIdAndSilentlyStripSign($id);
+    }
+
+    protected function setExcelFileIdAttribute($id)
+    {
+        if ($id === null)
+        {
+            return;
+        }
+
+        $this->attributes[self::EXCEL_FILE_ID] = FileStore::verifyIdAndSilentlyStripSign($id);
     }
 }

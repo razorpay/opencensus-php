@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -12,7 +13,6 @@ use RZP\Models\Transaction;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
-use RZP\Constants;
 
 class Core extends Base\Core
 {
@@ -99,16 +99,16 @@ class Core extends Base\Core
     {
         $transfer->edit($input);
 
-        // if ($transfer->getOnHold() === false)
-        // {
-        //     $transfer->setOnHoldUntil(null);
-        // }
+        if ($transfer->getOnHold() === false)
+        {
+            $transfer->setOnHoldUntil(null);
+        }
 
         return $this->repo->transaction(function () use ($transfer, $input)
         {
-            $this->repo->saveOrFail($transfer);
+            $this->updatePaymentHold($transfer);
 
-            $this->updatePaymentHold($transfer, $input);
+            $this->repo->saveOrFail($transfer);
 
             $this->trace->info(
                 TraceCode::TRANSFER_EDIT_SUCCESS,
@@ -161,15 +161,19 @@ class Core extends Base\Core
      * and transaction records with the new hold values
      *
      * @param  Entity $transfer
-     * @param  array  $input
      */
-    protected function updatePaymentHold(Entity $transfer, array $input)
+    protected function updatePaymentHold(Entity $transfer)
     {
+        $transferOnHold = $transfer->getOnHold();
+
+        $transferOnHoldUntil = $transfer->getOnHoldUntil();
+
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_HOLD,
             [
-                'transfer_id' => $transfer->getId(),
-                'input'       => $input,
+                'transfer_id'               => $transfer->getId(),
+                'transfer_on_hold'          => $transferOnHold,
+                'transfer_on_hold_until'    => $transferOnHoldUntil
             ]);
 
         $payment = $this->repo
@@ -178,9 +182,10 @@ class Core extends Base\Core
                             $transfer->getId(),
                             $transfer->getToId());
 
-        $payment->setOnHold($transfer->getOnHold());
 
-        // $payment->setOnHoldUntil($transfer->getOnHoldUntil());
+        $payment->setOnHold($transferOnHold);
+
+        $payment->setOnHoldUntil($transferOnHoldUntil);
 
         $txn = (new Transaction\Core)->updateOnHoldToggle($payment);
 
@@ -392,6 +397,16 @@ class Core extends Base\Core
         if (($this->mode === Constants\Mode::LIVE) and
             ($isOnHold === true))
         {
+            //
+            // Banks are testing our Openwallet demo app on
+            // on live mode, merchant ID 5ohNv7JkUtGrRx
+            // and hence we're ignoring this check for the merchant ID
+            //
+            if ($merchant->getId() === '5ohNv7JkUtGrRx')
+            {
+                return;
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
                 null,

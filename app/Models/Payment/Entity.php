@@ -238,6 +238,7 @@ class Entity extends Base\PublicEntity
     protected $appends = [self::PUBLIC_ID, self::CAPTURED];
 
     protected static $modifiers = [
+        self::EMAIL,
         self::CONTACT,
         self::BANK,
         'method_based_input',
@@ -252,7 +253,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::STATUS               => Status::CREATED,
-        self::REFUND_STATUS        => Refund\Status::NULL,
+        self::REFUND_STATUS        => RefundStatus::NULL,
         self::NOTES                => [],
         self::AMOUNT_REFUNDED      => 0,
         self::BASE_AMOUNT_REFUNDED => 0,
@@ -317,28 +318,39 @@ class Entity extends Base\PublicEntity
     // window in secs, used to fetch payments with same checkout id
     const PAYMENT_WINDOW                = 1800;
 
+    const DUMMY_EMAIL = 'void@razorpay.com';
+
+    const DUMMY_PHONE = '+919999999999';
+
 // --------------------- Generators --------------------------------------------
 
 // --------------------- Generators Ends ---------------------------------------
 
 // --------------------- Modifiers ---------------------------------------------
 
+    protected function modifyEmail(& $input)
+    {
+        if (empty($input['email']) === true)
+        {
+            $isEmailOptional = $this->merchant->isEmailOptional();
+
+            if ($isEmailOptional === true)
+            {
+                $input['email'] = self::DUMMY_EMAIL;
+            }
+        }
+    }
+
     protected function modifyContact(& $input)
     {
-        // We need to remove this once they fix it on their end.
-        $app = \App::getFacadeRoot();
-        // We are currently doing this for GoIbibo and beta test merchant
-        $excludedMerchants = ['6ZLE5BE57SExGF', '7FloNFaK7P4MMo'];
-
-        if ((in_array($app['basicauth']->getMerchantId(), $excludedMerchants, true) === true) and
-            (empty($input['contact']) === true))
+        if (empty($input['contact']) === true)
         {
-            $input['contact'] = '+919999999999';
-        }
+            $isPhoneOptional = $this->merchant->isPhoneOptional();
 
-        if (isset($input['contact']) === false)
-        {
-            return;
+            if ($isPhoneOptional === true)
+            {
+                $input['contact'] = self::DUMMY_PHONE;
+            }
         }
 
         $contact = & $input['contact'];
@@ -559,7 +571,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SIGNED, $signed);
     }
 
-    public function setOnHold($onHold)
+    public function setOnHold(bool $onHold)
     {
         $this->setAttribute(self::ON_HOLD, $onHold);
     }
@@ -858,6 +870,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::INVOICE_ID));
     }
 
+    public function hasTransfer()
+    {
+        return ($this->isAttributeNotNull(self::TRANSFER_ID));
+    }
+
     public function hasMetadata($key = null)
     {
         if ($key === null)
@@ -875,17 +892,17 @@ class Entity extends Base\PublicEntity
 
     public function isPartiallyOrFullyRefunded()
     {
-        return ! ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::NULL);
+        return ! ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::NULL);
     }
 
     public function isFullyRefunded()
     {
-        return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::FULL);
+        return ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::FULL);
     }
 
     public function isPartiallyRefunded()
     {
-        return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::PARTIAL);
+        return ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::PARTIAL);
     }
 
     public function isTransferred()
@@ -1041,6 +1058,17 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getFormattedAmount()
+    {
+        $currency = $this->getCurrency();
+
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
+
+        $amount = number_format($this->getAmount() / $denominationFactor, 2);
+
+        return  $currency . ' ' . $amount;
     }
 
     public function getAmountPaidout()
@@ -1636,11 +1664,11 @@ class Entity extends Base\PublicEntity
 
         if ($amount < $amountUnrefunded)
         {
-            $this->setRefundStatus(Refund\Status::PARTIAL);
+            $this->setRefundStatus(RefundStatus::PARTIAL);
         }
         else if ($amount === $amountUnrefunded)
         {
-            $this->setRefundStatus(Refund\Status::FULL);
+            $this->setRefundStatus(RefundStatus::FULL);
 
             $this->setStatus(Payment\Status::REFUNDED);
         }

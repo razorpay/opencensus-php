@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Admin;
 
-use RZP\Base;
+use RZP\Models\Admin\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
@@ -32,16 +32,16 @@ class Validator extends Base\Validator
         Entity::REMEMBER_TOKEN        => 'sometimes|string|max:255',
         Entity::OAUTH_ACCESS_TOKEN    => 'sometimes|string|max:255',
         Entity::OAUTH_PROVIDER_ID     => 'sometimes|string|max:255',
-        //TODO remove it later
         Entity::BRANCH_CODE           => 'required|string',
         Entity::DEPARTMENT_CODE       => 'required|string',
         Entity::SUPERVISOR_CODE       => 'required|string',
         Entity::LOCATION_CODE         => 'required|string',
         Entity::EMPLOYEE_CODE         => 'required|string',
-        Entity::ROLES                 => 'sometimes|array',
+        Entity::ROLES                 => 'sometimes|array|filled',
         Entity::MERCHANTS             => 'sometimes|array',
         Entity::GROUPS                => 'sometimes|array',
         Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
+        Entity::DISABLED              => 'sometimes|in:0,1',
     ];
 
     protected static $editRules = [
@@ -55,7 +55,6 @@ class Validator extends Base\Validator
         Entity::SUPERVISOR_CODE       => 'sometimes|string',
         Entity::LOCATION_CODE         => 'sometimes|string',
         Entity::EMPLOYEE_CODE         => 'sometimes|string',
-        Entity::DISABLED              => 'sometimes|in:0,1',
         Entity::ROLES                 => 'sometimes|array',
         Entity::MERCHANTS             => 'sometimes|array',
         Entity::GROUPS                => 'sometimes|array',
@@ -67,6 +66,12 @@ class Validator extends Base\Validator
     protected static $loginRules = [
         Entity::USERNAME              => 'required|email|max:255',
         Entity::PASSWORD              => 'required'
+    ];
+
+    protected static $passwordAuthRules = [
+        Entity::USERNAME              => 'required|alpha_dash|between:3,50',
+        Entity::PASSWORD              => 'required|string|confirmed',
+        Entity::PASSWORD_CONFIRMATION => 'required',
     ];
 
     protected static $resetRules = [
@@ -100,6 +105,8 @@ class Validator extends Base\Validator
         Entity::PASSWORD
     ];
 
+    public $isOrgSpecificValidationSupported = true;
+
     public function validateCredentials(array $input)
     {
         $this->validateInput('login', $input);
@@ -114,7 +121,7 @@ class Validator extends Base\Validator
         if (in_array($domain, $emailDomains) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL, 'email', $email);
+                ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME, 'email', $email);
         }
     }
 

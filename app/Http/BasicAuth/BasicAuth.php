@@ -52,6 +52,11 @@ class BasicAuth
     const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
 
     /**
+     * Dashboard headers are prefixed with following literal.
+     */
+    const DASHBOARD_HEADER_PREFIX = 'x-dashboard';
+
+    /**
      * The application instance.
      *
      * @var \Illuminate\Foundation\Application
@@ -334,22 +339,30 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->getKey() !== 'admin')
+        if ($this->getKey() === 'admin')
         {
-            return $this->invalidApiKey();
+            $this->setAdminTrue();
+
+            $token = $this->getSecret();
+
+            $adminToken = $this->fetchAdminToken($token);
+
+            if ($adminToken->getAdminId() !== null)
+            {
+                $this->checkForDashboardMerchantHeader();
+
+                $this->setDashboardHeaders();
+
+                $this->admin = $adminToken->admin;
+
+                $this->adminOrgId = $this->admin->getOrgId();
+
+                return $this->checkAndSetAccountScope();
+            }
         }
-
-        $this->setAdminTrue();
-
-        $token = $this->getSecret();
-
-        $adminToken = $this->fetchAdminToken($token);
-
-        if ($adminToken->getAdminId() !== null)
+        else if ($this->isKeyBlank())
         {
-            $this->admin = $adminToken->admin;
-
-            return $this->checkAndSetAccountScope();
+            return $this->appAuth();
         }
 
         return $this->invalidApiKey();
@@ -431,6 +444,12 @@ class BasicAuth
             // from merchant dashboard and not admin dashboard
             // which can potentially cause a security issue and
             // hence needs to be actively checked against.
+            $response = $this->setAdminAuthIfApplicable();
+
+            if ($response !== null)
+            {
+                return $response;
+            }
 
             $this->checkForDashboardMerchantHeader();
 
@@ -461,12 +480,62 @@ class BasicAuth
         // and allowed to do ops on merchant's behalf
         if ($this->verifyInternalAppAsProxy() === true)
         {
+            $response = $this->setAdminAuthIfApplicable();
+
+            if ($response !== null)
+            {
+                return $response;
+            }
+
             $this->setDashboardHeaders();
 
-            return;
+            return $this->checkAndSetAccountScope();
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    /**
+     * The return values will be those of:
+     *
+     * @return \Response|null
+     */
+    protected function setAdminAuthIfApplicable()
+    {
+        $adminToken = $this->request->header('X-Admin-Token');
+
+        if ($adminToken !== null)
+        {
+            // Remove the token so that subsequent code has no
+            // access to it (prevents logging, etc.)
+            $this->request->headers->remove('X-Admin-Token');
+
+            $token = $this->fetchAdminToken($adminToken);
+
+            if ($token->getAdminId() !== null)
+            {
+                $this->setAdminTrue();
+                $this->setType(Type::ADMIN_AUTH);
+
+                $this->admin = $token->admin;
+
+                $this->adminOrgId = $this->admin->getOrgId();
+
+                return;
+            }
+
+            return $this->invalidApiKey();
+        }
+
+        // `Route::$admin` contains routes that should strictly
+        // be on admin auth and cannot be accessed over others
+        // (proxy, internal, etc.)
+        $currentRoute = $this->router->currentRouteName();
+
+        if (in_array($currentRoute, Route::$admin, true) === true)
+        {
+            return $this->invalidApiKey();
+        }
     }
 
     public function deviceAuth()
@@ -857,13 +926,33 @@ class BasicAuth
     {
         $headers = $this->request->headers;
 
-        $this->dashboardHeaders = array(
-            'dashboard'     => $headers->get('X-Dashboard'),
-            'merchant'      => $headers->get('X-Dashboard-Merchant'),
-            'admin_user'    => $headers->get('X-Dashboard-Username'),
-            'user_id'       => $headers->get('X-Dashboard-User-Id'),
-            'user_role'     => $headers->get('X-Dashboard-User-Role'),
-        );
+        $this->dashboardHeaders =[
+            // String 'true' or null
+            'dashboard' => $headers->get('X-Dashboard'),
+        ];
+
+        // Gets all headers with 'X-Dashboard' as prefix and assign them to a
+        // key(with prefix removed) in $this->dashboardHeaders.
+
+        $dashHeaderPrefixLen = strlen(self::DASHBOARD_HEADER_PREFIX) + 1;
+
+        $dashHeadersKeys = array_filter(
+                                $headers->keys(),
+                                function ($k)
+                                {
+                                    return ($k !== self::DASHBOARD_HEADER_PREFIX) and
+                                        (starts_with($k, self::DASHBOARD_HEADER_PREFIX));
+                                });
+
+        foreach ($dashHeadersKeys as $dashHeadersKey)
+        {
+            // Gets key for $this->dashboardHeaders, which is snake_cased header
+            // with prefix removed.
+            $key = substr($dashHeadersKey, $dashHeaderPrefixLen);
+            $key = snake_case(camel_case($key));
+
+            $this->dashboardHeaders[$key] = $headers->get($dashHeadersKey);
+        }
     }
 
     public function getDashboardHeaders()
@@ -888,12 +977,12 @@ class BasicAuth
 
                 $this->internalApp = $name;
 
-                if ((isset($info['cloud'])) and
-                    ($info['cloud'] === true))
-                {
-                    // Disable internal ip checks for now
-                    // $verify = $this->verifyClientIpInternal();
-                }
+                // if ((isset($info['cloud'])) and
+                //     ($info['cloud'] === true))
+                // {
+                //     Disable internal ip checks for now
+                //     $verify = $this->verifyClientIpInternal();
+                // }
 
                 break;
             }
@@ -944,6 +1033,11 @@ class BasicAuth
     public function getAdmin()
     {
         return $this->admin;
+    }
+
+    public function getAdminOrgId()
+    {
+        return $this->adminOrgId;
     }
 
     public function getMerchantId()
@@ -1037,6 +1131,11 @@ class BasicAuth
         return ($this->type === Type::ADMIN_AUTH);
     }
 
+    public function isAdmin()
+    {
+        return $this->isAdmin;
+    }
+
     public function isPublicAuth()
     {
         return ($this->type === Type::PUBLIC_AUTH);
@@ -1110,7 +1209,18 @@ class BasicAuth
 
     protected function fetchAdminToken($token)
     {
-        $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
+        if ($this->app->environment('testing') === false)
+        {
+            $mode = Mode::LIVE;
+        }
+        else
+        {
+            $mode = $this->mode;
+        }
+
+        // Admin token check should always be done in the
+        // live mode (since we don't sync it in heimdall)
+        $this->adminToken = $this->repo->admin_token->connection($mode)->findOrFailToken($token);
 
         return $this->adminToken;
     }

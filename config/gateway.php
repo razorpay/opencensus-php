@@ -27,6 +27,7 @@ return array(
         'netbanking_icici',
         'netbanking_airtel',
         'netbanking_axis',
+        'netbanking_federal',
         'sharp',
         'wallet_olamoney',
         'upi_idfc',
@@ -55,6 +56,7 @@ return array(
     'mock_netbanking_icici'   => env('NETBANKING_ICICI_MOCK'),
     'mock_netbanking_airtel'  => env('NETBANKING_AIRTEL_MOCK'),
     'mock_netbanking_axis'    => env('NETBANKING_AXIS_MOCK'),
+    'mock_netbanking_federal' => env('NETBANKING_FEDERAL_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
     'mock_ebs'                => env('EBS_MOCK'),
     'mock_wallet_olamoney'    => env('OLAMONEY_MOCK'),
@@ -229,13 +231,13 @@ return array(
     ),
 
     'netbanking_icici' => [
-        'test_hash_secret'     => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
-        'test_merchant_id'     => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id2'    => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
-        'live_hash_secret'     => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
-        'live_hash_secret_tpv' => env('NETBANKING_ICICI_LIVE_HASH_SECRET_BROKER'),
-        'live_merchant_id'     => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
-        'live_merchant_id_tpv' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_BROKER'),
+        'test_hash_secret'      => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'      => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'     => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
+        'live_hash_secret'      => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
+        'live_hash_secret_tpv'  => env('NETBANKING_ICICI_LIVE_HASH_SECRET_BROKER'),
+        'live_merchant_id2'     => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
+        'live_merchant_id2_tpv' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_BROKER'),
     ],
 
     'netbanking_axis' => array(
@@ -248,6 +250,11 @@ return array(
         'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_LIVE_HASH_SECRET'),
+    ],
+
+    'netbanking_federal' => [
+        'test_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_TEST_MERCHANT_ID'),
+        'live_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_LIVE_MERCHANT_ID'),
     ],
 
     'sharp' => array(

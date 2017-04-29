@@ -363,7 +363,7 @@ class Gateway extends Base\Gateway
                 // It should have been refunded on the gateway side also. But, verify returned
                 // false in the verify response for refund.
 
-                $this->trace->error(
+                $this->trace->critical(
                     TraceCode::GATEWAY_REFUND_ABSENT,
                     [
                         'refund_id'         => $refundId,
@@ -1079,5 +1079,19 @@ class Gateway extends Base\Gateway
         }
 
         return false;
+    }
+
+    /**
+     * Calls gateway to verify if a refund has
+     * been successfully performed or not.
+     *
+     * true  if refunded
+     * false if not refunded
+     * @param array $input
+     * @return bool
+     */
+    public function verifyRefund(array $input)
+    {
+        ;
     }
 }

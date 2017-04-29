@@ -51,6 +51,15 @@ class EsDao
         $this->es->setHeimdallESClient([$heimdallHost]);
     }
 
+    /**
+     * @deprecated
+     *
+     * Sets index name.
+     * We only have two indexes, one for each mode. And all the notes of different
+     * entities are indexed in one of them as a type.
+     *
+     * @param string $mode
+     */
     public function setIndexName($mode)
     {
         if (empty($mode) === true)
@@ -66,6 +75,26 @@ class EsDao
         }
 
         $this->indexName = $this->config->get('database.es_index')[$mode];
+    }
+
+    public function setIndexNameByValue(string $indexName)
+    {
+        $this->indexName = $indexName;
+    }
+
+    public function bulkUpdate(array $params)
+    {
+        return $this->es->bulkUpdate($params);
+    }
+
+    public function delete(array $params)
+    {
+        $this->es->delete($params);
+    }
+
+    public function search(array $params)
+    {
+        return $this->es->search($params);
     }
 
     /**
@@ -318,6 +347,102 @@ class EsDao
         {
             $client->indices()->create($params);
         }
+    }
+
+    public function searchByIndexTypeAndActionId($indexName, $typeName, $id)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'body'  => [
+                'query' => [
+                   'match' => [
+                        'action_id' => $id
+                    ]
+                ]
+            ]
+        ];
+
+        return $this->es->searchHeimdall($params);
+    }
+
+    public function updateActionState($indexName, $typeName, $documentId, $state)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'id'    => $documentId,
+            'body'  => [
+                'script' => sprintf('ctx._source.state="%s";', $state)
+            ],
+        ];
+
+        return $this->es->updateHeimdall($params);
+    }
+
+    public function getDocumentByFields($indexName, $typeName, $terms)
+    {
+        $matchParamsForQuery = [];
+
+        foreach ($terms as $key => $val)
+        {
+            $matchParamsForQuery[] = [
+                'match' => [ $key => $val ]
+            ];
+        }
+
+        $body = [
+            "query" => [
+                "bool" => [
+                    "must" => $matchParamsForQuery
+                ]
+            ]
+        ];
+
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'body'  => $body,
+        ];
+
+        return $this->es->searchHeimdall($params);
+    }
+
+    public function searchDifferByParams(
+        string $indexName,
+        string $typeName,
+        array $matchParams,
+        array $openStates)
+    {
+        $matchParamsForQuery = [];
+
+        foreach ($matchParams as $key => $val)
+        {
+            $matchParamsForQuery[] = [
+                'match' => [ $key => $val ]
+            ];
+        }
+
+        $body = [
+            "query" => [
+                "bool" => [
+                    "must" => $matchParamsForQuery,
+                    "filter" => [
+                        "terms" => [
+                            "state" => $openStates // ['open', 'approved']
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'body'  => $body,
+        ];
+
+        return $this->es->searchHeimdall($params);
     }
 
     public function searchAuditLogs($orgId, $options = [])

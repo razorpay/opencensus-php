@@ -29,6 +29,11 @@ class Entity extends Base\Entity
     const ADMIN            = 'admin';
     const CROSS_ORG_ACCESS = 'cross_org_access';
 
+    /**
+     * Holds all the permissions as relation key.
+     */
+    const PERMISSIONS       = 'permissions';
+
     const RAZORPAY_ORG_ID = '100000razorpay';
 
     protected static $sign = 'org';
@@ -70,6 +75,7 @@ class Entity extends Base\Entity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::CUSTOM_CODE,
+        self::PERMISSIONS,
     ];
 
     protected $public = [
@@ -86,6 +92,7 @@ class Entity extends Base\Entity
         self::AUTH_TYPE,
         self::CREATED_AT,
         self::CUSTOM_CODE,
+        self::PERMISSIONS,
     ];
 
     protected $guarded = [
@@ -174,6 +181,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AUTH_TYPE);
     }
 
+    public function getCustomCode()
+    {
+        return $this->getAttribute(self::CUSTOM_CODE);
+    }
+
     public function isCrossOrgAccessEnabled()
     {
         return $this->getAttribute(self::CROSS_ORG_ACCESS);
@@ -194,5 +206,10 @@ class Entity extends Base\Entity
         }
 
         $this->attributes[self::EMAIL_DOMAINS] = $emailDomains;
+    }
+
+    public function getInputFields()
+    {
+        return $this->fillable;
     }
 }

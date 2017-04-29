@@ -267,6 +267,13 @@ class Checkout
 
         $data['version'] = 1;
 
+        $optionalInputConfig = $merchant->getOptionalInputConfig();
+
+        if (empty($optionalInputConfig) === false)
+        {
+            $data['optional'] = $optionalInputConfig;
+        }
+
         return $data;
     }
 
@@ -289,21 +296,103 @@ class Checkout
     {
         $offerCore = new Offer\Core;
 
-        // Temporaily commenting fetching shared offers
-        // $sharedOffers = $offerCore->fetchSharedOffers();
-
         $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
 
-        if ($orderId === null)
+        if ($orderId !== null)
         {
-            return;
+            $orderOffer = $offerCore->fetchForOrder($orderId, $merchant);
+
+            if ($orderOffer !== null)
+            {
+                // For offer applied on a particular order only enable methods eligible for the
+                // offer. Customer won't be able to select other payment methods
+                $this->updateMethodsToEnableOnCheckout($orderOffer, $data);
+
+                $data['offers'] = [
+                    $orderOffer->toArrayCheckout()
+                ];
+
+                return;
+            }
         }
 
-        $directOffer = $offerCore->fetchForOrder($orderId, $merchant);
+        $this->checkAndFillNonOrderOffers($merchant, $data);
+    }
 
-        if ($directOffer !== null)
+    protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)
+    {
+        $nonOrderOffers = (new Offer\Core)->fetchMerchantOffersForCheckout($merchant);
+
+        foreach ($nonOrderOffers as $offer)
         {
-            $data['offers'] = $directOffer->toArrayCheckout();
+            $data['offers'][] = $offer->toArrayCheckout();
+        }
+    }
+
+    protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)
+    {
+        $method = $offer->getPaymentMethod();
+
+        $enabledBanks = $data['methods']['netbanking'];
+
+        $enabledWallets = $data['methods']['wallet'];
+
+        $data['methods'] = [
+            'entity' => 'methods'
+        ];
+
+        switch ($method)
+        {
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+
+                // For card offers only set card method to true
+                $data['methods']['card'] = true;
+
+                break;
+
+            case Payment\Method::NETBANKING:
+
+                // Only allow payments through supported banks
+                $data['methods']['netbanking'] = $enabledBanks;
+
+                // Only allow payment through specific bank if network is specified
+                if ($offer->getPaymentNetwork() !== null)
+                {
+                    $bankCode = $offer->getPaymentNetwork();
+
+                    $bankName = Netbanking::getName($bankCode);
+
+                    $data['methods']['netbanking'] = [
+                        $bankCode => $bankName
+                    ];
+                }
+
+                break;
+
+            case Payment\Method::WALLET:
+
+                // Only allow payments through supported wallets
+                $data['methods']['wallet'] = $enabledWallets;
+
+                // For wallet offers if network is specified, lock method to only that wallet
+                if ($offer->getPaymentNetwork() !== null)
+                {
+                    $wallet = $offer->getPaymentNetwork();
+
+                    $data['methods']['wallet'] = [
+                        $wallet
+                    ];
+                }
+
+                break;
+
+            // For other methods like UPI, we currently handle it here, by just
+            // enabling the particular method.
+            default:
+                $data['methods'][$method] = true;
+
+                break;
         }
     }
 }

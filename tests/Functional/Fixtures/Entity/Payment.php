@@ -74,15 +74,17 @@ class Payment extends Base
         $payment['authorized_at'] = $attributes['authorized_at'];
         $payment['captured_at'] = $attributes['captured_at'];
 
-        $hdfcAttrArray = array(
+        $hdfcAttrArray = [
             'payment_id' => $payment->getKey(),
             'amount'     => $payment->getAmount(),
             'created_at' => $payment->created_at,
-            'updated_at' => $payment->created_at);
+            'updated_at' => $payment->created_at
+        ];
 
         $payment->saveOrFail();
 
-        $txn = $this->updateTransactionOnCapture($payment);
+        list($txn, $feesSplit) = $this->updateTransactionOnCapture($payment);
+
         $txn->saveOrFail();
 
         $payment->setStatus('captured');
@@ -100,7 +102,8 @@ class Payment extends Base
         $payment['authorized_at'] = $payment['created_at'];
         $payment['captured_at'] = $payment['created_at'] + 10;
 
-        $txn = $this->updateTransactionOnCapture($payment);
+        list($txn, $feesSplit) = $this->updateTransactionOnCapture($payment);
+
         $txn->saveOrFail();
 
         $payment->setStatus('captured');
@@ -111,15 +114,16 @@ class Payment extends Base
 
     public function createNetbankingAuthorized(array $attributes = array())
     {
-        $defaultValues = array(
-            'bank'  => 'HDFC',
-            'status' => 'authorized',
-            'gateway' => 'sharp',
-            'method' => 'netbanking',
-            'terminal_id' => '1n25f6uN5S1Z5a',
+        $defaultValues = [
+            'bank'           => 'HDFC',
+            'status'         => 'authorized',
+            'gateway'        => 'sharp',
+            'method'         => 'netbanking',
+            'terminal_id'    => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
-            'created_at' => time() - 10,
-            'updated_at' => time() - 5);
+            'created_at'     => time() - 10,
+            'updated_at'     => time() - 5
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -194,14 +198,14 @@ class Payment extends Base
     {
         $card = $this->fixtures->create('card');
 
-        $defaultValues = array(
-            'merchant_id' => '10000000000000',
+        $defaultValues = [
+            'merchant_id'   => '10000000000000',
             'authorized_at' => time(),
-            'status' => 'authorized',
-            'terminal_id' => '1n25f6uN5S1Z5a',
-            'card_id' => $card['id'],
+            'status'        => 'authorized',
+            'terminal_id'   => '1n25f6uN5S1Z5a',
+            'card_id'       => $card['id'],
             'international' => false,
-        );
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -212,12 +216,12 @@ class Payment extends Base
         $payment->setRelation('card', $card);
 
         $hdfcPayment = $this->fixtures->create('hdfc:authorized',
-            array(
+            [
                 'payment_id' => $payment->getKey(),
-                'amount' => $payment->getAmount(),
+                'amount'     => $payment->getAmount(),
                 'created_at' => $payment->created_at,
                 'updated_at' => $payment->created_at,
-            ));
+            ]);
 
         list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
 
@@ -238,25 +242,25 @@ class Payment extends Base
 
         $card = $this->fixtures->create('card', $cardAttributes);
 
-        $defaultValues = array(
+        $defaultValues = [
             'authorized_at' => time(),
-            'status' => 'authorized',
-            'terminal_id' => '1n25f6uN5S1Z5a',
-            'card_id' => $card['id'],
+            'status'        => 'authorized',
+            'terminal_id'   => '1n25f6uN5S1Z5a',
+            'card_id'       => $card['id'],
             'international' => false,
-        );
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
         $payment = $this->create($attributes);
 
         $hdfcPayment = $this->fixtures->create('hdfc:purchased',
-            array(
+            [
                 'payment_id' => $payment->getKey(),
-                'amount' => $payment->getAmount(),
+                'amount'     => $payment->getAmount(),
                 'created_at' => $payment->created_at,
                 'updated_at' => $payment->created_at,
-            ));
+            ]);
 
         list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
 
@@ -269,11 +273,11 @@ class Payment extends Base
 
     public function createCreated(array $attributes = array())
     {
-        $defaultValues = array(
-            'status' => 'created',
+        $defaultValues = [
+            'status'      => 'created',
             'terminal_id' => '1n25f6uN5S1Z5a',
-            'card_id' => '12345678901234',
-        );
+            'card_id'     => '12345678901234',
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -284,11 +288,11 @@ class Payment extends Base
 
     public function createFailed(array $attributes = array())
     {
-        $defaultValues = array(
-            'status' => 'failed',
+        $defaultValues = [
+            'status'      => 'failed',
             'terminal_id' => '1n25f6uN5S1Z5a',
-            'card_id' => '12345678901234',
-        );
+            'card_id'     => '12345678901234',
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 

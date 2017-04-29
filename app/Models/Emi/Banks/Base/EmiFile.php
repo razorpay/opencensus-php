@@ -23,11 +23,14 @@ class EmiFile extends Base\Core
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
 
-    public function generate($input)
+    public function generate($input, $email = null)
     {
         $emiData = $this->getEmiData($input);
 
         $emiFile = $this->writeEmiFile($emiData);
+
+        // Reset email if required
+        $this->resetEmail($email);
 
         $this->sendEmiFile($emiFile['path']);
 
@@ -37,6 +40,14 @@ class EmiFile extends Base\Core
         );
 
         return $emiFile['url'];
+    }
+
+    protected function resetEmail($email)
+    {
+        if (empty($email) === false)
+        {
+            $this->emailIdsToSendTo = [$email];
+        }
     }
 
     protected function getCardNumber($card)

@@ -214,12 +214,12 @@ return [
                         'ANDB' => 'Andhra Bank',
                         'UTIB' => 'Axis Bank',
                         'BKID' => 'Bank of India',
-                        'CIUB' => 'City Union Bank Ltd',
+                        'CIUB' => 'City Union Bank',
                         'CORP' => 'Corporation Bank',
-                        'HDFC' => 'HDFC Bank Ltd',
-                        'ICIC' => 'ICICI Bank Ltd',
-                        'IBKL' => 'IDBI Ltd',
-                        'INDB' => 'Indusind Bank Ltd',
+                        'HDFC' => 'HDFC Bank',
+                        'ICIC' => 'ICICI Bank',
+                        'IBKL' => 'IDBI',
+                        'INDB' => 'Indusind Bank',
                         'KVBL' => 'Karur Vysya Bank',
                         'KKBK' => 'Kotak Mahindra Bank',
                         'SBHY' => 'State Bank of Hyderabad',
@@ -317,14 +317,29 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_INVALID_OFFER
+                    'description' => 'Payment method used is not eligible for offer. Please try with a different payment method.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_OFFER
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testPaymentWithFailedOfferWithCustomErrorMessage' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Custom error message',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ]
 ];

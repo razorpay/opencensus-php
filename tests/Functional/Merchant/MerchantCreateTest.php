@@ -117,12 +117,15 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals($merchantDetails['contact_email'], 'test@localhost.com');
     }
 
-    protected function checkSettlementSchedule($content)
+    protected function checkSettlementSchedule($merchant)
     {
         $this->ba->appAuthTest();
 
-        $schedule = $this->getEntityById('schedule', $content['settlement_schedule_id'], true);
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
 
+        $this->assertEquals($merchant['id'], $scheduleTask['merchant_id']);
+        $this->assertEquals($schedule['id'], $merchant['settlement_schedule_id']);
         $this->assertEquals($schedule['type'], 'settlement');
         $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
         $this->assertEquals($schedule['period'], 'daily');

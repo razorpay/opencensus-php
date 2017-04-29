@@ -110,7 +110,7 @@ class NodalAccount extends Base\Core
                         ->content($text)
                         ->name($fileName)
                         ->store(FileStore\Store::S3)
-                        ->type(FileStore\Type::ICICI_NODAL_TRANSFER)
+                        ->type(FileStore\Type::FUND_TRANSFER_H2H)
                         ->id($this->id)
                         ->metadata($metadata)
                         ->save()
