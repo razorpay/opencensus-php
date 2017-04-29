@@ -83,7 +83,7 @@ class Core extends Base\Core
         {
             $this->trace->info(
                 TraceCode::GATEWAY_LOAD_RULES_POST_FILTER,
-                $applicableRules->pluck(Entity::ID));
+                $applicableRules->pluck(Entity::ID)->toArray());
         }
 
         return $applicableRules;
@@ -247,10 +247,9 @@ class Core extends Base\Core
         if ($totalLoad > Entity::MAX_LOAD)
         {
 
-            $conflictingRuleIds = $conflictingRules->map(function ($rule)
-            {
-                return $rule->getId();
-            });
+            $conflictingRuleIds = $conflictingRules
+                                    ->pluck(Entity::ID)
+                                    ->toArray();
 
             $data = [
                 'conflicting_rules' => $conflictingRuleIds,
@@ -262,7 +261,7 @@ class Core extends Base\Core
                     $data);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MAX_GATEWAY_LOAD_EXCEEDED,
+                ErrorCode::BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD,
                 null,
                 $data);
         }

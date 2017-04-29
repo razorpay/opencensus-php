@@ -145,7 +145,7 @@ class TerminalLoadSorter extends Terminal\Sorter
                 $terminalIds[] = $terminal->getId();
             }
 
-            $traceData['boosted_terminals'] = $boostedTerminals;
+            $traceData['boosted_terminals'] = $terminalIds;
 
             $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS, $traceData);
         }

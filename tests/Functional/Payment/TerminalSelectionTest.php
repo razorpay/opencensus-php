@@ -290,6 +290,8 @@ class TerminalSelectionTest extends TestCase
 
     public function testTerminalChoiceonChance()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->mockTokenex();

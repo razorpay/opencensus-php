@@ -63,12 +63,10 @@ class Validator extends Base\Validator
             return;
         }
 
-        $validAcquirersForGateway = Gateway::GATEWAY_ACQUIRERS[$gateway];
-
         if (Gateway::isValidAcquirerForGateway($gatewayAcquirer, $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        $gatewayAcquirer . ' is not a valid gateway acquirer');
+                        $gatewayAcquirer . ' is not a valid gateway acquirer for ' . $gateway);
         }
     }
 
@@ -81,7 +79,7 @@ class Validator extends Base\Validator
         if (Method::isValid($method) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        $method . 'is not a valid payment method');
+                        $method . ' is not a valid payment method');
         }
 
         if (Gateway::isMethodSupported($method, $gateway) === false)
@@ -165,7 +163,7 @@ class Validator extends Base\Validator
         if (IFSC::exists($issuer) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                $issuer. ' is not a valid Bank code');
+                $issuer . ' is not a valid bank code');
         }
     }
 
@@ -173,7 +171,7 @@ class Validator extends Base\Validator
     {
         if ($issuer === null)
         {
-            if (in_array($gateway, Gateway::$netbankingGateways, true) === true)
+            if (in_array($gateway, Gateway::$netbankingGateways, true) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "issuer can be null only for shared netbanking gateways");
@@ -185,13 +183,7 @@ class Validator extends Base\Validator
         if (in_array($gateway, $gateways, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                $issuer .' is not a supported Bank code for gateway ' . $gateway);
-        }
-
-        if (Netbanking::isSupportedBank($issuer) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                $issuer. ' is not a valid Bank code');
+                $issuer . ' is not a supported bank for gateway ' . $gateway);
         }
     }
 
@@ -200,7 +192,7 @@ class Validator extends Base\Validator
         if (Wallet::exists($issuer) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                $issuer . ' is not a valid Wallet');
+                $issuer . ' is not a valid wallet');
         }
     }
 

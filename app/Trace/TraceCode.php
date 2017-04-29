@@ -653,6 +653,7 @@ class TraceCode
     const GATEWAY_LOAD_RULE_UPDATE_REQUEST              = 'GATEWAY_LOAD_RULE_UPDATE_REQUEST';
     const GATEWAY_LOAD_RULES_POST_FILTER                = 'GATEWAY_LOAD_RULES_POST_FILTER';
     const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS        = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
+    const GATEWAY_LOAD_RULES_TO_TERMINALS_MAP           = 'GATEWAY_LOAD_RULES_TO_TERMINALS_MAP';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

@@ -57,7 +57,7 @@ class Filter extends Core
                 {
                     if (in_array($filterProperty, Entity::NULLABLE_ATTRIBUTES, true) === true)
                     {
-                        return ($rule->getAttribute($filterProperty) === null);
+                        $result = ($rule->getAttribute($filterProperty) === null);
                     }
                 }
 
@@ -122,7 +122,7 @@ class Filter extends Core
             return $rule->isInternational();
        }
 
-       return false;
+       return true;
     }
 
     protected function getMerchantSpecificRules(Base\PublicCollection $rules)
