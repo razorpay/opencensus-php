@@ -62,7 +62,7 @@ class PermissionTest extends TestCase
 
         $permId = Permission\Entity::verifyIdAndStripSign($result['id']);
 
-        $permIds = $this->org->permissions()->getRelatedIds()->toArray();
+        $permIds = $this->org->permissions()->allRelatedIds()->toArray();
 
         $this->assertContains($permId, $permIds);
     }
@@ -80,11 +80,11 @@ class PermissionTest extends TestCase
 
         $perm->roles()->attach($role);
 
-        $orgPerms = $this->org->permissions()->getRelatedIds()->toArray();
+        $orgPerms = $this->org->permissions()->allRelatedIds()->toArray();
 
         $this->assertContains($perm->getId(), $orgPerms);
 
-        $rolePerms = $role->permissions()->getRelatedIds()->toArray();
+        $rolePerms = $role->permissions()->allRelatedIds()->toArray();
 
         $this->assertCount(1, $rolePerms);
 
@@ -96,11 +96,11 @@ class PermissionTest extends TestCase
 
         $this->startTest();
 
-        $orgPerms = $this->org->permissions()->getRelatedIds()->toArray();
+        $orgPerms = $this->org->permissions()->allRelatedIds()->toArray();
 
         $this->assertNotContains($perm->getId(), $orgPerms);
 
-        $rolePerms = $role->permissions()->getRelatedIds()->toArray();
+        $rolePerms = $role->permissions()->allRelatedIds()->toArray();
 
         $this->assertCount(0, $rolePerms);
 
@@ -154,11 +154,11 @@ class PermissionTest extends TestCase
 
         $permId = Permission\Entity::verifyIdAndStripSign($result['id']);
 
-        $permIds = $this->org->permissions()->getRelatedIds()->toArray();
+        $permIds = $this->org->permissions()->allRelatedIds()->toArray();
 
         $rzpOrg = (new OrgRepo)->findOrFailPublic(Org::RZP_ORG);
 
-        $rzpPerms = $rzpOrg->permissions()->getRelatedIds()->toArray();
+        $rzpPerms = $rzpOrg->permissions()->allRelatedIds()->toArray();
 
         $this->assertNotContains($permId, $permIds);
 

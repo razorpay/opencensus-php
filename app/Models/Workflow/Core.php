@@ -132,7 +132,7 @@ class Core extends Base\Core
 
     protected function getPermissionIds(Entity $workflow, array $permissions = [])
     {
-        $permissionIds = $workflow->permissions->getRelatedIds()->toArray();
+        $permissionIds = $workflow->permissions->allRelatedIds()->toArray();
 
         return array_unique(array_merge($permissionIds, $permissions));
     }

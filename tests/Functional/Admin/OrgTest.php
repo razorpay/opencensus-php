@@ -72,7 +72,7 @@ class OrgTest extends TestCase
 
         $role = $this->ba->getAdmin()->roles()->get()[0];
 
-        $rolePermissions = $role->permissions()->getRelatedIds()->toArray();
+        $rolePermissions = $role->permissions()->allRelatedIds()->toArray();
 
         $this->assertEquals(3, count($rolePermissions));
     }

@@ -47,7 +47,7 @@ class Manager
         // if the admin has the role, give the checker the action_id, step_id
         //
 
-        $adminRoleIds = $admin->roles()->getRelatedIds()->toArray();
+        $adminRoleIds = $admin->roles()->allRelatedIds()->toArray();
 
         $actions = $this->repo->workflow_action->findActionsForChecker($adminRoleIds);
 

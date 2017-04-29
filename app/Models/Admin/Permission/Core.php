@@ -123,7 +123,7 @@ class Core extends Base\Core
 
     protected function toggleAssignableOrgs(Entity $permission, array $input)
     {
-        $assignedOrgs = $permission->orgs()->getRelatedIds()->toArray();
+        $assignedOrgs = $permission->orgs()->allRelatedIds()->toArray();
 
         $newOrgs = array_diff($input[Entity::ORGS], $assignedOrgs);
 
