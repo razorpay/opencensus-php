@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const PAID_COUNT        = 'paid_count';
     const AUTH_ATTEMPTS     = 'auth_attempts';
     const ERROR_STATUS      = 'error_status';
+    const SCHEDULE_ID       = 'schedule_id';
     //
     // Upfront amount needs to be at a subscription level because
     // the upfront amount can change based on the subscription period.
@@ -210,6 +211,11 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::TOKEN_ID);
     }
 
+    public function hasSchedule()
+    {
+        return $this->isAttributeNotNull(self::SCHEDULE_ID);
+    }
+
     public function getCustomerId()
     {
         return $this->getAttribute(self::CUSTOMER_ID);
@@ -228,6 +234,11 @@ class Entity extends Base\PublicEntity
     public function isCreated()
     {
         return ($this->getAttribute(self::STATUS) === Status::CREATED);
+    }
+
+    public function isAuthenticated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::AUTHENTICATED);
     }
 
     public function isExpired()
@@ -354,10 +365,15 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Models\Schedule\Run\Entity', 'entity_id');
     }
 
+    public function schedule()
+    {
+        return $this->belongsTo('RZP\Models\Schedule\Entity');
+    }
+
     public function task()
     {
         // TODO: Might have to change to morphMany. Check if this works.
-        return $this->morphOne('RZP\Models\Task\Entity', 'entity');
+        return $this->morphOne('RZP\Models\Schedule\Task\Entity', 'entity');
     }
 
     // --------------------- END RELATIONS ---------------------

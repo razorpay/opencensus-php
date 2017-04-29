@@ -135,6 +135,8 @@ class TraceCode
     const SUBSCRIPTIONS_EXPIRE_SUMMARY                  = 'SUBSCRIPTIONS_EXPIRE_SUMMARY';
     const SUBSCRIPTION_INVOICE_ALREADY_PAID             = 'SUBSCRIPTION_INVOICE_ALREADY_PAID';
     const SUBSCRIPTION_INVOICE_ON_HOLD                  = 'SUBSCRIPTION_INVOICE_ON_HOLD';
+    const SUBSCRIPTION_STATUS_ACTIVE                    = 'SUBSCRIPTION_STATUS_ACTIVE';
+    const PLAN_CREATE_REQUEST                           = 'PLAN_CREATE_REQUEST';
     const WEBHOOK_EDIT                                  = 'WEBHOOK_EDIT';
     const REFUND_AUTHORIZE_BULK                         = 'REFUND_AUTHORIZE_BULK';
     const PAYMENT_STATUS_FAILED                         = 'PAYMENT_STATUS_FAILED';
@@ -826,6 +828,14 @@ class TraceCode
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
         self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',
+
+        self::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED     => 'Subscription payment authorization failed',
+        self::SUBSCRIPTION_STATE_UNEXPECTED             => 'Unexpected state of subscription',
+        self::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE    => 'Not capturing late auth subscription payment',
+        self::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED       => 'Unable to capture subscription payment',
+        self::SUBSCRIPTION_ERROR_STATUS_UNEXPECTED      => 'Unexpected error status of subscription',
+        self::SUBSCRIPTION_INVOICE_ALREADY_PAID         => 'Subscription invoice has already been paid for',
+        self::SUBSCRIPTION_INVOICE_ON_HOLD              => 'Subscription invoice is now in on_hold state',
     );
 
     /**

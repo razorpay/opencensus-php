@@ -86,9 +86,9 @@ class Core extends Base\Core
 
         $scheduleId = $input[Entity::SCHEDULE_ID];
 
-        // $merchantId = Merchant\Account::SHARED_ACCOUNT;
+        $merchantId = Merchant\Account::SHARED_ACCOUNT;
 
-        $schedule = $this->repo->schedule->findOrFailPublic($scheduleId);
+        $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
 
         $scheduleTask->schedule()->associate($schedule);
 
@@ -120,16 +120,16 @@ class Core extends Base\Core
 
         $entity->setConnection($mode);
 
-        $currentSchedule = $this->repo
-                                ->schedule_task
-                                ->connection($mode)
-                                ->fetchExistingScheduleTask($entity);
+        $currentScheduleTask = $this->repo
+                                    ->schedule_task
+                                    ->connection($mode)
+                                    ->fetchExistingScheduleTask($entity);
 
-        if ($currentSchedule !== null)
+        if ($currentScheduleTask !== null)
         {
-            $entity->setNextRunAt($currentSchedule->getNextRunAt());
+            $entity->setNextRunAt($currentScheduleTask->getNextRunAt());
 
-            $this->repo->deleteOrFail($currentSchedule);
+            $this->repo->deleteOrFail($currentScheduleTask);
         }
 
         $this->repo->saveOrFail($entity);

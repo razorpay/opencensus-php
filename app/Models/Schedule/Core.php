@@ -17,6 +17,11 @@ class Core extends Base\Core
      */
     public function createSchedule(array $input, $merchant = null)
     {
+        $this->trace->info(
+            TraceCode::SCHEDULE_CREATE_REQUEST,
+            $input
+        );
+
         $schedule = (new Entity)->build($input);
 
         $schedule->generateId();

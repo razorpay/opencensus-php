@@ -130,4 +130,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::DELAY);
     }
+
+    // ----------------------- Setters -----------------------
+
+    public function setAnchor($anchor)
+    {
+        $this->setAttribute(self::ANCHOR, $anchor);
+    }
 }

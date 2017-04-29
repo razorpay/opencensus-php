@@ -34,12 +34,10 @@ class SubscriptionCreateTest extends TestCase
     {
         $this->startTest();
 
-        $plan = $this->getLastEntity('plan', true);
-        $schedule = $this->getLastEntity('schedule', true);
-
-        sd($schedule);
-
-        $this->assertEquals($schedule['id'], $plan['schedule_id']);
+        // $plan = $this->getLastEntity('plan', true);
+        // $schedule = $this->getLastEntity('schedule', true);
+        //
+        // $this->assertEquals($schedule['id'], $plan['schedule_id']);
     }
 
     public function testCreatePlanWithBadMonthlyIntervalPeriod()
@@ -62,6 +60,10 @@ class SubscriptionCreateTest extends TestCase
 
         $addOn = $this->getLastEntity('add_on', true);
         $lineItems = $this->getEntities('line_item', [], true);
+        $schedule = $this->getLastEntity('schedule', true);
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $subscription = $this->getLastEntity('subscription', true);
+        $plan = $this->getLastEntity('plan', true);
 
         $this->assertNull($addOn);
 
@@ -72,6 +74,19 @@ class SubscriptionCreateTest extends TestCase
         $this->assertEquals($response['id'], $invoice['subscription_id']);
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals(2000, $invoice['amount']);
+
+        $this->assertEquals($schedule['id'], $subscription['schedule_id']);
+
+        $this->assertEquals($plan['name'], $schedule['name']);
+        $this->assertEquals($plan['period'], $schedule['period']);
+        $this->assertEquals($plan['interval'], $schedule['interval']);
+        // Since there is no start_at, we don't set any anchor.
+        // The default is set to 1.
+        $this->assertEquals(1, $schedule['anchor']);
+
+        $this->assertEquals($subscription['id'], 'sub_' . $scheduleTask['entity_id']);
+        $this->assertEquals('subscription', $scheduleTask['entity_type']);
+        $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
     }
 
     public function testCreateSubscriptionWithNoStartAtAndWithAddOn()
@@ -264,6 +279,7 @@ class SubscriptionCreateTest extends TestCase
         }
 
         $requestContent['request']['url'] = '/plans/' . $planId . '/subscriptions/';
+        $requestContent['response']['content']['plan_id'] = $planId;
 
         return $requestContent;
     }

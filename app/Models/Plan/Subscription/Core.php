@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
@@ -10,12 +11,12 @@ use RZP\Models\Invoice;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Plan;
-use RZP\Models\Schedule\Run;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
 use RZP\Models\Item;
 use RZP\Models\AddOn;
+use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task;
 use RZP\Trace\TraceCode;
 
@@ -44,7 +45,7 @@ class Core extends Base\Core
 
                 $this->associateEntitiesToSubscription($subscription, $plan, $customer);
 
-                $this->createTask($subscription, $plan);
+                $this->createScheduleAndTask($subscription, $plan);
 
                 $this->repo->saveOrFail($subscription);
 
@@ -60,6 +61,42 @@ class Core extends Base\Core
             });
 
         return $subscription;
+    }
+
+    public function fillScheduleDetailsForNewSubscription(Entity $subscription)
+    {
+        //
+        // We don't have to update the next_run_at here
+        // because `handleCaptureSuccess` will take care of that.
+        // When the task was first created, the start_at of subscription
+        // would have been null, which means that the next_run_at
+        // would have got set to the midnight of subscription creation
+        // date (default).
+        // It will not get picked up by the cron also because of the
+        // subscription status being in created state.
+        // Now, since we set `anchor` here, the next_run_at of the task
+        // will automatically get set to the correct next_run
+        // according to the anchor.
+        //
+
+        if ($subscription->isAuthenticated() === false)
+        {
+            throw new LogicException(
+                'Subscription is not in authenticated state. This function should not have been called',
+                null,
+                [
+                    'subscription_id' => $subscription->getId(),
+                    'status' => $subscription->getStatus(),
+                ]);
+        }
+
+        $schedule = $subscription->schedule;
+
+        $anchor = $this->getAnchorForSchedule($subscription);
+
+        $schedule->setAnchor($anchor);
+
+        $this->repo->saveOrFail($schedule);
     }
 
     public function fillEndAtAndTotalCount(Entity $subscription, Plan\Entity $plan)
@@ -176,7 +213,7 @@ class Core extends Base\Core
         }
         else
         {
-            $this->trace->error(
+            $this->trace->critical(
                 TraceCode::SUBSCRIPTION_STATE_UNEXPECTED,
                 [
                     'payment_id'        => $capturedPayment->getId(),
@@ -447,9 +484,36 @@ class Core extends Base\Core
         return $lineItems;
     }
 
-    protected function createTask(Entity $subscription, Plan\Entity $plan)
+    protected function createScheduleAndTask(Entity $subscription, Plan\Entity $plan)
     {
-        $schedule = $plan->schedule;
+        $schedule = $this->createSchedule($subscription, $plan);
+
+        $subscription->schedule()->associate($schedule);
+
+        $this->createTask($subscription);
+    }
+
+    protected function createSchedule(Entity $subscription, Plan\Entity $plan)
+    {
+        $scheduleInput = [
+            Schedule\Entity::NAME       => $plan->getName(),
+            Schedule\Entity::INTERVAL   => $plan->getInterval(),
+            Schedule\Entity::PERIOD     => $plan->getPeriod(),
+        ];
+
+        if ($subscription->getStartAt() !== null)
+        {
+            $scheduleInput[Schedule\Entity::ANCHOR] = $this->getAnchorForSchedule($subscription);
+        }
+
+        $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
+
+        return $schedule;
+    }
+
+    protected function createTask(Entity $subscription)
+    {
+        $schedule = $subscription->schedule;
 
         $taskInput = [
             Task\Entity::METHOD         => null,
@@ -459,9 +523,21 @@ class Core extends Base\Core
             Task\Entity::NEXT_RUN_AT    => $subscription->getStartAt(),
         ];
 
-        $task = (new Task\Core)->create($plan->merchant, $subscription, $taskInput);
+        (new Task\Core)->createOrUpdate($subscription->merchant, $subscription, $taskInput);
+    }
 
-        return $task;
+    protected function getAnchorForSchedule(Entity $subscription)
+    {
+        // TODO: Handle setting anchor for weekly and monthly-week
+
+        if ($subscription->getStartAt() !== null)
+        {
+            $startAt = Carbon::createFromTimestamp($subscription->getStartAt(), 'Asia/Kolkata');
+
+            return $startAt->day;
+        }
+
+        return null;
     }
 
     protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice)

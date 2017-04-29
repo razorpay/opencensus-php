@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Schedule;
 
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Holidays;
 use Carbon\Carbon;
 
@@ -102,38 +103,93 @@ class Library
         return $lastRun;
     }
 
-    protected static function checkAnchor($time, $schedule)
+    protected static function checkAnchor(Carbon $time, Entity $schedule)
     {
-        $period = $schedule->getPeriod();
-
         // -1 is used to denote 'last', for example the last day of month.
         if ($schedule->getAnchor() !== -1)
         {
-            // Mapping for period to Carbon methods
-            $check = Anchor::CHECKS[$schedule->getPeriod()];
-
-            // For monthly-week periods, ensure that weekday is Monday
-            if (($period === Period::MONTHLY_WEEK) and
-                ($time->dayOfWeek !== Carbon::MONDAY))
-            {
-                return false;
-            }
-
-            return ($time->$check === $schedule->getAnchor());
+            return self::checkAnchorForNonLast($time, $schedule);
         }
         else
         {
-            // Last date of the month
-            if (($period === Period::MONTHLY_DATE) or
-                ($period === Period::MONTHLY))
+            return self::checkAnchorForLast($time, $schedule);
+        }
+    }
+
+    /**
+     * For monthly date, if the anchor is 31 and if the month is
+     * April (which has 30 days), we take the end of the month for the next run.
+     * The ideal way would be to pass -1 as the anchor while creating
+     * the schedule. But in case someone sends 31 instead,
+     * we take the last day of every month for the next run.
+     * Similarly, if someone passes 30th as the anchor, to calculate
+     * next run in February, we will take 28th or 29th.
+     *
+     * @param Carbon $time
+     * @param Entity $schedule
+     *
+     * @return bool
+     */
+    protected static function checkAnchorForNonLast(Carbon $time, Entity $schedule)
+    {
+        $period = $schedule->getPeriod();
+
+        // Mapping for period to Carbon methods
+        $check = Anchor::CHECKS[$schedule->getPeriod()];
+
+        // For monthly-week periods, ensure that weekday is Monday
+        if (($period === Period::MONTHLY_WEEK) and
+            ($time->dayOfWeek !== Carbon::MONDAY))
+        {
+            return false;
+        }
+
+        if ($time->$check === $schedule->getAnchor())
+        {
+            return true;
+        }
+        else
+        {
+            if (($period === Period::MONTHLY) or ($period === Period::MONTHLY_DATE))
             {
-                return ($time->day === $time->copy()->lastOfMonth()->day);
+                if ($time->$check === $time->copy()->endOfMonth()->$check)
+                {
+                    if ($time->$check < $schedule->getAnchor())
+                    {
+                        return true;
+                    }
+                }
             }
-            // Last week of the month
-            else if ($period === Period::MONTHLY_WEEK)
-            {
-                return ($time->day === $time->copy()->lastOfMonth(Carbon::MONDAY)->day);
-            }
+
+            return false;
+        }
+    }
+
+    protected static function checkAnchorForLast($time, Entity $schedule)
+    {
+        $period = $schedule->getPeriod();
+
+        // Last date of the month
+        if (($period === Period::MONTHLY_DATE) or
+            ($period === Period::MONTHLY))
+        {
+            return ($time->day === $time->copy()->lastOfMonth()->day);
+        }
+        // Last week of the month
+        else if ($period === Period::MONTHLY_WEEK)
+        {
+            return ($time->day === $time->copy()->lastOfMonth(Carbon::MONDAY)->day);
+        }
+        else
+        {
+            throw new LogicException(
+                'Invalid period. Should not have reached here.',
+                null,
+                [
+                    'period' => $period,
+                    'schedule_id' => $schedule->getId(),
+                    'anchor' => $schedule->getAnchor(),
+                ]);
         }
     }
 

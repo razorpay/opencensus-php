@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Plan;
+use RZP\Models\Schedule;
 use RZP\Models\Invoice;
 
 class CreateSubscription extends Migration
@@ -30,6 +31,7 @@ class CreateSubscription extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
             $table->char(Entity::PLAN_ID, Entity::ID_LENGTH);
+            $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH);
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
             $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH)
                   ->nullable();
@@ -109,6 +111,11 @@ class CreateSubscription extends Migration
                   ->references(Customer\Token\Entity::ID)
                   ->on(Table::TOKEN)
                   ->on_delete('restrict');
+
+            $table->foreign(Entity::SCHEDULE_ID)
+                  ->references(Schedule\Entity::ID)
+                  ->on(Table::SCHEDULE)
+                  ->on_delete('restrict');
         });
 
         // This should be here and not in invoices table because
@@ -148,6 +155,9 @@ class CreateSubscription extends Migration
             $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::TOKEN_ID . '_foreign');
 
             $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::PLAN_ID . '_foreign');
+
+            $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::SCHEDULE_ID . '_foreign');
+
         });
 
         Schema::table(Table::INVOICE, function($table)

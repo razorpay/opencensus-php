@@ -21,6 +21,7 @@ class Entity
     const P2P                   = 'p2p';
     const VPA                   = 'vpa';
     const CARD                  = 'card';
+    // const TASK                  = 'task';
     // TODO: Should this be renamed to subscription_plan? Since we have emi_plan and pricing_plan too.
     const PLAN                  = 'plan';
     const ITEM                  = 'item';
@@ -141,6 +142,7 @@ class Entity
         self::AMEX                  => \RZP\Gateway\Amex::class,
         self::HDFC                  => \RZP\Gateway\Hdfc::class,
         self::USER                  => \RZP\Models\User::class,
+        // self::TASK                  => \RZP\Models\Schedule\Task::class,
         self::OFFER                 => \RZP\Models\Offer::class,
         self::ORDER                 => \RZP\Models\Order::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,

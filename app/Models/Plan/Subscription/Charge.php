@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Exception\LogicException;
 use RZP\Jobs\InvoiceAction;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -18,8 +19,17 @@ use RZP\Models\Schedule\Task;
 class Charge extends Base\Core
 {
     protected $app;
+
+    /**
+     * @var Trace
+     */
     protected $trace;
+
     protected $repo;
+
+    /**
+     * @var Payment\Processor\Processor
+     */
     protected $processor;
 
     const MAX_JOB_ATTEMPTS = 3;
@@ -158,7 +168,7 @@ class Charge extends Base\Core
         //
         if ($payment->isCaptured() === false)
         {
-            $this->trace->error(
+            $this->trace->critical(
                 TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED,
                 [
                     'subscription_id'   => $subscription->getId(),
@@ -180,7 +190,7 @@ class Charge extends Base\Core
 
     protected function handleAuthorizationFailure(Entity $subscription)
     {
-        $this->trace->error(
+        $this->trace->critical(
             TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED,
             [
                 'subscription_id'   => $subscription->getId(),
@@ -195,6 +205,7 @@ class Charge extends Base\Core
         {
             $subscription->setStatus(Status::OVERDUE);
             $this->incrementChargeAtByOneDay($subscription);
+            $this->updateScheduleTask($subscription->task, true);
         }
         else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
         {
@@ -252,6 +263,15 @@ class Charge extends Base\Core
         $plan = $subscription->plan;
         $task = $subscription->task;
 
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_STATUS_ACTIVE,
+            [
+                'old_status'        => $subscription->getStatus(),
+                'new_status'        => Status::ACTIVE,
+                'subscription_id'   => $subscription->getId(),
+                'payment_id'        => $capturedPayment->getId(),
+            ]);
+
         $subscription->setStatus(Status::ACTIVE);
 
         $this->resetErrorStatusForSuccessfulCapture($subscription, $capturedPayment);
@@ -267,7 +287,7 @@ class Charge extends Base\Core
 
         $this->setNextChargeAt($subscription, $plan);
 
-        $this->updateScheduleTask($subscription, $task);
+        $this->updateScheduleTask($task);
 
         $this->incrementPaidCount($subscription);
 
@@ -362,7 +382,7 @@ class Charge extends Base\Core
         }
         else
         {
-            $this->trace->error(
+            $this->trace->critical(
                 TraceCode::SUBSCRIPTION_ERROR_STATUS_UNEXPECTED,
                 [
                     'payment_id'        => $capturedPayment->getId(),
@@ -438,12 +458,24 @@ class Charge extends Base\Core
         // $subscription->setChargeAt($nextChargeAt);
     }
 
-    protected function updateScheduleTask(Entity $subscription, Task\Entity $task)
+    /**
+     * In case of retries, we would explicitly change the task's next_run_at
+     * to the next day instead of next month or so. If the retry is successful,
+     * we would call this function and the next_run_at will get set to
+     * whatever it's supposed to get set to initially without retry.
+     *
+     * @param Task\Entity $task
+     * @param bool        $retry
+     */
+    protected function updateScheduleTask(Task\Entity $task, $retry = false)
     {
-        // $task = $this->repo->task->fetchByEntityAndMerchant($subscription, $subscription->merchant);
+        if ($retry === true)
+        {
+            $task->incrementNextRunByOneDayAndUpdateLastRun();
 
-        // TODO: This is not DONE! Need to understand and then refactor how
-        // next run is updated.
+            return;
+        }
+
         $task->updateNextRunAndLastRun(false);
     }
 

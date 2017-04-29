@@ -1550,7 +1550,8 @@ trait Authorize
             // We update attributes like token and status, which are done outside
             // of the handleCaptureSuccess flow. Hence, we need to save it here
             // explicitly, to ensure that these are saved even if handleCaptureSuccess
-            // is not called.
+            // is not called. handleCaptureSuccess is not called in case there's no
+            // add_on or isn't a first charge auth txn.
             //
             $this->repo->saveOrFail($subscription);
         }
@@ -1590,6 +1591,15 @@ trait Authorize
 
     protected function processNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
     {
+        //
+        // We do not need any special handling of late auth payments for subscriptions.
+        // If a payment gets late authorized, we don't auto capture it in the normal flow,
+        // since, in the function `shouldAutoCapture`, we return a `false` if the
+        // payment has a subscription. The subscription's auto capture flow is never
+        // called in a late auth case. Hence, no special handling required for late auth.
+        // It'll just get auto refunded in a few days, as per the merchant's config.
+        //
+
         //
         // We don't do this in the normal auth and capture flow because we need
         // to do some things after authorization and before capture.
@@ -1650,7 +1660,11 @@ trait Authorize
 
         $subscription->setStartAt($payment->getCreatedAt());
 
-        (new Subscription\Core)->fillEndAtAndTotalCount($subscription, $plan);
+        $subscriptionCore = new Subscription\Core;
+
+        $subscriptionCore->fillScheduleDetailsForNewSubscription($subscription);
+
+        $subscriptionCore->fillEndAtAndTotalCount($subscription, $plan);
     }
 
     protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)
@@ -1748,7 +1762,7 @@ trait Authorize
         //
         if ($subscription->isCreated() === false)
         {
-            $this->trace->error(
+            $this->trace->critical(
                 TraceCode::SUBSCRIPTION_STATE_UNEXPECTED,
                 [
                     'payment_id'            => $payment->getId(),

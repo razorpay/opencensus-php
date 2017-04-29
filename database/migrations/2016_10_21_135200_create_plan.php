@@ -27,7 +27,7 @@ class CreatePlan extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH);
+            // $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH);
 
             $table->integer(Entity::AMOUNT);
 
@@ -52,10 +52,10 @@ class CreatePlan extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Entity::SCHEDULE_ID)
-                  ->references(Schedule\Entity::ID)
-                  ->on(Table::SCHEDULE)
-                  ->on_delete('restrict');
+            // $table->foreign(Entity::SCHEDULE_ID)
+            //       ->references(Schedule\Entity::ID)
+            //       ->on(Table::SCHEDULE)
+            //       ->on_delete('restrict');
         });
     }
 
@@ -70,7 +70,7 @@ class CreatePlan extends Migration
         {
             $table->dropForeign(Table::PLAN . '_' . Entity::MERCHANT_ID . '_foreign');
 
-            $table->dropForeign(Table::PLAN . '_' . Entity::SCHEDULE_ID . '_foreign');
+            // $table->dropForeign(Table::PLAN . '_' . Entity::SCHEDULE_ID . '_foreign');
         });
 
         Schema::drop(Table::PLAN);

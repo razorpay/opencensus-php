@@ -148,7 +148,22 @@ class Entity extends Base\PublicEntity
 
         $currentTime = Carbon::now('Asia/Kolkata');
 
-        $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun);
+        $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun->copy(), $considerHolidays);
+
+        $this->setNextRunAt($nextRun->timestamp);
+        $this->setLastRunAt($lastRun->timestamp);
+    }
+
+    /**
+     * NOTE: This function does not take holidays into consideration.
+     * It also updates the last run. So, calculations for next_run based
+     * on the last_run may not end up correct. BE CAREFUL.
+     */
+    public function incrementNextRunByOneDayAndUpdateLastRun()
+    {
+        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), 'Asia/Kolkata');
+
+        $nextRun = $lastRun->copy()->addDay();
 
         $this->setNextRunAt($nextRun->timestamp);
         $this->setLastRunAt($lastRun->timestamp);

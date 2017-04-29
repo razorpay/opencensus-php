@@ -525,7 +525,7 @@ final class FactoryData
             'name'              => 'test plan',
             'period'            => 'monthly',
             'interval'          => 2,
-            'schedule_id'       => null,
+            // 'schedule_id'       => null,
             'amount'            => 2000,
             'currency'          => 'INR',
             'notes'             => null,

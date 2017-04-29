@@ -161,6 +161,24 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'total_count' => 3,
             ]);
 
+        $schedule = $this->fixtures->create(
+            'schedule',
+            [
+                'interval' => $plan->getInterval(),
+                'period' => $plan->getPeriod(),
+                'anchor' => null,
+                'name' => $plan->getName(),
+            ]);
+
+        $this->fixtures->create(
+            'schedule_task',
+            [
+                'schedule_id' => $schedule->getId(),
+                'entity_id' => $subscription->getId(),
+                'entity_type' => 'subscription',
+                'type' => 'subscription',
+            ]);
+
         $this->createFixturesForInvoice($subscription, $plan);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);

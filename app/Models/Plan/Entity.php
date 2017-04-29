@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
 
     // Input Keys
 
-    const SCHEDULE          = 'schedule';
+    // const FREQUENCY         = 'frequency';
 
     protected static $sign = 'plan';
 
@@ -101,10 +101,10 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function schedule()
-    {
-        return $this->belongsTo('RZP\Models\Schedule\Entity');
-    }
+    // public function schedule()
+    // {
+    //     return $this->belongsTo('RZP\Models\Schedule\Entity');
+    // }
 
     // --------------------- END RELATIONS ---------------------
 }

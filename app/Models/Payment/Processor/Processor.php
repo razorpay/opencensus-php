@@ -1096,7 +1096,7 @@ class Processor
         // TODO: Handle late auth for authenticated and for new subscriptions.
         if ($payment->isLateAuthorized())
         {
-            $this->trace->error(
+            $this->trace->critical(
                 TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
                 [
                     'payment_id' => $payment->getId(),
@@ -1144,7 +1144,7 @@ class Processor
         if ($subscriptionInvoices->count() > 1)
         {
             throw new Exception\LogicException(
-                'There should have been one invoice created for a newly created subscription',
+                'There should have been only one invoice created for a newly created subscription',
                 ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
                 [
                     'invoices_count'    => $subscriptionInvoices->count(),
@@ -1153,11 +1153,13 @@ class Processor
                 ]);
         }
 
-        // For now, we are not going to auto capture any late authorized payments.
-        // TODO: Fix this flow.
+        //
+        // Ideally, the flow shouldn't reach till here since this function
+        // is not called at all in case of a late auth payment.
+        //
         if ($payment->isLateAuthorized())
         {
-            $this->trace->error(
+            $this->trace->critical(
                 TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
                 [
                     'payment_id'      => $payment->getId(),

@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         Entity::INTERVAL        => 'required|integer|min:1|max:365',
         Entity::PERIOD          => 'required|string|custom',
         // Entity::PERIOD          => 'required|string',
-        Entity::SCHEDULE        => 'required|array',
+        // Entity::FREQUENCY       => 'required|array',
         Entity::NAME            => 'required|string|min:1|max:256',
         Entity::NOTES           => 'sometimes|notes'
     ];

@@ -13,10 +13,10 @@ return [
             'content' => [
                 'amount'            => 2000,
                 'currency'          => 'INR',
-                'schedule'          => [
-                    'period'            => 'monthly',
-                    'interval'          => 2,
-                ],
+                // 'schedule'          => [
+                //     'period'            => 'monthly',
+                //     'interval'          => 2,
+                // ],
                 'period'            => 'monthly',
                 'interval'          => 2,
                 'name'              => 'test plan',
