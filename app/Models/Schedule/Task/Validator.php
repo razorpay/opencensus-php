@@ -12,7 +12,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         ScheduleTask::TYPE              => 'required|string|max:20',
-        ScheduleTask::METHOD            => 'sometimes|string|max:20|custom',
+        ScheduleTask::METHOD            => 'sometimes|string|max:20|custom|nullable',
         ScheduleTask::SCHEDULE_ID       => 'required|alpha_dash|max:20',
         ScheduleTask::NEXT_RUN_AT       => 'sometimes|integer'
     ];
