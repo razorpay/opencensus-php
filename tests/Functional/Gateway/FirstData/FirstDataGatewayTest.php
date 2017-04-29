@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Gateway\FirstData;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\FirstData\Gateway;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FirstDataGatewayTest extends TestCase
@@ -25,8 +24,6 @@ class FirstDataGatewayTest extends TestCase
         $this->gateway = 'first_data';
 
         $this->payment = $this->getDefaultPaymentArray();
-
-        Gateway::setTestChance(4);
     }
 
     public function testRecurringPayment()
@@ -54,7 +51,7 @@ class FirstDataGatewayTest extends TestCase
         // Switch to private auth for second recurring payment
         $this->ba->privateAuth();
 
-        $response = $this->doS2SRecurringPayment($payment);
+        $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
         $this->capturePayment($paymentId, $payment['amount']);
 
@@ -70,7 +67,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($paymentId, $firstDataEntity['payment_id']);
 
         // Another payment to test auto-refund
-        $response = $this->doS2SRecurringPayment($payment);
+        $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
         $this->refundAuthorizedPayment($paymentId);
 
@@ -313,9 +310,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->getErrorInReturn();
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->refundpayment($payment['id']);
-        });
+        $this->refundpayment($payment['id']);
     }
 
     public function testFailedCapture()

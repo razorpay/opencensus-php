@@ -147,6 +147,8 @@ return array(
         // subscriptions
         // TODO: Use channel_id once the channel is created.
         'subscriptions'     => '#subscriptions',
+        // tech_logs_mail
+        'tech_logs_mail'    => 'C50JZ3S5T',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

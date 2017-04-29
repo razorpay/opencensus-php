@@ -221,11 +221,11 @@ trait Reversal
                           ->transfer
                           ->fetchBySourceTypeAndIdAndMerchant($payment->getEntity(), $payment->getId(), $this->merchant);
 
-        if ($refundType === Payment\Refund\Status::FULL)
+        if ($refundType === Payment\RefundStatus::FULL)
         {
             $reverseAll = true;
         }
-        else if ($refundType === Payment\Refund\Status::PARTIAL)
+        else if ($refundType === Payment\RefundStatus::PARTIAL)
         {
             $transferCount = $transfers->count();
 

@@ -262,7 +262,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::STATUS               => Status::CREATED,
-        self::REFUND_STATUS        => Refund\Status::NULL,
+        self::REFUND_STATUS        => RefundStatus::NULL,
         self::NOTES                => [],
         self::AMOUNT_REFUNDED      => 0,
         self::BASE_AMOUNT_REFUNDED => 0,
@@ -906,17 +906,17 @@ class Entity extends Base\PublicEntity
 
     public function isPartiallyOrFullyRefunded()
     {
-        return ! ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::NULL);
+        return ! ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::NULL);
     }
 
     public function isFullyRefunded()
     {
-        return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::FULL);
+        return ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::FULL);
     }
 
     public function isPartiallyRefunded()
     {
-        return ($this->getAttribute(self::REFUND_STATUS) === Refund\Status::PARTIAL);
+        return ($this->getAttribute(self::REFUND_STATUS) === RefundStatus::PARTIAL);
     }
 
     public function isTransferred()
@@ -1072,6 +1072,17 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getFormattedAmount()
+    {
+        $currency = $this->getCurrency();
+
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
+
+        $amount = number_format($this->getAmount() / $denominationFactor, 2);
+
+        return  $currency . ' ' . $amount;
     }
 
     public function getAmountPaidout()
@@ -1691,11 +1702,11 @@ class Entity extends Base\PublicEntity
 
         if ($amount < $amountUnrefunded)
         {
-            $this->setRefundStatus(Refund\Status::PARTIAL);
+            $this->setRefundStatus(RefundStatus::PARTIAL);
         }
         else if ($amount === $amountUnrefunded)
         {
-            $this->setRefundStatus(Refund\Status::FULL);
+            $this->setRefundStatus(RefundStatus::FULL);
 
             $this->setStatus(Payment\Status::REFUNDED);
         }

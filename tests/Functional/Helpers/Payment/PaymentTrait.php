@@ -731,6 +731,23 @@ trait PaymentTrait
         return $response;
     }
 
+    protected function retryFailedRefunds($gateway = [])
+    {
+        $this->ba->appAuth();
+
+        $content = [];
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/refunds/retry/failed',
+            'content' => $content
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     protected function refundAuthorizedPayment($id, array $input = [])
     {
         $this->ba->proxyAuth();

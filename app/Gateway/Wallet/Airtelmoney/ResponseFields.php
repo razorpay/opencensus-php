@@ -9,6 +9,7 @@ class ResponseFields
     const MID              = 'MID';
     const DATE             = 'DATE';
     const CODE             = 'CODE';
+    const HASH             = 'HASH';
     const ERR_CODE         = 'errCode';
     const TEXT             = 'text';
     const STATUS           = 'STATUS';

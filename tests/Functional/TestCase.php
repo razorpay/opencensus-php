@@ -9,6 +9,7 @@ namespace RZP\Tests\Functional;
 
 use Artisan;
 use RZP\Tests\TestCase as ParentTestCase;
+use RZP\Services\EsClient;
 
 class TestCase extends ParentTestCase
 {
@@ -105,5 +106,23 @@ class TestCase extends ParentTestCase
         $expected = $this->testData[$methodName]['response']['content'];
 
         $this->assertArraySelectiveEquals($expected, $entity);
+    }
+
+    /**
+     * Creates a mock of EsClient and sets it to be used when invoked from app.
+     * Also returns the same mock for setting expectations.
+     *
+     * @return object
+     */
+    protected function createEsMock($withMethods = [])
+    {
+        $esMock = $this->getMockBuilder(EsClient::class)
+                       ->setConstructorArgs([$this->app])
+                       ->setMethods($withMethods)
+                       ->getMock();
+
+        $this->app->instance('es', $esMock);
+
+        return $esMock;
     }
 }

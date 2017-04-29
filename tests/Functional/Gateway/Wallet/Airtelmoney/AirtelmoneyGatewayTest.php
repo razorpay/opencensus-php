@@ -186,10 +186,7 @@ class AirtelmoneyGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($capturePaymentId)
-        {
-            $this->refundPayment($capturePaymentId);
-        });
+        $this->refundPayment($capturePaymentId);
 
         $refund = $this->getLastEntity('wallet', true);
 

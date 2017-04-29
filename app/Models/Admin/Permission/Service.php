@@ -15,6 +15,13 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
         }
 
+        // Orgs for which workflows have to be enabled
+        if (empty($input[Entity::WORKFLOW_ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::WORKFLOW_ORGS]);
+        }
+
         $permission = $this->core()->create($input);
 
         $response = $permission->toArrayPublic();
@@ -30,6 +37,10 @@ class Service extends Base\Service
                            ->permission
                            ->findByPublicIdWithRelations(
                                $permissionId, $relations);
+
+        $workflowOrgs = $this->core()->getOrgsWithWorkflow($permission);
+
+        $permission->setWorkflowOrgs($workflowOrgs);
 
         return $permission->toArrayPublic();
     }
@@ -54,6 +65,13 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
         }
 
+        // Orgs for which workflows have to be enabled
+        if (empty($input[Entity::WORKFLOW_ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::WORKFLOW_ORGS]);
+        }
+
         $permission = $this->repo->permission->findOrFail($id);
 
         $permission = $this->core()->edit($permission, $input);
@@ -61,11 +79,13 @@ class Service extends Base\Service
         return $permission->toArrayPublic();
     }
 
-    public function getMultiplePermissions(string $orgId)
+    public function getMultiplePermissions(string $orgId, array $input)
     {
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $perms = $this->repo->permission->fetchAllByOrg($orgId);
+        $type = $input['type'] ?? null;
+
+        $perms = $this->repo->permission->fetchAllByOrg($orgId, $type);
 
         return $perms->toArrayPublic();
     }

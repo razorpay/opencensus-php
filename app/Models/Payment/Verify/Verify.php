@@ -160,6 +160,9 @@ class Verify extends Base\Core
      */
     public function verifyPaymentsWithFilter(string $filter, array $bucketFilter = [])
     {
+
+        $verifyFetchStartTime = time();
+
         Filter::isValidFilter($filter);
 
         $paymentStatus = $this->getPaymentStatusForFilter($filter);
@@ -219,7 +222,11 @@ class Verify extends Base\Core
 
         $verifiableCount = $paymentsCollectionWithCount['verifiable_count'];
 
-        return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount);
+        $verifyFetchEndTime = time();
+
+        $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
+
+        return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount, $verifyFetchTime);
     }
 
     /**
@@ -227,9 +234,15 @@ class Verify extends Base\Core
      * @param string                $filter
      * @param array                 $bucketFilter
      * @param integer               $verifiableCount
+     * @param integer               $verifyFetchTime
      * @return array with aggregated results
      */
-    protected function verifyMultiplePayments(Base\PublicCollection $payments, string $filter, array $bucketFilter, int $verifiableCount)
+    protected function verifyMultiplePayments(
+        Base\PublicCollection $payments,
+        string $filter,
+        array $bucketFilter,
+        int $verifiableCount,
+        int $verifyFetchTime)
     {
         $resultSet = [
             Result::AUTHORIZED    => 0,
@@ -272,7 +285,8 @@ class Verify extends Base\Core
         $times = [
             'start'             => $verifyStart,
             'end'               => $verifyEnd,
-            'authorize_time'    => $totalAuthTimeDiff
+            'authorize_time'    => $totalAuthTimeDiff,
+            'fetch_time'        => $verifyFetchTime
         ];
 
         $summary = $this->processResult($resultSet, $times, $filter, $bucketFilter, $verifiableCount);
@@ -371,7 +385,8 @@ class Verify extends Base\Core
             'bucket_filter'    => $bucketFilter,
             'verifiable_count' => $verifiableCount,
             'authorize_time'   => $avgTimeDiff,
-            'total_time'       => $totalVerifyTime . ' secs'
+            'total_time'       => $totalVerifyTime . ' secs',
+            'fetch_time'       => $times['fetch_time']
         ];
 
         $processedResults = array_merge($processedResults, $result);
@@ -458,12 +473,17 @@ class Verify extends Base\Core
                 {
                     $this->trace->warning(
                         TraceCode::PAYMENT_VERIFY_ALREADY_AUTHORIZED,
-                        [
-                            'payment_id'    => $payment->getId(),
-                            'status'        => $payment->getStatus(),
-                            'verify_bucket' => $payment->getVerifyBucket(),
-                            'error_message' => $ex->getMessage(),
-                        ]);
+                        $this->getAuthExceptionTraceBody($payment, $ex)
+                    );
+
+                    return null;
+                }
+                catch (Exception\GatewayErrorException $ex)
+                {
+                    $this->trace->warning(
+                        TraceCode::GATEWAY_VERIFY_ERROR,
+                        $this->getAuthExceptionTraceBody($payment, $ex)
+                    );
 
                     return null;
                 }
@@ -502,6 +522,18 @@ class Verify extends Base\Core
             ]);
 
         return $result;
+    }
+
+    protected function getAuthExceptionTraceBody(
+        Payment\Entity $payment,
+        Exception\BaseException $ex)
+    {
+        return [
+            'payment_id'    => $payment->getId(),
+            'status'        => $payment->getStatus(),
+            'verify_bucket' => $payment->getVerifyBucket(),
+            'error_message' => $ex->getMessage(),
+        ];
     }
 
     protected function getPaymentStatusForFilter(string $filter)

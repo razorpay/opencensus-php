@@ -76,7 +76,7 @@ class CreateWorkflowAction extends Migration
     {
         Schema::table(Table::WORKFLOW_ACTION, function($table)
         {
-            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::WORFLOW_ID . '_foreign');
+            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::WORKFLOW_ID . '_foreign');
 
             $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::ADMIN_ID . '_foreign');
 

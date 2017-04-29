@@ -244,14 +244,6 @@ class Entity
 
     protected static $syncedInLiveAndTest = [
         self::ORG,
-        self::ORG_HOSTNAME,
-        self::ORG_FIELD_MAP,
-        self::ROLE,
-        self::PERMISSION,
-        self::GROUP,
-        self::ADMIN,
-        self::ADMIN_TOKEN,
-        self::ADMIN_LEAD,
         self::IIN,
         self::FEATURE,
         self::METHODS,
@@ -260,12 +252,6 @@ class Entity
         self::MERCHANT,
         self::USER,
         self::SCHEDULE,
-        self::WORKFLOW,
-        self::WORKFLOW_STEP,
-        self::WORKFLOW_ACTION,
-        self::ACTION_CHECKER,
-        self::ACTION_STATE,
-        self::ACTION_COMMENT,
     ];
 
     public static function getEntityNamespace(string $entity)

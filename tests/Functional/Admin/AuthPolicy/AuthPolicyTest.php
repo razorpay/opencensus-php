@@ -30,7 +30,7 @@ class AuthPolicyTest extends TestCase
 
     public function testAdminLogin()
     {
-        $this->ba->appAuth('rzp_live');
+        $this->ba->appAuth();
 
         $result = $this->startTest();
 
@@ -112,7 +112,7 @@ class AuthPolicyTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = (new Admin\Repository)->findOrFailPublic($admin->getId());
 
         $this->assertNull($admin['last_login_at']);
         $this->assertEquals(true, $admin['locked']);
@@ -215,7 +215,7 @@ class AuthPolicyTest extends TestCase
 
     public function testPasswordChangedAtPolicy()
     {
-        $this->ba->appAuth('rzp_live');
+        $this->ba->appAuth();
 
         $passwordChangedAt = Carbon::now()->subDays(40)->timestamp;
 

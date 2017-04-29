@@ -87,6 +87,8 @@ final class Route
         'refund_create_missing_txn'               => ['post',     'refunds/transaction',                            'RefundController@postRefundsTransactions'                          ],
         'refund_gateway_refunded_txns'            => ['post',     'refunds/gateway_refunded/transaction',           'RefundController@postGatewayRefundedTransactions'                  ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                          'RefundController@postManualGatewayRefund'                          ],
+        'refund_retry_failed'                     => ['post',     'refunds/retry/failed',                           'RefundController@postRetryFailedRefunds'                           ],
+        'refund_verify_failed'                    => ['post',     'refunds/{id}/retry',                             'RefundController@postRefundRetry'                                  ],
         'card_check_recurring'                    => ['get',      'cards/recurring',                                'PaymentController@getCardRecurring'                                ],
         'card_fetch_by_id'                        => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                     => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
@@ -203,6 +205,7 @@ final class Route
         'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
+        'setl_reconcile_test'                     => ['post',     'settlements/reconcile/test',                     'SettlementController@postReconcileInTestMode'              ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
         'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                       'SettlementController@postH2HSettlementReconcile'                   ],
         'setl_return_generate'                    => ['post',     'settlements/return/generate',                    'SettlementController@postSettlementReturnGenerate'                 ],
@@ -717,6 +720,7 @@ final class Route
         'setl_reconcile',
         'setl_reconcile_h2h',
         'setl_reconcile_generate',
+        'setl_reconcile_test',
         'setl_return_generate',
         'setl_return',
         'setl_edit',
@@ -834,6 +838,8 @@ final class Route
         'user_merchant_mapping_action',
         'merchant_admin_lead_put',
         'payment_update_on_hold',
+        'refund_retry_failed',
+        'refund_verify_failed',
     );
 
     public static $proxy = array(
@@ -1040,6 +1046,12 @@ final class Route
         'workflow_action_states'           => ['*'],
         'workflow_action_details'          => ['*'],
         'workflow_action_get_multiple'     => ['*'],
+        'credits_fetch_multiple'           => [Permission::VIEW_MERCHANT_CREDITS_LOG],
+        'credits_create'                   => [Permission::ADD_MERCHANT_CREDITS],
+        'credits_delete'                   => [Permission::DELETE_MERCHANT_CREDITS],
+        'merchant_put_payment_methods'     => [Permission::EDIT_MERCHANT_METHODS],
+        'balance_fetch'                    => [Permission::VIEW_MERCHANT_BALANCE],
+        'feature_get_multiple'             => [Permission::VIEW_MERCHANT_FEATURES],
     ];
 
     public static $direct = array(
@@ -1084,6 +1096,7 @@ final class Route
             'setl_initiate',
             'payout_initiate',
             'setl_reconcile_generate',
+            'setl_reconcile_test',
             'setl_return_generate',
             'payment_auth_notify',
             'payment_timeout',
@@ -1119,6 +1132,7 @@ final class Route
             'offer_deactivate',
             'merchant_patch_beneficiary_code',
             'payment_update_on_hold',
+            'refund_retry_failed',
         ),
 
         'kotak' => array(
@@ -1150,7 +1164,7 @@ final class Route
     public static $slaveRoutes = [
         // TODO: Uncomment this when slave variables issue is fixed.
         //'es_migrate_entity',
-        'reports_public_entity_file',
+        'payment_fetch_transaction',
     ];
 
     protected static $jsonpRoutes = array(

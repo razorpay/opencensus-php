@@ -98,6 +98,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postReconcileInTestMode()
+    {
+        $input = Request::all();
+
+        $data = (new Settlement\Service)->reconcileSettlementsInTestMode($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSettlementReturnGenerate()
     {
         $input = Request::all();

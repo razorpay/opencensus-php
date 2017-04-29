@@ -409,9 +409,14 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::SUBSCRIPTION_ID) !== null);
     }
 
+    public function getReceipt()
+    {
+        return $this->getAttribute(self::RECEIPT);
+    }
+
     public function getReceiptElsePublicId()
     {
-        $receipt = $this->getAttribute(self::RECEIPT);
+        $receipt = $this->getReceipt();
 
         if ($receipt !== null)
         {
@@ -674,21 +679,25 @@ class Entity extends Base\PublicEntity
     // -------------------------------------- Accessors --------------------------------------
 
     /**
-     * DEPRECATED, WILL BE REMOVED.
-     * Replaced with setPublicCustomerAttribute method.
+     * @deprecated Replaced with setPublicCustomerAttribute method.
      *
      * @return array
      */
     protected function getCustomerDetailsAttribute()
     {
         return [
-            self::CUSTOMER_NAME            => $this->attributes[self::CUSTOMER_NAME],
-            self::CUSTOMER_EMAIL           => $this->attributes[self::CUSTOMER_EMAIL],
-            self::CUSTOMER_CONTACT         => $this->attributes[self::CUSTOMER_CONTACT],
+            self::CUSTOMER_NAME            => $this->getAttribute(self::CUSTOMER_NAME),
+            self::CUSTOMER_EMAIL           => $this->getAttribute(self::CUSTOMER_EMAIL),
+            self::CUSTOMER_CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
             self::CUSTOMER_ADDRESS         => null,
         ];
     }
 
+    /**
+     * TODO: Remove this post expand pr is merged. Also remove from $appends.
+     *
+     * @return Base\PublicCollection
+     */
     protected function getLineItemsAttribute()
     {
         $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
@@ -735,9 +744,9 @@ class Entity extends Base\PublicEntity
     protected function setPublicCustomerAttribute(array & $array)
     {
         $array[self::CUSTOMER] = [
-            Customer\Entity::NAME    => $this->attributes[self::CUSTOMER_NAME],
-            Customer\Entity::EMAIL   => $this->attributes[self::CUSTOMER_EMAIL],
-            Customer\Entity::CONTACT => $this->attributes[self::CUSTOMER_CONTACT],
+            Customer\Entity::NAME    => $this->getAttribute(self::CUSTOMER_NAME),
+            Customer\Entity::EMAIL   => $this->getAttribute(self::CUSTOMER_EMAIL),
+            Customer\Entity::CONTACT => $this->getAttribute(self::CUSTOMER_CONTACT),
         ];
 
         if ($this->hasCustomerBillingAddress() === true)

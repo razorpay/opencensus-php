@@ -10,9 +10,9 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Constants;
 use RZP\Constants\Table;
+use RZP\Models\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
@@ -25,6 +25,8 @@ class Service extends Base\Service
      * We run the cron for this once a day.
      */
     const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
+
+    const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
     public function create(array $input)
     {
@@ -46,6 +48,8 @@ class Service extends Base\Service
         $gatewayCode = null;
 
         $method = $input[Payment\Entity::METHOD];
+
+        $email = $input['email'] ?? null;
 
         switch ($method)
         {
@@ -103,12 +107,12 @@ class Service extends Base\Service
         {
             foreach ($gateways as $gatewayCode => $gateway)
             {
-                $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
+                $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email);
             }
         }
         else
         {
-            $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway);
+            $returnValue[$gateway] = $this->generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email);
         }
 
         $this->trace->info(
@@ -125,20 +129,22 @@ class Service extends Base\Service
         return $returnValue;
     }
 
-    protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
+    protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway, $email = null)
     {
-        // Handling netbanking kotak using seperate file.
+        // Handling claims file netbanking banks using daily files.
         if ((in_array($gatewayCode, Payment\Gateway::$claimsFileToBank)) and
             ($type === Payment\Entity::BANK))
         {
             $class = $this->getDailyFilesNamespace($gatewayCode);
 
-            $result = (new $class($gatewayCode))->generate($from, $to);
+            $result = (new $class($gatewayCode))->generate($from, $to, $email);
 
             return $result;
         }
         else
         {
+            // TODO : Implement send email feature for other netbanking gateways.
+            // Implemented for Daily file gateways.
             $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                                             $type, $gatewayCode, $from, $to, $gateway);
 
@@ -268,7 +274,7 @@ class Service extends Base\Service
 
             $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
 
-            $data[] = $this->getNewProcessor($merchant)->verifyRefund($refund);
+            $data[] = $this->getNewProcessor($merchant)->verifyInternalRefund($refund);
         }
 
         return $data;
@@ -478,10 +484,11 @@ class Service extends Base\Service
 
             $this->repo->transaction(
                 function()
-                use($refundWithoutTxn, $payment, $forceRefundTransaction)
+                use ($refundWithoutTxn, $payment, $forceRefundTransaction)
                 {
                     $transaction = $this->getNewProcessor($refundWithoutTxn->merchant)
-                                        ->createTransactionForRefund($refundWithoutTxn, $payment, $forceRefundTransaction);
+                                        ->createTransactionForRefund(
+                                            $refundWithoutTxn, $payment, $forceRefundTransaction);
 
                     if ($transaction === null)
                     {
@@ -633,5 +640,80 @@ class Service extends Base\Service
             ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $summary;
+    }
+
+    public function retryFailedRefunds()
+    {
+        $this->trace->info(TraceCode::REFUND_RETRY_INITIATED);
+
+        $gateways = Payment\Gateway::REFUND_RETRY_GATEWAYS;
+
+        $status = [];
+
+        $attempts = self::MAX_REFUND_RETRY_ATTEMPTS;
+
+        //
+        // Every combination of gateway / refund needs to be processed
+        // Get the appropriate refunds and pass them as part of the refund
+        // Get refunds that have failed and those that have not been
+        // retried more than 3. Post every retry update last retried at.
+        //
+        $refunds = $this->repo->refund->fetchRefundsByGatewayAndAttempts($gateways, $attempts);
+
+        $success = $failure = 0;
+
+        foreach ($refunds as $refund)
+        {
+            $refundId = $refund->getId();
+
+            try
+            {
+                $processor = $this->getNewProcessor($refund->merchant);
+
+                $status[$refundId] = $processor->processRefundRetry($refund);
+
+                $success++;
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::DEBUG,
+                    TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION,
+                    [
+                        'refund_id' => $refundId,
+                        'refund_attempts' => $refund->getAttempts()
+                    ]);
+
+                $failure++;
+            }
+        }
+
+        $summary = [
+            'successful'    => $success,
+            'failure'       => $failure,
+            'status'        => $status,
+        ];
+
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_RESULT,
+            [
+                $status,
+                'summary' => $summary
+            ]);
+
+        return $summary;
+    }
+
+    public function retry($id)
+    {
+        $refund = $this->repo->refund->findByPublicId($id);
+
+        $refundStatus = $this->getNewProcessor($refund->merchant)->processRefundRetry($refund);
+
+        return [
+            'refund_id' => $id,
+            'status'    => $refundStatus
+        ];
     }
 }
