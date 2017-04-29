@@ -205,9 +205,8 @@ class Service extends Base\Service
     // This is on internal auth
     public function fetch($id)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $methods = $merchant->methods;
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+            $id, ['methods', 'groups']);
 
         return $merchant->toArrayPublic();
     }

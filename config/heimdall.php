@@ -345,7 +345,6 @@ return [
             Permission::CREATE_GROUP      => 'Create group',
             Permission::EDIT_GROUP        => 'Edit group',
             Permission::DELETE_GROUP      => 'Delete group',
-            Permission::GROUP_GET_ALLOWED_GROUPS => 'Get allowed groups',
         ],
 
         // Admin
@@ -353,11 +352,6 @@ return [
             Permission::CREATE_ADMIN      => 'Create admin',
             Permission::EDIT_ADMIN        => 'Edit admin',
             Permission::DELETE_ADMIN      => 'Delete admin',
-        ],
-
-        // Permissions
-        PermissionCategory::PERMISSION => [
-            Permission::GET_PERMISSION      => 'Get Permission',
         ],
 
         // Invitations

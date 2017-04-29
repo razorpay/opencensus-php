@@ -68,40 +68,36 @@ class PermissionSeeder extends Seeder
 
                     $index++;
 
-                    $data = [
+                    DB::table(Table::PERMISSION)->insert([
                         'id'          => $id,
                         'name'        => $permission,
                         'description' => $description,
                         'category'    => $category,
                         'created_at'  => time(),
                         'updated_at'  => time(),
+                    ]);
+
+
+                    DB::table(Table::PERMISSION_MAP)->insert([
+                        'permission_id'     => $id,
+                        'entity_id'         => '6dLbNSpv5XbC5E',
+                        'entity_type'       => 'role',
+                    ]);
+
+                    $data = [
+                        'permission_id' => $id,
+                        'entity_id'     => '100000razorpay',
+                        'entity_type'   => 'org',
                     ];
 
-                    // For trimmed down ones (like HDFC)
                     if (isset($enableWorkflowPermissions[$category]) and
                         isset($enableWorkflowPermissions[$category][$permission]))
                     {
                         $data['enable_workflow'] = 1;
                     }
 
-                    DB::table(Table::PERMISSION)->insert($data);
-
-                    DB::table(Table::PERMISSION_MAP)->insert([
-                        [
-                            'permission_id'     => $id,
-                            'entity_id'         => '6dLbNSpv5XbC5E',
-                            'entity_type'       => 'role',
-                        ]
-                    ]);
-
                     // Razorpay Org will have all permissions
-                    DB::table(Table::PERMISSION_MAP)->insert([
-                        [
-                            'permission_id' => $id,
-                            'entity_id'     => '100000razorpay',
-                            'entity_type'   => 'org',
-                        ]
-                    ]);
+                    DB::table(Table::PERMISSION_MAP)->insert($data);
 
                     // For trimmed down ones (like HDFC)
                     if (isset($assignablePermissions[$category]) and
@@ -128,7 +124,6 @@ class PermissionSeeder extends Seeder
                             ]
                         ]);
                     }
-
                 }
             }
             // end of transaction

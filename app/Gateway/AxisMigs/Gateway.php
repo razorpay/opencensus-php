@@ -109,7 +109,7 @@ class Gateway extends Base\Gateway
         $this->verifyAmaTransactionResponse($content, $input);
     }
 
-    public function verifyRefund(array $input)
+    public function verifyInternalRefund(array $input)
     {
         $isRefundRequired = $this->isRefundRequired($input);
 
@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
         // not be called again.
         //
         if ((($input['payment']['transaction_id'] === null) and
-             ($checkTransaction === true))or
+             ($checkTransaction === true)) or
             ($refundedEntities->count() > 0) or
             ((isset($verifyContent['vpc_RefundedAmount']) === true) and
              ($verifyContent['vpc_RefundedAmount'] !== '0')))

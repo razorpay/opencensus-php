@@ -83,7 +83,7 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $this->mail->queue('email.message', $fileData, function ($message) use ($fileData)
+        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
         {
             $emails = $fileData['emails'];
 

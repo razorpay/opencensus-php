@@ -376,7 +376,7 @@ class Gateway extends Base\Gateway
             'Hdfc gateway does not support voids');
     }
 
-    public function verifyRefund(array $input)
+    public function verifyInternalRefund(array $input)
     {
         $isRefundRequired = $this->isRefundRequired($input);
 

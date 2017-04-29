@@ -369,13 +369,13 @@ class Creator extends Base\Core
      *
      * @return array
      */
-    public function getSignedUrl()
+    public function getSignedUrl($duration = '15')
     {
         $bucketConfig = $this->storageHandler->getBucketConfig(
             $this->file->getType(),
             $this->env);
 
-        $url = $this->storageHandler->getSignedUrl($bucketConfig, $this->file->getLocation());
+        $url = $this->storageHandler->getSignedUrl($bucketConfig, $this->file->getLocation(), $duration);
 
         return [
             'id'  => $this->file->getId(),

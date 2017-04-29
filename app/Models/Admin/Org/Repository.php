@@ -3,8 +3,11 @@
 namespace RZP\Models\Admin\Org;
 
 use Carbon\Carbon;
+
+use RZP\Constants\Table;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
@@ -58,4 +61,33 @@ class Repository extends Base\Repository
                     ->where($hostnameAttr, '=', $hostname)
                     ->firstOrFailPublic();
     }
+
+    /**
+     * Get all the orgs with enable_workflow=1 for the permission
+     */
+    public function getOrgsWithWorkflowEnabled(string $permissionId)
+    {
+        $orgAttrs = $this->getAttributeWithTableName('*');
+        $orgId = $this->getAttributeWithTableName(Entity::ID);
+
+        $pmTable = Table::PERMISSION_MAP;
+
+        /*
+            SELECT o.*
+            FROM orgs o
+            JOIN permission_map pm ON o.id = pm.entity_id
+            WHERE pm.permission_id = $permissionId
+                AND pm.entity_type = 'org'
+                AND pm.enable_workflow = 1
+        */
+
+        return $this->newQuery()
+                    ->select($orgAttrs)
+                    ->join($pmTable, $orgId, '=', $pmTable . '.entity_id')
+                    ->where($pmTable . '.permission_id', '=', $permissionId)
+                    ->where($pmTable . '.entity_type', '=', 'org')
+                    ->where($pmTable . '.enable_workflow', '=', 1)
+                    ->get();
+    }
+
 }

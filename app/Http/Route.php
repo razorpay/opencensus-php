@@ -87,6 +87,8 @@ final class Route
         'refund_create_missing_txn'               => ['post',     'refunds/transaction',                            'RefundController@postRefundsTransactions'                          ],
         'refund_gateway_refunded_txns'            => ['post',     'refunds/gateway_refunded/transaction',           'RefundController@postGatewayRefundedTransactions'                  ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                          'RefundController@postManualGatewayRefund'                          ],
+        'refund_retry_failed'                     => ['post',     'refunds/retry/failed',                           'RefundController@postRetryFailedRefunds'                           ],
+        'refund_verify_failed'                    => ['post',     'refunds/{id}/retry',                             'RefundController@postRefundRetry'                                  ],
         'card_check_recurring'                    => ['get',      'cards/recurring',                                'PaymentController@getCardRecurring'                                ],
         'card_fetch_by_id'                        => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                     => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
@@ -836,6 +838,8 @@ final class Route
         'gateway_find_load_rule_by_id',
         'gateway_update_load_rule',
         'gateway_delete_load_rule',
+        'refund_retry_failed',
+        'refund_verify_failed',
     );
 
     public static $proxy = array(
@@ -1125,6 +1129,7 @@ final class Route
             'offer_deactivate',
             'merchant_patch_beneficiary_code',
             'payment_update_on_hold',
+            'refund_retry_failed',
         ),
 
         'kotak' => array(
