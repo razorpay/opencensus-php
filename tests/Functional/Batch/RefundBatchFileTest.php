@@ -2,16 +2,17 @@
 
 namespace RZP\Tests\Functional\Batch;
 
-use Carbon\Carbon;
 use Mail;
+use Carbon\Carbon;
+use Illuminate\Http\UploadedFile;
 
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Batch\Status;
 use RZP\Models\Batch\Header;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use Illuminate\Http\UploadedFile;
+use RZP\Mail\Batch\RefundFile as BatchRefundFileMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class RefundBatchFileTest extends TestCase
 {
