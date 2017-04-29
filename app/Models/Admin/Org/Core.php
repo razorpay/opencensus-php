@@ -48,7 +48,7 @@ class Core extends Base\Core
 
             if (isset($input[Entity::PERMISSIONS]) === true)
             {
-                $oldPerms = $org->permissions()->getRelatedIds()->toArray();
+                $oldPerms = $org->permissions()->allRelatedIds()->toArray();
 
                 // These perms are deleted from the organization
                 $diffPerms = array_diff($oldPerms, $input[Entity::PERMISSIONS]);
@@ -92,6 +92,9 @@ class Core extends Base\Core
         $org->setAuditAction(Action::DELETE_ORG);
 
         (new Hostname\Core)->deleteHostnamesOfOrg($id);
+
+        // Required currently in 5.4 otherwise this function is not working.
+        $org->flushEventListeners();
 
         $this->repo->org->deleteOrFail($org);
 
