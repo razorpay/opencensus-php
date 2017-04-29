@@ -498,8 +498,6 @@ class Notify
             ];
         }
 
-<<<<<<< HEAD
-=======
         if ($this->payment->hasInvoice() === true)
         {
             $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
@@ -508,7 +506,6 @@ class Notify
             $data['merchant'] += $payloadForInvoice['merchant'];
         }
 
->>>>>>> master
         return $data;
     }
 
