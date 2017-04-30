@@ -284,8 +284,6 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlement()
     {
-        Mail::fake();
-
         $this->ba->appAuth();
 
         // $this->fixtures->merchant->createBankAccount();
@@ -379,8 +377,6 @@ class SettlementTest extends TestCase
 
         $settlementReport = $this->fetchReport('settlement', $input);
         assert(count($settlementReport) === 1);
-
-        Mail::assertSent(KotakSettlementMail::class);
     }
 
     public function testMerchantSettlementV2()
