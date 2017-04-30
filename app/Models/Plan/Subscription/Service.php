@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -168,5 +170,35 @@ class Service extends Base\Service
         );
 
         return $summary;
+    }
+
+    public function chargeSubscriptionInvoiceManually(string $subscriptionId, string $invoiceId)
+    {
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+
+        $invoice = $this->repo->invoice->findByPublicIdAndSubscription($invoiceId, $subscription);
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_INVOICE_MANUAL_CHARGE,
+            [
+                'invoice_id' => $invoiceId,
+                'subscription_id' => $subscriptionId,
+                'invoice_status' => $invoice->getStatus(),
+                'subscription' => $subscription->toArray(),
+            ]);
+
+        if ($invoice->isIssued() === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_IN_ISSUED,
+                null,
+                [
+                    'invoice_id' => $invoiceId,
+                    'subscription_id' => $subscriptionId,
+                    'invoice_status' => $invoice->getStatus(),
+                ]);
+        }
+
+        (new Core)->charge($subscription, $invoice, true);
     }
 }

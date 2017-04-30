@@ -53,6 +53,13 @@ class PlanController extends Controller
         return ApiResponse::json($summary);
     }
 
+    public function postChargeSubscriptionInvoiceManually($subId, $invId)
+    {
+        $subscription = $this->subscriptionService->chargeSubscriptionInvoiceManually($subId, $invId);
+
+        return ApiResponse::json($subscription);
+    }
+
     public function postExpireSubscriptions()
     {
         $summary = $this->subscriptionService->expireSubscriptions();

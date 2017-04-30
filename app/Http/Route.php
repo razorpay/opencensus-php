@@ -351,6 +351,7 @@ final class Route
         'subscriptions_charge_invoices'           => ['post',     'subscriptions/charge/invoices',                  'PlanController@postCreateAndChargeSubscriptionInvoices'            ],
         'subscriptions_auth_retry'                => ['post',     'subscriptions/retry/auth',                       'PlanController@postRetryAuthSubscriptions'                         ],
         'subscriptions_expire'                    => ['post',     'subscriptions/expire',                           'PlanController@postExpireSubscriptions'                            ],
+        'subscription_manual_retry'               => ['post',     'subscriptions/{subId}/invoices/{invId}/charge',  'PlanController@postChargeSubscriptionInvoiceManually'              ],
         'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
@@ -641,6 +642,7 @@ final class Route
         'customer_set_primary_address',
         'plan_create',
         'subscription_create',
+        'subscription_manual_retry',
         'p2p_fetch_private',
         'vpa_fetch_private',
         'customer_collect_request_fetch_private',
@@ -1204,6 +1206,7 @@ final class Route
         'transfer_create_reversal'          => [Feature::MARKETPLACE, Feature::OPENWALLET],
         'plan_create'                       => [Feature::RECURRING],
         'subscription_create'               => [Feature::RECURRING],
+        'subscription_manual_retry'         => [Feature::RECURRING],
     ];
 
     /*

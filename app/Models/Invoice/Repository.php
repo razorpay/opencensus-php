@@ -72,6 +72,15 @@ class Repository extends Base\Repository
         return $invoice;
     }
 
+    public function findByPublicIdAndSubscription(string $invoiceId, Subscription\Entity $subscription)
+    {
+        Entity::verifyIdAndStripSign($invoiceId);
+
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                    ->findOrFailPublic($invoiceId);
+    }
+
     public function getInvoicesForIssuedNotificationToCustomer($medium)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;

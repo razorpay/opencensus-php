@@ -74,11 +74,16 @@ class Charge extends Base\Core
 
         $this->processor = new Payment\Processor\Processor($subscription->merchant);
 
-        //
-        // This needs to be incremented every time we attempt to authorize a payment.
-        // Using this attribute, we would decide whether to retry or not.
-        //
-        $subscription->incrementAuthAttempts();
+        $manual = $data['manual'];
+
+        if ($manual === false)
+        {
+            //
+            // This needs to be incremented every time we attempt to authorize a payment.
+            // Using this attribute, we would decide whether to retry or not.
+            //
+            $subscription->incrementAuthAttempts();
+        }
 
         $authorizedPayment = null;
 
@@ -90,7 +95,10 @@ class Charge extends Base\Core
         {
             $this->trace->traceException($ex);
 
-            $this->handleAuthorizationFailure($subscription);
+            if ($manual === false)
+            {
+                $this->handleAuthorizationFailure($subscription);
+            }
 
             return;
         }
@@ -176,6 +184,7 @@ class Charge extends Base\Core
                 ]);
 
             // TODO: Decide on what status to keep here. How to handle?
+            // TODO: Also decide how to handle in case of manual retry.
             $subscription->setStatus(Status::ON_HOLD);
             $subscription->setErrorStatus(Status::CAPTURE_FAILURE);
         }
