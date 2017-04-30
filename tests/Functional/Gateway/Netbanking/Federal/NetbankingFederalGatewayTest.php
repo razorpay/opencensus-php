@@ -196,8 +196,6 @@ class NetbankingFederalGatewayTest extends TestCase
 
     public function testExcelRefundFileGeneration()
     {
-        Mail::fake();
-
         $payments = $this->createPaymentsToClaim();
 
         $this->createRefundsForFileGeneration($payments);

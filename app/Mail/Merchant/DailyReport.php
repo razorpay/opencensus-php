@@ -32,6 +32,8 @@ class DailyReport extends Mailable
         $email = Constants::MAIL_ADDRESSES[Constants::REPORTS];
 
         $this->from($email);
+
+        return $this;
     }
 
     protected function addReplyTo()
