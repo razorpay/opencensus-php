@@ -19,6 +19,6 @@ class FakerProviderHdfcGateway extends Base
 
     public function hdfcPaymentId()
     {
-        return random_integer(11);
+        return random_integer(5);
     }
 }
