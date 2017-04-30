@@ -3,8 +3,8 @@
 namespace RZP\Tests\Functional\Admin;
 
 use Mail;
-use Mockery;
 
+use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\TestCase;
@@ -37,6 +37,8 @@ class AdminLeadTest extends TestCase
 
     public function testCreateAdminLead()
     {
+        Mail::fake();
+
         $fields = $this->getDefaultFields();
 
         $role = $this->ba->getAdmin()->roles()->get()[0];
@@ -52,22 +54,18 @@ class AdminLeadTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        Mail::shouldReceive('queue')
-              ->once()
-              ->with(
-                    Mockery::any(),
-                    Mockery::on(function ($data)
-                    {
-                        $this->assertArrayHasKey('invitation', $data);
-
-                        $this->assertArrayHasKey('adminName', $data);
-
-                        return true;
-                    }),
-                    Mockery::any()
-                );
-
         $this->startTest();
+
+        Mail::assertSent(MerchantInvitationMail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertArrayHasKey('invitation', $data);
+
+            $this->assertArrayHasKey('adminName', $data);
+
+            return true;
+        });
 
         $adminLead = $this->getLastEntity('admin_lead', true);
 

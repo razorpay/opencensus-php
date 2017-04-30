@@ -2,7 +2,10 @@
 
 namespace RZP\Gateway\Netbanking\Federal;
 
+use Mail;
 use Carbon\Carbon;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\RefundFile\Constants;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\MailTags;
@@ -83,34 +86,15 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
-        {
-            $emails = $fileData['emails'];
+        $refundFileMail = new RefundFileMail($fileData, Constants::NETBANKING_FEDERAL);
 
-            $message->from('refunds@razorpay.com', 'Federal Netbanking refunds');
-
-            $message->subject($fileData['subject']);
-
-            $message->to($emails);
-
-            $message->attach($fileData['file_path']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::FEDERAL_NETBANKING_REFUNDS_MAIL);
-        });
+        Mail::queue($refundFileMail);
     }
 
     protected function getFileData()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d_m_Y');
-
-        $emails = ['settlements@razorpay.com'];
-
         return [
             'file_path' => $this->getFileToWriteName(),
-            'subject'   => 'Federal Netbanking refunds file for ' . $today,
-            'emails'    => $emails
         ];
     }
 

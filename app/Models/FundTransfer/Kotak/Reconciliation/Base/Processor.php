@@ -10,6 +10,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\MailTags;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\Base;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\FundTransfer\Kotak;
@@ -273,24 +274,12 @@ class Processor extends Base\Core
             $msg .= 'Failed settlement ids: ' . $response['failure ids'];
         }
 
-        $data['subject'] = "Re: Kotak Settlement files for $date";
         $data['date'] = $date;
         $data['body'] = $msg;
 
-        Mail::queue('emails.message', $data, function($message) use ($data)
-        {
-            $emails = ['settlements@razorpay.com'];
+        $kotakReconciliationMail = new SettlementMail\KotakReconciliation($data);
 
-            $message->from('settlement@razorpay.com', 'Kotak Settlement');
-
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
-        });
+        Mail::queue($kotakReconciliationMail);
     }
 
     public static function getHeadings()
