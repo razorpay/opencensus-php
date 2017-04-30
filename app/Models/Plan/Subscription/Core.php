@@ -63,6 +63,13 @@ class Core extends Base\Core
         return $subscription;
     }
 
+    public function retry(Entity $subscription)
+    {
+        $invoice = $this->repo->invoice->fetchIssuedAndNotOnHoldInvoiceForSubscription($subscription);
+
+        $this->charge($subscription, $invoice);
+    }
+
     public function fillScheduleDetailsForNewSubscription(Entity $subscription)
     {
         //
@@ -141,7 +148,7 @@ class Core extends Base\Core
         $invoice = $this->createInvoiceBeforeCharge($subscription);
 
         //
-        // We should not charge any invoice which is on_hold status,
+        // We should not charge any invoice which is in on_hold status,
         // since, the subscription would also be in on_hold status here.
         // We do not charge on_hold subscriptions, we only create an invoice.
         //
@@ -178,11 +185,6 @@ class Core extends Base\Core
         $subscription->setStatus(Status::EXPIRED);
 
         $this->repo->saveOrFail($subscription);
-    }
-
-    public function retry(Entity $subscription)
-    {
-        //$this->charge($subscription, $invoice);
     }
 
     /**
@@ -274,6 +276,18 @@ class Core extends Base\Core
         }
 
         return $authAmount;
+    }
+
+    public function fireWebhookForStatusUpdate(Entity $subscription, string $status)
+    {
+        if (in_array($status, array_keys(Status::$webhookStatuses), true) === false)
+        {
+            return;
+        }
+
+        $event = Status::$webhookStatuses[$status];
+
+        $this->app['events']->fire('api.' . $event, array($subscription));
     }
 
     protected function createInvoiceBeforeCharge(Entity $subscription)

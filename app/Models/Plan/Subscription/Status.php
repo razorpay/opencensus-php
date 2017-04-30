@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Models\Merchant\Webhook\Event;
+
 class Status
 {
     // ---------------- Subscription statuses ----------------
@@ -72,6 +74,13 @@ class Status
     public static $timestampedStatuses = [
         self::AUTHENTICATED,
         self::CANCELLED,
+    ];
+
+    public static $webhookStatuses = [
+        self::ACTIVE    => Event::SUBSCRIPTION_ACTIVATED,
+        self::OVERDUE   => Event::SUBSCRIPTION_OVERDUE,
+        self::ON_HOLD   => Event::SUBSCRIPTION_ON_HOLD,
+        self::EXPIRED   => Event::SUBSCRIPTION_EXPIRED,
     ];
 
     public static function isStatusValid($status)

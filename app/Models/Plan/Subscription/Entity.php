@@ -60,7 +60,6 @@ class Entity extends Base\PublicEntity
         self::STATUS            => Status::CREATED,
         self::PAID_COUNT        => 0,
         self::AUTH_ATTEMPTS     => 0,
-        // self::UPFRONT_AMOUNT    => null,
         self::ERROR_STATUS      => null,
         self::ACTIVATED_AT      => null,
         self::FAILED_AT         => null,
@@ -78,7 +77,6 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::QUANTITY,
         self::NOTES,
-        // self::UPFRONT_AMOUNT,
         self::START_AT,
         self::TOTAL_COUNT,
         self::END_AT,
@@ -98,7 +96,7 @@ class Entity extends Base\PublicEntity
         self::CHARGE_AT,
         self::START_AT,
         self::END_AT,
-        // self::UPFRONT_AMOUNT,
+        self::AUTH_ATTEMPTS,
         self::TOTAL_COUNT,
         self::PAID_COUNT,
     ];
@@ -111,11 +109,6 @@ class Entity extends Base\PublicEntity
         self::CURRENT_END       => 'int',
         self::TOTAL_COUNT       => 'int',
         self::PAID_COUNT        => 'int',
-        // self::UPFRONT_AMOUNT    => 'int',
-    ];
-
-    protected $amounts = [
-        // self::UPFRONT_AMOUNT,
     ];
 
     protected $publicSetters = [
@@ -270,7 +263,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENDED_AT, $endAt);
     }
 
-    public function setStatus($status)
+    public function setStatus($status, $sendWebhook = true)
     {
         Status::checkStatus($status);
 
@@ -283,6 +276,11 @@ class Entity extends Base\PublicEntity
             $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
             $this->setAttribute($timestampKey, $currentTime);
+        }
+
+        if ($sendWebhook === true)
+        {
+            (new Core)->fireWebhookForStatusUpdate($this, $status);
         }
     }
 

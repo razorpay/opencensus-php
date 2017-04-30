@@ -20,28 +20,10 @@ class Repository extends Base\Repository
         // TODO: Do this later.
         //
 
-        $subscriptionIdAttr = $this->getAttributeWithTableName(Entity::ID);
-
-        $taskEntityIdAttr = $this->manager->schedule_task->getAttributeWithTableName(Task\Entity::ENTITY_ID);
-        $taskNextRunAttr = $this->manager->schedule_task->getAttributeWithTableName(Task\Entity::NEXT_RUN_AT);
-
-        $subscriptionAttrs = $this->getAttributeWithTableName('*');
-
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
-
-        return $this->newQuery()
-                    ->select($subscriptionAttrs)
+        return $this->getBaseSubscriptionsQuery()
                     ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED])
                     ->whereNull(Entity::ENDED_AT)
                     ->where(Entity::AUTH_ATTEMPTS, '=', 0)
-                    ->join(Table::SCHEDULE_TASK, $subscriptionIdAttr, $taskEntityIdAttr)
-                    ->where($taskNextRunAttr, '<', $currentTime)
-                    ->where(function($query) use ($currentTime)
-                            {
-                                $query->whereNull(Entity::CURRENT_END)
-                                      ->orWhere(Entity::CURRENT_END, '<', $currentTime);
-                            })
-                    ->with(['plan', 'merchant'])
                     ->get();
     }
 
@@ -68,14 +50,24 @@ class Repository extends Base\Repository
 
     protected function getBaseSubscriptionsQuery()
     {
+        $subscriptionIdAttr = $this->getAttributeWithTableName(Entity::ID);
+
+        $taskEntityIdAttr = $this->manager->schedule_task->getAttributeWithTableName(Task\Entity::ENTITY_ID);
+        $taskNextRunAttr = $this->manager->schedule_task->getAttributeWithTableName(Task\Entity::NEXT_RUN_AT);
+
+        $subscriptionAttrs = $this->getAttributeWithTableName('*');
+
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         return $this->newQuery()
-                    ->where(Entity::CHARGE_AT, '<=', $currentTime)
+                    ->select($subscriptionAttrs)
+                    ->join(Table::SCHEDULE_TASK, $subscriptionIdAttr, $taskEntityIdAttr)
+                    ->where($taskNextRunAttr, '<', $currentTime)
                     ->where(function($query) use ($currentTime)
                             {
                                 $query->whereNull(Entity::CURRENT_END)
-                                      ->orWhere(Entity::CURRENT_END, '<', $currentTime);
-                            });
+                                    ->orWhere(Entity::CURRENT_END, '<', $currentTime);
+                            })
+                    ->with(['plan', 'merchant']);
     }
 }

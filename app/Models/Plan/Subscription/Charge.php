@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Exception\LogicException;
 use RZP\Jobs\InvoiceAction;
+use RZP\Models\Schedule\Library;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -260,8 +261,18 @@ class Charge extends Base\Core
 
     public function handleCaptureSuccess(Entity $subscription, Payment\Entity $capturedPayment, Invoice\Entity $invoice)
     {
-        $plan = $subscription->plan;
         $task = $subscription->task;
+
+        //
+        // Cannot move this to a variable because the instance values change later.
+        //
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_BEFORE_CAPTURE_UPDATE,
+            [
+                'subscription_details' => $subscription->toArray(),
+                'invoice_details' => $invoice->toArray(),
+                'task_details' => $task->toArray(),
+            ]);
 
         $this->trace->info(
             TraceCode::SUBSCRIPTION_STATUS_ACTIVE,
@@ -272,7 +283,11 @@ class Charge extends Base\Core
                 'payment_id'        => $capturedPayment->getId(),
             ]);
 
-        $subscription->setStatus(Status::ACTIVE);
+        //
+        // Not sending webhook here because the transaction might fail later
+        // in the flow. Will be sending it after the transaction is committed.
+        //
+        $subscription->setStatus(Status::ACTIVE, false);
 
         $this->resetErrorStatusForSuccessfulCapture($subscription, $capturedPayment);
 
@@ -281,11 +296,15 @@ class Charge extends Base\Core
         // we will be keeping the current billing cycle period
         // in subscriptions also.
         //
+        // Ensure that setting billing period functions are called
+        // before incrementing the paid count, since the logic
+        // is dependent on that.
+        //
         $this->setCurrentPeriod($subscription);
 
         $this->setInvoiceBillingPeriod($subscription, $invoice);
 
-        $this->setNextChargeAt($subscription, $plan);
+        $this->setNextChargeAt($subscription);
 
         $this->updateScheduleTask($task);
 
@@ -302,6 +321,16 @@ class Charge extends Base\Core
                 $this->repo->saveOrFail($invoice);
                 $this->repo->saveOrFail($subscription);
             });
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_AFTER_CAPTURE_UPDATE,
+            [
+                'subscription_details' => $subscription->toArray(),
+                'invoice_details' => $invoice->toArray(),
+                'task_details' => $task->toArray()
+            ]);
+
+        (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
 
         //
         // This must be sent after saving the invoice and subscription
@@ -328,40 +357,25 @@ class Charge extends Base\Core
 
     protected function getBillingPeriod(Entity $subscription)
     {
-        $plan = $subscription->plan;
+        $schedule = $subscription->schedule;
+        $task = $subscription->task;
 
         $billingPeriod = [];
 
-        $period = $plan->getPeriod();
-
-        $carbonAddFunc = Plan\Cycle::getCarbonFunction($period, 'add');
-
-        $interval = $plan->getInterval();
-
         if ($subscription->getPaidCount() === 0)
         {
-            $currentStart = $subscription->getStartAt();
-
-            $billingPeriod['start'] = $currentStart;
-
-            $currentEnd = Carbon::createFromTimestamp($currentStart)
-                                ->$carbonAddFunc($interval);
-
-            $billingPeriod['end'] = $currentEnd->timestamp;
+            $billingPeriod['start'] = $subscription->getStartAt();
         }
         else
         {
-            $currentStart = Carbon::createFromTimestamp($subscription->getCurrentStart());
-
-            $currentStart->$carbonAddFunc($interval)->timestamp;
-
-            $billingPeriod['start'] = $currentStart;
-
-            // To get $currentEnd, we need to add the same period to $currentStart (new $currentStart).
-            $currentStart->$carbonAddFunc($interval)->timestamp;
-
-            $billingPeriod['end'] = $currentStart;
+            $billingPeriod['start'] = $task->getNextRunAt();
         }
+
+        $currentTime = Carbon::now('Asia/Kolkata');
+        $lastRun = Carbon::createFromTimestamp($task->getNextRunAt(), 'Asia/Kolkata');
+        $currentEnd = Library::computeFutureRun($schedule, $currentTime, $lastRun, false);
+
+        $billingPeriod['end'] = $currentEnd->timestamp;
 
         return $billingPeriod;
     }
@@ -373,6 +387,11 @@ class Charge extends Base\Core
         //
         // At this point of the flow, if there is an error, it should be capture failure only.
         // If it was auth_failure, capture shouldn't have been called at all for the payment.
+        //
+        // The auth_failure error status is reset as soon as successful authorization is done.
+        //
+        // We check for null also here so that we can trace everything which is unexpected.
+        // null is expected when there is no error.
         //
 
         if (($errorStatus === null) or
@@ -419,9 +438,8 @@ class Charge extends Base\Core
      * for the next charge_at because charge_at can be modified during auth failures.
      *
      * @param Entity $subscription
-     * @param Plan\Entity $plan
      */
-    protected function setNextChargeAt(Entity $subscription, Plan\Entity $plan)
+    protected function setNextChargeAt(Entity $subscription)
     {
         $currentEnd = $subscription->getCurrentEnd();
 

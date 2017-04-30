@@ -141,6 +141,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchIssuedAndNotOnHoldInvoiceForSubscription(Subscription\Entity $subscription)
+    {
+        $invoices = $this->newQuery()
+                         ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                         ->where(Entity::STATUS, '=', Status::ISSUED)
+                         ->where(Entity::SUB_STATUS, '!=', Status::ON_HOLD)
+                         ->get();
+
+        if ($invoices->count() !== 1)
+        {
+            throw new Exception\LogicException(
+                'There should have been exactly one invoice for this',
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'auth_attempts'     => $subscription->getAuthAttempts(),
+                    'error_status'      => $subscription->getErrorStatus(),
+                    'status'            => $subscription->getStatus(),
+                ]);
+        }
+
+        return $invoices->first();
+    }
+
     public function getNonFailedPaymentsCount(Entity $invoice)
     {
         return $invoice->payments()

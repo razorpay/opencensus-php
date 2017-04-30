@@ -46,6 +46,12 @@ return [
                 'rejected'      => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'transferred'   => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
+            'subscription' => [
+                'activated'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'overdue'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'on_hold'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'expired'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ]
         ],
         'live' => [
             'payment' => [
@@ -66,6 +72,12 @@ return [
                 'rejected'      => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'transferred'   => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ],
+            'subscription' => [
+                'activated'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'overdue'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'on_hold'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'expired'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ]
         ],
     ],
 
