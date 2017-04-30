@@ -13,7 +13,6 @@ use RZP\Constants\MailTags;
 class DailyFiles
 {
     protected $app;
-    protected $mail;
     protected $repo;
     protected $mode;
     protected $gateway;
@@ -154,6 +153,8 @@ class DailyFiles
         ];
 
         $dailyFileMail = new DailyFileMail($data);
+
+        Mail::queue($dailyFileMail);
     }
 
     protected function getBankName()

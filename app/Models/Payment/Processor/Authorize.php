@@ -1349,11 +1349,11 @@ trait Authorize
                 return;
             }
 
-            $trigger = $hasInvoice ? Notify::INVOICE_PAYMENT_AUTHORIZED : Notify::FAILED_TO_AUTHORIZED;
+            $trigger = $hasInvoice ? Payment\Event::INVOICE_PAYMENT_AUTHORIZED : Payment\Event::FAILED_TO_AUTHORIZED;
         }
         else
         {
-            $trigger = $hasInvoice ? Notify::INVOICE_PAYMENT_AUTHORIZED : Notify::AUTHORIZED;
+            $trigger = $hasInvoice ? Payment\Event::INVOICE_PAYMENT_AUTHORIZED : Payment\Event::AUTHORIZED;
         }
 
         $notifier->trigger($trigger);
@@ -1369,7 +1369,7 @@ trait Authorize
         {
             $notifier = new Notify($this->payment);
 
-            $trigger = Notify::CARD_SAVED;
+            $trigger = Payment\Event::CARD_SAVED;
 
             $notifier->trigger($trigger);
         }

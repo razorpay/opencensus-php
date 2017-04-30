@@ -505,7 +505,7 @@ trait Capture
     {
         $hasInvoice = $this->payment->hasInvoice();
 
-        $event = $hasInvoice ? Notify::INVOICE_PAYMENT_CAPTURED : Notify::CAPTURED;
+        $event = $hasInvoice ? Payment\Event::INVOICE_PAYMENT_CAPTURED : Payment\Event::CAPTURED;
 
         (new Notify($this->payment))->trigger($event);
     }

@@ -36,14 +36,6 @@ class Notify
     const HIGH_RISK_RATING     = 4;
     const MAX_HIGH_RISK_RATING = 5;
 
-    const AUTHORIZED                 = 'authorized';
-    const CARD_SAVED                 = 'card_saved';
-    const CAPTURED                   = 'captured';
-    const REFUNDED                   = 'refunded';
-    const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
-    const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
-    const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
-
     protected $payment;
     protected $refund;
     protected $mode;
@@ -504,14 +496,6 @@ class Notify
                 'payment_id' => $this->refund->payment->getId(),
                 'public_id'  => $this->refund->getPublicId(),
             ];
-        }
-
-        if ($this->payment->hasInvoice() === true)
-        {
-            $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
-
-            $data['invoice']   = $payloadForInvoice['invoice'];
-            $data['merchant'] += $payloadForInvoice['merchant'];
         }
 
         return $data;

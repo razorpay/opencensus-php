@@ -65,14 +65,29 @@ class DailyFile extends Mailable
 
     protected function addAttachments()
     {
+        // @note Check with Firi once on this change
         if (empty($this->data['claimsFile']) === false)
         {
-            $this->attach($this->data['claimsFile']);
+            if (isset($this->data['claimsFile']['url']) === true)
+            {
+                $this->attach($this->data['claimsFile']['url'], ['as' => $this->data['claimsFile']['name']]);
+            }
+            else
+            {
+                $this->attach($this->data['claimsFile']);
+            }
         }
 
         if (empty($this->data['refundFile']) === false)
         {
-            $this->attach($this->data['refundsFile']);
+            if (isset($this->data['refundsFile']['url']) === true)
+            {
+                $this->attach($this->data['refundsFile']['url'], ['as' => $this->data['refundsFile']['name']]);
+            }
+            else
+            {
+                $this->attach($this->data['refundsFile']);
+            }
         }
 
         return $this;

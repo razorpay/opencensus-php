@@ -58,7 +58,6 @@ class MerchantInvitation extends Base\Mailable
 
         $this->subject($subject);
 
-
         return $this;
     }
 
