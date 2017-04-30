@@ -90,7 +90,7 @@ class RefundFile extends Base\RefundFile
     {
         $refundFileMail = new RefundFileMail($fileData, MailConstants::NETBANKING_FEDERAL);
 
-        Mail::send($refundFileMail);
+        Mail::queue($refundFileMail);
     }
 
     protected function getFileToWriteNameWithoutExt()
