@@ -308,13 +308,13 @@ class MerchantFilter extends Terminal\Filter
     {
         $merchantId = $input['payment']->getMerchantId();
 
-        $merchantList = Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST;
+        $gateway = $terminal->getGateway();
 
-        if (isset($merchantList[$merchantId]) === true)
+        $excludeList = Merchant\Preferences::MERCHANT_GATEWAY_BLACKLIST;
+
+        if (isset($excludeList[$merchantId]) === true)
         {
-            $gateway = $terminal->getGateway();
-
-            $excludedGateways = $merchantList[$merchantId];
+            $excludedGateways = $excludeList[$merchantId];
 
             if (in_array($gateway, $excludedGateways, true) === true)
             {
@@ -325,6 +325,22 @@ class MerchantFilter extends Terminal\Filter
                 {
                     return false;
                 }
+            }
+        }
+
+        $includeList = Merchant\Preferences::MERCHANT_GATEWAY_WHITELIST;
+
+        if (isset($includeList[$merchantId]) === true)
+        {
+            $includedGateways = $includeList[$merchantId];
+
+            if (in_array($gateway, $includedGateways, true) === true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
