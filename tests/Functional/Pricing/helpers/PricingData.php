@@ -741,7 +741,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Internatioanl pricing rule is only allowed for card method',
+                    'description' => 'International pricing rule is only allowed for card method',
                 ],
             ],
             'status_code' => 400,

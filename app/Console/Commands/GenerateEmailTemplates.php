@@ -75,7 +75,8 @@ class GenerateEmailTemplates extends Command {
 
         $base_css = $ink_css. PHP_EOL . $common_css;
 
-        foreach ($templates as $template) {
+        foreach ($templates as $template)
+        {
             $cssContent = $base_css;
             $css_file = $view_directory.$template.".css";
 
@@ -85,20 +86,33 @@ class GenerateEmailTemplates extends Command {
             }
 
             $emailTemplate = file_get_contents($view_directory.$template.".email");
-            $convertor = new CssToInlineStyles();
-            $convertor->setHTML($emailTemplate);
-            $convertor->setCleanup(false);
-            $convertor->setExcludeMediaQueries(false);
-            $convertor->setCSS($cssContent);
+
+            $convertor = new CssToInlineStyles;
+
+            // @note: Commented during upgrade to laravel5.4
+            //      The CssToInlineStyles library in version 2.2 is behaving
+            //      differently from older 1.5 version which was previously being
+            //      used.
+            //
+            // $convertor->setHTML($emailTemplate);
+            // $convertor->setCleanup(false);
+            // $convertor->setExcludeMediaQueries(false);
+            // $convertor->setCSS($cssContent);
+
+            $msg = $convert->convert($emailTemplate, $cssContent);
 
             // We run decode because some entities '{' get converted by cssInliner
             // TODO: Find a better solution to this
             // This should only be applied on img src tags
-            $output = str_replace(["%7B", "%7D", "%24", "%5B", "%5D", '%20', '&gt;', '&lt;'], ['{','}', '$', '[', ']', ' ', '>', '<'], ($convertor->convert()));
-            $renderFile = "$view_directory$template.blade.php";
-            file_put_contents($renderFile, $output);
-            $this->info("Rendered $template into $renderFile");
-            }
-        }
+            $output = str_replace(
+                ["%7B", "%7D", "%24", "%5B", "%5D", '%20', '&gt;', '&lt;'], ['{','}', '$', '[', ']', ' ', '>', '<'],
+                $msg);
 
+            $renderFile = "$view_directory$template.blade.php";
+
+            file_put_contents($renderFile, $output);
+
+            $this->info("Rendered $template into $renderFile");
+        }
     }
+}

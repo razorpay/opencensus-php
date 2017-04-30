@@ -20,7 +20,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY             => 'sometimes|',
         Entity::PLAN_NAME           => 'sometimes|',
         Entity::PAYMENT_METHOD      => 'required|string',
-        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|in:debit,credit|nullable',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|nullable|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|nullable|alpha|max:10',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
@@ -177,7 +177,7 @@ class Validator extends Base\Validator
         if ($input[Entity::PAYMENT_METHOD] !== Payment\Method::CARD)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Internatioanl pricing rule is only allowed for card method');
+                'International pricing rule is only allowed for card method');
         }
     }
 

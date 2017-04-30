@@ -237,9 +237,10 @@ class Response
     protected function generateCheckoutView($data)
     {
         $view = \View::make('checkout.checkout')
-                     ->with($data);
+                     ->with($data)
+                     ->render();
 
-        return \Response::view($view);
+        return \Response::make($view);
     }
 
     protected function isJsonpRequired($path)
