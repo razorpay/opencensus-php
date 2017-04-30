@@ -330,7 +330,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->payment->updateOnHold($input);
+        $data = $this->service('payment')->updateOnHold($input);
 
         return ApiResponse::json($data);
     }

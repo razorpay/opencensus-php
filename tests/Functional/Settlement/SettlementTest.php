@@ -99,8 +99,7 @@ class SettlementTest extends TestCase
             $request = ['url' => $url];
 
             $response = $this->sendRequest($request);
-
-            $this->assertResponseStatus(200);
+            $response->assertStatus(200);
         }
     }
 
