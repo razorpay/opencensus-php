@@ -304,7 +304,7 @@ class Inferno
         }
         catch (NetworkException $e)
         {
-            $msgPrefix = 'No response received due to network issues';
+            $msgPrefix = 'No response received due to network issues: ' . $e->getMessage();
 
             $this->traceWebhookResponse($webhook, $msgPrefix);
 
@@ -312,7 +312,7 @@ class Inferno
         }
         catch (RequestException $e)
         {
-            $msgPrefix = 'The request is invalid';
+            $msgPrefix = 'The request is invalid: ' . $e->getMessage();
 
             $this->traceWebhookResponse($webhook, $msgPrefix);
 
@@ -320,7 +320,7 @@ class Inferno
         }
         catch (TransferException $e)
         {
-            $msgPrefix = 'something unexpected happened';
+            $msgPrefix = 'Something unexpected happened: ' . $e->getMessage();
 
             $this->traceWebhookResponse($webhook, $msgPrefix);
 
