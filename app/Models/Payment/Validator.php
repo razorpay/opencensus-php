@@ -45,7 +45,7 @@ class Validator extends Base\Validator
         'fee'                     => 'sometimes|filled|integer|max:50000000',
         'service_tax'             => 'sometimes|filled|integer|max:50000000',
         'on_hold'                 => 'sometimes_if:method,transfer|boolean',
-        'on_hold_until'           => 'sometimes_if:method,transfer|epoch',
+        'on_hold_until'           => 'sometimes_if:method,transfer|nullable|epoch',
         'ip'                      => 'sometimes|ip',
         'referer'                 => 'sometimes|string|max:2083',
         'user_agent'              => 'sometimes|string',

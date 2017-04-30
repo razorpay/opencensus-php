@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY       => 'required|size:3|in:INR',
         Entity::NOTES          => 'sometimes|notes',
         Entity::ON_HOLD        => 'required_with:on_hold_until|boolean',
-        Entity::ON_HOLD_UNTIL  => 'sometimes|epoch',
+        Entity::ON_HOLD_UNTIL  => 'sometimes|nullable|epoch',
     ];
 
     protected static $createValidators = [
