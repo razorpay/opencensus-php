@@ -35,17 +35,29 @@ class Core extends Base\Core
     {
         $subscription = (new Entity)->build($input);
 
-        $this->repo->transaction(
+        //
+        // Transaction on live and test is required because
+        // schedule is created in both live and test.
+        //
+        $this->repo->transactionOnLiveAndTest(
             function() use ($subscription, $plan, $customer, $input)
             {
                 // This is being done for the `run` association.
                 $subscription->generateId();
 
-                $this->fillEndAtAndTotalCount($subscription, $plan);
-
+                //
+                // This should be called before creating task since it requires
+                // merchant to associated with the subscription first.
+                //
                 $this->associateEntitiesToSubscription($subscription, $plan, $customer);
 
+                //
+                // This should be called before filling end_at and total_count,
+                // since they require the schedule to be created first.
+                //
                 $this->createScheduleAndTask($subscription, $plan);
+
+                $this->fillEndAtAndTotalCount($subscription, $plan);
 
                 $this->repo->saveOrFail($subscription);
 
@@ -125,7 +137,7 @@ class Core extends Base\Core
         }
         else if ($subscription->getEndAt() === null)
         {
-            $this->calculateAndSetEndAt($subscription, $plan);
+            $this->calculateAndSetEndAt($subscription);
 
             $subscription->getValidator()->validateEndAtAfterGenerating();
         }
@@ -594,22 +606,16 @@ class Core extends Base\Core
         $subscription->customer()->associate($customer);
     }
 
-    protected function calculateAndSetEndAt(Entity $subscription, Plan\Entity $plan)
+    protected function calculateAndSetEndAt(Entity $subscription)
     {
-        $startAt = $subscription->getStartAt();
-        $totalCount = $subscription->getTotalCount();
-
-        $endAt = Plan\Cycle::getEndTimeForGivenTotalCount($plan, $startAt, $totalCount);
+        $endAt = Plan\Cycle::getEndTimeForGivenTotalCount($subscription);
 
         $subscription->setEndAt($endAt);
     }
 
-    protected function calculateAndSetTotalCount(Entity $subscription, Plan\Entity $plan)
+    protected function calculateAndSetTotalCount(Entity $subscription)
     {
-        $startAt = $subscription->getStartAt();
-        $endAt = $subscription->getEndAt();
-
-        $totalCount = Plan\Cycle::getTotalCountForGivenInterval($plan, $startAt, $endAt);
+        $totalCount = Plan\Cycle::getTotalCountForGivenInterval($subscription);
 
         $subscription->setTotalCount($totalCount);
     }

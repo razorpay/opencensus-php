@@ -5,6 +5,7 @@ namespace RZP\Models\Plan;
 use Carbon\Carbon;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\LogicException;
+use RZP\Models\Schedule\Library;
 
 class Cycle
 {
@@ -42,7 +43,7 @@ class Cycle
 
     public static function isPeriodValid(string $period)
     {
-        if (in_array($period, self::$validPeriods) === true)
+        if (in_array($period, self::$validPeriods, true) === true)
         {
             return true;
         }
@@ -62,37 +63,44 @@ class Cycle
         return self::$allowedMaxInterval[$period];
     }
 
-    public static function getTotalCountForGivenInterval(Entity $plan, int $start, int $end)
+    public static function getTotalCountForGivenInterval(Subscription\Entity $subscription)
     {
-        $interval = $plan->getInterval();
-        $period = $plan->getPeriod();
+        $start = $subscription->getStartAt();
+        $end = $subscription->getEndAt();
+
+        $schedule = $subscription->schedule;
 
         $start = Carbon::createFromTimestamp($start, 'Asia/Kolkata');
         $end = Carbon::createFromTimestamp($end, 'Asia/Kolkata');
 
-        $diffFunction = self::getCarbonFunction($period, 'diff');
-
-        $diffInPeriod = $end->$diffFunction($start);
+        $nextRun = $start;
 
         //
-        // We are adding one to the interval_count because
-        // we would be charging on the start date also.
+        // We are starting with 1 because we would be charging
+        // on the start_date also.
         //
-        // (int) will always floor the value.
-        //
-        $totalCycles = (int) (($diffInPeriod / $interval) + 1);
+        $totalCount = 1;
 
-        return $totalCycles;
+        while ($nextRun < $end)
+        {
+            $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
+
+            $start = $nextRun;
+
+            $totalCount++;
+        }
+
+        return $totalCount;
     }
 
-    public static function getEndTimeForGivenTotalCount(Entity $plan, int $start, int $totalCount)
+    public static function getEndTimeForGivenTotalCount(Subscription\Entity $subscription)
     {
-        $interval = $plan->getInterval();
-        $period = $plan->getPeriod();
+        $schedule = $subscription->schedule;
+
+        $start = $subscription->getStartAt();
+        $totalCount = $subscription->getTotalCount();
 
         $start = Carbon::createFromTimestamp($start, 'Asia/Kolkata');
-
-        $addFunction = self::getCarbonFunction($period, 'add');
 
         //
         // We are subtracting one because we would be
@@ -100,9 +108,14 @@ class Cycle
         // The total count given would be inclusive of the
         // charge made on start date also.
         //
-        $toAdd = ($totalCount * $interval) - 1;
+        foreach (range(1, $totalCount - 1) as $i)
+        {
+            $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
 
-        $end = $start->$addFunction($toAdd)->timestamp;
+            $start = $nextRun;
+        }
+
+        $end = $start->timestamp;
 
         return $end;
     }

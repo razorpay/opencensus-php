@@ -268,7 +268,7 @@ return [
                 'notes' => [],
                 'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
-                'end_at' => 1545244200, // 12-20-2018, 12:00:00 AM
+                'end_at' => 1542652200, // 11-20-2018, 12:00:00 AM
                 'total_count' => 6,
                 'paid_count' => 0
             ],
@@ -283,7 +283,7 @@ return [
                 'customer_id'   => 'cust_100000customer',
                 'quantity'      => 1,
                 'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
-                'end_at'        => 1545244200, // Every two months
+                'end_at'        => 1542652200, // Every two months
             ],
         ],
         'response' => [
@@ -298,7 +298,7 @@ return [
                 'notes' => [],
                 'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
                 'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
-                'end_at' => 1545244200, // 12-20-2018, 12:00:00 AM
+                'end_at' => 1542652200, // 12-20-2018, 12:00:00 AM
                 'total_count' => 6,
                 'paid_count' => 0
             ],

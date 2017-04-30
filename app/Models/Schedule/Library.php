@@ -69,19 +69,38 @@ class Library
         return $futureRun;
     }
 
-    protected static function resolveAnchored(Entity $schedule, Carbon $refTime)
+    protected static function resolveAnchored($schedule, $refTime)
     {
-        // Since hourly schedules can't be anchored, time no longer matters.
-        $nextRun = $refTime->addDay()->hour(0)->minute(0)->second(0);
-
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
 
-        // Increment by step size until condition is met and we arrive
-        // at an anchor date.
-        while (self::checkAnchor($nextRun, $schedule) === false)
+        $interval = $schedule->getInterval();
+
+        //
+        // Not sure when the interval would be null. Mostly it should always
+        // be 1 or more. Keeping this here just in case, since it's nullable.
+        //
+        if ($interval === null)
         {
-            $nextRun->$step();
+            $interval = 1;
+        }
+
+        //
+        // range parameters are inclusive on both ends.
+        //
+        foreach (range(1, $interval) as $i)
+        {
+            // Since hourly schedules can't be anchored, time no longer matters.
+            $nextRun = $refTime->addDay()->hour(0)->minute(0)->second(0);
+
+            // Increment by step size until condition is met and we arrive
+            // at an anchor date.
+            while (self::checkAnchor($nextRun, $schedule) === false)
+            {
+                $nextRun->$step();
+            }
+
+            $refTime = $nextRun;
         }
 
         return $nextRun;

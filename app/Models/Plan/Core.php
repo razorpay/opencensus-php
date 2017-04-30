@@ -18,11 +18,7 @@ class Core extends Base\Core
 
         $plan = (new Entity)->build($input);
 
-        //
-        // Transaction on live and test is required because
-        // schedule is created in both live and test.
-        //
-        $this->repo->transactionOnLiveAndTest(
+        $this->repo->transaction(
             function()
             use ($plan, $merchant, $input)
             {
