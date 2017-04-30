@@ -8,7 +8,7 @@ use RZP\Gateway\Netbanking\Federal\RequestFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::ACTION       => 'required|string|in:Y',
+        RequestFields::ACTION       => 'sometimes|string|in:Y',
         RequestFields::BANK_ID      => 'required|string|in:049',
         RequestFields::MODE         => 'required|string|in:P',
         RequestFields::PAYEE_ID     => 'required|string',
