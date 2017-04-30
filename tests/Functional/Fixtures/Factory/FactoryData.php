@@ -76,7 +76,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Card\Entity::class, [
             'id'                => $faker->uniqueid,
-            'merchant_id'       => 10000000000000,
+            'merchant_id'       => '10000000000000',
             'name'              => $faker->word,
             'network'           => 'Visa',
             'expiry_month'      => 01,
@@ -102,7 +102,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Payment\Entity::class, [
             'id' => $faker->uniqueid,
-            'merchant_id' => 10000000000000,
+            'merchant_id' => '10000000000000',
             'method' => 'card',
             'card_id' => null,
             'bank' => null,
