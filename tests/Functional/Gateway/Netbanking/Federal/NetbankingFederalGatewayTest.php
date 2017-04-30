@@ -196,15 +196,17 @@ class NetbankingFederalGatewayTest extends TestCase
 
     public function testExcelRefundFileGeneration()
     {
+        Mail::fake();
+
         $payments = $this->createPaymentsToClaim();
 
         $this->createRefundsForFileGeneration($payments);
 
-        $this->checkMailQueue();
-
         $data = $this->generateRefundsExcelForNb($this->bank);
 
         $this->checkRefundFileData($data['netbanking_federal']);
+
+        $this->checkMailQueue();
     }
 
     public function testEmptyExcelRefundFileGeneration()
@@ -273,7 +275,7 @@ class NetbankingFederalGatewayTest extends TestCase
          // Mail catch with amount and refund everywhere
         Mail::assertSent(RefundFileMail::class, function ($mail)
         {
-            $date = Carbon::today('Asia/Kolkata')->format('d_m_Y');
+            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
             $expectedSubject = 'Federal Netbanking refunds file for ' . $date;
 
@@ -281,7 +283,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
             $this->assertEquals($expectedSubject, $subject);
 
-            return $this->hasTo('settlements@razorpay.com');
+            return $mail->hasTo('settlements@razorpay.com');
         });
     }
 
