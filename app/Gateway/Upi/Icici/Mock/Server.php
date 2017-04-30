@@ -56,7 +56,7 @@ class Server extends Base\Mock\Server
             Fields::SUCCESS          => 'true',
             Fields::MESSAGE          => 'Transaction initiated',
             Fields::MERCHANT_TRAN_ID => $input['merchantTranId'],
-            Fields::BANK_RRN         => random_int(1111111111, 9999999999),
+            Fields::BANK_RRN         => random_int(111111111, 999999999),
         ];
 
         $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
