@@ -173,7 +173,7 @@ class DailyReport extends Base\Core
 
         $dailyReportMail = new DailyReportMail($data, $merchant);
 
-        Mail::queue($dailyReportMail);
+        Mail::send($dailyReportMail);
     }
 
     protected function getMerchantData($merchant)

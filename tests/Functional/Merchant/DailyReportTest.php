@@ -54,6 +54,7 @@ class DailyReportTest extends TestCase
 
         Mail::assertSent(DailyReportMail::class, function ($mail) use ($testData)
         {
+            s($testData, $mail->viewData);
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
             return $mail->hasTo('test@razorpay.com');
