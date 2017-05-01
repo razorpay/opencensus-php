@@ -30,11 +30,11 @@ class SubscriptionController extends Controller
         return ApiResponse::json($plan);
     }
 
-    public function postCreateSubscription(string $planId)
+    public function postCreateSubscription()
     {
         $input = Request::all();
 
-        $subscription = $this->subscriptionService->create($input, $planId);
+        $subscription = $this->subscriptionService->create($input);
 
         return ApiResponse::json($subscription);
     }

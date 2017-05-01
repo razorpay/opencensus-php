@@ -26,6 +26,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::CUSTOMER_ID     => 'required|string|size:19|public_id',
+        Entity::PLAN_ID         => 'required|string|size:19|public_id',
         // Entity::TOKEN_ID     => 'required|string|size:20',
         Entity::QUANTITY        => 'required|integer|min:1|max:500',
         Entity::NOTES           => 'sometimes|notes',

@@ -347,7 +347,7 @@ final class Route
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'plan_create'                             => ['post',     'plans',                                          'SubscriptionController@postCreatePlan'                             ],
-        'subscription_create'                     => ['post',     'plans/{plan_id}/subscriptions',                  'SubscriptionController@postCreateSubscription'                     ],
+        'subscription_create'                     => ['post',     'subscriptions',                                  'SubscriptionController@postCreateSubscription'                     ],
         'subscriptions_charge_invoices'           => ['post',     'subscriptions/charge/invoices',                  'SubscriptionController@postCreateAndChargeSubscriptionInvoices'    ],
         'subscriptions_auth_retry'                => ['post',     'subscriptions/retry/auth',                       'SubscriptionController@postRetryAuthSubscriptions'                 ],
         'subscriptions_expire'                    => ['post',     'subscriptions/expire',                           'SubscriptionController@postExpireSubscriptions'                    ],

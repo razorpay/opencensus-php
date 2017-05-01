@@ -23,17 +23,24 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function create(array $input, string $planId) : array
+    public function create(array $input) : array
     {
         if (empty($input[Entity::CUSTOMER_ID]) === true)
         {
             throw new BadRequestValidationFailureException(
                 'customer_id should be sent in the request to create a subscription.',
-                'customer_id'
-            );
+                'customer_id');
+        }
+
+        if (empty($input[Entity::PLAN_ID]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'plan_id should be sent in the request to create a subscription.',
+                'customer_id');
         }
 
         $customerId = $input[Entity::CUSTOMER_ID];
+        $planId = $input[Entity::PLAN_ID];
 
         $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
         $plan = $this->repo->plan->findByPublicIdAndMerchant($planId, $this->merchant);
