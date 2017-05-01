@@ -13,7 +13,7 @@ class BatchController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->serviCe('batch')->createBatch($input);
+        $result = $this->service('batch')->createBatch($input);
 
         return ApiResponse::json($result);
     }
@@ -22,35 +22,35 @@ class BatchController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->serviCe('batch')->fetchMultiple($input);
+        $result = $this->service('batch')->fetchMultiple($input);
 
         return ApiResponse::json($result);
     }
 
     public function getBatchById($id)
     {
-        $result = $this->serviCe('batch')->getBatchById($id);
+        $result = $this->service('batch')->getBatchById($id);
 
         return ApiResponse::json($result);
     }
 
     public function processBatches()
     {
-        $result = $this->serviCe('batch')->processBatches();
+        $result = $this->service('batch')->processBatches();
 
         return ApiResponse::json($result);
     }
 
     public function retryBatch($id)
     {
-        $result = $this->serviCe('batch')->retryBatch($id);
+        $result = $this->service('batch')->retryBatch($id);
 
         return ApiResponse::json($result);
     }
 
     public function downloadBatch($id)
     {
-        $result = $this->serviCe('batch')->downloadBatch($id);
+        $result = $this->service('batch')->downloadBatch($id);
 
         return ApiResponse::json($result);
     }

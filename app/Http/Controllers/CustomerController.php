@@ -13,8 +13,6 @@ class CustomerController extends Controller
     protected $customer;
     protected $token;
 
-    protected $service = Customer\Service::class;
-
     public function createLocalCustomer()
     {
         $input = Request::all();
