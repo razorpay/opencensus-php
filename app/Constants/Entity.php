@@ -17,12 +17,9 @@ class Entity
     //
     const IIN                   = 'iin';
     const KEY                   = 'key';
-    const RUN                   = 'run';
     const P2P                   = 'p2p';
     const VPA                   = 'vpa';
     const CARD                  = 'card';
-    // const TASK                  = 'task';
-    // TODO: Should this be renamed to subscription_plan? Since we have emi_plan and pricing_plan too.
     const PLAN                  = 'plan';
     const ITEM                  = 'item';
     const USER                  = 'user';
@@ -137,7 +134,6 @@ class Entity
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::EBS                   => \RZP\Gateway\Ebs::class,
-        self::RUN                   => \RZP\Models\Schedule\Run::class,
         self::ATOM                  => \RZP\Gateway\Atom::class,
         self::AMEX                  => \RZP\Gateway\Amex::class,
         self::HDFC                  => \RZP\Gateway\Hdfc::class,

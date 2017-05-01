@@ -7,7 +7,6 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Customer;
-use RZP\Models\Customer\Token;
 use RZP\Models\Plan;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -36,7 +35,7 @@ class Service extends Base\Service
         {
             throw new BadRequestValidationFailureException(
                 'plan_id should be sent in the request to create a subscription.',
-                'customer_id');
+                'plan_id');
         }
 
         $customerId = $input[Entity::CUSTOMER_ID];

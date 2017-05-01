@@ -485,7 +485,6 @@ trait Authorize
                     'payment_id'            => $payment->getId(),
                     'subscription_id'       => $subscription->getId(),
                     'subscription_status'   => $subscription->getStatus(),
-                    'subscription_token'    => $subscription->getTokenId(),
                 ]);
         }
 

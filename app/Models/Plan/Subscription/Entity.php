@@ -31,18 +31,19 @@ class Entity extends Base\PublicEntity
     const AUTH_ATTEMPTS     = 'auth_attempts';
     const ERROR_STATUS      = 'error_status';
     const SCHEDULE_ID       = 'schedule_id';
-    //
-    // Upfront amount needs to be at a subscription level because
-    // the upfront amount can change based on the subscription period.
-    // For example, if the subscription is for 3 months, upfront amount can
-    // be 1000rs and if subscription is for 1yr, upfront amount can be 500rs.
-    //
-    // const UPFRONT_AMOUNT    = 'upfront_amount';
+
     const FAILED_AT         = 'failed_at';
     const AUTHENTICATED_AT  = 'authenticated_at';
     const CANCELLED_AT      = 'cancelled_at';
 
     // Input Keys
+
+    //
+    // Add-on needs to be at a subscription level because
+    // the add-on amount can change based on the subscription period.
+    // For example, if the subscription is for 3 months, add-on amount can
+    // be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
+    //
     const ADD_ONS = 'add_ons';
 
     protected static $sign = 'sub';
@@ -117,6 +118,16 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::TOKEN_ID,
         self::PLAN_ID,
+    ];
+
+    protected $dates = [
+        self::CHARGE_AT,
+        self::CURRENT_END,
+        self::CURRENT_START,
+        self::ENDED_AT,
+        self::ACTIVATED_AT,
+        self::START_AT,
+        self::END_AT,
     ];
 
     const DEFAULT_AUTH_AMOUNT = 500;
@@ -269,7 +280,7 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::STATUS, $status);
 
-        if (in_array($status, Status::$timestampedStatuses, true))
+        if (in_array($status, Status::$timestampedStatuses, true) === true)
         {
             $timestampKey = $status . '_at';
 
@@ -358,11 +369,6 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Payment\Entity');
     }
 
-    public function run()
-    {
-        return $this->hasOne('RZP\Models\Schedule\Run\Entity', 'entity_id');
-    }
-
     public function schedule()
     {
         return $this->belongsTo('RZP\Models\Schedule\Entity');
@@ -391,7 +397,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicCustomerIdAttribute(array & $array)
     {
-        if (isset($array[self::CUSTOMER_ID]))
+        if (isset($array[self::CUSTOMER_ID]) === true)
         {
             $customerId = $this->getAttribute(self::CUSTOMER_ID);
 

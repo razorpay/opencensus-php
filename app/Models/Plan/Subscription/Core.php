@@ -14,7 +14,6 @@ use RZP\Models\Plan;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
-use RZP\Models\Item;
 use RZP\Models\AddOn;
 use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task;
@@ -31,7 +30,7 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer)
+    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer) : Entity
     {
         $subscription = (new Entity)->build($input);
 
@@ -268,11 +267,13 @@ class Core extends Base\Core
     {
         $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
-        if ($invoices->count() === 0)
+        $invoicesCount = $invoices->count();
+
+        if ($invoicesCount === 0)
         {
             $authAmount = Entity::DEFAULT_AUTH_AMOUNT;
         }
-        else if ($invoices->count() === 1)
+        else if ($invoicesCount === 1)
         {
             $authAmount = $invoices->first()->getAmount();
         }
@@ -282,7 +283,7 @@ class Core extends Base\Core
                 'Number of invoices found for subscription does not match 1',
                 ErrorCode::SERVER_ERROR_INVOICE_COUNT_MISMATCH,
                 [
-                    'count'             => $invoices->count(),
+                    'count'             => $invoicesCount,
                     'subscription_id'   => $subscription->getId(),
                 ]);
         }
@@ -292,7 +293,7 @@ class Core extends Base\Core
 
     public function fireWebhookForStatusUpdate(Entity $subscription, string $status)
     {
-        if (in_array($status, array_keys(Status::$webhookStatuses), true) === false)
+        if (array_key_exists($status, Status::$webhookStatuses[$status]) === false)
         {
             return;
         }
@@ -428,9 +429,11 @@ class Core extends Base\Core
 
         $addOnsInput = $input[Entity::ADD_ONS];
 
+        $addOnCore = (new AddOn\Core);
+
         foreach ($addOnsInput as $addOnInput)
         {
-            (new AddOn\Core)->create($addOnInput, $subscription);
+            $addOnCore->create($addOnInput, $subscription);
         }
     }
 

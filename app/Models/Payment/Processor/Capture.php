@@ -652,12 +652,12 @@ trait Capture
      */
     protected function updateSubscriptionStatus(Payment\Entity $payment)
     {
-        $subscription = $payment->subscription;
-
-        if (empty($subscription) === true)
+        if ($payment->hasSubscription() === false)
         {
             return;
         }
+
+        $subscription = $payment->subscription;
 
         $updateSubscription = (new Subscription\Core)->shouldUpdateSubscriptionOnCapture($subscription, $payment);
 

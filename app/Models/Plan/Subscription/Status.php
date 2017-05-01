@@ -83,7 +83,7 @@ class Status
         self::EXPIRED   => Event::SUBSCRIPTION_EXPIRED,
     ];
 
-    public static function isStatusValid($status)
+    public static function isStatusValid($status) : bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($status)));
     }
