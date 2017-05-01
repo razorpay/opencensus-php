@@ -40,6 +40,11 @@ class Processor extends Base\Core
 
     public function processFailedSettlements(array $input)
     {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_RETRY_REQUEST,
+            $input
+        );
+        
         $this->preSettlementProcessing($input);
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements();
