@@ -142,7 +142,7 @@ class Response
                 $view = \View::make('gateway.callbackReturnUrl')
                             ->with('data', $callbackArray)->render();
 
-                \Response::make($view);
+                return \Response::make($view);
             }
         }
         else if ($this->isCallbackRoute($route))

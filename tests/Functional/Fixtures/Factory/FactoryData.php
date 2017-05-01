@@ -60,7 +60,7 @@ final class FactoryData
             'entity_id'                 => '10000000000000',
             'type'                      => 'merchant',
             'ifsc_code'                 => 'RZPB0000000',
-            'account_number'            => 10010101011,
+            'account_number'            => '10010101011',
             'beneficiary_name'          => 'random_name',
             'beneficiary_address1'      => 'address1',
             'beneficiary_address2'      => 'address2',
@@ -70,8 +70,8 @@ final class FactoryData
             'beneficiary_state'         => 'DE',
             'beneficiary_country'       => 'IN',
             'beneficiary_email'         => 'random@email.com',
-            'beneficiary_mobile'        => 9988776655,
-            'beneficiary_pin'           => 100000,
+            'beneficiary_mobile'        => '9988776655',
+            'beneficiary_pin'           => '100000',
         ]);
 
         $factory(\RZP\Models\Card\Entity::class, [
