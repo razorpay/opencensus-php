@@ -435,4 +435,15 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END GENERATORS ---------------------
+
+    protected function associateEntities(
+        Plan\Entity $plan,
+        Customer\Entity $customer)
+    {
+        $merchant = $customer->merchant;
+
+        $subscription->merchant()->associate($merchant);
+        $subscription->plan()->associate($plan);
+        $subscription->customer()->associate($customer);
+    }
 }

@@ -60,6 +60,7 @@ class Service extends Base\Service
         {
             try
             {
+                (new Billing)->createInvoiceAndCharge($subscription);
                 $this->core->createInvoiceAndCharge($subscription);
 
                 $invoicesCreated++;

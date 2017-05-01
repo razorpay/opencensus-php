@@ -1,0 +1,190 @@
+<?php
+
+namespace RZP\Models\Plan\Subscription;
+
+use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
+use RZP\Models\Base;
+use RZP\Models\Invoice;
+use RZP\Models\LineItem;
+use RZP\Models\Merchant;
+use RZP\Models\Plan;
+use RZP\Models\Customer;
+use RZP\Models\Customer\Token;
+use RZP\Models\Payment;
+use RZP\Models\Item;
+use RZP\Models\AddOn;
+use RZP\Models\Schedule;
+use RZP\Models\Schedule\Task;
+use RZP\Trace\TraceCode;
+
+class Creator extends Base\Core
+{
+    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer)
+    {
+        $subscription = (new Entity)->build($input);
+
+        //
+        // Transaction on live and test is required because
+        // schedule is created in both live and test.
+        //
+        $this->repo->transactionOnLiveAndTest(
+            function() use ($subscription, $plan, $customer, $input)
+            {
+                // This is being done for the `run` association.
+                $subscription->generateId();
+
+                //
+                // This should be called before creating task since it requires
+                // merchant to associated with the subscription first.
+                //
+                $subscription->associateEntities($plan, $customer);
+
+                //
+                // This should be called before filling end_at and total_count,
+                // since they require the schedule to be created first.
+                //
+                $this->createScheduleAndTask($subscription, $plan);
+
+                $this->fillEndAtAndTotalCount($subscription, $plan);
+
+                $this->repo->saveOrFail($subscription);
+
+                //
+                // This needs to be done after saving the subscription
+                // because invoice/add_on is created and saved in the
+                // following step, with the subscription_id.
+                //
+
+                $this->createAddOnsIfApplicable($subscription, $input);
+
+                $this->createInvoiceIfApplicable($subscription);
+            });
+
+        return $subscription;
+    }
+
+
+    protected function associateEntitiesToSubscription(
+        Entity $subscription,
+        Plan\Entity $plan,
+        Customer\Entity $customer)
+    {
+        $merchant = $customer->merchant;
+
+        $subscription->merchant()->associate($merchant);
+        $subscription->plan()->associate($plan);
+        $subscription->customer()->associate($customer);
+    }
+
+
+    protected function createScheduleAndTask(Entity $subscription, Plan\Entity $plan)
+    {
+        $schedule = $this->createSchedule($subscription, $plan);
+
+        $subscription->schedule()->associate($schedule);
+
+        $this->createTask($subscription);
+    }
+
+
+    protected function createAddOnsIfApplicable(Entity $subscription, array $input)
+    {
+        if (empty($input[Entity::ADD_ONS]) === true)
+        {
+            return;
+        }
+
+        $addOnsInput = $input[Entity::ADD_ONS];
+
+        $addOnCore = (new AddOn\Core);
+
+        foreach ($addOnsInput as $addOnInput)
+        {
+            $addOnCore->create($addOnInput, $subscription);
+        }
+    }
+
+    /**
+     * We create an invoice only if the auth transaction includes the
+     * first charge also. This invoice will be used when the payment
+     * for the auth txn (first charge) is made.
+     *
+     * If the auth txn also includes the upfront_amount, the invoice
+     * will be made for plan_amount + upfront_amount.
+     *
+     * @param Entity $subscription
+     */
+    protected function createInvoiceIfApplicable(Entity $subscription)
+    {
+        $addOns = $this->repo->add_on->getUnusedAddOnsForSubscription($subscription);
+
+        if (($addOns->count() === 0) and
+            ($subscription->getStartAt() !== null))
+        {
+            return;
+        }
+
+        (new Billing)->createInvoiceForSubscription($subscription, $addOns, true);
+    }
+
+
+    protected function createScheduleAndTask(Entity $subscription, Plan\Entity $plan)
+    {
+        $schedule = $this->createSchedule($subscription, $plan);
+
+        $subscription->schedule()->associate($schedule);
+
+        $this->createTask($subscription);
+    }
+
+    protected function createSchedule(Entity $subscription, Plan\Entity $plan)
+    {
+        $scheduleInput = [
+            Schedule\Entity::NAME       => $plan->getName(),
+            Schedule\Entity::INTERVAL   => $plan->getInterval(),
+            Schedule\Entity::PERIOD     => $plan->getPeriod(),
+        ];
+
+        if ($subscription->getStartAt() !== null)
+        {
+            $scheduleInput[Schedule\Entity::ANCHOR] = $this->getAnchorForSchedule($subscription);
+        }
+
+        $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
+
+        return $schedule;
+    }
+
+    protected function createTask(Entity $subscription)
+    {
+        $schedule = $subscription->schedule;
+
+        $taskInput = [
+            Task\Entity::METHOD         => null,
+            Task\Entity::TYPE           => Task\Type::SUBSCRIPTION,
+            Task\Entity::SCHEDULE_ID    => $schedule->getId(),
+            // TODO: During first charge auth txn, update the task's next run_at.
+            Task\Entity::NEXT_RUN_AT    => $subscription->getStartAt(),
+        ];
+
+        (new Task\Core)->createOrUpdate($subscription->merchant, $subscription, $taskInput);
+    }
+
+    protected function getAnchorForSchedule(Entity $subscription)
+    {
+        // TODO: Handle setting anchor for weekly and monthly-week
+
+        if ($subscription->getStartAt() !== null)
+        {
+            $startAt = Carbon::createFromTimestamp($subscription->getStartAt(), 'Asia/Kolkata');
+
+            return $startAt->day;
+        }
+
+        return null;
+    }
+}
+
