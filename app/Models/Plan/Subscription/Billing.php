@@ -94,8 +94,7 @@ class Billing extends Base\Core
         $this->repo->saveOrFail($subscription);
     }
 
-
-    protected function createInvoiceForSubscription(Entity $subscription, $addOns, bool $first = false)
+    public function createInvoiceForSubscription(Entity $subscription, $addOns, bool $first = false)
     {
         $merchant = $subscription->merchant;
 
@@ -173,8 +172,8 @@ class Billing extends Base\Core
         foreach ($addOns as $addOn)
         {
             $addOnLineItem = [
-                LineItem\Entity::ITEM_ID => $addOn->item->getPublicId(),
-                LineItem\Entity::ADD_ON_ID => $addOn->getPublicId(),
+                LineItem\Entity::ITEM_ID    => $addOn->item->getPublicId(),
+                LineItem\Entity::ADD_ON_ID  => $addOn->getPublicId(),
             ];
 
             $lineItems[] = $addOnLineItem;

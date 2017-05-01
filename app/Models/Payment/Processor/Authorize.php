@@ -463,19 +463,6 @@ trait Authorize
         Payment\Entity $payment,
         array $input)
     {
-        if ($subscription->hasBeenAuthenticated() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_AUTHENTICATED,
-                null,
-                [
-                    'payment_id' => $payment->getId(),
-                    'subscription_id' => $subscription->getId(),
-                    'input' => $input,
-                    'subscription_status' => $subscription->getStatus(),
-                ]);
-        }
-
         if ($subscription->hasToken() === false)
         {
             throw new Exception\BadRequestException(
@@ -1496,9 +1483,50 @@ trait Authorize
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
+        $this->postPaymentAuthorizeSubscriptionProcessing($payment);
+
+        return $this->processAuthorizeResponse($payment);
+    }
+
+    protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
+    {
         try
         {
-            $this->postPaymentAuthorizeSubscriptionProcessing($payment);
+            //
+            // The following cannot be in a transaction because we run a capture flow
+            // here. We do some processing after the capture too. If something fails
+            // after capture, we should not roll back the capture status and other
+            // operations that we would have done as part of capture.
+            //
+
+            if ($payment->hasSubscription() === false)
+            {
+                return;
+            }
+
+            $subscription = $payment->subscription;
+
+            if ($subscription->isCreated() === true)
+            {
+                $this->processNewSubscription($subscription, $payment);
+
+                //
+                // We update attributes like token and status, which are done outside
+                // of the handleCaptureSuccess flow. Hence, we need to save it here
+                // explicitly, to ensure that these are saved even if handleCaptureSuccess
+                // is not called. handleCaptureSuccess is not called in case there's no
+                // add_on or isn't a first charge auth txn.
+                //
+                $this->repo->saveOrFail($subscription);
+            }
+            else
+            {
+                //
+                // We don't update any subscription attributes here. The ones which are updated,
+                // get saved in a transaction in handleCaptureSuccess function.
+                //
+                $this->processAlreadyAuthenticatedSubscription($subscription, $payment);
+            }
         }
         catch (\Exception $ex)
         {
@@ -1520,47 +1548,6 @@ trait Authorize
                 [
                     'payment_id' => $payment->getId()
                 ]);
-        }
-
-        return $this->processAuthorizeResponse($payment);
-    }
-
-    protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
-    {
-        //
-        // The following cannot be in a transaction because we run a capture flow
-        // here. We do some processing after the capture too. If something fails
-        // after capture, we should not roll back the capture status and other
-        // operations that we would have done as part of capture.
-        //
-
-        if ($payment->hasSubscription() === false)
-        {
-            return;
-        }
-
-        $subscription = $payment->subscription;
-
-        if ($subscription->isCreated() === true)
-        {
-            $this->processNewSubscription($subscription, $payment);
-
-            //
-            // We update attributes like token and status, which are done outside
-            // of the handleCaptureSuccess flow. Hence, we need to save it here
-            // explicitly, to ensure that these are saved even if handleCaptureSuccess
-            // is not called. handleCaptureSuccess is not called in case there's no
-            // add_on or isn't a first charge auth txn.
-            //
-            $this->repo->saveOrFail($subscription);
-        }
-        else
-        {
-            //
-            // We don't update any subscription attributes here. The ones which are updated,
-            // get saved in a transaction in handleCaptureSuccess function.
-            //
-            $this->processAlreadyAuthenticatedSubscription($subscription, $payment);
         }
     }
 
@@ -1614,17 +1601,11 @@ trait Authorize
         $subscription->setStatus(Subscription\Status::AUTHENTICATED);
 
         //
-        // This signifies that the auth transaction also
-        // includes the first charge of the subscription.
-        //
-        $authTxnCharge = ($subscription->getStartAt() === null);
-
-        //
         // We have an explicit check for auth txn charge because we don't want
         // to run `handleCaptureSuccess` for capturing an upfront amount or
         // authorizing just the auth txn amount.
         //
-        if ($authTxnCharge === true)
+        if ($subscription->isAuthTxnCharge() === true)
         {
             if ($payment->isCaptured() === false)
             {
@@ -1676,7 +1657,7 @@ trait Authorize
         $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
         //
-        // If add_ons are present or start_at is null (first charge in auth txn itself),
+        // If add_ons are present or start_at is null (first charge in auth txn itself) (invoice created),
         // the payment should have been captured before it reaches this stage.
         //
         if (($payment->isCaptured() === false) and
@@ -1715,7 +1696,7 @@ trait Authorize
 
         // TODO: Should we do a reload of subscription here? In case some other payment is setting the token?
 
-        $valid = $this->handleUnexpectedSubscriptionState($payment, $paymentToken, $subscription);
+        $valid = $this->validateSubscriptionState($payment, $paymentToken, $subscription);
 
         if ($valid === false)
         {
@@ -1725,7 +1706,7 @@ trait Authorize
         $subscription->token()->associate($paymentToken);
     }
 
-    protected function handleUnexpectedSubscriptionState(
+    protected function validateSubscriptionState(
         Payment\Entity $payment,
         Token\Entity $paymentToken,
         Subscription\Entity $subscription)

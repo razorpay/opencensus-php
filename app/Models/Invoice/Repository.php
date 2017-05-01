@@ -117,31 +117,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * @deprecated
-     *
-     * Once an invoice is issued for a subscription, it MUST
-     * be charged, irrespective of whether the invoice has been expired
-     * or the subscription has been cancelled.
-     * The only case when the invoice will not be charged is when
-     * the sub status of the invoice is set to on_hold.
-     *
-     * @return Base\PublicCollection
-     */
-    public function getSubscriptionInvoicesToCharge()
-    {
-        return $this->newQuery()
-                    ->where(Entity::STATUS, '=', Status::ISSUED)
-                    ->where(function ($query)
-                        {
-                            $query->where(Entity::SUB_STATUS, '!=', Status::ON_HOLD)
-                                  ->orWhereNull(Entity::SUB_STATUS);
-                        })
-                    ->whereNotNull(Entity::SUBSCRIPTION_ID)
-                    ->with('subscription')
-                    ->get();
-    }
-
     public function fetchIssuedInvoicesOfSubscription(Subscription\Entity $subscription)
     {
         return $this->newQuery()

@@ -149,8 +149,8 @@ class Charge extends Base\Core
             $this->trace->critical(
                 $traceCode,
                 [
-                    'invoice_id' => $invoice->getId(),
-                    'subscription_id' => $subscription->getId(),
+                    'invoice_id'        => $invoice->getId(),
+                    'subscription_id'   => $subscription->getId(),
                 ]);
         }
 

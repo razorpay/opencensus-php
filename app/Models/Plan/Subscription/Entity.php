@@ -250,6 +250,16 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::EXPIRED);
     }
 
+    public function isAuthTxnCharge()
+    {
+        //
+        // This signifies that the auth transaction also
+        // includes the first charge of the subscription.
+        //
+
+        return ($this->isAttributeNull(self::START_AT) === true);
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
@@ -436,18 +446,18 @@ class Entity extends Base\PublicEntity
 
     // --------------------- END GENERATORS ---------------------
 
-    protected function associateEntities(
+    public function associateEntities(
         Plan\Entity $plan,
         Customer\Entity $customer)
     {
         $merchant = $customer->merchant;
 
-        $subscription->merchant()->associate($merchant);
-        $subscription->plan()->associate($plan);
-        $subscription->customer()->associate($customer);
+        $this->merchant()->associate($merchant);
+        $this->plan()->associate($plan);
+        $this->customer()->associate($customer);
     }
 
-    protected function getAnchorForSchedule()
+    public function getAnchorForSchedule()
     {
         // TODO: Handle setting anchor for weekly and monthly-week
 

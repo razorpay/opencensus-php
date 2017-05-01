@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class Library
 {
-    public static function getNextApplicableTime($currentTime, Entity $schedule, $nextRunAt)
+    public static function getNextApplicableTime($currentTime, Entity $schedule, $nextRunAt) : int
     {
         // Minimum delay before the settlement of any payment. In case of hourly
         // schedules, this is set to zero, but settlement time is pushed forward
@@ -69,7 +69,7 @@ class Library
         return $futureRun;
     }
 
-    protected static function resolveAnchored($schedule, $refTime)
+    protected static function resolveAnchored($schedule, $refTime) : Carbon
     {
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);

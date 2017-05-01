@@ -1074,7 +1074,7 @@ class Processor
         // flow, because of some pre-processing and post-processing
         // that requires to be done.
         //
-        if ($payment->hasSubscription())
+        if ($payment->hasSubscription() === true)
         {
             return false;
         }
@@ -1094,7 +1094,7 @@ class Processor
         // Once we start using invoices with this, it'll be easier to
         // identify.
         // TODO: Handle late auth for authenticated and for new subscriptions.
-        if ($payment->isLateAuthorized())
+        if ($payment->isLateAuthorized() === true)
         {
             $this->trace->critical(
                 TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
@@ -1157,7 +1157,7 @@ class Processor
         // Ideally, the flow shouldn't reach till here since this function
         // is not called at all in case of a late auth payment.
         //
-        if ($payment->isLateAuthorized())
+        if ($payment->isLateAuthorized() === true)
         {
             $this->trace->critical(
                 TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
@@ -1194,7 +1194,7 @@ class Processor
             return false;
         }
 
-        if ($payment->isLateAuthorized())
+        if ($payment->isLateAuthorized() === true)
         {
             return $this->shouldAutoCaptureLateAuthorized($payment);
         }

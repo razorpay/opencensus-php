@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Plan\Subscription;
 
-use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
@@ -32,7 +31,7 @@ class Core extends Base\Core
 
     public function create(array $input, Plan\Entity $plan, Customer\Entity $customer) : Entity
     {
-        return (new Creator)->build($input, $plan, $customer);
+        return (new Creator)->create($input, $plan, $customer);
     }
 
     public function retry(Entity $subscription)
@@ -93,7 +92,7 @@ class Core extends Base\Core
 
         if ($subscription->getTotalCount() === null)
         {
-            $this->calculateAndSetTotalCount($subscription, $plan);
+            $this->calculateAndSetTotalCount($subscription);
         }
         else if ($subscription->getEndAt() === null)
         {

@@ -61,7 +61,6 @@ class Service extends Base\Service
             try
             {
                 (new Billing)->createInvoiceAndCharge($subscription);
-                $this->core->createInvoiceAndCharge($subscription);
 
                 $invoicesCreated++;
             }
@@ -165,9 +164,9 @@ class Service extends Base\Service
         }
 
         $summary = [
-            'total' => $subscriptionsToRetry->count(),
-            'queued' => $queued,
-            'failed' => $failed,
+            'total'                 => $subscriptionsToRetry->count(),
+            'queued'                => $queued,
+            'failed'                => $failed,
             'failure_subscriptions' => $failures,
         ];
 
@@ -188,10 +187,10 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::SUBSCRIPTION_INVOICE_MANUAL_CHARGE,
             [
-                'invoice_id' => $invoiceId,
-                'subscription_id' => $subscriptionId,
-                'invoice_status' => $invoice->getStatus(),
-                'subscription' => $subscription->toArray(),
+                'invoice_id'        => $invoiceId,
+                'subscription_id'   => $subscriptionId,
+                'invoice_status'    => $invoice->getStatus(),
+                'subscription'      => $subscription->toArray(),
             ]);
 
         if ($invoice->isIssued() === false)
@@ -200,9 +199,9 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_IN_ISSUED,
                 null,
                 [
-                    'invoice_id' => $invoiceId,
-                    'subscription_id' => $subscriptionId,
-                    'invoice_status' => $invoice->getStatus(),
+                    'invoice_id'        => $invoiceId,
+                    'subscription_id'   => $subscriptionId,
+                    'invoice_status'    => $invoice->getStatus(),
                 ]);
         }
 

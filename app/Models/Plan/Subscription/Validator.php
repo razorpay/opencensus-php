@@ -148,7 +148,9 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        $maxSecondsFromCurrentTime = $currentTime + (self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR);
+        $maxSecondsAllowedForSubscription = self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR;
+
+        $maxSecondsFromCurrentTime = $currentTime + $maxSecondsAllowedForSubscription;
 
         if ($value > $maxSecondsFromCurrentTime)
         {

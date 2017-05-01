@@ -119,33 +119,4 @@ class Cycle
 
         return $end;
     }
-
-    public static function getCarbonFunction(string $period, string $operation)
-    {
-        switch ($operation)
-        {
-            case 'diff':
-                $carbonFunction = 'diffIn';
-
-                break;
-            case 'add':
-                $carbonFunction = 'add';
-
-                break;
-            default:
-                throw new LogicException(
-                    'Invalid operation provided for getting Carbon function',
-                    null,
-                    [
-                        'period' => $period,
-                        'operation' => $operation,
-                    ]);
-        }
-
-        $carbonPeriod = self::$carbonFunctionMapping[$period];
-
-        $carbonFunction .= $carbonPeriod;
-
-        return $carbonFunction;
-    }
 }

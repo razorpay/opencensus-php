@@ -24,7 +24,6 @@ class Creator extends Base\Core
 {
     public function create(array $input, Plan\Entity $plan, Customer\Entity $customer)
     {
-        return (new Creator)->create($input, $plan, $customer);
         $subscription = (new Entity)->build($input);
 
         //
@@ -34,7 +33,7 @@ class Creator extends Base\Core
         $this->repo->transactionOnLiveAndTest(
             function() use ($subscription, $plan, $customer, $input)
             {
-                // This is being done for the `run` association.
+                // This is being done for the `schedule` and `task` associations.
                 $subscription->generateId();
 
                 //
@@ -49,7 +48,7 @@ class Creator extends Base\Core
                 //
                 $this->createScheduleAndTask($subscription, $plan);
 
-                $this->fillEndAtAndTotalCount($subscription, $plan);
+                (new Core)->fillEndAtAndTotalCount($subscription, $plan);
 
                 $this->repo->saveOrFail($subscription);
 
@@ -65,19 +64,6 @@ class Creator extends Base\Core
             });
 
         return $subscription;
-    }
-
-
-    protected function associateEntitiesToSubscription(
-        Entity $subscription,
-        Plan\Entity $plan,
-        Customer\Entity $customer)
-    {
-        $merchant = $customer->merchant;
-
-        $subscription->merchant()->associate($merchant);
-        $subscription->plan()->associate($plan);
-        $subscription->customer()->associate($customer);
     }
 
     protected function createAddOnsIfApplicable(Entity $subscription, array $input)
