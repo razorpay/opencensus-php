@@ -134,8 +134,10 @@ class Holidays
      *
      * This includes checks for bank holidays, non working saturday, sundays
      *
-     * @param Carbon\Carbon $date input date
-     * @return Carbon\Carbon $date Next working date
+     * @param Carbon $date input date
+     * @param bool   $ignoreBankHolidays
+     *
+     * @return Carbon $date Next working date
      */
     public static function getNextWorkingDay($date, $ignoreBankHolidays = false): Carbon
     {
@@ -180,8 +182,10 @@ class Holidays
      *
      * This includes checks for bank holiday, non working saturday, sundays
      *
-     * @param Carbon\Carbon $date
-     * @return boolean
+     * @param Carbon $date
+     * @param bool   $ignoreBankHolidays
+     *
+     * @return bool
      */
     public static function isWorkingDay($date, $ignoreBankHolidays = false): bool
     {
@@ -209,9 +213,10 @@ class Holidays
     /**
      * getSpecifiedBankHolidaysBetween - fromDate and toDate
      *
-     * @param  Carbon\Carbon $fromDate
-     * @param  Carbon\Carbon $toDate
-     * @return $holidays - All holidays between days
+     * @param Carbon $fromDate
+     * @param Carbon $toDate
+     *
+     * @return array $holidays - All holidays between days
      */
     public static function getSpecifiedBankHolidaysBetween($fromDate, $toDate): array
     {
@@ -233,7 +238,6 @@ class Holidays
                     'reason'    => self::getReasonForBankHoliday($date),
                 ];
             }
-
         }
         while ($date->lt($toDate));
 
@@ -259,7 +263,7 @@ class Holidays
     /**
      * Private function to get reason for a holiday
      *
-     * @param  Carbon\Carbon $date
+     * @param  Carbon $date
      * @return String
      */
     protected static function getReasonForBankHoliday($date): string
@@ -272,7 +276,7 @@ class Holidays
      * Returns whether that saturday was working or not
      * Bank logic: Every non-even week of the month is a working saturday
      *
-     * @param Carbon\Carbon $day Any Carbon Day
+     * @param Carbon $day Any Carbon Day
      * @return boolean
      */
     public static function isWorkingSaturday($day): bool
@@ -288,8 +292,8 @@ class Holidays
      * It breaks at the first sight of return.
      * And it is intended to skip most elements.
      *
-     * @param Carbon\Carbon $date
-     * @return Carbon\Carbon $date
+     * @param Carbon $date
+     * @return Carbon $date
      */
     public static function getNextSettlementHoliday($date): Carbon
     {
