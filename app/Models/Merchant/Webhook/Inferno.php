@@ -255,7 +255,19 @@ class Inferno
         return $this->client;
     }
 
-    public function sendRequest($request, $webhook)
+    /**
+     * This Function Will send request to Webhook Url, and get the response
+     * In case of non-successful response it will return false,
+     * Webhoook Handling i.e diasbling need to be handled after that.
+     *
+     * This function also sets class variable errorMessage, which is used while sending mails
+     *
+     * @param array  $request Options in array format for making request
+     * @param Entity $webhook Webhook Entity
+     *
+     * @return boolen Success/Failure
+     */
+    public function sendRequest(array $request, Entity $webhook)
     {
         $success = false;
         $response = null;
@@ -350,7 +362,16 @@ class Inferno
         return $success;
     }
 
-    protected function traceWebhookResponse($webhook, $msgPrefix = '', $response = null)
+    /**
+     * This Will Trace the Webhook Data for Various Exception Response
+     * Depending on exception thrown, sometime we have getResponse(),
+     * if available, then use it for logging and creating ErrorMessgage which is used to send mail
+     *
+     * @param Entity     $webhook   Webhook Entity
+     * @param string     $msgPrefix Message Prefix which will be appended before $response Failure reason if any
+     * @param array|null $response  Response if any
+     */
+    protected function traceWebhookResponse(Entity $webhook,string $msgPrefix = '', $response = null)
     {
         $webhookData = [
             'webhook_id'        => $webhook->getId(),
@@ -364,7 +385,7 @@ class Inferno
             $webhookData + $responseData);
     }
 
-    protected function getResponseData($msgPrefix = '', $response = null)
+    protected function getResponseData(string $msgPrefix = '', $response = null)
     {
         $this->errorMessage = $msgPrefix;
 
