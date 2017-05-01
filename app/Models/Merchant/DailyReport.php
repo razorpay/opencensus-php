@@ -78,6 +78,10 @@ class DailyReport extends Base\Core
         {
             $merchantIds = array_keys($captureMerchants + $authMerchants
                                     + $refundMerchants + $setlMerchants);
+
+            // if it's integer like string keys, then array_keys will convert
+            // those to integers. Let's re-map to string
+            $merchantIds = array_map('strval', $merchantIds);
         }
 
         // Summary of merchants mailed
@@ -99,12 +103,6 @@ class DailyReport extends Base\Core
                     'refunds'     => $refundMerchants[$merchantId] ?? $zeroArray,
                     'settlements' => $setlMerchants[$merchantId] ?? $zeroArray,
                 ];
-
-                // @note: This casting required post laravel5.4 upgrade as otherwise
-                // during tests the merchantId value is int 10000000000000. When it
-                // tries to searc using the same, it silently fails at the findOrFailPublic.
-                // This is observed only when running tests on docker/wercker
-                $merchantId = (string) $merchantId;
 
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
