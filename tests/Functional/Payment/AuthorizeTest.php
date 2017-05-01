@@ -26,10 +26,10 @@ class AuthorizeTest extends TestCase
 
     public function testSession()
     {
-        $this->withSession(['foo' => 'bar'])
-             ->visit('/');
+        $response = $this->withSession(['foo' => 'bar'])
+                         ->get('/');
 
-        $this->seeInSession('foo', 'bar');
+        $response->assertSessionHas('foo', 'bar');
     }
 
     public function testInvalidEmailInPayment()
