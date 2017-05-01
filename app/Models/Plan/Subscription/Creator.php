@@ -24,6 +24,7 @@ class Creator extends Base\Core
 {
     public function create(array $input, Plan\Entity $plan, Customer\Entity $customer)
     {
+        return (new Creator)->create($input, $plan, $customer);
         $subscription = (new Entity)->build($input);
 
         //
@@ -79,17 +80,6 @@ class Creator extends Base\Core
         $subscription->customer()->associate($customer);
     }
 
-
-    protected function createScheduleAndTask(Entity $subscription, Plan\Entity $plan)
-    {
-        $schedule = $this->createSchedule($subscription, $plan);
-
-        $subscription->schedule()->associate($schedule);
-
-        $this->createTask($subscription);
-    }
-
-
     protected function createAddOnsIfApplicable(Entity $subscription, array $input)
     {
         if (empty($input[Entity::ADD_ONS]) === true)
@@ -130,7 +120,6 @@ class Creator extends Base\Core
         (new Billing)->createInvoiceForSubscription($subscription, $addOns, true);
     }
 
-
     protected function createScheduleAndTask(Entity $subscription, Plan\Entity $plan)
     {
         $schedule = $this->createSchedule($subscription, $plan);
@@ -150,7 +139,7 @@ class Creator extends Base\Core
 
         if ($subscription->getStartAt() !== null)
         {
-            $scheduleInput[Schedule\Entity::ANCHOR] = $this->getAnchorForSchedule($subscription);
+            $scheduleInput[Schedule\Entity::ANCHOR] = $subscription->getAnchorForSchedule();
         }
 
         $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
@@ -171,20 +160,6 @@ class Creator extends Base\Core
         ];
 
         (new Task\Core)->createOrUpdate($subscription->merchant, $subscription, $taskInput);
-    }
-
-    protected function getAnchorForSchedule(Entity $subscription)
-    {
-        // TODO: Handle setting anchor for weekly and monthly-week
-
-        if ($subscription->getStartAt() !== null)
-        {
-            $startAt = Carbon::createFromTimestamp($subscription->getStartAt(), 'Asia/Kolkata');
-
-            return $startAt->day;
-        }
-
-        return null;
     }
 }
 

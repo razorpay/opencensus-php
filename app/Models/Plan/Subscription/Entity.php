@@ -446,4 +446,18 @@ class Entity extends Base\PublicEntity
         $subscription->plan()->associate($plan);
         $subscription->customer()->associate($customer);
     }
+
+    protected function getAnchorForSchedule()
+    {
+        // TODO: Handle setting anchor for weekly and monthly-week
+
+        if ($this->getStartAt() !== null)
+        {
+            $startAt = Carbon::createFromTimestamp($this->getStartAt(), 'Asia/Kolkata');
+
+            return $startAt->day;
+        }
+
+        return null;
+    }
 }

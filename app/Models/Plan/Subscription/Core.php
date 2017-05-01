@@ -32,46 +32,7 @@ class Core extends Base\Core
 
     public function create(array $input, Plan\Entity $plan, Customer\Entity $customer) : Entity
     {
-        $subscription = (new Entity)->build($input);
-
-        //
-        // Transaction on live and test is required because
-        // schedule is created in both live and test.
-        //
-        $this->repo->transactionOnLiveAndTest(
-            function() use ($subscription, $plan, $customer, $input)
-            {
-                // This is being done for the `run` association.
-                $subscription->generateId();
-
-                //
-                // This should be called before creating task since it requires
-                // merchant to associated with the subscription first.
-                //
-                $this->associateEntitiesToSubscription($subscription, $plan, $customer);
-
-                //
-                // This should be called before filling end_at and total_count,
-                // since they require the schedule to be created first.
-                //
-                $this->createScheduleAndTask($subscription, $plan);
-
-                $this->fillEndAtAndTotalCount($subscription, $plan);
-
-                $this->repo->saveOrFail($subscription);
-
-                //
-                // This needs to be done after saving the subscription
-                // because invoice/add_on is created and saved in the
-                // following step, with the subscription_id.
-                //
-
-                $this->createAddOnsIfApplicable($subscription, $input);
-
-                $this->createInvoiceIfApplicable($subscription);
-            });
-
-        return $subscription;
+        return (new Creator)->build($input, $plan, $customer);
     }
 
     public function retry(Entity $subscription)
@@ -110,7 +71,7 @@ class Core extends Base\Core
 
         $schedule = $subscription->schedule;
 
-        $anchor = $this->getAnchorForSchedule($subscription);
+        $anchor = $subscription->getAnchorForSchedule();
 
         $schedule->setAnchor($anchor);
 
