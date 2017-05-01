@@ -52,14 +52,12 @@ class DailyReportTest extends TestCase
 
         $this->generateDailyReport();
 
-        Mail::assertSent(DailyReportMail::class);
+        Mail::assertSent(DailyReportMail::class, function ($mail) use ($testData)
+        {
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-        // Mail::assertSent(DailyReportMail::class, function ($mail) use ($testData)
-        // {
-        //     $this->assertArraySelectiveEquals($testData, $mail->viewData);
-
-        //     return $mail->hasTo('test@razorpay.com');
-        // });
+            return $mail->hasTo('test@razorpay.com');
+        });
     }
 
     protected function setUpFixture()

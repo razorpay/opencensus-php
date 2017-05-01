@@ -100,6 +100,12 @@ class DailyReport extends Base\Core
                     'settlements' => $setlMerchants[$merchantId] ?? $zeroArray,
                 ];
 
+                // @note: This casting required post laravel5.4 upgrade as otherwise
+                // during tests the merchantId value is int 10000000000000. When it
+                // tries to searc using the same, it silently fails at the findOrFailPublic.
+                // This is observed only when running tests on docker/wercker
+                $merchantId = (string) $merchantId;
+
                 $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
                 $data = array_merge($data, $this->getMerchantData($merchant));
