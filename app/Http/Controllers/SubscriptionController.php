@@ -6,7 +6,7 @@ use ApiResponse;
 use RZP\Models\Plan;
 use Request;
 
-class PlanController extends Controller
+class SubscriptionController extends Controller
 {
     protected $planService;
     protected $subscriptionService;

@@ -6,18 +6,9 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-    protected $core;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->core = new Core;
-    }
-
     public function create(array $input) : array
     {
-        $plan = $this->core->create($input, $this->merchant);
+        $plan = (new Core)->create($input, $this->merchant);
 
         return $plan->toArrayPublic();
     }

@@ -13,41 +13,14 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::PLAN_CREATE_REQUEST,
-            $input
-        );
+            $input);
 
         $plan = (new Entity)->build($input);
 
-        $this->repo->transaction(
-            function()
-            use ($plan, $merchant, $input)
-            {
-                $plan->merchant()->associate($merchant);
+        $plan->merchant()->associate($merchant);
 
-                // $this->createSchedule($plan, $input);
-
-                // We need to do this because `createSchedule` will change the
-                // connection to live.
-                // $plan->setConnection($this->mode);
-
-                $this->repo->saveOrFail($plan);
-            });
+        $this->repo->saveOrFail($plan);
 
         return $plan;
     }
-
-    // protected function createSchedule(Entity $plan, array $input)
-    // {
-    //     // TODO: Decide on the name for the schedule.
-    //
-    //     $extraInput = [
-    //         Schedule\Entity::NAME => $input[Entity::NAME],
-    //     ];
-    //
-    //     $scheduleInput = array_merge($input[Entity::FREQUENCY], $extraInput);
-    //
-    //     // $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
-    //
-    //     // $plan->schedule()->associate($schedule);
-    // }
 }
