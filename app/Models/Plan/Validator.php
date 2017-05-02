@@ -12,8 +12,6 @@ class Validator extends Base\Validator
         Entity::CURRENCY        => 'required|string|size:3|in:INR',
         Entity::INTERVAL        => 'required|integer|min:1|max:365',
         Entity::PERIOD          => 'required|string|custom',
-        // Entity::PERIOD          => 'required|string',
-        // Entity::FREQUENCY       => 'required|array',
         Entity::NAME            => 'required|string|min:1|max:256',
         Entity::NOTES           => 'sometimes|notes'
     ];

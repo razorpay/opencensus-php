@@ -36,6 +36,14 @@ class Status
         self::EXPIRED,
     ];
 
+    public static $invoiceStatuses = [
+        self::DRAFT,
+        self::ISSUED,
+        self::PAID,
+        self::CANCELLED,
+        self::EXPIRED,
+    ];
+
     public static $subStatuses = [
         //
         // All the invoices created when the subscription
@@ -46,9 +54,9 @@ class Status
         self::ON_HOLD,
     ];
 
-    public static function isStatusValid($status)
+    public static function isStatusValid($status) : bool
     {
-        return (defined(__CLASS__ . '::' . strtoupper($status)));
+        return in_array($status, self::$invoiceStatuses, true);
     }
 
     public static function checkStatus($status)
@@ -59,7 +67,7 @@ class Status
         }
     }
 
-    public static function isSubStatusValid($subStatus)
+    public static function isSubStatusValid($subStatus) : bool
     {
         return in_array($subStatus, self::$subStatuses, true);
     }

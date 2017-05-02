@@ -114,7 +114,7 @@ class Core extends Base\Core
         return $scheduleTask;
     }
 
-    protected function createOrUpdateInMode($scheduleTask, $mode)
+    protected function createOrUpdateInMode(Entity $scheduleTask, string $mode)
     {
         $entity = clone $scheduleTask;
 

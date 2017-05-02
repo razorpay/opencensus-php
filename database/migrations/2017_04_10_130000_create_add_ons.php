@@ -7,6 +7,7 @@ use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\AddOn\Entity;
 use RZP\Models\Invoice;
+use RZP\Models\LineItem;
 use RZP\Constants\Table;
 use RZP\Models\Plan\Subscription;
 
@@ -30,8 +31,7 @@ class CreateAddOns extends Migration
 
             $table->char(Entity::SUBSCRIPTION_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::ITEM_ID, Entity::ID_LENGTH)
-                  ->nullable();
+            $table->char(Entity::ITEM_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::INVOICE_ID, Entity::ID_LENGTH)
                   ->nullable();
@@ -64,6 +64,16 @@ class CreateAddOns extends Migration
                   ->references(Invoice\Entity::ID)
                   ->on(Table::INVOICE)
                   ->on_delete('restrict');
+
+            // This should be here and not in payments table because
+            // subscription table is created after payments.
+            Schema::table(Table::LINE_ITEM, function($table)
+            {
+                $table->foreign(LineItem\Entity::ADD_ON_ID)
+                      ->references(Entity::ID)
+                      ->on(Table::ADD_ON)
+                      ->on_delete('restrict');
+            });
         });
     }
 

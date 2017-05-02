@@ -307,7 +307,7 @@ class Processor extends Base\Core
      *
      * @return bool returns if settlement can be processed now
      */
-    protected function isInvalidSettlementTime()
+    protected function isInvalidSettlementTime() : bool
     {
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;

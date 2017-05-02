@@ -272,14 +272,7 @@ class Core extends Base\Core
                 'medium'         => $medium,
             ]);
 
-        $isSubscription = false;
-
-        if ($invoice->getSubscriptionId() !== null)
-        {
-            $isSubscription = true;
-        }
-
-        $invoice->getValidator()->validateSendNotificationRequest($medium, $isSubscription);
+        $invoice->getValidator()->validateSendNotificationRequest($medium);
 
         $func = studly_case($medium) . 'InvoiceIssuedToCustomer';
 
@@ -290,7 +283,7 @@ class Core extends Base\Core
             $pdfPath = $this->getFreshInvoicePdf($invoice);
         }
 
-        $response = (new Notifier($invoice, $pdfPath))->$func($isSubscription);
+        $response = (new Notifier($invoice, $pdfPath))->$func();
 
         $this->repo->saveOrFail($invoice);
 

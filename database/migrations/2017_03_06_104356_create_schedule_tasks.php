@@ -36,11 +36,7 @@ class CreateScheduleTasks extends Migration
 
             $table->char(ScheduleTask::SCHEDULE_ID, Schedule::ID_LENGTH);
 
-            // During the creation of schedule task, we may
-            // not know when to run it next. When we know,
-            // we update it.
-            $table->integer(ScheduleTask::NEXT_RUN_AT)
-                  ->nullable();
+            $table->integer(ScheduleTask::NEXT_RUN_AT);
 
             $table->integer(ScheduleTask::LAST_RUN_AT)
                   ->nullable();

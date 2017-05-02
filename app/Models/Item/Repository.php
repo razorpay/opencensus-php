@@ -51,7 +51,7 @@ class Repository extends Base\Repository
     {
         $item = $this->findByPublicIdAndMerchant($id, $merchant);
 
-        if ($item->getType !== $type)
+        if ($item->getType() !== $type)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE,

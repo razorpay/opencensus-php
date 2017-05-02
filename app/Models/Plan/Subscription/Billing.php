@@ -2,22 +2,10 @@
 
 namespace RZP\Models\Plan\Subscription;
 
-use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\LineItem;
-use RZP\Models\Merchant;
-use RZP\Models\Plan;
-use RZP\Models\Customer;
-use RZP\Models\Customer\Token;
-use RZP\Models\Payment;
-use RZP\Models\Item;
-use RZP\Models\AddOn;
-use RZP\Models\Schedule;
-use RZP\Models\Schedule\Task;
 use RZP\Trace\TraceCode;
 
 /**
@@ -49,10 +37,43 @@ class Billing extends Base\Core
             return;
         }
 
-        $this->charge($subscription, $invoice);
+        (new Core)->charge($subscription, $invoice);
     }
 
-    protected function createInvoiceBeforeCharge(Entity $subscription)
+    public function createInvoiceForSubscription(Entity $subscription, $addOns, bool $first = false) : Invoice\Entity
+    {
+        //
+        // This is in a transaction even though the calling functions
+        // are already in a transaction, because it's a public function
+        // and can be used independently.
+        // If a new calling function does not implement this in a transaction,
+        // it might be an issue and hence putting this here.
+        //
+
+        return $this->repo->transaction(
+            function() use($subscription, $addOns, $first)
+            {
+                $merchant = $subscription->merchant;
+
+                $invoiceInput = $this->getInvoiceInput($subscription, $addOns, $first);
+
+                $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+
+                $this->associateInvoiceToAddOns($invoice, $addOns);
+
+                $this->trace->info(
+                    TraceCode::SUBSCRIPTION_INVOICE_CREATED,
+                    [
+                        'invoice_id'      => $invoice->getId(),
+                        'subscription_id' => $subscription->getId(),
+                        'invoice_details' => $invoice->toArray(),
+                    ]);
+
+                return $invoice;
+            });
+    }
+
+    protected function createInvoiceBeforeCharge(Entity $subscription) : Invoice\Entity
     {
         return $this->repo->transaction(
             function() use ($subscription)
@@ -94,27 +115,6 @@ class Billing extends Base\Core
         $this->repo->saveOrFail($subscription);
     }
 
-    public function createInvoiceForSubscription(Entity $subscription, $addOns, bool $first = false)
-    {
-        $merchant = $subscription->merchant;
-
-        $invoiceInput = $this->getInvoiceInput($subscription, $addOns, $first);
-
-        $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
-
-        $this->associateInvoiceToAddOns($invoice, $addOns);
-
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_INVOICE_CREATED,
-            [
-                'invoice_id'      => $invoice->getId(),
-                'subscription_id' => $subscription->getId(),
-                'invoice_details' => $invoice->toArray(),
-            ]);
-
-        return $invoice;
-    }
-
     protected function associateInvoiceToAddOns(Invoice\Entity $invoice, $addOns)
     {
         foreach ($addOns as $addOn)
@@ -124,7 +124,7 @@ class Billing extends Base\Core
         }
     }
 
-    protected function getInvoiceInput(Entity $subscription, $addOns, bool $first)
+    protected function getInvoiceInput(Entity $subscription, $addOns, bool $first) : array
     {
         $plan = $subscription->plan;
         $customer = $subscription->customer;
@@ -142,7 +142,7 @@ class Billing extends Base\Core
         return $invoiceInput;
     }
 
-    protected function getLineItemsForInvoiceInput(Entity $subscription, $addOns, bool $first)
+    protected function getLineItemsForInvoiceInput(Entity $subscription, $addOns, bool $first) : array
     {
         $plan = $subscription->plan;
 

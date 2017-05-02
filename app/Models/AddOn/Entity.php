@@ -2,7 +2,6 @@
 
 namespace RZP\Models\AddOn;
 
-use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
@@ -61,7 +60,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::DELETED_AT => null,
+        self::DELETED_AT    => null,
+        self::INVOICE_ID    => null,
     ];
 
     protected $publicSetters = [

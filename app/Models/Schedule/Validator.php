@@ -45,6 +45,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_PERIOD,
+                'period',
                 [
                     'period' => $period,
                 ]);

@@ -128,15 +128,16 @@ class CreateSubscription extends Migration
                   ->on_delete('restrict');
         });
 
-        // This should be here and not in payments table because
-        // subscription table is created after payments.
-        Schema::table(Table::PAYMENT, function($table)
-        {
-            $table->foreign(Payment\Entity::SUBSCRIPTION_ID)
-                  ->references(Entity::ID)
-                  ->on(Table::SUBSCRIPTION)
-                  ->on_delete('restrict');
-        });
+        // TODO: Uncomment after migrations are run on prod.
+        // // This should be here and not in payments table because
+        // // subscription table is created after payments.
+        // Schema::table(Table::PAYMENT, function($table)
+        // {
+        //     $table->foreign(Payment\Entity::SUBSCRIPTION_ID)
+        //           ->references(Entity::ID)
+        //           ->on(Table::SUBSCRIPTION)
+        //           ->on_delete('restrict');
+        // });
     }
 
     /**

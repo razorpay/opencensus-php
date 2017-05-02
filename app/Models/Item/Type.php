@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Item;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class Type
 {
     const ADD_ON    = 'add_on';
@@ -17,7 +19,7 @@ class Type
     {
         if (self::isTypeValid($type) === false)
         {
-            throw new \InvalidArgumentException('Not a valid type: ' . $type);
+            throw new BadRequestValidationFailureException('Not a valid type: ' . $type);
         }
     }
 }

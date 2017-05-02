@@ -135,7 +135,7 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::NEXT_RUN_AT, $timestamp);
     }
 
-    public function setLastRunAt($timestamp)
+    public function setLastRunAt(int $timestamp)
     {
         return $this->setAttribute(self::LAST_RUN_AT, $timestamp);
     }
