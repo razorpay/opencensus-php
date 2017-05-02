@@ -818,8 +818,8 @@ class Service extends Base\Service
         $this->setApiCredentials();
 
         $params = [
-            'password'         => $user->password,
-            'confirm_password' =>$user->password,
+            'password'              => $user->password,
+            'password_confirmation' => $user->password,
         ];
 
         $response = $this->api->user->changePassword($user->id, $params);
