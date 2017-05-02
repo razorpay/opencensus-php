@@ -532,8 +532,6 @@ class Entity extends Base\Entity
     {
         $routePermission = Permission\Name::$actionMap[$action];
 
-        $hasPermission = $this->hasPermissionOrFail($routePermission);
-
-        return $hasPermission;
+        return $this->hasPermissionOrFail($routePermission);
     }
 }

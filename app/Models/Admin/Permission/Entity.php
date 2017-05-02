@@ -63,6 +63,11 @@ class Entity extends Base\Entity
         self::ASSIGNABLE        => 'bool',
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::WORKFLOW_ORGS,
+    ];
+
     protected static function boot()
     {
         parent::boot();
@@ -97,9 +102,18 @@ class Entity extends Base\Entity
         return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSIONS);
     }
 
+    public function setPublicWorkflowOrgsAttribute(array &$attributes)
+    {
+        $orgs = $this->getAttribute(Entity::WORKFLOW_ORGS);
+
+        if ($orgs !== null)
+        {
+            $attributes[Entity::WORKFLOW_ORGS] = $orgs->toArrayPublic()['items'];
+        }
+    }
+
     public function setWorkflowOrgs($orgs)
     {
         $this->attributes[Entity::WORKFLOW_ORGS] = $orgs;
     }
-
 }
