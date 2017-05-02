@@ -162,7 +162,13 @@ class RawApiRequest
 
         if ($contentType === "application/json")
         {
-            $this->params['body'] = json_encode($this->params['body']);
+            // To check if the the content is already a JSON, we decode the content
+            // and check for any JSON error. If no error then it is already a valid JSON
+            // and there is no need to do a json_encode
+            json_decode($this->params['body']);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $this->params['body'] = json_encode($this->params['body']);
+            }
         }
 
         // The content type header might be missing and in those cases
