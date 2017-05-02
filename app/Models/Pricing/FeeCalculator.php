@@ -10,7 +10,6 @@ use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Base;
 use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class FeeCalculator
@@ -30,7 +29,7 @@ class FeeCalculator
     /**
      * For which fees needs to be calculated.
      *
-     * @var RZP\Models\Payment\Entity
+     * @var \RZP\Models\Payment\Entity
      */
     protected $entity;
 
@@ -455,6 +454,12 @@ class FeeCalculator
      * We are modifying Customer subvention to choose rule based on original
      * amount only. This implies that only the merchant subvention rule selection
      * will be applied, irrespective of the subvention type.
+     *
+     * @param $rules
+     * @param $amount
+     * @param $subventionType
+     *
+     * @return null
      */
     protected function chooseRuleWithAmount($rules, $amount, $subventionType)
     {
@@ -465,6 +470,12 @@ class FeeCalculator
      * If the rules are amount range active rules,
      * choose rule based on amount
      * else return first available rule.
+     *
+     * @param $rules
+     * @param $amount
+     *
+     * @return null
+     * @throws Exception\RuntimeException
      */
     protected function chooseRuleWithAmountForMerchantSubvention($rules, $amount)
     {
