@@ -36,8 +36,6 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $data = $this->getGatewayRequestArray();
-
         $content = $this->getAuthorizeRequestData();
 
         $request = $this->getStandardRequestArray($content);
