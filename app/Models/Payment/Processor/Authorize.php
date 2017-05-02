@@ -1850,12 +1850,10 @@ trait Authorize
                 $payment->setGatewayCaptured(true);
 
                 // Also sets the transaction association with the payment.
+                // Fee Split would be null, as its the dummy transaction, so we are not saving fee split.
                 list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
                 $this->repo->saveOrFail($txn);
-
-                //TODO: This is for backward compatibility
-                $this->saveFeeDetails($txn, $feesSplit);
             }
 
             $this->repo->saveOrFail($payment);
