@@ -338,7 +338,7 @@ class Service extends Base\Service
     {
         $merchant = Merchant\Entity::findOrFail($merchantId);
 
-        $merchantApiData = $this->getMerchantApiData($merchant);
+        $merchantApiData = $this->getMerchantApiData($merchant, $adminId);
 
         // This is internal auth as of now
         // We need to shift this to some other auth
@@ -355,7 +355,7 @@ class Service extends Base\Service
         return $merchant;
     }
 
-    public function getMerchantApiData($merchant)
+    public function getMerchantApiData($merchant, $adminId)
     {
         $merchantApiData = $merchant->generateApiData();
 
