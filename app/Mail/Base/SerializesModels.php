@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Base;
 
+use ReflectionClass;
+
 use Illuminate\Queue\SerializesModels as LaravelSerializesModels;
 
 /**
