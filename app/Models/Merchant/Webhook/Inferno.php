@@ -76,7 +76,7 @@ class Inferno
 
         if ($webhook->isActive() === false)
         {
-            $this->updateJob(true);
+            $this->job->delete();
 
             return;
         }
@@ -421,7 +421,7 @@ class Inferno
 
         $this->repo->saveOrFail($webhook);
 
-        $this->updateJob(true);
+        $this->job->delete();
     }
 
     /**
@@ -505,7 +505,7 @@ class Inferno
                 TraceCode::WEBHOOK_FIRING,
                 ['data' => $data]);
 
-            $this->updateJob(true);
+            $this->job->delete();
         }
 
         return $webhook;
