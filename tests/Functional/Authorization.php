@@ -229,9 +229,9 @@ class Authorization
     /**
      * Adds admin auth headers to a request
      */
-    public function addAdminAuthHeaders(string $orgId)
+    public function addAdminAuthHeaders(string $orgId = null, string $adminToken = null)
     {
-        $this->adminHeaders = ['X-Org-Id' => $orgId];
+        $this->adminHeaders = ['X-Org-Id' => $orgId, 'X-Admin-Token' => $adminToken];
     }
 
     /**

@@ -11,7 +11,7 @@ use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
@@ -20,10 +20,10 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
-    use PaymentTrait;
     use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -374,6 +374,13 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
     public function testMerchantArchive()
     {
         $merchant = $this->getLastEntity('merchant', true);
@@ -385,6 +392,10 @@ class MerchantTest extends TestCase
                 'locked'      => true
             ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
 
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
@@ -394,6 +405,10 @@ class MerchantTest extends TestCase
 
     public function testMerchantArchiveWithNoMerchantDetails()
     {
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -403,6 +418,10 @@ class MerchantTest extends TestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => '123456789' ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -411,6 +430,10 @@ class MerchantTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => '123456789' ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
 
@@ -425,12 +448,20 @@ class MerchantTest extends TestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => NULL ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
     public function testMerchantSuspend()
     {
         $merchant = $this->getLastEntity('merchant', true);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
 
@@ -445,6 +476,10 @@ class MerchantTest extends TestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -453,6 +488,10 @@ class MerchantTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
 
@@ -466,6 +505,10 @@ class MerchantTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => NULL ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }
