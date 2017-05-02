@@ -405,9 +405,9 @@ class Service extends Base\Service
 
         $user->confirm();
 
-        $this->subscribeToMailingList($user);
+        $this->confirmUserOnApi($user->id);
 
-        Auth::guard('user')->login($user);
+        $this->subscribeToMailingList($user);
     }
 
     public function subscribeToMailingList(User\Entity $user)

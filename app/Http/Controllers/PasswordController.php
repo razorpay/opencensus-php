@@ -92,7 +92,7 @@ class PasswordController extends Controller
         {
             return Response::json([
                             'success' => false,
-                            'errors'  => ['Token is invalid or expired']
+                            'errors'  => ['Token is invalid or expired.']
                         ]);
         }
 
