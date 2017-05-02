@@ -96,7 +96,7 @@ export default class PaymentsListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={payments.length}
-              onClick={this.fetchAll}
+              onClick={this.paginate}
             />
           </div>
         </div>
