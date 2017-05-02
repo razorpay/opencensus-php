@@ -173,17 +173,27 @@
                       <th>Permission</th>
                       <th>Category</th>
                       <th>Description</th>
+                      <th>Workflow Enable</th>
                       <th>Assignable</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr ng-repeat="(key, row) in permissions">
                       <td>
-                        <input type="checkbox" name='permissions[]' ng-model="selected_permissions[row.id]" ng-checked="selected_permissions[row.id]">
+                        <input type="checkbox" name='permissions[]'
+                               ng-model="selected_permissions[row.id]"
+                               ng-checked="selected_permissions[row.id]"
+                               ng-change="updateIfPermChanged(row.id)">
                       </td>
                       <td>{{row.name}}</td>
                       <td>{{row.category}}</td>
                       <td>{{row.description}}</td>
+                      <td style="text-align: center;">
+                        <input type="checkbox" class="form-control"
+                               ng-model="workflow_permissions[row.id]"
+                               ng-checked="workflow_permissions[row.id]"
+                               ng-disabled="!selected_permissions[row.id]"/>
+                      </td>
                       <td>{{row.assignable ? 'Yes' : 'No' }}</td>
                     </tr>
                   </tbody>
