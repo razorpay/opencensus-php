@@ -154,8 +154,8 @@
     </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a class="list-group-item" ng-click="openTagMerchant()">
-          <span class="pull-right">{{merchant.details.tags.join()}}</span>
+        <a class="list-group-item clearfix" ng-click="openTagMerchant()">
+          <span class="pull-right col-md-11">{{merchant.details.tags.join(', ')}}</span>
           Tags
         </a>
         <a href class="list-group-item" ng-init="isFeaturesCollapsed = true">
