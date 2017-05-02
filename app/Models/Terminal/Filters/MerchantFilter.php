@@ -306,6 +306,13 @@ class MerchantFilter extends Terminal\Filter
 
     public function gatewayFilter(Terminal\Entity $terminal, array $input) : bool
     {
+        $method = $input['payment']->getMethod();
+
+        if (in_array($method, [Method::CARD, Method::EMI], true) === false)
+        {
+            return true;
+        }
+
         $merchantId = $input['payment']->getMerchantId();
 
         $gateway = $terminal->getGateway();
