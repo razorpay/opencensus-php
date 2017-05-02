@@ -5,7 +5,6 @@ namespace RZP\Mail\Invoice\Payment;
 use Config;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base\Constants;
 use RZP\Mail\Invoice\InvoiceData;
 use RZP\Mail\Payment\Base;
 use RZP\Models\Invoice;

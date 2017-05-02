@@ -11,7 +11,7 @@ class Validator extends Base\Validator
         Entity::QUANTITY            => 'sometimes|integer|min:1',
         Entity::ITEM_ID             => 'sometimes|string|max:19',
         Entity::NAME                => 'required_without:item_id|string|max:512',
-        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
+        Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
         Entity::AMOUNT              => 'required_without:item_id|integer|min:100',
         Entity::CURRENCY            => 'required_without:item_id|size:3|in:INR',
     ];
