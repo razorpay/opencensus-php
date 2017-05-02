@@ -26,7 +26,7 @@ class GenericUser extends AuthGenericUser
 
         if ($ownerMerchant !== null)
         {
-            return new Merchant\GenericMerchant((array) $currentMerchant);
+            return new Merchant\GenericMerchant((array) $ownerMerchant);
         }
 
         return null;

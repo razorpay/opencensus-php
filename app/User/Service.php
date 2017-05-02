@@ -925,11 +925,18 @@ class Service extends Base\Service
 
         $currentMerchant = $this->getCurrentMerchant($userDetails);
 
-        $ownerMerchant = array_filter($merchants, function($merchant) use ($currentMerchant)
-            {
-                return (($merchant['id'] === $currentMerchant['id']) and
-                    ($merchant['role'] === 'owner'));
-            });
+        $ownerMerchants = array_filter($merchants, function($merchant) use ($currentMerchant)
+        {
+            return (($merchant['id'] === $currentMerchant['id']) and
+                ($merchant['role'] === 'owner'));
+        });
+
+        $ownerMerchant = null;
+
+        if (empty($ownerMerchants) === false)
+        {
+            $ownerMerchant = $ownerMerchants[0];
+        }
 
         return $ownerMerchant;
     }

@@ -43,6 +43,7 @@ class Service extends Base\Service
 
         // We need to change this to currentLoggedInMerchant later
         $merchant = $this->loggedInUser->ownerMerchant();
+        $merchant = Merchant\Entity::findorfail($merchant->id);
 
         if ($merchant === false)
         {
