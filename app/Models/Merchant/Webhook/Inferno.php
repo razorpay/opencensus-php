@@ -85,7 +85,7 @@ class Inferno
 
         if ($webhook->isActive() === false)
         {
-            $job->delete();
+            $this->updateJob(true);
 
             return;
         }
@@ -426,9 +426,11 @@ class Inferno
 
     protected function webhookSuccessfullyFired($webhook)
     {
-        $this->repo->setLastSuccessfulAt($webhook);
+        $webhook->setLastSuccessfulAt();
 
-        $this->job->delete();
+        $this->repo->saveOrFail($webhook);
+
+        $this->updateJob(true);
     }
 
     /**
@@ -446,9 +448,7 @@ class Inferno
     {
         $deleteJobFlag = false;
 
-        $job = $this->job;
-
-        if (($job->attempts() > self::WEBHOOK_MAXIMUM_ATTEMPTS))
+        if (($this->job->attempts() > self::WEBHOOK_MAXIMUM_ATTEMPTS))
         {
             $deleteJobFlag = true;
         }
@@ -475,14 +475,21 @@ class Inferno
         else
         {
             $this->sendEmail($webhook, 'failure');
-
-            // Attempt again after 1 hour
-            $job->release(3600);
         }
 
-        if ($deleteJobFlag === true);
+        $this->updateJob($deleteJobFlag);
+    }
+
+    protected function updateJob($deleteJobFlag = true)
+    {
+        if ($deleteJobFlag === true)
         {
-            $job->delete();
+            $this->job->delete();
+        }
+        else
+        {
+            // Attempt again after 1 hour
+            $this->job->release(3600);
         }
     }
 
@@ -507,7 +514,7 @@ class Inferno
                 TraceCode::WEBHOOK_FIRING,
                 ['data' => $data]);
 
-            $this->job->delete();
+            $this->updateJob(true);
         }
 
         return $webhook;
