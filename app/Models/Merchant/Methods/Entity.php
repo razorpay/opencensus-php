@@ -29,7 +29,7 @@ class Entity extends Base\PublicEntity
     const UPI               = 'upi';
     const AEPS              = 'aeps';
 
-    const METHODS     = 'methods';
+    const METHODS           = 'methods';
 
     protected $primaryKey = self::MERCHANT_ID;
 

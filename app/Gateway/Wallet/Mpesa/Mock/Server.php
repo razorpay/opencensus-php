@@ -9,7 +9,6 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\Status;
 use RZP\Exception\ServerErrorException;
-use RZP\Gateway\Wallet\Mpesa\Constants;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
 use RZP\Gateway\Wallet\Mpesa\SoapMethod;
 use RZP\Gateway\Wallet\Mpesa\StatusCode;

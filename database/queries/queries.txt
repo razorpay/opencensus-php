@@ -2095,3 +2095,6 @@ ALTER TABLE adjustment
 
 ALTER TABLE terminals
    MODIFY COLUMN type TINYINT(1) UNSIGNED DEFAULT 1;
+
+ALTER TABLE wallet
+    ADD COLUMN status VARCHAR(255) NULL AFTER gateway_refund_id

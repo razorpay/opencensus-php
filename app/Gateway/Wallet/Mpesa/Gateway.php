@@ -414,10 +414,16 @@ class Gateway extends Base\Gateway
 
     protected function getOtpGenerateContentToSave(array $content)
     {
+        $response = $content[ResponseFields::LC_RESPONSE];
+
         $attributes = [
-            Base\Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER],
-            Base\Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER],
-            Base\Entity::AMOUNT              => $this->input['payment']['amount']
+            Base\Entity::GATEWAY_PAYMENT_ID2  => $content[ResponseFields::S2S_REF_NUMBER],
+            Base\Entity::CONTACT              => $content[ResponseFields::OTP_MOBILE_NUMBER],
+            Base\Entity::AMOUNT               => $this->input['payment']['amount'],
+            Base\Entity::STATUS               => $response[ResponseFields::LC_STATUS],
+            Base\Entity::STATUS_CODE          => $response[ResponseFields::S2S_STATUS_CODE],
+            Base\Entity::RESPONSE_DESCRIPTION => $response[ResponseFields::DESCRIPTION],
+            Base\Entity::REFERENCE1           => $response[ResponseFields::RESPONSE_ID]
         ];
 
         return $attributes;
@@ -429,8 +435,10 @@ class Gateway extends Base\Gateway
             $this->input['payment']['id'], Action::OTP_GENERATE);
 
         $attributes = [
-            Base\Entity::RECEIVED           => true,
-            Base\Entity::GATEWAY_PAYMENT_ID => $content[ResponseFields::S2S_TRANS_ID]
+            Base\Entity::RECEIVED            => true,
+            Base\Entity::GATEWAY_PAYMENT_ID  => $content[ResponseFields::S2S_TRANS_ID],
+            Base\Entity::STATUS              => $content[ResponseFields::LC_STATUS],
+            Base\Entity::STATUS_CODE         => $content[ResponseFields::S2S_STATUS_CODE],
         ];
 
         $this->updateGatewayPaymentEntity($wallet, $attributes, false);
@@ -515,8 +523,8 @@ class Gateway extends Base\Gateway
                 'gateway'     => $this->gateway,
                 'soap_method' => $method,
                 'request'     => [
-                    'soapRoot' => $soapRoot,
-                    'data'     => $data
+                    'soap_root' => $soapRoot,
+                    'data'      => $data
                 ],
             ]);
 

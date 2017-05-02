@@ -31,6 +31,7 @@ class CreateWallet extends Migration {
             $table->string('gateway_payment_id')->nullable();
             $table->string('gateway_payment_id_2')->nullable();
             $table->string('gateway_refund_id')->nullable();
+            $table->string('status')->nullable();
             $table->string('response_code')->nullable();
             $table->string('response_description')->nullable();
             $table->string('status_code')->nullable();

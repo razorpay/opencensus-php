@@ -27,6 +27,7 @@ class Entity extends Base\Entity
     const REFUND_ID             = 'refund_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
+    const STATUS                = 'status';
 
     protected $entity = 'wallet';
 
@@ -74,6 +75,7 @@ class Entity extends Base\Entity
         self::REFUND_ID,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::STATUS,
     );
 
     public function getStatusCode()

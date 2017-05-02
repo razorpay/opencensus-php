@@ -30,7 +30,8 @@ class Gateway extends Mpesa\Gateway
                 'gateway'     => $this->gateway,
                 'soap_method' => $method,
                 'request'     => [
-                    $soapRoot => $data
+                    'soap_root' => $soapRoot,
+                    'data'      => $data,
                 ],
             ]);
 
