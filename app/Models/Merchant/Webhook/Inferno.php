@@ -72,9 +72,9 @@ class Inferno
 
         $this->event = $data['event'];
 
-        $webhook = $this->getWebhook($data);
+        $webhook = $this->getActiveWebhook($data);
 
-        if ($webhook->isActive() === false)
+        if ($webhook === null)
         {
             $this->job->delete();
 
@@ -491,7 +491,7 @@ class Inferno
         $this->repo->saveOrFail($webhook);
     }
 
-    protected function getWebhook($data)
+    protected function getActiveWebhook($data)
     {
         $mode = $data['mode'];
 
@@ -503,9 +503,13 @@ class Inferno
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRING,
-                ['data' => $data]);
-
-            $this->job->delete();
+                [
+                    'data' => $data
+                ]);
+        }
+        else if ($webhook->isActive() === false)
+        {
+            $webhook = null;
         }
 
         return $webhook;
