@@ -93,7 +93,7 @@ export default class InvoicesListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={invoices.length}
-              onClick={this.fetchAll}
+              onClick={this.paginate}
             />
           </div>
         </div>

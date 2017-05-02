@@ -55,7 +55,7 @@ export default class BatchListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={batchuploads.length}
-              onClick={this.fetchAll}
+              onClick={this.paginate}
             />
           </div>
         </div>

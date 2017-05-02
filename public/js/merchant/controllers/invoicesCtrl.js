@@ -11,7 +11,7 @@ app.controller('InvoicesCtrl', [
 
     var titleHash = {
       'app.invoices.list': 'Invoices',
-      'app.invoices.details': 'Invoice Detail',
+      'app.invoices.detail': 'Invoice Detail',
       'app.invoices.new': 'New Invoice',
       'app.invoices.edit': 'Edit Invoice',
       'app.invoices.customers': 'Customers',

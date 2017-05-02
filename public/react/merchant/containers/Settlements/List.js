@@ -55,7 +55,7 @@ export default class SettlementsListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={settlements.length}
-              onClick={this.fetchAll}
+              onClick={this.paginate}
             />
 
             <div class="panel-footer">

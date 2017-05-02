@@ -42,6 +42,37 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
   content: $supportkit-text;
 }
 
+.dynamic-tooltip {
+  padding: 5px 10px;
+  position: absolute;
+  border-radius: 4px;
+  color: #fff;
+  background-color: #000;
+  z-index: 200;
+  animation: fadeIn 0.5s;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    width: 0;
+    height: 0;
+    transform: translate(0, 50%);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 10px solid #000;
+  }
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 .list-group-item pre {
 	font-family: Menlo, Monaco, "Ubuntu Mono", Consolas, "Courier New", monospace;
 	letter-spacing: 0.0625em;
@@ -431,14 +462,72 @@ a.highlight:hover, a.highlight:focus {
   .assignee-heading {
     margin-bottom: 4px
   }
-  .assignee-label {
-    background: #EBEBEB;
-    border-radius: 4px;
-    padding: 4px 6px;
-    font-weight: bold;
-    margin-right: 8px;
-    line-height: 36px;
+  .assignees-container {
+    margin-left: 28px;
+
+    .pills-label {
+      border-radius: 4px;
+      font-weight: bold;
+      padding: 4px 8px;
+      vertical-align: top;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .role-element {
+      display: table-cell;
+      max-width: 75%;
+
+      .assignee-label {
+        background: #EBEBEB;
+        margin-right: 12px;
+      }
+    }
+    .level-element {
+      display: table-cell;
+      position: relative;
+      width: 88px;
+
+      .level-label {
+        background: #fff;
+        border: 1px solid #e4e4e4;
+        text-transform: uppercase;
+        margin-right: 20px;
+        padding: 3px 7px;
+      }
+    }
+
+    &.inactive {
+      .role-element {
+        opacity: 0.6;
+      }
+      .level-element .level-label {
+        color: #9ba3a8;
+        border-color: #efefef;
+      }
+    }
   }
+  .vertical-line {
+    width: 2px;
+    height: 100%;
+    position: absolute;
+    left: 28px;
+    top: 28px;
+    border-left: 1px solid #e4e4e4;
+  }
+  .tick-green {
+    background-color: #16c116;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    font-size: 10px;
+    color: #fff;
+    position: absolute;
+    left: -28px;
+    top: 5px;
+  }
+
   .faded-text {
     color: #ccc;
   }
@@ -580,14 +669,6 @@ a.highlight:hover, a.highlight:focus {
       width: auto !important;
     }
   }
-  .delete-btn {
-    line-height: 20px;
-    color: #ccc;
-    cursor: pointer;
-    &:hover {
-      color: inherit;
-    }
-  }
   .perm-row {
     height: 42px;
   }
@@ -643,13 +724,18 @@ a.highlight:hover, a.highlight:focus {
       line-height: 12px;
     }
   }
-  .assignee-label {
-    background: #EBEBEB;
-    border-radius: 4px;
-    padding: 4px 6px;
-    font-weight: bold;
-    margin-right: 8px;
-    line-height: 36px;
+  .optype-container {
+    margin: 0 0 10px 10px;
+    display: inline-block;
+  }
+  .solid-label {
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .pills-label {
+    margin: 4px 8px;
+    padding: 4px 8px;
+    display: inline-block;
   }
   .help-label {
     font-size: 12px;
@@ -658,10 +744,43 @@ a.highlight:hover, a.highlight:focus {
   .save-btn {
     border-radius: 17px;
   }
-  .select2-selection {
-    border-color: #cfdadd;
-  }
   .name-input {
     font-size: 14px;
+  }
+}
+
+.select2-selection {
+  border-color: #cfdadd !important;
+
+  &__rendered {
+    width: 90%;
+  }
+}
+
+.pills-container-users {
+  margin-bottom: 16px;
+
+  .pills-label {
+    margin-left: 0;
+  }
+}
+
+.pills-label {
+  border-radius: 4px;
+  font-weight: bold;
+  padding: 4px 8px;
+}
+
+.assignee-label {
+  background: #EBEBEB;
+  margin-right: 12px;
+}
+
+.delete-btn {
+  line-height: 20px;
+  color: #ccc;
+  cursor: pointer;
+  &:hover {
+    color: inherit;
   }
 }

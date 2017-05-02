@@ -24,6 +24,15 @@ app
         $scope.action_id = $stateParams.action_id;
       }
 
+      // Don't allow to edit title/desc if request is still opened
+      function updateEditFieldState() {
+        $scope.allowFieldEdit = false;
+
+        if (['open', 'approved'].indexOf($scope.action_details.state) !== -1) {
+          $scope.allowFieldEdit = true;
+        }
+      }
+
       $scope.fetchDiff = function() {
         var request = $http.get('/admin/generic', {
           params: {
@@ -182,7 +191,23 @@ app
             $scope.rejectorList = $scope.cards.filter(function(card) {
               return !card.approved;
             });
+
+            $scope.levels = {};
+            var steps = $scope.action_details.workflow_steps;
+
+            // Level(step) structure having roles names
+            for (var key in steps) {
+              if (!$scope.levels[steps[key].level]) {
+                $scope.levels[steps[key].level] = [];
+              }
+              $scope.levels[steps[key].level].push(steps[key].role.name);
+            }
+
+            // To display vertical lines between steps
+            $scope.totalLevels = Object.keys($scope.levels).length;
           }
+
+          updateEditFieldState();
         });
       };
 
@@ -249,6 +274,8 @@ app
                   true
                 );
                 $scope.action_details.state = data.data.state; // Change state of request
+
+                updateEditFieldState();
               } else {
                 angular.forEach(data.errors, function(value, key) {
                   $scope.alerts.addAlert('danger', value);

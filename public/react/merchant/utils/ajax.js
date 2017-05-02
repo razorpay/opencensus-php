@@ -14,10 +14,10 @@ export default (url, params = {}) => {
     ...ajaxParams
   } = params;
   let mode = store.getState().session.mode;
+  ajaxParams.url = normalizeUrl(params.url);
 
   if (appendModeInQueryParam) {
     ajaxParams.data.mode = mode;
-    ajaxParams.url = normalizeUrl(params.url);
   } else if (appendModeInURL) {
     ajaxParams.url = normalizeUrl(`/${mode}/${params.url}`);
   }
@@ -25,6 +25,7 @@ export default (url, params = {}) => {
   return ajax(ajaxParams);
 };
 
+// Replaces consecutive & trailing slashes from the URL
 const normalizeUrl = url => {
-  return url.replace(/\/{2,}/g, '/');
+  return url.replace(/([^:]\/)\/+/g, '$1').replace(/\/$/, '');
 };

@@ -16,6 +16,7 @@ class Alert extends Component {
       this.setState({
         close: false,
       });
+      window.scrollTo(0, 0);
     }
   }
 
@@ -36,7 +37,7 @@ class Alert extends Component {
     return (
       <div
         class={cx(
-          'alert alert-dismissable text-center',
+          'alert alert-dismissable',
           props.type === 'error' ? 'alert-danger' : 'alert-success'
         )}
         style={{ borderRadius: 0 }}
@@ -45,8 +46,15 @@ class Alert extends Component {
           <span>×</span>
         </button>
 
-        <ul class="list-unstyled">
-          {msgs.map((msg, index) => <li key={index}>{JSON.stringify(msg)}</li>)}
+        <ul
+          class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
+          style={{ paddingLeft: '15px' }}
+        >
+          {msgs.map((msg, index) => (
+            <li key={index}>
+              {typeof msg === 'string' ? msg : JSON.stringify(msg)}
+            </li>
+          ))}
         </ul>
       </div>
     );

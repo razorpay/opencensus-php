@@ -280,9 +280,17 @@ app
         $scope.editMerchant(merchantEdit);
       };
       $scope.enableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/enable'
-        );
+        var data = {
+          route_name: 'merchant_live_enable',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -304,9 +312,17 @@ app
           });
       };
       $scope.disableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/disable'
-        );
+        var data = {
+          route_name: 'merchant_live_disable',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -338,13 +354,18 @@ app
           ? msg
           : 'Methods edited successfully: ' + JSON.stringify(methods);
 
+        var data = {
+          route_name: 'merchant_put_payment_methods',
+          url_params: {
+            '{mid}': $scope.merchant.id,
+          },
+          body: postMethods,
+        };
         var request = $http({
-          method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/methods',
-          transformRequest: transformRequestAsFormPost,
-          data: postMethods,
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
         });
-
         request
           .success(function(data) {
             if (data.success) {
@@ -364,27 +385,6 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
-
-      $scope.enableMethod = function(method) {
-        var methods = {};
-        methods[method] = 1;
-
-        $scope.editMethods(
-          methods,
-          method + ' enabled for merchant successfully'
-        );
-      };
-
-      $scope.disableMethod = function(method) {
-        var methods = {};
-        methods[method] = 0;
-
-        $scope.editMethods(
-          methods,
-          method + ' disabled for merchant successfully'
-        );
-      };
-
       $scope.setReceiptEmail = function(value) {
         var editMerchant = { receipt_email_enabled: value };
         $scope.editMerchant(editMerchant);
@@ -675,9 +675,18 @@ app
           });
       };
       $scope.archiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/archive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'archive' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -699,9 +708,18 @@ app
           });
       };
       $scope.unarchiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unarchive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'unarchive' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -724,9 +742,18 @@ app
       };
 
       $scope.suspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/suspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'suspend' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -749,9 +776,18 @@ app
       };
 
       $scope.unsuspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unsuspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'unsuspend' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -1203,7 +1239,15 @@ app
       }
 
       function getMerchantFeatures() {
-        var request = $http.get('/admin/features/' + $scope.merchant.id);
+        var data = {
+          route_name: 'feature_get_multiple',
+          url_params: {
+            '{entityId}': $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -1260,24 +1304,49 @@ app
       };
 
       function fetchBalance() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/balance'
-        );
+        $scope.merchant.balance = {};
+        $scope.merchant.credits = {};
+        $scope.merchant.fee_credits = {};
+
+        // live mode
+        var request = $http.get('/admin/generic', {
+          params: {
+            route_name: 'balance_fetch',
+            merchant_id: $scope.merchant.id,
+            mode: 'live',
+          },
+        });
         request
           .success(function(data) {
             if (data.success) {
-              $scope.merchant.balance = {
-                test: data.data.test.balance,
-                live: data.data.live.balance,
-              };
-              $scope.merchant.credits = {
-                test: data.data.test.credits,
-                live: data.data.live.credits,
-              };
-              $scope.merchant.fee_credits = {
-                test: data.data.test.fee_credits,
-                live: data.data.live.fee_credits,
-              };
+              $scope.merchant.balance.live = data.data.balance;
+              $scope.merchant.credits.live = data.data.credits;
+              $scope.merchant.fee_credits.live = data.data.fee_credits;
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
+
+        // test mode
+        var request = $http.get('/admin/generic', {
+          params: {
+            route_name: 'balance_fetch',
+            merchant_id: $scope.merchant.id,
+            mode: 'test',
+          },
+        });
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.merchant.balance.test = data.data.balance;
+              $scope.merchant.credits.test = data.data.credits;
+              $scope.merchant.fee_credits.test = data.data.fee_credits;
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {

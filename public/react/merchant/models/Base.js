@@ -75,7 +75,7 @@ export default class BaseModel {
    */
   deserialize(json) {
     for (let prop in json) {
-      this.deserializeProperty(prop, json[prop]);
+      this.deserializeProperty(prop, json[prop], json);
     }
 
     this.didDeserialize();
@@ -95,6 +95,10 @@ export default class BaseModel {
     if (!this.isNew && isBlank(this.__stashed__)) {
       this.__stashed__ = json;
     }
+  }
+
+  getPayload() {
+    return this.__stashed__;
   }
 
   /*

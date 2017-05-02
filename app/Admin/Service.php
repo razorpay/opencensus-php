@@ -520,15 +520,6 @@ class Service extends Base\Service
         return [[], $data];
     }
 
-    public function fetchEntityFeatures($entityId)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->feature->getFeatures($entityId);
-
-        return [[], $response];
-    }
-
     public function fetchFullMerchantDetails($id)
     {
         $details = null;
@@ -1498,32 +1489,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    /**
-     * Edits the merchant's methods
-     *
-     * @param  string $id      Merchant Id
-     * @param  array $methods Array containing methods
-     *                        with values 0/1
-     * @return array $error
-     */
-    public function editMethods($id, $methods)
-    {
-        $error = [];
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $this->api->merchant->fetch($id)->editMethods($methods);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage()];
-        }
-
-        return $error;
-    }
-
     public function fetchPricingPlan($id)
     {
         $errors = array();
@@ -2223,19 +2188,21 @@ class Service extends Base\Service
 
     public function getOrg($domain)
     {
-        $error = $data = null;
+        $requestConfig = [
+            'route_name' => 'org_get_by_hostname',
 
-        $this->setApiCredentials();
+            'url_params' => [
+                '{hostname}' => $domain
+            ]
+        ];
 
-        try
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('GET', $requestConfig);
+
+        if (empty($error))
         {
-            $data = $this->api->org->fetchByDomain($domain)->toArray();
-
             $this->setOrgInCache($data);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
         }
 
         return [$error, $data];
@@ -2364,9 +2331,10 @@ class Service extends Base\Service
 
         $filePath = $file->getPathname();
         $fileName = $file->getFilename();
-        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+        $extension = $file->getClientOriginalExtension();
+        $mimeType = $file->getClientMimeType();
 
-        if ($extension !== '.png')
+        if ($extension !== 'png' and $mimeType !== 'image/png')
         {
             return ['Invalid file format. Please upload a file with PNG extension.', $data];
         }

@@ -315,6 +315,73 @@ angular
       };
     },
   ])
+  .directive('dynamicTooltip', [
+    '$parse',
+    function($parse) {
+      return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+          var permTxt = attrs.dynamicTooltip; // text in attribute dynamic-tooltip is used as content
+
+          element.on({
+            mouseout: function(evt) {
+              $('.dynamic-tooltip').remove(); // remove all tooltips from view.
+            },
+
+            mouseover: function(evt) {
+              // Check if ctrl key is pressed while mouse hover
+              if (evt.ctrlKey) {
+                // Prepare tooltip
+                var tooltip = document.createElement('span');
+                var permissionTxt = document.createTextNode(permTxt);
+
+                tooltip.appendChild(permissionTxt); // Set content in tooltip
+                tooltip.className = 'dynamic-tooltip'; // Adding class for pre-defined style
+
+                // Setting positon wrt body (to display on right side of element)
+                tooltip.style.top =
+                  document.body.scrollTop +
+                  evt.target.getBoundingClientRect().top +
+                  'px';
+                tooltip.style.left =
+                  evt.target.offsetWidth +
+                  evt.target.getBoundingClientRect().left -
+                  tooltip.offsetWidth / 2 +
+                  'px';
+
+                document.body.appendChild(tooltip); // Adding tooltip in body
+              }
+            },
+          });
+        },
+      };
+    },
+  ])
+  /*
+  * Usage:
+  * - <select class="role-select2" role-select="Select a placeholder"></select>
+  * - Scope must have fn. initRoleSelector to perform action on selecting an option
+  */
+  .directive('roleSelect', [
+    '$parse',
+    function($parse) {
+      return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+          var placeholder = attrs.roleSelect;
+
+          // Add theme to custom selector
+          element.select2({
+            theme: 'classic',
+            placeholder: placeholder,
+          });
+
+          // Call custom function to attach event listener which performs action when an option is selected
+          scope.initRoleSelector(element);
+        },
+      };
+    },
+  ])
   .directive('jqTourbus', [
     'jqTourbusService',
     '$compile',
