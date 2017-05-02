@@ -32,7 +32,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
             return $this->getTypeForRowEmail($row);
         }
 
-        return $this->getTypeForRowWebsite($row);
+        return $this->getTypeForRowDashboard($row);
     }
 
     /**
@@ -48,7 +48,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      * @param $row array
      * @return string
      */
-    protected function getTypeForRowWebsite(array $row) : string
+    protected function getTypeForRowDashboard(array $row)
     {
         if ((array_key_exists(self::REFUND_TXN_CLM, $row) === false) and
             (array_key_exists(self::CAPTURE_TXN_CLM, $row) === false))
@@ -60,10 +60,13 @@ class CombinedReconciliate extends Base\CombinedReconciliate
         {
             return BaseReconciliate::REFUND;
         }
-
-        elseif ($row[self::CAPTURE_TXN_CLM] !== 0.0)
+        else if ($row[self::CAPTURE_TXN_CLM] !== 0.0)
         {
             return BaseReconciliate::PAYMENT;
+        }
+        else
+        {
+            return null;
         }
     }
 
@@ -79,7 +82,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      * @param $row array
      * @return string
      */
-    protected function getTypeForRowEmail(array $row) : string
+    protected function getTypeForRowEmail(array $row)
     {
         $txnType = strtolower($row[self::TXN_TYPE_COLUMN]);
 
@@ -87,10 +90,13 @@ class CombinedReconciliate extends Base\CombinedReconciliate
         {
             return BaseReconciliate::PAYMENT;
         }
-
-        elseif ($txnType === self::TXN_DEBIT)
+        else if ($txnType === self::TXN_DEBIT)
         {
             return BaseReconciliate::REFUND;
+        }
+        else
+        {
+            return null;
         }
     }
 }
