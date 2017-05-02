@@ -5,11 +5,11 @@ namespace RZP\Gateway\Netbanking\Hdfc;
 use Carbon\Carbon;
 use Mail;
 
+use RZP\Constants\MailTags;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Mail\Gateway\RefundFile\Constants;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
-use RZP\Constants\MailTags;
+use RZP\Models\Payment\Gateway;
 
 class RefundFile extends Base\RefundFile
 {
@@ -50,7 +50,7 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $refundFileMail = new RefundFileMail($fileData, Constants::NETBANKING_HDFC);
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_HDFC);
 
         Mail::queue($refundFileMail);
     }

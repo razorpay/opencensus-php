@@ -2,13 +2,14 @@
 
 namespace RZP\Gateway\Netbanking\Federal;
 
-use Mail;
 use Carbon\Carbon;
+use Mail;
+use RZP\Constants\MailTags;
+use RZP\Gateway\Base;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Constants as MailConstants;
-use RZP\Gateway\Base;
 use RZP\Models\FileStore;
-use RZP\Constants\MailTags;
+use RZP\Models\Payment\Gateway;
 
 class RefundFile extends Base\RefundFile
 {
@@ -88,7 +89,7 @@ class RefundFile extends Base\RefundFile
 
     protected function sendRefundEmail($fileData = [])
     {
-        $refundFileMail = new RefundFileMail($fileData, MailConstants::NETBANKING_FEDERAL);
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_FEDERAL);
 
         Mail::queue($refundFileMail);
     }
