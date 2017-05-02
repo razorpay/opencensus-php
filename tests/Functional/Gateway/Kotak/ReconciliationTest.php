@@ -2,21 +2,22 @@
 
 namespace RZP\Tests\Functional\Gateway\Kotak;
 
+use App;
 use Carbon\Carbon;
 use Config;
-use Mockery;
 use Mail;
-
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Mockery;
+use RZP\Constants\Mode;
+use RZP\Mail\Settlement\KotakReconciliation as KotakReconciliationMail;
+use RZP\Models\FileStore;
+use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Merchant\Account;
+use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
-use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\FileStore;
-use RZP\Models\Merchant\Account;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Models\FundTransfer\Kotak;
-use RZP\Mail\Settlement\KotakReconciliation as KotakReconciliationMail;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ReconciliationTest extends TestCase
 {
@@ -383,6 +384,11 @@ class ReconciliationTest extends TestCase
 
             $allAttempts[] = $fta;
         }
+
+        $app = App::getFacadeRoot();
+
+        // Explicitly setting mode here as we are not using request response flow here
+        $app['rzp.mode'] = Mode::TEST;
 
         list($textFile, $excelFile) = (new Kotak\NodalAccount)->generateSettlementFile(
                                                                         $allAttempts, false);

@@ -25,11 +25,6 @@ trait SerializesModels
     {
         \Database\DefaultConnection::set($this->mode);
 
-        foreach ((new ReflectionClass($this))->getProperties() as $property)
-        {
-            $property->setValue($this, $this->getRestoredPropertyValue(
-                $this->getPropertyValue($property)
-            ));
-        }
+       LaravelSerializesModels::__wakeup();
     }
 }
