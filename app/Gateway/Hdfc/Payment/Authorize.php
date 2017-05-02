@@ -107,11 +107,14 @@ trait Authorize
 
     protected function verifyAuthResponse(array & $authResponse)
     {
-        $this->assertPaymentId($this->input['payment']['id'], $authResponse['data']['trackid']);
-
         $this->isAuthSuccess($authResponse);
 
         $this->traceAuthEnrolledResponse($authResponse);
+
+        if (isset($authResponse['data']['trackid']) === true)
+        {
+            $this->assertPaymentId($this->input['payment']['id'], $authResponse['data']['trackid']);
+        }
 
         if (($this->error === true) and
             ($this->callbackAlreadyProcessed($authResponse) === true))

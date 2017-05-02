@@ -23,7 +23,9 @@ class TraceCode
     const PAYMENT_REFUND_FAILURE                        = 'PAYMENT_REFUND_FAILURE';
     const PAYMENT_REVERSE_FAILURE                       = 'PAYMENT_REVERSE_FAILURE';
     const PAYMENT_VERIFY_CAPTURE_FAILURE                = 'PAYMENT_VERIFY_CAPTURE_FAILURE';
+    const PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE        = 'PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE';
     const PAYMENT_VERIFY_REFUND_FAILURE                 = 'PAYMENT_VERIFY_REFUND_FAILURE';
+    const PAYMENT_VERIFY_REFUND_EXCEPTION               = 'PAYMENT_VERIFY_REFUND_EXCEPTION';
     const PAYMENT_TOPUP_REQUEST                         = 'PAYMENT_TOPUP_REQUEST';
     const PAYMENT_TOPUP_RESPONSE                        = 'PAYMENT_TOPUP_RESPONSE';
     const PAYMENT_TOPUP_FAILURE                         = 'PAYMENT_TOPUP_FAILURE';
@@ -146,6 +148,8 @@ class TraceCode
     const MIGS_CAN_MANUAL_REFUND                        = 'MIGS_CAN_MANUAL_REFUND';
     const LATE_AUTHORIZE_AUTO_CAPTURE                   = 'LATE_AUTHORIZE_AUTO_CAPTURE';
     const MISSING_BILLDESK_CANCELLED_REFUNDS            = 'MISSING_BILLDESK_CANCELLED_REFUNDS';
+    const REFUND_RETRY_INITIATED                        = 'REFUND_RETRY_INITIATED';
+    const REFUND_RETRY_RESULT                           = 'REFUND_RETRY_RESULT';
 
     const REQUESTS_JOB_REQUEST                          = 'REQUESTS_JOB_REQUEST';
     const REQUESTS_JOB_RESPONSE                         = 'REQUESTS_JOB_RESPONSE';
@@ -391,6 +395,7 @@ class TraceCode
     const SETTLEMENT_DAILY_REPORT_DATA              = 'SETTLEMENT_DAILY_REPORT_DATA';
     const SETTLEMENT_DAILY_REPORT_RESULT            = 'SETTLEMENT_DAILY_REPORT_RESULT';
     const SETTLEMENT_DAILY_REPORT_FAILURE           = 'SETTLEMENT_DAILY_REPORT_FAILURE';
+    const SETTLEMENT_RETRY_REQUEST                  = 'SETTLEMENT_RETRY_REQUEST';
     const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
     const EMI_FILE_SENT                             = 'EMI_FILE_SENT';
 
@@ -749,6 +754,8 @@ class TraceCode
         self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
+        self::REFUND_RETRY_INITIATED                    => 'Retry of failed refunds initiated',
+        self::REFUND_RETRY_RESULT                       => 'Result of failed refunds retry.',
 
         self::TRANSACTION_MIGRATION_TAX_MISTMATCH       => 'Mismatch in the tax calculation during migration',
         self::TRANSACTION_MIGRATION_FEE_MISTMATCH       => 'Mismatch in the fees calculation during migration',

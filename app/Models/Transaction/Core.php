@@ -42,6 +42,13 @@ class Core extends Base\Core
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
+    /**
+     * This will be called only in case of Non Auth Capture Flow
+     * We will create a dummy transaction with no fee split.
+     * The actual fee split will be calculated at the time of payment capture
+     * @param  Payment\Entity $payment
+     * @return [Transaction\Entity $txn, PublicCollection $feesSplit]
+     */
     public function createFromPaymentAuthorized(Payment\Entity $payment)
     {
         $this->trace->info(
@@ -50,8 +57,7 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        //TODO: Pass false as argument to remove backward compatibility.
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, false);
 
         return [$txn, $feesSplit];
     }
@@ -221,7 +227,7 @@ class Core extends Base\Core
 
         $txn->fill($values);
 
-        return [$txn, null];
+        return [$txn, new Base\PublicCollection];
     }
 
     protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment, bool $updateFees = true)
@@ -558,7 +564,7 @@ class Core extends Base\Core
             case Payment\Status::REFUNDED:
                 $gateway = $payment->getGateway();
 
-                Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
+                Payment\Refund\Validator::validateVerifyInternalRefundAllowed($gateway);
 
                 //$this->updateNodalBalance($txn);
 

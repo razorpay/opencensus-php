@@ -48,7 +48,7 @@ class RefundTest extends TestCase
         $this->mockDashboardRequest();
 //        $this->mockRefundEmail();
 
-        $refund = $this->startTest($payment['id'], (string)$payment['amount']);
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
 
         $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
@@ -367,6 +367,8 @@ class RefundTest extends TestCase
 
     public function testCreateMissingRefundTransaction()
     {
+        $this->markTestSkipped('Transactions are getting created now');
+
         $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
 
         $payment = $this->fixtures->create(
@@ -499,15 +501,15 @@ class RefundTest extends TestCase
                 Mockery::on(function ($data)
                     {
                         $testData = array(
-                            'payment'   =>  [
-                                'amount'=>  'INR 500.00'
+                            'payment'   => [
+                                'amount' => 'INR 500.00'
                             ],
-                            'merchant'  =>  [],
-                            'customer'   =>  [
-                                'email' =>  'a@b.com',
+                            'merchant' => [],
+                            'customer'  => [
+                                'email' => 'a@b.com',
                                 'phone' => '9918899029'
                             ],
-                            'refund'  =>  [
+                            'refund'  => [
                                 'amount' => 'INR 500.00'
                             ]
                         );

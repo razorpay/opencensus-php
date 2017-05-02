@@ -341,10 +341,7 @@ EOT;
             $content['status'] = 'FAILED';
         });
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->refundPayment($payment['id']);
-        });
+        $this->refundPayment($payment['id']);
     }
 
     public function testRefundRequestTimeout()
@@ -362,10 +359,7 @@ EOT;
             $content['status'] = 'FAILED';
         });
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->refundPayment($payment['id']);
-        });
+        $this->refundPayment($payment['id']);
     }
 
     public function testRefundDuplicateRequest()
@@ -383,10 +377,7 @@ EOT;
             $content['status'] = 'FAILED';
         });
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->refundPayment($payment['id']);
-        });
+        $this->refundPayment($payment['id']);
     }
 
     public function testRefundInsufficientBalance()
@@ -404,10 +395,7 @@ EOT;
             $content['status'] = 'FAILED';
         });
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->refundPayment($payment['id']);
-        });
+        $this->refundPayment($payment['id']);
     }
 
     public function testRefundInvalidEncryptedRequest()
@@ -425,10 +413,7 @@ EOT;
             $content['status'] = 'FAILED';
         });
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->refundPayment($payment['id']);
-        });
+        $this->refundPayment($payment['id']);
     }
 
     public function testRefundInternalServerError()
@@ -446,10 +431,7 @@ EOT;
             $content['status'] = 'FAILED';
         });
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->refundPayment($payment['id']);
-        });
+        $this->refundPayment($payment['id']);
     }
 
     public function testVerifyPayment()

@@ -10,6 +10,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Constants\Table;
+use Carbon\Carbon;
 
 class Repository extends Base\Repository
 {
@@ -24,13 +25,17 @@ class Repository extends Base\Repository
     ];
 
     protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
+        Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
         Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::STATUS          => 'sometimes|string|max:30',
     );
 
     protected $signedIds = [
-        Entity::PAYMENT_ID
+        Entity::BATCH_ID,
+        Entity::PAYMENT_ID,
+        Entity::TRANSACTION_ID,
     ];
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
@@ -333,6 +338,46 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
                     ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
+                    ->get();
+    }
+
+    public function fetchRefundsByGatewayAndAttempts($gateways, $attempts)
+    {
+        //
+        // Select * from refunds join payments on refunds.payment_id = payments.id
+        // where payments.gateway IN ($gateway) and refunds.attempts > $attempt and
+        // refunds.last_attempted_at < $timeLimit and refunds.status = "failed"
+        // order by rand() limit 50
+        //
+
+        $attrs = $this->getAttributeWithTableName('*');
+
+        $pRepo = $this->manager->payment;
+        $pTableName = $pRepo->getTableName();
+
+        $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+        $rAttempts = $this->getAttributeWithTableName(Refund\Entity::ATTEMPTS);
+        $rStatus = $this->getAttributeWithTableName(Refund\Entity::STATUS);
+        $rLastAttemptedAt = $this->getAttributeWithTableName(Refund\Entity::LAST_ATTEMPTED_AT);
+
+        $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+        $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+
+        $timeLimit = Carbon::now('Asia/Kolkata')->subMinutes(30)->timestamp;
+
+        // TODO: If the number of gateways exceeds by half of total,
+        // inverse the `whereIn` condition.
+
+        return $this->newQuery()
+                    ->select($attrs)
+                    ->join($pTableName, $rPaymentId, '=', $pId)
+                    ->where($rAttempts, '<', $attempts)
+                    ->where($rStatus, '=', Refund\Status::FAILED)
+                    ->whereIn($pGateway, $gateways)
+                    ->where($rLastAttemptedAt, '<', $timeLimit)
+                    ->with(['payment','payment.terminal'])
+                    ->limit(50)
+                    ->inRandomOrder()
                     ->get();
     }
 }

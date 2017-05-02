@@ -36,11 +36,11 @@ return [
         'type'            => 'payment',
         'merchant_id'     => '10000000000000',
         'amount'          => 50000,
-        'fee'             => 1438,
-        'service_tax'     => 188,
+        'fee'             => 0,
+        'service_tax'     => 0,
         'pricing_rule_id' => null,
         'debit'           => 0,
-        'credit'          => 48562,
+        'credit'          => 0,
         'currency'        => 'INR',
         'balance'         => 0,
         'gateway_fee'     => 0,
@@ -166,22 +166,6 @@ return [
         'exception' => [
             'class'                 => RZP\Exception\BadRequestException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
-        ],
-    ],
-
-    'testPaymentInvalidRefund' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => 'BAD_REQUEST_ERROR',
-                    'description'   => 'Account Balance is insufficient',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE',
         ],
     ],
 
