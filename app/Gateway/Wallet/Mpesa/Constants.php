@@ -16,9 +16,6 @@ class Constants
     const COMMAND_ID       = 'O';
     const CMDID            = 111;
 
-    // Response Constants
-    const SUCCESS          = 'SUCCESS';
-
     // Soap constants
     const USER_ID          = 'userId';
     const PASSWORD         = 'password';

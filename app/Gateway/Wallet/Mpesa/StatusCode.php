@@ -4,13 +4,15 @@ namespace RZP\Gateway\Wallet\Mpesa;
 
 class StatusCode
 {
-    const SUCCESS           = '100';
-    const AUTH_FAILURE      = '101';
-    const INVALID_PARAMS    = '103';
-    const INVALID_MOBILE_NO = '104';
-    const PARAMS_MISSING    = '105';
-    const FAILURE           = '106';
-    const TIMEOUT           = '107';
+    const SUCCESS            = '100';
+    const AUTH_FAILURE       = '101';
+    const INVALID_PARAMS     = '103';
+    const INVALID_MOBILE_NO  = '104';
+    const PARAMS_MISSING     = '105';
+    const FAILURE            = '106';
+    const TIMEOUT            = '107';
+
+    const RANDOM_MPESA_ERROR = 'Random Mpesa Error';
 
     protected static $errorCodeMessageMap = [
         self::SUCCESS           => 'Success',
@@ -29,6 +31,11 @@ class StatusCode
 
     public static function getErrorMessage($code)
     {
-        return self::$errorCodeMessageMap[$code];
+        if (isset(self::$errorCodeMessageMap[$code]) === true)
+        {
+            return self::$errorCodeMessageMap[$code];
+        }
+
+        return self::RANDOM_MPESA_ERROR;
     }
 }

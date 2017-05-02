@@ -7,6 +7,7 @@ use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Mpesa\Action;
+use RZP\Gateway\Wallet\Mpesa\Status;
 use RZP\Exception\ServerErrorException;
 use RZP\Gateway\Wallet\Mpesa\Constants;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
@@ -49,9 +50,9 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($request, SoapMethod::VALIDATE_CUSTOMER);
 
         $response = [
-            ResponseFields::LC_STATUS       => Constants::SUCCESS,
+            ResponseFields::LC_STATUS       => Status::SUCCESS,
             ResponseFields::S2S_STATUS_CODE => StatusCode::SUCCESS,
-            ResponseFields::DESCRIPTION     => Constants::SUCCESS,
+            ResponseFields::DESCRIPTION     => Status::SUCCESS,
             ResponseFields::RESPONSE_ID     => uniqid()
         ];
 
@@ -71,7 +72,7 @@ class Server extends Base\Mock\Server
         $mobileNumber = $request[RequestFields::MOBILE_NUMBER];
 
         $data = [
-            ResponseFields::LC_STATUS       => Constants::SUCCESS,
+            ResponseFields::LC_STATUS       => Status::SUCCESS,
             ResponseFields::S2S_STATUS_CODE => StatusCode::SUCCESS,
             ResponseFields::DESCRIPTION     => 'Otp Sent Successfully',
             ResponseFields::RESPONSE_ID     => uniqid()
@@ -102,7 +103,7 @@ class Server extends Base\Mock\Server
             ResponseFields::S2S_TRANS_ID        => $transId,
             ResponseFields::S2S_TRANSACTION_REF => $request[RequestFields::TRANSACTION_REFERENCE],
             ResponseFields::S2S_STATUS_CODE     => StatusCode::SUCCESS,
-            ResponseFields::LC_STATUS           => Constants::SUCCESS,
+            ResponseFields::LC_STATUS           => Status::SUCCESS,
             ResponseFields::MOBILE_NUMBER       => $request[RequestFields::MOBILE_NUMBER]
         ];
 
@@ -122,7 +123,7 @@ class Server extends Base\Mock\Server
         $response = [
             ResponseFields::S2S_REF_NUMBER  => $request[RequestFields::QUERY_TRANSACTION_REF],
             ResponseFields::S2S_STATUS_CODE => StatusCode::SUCCESS,
-            ResponseFields::REASON          => Constants::SUCCESS,
+            ResponseFields::REASON          => Status::SUCCESS,
             ResponseFields::MOBILE_NUMBER   => $mobileNumber
         ];
 
@@ -143,7 +144,7 @@ class Server extends Base\Mock\Server
             ResponseFields::S2S_TRANS_ID        => $request[RequestFields::COM_TRANSACTION_ID],
             ResponseFields::S2S_TRANSACTION_REF => $request[RequestFields::QUERY_TRANSACTION_REF],
             ResponseFields::S2S_STATUS_CODE     => StatusCode::SUCCESS,
-            ResponseFields::REASON              => Constants::SUCCESS,
+            ResponseFields::REASON              => Status::SUCCESS,
             ResponseFields::MOBILE_NUMBER       => $mobileNumber
         ];
 
@@ -160,7 +161,7 @@ class Server extends Base\Mock\Server
             ResponseFields::COM_TRANSACTION_ID    => $transId,
             ResponseFields::TRANSACTION_REFERENCE => $request[RequestFields::TRANSACTION_REFERENCE],
             ResponseFields::STATUS_CODE           => StatusCode::SUCCESS,
-            ResponseFields::REASON                => Constants::SUCCESS,
+            ResponseFields::REASON                => Status::SUCCESS,
             ResponseFields::TRANSACTION_AMOUNT    => $request[RequestFields::AMOUNT]
         ];
 

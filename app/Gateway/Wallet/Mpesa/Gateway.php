@@ -16,7 +16,6 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Payment\Entity as Payment;
 
 class Gateway extends Base\Gateway
 {
@@ -518,7 +517,8 @@ class Gateway extends Base\Gateway
                 'gateway'     => $this->gateway,
                 'soap_method' => $method,
                 'request'     => [
-                    $soapRoot => $data
+                    'soapRoot' => $soapRoot,
+                    'data'     => $data
                 ],
             ]);
 
