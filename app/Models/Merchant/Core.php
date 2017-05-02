@@ -12,6 +12,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
 use RZP\Models\Merchant\Detail;
@@ -19,6 +20,8 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Core extends Base\Core
 {
+    use Notify;
+
     public function create($input)
     {
         $merchant = (new Merchant\Entity)->build($input);
@@ -88,7 +91,7 @@ class Core extends Base\Core
         return $subMerchant;
     }
 
-    protected function addMerchantSupportingEntities($merchant)
+    protected function addMerchantSupportingEntities(Entity $merchant)
     {
         $this->createBalance($merchant, Mode::TEST);
 
@@ -271,5 +274,30 @@ class Core extends Base\Core
 
             return $data;
         }
+    }
+
+    public function action($merchant, $input)
+    {
+        $merchant->getValidator()->validateInput('action', $input);
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $function = $input['action'];
+
+        $hasPermission = $admin->hasPermission($function);
+
+        if ($hasPermission === false)
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        $merchant->$function();
+
+        $this->repo->saveOrFail($merchant);
+
+        $this->logActionToSlack($merchant, $function);
+
+        return $merchant;
     }
 }

@@ -1169,9 +1169,9 @@ class Processor
             $this->trace->info(
                 TraceCode::FEES_BREAKUP_ALREADY_EXISTS,
                 [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
+                  'transaction_id'    => $txn->getId(),
+                  'payment_id'        => $txn->getEntityId(),
+                  'fee_split'         => $feesSplit->toArrayPublic(),
                 ]);
 
             return;

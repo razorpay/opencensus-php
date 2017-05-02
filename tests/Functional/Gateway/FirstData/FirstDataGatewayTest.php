@@ -51,7 +51,7 @@ class FirstDataGatewayTest extends TestCase
         // Switch to private auth for second recurring payment
         $this->ba->privateAuth();
 
-        $response = $this->doS2SRecurringPayment($payment);
+        $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
         $this->capturePayment($paymentId, $payment['amount']);
 
@@ -67,7 +67,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($paymentId, $firstDataEntity['payment_id']);
 
         // Another payment to test auto-refund
-        $response = $this->doS2SRecurringPayment($payment);
+        $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
         $this->refundAuthorizedPayment($paymentId);
 

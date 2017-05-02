@@ -714,7 +714,7 @@ class CybersourceGatewayTest extends TestCase
         // Switch to private auth for subsequent recurring payment
         $this->ba->privateAuth();
 
-        $response = $this->doS2SRecurringPayment($payment);
+        $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
