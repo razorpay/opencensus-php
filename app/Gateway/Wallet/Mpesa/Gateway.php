@@ -414,8 +414,6 @@ class Gateway extends Base\Gateway
 
     protected function getOtpGenerateContentToSave(array $content)
     {
-        $response = $content['response'];
-
         $attributes = [
             Base\Entity::GATEWAY_PAYMENT_ID2 => $content[ResponseFields::S2S_REF_NUMBER],
             Base\Entity::CONTACT             => $content[ResponseFields::OTP_MOBILE_NUMBER],

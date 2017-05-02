@@ -237,34 +237,31 @@ class MpesaGatewayTest extends TestCase
 
     public function testRefundPayment()
     {
-        $this->testRefunds(50000, __FUNCTION__);
+        $this->refundsTest(50000, __FUNCTION__);
     }
 
     public function testPartialRefund()
     {
-        $this->testRefunds(10000, __FUNCTION__);
+        $this->refundsTest(10000, __FUNCTION__);
     }
 
     public function testRefundFailed()
     {
-        $data = $this->testData[__FUNCTION__];
-
         $this->testOtpPayment();
 
         $this->mockRefundFailure();
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->refundPayment($payment['id']);
-            }
-        );
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals('failed', $refund['status']);
     }
 
-    protected function testRefunds($amount, $key)
+    protected function refundsTest($amount, $key)
     {
         $data = $this->testData[$key];
 
