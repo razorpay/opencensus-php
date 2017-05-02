@@ -11,6 +11,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\Entity
@@ -501,5 +502,14 @@ class Entity extends Base\Entity
             self::ROLES,
             self::GROUPS,
         ];
+    }
+
+    public function hasPermission($route)
+    {
+        $adminPermissions = $this->getPermissionsList();
+
+        $routePermission = Permission\Name::$actionMap[$route];
+
+        return in_array($routePermission, $adminPermissions);
     }
 }
