@@ -16,6 +16,8 @@ class MerchantInvitation extends Base\Mailable
 
     public function __construct(Admin\Entity $admin, AdminLead\Entity $invitation)
     {
+        parent::__construct();
+
         $this->admin = $admin;
 
         $this->invitation = $invitation;

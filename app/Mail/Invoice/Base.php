@@ -24,6 +24,8 @@ class Base extends Mailable
 
     public function __construct(InvoiceEntity $invoice)
     {
+        parent::__construct();
+
         $this->invoice = $invoice;
 
         $this->invoiceData = $this->getInvoiceData();

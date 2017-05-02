@@ -17,6 +17,8 @@ class Base extends Mailable
 
     public function __construct(AdminEntity $admin, array $input)
     {
+        parent::__construct();
+
         $this->admin = $admin;
 
         $this->org = $admin->org;

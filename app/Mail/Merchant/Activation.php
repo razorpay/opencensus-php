@@ -20,9 +20,12 @@ class Activation extends Mailable
 
     public function __construct(Merchant\Entity $merchant, PublicCollection $plan)
     {
+        parent::__construct();
+
         $this->merchant = $merchant;
 
         $this->plan = $plan;
+
     }
 
     protected function addRecipients()

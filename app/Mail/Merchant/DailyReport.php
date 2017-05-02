@@ -15,6 +15,8 @@ class DailyReport extends Mailable
 
     public function __construct(array $data, Merchant\Entity $merchant)
     {
+        parent::__construct();
+
         $this->data = $data;
 
         $this->merchant = $merchant;

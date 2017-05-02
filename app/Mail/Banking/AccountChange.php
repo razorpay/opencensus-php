@@ -16,6 +16,8 @@ class AccountChange extends Mailable
 
     public function __construct(BankAccount\Entity $bankAccount, Merchant\Entity $merchant)
     {
+        parent::__construct();
+
         $this->bankAccount = $bankAccount;
 
         $this->merchant = $merchant;

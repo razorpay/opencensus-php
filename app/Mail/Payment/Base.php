@@ -14,9 +14,12 @@ class Base extends Mailable
 
     public function __construct(array $data, bool $isMerchantEmail = false)
     {
+        parent::__construct();
+
         $this->data = $data;
 
         $this->isMerchantEmail = $isMerchantEmail;
+
     }
 
     protected function addSender()

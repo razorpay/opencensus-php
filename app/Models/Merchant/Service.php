@@ -148,10 +148,6 @@ class Service extends Base\Service
      */
     protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
     {
-        $subMerchant = $subMerchant->toArray();
-
-        $aggregator = $aggregator->toArray();
-
         $createSubMerchantMail = new CreateSubMerchantMail($subMerchant, $aggregator);
 
         Mail::queue($createSubMerchantMail);

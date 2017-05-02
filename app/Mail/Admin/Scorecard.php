@@ -14,6 +14,8 @@ class Scorecard extends Mailable
 
     public function __construct(array $data)
     {
+        parent::__construct();
+
         $this->data = $data;
     }
 
@@ -53,7 +55,6 @@ class Scorecard extends Mailable
         $message = '
             Yesterday\'s Volume        - ' . $this->data['yesterdayVolume']->getAttribute('amount') / 100 . ' <br />
             Monthly Volume till now - ' . $this->data['monthVolume']->getAttribute('amount') / 100 . ' <br /><br />';
-
 
         $message .= '
             Yesterday\'s Transactions count        - ' . $this->data['yesterdayVolume']->getAttribute('count') . ' <br />

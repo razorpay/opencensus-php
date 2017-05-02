@@ -17,6 +17,8 @@ class RefundFile extends Mailable
 
     public function __construct(Batch\Entity $batch, string $filePath)
     {
+        parent::__construct();
+
         $this->batch = $batch;
 
         $this->filePath = $filePath;
