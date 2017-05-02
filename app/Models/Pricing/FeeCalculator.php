@@ -2,14 +2,12 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
-use RZP\Models\Merchant;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\Trace;
@@ -97,7 +95,11 @@ class FeeCalculator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-                Payment\Entity::AMOUNT);
+                Payment\Entity::AMOUNT,
+                [
+                    'amount' => $amount,
+                    'fees'   => $totalFees
+                ]);
         }
 
         return [$totalFees, $totalTaxes];
