@@ -123,7 +123,7 @@ class Core extends Base\Core
 
         $merchantId = $input[Entity::MERCHANT_ID];
 
-        $this->repo->sync($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
+        $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
     }
 
     protected function detach(Entity $user, array $input)
