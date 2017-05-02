@@ -43,15 +43,6 @@ class Inferno
 
     const WEBHOOK_MAXIMUM_ATTEMPTS = 24;
 
-    const KNOWN_ERRORS = [
-        'unable to get local issuer certificate',
-        'empty reply from server',
-        'ssl certificate problem: certificate has expired',
-        '<url> malformed',
-        'server error response',
-        'too many redirects',
-    ];
-
     /**
      * We keep it internally as 20 seconds
      * but publicly we say it's only 5 seconds.
@@ -518,20 +509,5 @@ class Inferno
         }
 
         return $webhook;
-    }
-
-    protected function isKnownRequestsException($e)
-    {
-        $msg = $e->getMessage();
-        $msg = strtolower($msg);
-
-        foreach (self::KNOWN_ERRORS as $errorMessage)
-        {
-            if (strpos($msg, $errorMessage) !== false)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 }
