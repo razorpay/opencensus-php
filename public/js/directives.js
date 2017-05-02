@@ -357,6 +357,31 @@ angular
       };
     },
   ])
+  /*
+  * Usage:
+  * - <select class="role-select2" role-select="Select a placeholder"></select>
+  * - Scope must have fn. initRoleSelector to perform action on selecting an option
+  */
+  .directive('roleSelect', [
+    '$parse',
+    function($parse) {
+      return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+          var placeholder = attrs.roleSelect;
+
+          // Add theme to custom selector
+          element.select2({
+            theme: 'classic',
+            placeholder: placeholder,
+          });
+
+          // Call custom function to attach event listener which performs action when an option is selected
+          scope.initRoleSelector(element);
+        },
+      };
+    },
+  ])
   .directive('jqTourbus', [
     'jqTourbusService',
     '$compile',
