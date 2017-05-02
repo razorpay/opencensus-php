@@ -159,11 +159,11 @@ class Service extends Base\Service
         $currentUser = User\Entity::getUserWithEmail($currentMerchant->email);
 
         $subMerchant = $this->fetch($input['id']);
+
         $email = $subMerchant['email'];
         $input['email'] = $email;
 
-        $error = (new Merchant\Validator)
-            ->validateInput('create_submerchant_user', $input)->messages();
+        $error = (new Merchant\Validator)->validateInput('create_submerchant_user', $input)->messages();
 
         if (empty($error))
         {
@@ -172,9 +172,24 @@ class Service extends Base\Service
                 return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
             }
 
+            list($error, $users) = $this->getUsersOfMerchantFromApi($currentMerchant->id);
+
+            $primaryOwners = array_filter($users, function($user)
+            {
+                return ($user['role'] === 'owner');
+            });
+
+            list($error, $primaryOwnerDetails) = (new User\Service)->getUserFromApi(array_values($primaryOwners)[0]['id']);
+
+            $ownerMerchants = array_filter($primaryOwnerDetails['merchants'], function($merchant) use ($subMerchant)
+            {
+                return (($merchant['id'] === $subMerchant['id']) and
+                        ($merchant['role'] === 'owner'));
+            });
+
             // checks if the main merchant's owner user is the primary
             // owner of the submerchant account
-            if ($currentMerchant->primaryOwner()->ownsMerchant($subMerchant) !== true)
+            if (empty($ownerMerchants) === true)
             {
                 return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
             }
@@ -197,7 +212,6 @@ class Service extends Base\Service
 
                 return [null, $user->toArray()];
             }
-
             catch(User\RecoverableException $e)
             {
                 $error = [$e->getMessage()];
@@ -420,9 +434,11 @@ class Service extends Base\Service
 
         $tags = Merchant\Entity::select(['id'])
                                 ->with('tagged')
-                                ->where('id', $merchantId);
+                                ->where('id', $merchantId)
+                                ->get()
+                                ->toArray();
 
-        return array_merge($merchant, $tags->get()->toArray()[0]);
+        return array_merge($merchant, $tags[0]);
     }
 
     public function fetchMerchantFromApi($merchantId)
@@ -674,7 +690,7 @@ class Service extends Base\Service
             return [$error, null];
         }
 
-        $users = $this->getUserOfMerhantFromApi($this->currentUser->currentMerchant()->id);
+        list($error, $users) = $this->getUsersOfMerchantFromApi($this->currentUser->currentMerchant()->id);
 
         $updatedUser = array_filter($users, function($user) use ($userId)
         {
@@ -869,7 +885,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getUserOfMerhantFromApi($merchantId)
+    public function getUsersOfMerchantFromApi($merchantId)
     {
         $error = $response = [];
 

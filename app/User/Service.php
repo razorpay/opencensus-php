@@ -720,7 +720,7 @@ class Service extends Base\Service
 
         if (empty($currentMerchants) === false)
         {
-            Session::put('current_merchant_id', $currentMerchants[0]['id']);
+            Session::put('current_merchant_id', array_values($currentMerchants)[0]['id']);
 
             return [];
         }
@@ -906,7 +906,7 @@ class Service extends Base\Service
             }
             else
             {
-                $currentMerchant = $currentMerchants[0];
+                $currentMerchant = array_values($currentMerchants)[0];
             }
         }
         else

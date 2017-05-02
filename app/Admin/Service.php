@@ -247,9 +247,16 @@ class Service extends Base\Service
             return ($user['role'] === 'owner');
         });
 
+        if (empty($primaryOwner) === true)
+        {
+            $error[] = self::PRIMARY_LOGIN_ERROR;
+
+            return $error;
+        }
+
         try
         {
-            list($error, $user) = (new User\Service)->getUserFromApi($primaryOwner[0]['id']);
+            list($error, $user) = (new User\Service)->getUserFromApi(array_values($primaryOwner)[0]['id']);
 
             if (empty($error) === true)
             {
