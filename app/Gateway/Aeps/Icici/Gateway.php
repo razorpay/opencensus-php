@@ -29,7 +29,7 @@ class Gateway extends Base\Gateway
         {
             $response = $this->sendRequest($requestXmlData);
 
-             $this->updateGatewayPayment($response);
+            $this->updateGatewayPayment($response);
         }
         catch (\Exception $e)
         {
