@@ -64,6 +64,8 @@ return [
             Permission::EDIT_MERCHANT_DISABLE_LIVE => '',
             Permission::EDIT_MERCHANT_ARCHIVE => '',
             Permission::EDIT_MERCHANT_UNARCHIVE => '',
+            Permission::EDIT_MERCHANT_SUSPEND => '',
+            Permission::EDIT_MERCHANT_UNSUSPEND => '',
             Permission::EDIT_MERCHANT_METHODS => '',
             Permission::EDIT_MERCHANT_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL => '',
@@ -224,6 +226,8 @@ return [
             Permission::EDIT_MERCHANT_DISABLE_LIVE        => '',
             Permission::EDIT_MERCHANT_ARCHIVE             => '',
             Permission::EDIT_MERCHANT_UNARCHIVE           => '',
+            Permission::EDIT_MERCHANT_SUSPEND             => '',
+            Permission::EDIT_MERCHANT_UNSUSPEND           => '',
 
             Permission::VIEW_MERCHANT_COMPANY_INFO => '',
             Permission::EDIT_MERCHANT_SCREENSHOT => '',

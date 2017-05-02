@@ -424,6 +424,12 @@ trait Capture
         $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
     }
 
+    /**
+     * This function is called when we captured successfully on the gateway side but threw an error on the API side.
+     * So, as far as the merchant is concerned, the capture did not happen and
+     * we are not going to settle any money to him.
+     * Hence, we should not save any fees details in this case.
+     */
     protected function recordTransactionForFailedApiCapture()
     {
         $payment = $this->payment;
@@ -440,9 +446,6 @@ trait Capture
             $this->repo->saveOrFail($txn);
 
             $this->repo->saveOrFail($payment);
-
-            //TODO: Saving feesplit for backward compatibility
-            $this->saveFeeDetails($txn, $feesSplit);
 
             $this->tracePaymentInfo(TraceCode::TRANSACTION_CREATED_IN_VERIFY_CAPTURE);
         });

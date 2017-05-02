@@ -548,6 +548,8 @@ class TraceCode
 
     const GATEWAY_VERIFY_ERROR                          = 'GATEWAY_VERIFY_ERROR';
 
+    const SETTLEMENT_RETRY_REQUEST                  = 'SETTLEMENT_RETRY_REQUEST';
+
     // ES related trace codes
 
     const ES_SYNC_FAILED                                = 'ES_SYNC_FAILED';

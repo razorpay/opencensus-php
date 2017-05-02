@@ -166,7 +166,16 @@ class Merchant extends Base
 
     public function createScheduleTask(array $attributes = array())
     {
-        $schedule = $this->fixtures->create('schedule');
+        $scheduleAttributes = [];
+
+        if (isset($attributes['schedule']) === true)
+        {
+            $scheduleAttributes = $attributes['schedule'];
+
+            unset ($attributes['schedule']);
+        }
+
+        $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
 
         $defaultValues = ['schedule_id' => $schedule->getId()];
 

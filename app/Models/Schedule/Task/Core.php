@@ -13,15 +13,13 @@ use RZP\Models\Schedule;
 class Core extends Base\Core
 {
     /**
-     * create a default settlement schedule for merchant
+     * Create a default settlement schedule for merchant
      *
-     * @param $merchant
+     * @param Merchant\Entity $merchant
      */
-    public function createDefaultSettlementSchedule($merchant)
+    public function createDefaultSettlementSchedule(Merchant\Entity $merchant)
     {
-        $defaultDelay = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
-
-        $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
+        $schedule = $this->getDefaultMerchantSchedule($merchant);
 
         $merchant->schedule()->associate($schedule);
 
@@ -74,7 +72,7 @@ class Core extends Base\Core
      * @param Base\Entity     $entity
      * @param                 $input
      *
-     * @return $this
+     * @return Entity
      */
     public function create(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
@@ -105,11 +103,13 @@ class Core extends Base\Core
      */
     public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
     {
-        $scheduleTasks = $this->repo->schedule_task
-                                  ->fetchByMerchant($merchant, Type::SETTLEMENT);
+        $scheduleTasks = $this->repo
+                              ->schedule_task
+                              ->fetchByMerchant($merchant, Type::SETTLEMENT);
 
         $scheduleTask = $this->filterAndGetScheduleByMethodOrDefault(
-                                    $scheduleTasks, $method);
+                                    $scheduleTasks,
+                                    $method);
 
         return $scheduleTask;
     }
@@ -133,6 +133,41 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($entity);
+    }
+
+    /**
+     * Fetch schedule to assign for a new merchant
+     *
+     * @param Merchant\Entity $merchant
+     * @return Schedule\Entity
+     */
+    protected function getDefaultMerchantSchedule(Merchant\Entity $merchant)
+    {
+        $schedule = null;
+
+        //
+        // For marketplace linked accounts, use the parent merchants
+        // schedule, if available
+        //
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $parentMerchant = $merchant->parent;
+
+            $scheduleTask = $this->repo
+                                 ->schedule_task
+                                 ->findByMerchantAndMethod($parentMerchant, null);
+
+            $schedule = $scheduleTask->schedule;
+        }
+
+        if ($schedule === null)
+        {
+            $defaultDelay = Merchant\Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+            $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
+        }
+
+        return $schedule;
     }
 
     /**

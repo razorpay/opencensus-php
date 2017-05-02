@@ -685,7 +685,6 @@ final class Route
         'merchant_activate',
         'merchant_live_enable',
         'merchant_live_disable',
-        'merchant_actions',
         'merchant_put_payment_methods',
         'merchant_get_banks',
         'merchant_set_banks',
@@ -840,6 +839,7 @@ final class Route
         'user_merchant_mapping_action',
         'merchant_admin_lead_put',
         'payment_update_on_hold',
+        'merchant_actions',
         'refund_retry_failed',
         'refund_verify_failed',
     );
@@ -1054,6 +1054,10 @@ final class Route
         'merchant_put_payment_methods'     => [Permission::EDIT_MERCHANT_METHODS],
         'balance_fetch'                    => [Permission::VIEW_MERCHANT_BALANCE],
         'feature_get_multiple'             => [Permission::VIEW_MERCHANT_FEATURES],
+        'merchant_actions'                 => ['*'],
+        'merchant_live_enable'             => [Permission::EDIT_MERCHANT_ENABLE_LIVE],
+        'merchant_live_disable'            => [Permission::EDIT_MERCHANT_DISABLE_LIVE],
+        'admin_fetch_entity_by_id'         => ['*'],
     ];
 
     public static $direct = array(

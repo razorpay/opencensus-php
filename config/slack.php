@@ -149,6 +149,10 @@ return array(
         'subscriptions'     => '#tech_subscription_logs',
         // tech_logs_mail
         'tech_logs_mail'    => 'C50JZ3S5T',
+
+        'activations'       => 'activations_log',
+        'risk'              => 'risk',
+        'operations'        => 'operations_log',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,
