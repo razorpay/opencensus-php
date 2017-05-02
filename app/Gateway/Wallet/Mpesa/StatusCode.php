@@ -12,7 +12,7 @@ class StatusCode
     const FAILURE            = '106';
     const TIMEOUT            = '107';
 
-    const RANDOM_MPESA_ERROR = 'Random Mpesa Error';
+    const RANDOM_MPESA_ERROR = 'Vodafone Mpesa Failure';
 
     protected static $errorCodeMessageMap = [
         self::SUCCESS           => 'Success',

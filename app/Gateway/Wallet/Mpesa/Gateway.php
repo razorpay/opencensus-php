@@ -14,6 +14,7 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
+use libphonenumber\PhoneNumberUtil;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Wallet;
 
@@ -249,7 +250,7 @@ class Gateway extends Base\Gateway
                                            SoapMethod::VALIDATE_CUSTOMER);
 
         $this->trace->info(
-            'GATEWAY_VALIDATE_CUSTOMER_RESPONSE',
+            TraceCode::GATEWAY_VALIDATE_CUSTOMER_RESPONSE,
             [
                 'gateway'    => $this->gateway,
                 'response'   => $response,
@@ -489,7 +490,9 @@ class Gateway extends Base\Gateway
     {
         $contact = $this->input['payment']['contact'];
 
-        return explode('+91', $contact)[1];
+        $phoneUtil = PhoneNumberUtil::getInstance();
+
+        return $phoneUtil->parse($contact, 'IN')->getNationalNumber();
     }
 
     protected function getXmlData(array $array, string $xmlRoot)
