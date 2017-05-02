@@ -11,7 +11,7 @@ class MailFake extends BaseMailFake
      * Mocks the sending of a mail using mailable. Used for mocking the Mail facade
      * to assert if a mail was sent
      *
-     * @param  Mailable obkect $mailable
+     * @param  Mailable object $mailable
      * @param  array  $data
      * @param  \Closure|string  $callback
      * @return void

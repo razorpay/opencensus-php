@@ -138,9 +138,9 @@ class Name
     const DELETE_WORKFLOW                 = 'delete_workflow';
 
     public static $actionMap = [
-        Merchant\Action::ARCHIVE => self::EDIT_MERCHANT_ARCHIVE,
+        Merchant\Action::ARCHIVE   => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE => self::EDIT_MERCHANT_UNARCHIVE,
-        Merchant\Action::SUSPEND => self::EDIT_MERCHANT_SUSPEND,
+        Merchant\Action::SUSPEND   => self::EDIT_MERCHANT_SUSPEND,
         Merchant\Action::UNSUSPEND => self::EDIT_MERCHANT_UNSUSPEND,
     ];
 }

@@ -48,11 +48,11 @@ class Create extends Base
     {
         $data = [
             'user' => [
-                'email' => $this->admin->getEmail(),
+                'email'    => $this->admin->getEmail(),
                 // todo: Hack for now. Remove it
                 'password' => $this->input['password'],
-                'org' => $this->org->getDisplayName(),
-                'url' => Config::get('applications.dashboard.url'),
+                'org'      => $this->org->getDisplayName(),
+                'url'      => Config::get('applications.dashboard.url'),
             ]
         ];
 

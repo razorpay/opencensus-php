@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Excel;
 use Mail;
 
+use App;
 use RZP\Exception;
 use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\FundTransfer\Attempt;
@@ -32,6 +33,8 @@ class NodalAccount
 
     protected $summary;
 
+    protected $app;
+
     public function __construct()
     {
         // Date format is DD/MM/YYYY in human representation
@@ -40,6 +43,8 @@ class NodalAccount
         $this->hour = Carbon::now('Asia/Kolkata')->hour;
 
         $this->queue = \Queue::getFacadeRoot();
+
+        $this->app = App::getFacadeRoot();
 
         $this->initSummary();
     }
@@ -316,7 +321,9 @@ class NodalAccount
         FileStore\Creator $excelFileEntity,
         FileStore\Creator $textFileEntity)
     {
-        if ($this->getMode() === Mode::TEST)
+        // Don't send mail if mode is test and env is not dev or testing
+        if (($this->getMode() === Mode::TEST) and
+            ($this->app->environment('dev', 'testing') === false))
         {
             return;
         }

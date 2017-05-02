@@ -14,7 +14,8 @@ class MailServiceProvider extends LaravelMailServiceProvider
      */
     protected function registerIlluminateMailer()
     {
-        $this->app->singleton('mailer', function ($app) {
+        $this->app->singleton('mailer', function ($app)
+        {
             $config = $app->make('config')->get('mail');
 
             // Once we have create the mailer instance, we will set a container instance
@@ -24,14 +25,16 @@ class MailServiceProvider extends LaravelMailServiceProvider
                 $app['view'], $app['swift.mailer'], $app['events']
             );
 
-            if ($app->bound('queue')) {
+            if ($app->bound('queue'))
+            {
                 $mailer->setQueue($app['queue']);
             }
 
             // Next we will set all of the global addresses on this mailer, which allows
             // for easy unification of all "from" addresses as well as easy debugging
             // of sent messages since they get be sent into a single email address.
-            foreach (['from', 'reply_to', 'to'] as $type) {
+            foreach (['from', 'reply_to', 'to'] as $type)
+            {
                 $this->setGlobalAddress($mailer, $config, $type);
             }
 

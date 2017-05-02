@@ -381,6 +381,8 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2()
     {
+        Mail::fake();
+
         $this->ba->adminAuth();
 
         $payments = $this->createPaymentEntities();
@@ -460,6 +462,8 @@ class SettlementTest extends TestCase
 
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 2);
+
+        Mail::assertSent(KotakSettlementMail::class);
     }
 
     public function testSettlementIgnoredTxns()
@@ -581,12 +585,12 @@ class SettlementTest extends TestCase
         $transfer = $this->fixtures->create(
             'transfer:to_account',
             [
-                'source_id'  => $payment->getId(),
-                'source_type'=> 'payment',
-                'amount'     => 5000,
-                'currency'   => 'INR',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 5000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
             ]);
 
         // Generate settlements
@@ -611,13 +615,13 @@ class SettlementTest extends TestCase
         $transfer = $this->fixtures->create(
             'transfer:to_account',
             [
-                'source_id'  => $payment->getId(),
-                'source_type'=> 'payment',
-                'amount'     => 5000,
-                'currency'   => 'INR',
-                'on_hold'    => '1',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 5000,
+                'currency'    => 'INR',
+                'on_hold'     => '1',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
             ]);
 
         // Generate settlements
@@ -700,13 +704,13 @@ class SettlementTest extends TestCase
         $transfer = $this->fixtures->times(2)->create(
             'transfer:to_account',
             [
-                'account'    => $account,
-                'source_id'  => $payment->getId(),
-                'source_type'=> 'payment',
-                'amount'     => 1000,
-                'currency'   => 'INR',
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt + 10
+                'account'     => $account,
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
             ]);
 
         $reversal = $this->fixtures->create(

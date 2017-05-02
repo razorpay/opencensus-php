@@ -11,7 +11,7 @@ use RZP\Models\Invoice;
 
 /**
  * We are extending Mail\Payment\Base class here instead of Invoice|base
- * as this mailable requires some payment related dara too
+ * as this mailable requires some payment related data too
  */
 class Authorized extends Base
 {

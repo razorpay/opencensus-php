@@ -34,11 +34,11 @@ class SlackActions
     const DISABLE               = 'disable';
 
     public static $actionMsgMap = [
-        self::ARCHIVE => self::ARCHIVED,
+        self::ARCHIVE   => self::ARCHIVED,
         self::UNARCHIVE => self::UNARCHIVED,
-        self::SUSPEND => self::SUSPENDED,
+        self::SUSPEND   => self::SUSPENDED,
         self::UNSUSPEND => self::UNSUSPENDED,
-        self::ENABLE => self::LIVE_ENABLED,
-        self::DISABLE => self::LIVE_DISABLED,
+        self::ENABLE    => self::LIVE_ENABLED,
+        self::DISABLE   => self::LIVE_DISABLED,
     ];
 }
