@@ -137,7 +137,6 @@ class Entity extends Base\PublicEntity
             $currentTime = time();
 
             $differenceHours = ($currentTime - $lastSuccessfulAt) / 3600;
-
         }
 
         return $differenceHours;
