@@ -55,6 +55,32 @@ class Gateway extends Base\Gateway
         return $this->getPaymentResponseData($gatewayPayment);
     }
 
+    protected function parseResponse($response)
+    {
+        $responseArray = [];
+
+        $fieldCount = $response->count();
+
+        foreach (range(0, $fieldCount - 1) as $index)
+        {
+            foreach ($response->field[$index]->attributes() as $a => $b)
+            {
+                if ($a === 'id')
+                {
+                    $key = $b;
+                }
+                else if ($a === 'value')
+                {
+                    $value = $b;
+                }
+            }
+
+            $responseArray[$key] = $value;
+        }
+
+        return $responseArray;
+    }
+
     protected function getPaymentResponseData($gatewayPayment)
     {
         //TODO : Write Response Parser
