@@ -126,6 +126,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST_SUCCESSFUL_AT);
     }
 
+    public function getTimeDifferenceFromLastSuccessInHour()
+    {
+        $differenceHours = 0;
+
+        $lastSuccessfulAt = $this->getAttribute(self::LAST_SUCCESSFUL_AT);
+
+        if ($lastSuccessfulAt !== null)
+        {
+            $currentTime = time();
+
+            $differenceHours = ($currentTime - $lastSuccessfulAt) / 3600;
+        }
+
+        return $differenceHours;
+    }
+
     protected function setEventsAttribute($events)
     {
         $hex = 0;
