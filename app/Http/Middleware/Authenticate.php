@@ -60,9 +60,9 @@ class Authenticate
         $bearerToken = $request->bearerToken();
 
         //
-        // If the request was sent with Bearer auth,
-        // authenticate with the token, else go for the
-        // old flow
+        // If the request was sent with Bearer auth (OAuth),
+        // authenticate with the access token, else go for the
+        // old key-secret flow
         //
         if (empty($bearerToken) === false)
         {
@@ -133,6 +133,12 @@ class Authenticate
         return $ret;
     }
 
+    /**
+     * @param string $route
+     * @param string $bearerToken
+     *
+     * @return mixed|null ErrorResponse if error, else null
+     */
     protected function authenticateBearerAuth(string $route, string $bearerToken)
     {
         //
