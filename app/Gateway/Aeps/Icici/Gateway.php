@@ -29,7 +29,9 @@ class Gateway extends Base\Gateway
         {
             $response = $this->sendRequest($requestXmlData);
 
-            $this->updateGatewayPayment($response);
+            $parsedResponse = $this->parseResponse($response);
+
+            $this->updateGatewayPayment($parsedResponse);
         }
         catch (\Exception $e)
         {
@@ -41,7 +43,9 @@ class Gateway extends Base\Gateway
 
             $reversalResponse = $this->sendReversalRequest($reversalRequestXmlData);
 
-            $this->updateGatewayPayment($reversalResponse);
+            $parsedReversalResponse = $this->parseResponse($reversalResponse);
+
+            $this->updateGatewayPayment($parsedReversalResponse);
         }
         finally
         {
@@ -53,12 +57,12 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentResponseData($gatewayPayment)
     {
-
+        //TODO : Write Response Parser
     }
 
     protected function updateGatewayPayment($response)
     {
-
+        //TODO : FIX IT
     }
 
     protected function sendReversalRequest($reversalRequestXmlData)
@@ -71,6 +75,15 @@ class Gateway extends Base\Gateway
         {
             // Trace as reversal has also failed, and think of a better way to handle this
         }
+    }
+
+    protected function sendRequest($requestXmlData)
+    {
+        $socket = new Socket;
+
+        $socket->sendData($requestXmlData);
+
+        return $socket->receiveData();
     }
 
     protected function getRequestData($input, $reversal)

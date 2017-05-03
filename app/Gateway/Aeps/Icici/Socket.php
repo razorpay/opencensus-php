@@ -52,6 +52,8 @@ class Socket extends Base\Core
     public function receiveData($maxDataSize = 10000)
     {
         $data = socket_read($this->sock, $maxDataSize);
+
+        $this->closeSocket();
     }
 
     public function closeSocket()
