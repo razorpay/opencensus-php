@@ -319,7 +319,7 @@ class Inferno
 
             $this->traceWebhookResponse($webhook, $msgPrefix, $response);
 
-            return $success;
+            return $clientError;
         }
 
         if ($response->getStatusCode() === 200)
