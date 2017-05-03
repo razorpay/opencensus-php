@@ -354,7 +354,6 @@ final class Route
         'otp_verify_app'                          => ['post',     'otp/verify/app',                                 'CustomerController@verifyOtpApp'                                   ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
         'es_debug_read'                           => ['post',     'es/debug/{method}',                              'EsController@debug'                                                ],
-        'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                        'EsController@migrateEntity'                                        ],
         'gateway_add_priorities'                  => ['post',     'gateway/priorities/{method}',                    'GatewayController@createGatewayPriority'                           ],
         'gateway_fetch_priorities'                => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'               => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
@@ -872,7 +871,6 @@ final class Route
         'refund_verify',
         'payment_capture_verify',
         'es_debug_read',
-        'es_migrate_entity',
         'dummy_critical_error',
         'reconciliate',
         'credits_create',
@@ -1265,7 +1263,6 @@ final class Route
             'payment_refund_authorized',
             'payment_capture_reminder',
             'emi_generate_excel',
-            'es_migrate_entity',
             'setl_post_details_old',
             'invoice_send_notifications',
             'card_update_saved',
@@ -1318,8 +1315,6 @@ final class Route
     ];
 
     public static $slaveRoutes = [
-        // TODO: Uncomment this when slave variables issue is fixed.
-        //'es_migrate_entity',
         'payment_fetch_transaction',
     ];
 

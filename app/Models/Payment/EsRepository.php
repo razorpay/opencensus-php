@@ -3,11 +3,13 @@
 namespace RZP\Models\Payment;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 
 class EsRepository extends Base\EsRepository
 {
-    protected static $table = Table::PAYMENT;
+    // TODO:
+    // (Applies for Payment, Order, Refund's EsRepository classes.)
+    // - Do we want to index any other fields here?
+    // - Do we want to add 'q' support?
 
     protected $fields = [
         Entity::ID,

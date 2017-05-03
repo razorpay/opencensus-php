@@ -150,10 +150,7 @@ return array(
     |--------------------------------------------------------------------------
     */
 
-    'es_index' => [
-        'live' => env('ES_LIVE_INDEX'),
-        'test' => env('ES_TEST_INDEX')
-    ],
+    'es_entity_index_prefix'        => env('ES_ENTITY_INDEX_PREFIX'),
 
     'es_audit' => [
         'live' => env('ES_AUDIT_LIVE_INDEX'),

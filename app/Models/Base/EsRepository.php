@@ -8,7 +8,6 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Base\RepositoryFetch;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
@@ -46,13 +45,6 @@ class EsRepository extends \Razorpay\Spine\Repository
      */
     const SEARCH_HITS      = 'search_hits';
 
-    /**
-     * @deprecated - Will not be required later and will be removed.
-     *
-     * @var string
-     */
-    protected static $table;
-
     protected $esDao;
     protected $trace;
 
@@ -80,9 +72,9 @@ class EsRepository extends \Razorpay\Spine\Repository
     /**
      * Constructor
      *
-     * @param string|null $entity
+     * @param string $entity
      */
-    public function __construct(string $entity = null)
+    public function __construct(string $entity)
     {
         parent::__construct();
 
@@ -92,19 +84,14 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->esDao = new Base\EsDao;
 
-        // If entity name is set as part of constructor argument,
-        // get corresponding index name from configuration and assign
-        // it to instance var and also set the same for ES DAO object.
+        $esEntityIndexPrefix = $app['config']->get('database.es_entity_index_prefix');
 
-        if (($entity !== null) and
-            (RepositoryFetch::isEntityInOldEsFlow($entity) === false))
-        {
-            $prefix = $app['config']->get('database.es_entity_index_prefix');
+        // Index name is of following format:
+        // <prefix><entity>_<mode>, Eg. 'delta_api_invoice_live'.
 
-            $indexName = $prefix . $entity . '_' . $app['rzp.mode'];
+        $indexName = $esEntityIndexPrefix . $entity . '_' . $app['rzp.mode'];
 
-            $this->setIndexNameByValue($indexName);
-        }
+        $this->setIndexNameByValue($indexName);
     }
 
     public function setIndexNameByValue(string $indexName)
@@ -130,105 +117,6 @@ class EsRepository extends \Razorpay\Spine\Repository
     {
         return array_merge($this->fields, [self::QUERY, self::SEARCH_HITS]);
     }
-
-    // DEPRECATED METHODS STARTS ----------------------------------------------
-    // TODO: Needs to be cleaned once old entities are migrated to new generic flow.
-
-    public function fetch($params, $merchantId)
-    {
-        $entities = new Base\PublicCollection;
-
-        if (isset($params['notes']) === true)
-        {
-            $entities = $this->fetchNotes(static::$table, $params, $merchantId);
-        }
-
-        return $entities;
-    }
-
-    public function fetchNotes($typeName, $params, $merchantId)
-    {
-        $params['merchant_id'] = $merchantId;
-
-        $entities = new Base\PublicCollection;
-
-        // Returns all the entity IDs matching the notes search.
-        $entityIds = $this->esDao->getNotes($typeName, $params);
-
-       if (empty($entityIds) === false)
-        {
-            // Get the entity data from MySQL.
-            $entities = $this->newQuery()->findOrFailPublic($entityIds);
-
-            // MySQL should contain all entities present in ES.
-            if ($entities->count() !== count($entityIds))
-            {
-                throw new Exception\ServerErrorException(
-                    'Did not find corresponding entity data in MySQL' ,
-                    ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND,
-                    ['es_entity_ids' => $entityIds]);
-            }
-        }
-
-        return $entities;
-    }
-
-    // Currently storing only notes and merchant ID.
-    public function storeEntity($typeName, $entityArray, $esDao = null)
-    {
-        $params['notes'] = $entityArray['notes'];
-        $params['merchant_id'] = $entityArray['merchant_id'];
-        $params['entity_id'] = $entityArray['id'];
-
-        $esDao->storeNotes($typeName, $params);
-    }
-
-    // Called through queue
-    // Called through the entity repository
-    public function fireStoreEntity($job, $data)
-    {
-        $esType = $data['es_type'];
-        $entityArray = $data['entity'];
-        $mode = $data['mode'];
-
-        try
-        {
-            $this->trace->info(TraceCode::ES_SAVE_REQUEST, $data);
-
-            // Because EsDao is being instantiated in queue, app's rzp.mode
-            // won't be set and so explicitly passing $mode as argument.
-
-            $esDao = new Base\EsDao($mode);
-
-            $this->storeEntity($esType, $entityArray, $esDao);
-
-            $job->delete();
-        }
-        catch (\Exception $ex)
-        {
-            $data['job_attempts'] = $job->attempts();
-
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::ES_SAVE_FAILED,
-                [
-                    $data
-                ]
-            );
-
-            if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
-            {
-                $job->delete();
-            }
-            else
-            {
-                $job->release(self::JOB_RELEASE_WAIT);
-            }
-        }
-    }
-
-    // DEPRECATED METHODS ENDS ------------------------------------------------
 
     /**
      * Makes search in ES on this model with given params.

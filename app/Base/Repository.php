@@ -14,7 +14,6 @@ use RZP\Constants\Entity as E;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\EsSync;
-use RZP\Jobs\EsRepository as OldEsSync;
 use RZP\Jobs\DispatchRouter;
 
 class Repository extends \Razorpay\Spine\Repository
@@ -394,7 +393,9 @@ class Repository extends \Razorpay\Spine\Repository
      */
     public function setEsRepoIfExist()
     {
-        $esRepoClassPath = $this->getEsRepoClassPath();
+        $parentNamespace = $this->getParentNamespace();
+
+        $esRepoClassPath = $parentNamespace . '\\' . 'EsRepository';
 
         if (class_exists($esRepoClassPath) === true)
         {
@@ -517,47 +518,6 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
-     * @deprecated
-     *
-     * Saves dirtied entities to es if few conditions met.
-     *
-     * @param Models\Base\PublicEntity $entity
-     * @param array                    $dirty
-     *
-     * @return
-     */
-    protected function syncToEsDeprecated(Models\Base\PublicEntity $entity, array $dirty)
-    {
-        try
-        {
-            $esRepoClassPath = $this->getEsRepoClassPath();
-
-            $esType = $this->getEsType();
-
-            $mode = $this->app['rzp.mode'];
-
-            $queueData = [
-                'es_type'           => $esType,
-                // This entity object is converted into an array because Queue::push
-                // decodes and encodes it with assoc array flag set to true.
-                'entity'            => $entity->toArray(),
-                'mode'              => $mode,
-                'es_repo_path'      => $esRepoClassPath,
-            ];
-
-            // Saving the entity in ES.
-            $job = new OldEsSync($queueData);
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES);
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::ES_SAVE_FAILED, $entity->toArray());
-        }
-    }
-
-    /**
      * Syncs model changes to es.
      * Upserts in case of addition/updates and deletes es document otherwise.
      *
@@ -572,12 +532,8 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $this->setEsRepoIfExist();
 
-        if ($this->esRepo === null)
-        {
-            return;
-        }
-
-        if ($this->isEsSyncNeeded($action, $dirty) === false)
+        if (($this->esRepo === null) or
+            ($this->isEsSyncNeeded($action, $dirty) === false))
         {
             return;
         }
@@ -689,49 +645,11 @@ class Repository extends \Razorpay\Spine\Repository
         return $shouldSync;
     }
 
-    /**
-     * @deprecated
-     *
-     * @return string
-     */
-    protected function getEsRepoClassPath(): string
-    {
-        $parentNamespace = $this->getParentNamespace();
-
-        $esRepoClassPath = $parentNamespace . '\\' . 'EsRepository';
-
-        return $esRepoClassPath;
-    }
-
     protected function getParentNamespace()
     {
         // get_called_class gives the (namespace+classname)
         // removing the last element to get only the namespace.
         return join('\\', explode('\\', get_called_class(), -1));
-    }
-
-    /**
-     * @deprecated
-     *
-     * Override this method in entity/repository in case the type name is
-     * different for that entity.
-     *
-     * @return string
-     */
-    protected function getEsType(): string
-    {
-        $parentNamespace = $this->getParentNamespace();
-
-        $parentNamespaceArray = explode('\\', $parentNamespace);
-
-        // Constant names are all uppercase.
-        // Table constant class has the same name as the entity class name.
-        $className = strtoupper(end($parentNamespaceArray));
-
-        // The ES type name is the same as the table name for the entity in MySQL.
-        $typeName = constant("RZP\\Constants\\Table::$className");
-
-        return $typeName;
     }
 
     protected function dbColumn($col)

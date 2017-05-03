@@ -543,16 +543,4 @@ trait RepositoryFetch
             $params['count'] = $count;
         }
     }
-
-    public function fetchAllNotesFromCreatedAt($skip, $createdAt, $count)
-    {
-        // Using created_at and not updated_at because updated_at is not indexed.
-        return $this->newQuery()
-                    ->select(Common::ID, 'notes', Common::MERCHANT_ID, Common::CREATED_AT)
-                    ->where(Common::CREATED_AT, '>=', $createdAt)
-                    ->orderBy(Common::ID, 'desc')
-                    ->skip($skip)
-                    ->take($count)
-                    ->get();
-    }
 }
