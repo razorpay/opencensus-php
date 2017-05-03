@@ -25,23 +25,31 @@ class OAuth
         $this->server = new OAuthServer();
     }
 
+    /**
+     * Resolve an OAuth access token
+     * Assign and verify scopes for the token,
+     * returns merchant ID if everything checks out
+     *
+     * @param string $token
+     *
+     * @return string
+     */
     public function resolveToken(string $token) : string
     {
         $response = $this->server->authenticateWithBearerToken($token);
-        $scopes = (array) $response['scopes'];
 
-        $merchantId = $response['merchant_id'];
+        $scopes = json_decode($response['scopes'], true);
 
         $this->resolveScopes($scopes);
+
+        $merchantId = $response['merchant_id'];
 
         return $merchantId;
     }
 
-    protected function resolveScopes(array $scopes)
+    protected function resolveScopes(array $tokenScopes)
     {
-        // check if current route has access for scopes
-
         // Save scopes so endpoints can check against it, if needed
-        $this->ba->withScopes($scopes);
+        $this->ba->withScopes($tokenScopes);
     }
 }

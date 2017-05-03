@@ -1171,9 +1171,10 @@ class BasicAuth
      * request
      *
      * @param array $scopes
-     * @return $this
+     *
+     * @return BasicAuth
      */
-    public function withScopes(array $scopes)
+    public function withScopes(array $scopes) : BasicAuth
     {
         $this->scopes = $scopes;
 
@@ -1187,7 +1188,7 @@ class BasicAuth
      * @param string $scope
      * @return bool
      */
-    public function hasScope(string $scope)
+    public function hasScope(string $scope) : bool
     {
         if (($scope === '*') or
             ($scope === '*.*'))

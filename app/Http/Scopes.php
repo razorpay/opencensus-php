@@ -15,43 +15,30 @@ class Scopes
      * @param string $route
      * @return array|mixed
      */
-    public function getScopesForRoute(string $route)
+    public static function getScopesForRoute(string $route)
     {
         $scopes = self::$scopes[$route] ?? [];
 
-        if (empty($scopes) === true)
-        {
-            $scopes = $this->getDefaultScope($route);
-        }
+        self::addDefaultScopes($scopes, $route);
 
         return $scopes;
     }
 
     public function checkAnyScopesOnRoute(array $tokenScopes, string $route)
     {
-        $definedScopes = $this->getScopesForRoute($route);
-
-
-    }
-
-    public static function parseScope(string $scope)
-    {
-        $scopesParts = explode('.', $scope);
-
-        return [
-            'entity'    => $scopesParts[0],
-            'operation' => $scopesParts[1]
-        ];
+        // TODO
     }
 
     /**
      * If no scope is defined, we assign a default set
      * of scopes to a route
      *
+     * @param array  $scopes
      * @param string $route
+     *
      * @return array
      */
-    protected function getDefaultScope(string $route) : array
+    protected static function addDefaultScopes(array & $scopes, string $route) : array
     {
         $routeParams = Route::getApiRoute($route);
 
@@ -66,6 +53,6 @@ class Scopes
             $defaultScopes[] = 'write_only';
         }
 
-        return $defaultScopes;
+        $scopes = array_merge($scopes, $defaultScopes);
     }
 }
