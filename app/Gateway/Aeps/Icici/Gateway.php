@@ -131,6 +131,7 @@ class Gateway extends Base\Gateway
 
         $date = '2017-04-09T11:11:10';
 
+        // TODO fill field 60 n 127
         $data = [
             '0'   => $msgType,
             '2'   => $bankIin . '0' . $input['aadhaar_no'],
