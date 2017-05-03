@@ -311,7 +311,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData()
     {
-        $wallet = (new Repository($this->repo))->findByPaymentIdAndActions(
+        $wallet = $this->repo->findByPaymentIdAndActions(
             $this->input['payment']['id'],
             [Action::AUTHORIZE, Action::OTP_GENERATE]);
 
@@ -393,7 +393,7 @@ class Gateway extends Base\Gateway
 
     protected function getRefundData()
     {
-        $wallet = (new Repository($this->repo))->findByPaymentIdAndActions(
+        $wallet = $this->repo->findByPaymentIdAndActions(
             $this->input['payment']['id'],
             [Action::AUTHORIZE, Action::OTP_GENERATE]);
 
@@ -581,7 +581,7 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContent(Verify $verify)
     {
-        $wallet = (new Repository($this->repo))->findByPaymentIdAndActions(
+        $wallet = $this->repo->findByPaymentIdAndActions(
             $this->input['payment']['id'],
             [Action::AUTHORIZE, Action::OTP_GENERATE]);
 
@@ -644,11 +644,18 @@ class Gateway extends Base\Gateway
     {
         $actions = [Action::AUTHORIZE, Action::OTP_GENERATE];
 
-        $gatewayPayment = (new Repository($this->repo))->findByPaymentIdAndActions(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActions(
                     $verify->input['payment']['id'], $actions);
 
         $verify->payment = $gatewayPayment;
 
         return $gatewayPayment;
+    }
+
+    protected function getRepository()
+    {
+        $gateway = $this->gateway;
+
+        return $this->app['repo']->$gateway;
     }
 }
