@@ -30,7 +30,7 @@ class Entity
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
     const REFUND                = 'refund';
-    const AADHAAR               = 'aadhaar';
+    const AADHAAR2              = 'aadhaar2';
     const REPORT                = 'report';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';

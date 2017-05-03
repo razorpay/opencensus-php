@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const NUMBER            = 'number';
     const MERCHANT_ID       = 'merchant_id';
     const BANK              = 'bank';
+    const PAYMENT_ID        = 'payment_id';
 
     /**
      * Fingerprint data are never saved in the database

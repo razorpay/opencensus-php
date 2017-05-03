@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Aadhaar\Entity as Aadhaar;
+use RZP\Models\Base\UniqueIdEntity;
 
 class CreateAadhaar2 extends Migration
 {
@@ -12,7 +13,7 @@ class CreateAadhaar2 extends Migration
      * Run the migrations.
      *
      * @return void
-     */
+    */
     public function up()
     {
         Schema::create(Table::AADHAAR2, function(Blueprint $table)
@@ -21,17 +22,17 @@ class CreateAadhaar2 extends Migration
 
             $table->increments(Aadhaar::ID);
 
-            $table->string(Aeps::PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
+            $table->string(Aadhaar::PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
 
-            $table->string(Aeps::BANK)->nullable();
+            $table->string(Aadhaar::BANK)->nullable();
 
-            $table->string(Aeps::MERCHANT_ID)->nullable();
+            $table->string(Aadhaar::MERCHANT_ID)->nullable();
 
-            $table->string(Aeps::NUMBER)->nullable();
+            $table->string(Aadhaar::NUMBER)->nullable();
 
-            $table->integer(Aeps::CREATED_AT);
+            $table->integer(Aadhaar::CREATED_AT);
 
-            $table->integer(Aeps::UPDATED_AT);
+            $table->integer(Aadhaar::UPDATED_AT);
 
         });
     }
