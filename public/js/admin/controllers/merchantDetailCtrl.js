@@ -543,6 +543,14 @@ app
         // If the second parameter was not provided
         // we don't try to edit the groups and don't
         // send the field instead.
+        for (var key in selected_groups) {
+          if (selected_groups.hasOwnProperty(key)) {
+            if (!selected_groups[key]) {
+              delete selected_groups[key];
+            }
+          }
+        }
+
         if (typeof selected_groups === 'undefined') {
           selected_groups = {};
         } else {
