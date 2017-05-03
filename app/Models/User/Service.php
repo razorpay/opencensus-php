@@ -53,7 +53,7 @@ class Service extends Base\Service
 
         $merchantId = $input['merchant_id'];
 
-        $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams]);
+        $this->repo->attach($user, 'merchants', [$merchantId => $mappingParams]);
 
         return $user->toArrayPublic();
     }
@@ -76,7 +76,7 @@ class Service extends Base\Service
 
         $merchantId = $input['merchant_id'];
 
-        $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams]);
+        $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
 
         return $user->toArrayPublic();
     }

@@ -177,7 +177,7 @@ DELETE FROM fees_breakup
             WHERE payments.captured_at is null AND
                   transactions.fee > 0
         );
-        
+
 UPDATE settlements
 SET attempts = (
     SELECT COUNT(id) FROM fund_transfer_attempts
@@ -346,3 +346,5 @@ UPDATE billdesk SET RefundId = 'ISBM52921114461' WHERE id = 1234573;
 # Currently set to CENT which was acquired by HDFC in 2008
 
 UPDATE iins SET issuer="HDFC" WHERE iin IN (421335,421394,422677,434673,472803,472810,489782,530151)
+
+ALTER TABLE merchant_users ADD CONSTRAINT merchant_users_merchant_id_user_id_role_unique UNIQUE (merchant_id, user_id, role);

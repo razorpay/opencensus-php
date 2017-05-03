@@ -168,9 +168,9 @@ class Repository extends \Razorpay\Spine\Repository
         $this->syncToEs($entity, EsRepository::DELETE);
     }
 
-    public function sync($entity, $relation, $ids = [])
+    public function sync($entity, $relation, $ids = [], bool $detaching = true)
     {
-        $entity->$relation()->sync($ids);
+        $entity->$relation()->sync($ids, $detaching);
 
         return $this;
     }
