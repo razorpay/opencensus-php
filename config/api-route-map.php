@@ -325,6 +325,8 @@ return [
 
         'feature_get_multiple'              => 'features/{entityId}',
 
+        'merchant_activation_update'        => 'merchant/activation/{id}/update',
+
         'merchant_action'                   => 'merchants/{id}/action',
         'merchant_live_enable'              => 'merchants/{id}/live/enable',
         'merchant_live_disable'             => 'merchants/{id}/live/disable',

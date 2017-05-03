@@ -50,9 +50,21 @@ app
 
       generateMerchant();
       $scope.lockForm = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/lock'
-        );
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            locked: true,
+          },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -215,9 +227,21 @@ app
       };
 
       $scope.unlockForm = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unlock'
-        );
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            locked: false,
+          },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -283,13 +307,13 @@ app
         var data = {
           route_name: 'merchant_live_enable',
           url_params: {
-            '{id}' : $scope.merchant.id
-          }
+            '{id}': $scope.merchant.id,
+          },
         };
         var request = $http({
           method: 'post',
           url: '/admin/generic',
-          data: data
+          data: data,
         });
         request
           .success(function(data) {
@@ -315,13 +339,13 @@ app
         var data = {
           route_name: 'merchant_live_disable',
           url_params: {
-            '{id}' : $scope.merchant.id
-          }
+            '{id}': $scope.merchant.id,
+          },
         };
         var request = $http({
           method: 'post',
           url: '/admin/generic',
-          data: data
+          data: data,
         });
         request
           .success(function(data) {
@@ -686,14 +710,14 @@ app
         var data = {
           route_name: 'merchant_action',
           url_params: {
-            '{id}' : $scope.merchant.id
+            '{id}': $scope.merchant.id,
           },
-          body: {action: 'archive'}
+          body: { action: 'archive' },
         };
         var request = $http({
           method: 'put',
           url: '/admin/generic',
-          data: data
+          data: data,
         });
         request
           .success(function(data) {
@@ -719,14 +743,14 @@ app
         var data = {
           route_name: 'merchant_action',
           url_params: {
-            '{id}' : $scope.merchant.id
+            '{id}': $scope.merchant.id,
           },
-          body: {action: 'unarchive'}
+          body: { action: 'unarchive' },
         };
         var request = $http({
           method: 'put',
           url: '/admin/generic',
-          data: data
+          data: data,
         });
         request
           .success(function(data) {
@@ -753,14 +777,14 @@ app
         var data = {
           route_name: 'merchant_action',
           url_params: {
-            '{id}' : $scope.merchant.id
+            '{id}': $scope.merchant.id,
           },
-          body: {action: 'suspend'}
+          body: { action: 'suspend' },
         };
         var request = $http({
           method: 'put',
           url: '/admin/generic',
-          data: data
+          data: data,
         });
         request
           .success(function(data) {
@@ -787,14 +811,14 @@ app
         var data = {
           route_name: 'merchant_action',
           url_params: {
-            '{id}' : $scope.merchant.id
+            '{id}': $scope.merchant.id,
           },
-          body: {action: 'unsuspend'}
+          body: { action: 'unsuspend' },
         };
         var request = $http({
           method: 'put',
           url: '/admin/generic',
-          data: data
+          data: data,
         });
         request
           .success(function(data) {
