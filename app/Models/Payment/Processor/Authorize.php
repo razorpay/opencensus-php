@@ -783,41 +783,12 @@ trait Authorize
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
         }
 
-        if ($payment->isAeps())
-        {
-            $gatewayInput['aadhaar'] = $this->createAadhaarEntity($input, $this->merchant);
-        }
-
         if ($payment->isUpi())
         {
             $this->validateUpiPspIsAllowed($payment);
         }
 
         $payment->setInternational();
-    }
-
-    protected function createAadhaarEntity(array $input, Merchant\Entity $merchant)
-    {
-        //
-        // Creates Aadhaar entity
-        //
-
-        $aadhaarCore = new Aadhaar\Core;
-
-        $aadhaarRawData = [
-            'bank'           => $input['bank'],
-            'fingerprint'    => $input['aadhaar']['fingerprint'],
-            'number'         => $input['aadhaar']['number'],
-        ];
-
-        //$aadhaarData = $aadhaarCore->create($aadhaarRawData, $merchant);
-
-        // TODO : FIX this
-        //$this->repo->saveOrFail($aadhaarData);
-
-        //$this->payment->entity()->associate($aadhaarData);
-
-        return $aadhaarRawData;
     }
 
     protected function preProcessPaymentWithoutSaving($payment, array & $input, array & $gatewayInput)

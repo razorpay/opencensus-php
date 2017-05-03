@@ -20,6 +20,8 @@ class Gateway extends Base\Gateway
             unset($input['encrypted']);
         }
 
+        $this->createGatewayPayment($input);
+
         // This need to be done for reversal request,
         $this->setEncryptedFingerPrintDataInRedis($input);
 
@@ -53,6 +55,11 @@ class Gateway extends Base\Gateway
         }
 
         return $this->getPaymentResponseData($gatewayPayment);
+    }
+
+    protected function createGatewayPayment($input)
+    {
+        //TODO store aadhaar number
     }
 
     protected function parseResponse($response)

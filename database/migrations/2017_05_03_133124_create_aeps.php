@@ -33,6 +33,8 @@ class CreateAeps extends Migration
 
             $table->string(Aeps::ERROR_CODE)->nullable();
 
+            $table->string(Aeps::AADHAAR_NUMBER)->nullable();
+
             $table->string(Aeps::ERROR_DESCRIPTION)->nullable();
 
             $table->string(Aeps::RRN)->nullable();
