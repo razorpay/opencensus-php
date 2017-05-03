@@ -138,7 +138,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $content = $this->doS2SRecurringPayment($payment);
+        $content = $this->doS2sRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -240,11 +240,11 @@ class RecurringPaymentTest extends TestCase
                 'terminal_id' => '1000CybrsTrmnl',
             ]);
 
-        $content = $this->doS2SRecurringPayment($payment);
+        $content = $this->doS2sRecurringPayment($payment);
 
         $payment[Payment::CARD] = [];
 
-        $content = $this->doS2SRecurringPayment($payment);
+        $content = $this->doS2sRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 

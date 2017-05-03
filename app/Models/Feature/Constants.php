@@ -28,6 +28,7 @@ class Constants
     const MARKETPLACE         = 'marketplace';
     const EMAIL_OPTIONAL      = 'email_optional';
     const CONTACT_OPTIONAL    = 'contact_optional';
+    const ZOHO                = 'zoho';
 
     // TODO: Use this instead of alFeatures once in final code change pr
     public static $featureValueMap = [
@@ -52,6 +53,7 @@ class Constants
         self::MARKETPLACE         => true,
         self::EMAIL_OPTIONAL      => true,
         self::CONTACT_OPTIONAL    => true,
+        self::ZOHO                => true,
     ];
 
     public static $visibleFeaturesMap = [

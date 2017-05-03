@@ -423,6 +423,12 @@ trait Capture
         $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
     }
 
+    /**
+     * This function is called when we captured successfully on the gateway side but threw an error on the API side.
+     * So, as far as the merchant is concerned, the capture did not happen and
+     * we are not going to settle any money to him.
+     * Hence, we should not save any fees details in this case.
+     */
     protected function recordTransactionForFailedApiCapture()
     {
         $payment = $this->payment;
@@ -434,13 +440,11 @@ trait Capture
             // This could be actually misleading.
             // We are creating a transaction even if the payment
             // is in refunded state.
-
-            list($txn, $feesSplit) = $txnCore->createFromPaymentAuthorized($payment);
+            list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
             $this->repo->saveOrFail($txn);
-            $this->repo->saveOrFail($payment);
 
-            $this->saveFeeDetails($txn, $feesSplit);
+            $this->repo->saveOrFail($payment);
 
             $this->tracePaymentInfo(TraceCode::TRANSACTION_CREATED_IN_VERIFY_CAPTURE);
         });
@@ -551,18 +555,9 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $auth = ($payment->hasTransaction() === false);
-
         $feesSplit = new PublicCollection;
 
-        if ($auth === true)
-        {
-            list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
-        }
-        else
-        {
-            $txn = $txnCore->updateOnCapture($payment);
-        }
+        list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
         $payment->setServiceTax($txn->getServiceTax());
 
@@ -573,6 +568,7 @@ trait Capture
         }
 
         $this->repo->saveOrFail($txn);
+
         $this->repo->saveOrFail($payment);
 
         $this->saveFeeDetails($txn, $feesSplit);

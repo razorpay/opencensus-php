@@ -482,6 +482,19 @@ trait Authorize
             ($payment->isSecondRecurring() === true))
         {
             $this->verifyPrivateAuth();
+
+            $this->verifyAggregatorIfApplicable($merchant);
+        }
+    }
+
+    protected function verifyAggregatorIfApplicable(Merchant\Entity $merchant)
+    {
+        // Zoho requires its merchant to use this route only through Zoho itself
+        // We need to check if merchant is sending the request himself, without Zoho
+        // This is temporary, will be removed when OAuth comes through
+        if ($merchant->isFeatureEnabled(Feature\Constants::ZOHO) === true)
+        {
+            (new Feature\Validator)->validateZoho($this->request);
         }
     }
 
@@ -1850,12 +1863,10 @@ trait Authorize
                 $payment->setGatewayCaptured(true);
 
                 // Also sets the transaction association with the payment.
-
+                // Fee Split would be null, as its the dummy transaction, so we are not saving fee split.
                 list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
                 $this->repo->saveOrFail($txn);
-
-                $this->saveFeeDetails($txn, $feesSplit);
             }
 
             $this->repo->saveOrFail($payment);

@@ -120,6 +120,11 @@ class Service extends Base\Service
         return (new Kotak\Service)->reconcileH2HSettlements($input);
     }
 
+    public function reconcileSettlementsInTestMode($input)
+    {
+        return (new Kotak\ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
+    }
+
     public function generateSettlementReconciliation($input)
     {
         return (new Kotak\Service)->generateSettlementReconciliation($input);

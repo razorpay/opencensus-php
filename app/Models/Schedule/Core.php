@@ -30,7 +30,7 @@ class Core extends Base\Core
         return $schedule;
     }
 
-    public function getOrCreateDefaultSchedule($delay)
+    public function getOrCreateDefaultSchedule($delay) : Entity
     {
         $schedule = $this->repo->schedule->getDailySettlementScheduleByDelay($delay);
 

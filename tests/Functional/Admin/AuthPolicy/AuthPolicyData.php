@@ -140,8 +140,8 @@ return [
             'url' => '/orgs/%s/admin/authenticate',
             'method' => 'post',
             'content' => [
-                'username'                 => 'randomemail@rzp.com',
-                'password'              => 'test123456'
+                'username'  => 'randomemail@rzp.com',
+                'password'  => 'test123456'
             ],
         ],
         'response'  => [

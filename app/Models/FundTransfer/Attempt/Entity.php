@@ -192,7 +192,7 @@ class Entity extends Base\PublicEntity
 
     public function isPendingReconciliation()
     {
-        return $this->isStatusCreated();
+        return ($this->getStatus() === Status::PENDING_RECONCILIATION);
     }
 
     public function isStatusFailed()

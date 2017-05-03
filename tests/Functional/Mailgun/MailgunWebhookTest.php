@@ -39,8 +39,15 @@ class MailgunWebhookTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $this->assertNotContains($testData['request']['content'][MailTags::HEADER], MailTags::$notifyTags);
+        $this->assertNotContains($testData['request']['content'][MailTags::HEADER], MailTags::$setlNotifyTags);
 
+        $testDataReplace = $this->getRequestVariableData(Config::get('applications.mailgun.key'));
+
+        $this->startTest($testDataReplace);
+    }
+
+    public function testEmailBounce()
+    {
         $testDataReplace = $this->getRequestVariableData(Config::get('applications.mailgun.key'));
 
         $this->startTest($testDataReplace);

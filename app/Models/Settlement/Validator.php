@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use RZP\Base;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {

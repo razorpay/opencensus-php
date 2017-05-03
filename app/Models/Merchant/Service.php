@@ -32,6 +32,8 @@ use RZP\Constants\MailTags;
 
 class Service extends Base\Service
 {
+    use Notify;
+
     /**
      * Creates a merchant and saves in database
      *
@@ -205,9 +207,8 @@ class Service extends Base\Service
     // This is on internal auth
     public function fetch($id)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $methods = $merchant->methods;
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+            $id, ['methods', 'groups']);
 
         return $merchant->toArrayPublic();
     }
@@ -454,6 +455,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
+        $this->logActionToSlack($merchant, 'enable');
+
         return $merchant->toArrayPublic();
     }
 
@@ -477,6 +480,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
+        $this->logActionToSlack($merchant, 'disable');
+
         return $merchant->toArrayPublic();
     }
 
@@ -484,13 +489,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant->getValidator()->validateInput('action', $input);
-
-        $function = $input['action'];
-
-        $merchant->$function();
-
-        $this->repo->saveOrFail($merchant);
+        $merchant = (new Merchant\Core)->action($merchant, $input);
 
         return $merchant->toArrayPublic();
     }

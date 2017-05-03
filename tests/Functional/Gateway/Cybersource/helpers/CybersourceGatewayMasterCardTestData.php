@@ -9,15 +9,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
         ],
     ],
 
@@ -25,15 +25,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
         ],
     ],
 
@@ -41,15 +41,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
         ],
     ],
 
@@ -73,15 +73,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => PublicErrorDescription::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
         ],
     ],
 

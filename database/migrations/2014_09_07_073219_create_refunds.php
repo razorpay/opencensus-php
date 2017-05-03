@@ -5,9 +5,9 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Payment\Refund\Entity as Refund;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\Transaction;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Transaction\Entity as Transaction;
 
 class CreateRefunds extends Migration
 {
@@ -25,42 +25,60 @@ class CreateRefunds extends Migration
             $table->char(Refund::ID, Refund::ID_LENGTH)
                   ->primary();
 
-            $table->char(Refund::PAYMENT_ID, Refund::ID_LENGTH);
+            $table->char(Refund::PAYMENT_ID, Payment::ID_LENGTH);
 
-            $table->char(Refund::MERCHANT_ID, Refund::ID_LENGTH);
+            $table->char(Refund::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->integer(Refund::AMOUNT)
                   ->unsigned();
 
-            $table->char(Refund::CURRENCY, Payment\Entity::CURRENCY_LENGTH);
+            $table->char(Refund::CURRENCY, Payment::CURRENCY_LENGTH);
 
             $table->integer(Refund::BASE_AMOUNT)
                   ->unsigned();
+
+            $table->string(Refund::STATUS)
+                  ->nullable();
 
             $table->tinyInteger(Refund::GATEWAY_REFUNDED)
                   ->nullable();
 
             $table->text(Refund::NOTES);
 
-            $table->char(Refund::TRANSACTION_ID, Refund::ID_LENGTH)
+            $table->char(Refund::TRANSACTION_ID, Transaction::ID_LENGTH)
                   ->unique()
+                  ->nullable();
+
+            $table->tinyInteger(Refund::ATTEMPTS)
+                  ->nullable();
+
+            $table->integer(Refund::LAST_ATTEMPTED_AT)
+                  ->nullable();
+
+            $table->string(Refund::RRN)
                   ->nullable();
 
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
 
+            $table->index(Refund::STATUS);
+            $table->index(Refund::GATEWAY_REFUNDED);
+            $table->index(Refund::ATTEMPTS);
+            $table->index(Refund::CREATED_AT);
+            $table->index(Refund::LAST_ATTEMPTED_AT);
+
             $table->foreign(Refund::MERCHANT_ID)
-                  ->references(Merchant\Entity::ID)
+                  ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
             $table->foreign(Refund::PAYMENT_ID)
-                  ->references(Payment\Entity::ID)
+                  ->references(Payment::ID)
                   ->on(Table::PAYMENT)
                   ->on_delete('restrict');
 
             $table->foreign(Refund::TRANSACTION_ID)
-                  ->references(Transaction\Entity::ID)
+                  ->references(Transaction::ID)
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
         });

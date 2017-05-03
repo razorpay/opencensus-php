@@ -51,6 +51,26 @@ return [
         ],
     ],
 
+    'testCreatePermissionWithOrg' => [
+        'request' => [
+            'url' => '/permissions',
+            'method' => 'post',
+            'content' => [
+                'name' => 'test permission',
+                'description' => 'test description',
+                'category' => 'test category',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'test permission',
+                'description' => 'test description',
+                'category' => 'test category',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeletePermission' => [
         'request' => [
             'url' => '/permissions',
@@ -79,5 +99,35 @@ return [
             ],
             'status_code' => 200,
         ],
+    ],
+
+    'testEditPermissionWithOrg' => [
+        'request' => [
+            'url' => '/permissions',
+            'method' => 'put',
+            'content' => [
+                'description' => 'test desc2',
+                'orgs' => [
+                    'org_100000razorpay'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description' => 'test desc2',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetRolesForPermission' => [
+        'request' => [
+            'url'    => '/permissions/%s/roles',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
     ]
 ];

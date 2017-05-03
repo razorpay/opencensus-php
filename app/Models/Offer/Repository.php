@@ -47,13 +47,14 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchSharedOffers()
+    public function fetchMerchantOffersForCheckout(string $merchantId)
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', Account::SHARED_ACCOUNT)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::ACTIVE, '=', true)
+                    ->where(Entity::CHECKOUT_DISPLAY, '=', true)
                     ->where(Entity::STARTS_AT, '<=', $now)
                     ->where(Entity::ENDS_AT, '>=', $now)
                     ->get();

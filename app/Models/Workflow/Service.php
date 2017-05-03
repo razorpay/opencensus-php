@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Workflow\Step;
 
 class Service extends Base\Service
 {
@@ -17,7 +18,8 @@ class Service extends Base\Service
 
         $workflow = $this->core()->create($input);
 
-        return $workflow->toArrayPublic();
+        return $this->convertDataToDashboardFormat(
+            $workflow->toArrayPublic());
     }
 
     public function fetch(string $orgId, string $id)
@@ -26,7 +28,14 @@ class Service extends Base\Service
                                ->findByPublicIdAndOrgIdWithRelations(
                                    $id, $orgId, ['steps', 'permissions']);
 
-        return $workflow->toArrayPublic();
+        $data = $workflow->toArrayPublic();
+
+        $data['isEditable'] = $this->core()->isWorkflowEditable($workflow);
+
+        // Dashboard requires the API in certain format
+        $response = $this->convertDataToDashboardFormat($data);
+
+        return $response;
     }
 
     public function fetchMultiple(string $orgId, array $input)
@@ -42,13 +51,24 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        Permission\Entity::verifyIdAndStripSignMultiple($input[Entity::PERMISSIONS]);
+        if (empty($input[Entity::PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::PERMISSIONS]);
+        }
+
+        if (empty($input[Entity::ORG_ID]) === false)
+        {
+            Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
+        }
 
         $workflow = $this->repo->workflow->findOrFailPublic($id);
 
         $workflow = $this->core()->update($workflow, $input);
 
-        return $workflow->toArrayPublic();
+        $data = $this->convertDataToDashboardFormat($workflow->toArrayPublic());
+
+        return $data;
     }
 
     public function delete(string $id)
@@ -107,5 +127,52 @@ class Service extends Base\Service
         $workflows = (new Action\Core)->getWorkflowsForPermissions($routePermissions, $orgId);
 
         return ($workflows->isEmpty() === false);
+    }
+
+    public function convertDataToDashboardFormat(array $data)
+    {
+        $steps = $data[Entity::STEPS] ?? [];
+
+        // Get all the levels in the steps.
+
+        $levels = array_map(function($step){
+            return $step[Step\Entity::LEVEL];
+        }, $steps);
+
+        $levels = array_unique($levels, SORT_NUMERIC);
+
+        $levelData = [];
+
+        foreach ($levels as $level)
+        {
+            $levelDetails = [];
+
+            $levelSteps = [];
+
+            foreach ($steps as $step)
+            {
+                if ($step[Step\Entity::LEVEL] === $level)
+                {
+                    $levelDetails[Step\Entity::OP_TYPE] = $step[Step\Entity::OP_TYPE];
+                    $levelDetails[Step\Entity::LEVEL] = $level;
+
+                    unset($step[Step\Entity::OP_TYPE]);
+                    unset($step[Step\Entity::LEVEL]);
+
+                    $levelSteps[] = $step;
+                }
+            }
+
+            $levelDetails['steps'] = $levelSteps;
+
+            $levelData[] = $levelDetails;
+        }
+
+        // returns null if the key is not present
+        unset($data[Entity::STEPS]);
+
+        $data[Entity::LEVELS] = $levelData;
+
+        return $data;
     }
 }

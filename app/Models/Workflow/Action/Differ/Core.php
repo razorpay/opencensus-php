@@ -61,7 +61,7 @@ class Core extends Base\Core
 
     public function get(string $actionId)
     {
-        $esResponse = $this->esDao->search(
+        $esResponse = $this->esDao->searchByIndexTypeAndActionId(
             strtolower($this->baseIndex), self::ES_TYPE, $actionId);
 
         if ($esResponse === null)
@@ -82,7 +82,7 @@ class Core extends Base\Core
 
     public function fetchRequest(Action\Entity $action)
     {
-        $esResponse = $this->esDao->search(
+        $esResponse = $this->esDao->searchByIndexTypeAndActionId(
             strtolower($this->baseIndex), self::ES_TYPE, $action->getId());
 
         if ($esResponse === null)
