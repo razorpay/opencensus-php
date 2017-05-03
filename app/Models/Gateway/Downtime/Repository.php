@@ -99,7 +99,7 @@ class Repository extends Base\Repository
         $this->buildFetchQuery($query, $input);
 
         return $query->whereNull(Entity::TERMINAL_ID)
-                    ->get();
+                     ->get();
     }
 
     protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)

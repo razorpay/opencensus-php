@@ -394,17 +394,17 @@ class Netbanking
 
         $otherGatewaySupportedBanks = self::$self;
 
+        $gatewayExclusiveBanks = self::$$gateway;
+
         foreach (Gateway::SHARED_NETBANKING_GATEWAYS_LIVE as $netbankingGateway)
         {
             if ($gateway !== $netbankingGateway)
             {
-                $otherGatewaySupportedBanks = array_merge($otherGatewaySupportedBanks, self::$$netbankingGateway);
+                $gatewayExclusiveBanks = array_values(array_diff($gatewayExclusiveBanks, self::$$netbankingGateway));
             }
         }
 
-        $otherGatewaySupportedBanks = array_values(array_unique($otherGatewaySupportedBanks));
-
-        $gatewayExclusiveBanks = array_values(array_diff($gatewaySupportedBanks, $otherGatewaySupportedBanks));
+        $gatewayExclusiveBanks = array_values(array_diff($gatewayExclusiveBanks, self::$self));
 
         return $gatewayExclusiveBanks;
     }

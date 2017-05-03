@@ -624,7 +624,7 @@ class Gateway
     {
         $supportedNetworks = self::$cardNetworkMap[$gateway];
 
-        $otherGatewayNetowrks = [];
+        $exclusiveNetworks = self::$cardNetworkMap[$gateway];
 
         foreach (self::CARD_GATEWAYS_LIVE as $cardGateway)
         {
@@ -632,7 +632,7 @@ class Gateway
             {
                 $networks = self::$cardNetworkMap[$cardGateway];
 
-                $otherGatewayNetowrks = array_merge($otherGatewayNetowrks, $networks);
+                $exclusiveNetworks = array_diff($otherGatewayNetowrks, $networks);
             }
         }
 

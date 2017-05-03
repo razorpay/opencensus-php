@@ -215,7 +215,6 @@ class StatusCakeProcessor implements ProcessorInterface
                 break;
 
             case Method::WALLET:
-            case Method::UPI:
 
                 if (isset($options['gateway']) === false)
                 {
@@ -226,6 +225,23 @@ class StatusCakeProcessor implements ProcessorInterface
 
                     throw new Exception\BadRequestValidationFailureException(
                         'StatusCake invalid wallet data',
+                        'tags',
+                        $tags);
+                }
+
+                break;
+
+            case Method::UPI:
+
+                if (isset($options['gateway']) === false)
+                {
+                    $this->trace->warning(
+                        TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_UPIDATA,
+                        ['data' => $tags]
+                    );
+
+                    throw new Exception\BadRequestValidationFailureException(
+                        'StatusCake invalid upi data',
                         'tags',
                         $tags);
                 }

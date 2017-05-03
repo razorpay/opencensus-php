@@ -174,9 +174,7 @@ class Collection extends Base\PublicCollection
         // For directly supporteed gateways we always dsiplay the data
         if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
         {
-            $data[Entity::ISSUER] = [
-                Payment\Gateway::getBankForDirectNetbankingGateway($gateway)
-            ];
+            $data[Entity::ISSUER] = (array) Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
         }
 
         return $data;

@@ -197,16 +197,14 @@ class Entity extends Base\PublicEntity
 
                     $gateway = $input[Entity::GATEWAY];
 
+                    $input[Entity::ISSUER] = Entity::UNKNOWN;
+
                     // If gateway is a direct netbanking gateway we set the issuer
-                    // for it as the gateway's issuer, else we set it to UNKNOWN
                     if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
                     {
                         $input[Entity::ISSUER] = Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
                     }
-                    else
-                    {
-                        $input[Entity::ISSUER] = Entity::UNKNOWN;
-                    }
+
                     break;
 
                 case Payment\Method::WALLET:
@@ -214,6 +212,7 @@ class Entity extends Base\PublicEntity
                     $gateway = strtolower($input[Entity::GATEWAY]);
 
                     $input[Entity::ISSUER] = Payment\Gateway::getWalletForGateway($gateway);
+
                     break;
 
                 case Payment\Method::CARD:
@@ -377,9 +376,7 @@ class Entity extends Base\PublicEntity
         {
             $data[Entity::CARD_TYPE] = $this->getCardType();
 
-            $data[Entity::NETWORK] = [
-                $this->getNetwork(),
-            ];
+            $data[Entity::NETWORK] = (array) $this->getNetwork();
         }
 
         return array_filter($data);
