@@ -622,8 +622,6 @@ class Gateway
 
     public static function getExclusiveNetworksForGateway(string $gateway)
     {
-        $supportedNetworks = self::$cardNetworkMap[$gateway];
-
         $exclusiveNetworks = self::$cardNetworkMap[$gateway];
 
         foreach (self::CARD_GATEWAYS_LIVE as $cardGateway)
@@ -632,13 +630,9 @@ class Gateway
             {
                 $networks = self::$cardNetworkMap[$cardGateway];
 
-                $exclusiveNetworks = array_diff($otherGatewayNetowrks, $networks);
+                $exclusiveNetworks = array_values(array_diff($exclusiveNetworks, $networks));
             }
         }
-
-        $otherGatewayNetowrks = array_values(array_unique($otherGatewayNetowrks));
-
-        $exclusiveNetworks = array_diff($supportedNetworks, $otherGatewayNetowrks);
 
         // Filter out the UNKNOWN network if present
         $exclusiveNetworks = array_filter($exclusiveNetworks, function ($network)

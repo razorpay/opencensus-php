@@ -78,7 +78,8 @@ class Collection extends Base\PublicCollection
         $issuer = $downtime->getIssuer();
 
         // If network or issuer is unknown / not available we don't display the data
-        if (($this->isUnknownOrNA($network) === true) or ($this->isUnknownOrNA($issuer) === true))
+        if (($this->isUnknownOrNA($network) === true) or
+            ($this->isUnknownOrNA($issuer) === true))
         {
             return null;
         }
@@ -94,7 +95,7 @@ class Collection extends Base\PublicCollection
 
         //
         // For card downtimes if gateway is not ALL and a specific issuer is given
-        // don't show it, as we can always retry via another card
+        // don't show it, as we can always retry via another gateway
         //
         if ($issuer !== Entity::ALL)
         {
