@@ -154,10 +154,33 @@ class Authenticate
 
         $merchantId = $oauth->resolveToken($bearerToken);
 
+        $routeScopes = Scopes::getScopesForRoute($route);
+
+        $scopeAllowed = $this->checkScopes($routeScopes);
+
+        if ($scopeAllowed === false)
+        {
+            // todo: Change to unauthorized response
+            return ApiResponse::routeNotFound();
+        }
+
         //
         // Set merchant for the current request
         // TODO: Move this to a common auth class
         //
         $this->ba->setMerchant($merchantId);
+    }
+
+    protected function checkScopes(array $routeScopes) : bool
+    {
+        foreach ($routeScopes as $scope)
+        {
+            if ($this->ba->hasScope($scope) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
