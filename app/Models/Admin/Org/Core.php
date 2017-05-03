@@ -56,6 +56,25 @@ class Core extends Base\Core
 
                 $this->addOrgRelatedEntities($org, $input);
             }
+
+            if (isset($input[Entity::WORKFLOW_PERMISSIONS]) === true)
+            {
+                $perms = $input[Entity::WORKFLOW_PERMISSIONS];
+
+                $oldPerms = $this->repo->permission
+                                       ->fetchAllByOrg($org->getId(), 'workflow')
+                                       ->toArray();
+
+                $oldPerms = array_map(function($perm) {
+                    return $perm->getId();
+                }, $oldPerms);
+
+                $diffPerms = array_diff($oldPerms, $perms);
+
+                $this->disableWorkflowPermissionsForOrg($org, $diffPerms);
+
+                $this->enableWorkflowPermissionsForOrg($org, $perms);
+            }
         });
 
         $org = $this->fetch($org->getPublicId());
@@ -141,5 +160,27 @@ class Core extends Base\Core
             $this->repo->sync(
                 $org, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
         }
+
+        if (isset($input[Entity::WORKFLOW_PERMISSIONS]) === true)
+        {
+            $this->enableWorkflowPermissionsForOrg(
+                $org, $input[Entity::WORKFLOW_PERMISSIONS]);
+        }
+    }
+
+    public function enableWorkflowPermissionsForOrg(
+        Entity $org,
+        array $permissions)
+    {
+        $this->repo->permission->toggleWorkflowOnOrgForPermissions(
+            $org->getId(), $permissions, true);
+    }
+
+    public function disableWorkflowPermissionsForOrg(
+        Entity $org,
+        array $permissions)
+    {
+        $this->repo->permission->toggleWorkflowOnOrgForPermissions(
+            $org->getId(), $permissions, false);
     }
 }

@@ -29,6 +29,8 @@ class Entity extends Base\Entity
     const ADMIN            = 'admin';
     const CROSS_ORG_ACCESS = 'cross_org_access';
 
+    const WORKFLOW_PERMISSIONS = 'workflow_permissions';
+
     /**
      * Holds all the permissions as relation key.
      */
