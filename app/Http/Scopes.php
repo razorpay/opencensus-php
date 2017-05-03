@@ -54,5 +54,7 @@ class Scopes
         }
 
         $scopes = array_merge($scopes, $defaultScopes);
+
+        return $scopes;
     }
 }

@@ -6,9 +6,11 @@ use Closure;
 use ApiResponse;
 use Illuminate\Foundation\Application;
 
+use RZP\Error\ErrorCode;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
+use RZP\Http\Scopes;
 
 class Authenticate
 {
@@ -153,6 +155,12 @@ class Authenticate
         $oauth = new OAuth;
 
         $merchantId = $oauth->resolveToken($bearerToken);
+
+        if ($merchantId === null)
+        {
+            // todo: Change to unauthorized response
+            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
 
         $routeScopes = Scopes::getScopesForRoute($route);
 

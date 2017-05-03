@@ -32,13 +32,19 @@ class OAuth
      *
      * @param string $token
      *
-     * @return string
+     * @return string|null
      */
-    public function resolveToken(string $token) : string
+    public function resolveToken(string $token)
     {
         $response = $this->server->authenticateWithBearerToken($token);
 
-        $scopes = json_decode($response['scopes'], true);
+        // Error
+        if (empty($response) === true)
+        {
+            return null;
+        }
+
+        $scopes = (array) $response['scopes'];
 
         $this->resolveScopes($scopes);
 
