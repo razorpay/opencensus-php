@@ -347,7 +347,13 @@ class MerchantFilter extends Terminal\Filter
             }
             else
             {
-                return false;
+                $network = $input['payment']->card->getNetworkCode();
+
+                if (($network === Network::VISA) or
+                    ($network === Network::MC))
+                {
+                    return false;
+                }
             }
         }
 
