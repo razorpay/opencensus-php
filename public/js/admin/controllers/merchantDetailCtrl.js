@@ -280,9 +280,17 @@ app
         $scope.editMerchant(merchantEdit);
       };
       $scope.enableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/enable'
-        );
+        var data = {
+          route_name: 'merchant_live_enable',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          }
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -304,9 +312,17 @@ app
           });
       };
       $scope.disableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/disable'
-        );
+        var data = {
+          route_name: 'merchant_live_disable',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          }
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -667,9 +683,18 @@ app
           });
       };
       $scope.archiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/archive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          },
+          body: {action: 'archive'}
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -691,9 +716,18 @@ app
           });
       };
       $scope.unarchiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unarchive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          },
+          body: {action: 'unarchive'}
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -716,9 +750,18 @@ app
       };
 
       $scope.suspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/suspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          },
+          body: {action: 'suspend'}
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -741,9 +784,18 @@ app
       };
 
       $scope.unsuspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unsuspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          },
+          body: {action: 'unsuspend'}
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
