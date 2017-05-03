@@ -13,17 +13,6 @@ use RZP\Reconciliator\Base;
 
 class Converter
 {
-    const CSV_EXTENSION = 'csv';
-
-    //
-    // For some gateways like Netbanking Federal, the csv columns
-    // are separated by '|' instead of ',' and therefore we need
-    // to get the columns out of these rows
-    //
-    const GATEWAY_FILE_DELIMITER = [
-        Orchestrator::NETBANKING_FEDERAL => '|'
-    ];
-
     const DEFAULT_DELIMITER = ',';
 
     const MAPPINGS = [
@@ -119,7 +108,7 @@ class Converter
         return $rows;
     }
 
-    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip = [], $gateway)
+    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip = [], $delimiter = ',')
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -139,14 +128,9 @@ class Converter
                 'Unable to open file . ' . $filePath);
         }
 
-        //
-        // Setting glue for the csv to array conversion
-        //
-        $glue = self::GATEWAY_FILE_DELIMITER[$gateway] ?? self::DEFAULT_DELIMITER;
-
         try
         {
-            while (($row = fgetcsv($handle, 0, $glue)) !== false)
+            while (($row = fgetcsv($handle, 0, $delimiter)) !== false)
             {
                 //
                 // Skip the first few ($linesToSkipFromTop) rows
