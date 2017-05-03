@@ -331,13 +331,21 @@ class Converter
 
         foreach ($rowIterator as $row)
         {
+            if (max($row) === "")
+            {
+                continue;
+            }
+
             if ($rowIterator->key() === 1)
             {
                 $sheetHeaders = $this->normalizeHeaders($row);
             }
             else
             {
-                $allSheetsContent[$sheetName][] = array_combine($sheetHeaders, $row);
+                if (count($sheetHeaders) === count($row))
+                {
+                    $allSheetsContent[$sheetName][] = array_combine($sheetHeaders, $row);
+                }
             }
         }
     }
