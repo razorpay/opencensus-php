@@ -458,10 +458,7 @@ trait Authorize
         }
     }
 
-    protected function validateAuthenticatedSubscription(
-        Subscription\Entity $subscription,
-        Payment\Entity $payment,
-        array $input)
+    protected function validateAuthenticatedSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
     {
         if ($subscription->hasToken() === false)
         {
@@ -1519,13 +1516,24 @@ trait Authorize
                 //
                 $this->repo->saveOrFail($subscription);
             }
-            else
+            else if ($subscription->hasBeenAuthenticated() === true)
             {
                 //
                 // We don't update any subscription attributes here. The ones which are updated,
                 // get saved in a transaction in handleCaptureSuccess function.
                 //
                 $this->processAlreadyAuthenticatedSubscription($subscription, $payment);
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'The subscription should have been in either created or authenticated state.',
+                    null,
+                    [
+                        'subscription_id'       => $subscription->getId(),
+                        'subscription_status'   => $subscription->getStatus(),
+                        'subscription_auth'     => $subscription->hasBeenAuthenticated(),
+                    ]);
             }
         }
         catch (\Exception $ex)

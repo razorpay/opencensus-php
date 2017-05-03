@@ -100,7 +100,7 @@ class Generator extends Base\Core
      *
      * @throws BadRequestValidationFailureException
      */
-    protected function preProcessGeneration(array $input, $subscription)
+    protected function preProcessGeneration(array $input, $subscription = null)
     {
         $this->associateCustomerWithInvoice($input);
 

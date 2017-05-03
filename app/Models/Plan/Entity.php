@@ -4,6 +4,7 @@ namespace RZP\Models\Plan;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Item;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -17,7 +18,7 @@ class Entity extends Base\PublicEntity
     const NAME              = 'name';
     const NOTES             = 'notes';
     const MERCHANT_ID       = 'merchant_id';
-    const SCHEDULE_ID       = 'schedule_id';
+    const ITEM_ID           = 'item_id';
 
     // Input Keys
 
@@ -50,9 +51,16 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::INTERVAL,
         self::PERIOD,
+        self::ITEM_ID,
         self::NAME,
         self::NOTES,
         self::CREATED_AT
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ITEM_ID,
     ];
 
     // Used for reporting
@@ -101,10 +109,17 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    // public function schedule()
-    // {
-    //     return $this->belongsTo('RZP\Models\Schedule\Entity');
-    // }
+    public function item()
+    {
+        return $this->belongsTo('RZP\Models\Item\Entity');
+    }
 
     // --------------------- END RELATIONS ---------------------
+
+    // --------------------- PUBLIC SETTERS ---------------------
+
+    protected function setPublicItemIdAttribute(array & $array)
+    {
+        $array[self::ITEM_ID] = Item\Entity::getSignedIdOrNull($this->getAttribute(self::ITEM_ID));
+    }
 }

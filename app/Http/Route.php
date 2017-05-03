@@ -1208,9 +1208,9 @@ final class Route
         'transfer_fetch_multiple'           => [Feature::MARKETPLACE, Feature::OPENWALLET],
         'transfer_fetch'                    => [Feature::MARKETPLACE, Feature::OPENWALLET],
         'transfer_create_reversal'          => [Feature::MARKETPLACE, Feature::OPENWALLET],
-        'plan_create'                       => [Feature::RECURRING],
-        'subscription_create'               => [Feature::RECURRING],
-        'subscription_manual_retry'         => [Feature::RECURRING],
+        'plan_create'                       => [Feature::RECURRING, Feature::SUBSCRIPTIONS],
+        'subscription_create'               => [Feature::RECURRING, Feature::SUBSCRIPTIONS],
+        'subscription_manual_retry'         => [Feature::RECURRING, Feature::SUBSCRIPTIONS],
     ];
 
     /*

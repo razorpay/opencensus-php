@@ -187,19 +187,22 @@ class Core extends Base\Core
     }
 
     /**
-     * upfront_amount | start_at | charge_amount
+     * add_on_amount  | start_at | charge_amount
      * ----------------------------------------------------------
-     * yes            | no       | upfront_amount + plan_amount
+     * yes            | no       | add_on_amount + plan_amount
      * no             | yes      | default_auth_amount (5rs)
-     * yes            | yes      | upfront_amount
+     * yes            | yes      | add_on_amount
      * no             | no       | plan_amount
+     *
+     * The above amount is taken care of when we create an invoice
+     * and hence not doing those checks here.
      *
      * @param Entity $subscription
      *
      * @return int
      * @throws LogicException
      */
-    public function getAuthTransactionAmount(Entity $subscription)
+    public function getAuthTransactionAmount(Entity $subscription) : int
     {
         $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
@@ -297,7 +300,7 @@ class Core extends Base\Core
 
         $recurringPayload = [
             Payment\Entity::AMOUNT          => $subscriptionAmount,
-            Payment\Entity::CURRENCY        => Payment\Entity::DEFAULT_CURRENCY,
+            Payment\Entity::CURRENCY        => $invoice->getCurrency(),
             Payment\Entity::RECURRING       => '1',
             Payment\Entity::SUBSCRIPTION_ID => $subscription->getPublicId(),
             Payment\Entity::TOKEN           => $tokenId,

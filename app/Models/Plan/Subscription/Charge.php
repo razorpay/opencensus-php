@@ -196,6 +196,7 @@ class Charge extends Base\Core
     {
         $subscription->setFailedAt(null);
         $subscription->setErrorStatus(null);
+        $subscription->resetAuthAttempts();
     }
 
     protected function handleAuthorizationFailure(Entity $subscription)
