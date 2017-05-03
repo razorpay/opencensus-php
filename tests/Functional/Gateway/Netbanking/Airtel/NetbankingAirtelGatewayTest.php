@@ -218,11 +218,14 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $data = $this->testData[__FUNCTION__];
-
         $this->mockRefundFailure();
 
         $this->refundPayment($payment['id'], 100);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals('failed', $refund['status']);
     }
 
     public function testAuthResponseHashFailure()
