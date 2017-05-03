@@ -7,7 +7,6 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
-use RZP\Models\Merchant;
 use RZP\Trace;
 use RZP\Trace\TraceCode;
 
@@ -86,12 +85,6 @@ class Selector
 
     public function select(Options $options = null, $verbose = false)
     {
-        // Temp measure to debug ipay's issue with terminal selection
-        if ($this->merchant->getId() === Merchant\Preferences::MID_IPAY)
-        {
-            $verbose = true;
-        }
-
         $terminals = $this->getTerminals();
 
         $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);
