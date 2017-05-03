@@ -8,42 +8,42 @@ use ApiResponse;
  * This trait if used in a controller supports CRUD methods.
  *
  * Expects:
- * - $this->service
+ * - $this->service to be initialized with corresponding class name(string)
  *
  */
 trait HasCrudMethods
 {
     public function get(string $id)
     {
-        $entity = $this->service->fetch($id);
+        $entity = $this->service()->fetch($id);
 
         return ApiResponse::json($entity);
     }
 
     public function list()
     {
-        $entities = $this->service->fetchMultiple($this->input);
+        $entities = $this->service()->fetchMultiple($this->input);
 
         return ApiResponse::json($entities);
     }
 
     public function create()
     {
-        $entity = $this->service->create($this->input);
+        $entity = $this->service()->create($this->input);
 
         return ApiResponse::json($entity);
     }
 
     public function update(string $id)
     {
-        $entity = $this->service->update($id, $this->input);
+        $entity = $this->service()->update($id, $this->input);
 
         return ApiResponse::json($entity);
     }
 
     public function delete(string $id)
     {
-        $response = $this->service->delete($id);
+        $response = $this->service()->delete($id);
 
         return ApiResponse::json($response);
     }

@@ -10,6 +10,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App;
 use Request;
 
+use RZP\Constants\Entity as E;
+
 abstract class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
@@ -18,6 +20,13 @@ abstract class Controller extends BaseController
     protected $trace;
     protected $repo;
     protected $route;
+
+    /**
+     * Service class name which this controller usage
+     *
+     * @var string
+     */
+    protected $service;
 
     /**
      * HTTP request input
@@ -76,5 +85,26 @@ abstract class Controller extends BaseController
         $data['font'] = $cdnUrlMap['production'].$font;
 
         return $data;
+    }
+
+    /**
+     * Returns the service instance.
+     *
+     * @param string|null $service
+     *
+     * @return \RZP\Models\Base\Service
+     */
+    protected function service($service = null)
+    {
+        if ($service !== null)
+        {
+            $ns = E::getEntityNamespace($service);
+            $class = $ns . '\\' . 'Service';
+            return new $class;
+        }
+
+        $class = $this->service;
+
+        return new $class;
     }
 }

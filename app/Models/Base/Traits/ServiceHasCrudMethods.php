@@ -8,6 +8,7 @@ namespace RZP\Models\Base\Traits;
  * Expects:
  * - $this->core
  * - $this->entityRepo
+ * - $this->merchant
  *
  */
 trait ServiceHasCrudMethods
