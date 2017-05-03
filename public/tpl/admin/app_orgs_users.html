@@ -47,7 +47,7 @@
             <td ng-if="fields.indexOf('username') !== -1">{{row.username}}</td>
             <td ng-if="fields.indexOf('email') !== -1">{{row.email}}</td>
             <td ng-if="fields.indexOf('roles') !== -1">
-              {{row.roles && row.roles.length ? row.roles[0].name : '--'}}
+              {{ roleFormatter(row.roles) }}
             </td>
             <td ng-if="fields.indexOf('employee_code') !== -1">
               {{row.employee_code}} /
