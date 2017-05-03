@@ -810,11 +810,12 @@ trait Authorize
             'number'         => $input['aadhaar']['number'],
         ];
 
-        $aadhaarData = $aadhaarCore->create($aadhaarRawData, $merchant);
+        //$aadhaarData = $aadhaarCore->create($aadhaarRawData, $merchant);
 
-        $this->repo->saveOrFail($aadhaarData);
+        // TODO : FIX this
+        //$this->repo->saveOrFail($aadhaarData);
 
-        $this->payment->entity()->associate($aadhaarData);
+        //$this->payment->entity()->associate($aadhaarData);
 
         return $aadhaarRawData;
     }
