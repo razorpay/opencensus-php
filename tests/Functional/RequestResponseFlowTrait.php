@@ -236,7 +236,7 @@ trait RequestResponseFlowTrait
             $request['server'] += $this->transformHeadersToServerVars($accountHeader);
         }
 
-        if ($this->ba->isAdminAuth() === true)
+        if ($this->ba->isAdminAuth() === true || $this->ba->getType() === 'app')
         {
             $adminHeaders = $this->ba->getAdminHeaders();
 

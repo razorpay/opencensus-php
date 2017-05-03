@@ -98,6 +98,10 @@ return array(
         'appId'     => env('EXCHANGE_APP_ID')
     ],
 
+    'zoho' => [
+        'header'    => env('ZOHO_HEADER'),
+    ],
+
     'drip' => [
         'mock'      => env('DRIP_MOCK', false),
         'url'       => env('DRIP_URL'),
