@@ -17,6 +17,9 @@ use Http\Client\Common\Plugin\ErrorPlugin;
 use Http\Client\Common\Exception\ClientErrorException;
 use Http\Client\Common\Exception\ServerErrorException;
 use Http\Client\Exception\HttpException;
+use Http\Client\Exception\NetworkException;
+use Http\Client\Exception\RequestException;
+use Http\Client\Exception\TransferException;
 
 class Inferno
 {
@@ -39,15 +42,6 @@ class Inferno
     const WEBHOOK_FAILURE_HOURS = 24;
 
     const WEBHOOK_MAXIMUM_ATTEMPTS = 24;
-
-    const KNOWN_ERRORS = [
-        'unable to get local issuer certificate',
-        'empty reply from server',
-        'ssl certificate problem: certificate has expired',
-        '<url> malformed',
-        'server error response',
-        'too many redirects',
-    ];
 
     /**
      * We keep it internally as 20 seconds
@@ -78,25 +72,25 @@ class Inferno
 
         $this->event = $data['event'];
 
-        $webhook = $this->getWebhook($data);
+        $webhook = $this->getActiveWebhook($data);
 
-        if ($webhook->isActive() === false)
+        if ($webhook === null)
         {
-            $job->delete();
+            $this->job->delete();
 
             return;
         }
 
         $request = $this->getRequestArray($data['event'], $webhook);
 
-        $success = $this->sendRequest($request, $webhook);
+        $clientError = $this->sendRequest($request, $webhook);
 
-        $this->updateWebhookPostFiring($success, $webhook);
+        $this->updateWebhookPostFiring($clientError, $webhook);
     }
 
-    protected function updateWebhookPostFiring($success, $webhook)
+    protected function updateWebhookPostFiring($clientError, $webhook)
     {
-        if ($success === true)
+        if ($clientError === false)
         {
             $this->webhookSuccessfullyFired($webhook);
         }
@@ -252,9 +246,22 @@ class Inferno
         return $this->client;
     }
 
-    public function sendRequest($request, $webhook)
+    /**
+     * This Function Will send request to Webhook Url, and get the response
+     * In case of non-successful response it will return false,
+     * Webhoook Handling i.e diasbling need to be handled after that.
+     *
+     * This function also sets class variable errorMessage, which is used while sending mails
+     *
+     * @param array  $request Options in array format for making request
+     * @param Entity $webhook Webhook Entity
+     *
+     * @return boolen Success/Failure
+     */
+    public function sendRequest(array $request, Entity $webhook)
     {
-        $success = true;
+        $clientError = true;
+
         $response = null;
 
         $this->trace->info(
@@ -269,79 +276,53 @@ class Inferno
         {
             $response = $this->makeRequest($request);
         }
-        catch (ClientErrorException $e)
+        catch (\Throwable $e)
         {
-            $response = $e->getResponse();
+            switch(true)
+            {
+                case ($e instanceof ClientErrorException):
+                    $response = $e->getResponse();
+                    $msgPrefix = 'Client error: ';
+                    break;
 
-            $this->errorMessage = 'Client error: '. $response->getReasonPhrase();
+                case ($e instanceof ServerErrorException):
+                    $response = $e->getResponse();
+                    $msgPrefix = 'Server error: ';
+                    break;
 
-            $this->trace->info(
-                TraceCode::WEBHOOK_RESPONSE_FAILURE,
-                [
-                    'webhook_id'        => $webhook->getId(),
-                    'merchant_id'       => $webhook->merchant->getId(),
-                    'exception'         => $this->errorMessage,
-                    'response_code'     => $response->getStatusCode(),
-                    'response_headers'  => $response->getHeaders()
-                ]);
+                case ($e instanceof HttpException):
+                    $response = $e->getResponse();
+                    $msgPrefix = 'Some error occurred: ';
+                    break;
 
-            return false;
-        }
-        catch (ServerErrorException $e)
-        {
-            $response = $e->getResponse();
+                case ($e instanceof NetworkException):
+                    $msgPrefix = 'No response received due to network issues: ' . $e->getMessage();
+                    break;
 
-            $this->errorMessage = 'Server error: '. $response->getReasonPhrase();
+                case ($e instanceof RequestException):
+                    $msgPrefix = 'The request is invalid: ' . $e->getMessage();
+                    break;
 
-            $this->trace->info(
-                TraceCode::WEBHOOK_RESPONSE_FAILURE,
-                [
-                    'webhook_id'        => $webhook->getId(),
-                    'merchant_id'       => $webhook->merchant->getId(),
-                    'exception'         => $this->errorMessage,
-                    'response_code'     => $response->getStatusCode(),
-                    'response_headers'  => $response->getHeaders()
-                ]);
+                case ($e instanceof TransferException):
+                    $msgPrefix = 'Something unexpected happened: ' . $e->getMessage();
+                    break;
 
-            return false;
-        }
-        catch (HttpException $e)
-        {
-            $response = $e->getResponse();
+                default:
+                    // We got an unexpected Error,
+                    // Log the response but do not disable the Webhook
+                    // Re-throw the exception
 
-            $this->errorMessage = 'Some error occurred: '. $response->getReasonPhrase();
+                    $this->traceWebhookResponse($webhook, $e->getMessage());
 
-            $this->trace->info(
-                TraceCode::WEBHOOK_RESPONSE_FAILURE,
-                [
-                    'webhook_id'        => $webhook->getId(),
-                    'merchant_id'       => $webhook->merchant->getId(),
-                    'exception'         => $this->errorMessage,
-                    'response_code'     => $response->getStatusCode(),
-                    'response_headers'  => $response->getHeaders()
-                ]);
+                    throw $e;
+            }
 
-            return false;
+            $this->traceWebhookResponse($webhook, $msgPrefix, $response);
+
+            return $success;
         }
 
-        if ($response->getStatusCode() !== 200)
-        {
-            $this->trace->info(
-                TraceCode::WEBHOOK_RESPONSE_FAILURE,
-                [
-                    'webhook_id'        => $webhook->getId(),
-                    'merchant_id'       => $webhook->merchant->getId(),
-                    'response_code'     => $response->getStatusCode(),
-                    'response_body'     => $response->getReasonPhrase(),
-                    'response_headers'  => $response->getHeaders()
-                ]
-            );
-
-            $this->errorMessage = $response->getReasonPhrase();
-
-            $success = false;
-        }
-        else
+        if ($response->getStatusCode() === 200)
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRED,
@@ -351,9 +332,64 @@ class Inferno
                     'response_code'     => $response->getStatusCode(),
                     'response_headers'  => $response->getHeaders()
                 ]);
+
+            $clientError = false;
+        }
+        else
+        {
+            $msgPrefix = '';
+
+            $this->traceWebhookResponse($webhook, $msgPrefix, $response);
         }
 
-        return $success;
+        return $clientError;
+    }
+
+    /**
+     * This Will Trace the Webhook Data for Various Exception Response
+     * Depending on exception thrown, sometime we have getResponse(),
+     * if available, then use it for logging and creating ErrorMessgage which is used to send mail
+     *
+     * @param Entity     $webhook   Webhook Entity
+     * @param string     $msgPrefix Message Prefix which will be appended before $response Failure reason if any
+     * @param array|null $response  Response if any
+     */
+    protected function traceWebhookResponse(Entity $webhook,string $msgPrefix = '', $response = null)
+    {
+        $webhookData = [
+            'webhook_id'        => $webhook->getId(),
+            'merchant_id'       => $webhook->merchant->getId()
+        ];
+
+        $responseData = $this->getResponseData($msgPrefix, $response);
+
+        $this->trace->info(
+            TraceCode::WEBHOOK_RESPONSE_FAILURE,
+            $webhookData + $responseData);
+    }
+
+    protected function getResponseData(string $msgPrefix = '', $response = null)
+    {
+        $this->errorMessage = $msgPrefix;
+
+        $data = [
+            'status_code' => '',
+            'headers'     => [],
+        ];
+
+         if ($response !== null)
+         {
+             $data = [
+                 'status_code' => $response->getStatusCode(),
+                 'headers'     => $response->getHeaders(),
+             ];
+
+             $this->errorMessage .= $response->getReasonPhrase();
+         }
+
+         $data['exception'] = $this->errorMessage;
+
+         return $data;
     }
 
     protected function getRequestArray($event, $webhook)
@@ -381,7 +417,9 @@ class Inferno
 
     protected function webhookSuccessfullyFired($webhook)
     {
-        $this->repo->setLastSuccessfulAt($webhook);
+        $webhook->setLastSuccessfulAt();
+
+        $this->repo->saveOrFail($webhook);
 
         $this->job->delete();
     }
@@ -399,62 +437,62 @@ class Inferno
      */
     protected function webhookFailure($webhook)
     {
-        $job = $this->job;
+        $deleteJobFlag = false;
 
-        $sendFailureEmail = 1;
-        $jobDeleted = 0;
-
-        if (($job->attempts() > self::WEBHOOK_MAXIMUM_ATTEMPTS))
+        if (($this->job->attempts() > self::WEBHOOK_MAXIMUM_ATTEMPTS))
         {
-            $job->delete();
-            $jobDeleted = 1;
+            $deleteJobFlag = true;
         }
 
-        $lastSuccessfulAt = $webhook->getLastSuccessfulAt();
-        $currentTime = time();
+        $lastSuccessDifference = $webhook->getTimeDifferenceFromLastSuccessInHour();
 
-        if ($lastSuccessfulAt !== null)
+        // If (LSA - current time) > 24hrs, mark deactivated.
+        if ($lastSuccessDifference > self::WEBHOOK_FAILURE_HOURS)
         {
-            $differenceHours = ($currentTime - $lastSuccessfulAt) / 3600;
+            $this->trace->info(
+                TraceCode::WEBHOOK_DEACTIVATE,
+                [
+                    'webhook_id'  => $webhook->getId(),
+                    'merchant_id' => $webhook->merchant->getId(),
+                ]
+            );
 
-            // If (LSA - current time) > 24hrs, mark deactivated.
-            if (($differenceHours > self::WEBHOOK_FAILURE_HOURS))
-            {
-                $this->trace->info(
-                    TraceCode::WEBHOOK_DEACTIVATE,
-                    [
-                        'webhook_id'  => $webhook->getId(),
-                        'merchant_id' => $webhook->merchant->getId(),
-                    ]
-                );
+            $this->disableWebhook($webhook);
 
-                $webhook->deactivate();
+            $this->sendEmail($webhook, 'deactivate');
 
-                $this->repo->saveOrFail($webhook);
-
-                $this->sendEmail($webhook,'deactivate');
-
-                // Webhook is now inactive
-                // So let's just delete the job
-                if ($jobDeleted == 0)
-                {
-                    $job->delete();
-                }
-
-                $sendFailureEmail = 0;
-            }
+            $deleteJobFlag = true;
+        }
+        else
+        {
+            $this->sendEmail($webhook, 'failure');
         }
 
-        if ($sendFailureEmail === 1)
-        {
-            $this->sendEmail($webhook,'failure');
+        $this->updateJob($deleteJobFlag);
+    }
 
+    protected function updateJob($deleteJobFlag = true)
+    {
+        if ($deleteJobFlag === true)
+        {
+            $this->job->delete();
+        }
+        else
+        {
             // Attempt again after 1 hour
-            $job->release(3600);
+            // TODO revert after testing on beta
+            $this->job->release(60);
         }
     }
 
-    protected function getWebhook($data)
+    protected function disableWebhook(Entity $webhook)
+    {
+        $webhook->deactivate();
+
+        $this->repo->saveOrFail($webhook);
+    }
+
+    protected function getActiveWebhook($data)
     {
         $mode = $data['mode'];
 
@@ -466,26 +504,15 @@ class Inferno
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_FIRING,
-                ['data' => $data]);
-
-            $this->job->delete();
+                [
+                    'data' => $data
+                ]);
+        }
+        else if ($webhook->isActive() === false)
+        {
+            $webhook = null;
         }
 
         return $webhook;
-    }
-
-    protected function isKnownRequestsException($e)
-    {
-        $msg = $e->getMessage();
-        $msg = strtolower($msg);
-
-        foreach (self::KNOWN_ERRORS as $errorMessage)
-        {
-            if (strpos($msg, $errorMessage) !== false)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 }
