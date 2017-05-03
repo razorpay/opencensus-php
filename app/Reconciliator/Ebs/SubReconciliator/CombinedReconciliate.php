@@ -12,9 +12,9 @@ class CombinedReconciliate extends Base\CombinedReconciliate
     const REFUND_TXN_CLM     = 'refunded';
     const CAPTURE_TXN_CLM    = 'captured';
 
-    const TXN_TYPE_COLUMN       = 'particular';
-    const TXN_REFUND            = 'refunded';              // refund
-    const TXN_PAYMENT           = 'captured';              // payment
+    const TXN_TYPE_COLUMN    = 'particular';
+    const TXN_REFUND         = 'refunded';              // refund
+    const TXN_PAYMENT        = 'captured';              // payment
 
     /**
      * We get two types of excels for EBS recon
@@ -26,7 +26,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      */
     protected function getReconciliationTypeForRow(array $row)
     {
-        // This indicated the file is frome email
+        // This indicates the file is frome email
         if (isset($row[self::TXN_TYPE_COLUMN]) === true)
         {
             return $this->getTypeForRowEmail($row);
@@ -53,7 +53,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
         if ((array_key_exists(self::REFUND_TXN_CLM, $row) === false) and
             (array_key_exists(self::CAPTURE_TXN_CLM, $row) === false))
         {
-            return;
+            return null;
         }
 
         if ($row[self::REFUND_TXN_CLM] !== 0.0)
@@ -73,7 +73,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
     /**
      * For the file generated from email.
      *
-     * Here, we get a column 'Particular',
+     * Here, we get a column 'particular',
      * whose value is 'captured' or 'refunded'
      *
      * Captured => Payment
@@ -86,17 +86,19 @@ class CombinedReconciliate extends Base\CombinedReconciliate
     {
         $txnType = strtolower($row[self::TXN_TYPE_COLUMN]);
 
-        if ($txnType === self::TXN_CREDIT)
+        switch ($txnType)
         {
-            return BaseReconciliate::PAYMENT;
-        }
-        else if ($txnType === self::TXN_DEBIT)
-        {
-            return BaseReconciliate::REFUND;
-        }
-        else
-        {
-            return null;
+            case self::TXN_PAYMENT:
+
+                return BaseReconciliate::PAYMENT;
+
+            case self::TXN_REFUND:
+
+                return BaseReconciliate::REFUND;
+
+            default:
+
+                return null;
         }
     }
 }
