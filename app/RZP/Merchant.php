@@ -83,11 +83,11 @@ class Merchant extends Entity
         ApiRequest::addHeader('Content-Type', 'application/json');
 
         // JSON encoding is also requried
-        $params = json_encode($params);
+        $body = json_encode($params);
 
         $relativeUrl = $this->getEntityUrl().$this->id;
 
-        return $this->request('PUT', $relativeUrl, $params);
+        return $this->request('PUT', $relativeUrl, $body);
     }
 
     public function editEmail($params)
