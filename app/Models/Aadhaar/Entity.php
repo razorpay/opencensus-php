@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'adhr';
 
-    protected $entity = 'aadhaar';
+    protected $entity = 'aadhaar2';
 
     protected $generateIdOnCreate = true;
 
