@@ -480,8 +480,7 @@ class Inferno
         else
         {
             // Attempt again after 1 hour
-            // TODO revert after testing on beta
-            $this->job->release(60);
+            $this->job->release(3600);
         }
     }
 
