@@ -8,7 +8,6 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\Status;
-use RZP\Exception\ServerErrorException;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
 use RZP\Gateway\Wallet\Mpesa\SoapMethod;
 use RZP\Gateway\Wallet\Mpesa\StatusCode;
@@ -22,8 +21,6 @@ class Server extends Base\Mock\Server
         unset($input['paymentId']);
 
         $this->content($input, Action::AUTH_REQUEST);
-
-        $this->validateChecksum($input);
 
         $this->validateAuthorizeInput($input);
 
@@ -172,23 +169,5 @@ class Server extends Base\Mock\Server
         $xml = $input[RequestFields::GATEWAY_PARAM];
 
         return (array) simplexml_load_string($xml);
-    }
-
-    protected function validateChecksum(array $input)
-    {
-        $xml = $input[RequestFields::GATEWAY_PARAM];
-
-        $checksum = $input[RequestFields::CHECKSUM];
-
-        $secret = $this->getGatewayInstance()->getSecret();
-
-        $generatedChecksum = hash_hmac(HashAlgo::SHA256, $xml, $secret);
-
-        if (hash_equals($checksum, $generatedChecksum) === false)
-        {
-            throw new Exception\ServerErrorException(
-                'Checksum Validation Failed',
-                ErrorCode::SERVER_ERROR_CHECKSUM_MATCH_FAILED);
-        }
     }
 }
