@@ -1024,19 +1024,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function unlockMerchant($id)
-    {
-        $error = $merchantDetails = [];
-
-        $params = ['locked' => false];
-
-        list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
-
-        $this->logActionToSlack($id, Actions::FORM_UNLOCKED);
-
-        return $error;
-    }
-
     public function fetchMerchantTerminal($id)
     {
         $this->setApiCredentials();

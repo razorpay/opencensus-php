@@ -193,8 +193,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
 
         // Admin merchant actions
-        Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
-        Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');

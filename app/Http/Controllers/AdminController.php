@@ -378,20 +378,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function getLockMerchantDetails($id)
-    {
-        $error = (new Admin\Service)->lockMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getUnlockMerchantDetails($id)
-    {
-        $error = (new Admin\Service)->unlockMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getMerchantDetails($id)
     {
         list($error, $data) = (new Admin\Service)->fetchMerchantAndActivationDetails($id);
