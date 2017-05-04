@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
         parent::__construct();
 
         $this->secureCacheDriver = Config::get('cache.secure_default');
+
+        $this->cache = Cache::getFacadeRoot();
     }
 
     public function authorize(array $input)
@@ -178,7 +180,7 @@ class Gateway extends Base\Gateway
 
         $amount = str_pad($input['payment']['amount'], 12, '0', STR_PAD_LEFT);
 
-        $randomNo = '000013';
+        $counter = $this->getCounter();
 
         $terminalId = '77777777';
 
@@ -190,7 +192,7 @@ class Gateway extends Base\Gateway
             '2'   => $bankIin . '0' . $input['aadhaar_number'],
             '3'   => '421000',
             '4'   => $amount,
-            '11'  => $randomNo,
+            '11'  => $counter,
             '22'  => '019',
             '24'  => '001',
             '25'  => '05',
@@ -204,6 +206,15 @@ class Gateway extends Base\Gateway
         ];
 
         return $data;
+    }
+
+    protected function getCounter()
+    {
+        $cacheKey = 'AEPS_COUNTER_' . Carbon::now('Asia/Kolkata')->format('Ymd');
+
+        $counter = $this->cache->increment($cacheKey);
+
+        return $counter;
     }
 
     protected function getRequestXml($input, $reversal = false)
