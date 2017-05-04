@@ -48,7 +48,9 @@ class Gateway extends Base\Gateway
         // As reversal is done in the same flow skipping for now
         //$this->setEncryptedFingerPrintDataInCache($input);
 
-        $requestXmlData = $this->getRequestXml($input);
+        $requestData = $this->getRequestData($input);
+
+        $requestXmlData = $this->getRequestXml($requestData);
 
         try
         {
@@ -60,11 +62,11 @@ class Gateway extends Base\Gateway
         }
         catch (\Exception $e)
         {
-            //catch Timeout exception, instead of generic Exception
+            //TODO catch Timeout exception, instead of generic Exception
             // Timeout should be 90 secs
-            $reversal = true;
+            $reversalRequestData = $this->getReversalData($requestData);
 
-            $reversalRequestXmlData = $this->getRequestXml($input, $reversal);
+            $reversalRequestXmlData = $this->getRequestXml($reversalRequestData);
 
             try
             {
@@ -82,6 +84,7 @@ class Gateway extends Base\Gateway
         }
         finally
         {
+            //As reversal is done in same thread, cache can be ignored
             //$this->deleteEncryptedFingerPrintDataFromCache($input);
         }
 
@@ -163,14 +166,11 @@ class Gateway extends Base\Gateway
         return $socket->receiveData();
     }
 
-    protected function getRequestData($input, $reversal)
+    protected function getRequestData($input)
     {
         $msgType = RequestConstants::REQUEST_MSG_TYPE;
 
-        if ($reversal === true)
-        {
-            $msgType = RequestConstants::REVERSAL_MSG_TYPE;
-        }
+        $counter = $this->getCounter();
 
         $transactionType = RequestConstants::OFFUS;
 
@@ -183,7 +183,6 @@ class Gateway extends Base\Gateway
 
         $amount = str_pad($input['payment']['amount'], 12, '0', STR_PAD_LEFT);
 
-        $counter = $this->getCounter();
 
         $terminalId = $this->getTerminalId();
 
@@ -211,6 +210,11 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    protected function getReversalData($data)
+    {
+        $data['0'] = RequestConstants::REVERSAL_MSG_TYPE;
+    }
+
     protected function getTerminalId()
     {
         if ($this->mode === Mode::TEST)
@@ -230,15 +234,13 @@ class Gateway extends Base\Gateway
         return $counter;
     }
 
-    protected function getRequestXml($input, $reversal = false)
+    protected function getRequestXml($data)
     {
         $xmlString = '';
 
         $xmlStringPrefix = '<isomsg direction="incoming"><header>00000000</header>';
 
         $xmlStringPostfix = '</isomsg>';
-
-        $data = $this->getRequestData($input, $reversal);
 
         foreach ($data as $key => $value)
         {
