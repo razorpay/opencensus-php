@@ -6,12 +6,12 @@ use Cache;
 use Config;
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal;
+use RZP\Gateway\Aeps\Base;
 
 class Gateway extends Base\Gateway
 {
@@ -110,23 +110,6 @@ class Gateway extends Base\Gateway
         $key = $this->getCacheKey($input['payment']['id']);
 
         return Cache::store($this->secureCacheDriver)->get($key) ?: [];
-    }
-
-    protected function createGatewayPaymentEntity($input, $requestData)
-    {
-        $gatewayPayment = $this->getNewGatewayPaymentEntity();
-
-        $gatewayPayment->setPaymentId($input['payment'][Payment\Entity::ID]);
-
-        $gatewayPayment->setAadhaarNumber($input['aadhaar_number']);
-
-        $gatewayPayment->setAmount($input['payment']['amount']);
-
-        $gatewayPayment->setCounter($requestData[RequestConstants::COUNTER]);
-
-        $this->repo->saveOrFail($gatewayPayment);
-
-        return $gatewayPayment;
     }
 
     protected function parseResponse($response)
