@@ -808,7 +808,8 @@ trait Authorize
             $gatewayInput['aadhaar'] = [
                 'fingerprint' => $input['aadhaar']['fingerprint'],
                 'session_key' => $input['aadhaar']['session_key'],
-                'hmac' => $input['aadhaar']['hmac']
+                'hmac'        => $input['aadhaar']['hmac'],
+                'cert_expiry' => $input['aadhaar']['cert_expiry'],
             ];
         }
         else

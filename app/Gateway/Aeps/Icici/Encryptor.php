@@ -52,15 +52,15 @@ class Encryptor
     {
         $skey = $this->generateSkey();
 
-        $pidBlock = $this->createPidXml($input['aadhaar_fingerprint']);
+        $pidBlock = $this->createPidXml($input['aadhaar']['fingerprint']);
 
-        $input['aadhaar_hmac'] = $this->generateHmac($pidBlock, $skey);
+        $input['aadhaar']['hmac'] = $this->generateHmac($pidBlock, $skey);
 
-        $input['aadhaar_fingerprint'] = $this->encryptUsingSessionKey($pidBlock, $skey);
+        $input['aadhaar']['fingerprint'] = $this->encryptUsingSessionKey($pidBlock, $skey);
 
-        $input['aadhaar_session_key'] = $this->encryptSessionKey('1234567890123456');
+        $input['aadhaar']['session_key'] = $this->encryptSessionKey($skey);
 
-        $input['aadhaar_cert_expiry'] = self::CERT_EXPIRY;
+        $input['aadhaar']['cert_expiry'] = self::CERT_EXPIRY;
     }
 
     function generateSkey($length = 16)
