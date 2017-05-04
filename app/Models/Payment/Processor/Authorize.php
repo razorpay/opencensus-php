@@ -1371,22 +1371,11 @@ trait Authorize
         return $returnData;
     }
 
-    protected function fillReturnDataWithAepsInfo(Payment\Entity $payment, & $data)
+    protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
     {
-        $data['status'] = $payment->getStatus();
-        $data['amount'] = $payment->getAmount();
-    }
+        $data['razorpay_order_id'] = $payment->order->getPublicId();
 
-    protected function verifyAepsEnabled()
-    {
-        $merchantMethods = $this->methods;
-
-        if (($merchantMethods === null) or
-            ($merchantMethods->isAepsEnabled() === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_AEPS_NOT_ENABLED_FOR_MERCHANT);
-        }
+        $data['razorpay_signature'] = $this->getSignature($data);
     }
 
     /**
@@ -1778,6 +1767,18 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyAepsEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isAepsEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AEPS_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 
