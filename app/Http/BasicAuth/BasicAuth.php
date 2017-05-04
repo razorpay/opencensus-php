@@ -8,6 +8,7 @@ use Crypt;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Http\Scopes;
 use RZP\Trace\TraceCode;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -177,6 +178,8 @@ class BasicAuth
      * @var array
      */
     protected $dashboardHeaders = array();
+
+    protected $scopes = [];
 
     /**
      * Contains valid lengths of key.
@@ -1092,6 +1095,13 @@ class BasicAuth
         $this->app['rzp.mode'] = $mode;
     }
 
+    public function setMerchant(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->merchant = $merchant;
+    }
+
     protected function setType($type)
     {
         $this->type = $type;
@@ -1154,6 +1164,41 @@ class BasicAuth
     public function isProxyOrPrivilegeAuth()
     {
         return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));
+    }
+
+    /**
+     * Set the scopes available on the current authenticated
+     * request
+     *
+     * @param array $scopes
+     *
+     * @return BasicAuth
+     */
+    public function withScopes(array $scopes) : BasicAuth
+    {
+        $this->scopes = $scopes;
+
+        return $this;
+    }
+
+    /**
+     * Check if the request has a particular
+     * scope defined
+     *
+     * @param string $scope
+     * @return bool
+     */
+    public function hasScope(string $scope) : bool
+    {
+        if (($scope === '*') or
+            ($scope === '*.*'))
+        {
+            return true;
+        }
+
+        $allScopes = $this->scopes ?? [];
+
+        return (in_array($scope, $allScopes, true) === true);
     }
 
     protected function setKeyFromQueryParams()
