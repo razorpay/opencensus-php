@@ -1,10 +1,10 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import moment from 'moment';
 import { Field, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
-import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required } from 'rzp/utils/validators';
 
@@ -356,13 +356,12 @@ export default class BusinessDetailsForm extends Component {
                   <div class="col-md-9">
                     <Field
                       name="business_doe"
-                      component={DatePickerField}
+                      component={InputField}
+                      type="date"
+                      max={moment().format('YYYY-MM-DD')}
                       class="form-control"
-                      outputDateFormat="YYYY-MM-DD"
                       disabled={locked}
-                      isOutsideRange={day => {
-                        return day.isAfter(moment());
-                      }}
+                      validate={[required()]}
                     />
                   </div>
                 </div>
