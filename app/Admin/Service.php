@@ -620,15 +620,6 @@ class Service extends Base\Service
         return compact('test', 'live');
     }
 
-    public function fetchMerchantBanks($id)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->merchant->setId($id)->fetchBanks()->toArray();
-
-        return $response;
-    }
-
     public function postEditMerchant($id, $input)
     {
         $error = [];

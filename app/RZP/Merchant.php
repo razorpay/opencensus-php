@@ -118,13 +118,6 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl, $params);
     }
 
-    public function fetchBanks()
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/banks';
-
-        return $this->request('GET', $relativeUrl);
-    }
-
     public function setBanks($params)
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/banks';

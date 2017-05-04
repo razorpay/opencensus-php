@@ -1542,7 +1542,15 @@ app
           $scope.bankdata[e] = value;
         });
       };
-      var request = $http.get('/admin/merchant/' + current + '/banks');
+      var data = {
+        route_name: 'merchant_get_banks',
+        url_params: {
+          '{id}': current,
+        },
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request.success(function(data) {
         if (data.success) {
           $scope.banks = data.data;

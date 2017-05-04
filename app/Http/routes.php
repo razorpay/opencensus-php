@@ -159,8 +159,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/list', 'AdminController@getMerchantList');
         Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
-        // This is the list of banks in netbanking
-        Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
 
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
         Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature')
