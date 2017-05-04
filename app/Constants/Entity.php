@@ -177,6 +177,7 @@ class Entity
         self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
         self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
+        self::AEPS                  => \RZP\Gateway\Aeps::class,
         self::AEPS_ICICI            => \RZP\Gateway\Aeps\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,

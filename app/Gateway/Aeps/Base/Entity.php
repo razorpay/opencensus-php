@@ -14,8 +14,6 @@ class Entity extends Base\Entity
     const REVERSED              = 'reversed';
     const ERROR_CODE            = 'error_code';
     const ERROR_DESCRIPTION     = 'error_description';
-    const REV_ERROR_CODE        = 'rev_error_code';
-    const REV_ERROR_DESCRIPTION = 'rev_error_description';
     const AADHAAR_NUMBER        = 'aadhaar_number';
     const RRN                   = 'rrn';
     const COUNTER               = 'counter';
@@ -26,11 +24,11 @@ class Entity extends Base\Entity
         self::AMOUNT,
         self::RECEIVED,
         self::ERROR_CODE,
+        self::ERROR_DESCRIPTION,
         self::PAYMENT_ID,
         self::REFUND_ID,
         self::REVERSED,
         self::RRN,
-        self::ERROR_DESCRIPTION,
     ];
 
     protected $fillable = [
@@ -45,7 +43,7 @@ class Entity extends Base\Entity
     ];
 
     protected $casts = [
-        self::AMOUNT        => 'int',
+        self::AMOUNT => 'int',
     ];
 
     protected $entity = Constants\Entity::AEPS;
