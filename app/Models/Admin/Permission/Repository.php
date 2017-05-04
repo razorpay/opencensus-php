@@ -61,7 +61,7 @@ class Repository extends Base\Repository
         if ((empty($type) === false) and
             ($type === 'workflow'))
         {
-            $query->where(Entity::ENABLE_WORKFLOW, '=', 1);
+            $query->where($pmTable . '.enable_workflow', '=', 1);
         }
 
         return $query->get();

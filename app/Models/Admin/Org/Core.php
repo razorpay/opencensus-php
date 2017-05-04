@@ -28,7 +28,7 @@ class Core extends Base\Core
         Entity::verifyIdAndStripSign($orgId);
 
         return $this->repo->org->findOrFailPublicWithRelations(
-            $orgId, ['hostnames', 'permissions']);
+            $orgId, ['hostnames', 'permissions', 'workflow_permissions']);
     }
 
     public function edit(string $orgId, array $input)
@@ -66,7 +66,7 @@ class Core extends Base\Core
                                        ->toArray();
 
                 $oldPerms = array_map(function($perm) {
-                    return $perm->getId();
+                    return $perm['id'];
                 }, $oldPerms);
 
                 $diffPerms = array_diff($oldPerms, $perms);
@@ -168,7 +168,7 @@ class Core extends Base\Core
         }
     }
 
-    public function enableWorkflowPermissionsForOrg(
+    protected function enableWorkflowPermissionsForOrg(
         Entity $org,
         array $permissions)
     {
@@ -176,7 +176,7 @@ class Core extends Base\Core
             $org->getId(), $permissions, true);
     }
 
-    public function disableWorkflowPermissionsForOrg(
+    protected function disableWorkflowPermissionsForOrg(
         Entity $org,
         array $permissions)
     {
