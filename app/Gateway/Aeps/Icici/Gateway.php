@@ -60,7 +60,7 @@ class Gateway extends Base\Gateway
 
             $parsedResponse = $this->parseResponse($response);
 
-            $this->updateGatewayPayment($parsedResponse);
+            $this->updateGatewayPayment($gatewayPayment, $parsedResponse);
         }
         catch (Exception\GatewayTimeoutException $e)
         {
@@ -74,7 +74,7 @@ class Gateway extends Base\Gateway
 
                 $parsedReversalResponse = $this->parseResponse($reversalResponse);
 
-                $this->updateGatewayPayment($parsedReversalResponse);
+                $this->updateGatewayPayment($gatewayPayment, $parsedReversalResponse);
 
                 // After reverse is complete, We have to throw exception as
                 // paymnet failed overall
@@ -139,19 +139,21 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
         }
 
-        $fieldCount = $response->count();
+        $xmlResponse = simplexml_load_string($response);
 
-        foreach (range(0, $fieldCount - 1) as $index)
+        $fieldCount = $xmlResponse->count();
+
+        foreach (range(0, $fieldCount - 2) as $index)
         {
-            foreach ($response->field[$index]->attributes() as $a => $b)
+            foreach ($xmlResponse->field[$index]->attributes() as $a => $b)
             {
                 if ($a === 'id')
                 {
-                    $key = $b;
+                    $key = $b->__toString();
                 }
                 else if ($a === 'value')
                 {
-                    $value = $b;
+                    $value = $b->__toString();
                 }
             }
 
@@ -172,11 +174,11 @@ class Gateway extends Base\Gateway
         {
             if ($response[ResponseConstants::STATUS] === '00')
             {
-                $gatewayPayment->setReversed(true);
+                $gatewayPayment->setReversed(1);
             }
             else
             {
-                $gatewayPayment->setReversed(false);
+                $gatewayPayment->setReversed(0);
 
                 $gatewayPayment->setReversalErrorCode($response[ResponseConstants::STATUS]);
 
@@ -188,7 +190,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $gatewayPayment->setReversed(false);
+            $gatewayPayment->setReversed(0);
         }
     }
 
@@ -203,11 +205,11 @@ class Gateway extends Base\Gateway
         {
             if ($response[ResponseConstants::STATUS] === '00')
             {
-                $gatewayPayment->setReceived(true);
+                $gatewayPayment->setReceived(1);
             }
             else
             {
-                $gatewayPayment->setReceived(false);
+                $gatewayPayment->setReceived(0);
                 $gatewayPayment->setErrorCode($response[ResponseConstants::STATUS]);
 
                 if (isset($response[ResponseConstants::DESCRIPTION]) === true)
@@ -218,7 +220,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $gatewayPayment->setReceived(false);
+            $gatewayPayment->setReceived(0);
         }
     }
 

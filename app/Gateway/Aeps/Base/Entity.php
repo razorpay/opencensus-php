@@ -66,4 +66,14 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::COUNTER, $counter);
     }
+
+    public function setRrn($rrn)
+    {
+        $this->setAttribute(self::RRN, $rrn);
+    }
+
+    public function setReceived($recieved)
+    {
+        $this->setAttribute(self::RECEIVED, $recieved);
+    }
 }
