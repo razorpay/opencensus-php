@@ -17,4 +17,5 @@ class ResponseFields
     const PAYMENT_STATUS      = 'PaymentStatus';
     const VERIFY_RESPONSE_AMT = 'Amount';
     const STATUS              = 'status';
+    const VERIFICATION        = 'VERIFICATION';
 }

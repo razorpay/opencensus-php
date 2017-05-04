@@ -151,8 +151,8 @@ class Gateway extends Base\Gateway
     {
         $verify->gatewaySuccess = false;
 
-        if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
-            ($response[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
+        if ((isset($response[ResponseFields::VERIFICATION]) === true) and
+            ($response[ResponseFields::VERIFICATION] === Constants::Y))
         {
             $verify->gatewaySuccess = true;
         }
@@ -188,7 +188,6 @@ class Gateway extends Base\Gateway
             RequestFields::MODE         => Constants::VERIFY,
             RequestFields::PAYEE_ID     => $this->getPid(),
             RequestFields::USER_TYPE    => Constants::RETAIL_USER,
-           // RequestFields::PAYMENT_TYPE => Constants::HOT_PAYMENT,
         ];
 
         $data[RequestFields::ENCRYPTED_STRING] = $this->getVerifyEncryptedString($input);
@@ -198,6 +197,9 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyEncryptedString($input)
     {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
         $data = [
             RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
@@ -205,7 +207,7 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY_CODE      => Currency::INR,
             RequestFields::CONFIRMATION       => Constants::YES,
             RequestFields::RETURN_URL         => "dummy",
-            RequestFields::BANK_REFERENCE_ID  => $input['payment']['transaction_id'],
+            RequestFields::BANK_REFERENCE_ID  => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
         ];
 
         $queryString = $this->createQueryString($data);
@@ -343,17 +345,17 @@ class Gateway extends Base\Gateway
     {
         return [
             'received'          => true,
-            'status'            => $content[ResponseFields::STATUS],
+            'status'            => $content['VERIFICATION'],
         ];
     }
 
     protected function parseResponseXml(string $response)
     {
+        $response = trim($response);
+
         $responseArray = (array) simplexml_load_string($response);
 
-        // Lets assume we verify only one payment at a time
-        // So the response will contain just 1 table at a time
-        return (array) $responseArray['@attributes'];
+        return $responseArray;
     }
 
     public function getMerchantId()
