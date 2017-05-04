@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Aeps\Icici;
 
 use Cache;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
@@ -166,13 +167,13 @@ class Gateway extends Base\Gateway
 
         $bankIin = '607202';
 
-        $amount = '000000001000';
+        $amount = str_pad($input['amount'], 12, '0', STR_PAD_LEFT);
 
         $randomNo = '000013';
 
         $terminalId = '77777777';
 
-        $date = '2017-04-09T11:11:10';
+        $date = Carbon::now('Asia/Kolkata')->format('Y-m-d\TH:i:s');
 
         // FIX IT
         $input['aadhaar_no'] = '123456789012';
@@ -191,7 +192,7 @@ class Gateway extends Base\Gateway
             '42'  => '       RAZORPAY',
             '60'  => '',
             '125' => 'OFFUS.APAY',
-            '126' => '"001009nnnyFMRnn008001X401019' . $date . '402001F403001Y40400660758041200' . $terminalId,
+            '126' => '"001009nnnyFMRnn008001X401019' . $date . '402001F403001Y404006607580412008' . $terminalId,
             '127' => '',
         ];
 
