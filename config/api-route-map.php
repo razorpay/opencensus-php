@@ -331,6 +331,8 @@ return [
 
         'merchant_get_banks'                => 'merchants/{id}/banks',
 
+        'merchant_set_banks'                => 'merchants/{id}/banks',
+
         'merchant_action'                   => 'merchants/{id}/action',
         'merchant_live_enable'              => 'merchants/{id}/live/enable',
         'merchant_live_disable'             => 'merchants/{id}/live/disable',

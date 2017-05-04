@@ -814,30 +814,6 @@ class Service extends Base\Service
         return [$error, $comment];
     }
 
-    public function postMerchantBanks($id, $input)
-    {
-        $error = (new Merchant\Validator)->validateInput('banks', $input)->messages();
-
-        $data = [];
-
-        if (empty($error))
-        {
-            $this->setApiCredentials();
-
-            try
-            {
-                $data = $this->api->merchant->fetch($id)->setBanks($input)->toArray();
-                $this->logActionToSlack($id, Actions::BANK_LIST_EDITED);
-            }
-            catch (\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error[] = $e->getMessage();
-            }
-        }
-
-        return array($error, $data);
-    }
-
     public function postAddAdjustment($id, $input)
     {
         $data = [];

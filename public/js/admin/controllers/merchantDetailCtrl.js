@@ -514,10 +514,17 @@ app
             data.banks.push(e);
           }
         });
+        var data = {
+          route_name: 'merchant_set_banks',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/banks',
-          data: angular.toJson(data),
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {

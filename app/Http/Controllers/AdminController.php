@@ -412,15 +412,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postMerchantBanks($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postMerchantBanks($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postAddAdjustment($id)
     {
         $input = Input::all();

@@ -194,7 +194,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
-        Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
         Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
         Route::get('/admin/merchant/{id}/live/enable', 'AdminController@getMerchantLiveEnable');
