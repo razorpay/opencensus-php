@@ -10,6 +10,7 @@ class RequestConstants
     const OFFUS                 = 'OFFUS.APAY';
     const ONUS                  = 'SL.APAY';
 
+    // TODO rename constants starting with F
     const MSG_TYPE              = '0';
     const ACC_NO                = '2';
     const REQ_TYPE              = '3';

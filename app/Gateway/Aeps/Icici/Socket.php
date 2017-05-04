@@ -10,6 +10,8 @@ class Socket extends Base\Core
 {
     protected $sock;
 
+    const TIMEOUT = 90;
+
     public function __construct()
     {
         $this->sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
@@ -52,6 +54,15 @@ class Socket extends Base\Core
 
     public function receiveData($maxDataSize = 10000)
     {
+        socket_set_option(
+            $this->sock,
+            SOL_SOCKET,
+            SO_RCVTIMEO,
+            [
+                "sec"  => self::TIMEOUT,
+                "usec" => 0
+            ]);
+
         $data = socket_read($this->sock, $maxDataSize);
 
         $this->closeSocket();
