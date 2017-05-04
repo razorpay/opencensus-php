@@ -131,7 +131,11 @@ class Service extends Base\Service
 
     protected function sendAdminForgotPasswordEmail(Entity $admin, $input)
     {
-        $forgotPasswordMail = new AdminMail\ForgotPassword($admin, $input);
+        $org = $admin->org->toArray();
+
+        $admin = $admin->toArray();
+
+        $forgotPasswordMail = new AdminMail\ForgotPassword($admin, $org, $input);
 
         Mail::queue($forgotPasswordMail);
     }
@@ -280,7 +284,11 @@ class Service extends Base\Service
 
     public function sendAdminCreateEmail($admin, $input)
     {
-        $createAdminMail = new AdminMail\Create($admin, $input);
+        $org = $admin->org->toArray();
+
+        $admin = $admin->toArray();
+
+        $createAdminMail = new AdminMail\Create($admin, $org, $input);
 
         Mail::queue($createAdminMail);
     }

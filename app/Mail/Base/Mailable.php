@@ -10,7 +10,7 @@ use Illuminate\Mail\Mailable as BaseMailable;
 
 class Mailable extends BaseMailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
 
     // Attribute to store app mode value which is used to construct the mailable
     protected $mode;

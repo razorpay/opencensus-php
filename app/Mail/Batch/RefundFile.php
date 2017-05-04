@@ -11,22 +11,22 @@ use RZP\Models\Batch;
 
 class RefundFile extends Mailable
 {
-    protected $batch;
+    protected $merchant;
 
     protected $filePath;
 
-    public function __construct(Batch\Entity $batch, string $filePath)
+    public function __construct(array $merchant, string $filePath)
     {
         parent::__construct();
 
-        $this->batch = $batch;
+        $this->merchant = $merchant;
 
         $this->filePath = $filePath;
     }
 
     protected function addRecipients()
     {
-        $emails = $this->batch->merchant->getTransactionReportEmail();
+        $emails = $this->merchant['transaction_report_email'];
 
         $this->to($emails);
 

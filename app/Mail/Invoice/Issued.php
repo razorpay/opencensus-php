@@ -2,7 +2,6 @@
 
 namespace RZP\Mail\Invoice;
 
-use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Type;
 
 class Issued extends Base
@@ -13,13 +12,13 @@ class Issued extends Base
         Type::INVOICE => ' Invoice from %s',
     ];
 
-    protected $issuedPdfPath;
+    protected $fileData;
 
-    public function __construct(InvoiceEntity $invoice, $issuedPdfPath)
+    public function __construct(array $invoice, array $invoiceData, array $fileData = null)
     {
-        parent::__construct($invoice);
+        parent::__construct($invoice, $invoiceData);
 
-        $this->issuedPdfPath = $issuedPdfPath;
+        $this->fileData = $fileData;
     }
 
     protected function addHtmlView()
@@ -31,12 +30,12 @@ class Issued extends Base
 
     protected function addAttachments()
     {
-        if ($this->issuedPdfPath !== null)
+        if ($this->fileData !== null)
         {
-            $pdfDisplayName = $this->invoice->getPdfDisplayName();
+            $pdfDisplayName = $this->fileData['name'];
 
             $this->attach(
-                $this->issuedPdfPath,
+                $this->fileData['path'],
                 ['as' => $pdfDisplayName, 'mime' => 'application/pdf']);
         }
 
@@ -45,7 +44,7 @@ class Issued extends Base
 
     protected function getSubjectTemplate()
     {
-        $type =  $this->invoice->getType();
+        $type =  $this->invoice['type'];
 
         return self::SUBJECT_TEMPLATES[$type];
     }

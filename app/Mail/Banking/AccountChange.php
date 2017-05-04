@@ -5,8 +5,6 @@ namespace RZP\Mail\Banking;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Common;
-use RZP\Models\Merchant;
-use RZP\Models\BankAccount;
 
 class AccountChange extends Mailable
 {
@@ -14,7 +12,7 @@ class AccountChange extends Mailable
 
     protected $merchant;
 
-    public function __construct(BankAccount\Entity $bankAccount, Merchant\Entity $merchant)
+    public function __construct(array $bankAccount, array $merchant)
     {
         parent::__construct();
 
@@ -25,8 +23,8 @@ class AccountChange extends Mailable
 
     protected function addRecipients()
     {
-        $email = $this->merchant->getEmail();
-        $name = $this->merchant->getName();
+        $email = $this->merchant['email'];
+        $name = $this->merchant['name'];
 
         $this->to($email, $name);
 
@@ -35,7 +33,12 @@ class AccountChange extends Mailable
 
     protected function addSubject()
     {
-        $label = $this->merchant->getBillingLabelElseName();
+        $label = $this->merchant['billing_label'];
+
+        if (empty($label) === true)
+        {
+            $label = $this->merchant['name'];
+        }
 
         $subject = 'Razorpay | Bank account change successful for ' . $label;
 
@@ -46,7 +49,7 @@ class AccountChange extends Mailable
 
     protected function addMailData()
     {
-        $data = array_merge($this->merchant->toArray(), $this->bankAccount->toArray());
+        $data = array_merge($this->merchant, $this->bankAccount);
 
         $this->with($data);
 

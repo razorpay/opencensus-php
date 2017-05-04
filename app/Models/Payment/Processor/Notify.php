@@ -2,19 +2,19 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use Illuminate\Foundation\Bus\DispatchesJobs;
-
 use App;
 use Carbon\Carbon;
-use RZP\Constants\Mode;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use Mail;
+use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
+use RZP\Jobs\InvoiceAction;
 use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Base;
+use RZP\Models\Invoice;
+use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Models\Invoice;
-use RZP\Constants\MailTags;
-use RZP\Jobs\InvoiceAction;
 
 class Notify
 {
@@ -104,7 +104,9 @@ class Notify
 
             if ($this->invoice !== null)
             {
-                $mailable->setInvoice($this->invoice);
+                $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+
+                $mailable->setInvoiceDetails($this->invoice->toArrayPublic(), $invoiceData);
             }
 
             if ($this->isCustomerMailEnabled($mailable) === true)
@@ -119,7 +121,9 @@ class Notify
 
             if ($this->invoice !== null)
             {
-                $mailable->setInvoice($this->invoice);
+                $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+
+                $mailable->setInvoiceDetails($this->invoice->toArrayPublic(), $invoiceData);
             }
 
             if ($this->isMerchantMailEnabled($mailable) === true)

@@ -3,17 +3,17 @@
 namespace RZP\Models\Invoice;
 
 use App;
+use Carbon\Carbon;
 use Config;
 use Mail;
-
-use Carbon\Carbon;
+use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Mail\Invoice as InvoiceMail;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Models\Customer;
+use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Trace\TraceCode;
-use RZP\Constants\MailTags;
-use RZP\Exception;
 
 class Notifier extends Base\Core
 {
@@ -138,7 +138,17 @@ class Notifier extends Base\Core
             return false;
         }
 
-        $invoiceIssuedMail = new InvoiceMail\Issued($this->invoice, $this->issuedPdfPath);
+        $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+
+        $fileData = [
+            'name' => $this->invoice->getPdfDisplayName(),
+            'path' => $this->issuedPdfPath,
+        ];
+
+        $invoiceIssuedMail = new InvoiceMail\Issued(
+                                    $this->invoice->toArrayPublic(),
+                                    $invoiceData,
+                                    $fileData);
 
         Mail::send($invoiceIssuedMail);
 
@@ -163,7 +173,11 @@ class Notifier extends Base\Core
             return false;
         }
 
-        $invoiceExpiredMail = new InvoiceMail\Expired($this->invoice);
+        $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+
+        $invoiceExpiredMail = new InvoiceMail\Expired(
+                                    $this->invoice->toArrayPublic(),
+                                    $invoiceData);
 
         Mail::send($invoiceExpiredMail);
 
@@ -225,7 +239,11 @@ class Notifier extends Base\Core
             return false;
         }
 
-        $invoiceExpiringMail = new InvoiceMail\Expiring($this->invoice);
+        $invoiceData = (new ViewDataSerializer($this->invoice))->get();
+
+        $invoiceExpiringMail = new InvoiceMail\Expiring(
+                                    $this->invoice->toArrayPublic(),
+                                    $invoiceData);
 
         Mail::send($invoiceExpiringMail);
 

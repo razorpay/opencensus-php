@@ -170,6 +170,10 @@ class Core extends Base\Core
             return;
         }
 
+        $newBankAccount = $newBankAccount->toArray();
+
+        $merchant = $merchant->toArray();
+
         $bankAccountChangeMail = new BankAccountChangeMail($newBankAccount, $merchant);
 
         Mail::queue($bankAccountChangeMail);

@@ -3,20 +3,19 @@
 namespace RZP\Mail\Admin\Account;
 
 use RZP\Constants\MailTags;
-use RZP\Models\Admin\Admin\Entity as AdminEntity;
 
 class ForgotPassword extends Base
 {
     const TOKEN = 'token';
 
-    public function __construct(AdminEntity $admin, array $input)
+    public function __construct(array $admin, array $org, array $input)
     {
-        parent::__construct($admin, $input);
+        parent::__construct($admin, $org, $input);
     }
 
     protected function addSubject()
     {
-        $subject = 'Reset your password for' . $this->org->getDisplayName() . ' dashboard';
+        $subject = 'Reset your password for' . $this->org['display_name'] . ' dashboard';
 
         $this->subject($subject);
 
@@ -32,10 +31,12 @@ class ForgotPassword extends Base
 
     protected function addMailData()
     {
+        $firstName = explode(' ', $this->admin['name'])[0];
+
         $data = [
-            'firstName' => $this->admin->getFirstName(),
+            'firstName' => $firstName,
             'resetUrl'  => $this->input['reset_password_url'] . '/' . $this->input[self::TOKEN],
-            'orgName'   => $this->org->getDisplayName(),
+            'orgName'   => $this->org['display_name'],
         ];
 
         $this->with($data);

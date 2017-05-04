@@ -2,7 +2,6 @@
 
 namespace RZP\Mail\Invoice;
 
-use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Type;
 
 class Expired extends Base
@@ -13,9 +12,9 @@ class Expired extends Base
         Type::INVOICE => ' Invoice from %s has expired',
     ];
 
-    public function __construct(InvoiceEntity $invoice)
+    public function __construct(array $invoice, array $invoiceData)
     {
-        parent::__construct($invoice);
+        parent::__construct($invoice, $invoiceData);
     }
 
     protected function addHtmlView()
@@ -27,7 +26,7 @@ class Expired extends Base
 
     protected function getSubjectTemplate()
     {
-        $type =  $this->invoice->getType();
+        $type =  $this->invoice['type'];
 
         return self::SUBJECT_TEMPLATES[$type];
     }

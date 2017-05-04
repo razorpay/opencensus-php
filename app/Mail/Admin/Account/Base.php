@@ -5,7 +5,6 @@ namespace RZP\Mail\Admin\Account;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
-use RZP\Models\Admin\Admin\Entity as AdminEntity;
 
 class Base extends Mailable
 {
@@ -15,13 +14,13 @@ class Base extends Mailable
 
     protected $input;
 
-    public function __construct(AdminEntity $admin, array $input)
+    public function __construct(array $admin, array $org, array $input)
     {
         parent::__construct();
 
         $this->admin = $admin;
 
-        $this->org = $admin->org;
+        $this->org = $org;
 
         $this->input = $input;
     }
@@ -38,7 +37,7 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $to = $this->admin->getEmail();
+        $to = $this->admin['email'];
 
         $this->to($to);
 

@@ -175,6 +175,8 @@ class DailyReport extends Base\Core
                     )
         );
 
+        $merchant = $merchant->toArrayPublic();
+
         $dailyReportMail = new DailyReportMail($data, $merchant);
 
         Mail::send($dailyReportMail);

@@ -5,20 +5,23 @@ namespace RZP\Mail\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
-use RZP\Models\Merchant\Webhook\Entity as WebhookEntity;
 use RZP\Models\Merchant\Webhook\Event;
 
 class Webhook extends Mailable
 {
     protected $webhook;
 
+    protected $merchant;
+
     protected $options;
 
-    public function __construct(WebhookEntity $webhook, array $options)
+    public function __construct(array $webhook, array $merchant, array $options)
     {
         parent::__construct();
 
         $this->webhook = $webhook;
+
+        $this->merchant = $merchant;
 
         $this->options = $options;
     }
@@ -36,7 +39,7 @@ class Webhook extends Mailable
 
     protected function addRecipients()
     {
-        $emails = $this->webhook->merchant->getTransactionReportEmail();
+        $emails = $this->merchant['transaction_report_email'];
 
         $this->to($emails);
 
@@ -66,7 +69,7 @@ class Webhook extends Mailable
     protected function addMailData()
     {
         $data = [
-            'url' => $this->webhook->getUrl(),
+            'url' => $this->webhook['url'],
         ];
 
         $data['error_message'] = $this->options['errorMessage'];
@@ -120,7 +123,12 @@ class Webhook extends Mailable
 
     protected function getSubject()
     {
-        $subjectName = $this->webhook->merchant->getBillingLabelElseName();
+        $subjectName = $this->merchant['billing_label'];
+
+        if (empty($subjectName) === true)
+        {
+            $subjectName = $this->merchant['name'];
+        };
 
         $subject = 'Razorpay | ';
 

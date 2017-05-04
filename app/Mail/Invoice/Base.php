@@ -8,7 +8,6 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Exception;
-use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Type;
 
 class Base extends Mailable
@@ -22,13 +21,17 @@ class Base extends Mailable
 
     protected $invoice;
 
-    public function __construct(InvoiceEntity $invoice)
+    protected $invoiceData;
+
+    public function __construct(array $invoice, array $invoiceData)
     {
         parent::__construct();
 
         $this->invoice = $invoice;
 
-        $this->invoiceData = $this->getInvoiceData();
+        $this->invoiceData = $invoiceData;
+
+        $this->addExtraInvoicePayLoad();
     }
 
     protected function addSender()
@@ -55,7 +58,7 @@ class Base extends Mailable
     {
         $merchantName = $this->invoiceData['merchant']['name'];
 
-        $type = $this->invoice->getType();
+        $type = $this->invoice['type'];
 
         $subjectTemplate = $this->getSubjectTemplate();
 
@@ -88,13 +91,13 @@ class Base extends Mailable
     {
         $this->withSwiftMessage(function ($message)
         {
-            $invoiceType = $this->invoice->getType();
+            $invoiceType = $this->invoice['type'];
 
             $label = self::MAIL_TAG_MAP[$invoiceType] ?? MailTags::INVOICE;
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, $this->invoice->getPublicId());
+            $headers->addTextHeader(MailTags::HEADER, $this->invoice['id']);
 
             $headers->addTextHeader(MailTags::HEADER, $label);
         });

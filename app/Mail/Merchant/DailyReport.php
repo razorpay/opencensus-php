@@ -5,7 +5,6 @@ namespace RZP\Mail\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
-use RZP\Models\Merchant;
 
 class DailyReport extends Mailable
 {
@@ -13,7 +12,7 @@ class DailyReport extends Mailable
 
     protected $merchant;
 
-    public function __construct(array $data, Merchant\Entity $merchant)
+    public function __construct(array $data, array $merchant)
     {
         parent::__construct();
 
@@ -72,7 +71,7 @@ class DailyReport extends Mailable
         {
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, $this->merchant->getPublicId());
+            $headers->addTextHeader(MailTags::HEADER, $this->merchant['id']);
 
             $headers->addTextHeader(MailTags::HEADER, MailTags::DAILY_REPORT);
         });

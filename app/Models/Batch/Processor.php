@@ -389,7 +389,9 @@ class Processor extends Base\Core
             return;
         }
 
-        $batchRefundMail = new BatchRefundFileMail($batch, $filePath);
+        $merchant = $batch->merchant->toArray();
+
+        $batchRefundMail = new BatchRefundFileMail($merchant, $filePath);
 
         Mail::send($batchRefundMail);
     }

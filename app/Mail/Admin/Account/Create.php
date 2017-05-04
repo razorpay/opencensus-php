@@ -5,25 +5,24 @@ namespace RZP\Mail\Admin\Account;
 use Config;
 
 use RZP\Constants\MailTags;
-use RZP\Models\Admin\Admin\Entity as AdminEntity;
 
 class Create extends Base
 {
-    public function __construct(AdminEntity $admin, array $input)
+    public function __construct(array $admin, array $org, array $input)
     {
-        parent::__construct($admin, $input);
+        parent::__construct($admin, $org, $input);
 
         $this->header = MailTags::ADMIN_CREATE;
     }
 
     public function canSend()
     {
-        return ($this->org->getAuthType() !== 'password');
+        return ($this->org['auth_type'] !== 'password');
     }
 
     protected function addSubject()
     {
-        $subject = 'Your admin account details for ' . $this->org->getDisplayName() . ' dashboard';
+        $subject = 'Your admin account details for ' . $this->org['display_name'] . ' dashboard';
 
         $this->subject($subject);
 
@@ -48,10 +47,10 @@ class Create extends Base
     {
         $data = [
             'user' => [
-                'email'    => $this->admin->getEmail(),
+                'email'    => $this->admin['email'],
                 // todo: Hack for now. Remove it
                 'password' => $this->input['password'],
-                'org'      => $this->org->getDisplayName(),
+                'org'      => $this->org['display_name'],
                 'url'      => Config::get('applications.dashboard.url'),
             ]
         ];

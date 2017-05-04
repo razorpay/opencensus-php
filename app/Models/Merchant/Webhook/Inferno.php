@@ -117,7 +117,11 @@ class Inferno
             'errorMessage' => $this->errorMessage
         ];
 
-        $webhookMail = new WebhookMail($webhook, $options);
+        $merchant = $webhook->merchant->toArrayPublic();
+
+        $webhook = $webhook->toArrayPublic();
+
+        $webhookMail = new WebhookMail($webhook, $merchant, $options);
 
         Mail::send($webhookMail);
     }

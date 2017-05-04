@@ -5,7 +5,6 @@ namespace RZP\Mail\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Common;
-use RZP\Models\Merchant;
 
 class CreateSubMerchant extends Mailable
 {
@@ -13,7 +12,7 @@ class CreateSubMerchant extends Mailable
 
     protected $aggregator;
 
-    public function __construct(Merchant\Entity $subMerchant, Merchant\Entity $aggregator)
+    public function __construct(array $subMerchant, array $aggregator)
     {
         parent::__construct();
 
@@ -24,9 +23,9 @@ class CreateSubMerchant extends Mailable
 
     protected function addRecipients()
     {
-        $email = $this->subMerchant->getEmail();
+        $email = $this->subMerchant['email'];
 
-        $name = $this->subMerchant->getName();
+        $name = $this->subMerchant['name'];
 
         $this->to($email, $name);
 
@@ -35,9 +34,9 @@ class CreateSubMerchant extends Mailable
 
     protected function addCc()
     {
-        if ($this->subMerchant->getEmail() !== $this->aggregator->getEmail())
+        if ($this->subMerchant['email'] !== $this->aggregator['email'])
         {
-            $this->cc($this->aggregator->getEmail());
+            $this->cc($this->aggregator['email']);
         }
 
         return $this;
@@ -53,8 +52,8 @@ class CreateSubMerchant extends Mailable
     protected function addMailData()
     {
         $data = [
-            'name'  => $this->subMerchant->getName(),
-            'email' => $this->subMerchant->getEmail(),
+            'name'  => $this->subMerchant['name'],
+            'email' => $this->subMerchant['email'],
         ];
 
         $this->with($data);

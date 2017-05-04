@@ -5,30 +5,32 @@ namespace RZP\Mail\Admin;
 use Carbon\Carbon;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base;
-use RZP\Models\Admin\Admin;
-use RZP\Models\Admin\AdminLead;
 
 class MerchantInvitation extends Base\Mailable
 {
     protected $admin;
 
+    protected $org;
+
     protected $invitation;
 
-    public function __construct(Admin\Entity $admin, AdminLead\Entity $invitation)
+    public function __construct(array $admin, array $org, array $invitation)
     {
         parent::__construct();
 
         $this->admin = $admin;
+
+        $this->org = $org;
 
         $this->invitation = $invitation;
     }
 
     protected function addRecipients()
     {
-        $email = $this->invitation->getEmail();
+        $email = $this->invitation['email'];
 
         // TODO have a fallover when contact name is not given
-        $name = $this->invitation->getFormData()['contact_name'] ?? '';
+        $name = $this->invitation['format_data']['contact_name'] ?? '';
 
         $this->to($email, $name);
 
@@ -51,7 +53,7 @@ class MerchantInvitation extends Base\Mailable
 
     protected function addSubject()
     {
-        $orgName = $this->admin->org->getDisplayName();
+        $orgName = $this->org['display_name'];
 
         // date format = 6th July 2015
         $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
@@ -66,11 +68,11 @@ class MerchantInvitation extends Base\Mailable
     protected function addMailData()
     {
         $data = [
-            'invitation' => $this->invitation->toArrayPublic(),
-            'adminName'  => $this->admin->getName(),
+            'invitation' => $this->invitation,
+            'adminName'  => $this->admin['name'],
         ];
 
-        $data['invitation']['token'] = $this->invitation->getToken();
+        $data['invitation']['token'] = $this->invitation['token'];
 
         $this->with($data);
 
