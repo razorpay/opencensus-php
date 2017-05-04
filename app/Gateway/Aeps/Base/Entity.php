@@ -74,4 +74,14 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::RECEIVED, $recieved);
     }
+
+    public function setErrorCode($code)
+    {
+        $this->setAttribute(self::ERROR_CODE, $code);
+    }
+
+    public function setErrorDescription($desc)
+    {
+        $this->setAttribute(self::ERROR_DESCRIPTION, $desc);
+    }
 }

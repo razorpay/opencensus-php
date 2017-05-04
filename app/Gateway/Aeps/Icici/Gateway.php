@@ -23,6 +23,9 @@ class Gateway extends Base\Gateway
 
     const TERMINAL_ID = 'terminal_id';
 
+    const FAILED = 'failed';
+    const SUCCESS = 'success';
+
     public function __construct()
     {
         parent::__construct();
@@ -60,7 +63,14 @@ class Gateway extends Base\Gateway
 
             $parsedResponse = $this->parseResponse($response);
 
-            $this->updateGatewayPayment($gatewayPayment, $parsedResponse);
+            $paymentStatus = $this->updateGatewayPaymentAndGetStatus($gatewayPayment, $parsedResponse);
+
+            if ($paymentStatus === SELF::FAILED)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+
+            }
         }
         catch (Exception\GatewayTimeoutException $e)
         {
@@ -177,8 +187,10 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function updateGatewayPayment($gatewayPayment, $response)
+    protected function updateGatewayPaymentAndGetStatus($gatewayPayment, $response)
     {
+        $paymentStatus = self::FAILED;
+
         if (isset($response[ResponseConstants::RRN]) === true)
         {
             $gatewayPayment->setRrn($response[ResponseConstants::RRN]);
@@ -189,6 +201,8 @@ class Gateway extends Base\Gateway
             if ($response[ResponseConstants::STATUS] === '00')
             {
                 $gatewayPayment->setReceived(1);
+
+                $paymentStatus = self::SUCCESS;
             }
             else
             {
@@ -205,6 +219,8 @@ class Gateway extends Base\Gateway
         {
             $gatewayPayment->setReceived(0);
         }
+
+        return $paymentStatus;
     }
 
     protected function sendReversalRequest($reversalRequestXmlData)
