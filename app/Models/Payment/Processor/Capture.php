@@ -651,6 +651,8 @@ trait Capture
     /**
      * THIS IS RELEVANT ONLY FOR THE RETRY FLOW. NOT IN THE NORMAL FLOW.
      *
+     * TODO: Fix this after discussing how to handle capture failures.
+     *
      * @param Payment\Entity $payment
      */
     protected function updateSubscriptionStatus(Payment\Entity $payment)

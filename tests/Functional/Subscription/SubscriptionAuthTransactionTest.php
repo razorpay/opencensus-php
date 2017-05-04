@@ -167,7 +167,7 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'interval' => $plan->getInterval(),
                 'period' => $plan->getPeriod(),
                 'anchor' => null,
-                'name' => $plan->getName(),
+                'name' => $plan->item->getName(),
             ]);
 
         $this->fixtures->create(
@@ -182,7 +182,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->createFixturesForInvoice($subscription, $plan);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
-        $paymentRequest['amount'] = $plan->getAmount();
+        $paymentRequest['amount'] = $plan->item->getAmount();
 
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('created', $subscription['status']);
@@ -236,10 +236,10 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'total_count' => 3,
             ]);
 
-        $this->createFixturesForAddOn($subscription, $plan, $plan->getAmount() + 1000, 1000, true);
+        $this->createFixturesForAddOn($subscription, $plan, $plan->item->getAmount() + 1000, 1000, true);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
-        $paymentRequest['amount'] = 1000 + $plan->getAmount();
+        $paymentRequest['amount'] = 1000 + $plan->item->getAmount();
 
         $recurringPayment = $this->doAuthPayment($paymentRequest);
 
@@ -258,12 +258,12 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(null, $payment['amount_refunded']);
         $this->assertEquals($invoice['id'], $payment['invoice_id']);
-        $this->assertEquals($plan->getAmount() + 1000, $payment['amount']);
+        $this->assertEquals($plan->item->getAmount() + 1000, $payment['amount']);
         $this->assertEquals($order['id'], $payment['order_id']);
         $this->assertTrue($payment['auto_captured']);
 
         $this->assertEquals('paid', $invoice['status']);
-        $this->assertEquals($plan->getAmount() + 1000, $invoice['amount']);
+        $this->assertEquals($plan->item->getAmount() + 1000, $invoice['amount']);
         $this->assertEquals($subscription['id'], $invoice['subscription_id']);
         $this->assertEquals($order['id'], $invoice['order_id']);
         $this->assertNull($invoice['sub_status']);
@@ -278,7 +278,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         // $this->assertNull($invoice['expire_by']);
 
         $this->assertEquals('paid', $order['status']);
-        $this->assertEquals($plan->getAmount() + 1000, $order['amount']);
+        $this->assertEquals($plan->item->getAmount() + 1000, $order['amount']);
     }
 
     public function testSubscriptionAuthTxnWithRecurringFalse()
@@ -513,8 +513,8 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'line_item',
                 [
                     'id' => '200000lineitem',
-                    'name' => $plan->getName(),
-                    'amount' => $plan->getAmount(),
+                    'name' => $plan->item->getName(),
+                    'amount' => $plan->item->getAmount(),
                     'entity_id' => $invoice->getId(),
                     'item_id' => null,
                 ]);
@@ -525,7 +525,7 @@ class SubscriptionAuthTransactionTest extends TestCase
      {
          if ($amount === null)
          {
-             $amount = $plan->getAmount();
+             $amount = $plan->item->getAmount();
          }
 
         $order = $this->fixtures->create(
@@ -542,13 +542,13 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'email_status' => null,
                 'subscription_id' => $subscription->getId(),
                 'order_id' => $order->getId(),
-                'amount' => $plan->getAmount(),
+                'amount' => $plan->item->getAmount(),
             ]);
 
         $this->fixtures->create(
             'line_item',
             [
-                'name' => $plan->getName(),
+                'name' => $plan->item->getName(),
                 'amount' => $amount,
                 'entity_id' => $invoice->getId(),
                 'item_id' => null,

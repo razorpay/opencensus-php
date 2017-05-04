@@ -60,4 +60,28 @@ class Core extends Base\Core
 
         return $this->repo->item->deleteOrFail($item);
     }
+
+    public function createItemForType(array $input, Merchant\Entity $merchant, string $type): Entity
+    {
+        if (empty($input[Entity::ITEM_ID]) === false)
+        {
+            $item = $this->repo->item->findByPublicIdAndMerchantForType(
+                                                        $input[Entity::ITEM_ID],
+                                                        $merchant, 
+                                                        $type);
+        }
+        else
+        {
+            $itemInput = [
+                Entity::NAME       => $input[Entity::NAME],
+                Entity::AMOUNT     => $input[Entity::AMOUNT],
+                Entity::CURRENCY   => $input[Entity::CURRENCY],
+                Entity::TYPE       => $type,
+            ];
+
+            $item = $this->create($itemInput, $merchant);
+        }
+
+        return $item;
+    }
 }

@@ -30,7 +30,6 @@ class InvoiceAction extends Job implements ShouldQueue
     const UPDATED               = 'updated';
     const EXPIRED               = 'expired';
     const AUTHORIZED            = 'authorized';
-    const SUBSCRIPTION_CHARGED  = 'subscription_charged';
 
     protected $mode;
     protected $event;
@@ -53,17 +52,6 @@ class InvoiceAction extends Job implements ShouldQueue
         try
         {
             $this->init();
-
-            if ($this->invoice->isOfSubscription())
-            {
-                //
-                // TODO: Others will be handled separately.
-                //
-                if ($this->event !== self::SUBSCRIPTION_CHARGED)
-                {
-                    return;
-                }
-            }
 
             $timeStarted = microtime(true);
 
@@ -189,13 +177,6 @@ class InvoiceAction extends Job implements ShouldQueue
         // returning true.
         //
         return true;
-    }
-
-    private function handleSubscriptionCharged()
-    {
-        $pdfPath = $this->core->createInvoicePdf($this->invoice);
-
-        return (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceSubscriptionChargedToCustomer();
     }
 
     // ------------------------------------------------------------

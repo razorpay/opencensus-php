@@ -95,13 +95,6 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function notifyInvoiceSubscriptionChargedToCustomer()
-    {
-        $this->sendSubscriptionInvoiceEmail();
-
-        $this->repo->saveOrFail($this->invoice());
-    }
-
     public function notifyInvoiceExpiredToCustomer()
     {
         if ($this->invoice->isExpired() === false)
@@ -348,27 +341,6 @@ class Notifier extends Base\Core
         }
 
         return $viewPayload;
-    }
-
-    protected function sendSubscriptionInvoiceEmail()
-    {
-        // TODO: Decide on the email content and other things.
-
-        $subscription = $this->invoice->subscription;
-
-        if ($this->invoice->hasBeenPaid() === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_PAID,
-                null,
-                [
-                    'invoice_id'        => $this->invoice->getId(),
-                    'subscription_id'   => $subscription->getId(),
-                    'invoice_status'    => $this->invoice->getStatus(),
-                ]);
-        }
-
-        return true;
     }
 
     protected function getInvoiceMailSubject(string $callee, string $merchantName)

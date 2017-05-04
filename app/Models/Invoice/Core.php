@@ -55,7 +55,7 @@ class Core extends Base\Core
             $input
         );
 
-        $invoice = (new Generator($merchant))->generate($input, $subscription);
+        $invoice = (new Generator($merchant))->setSubscription($subscription)->generate($input);
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,
@@ -152,7 +152,7 @@ class Core extends Base\Core
         return $this->repo->invoice->deleteOrFail($invoice);
     }
 
-    public function addLineItems(
+    public function LineItems(
         Entity $invoice,
         array $input,
         Merchant\Entity $merchant)

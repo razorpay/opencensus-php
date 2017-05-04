@@ -80,7 +80,7 @@ class Status
         self::ACTIVE    => Event::SUBSCRIPTION_ACTIVATED,
         self::OVERDUE   => Event::SUBSCRIPTION_OVERDUE,
         self::ON_HOLD   => Event::SUBSCRIPTION_ON_HOLD,
-        self::EXPIRED   => Event::SUBSCRIPTION_EXPIRED,
+        // self::EXPIRED   => Event::SUBSCRIPTION_EXPIRED,
     ];
 
     public static function isStatusValid($status) : bool

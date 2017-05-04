@@ -108,7 +108,7 @@ class Creator extends Base\Core
     protected function createSchedule(Entity $subscription, Plan\Entity $plan)
     {
         $scheduleInput = [
-            Schedule\Entity::NAME       => $plan->getName(),
+            Schedule\Entity::NAME       => $plan->item->getName(),
             Schedule\Entity::INTERVAL   => $plan->getInterval(),
             Schedule\Entity::PERIOD     => $plan->getPeriod(),
         ];
@@ -131,7 +131,6 @@ class Creator extends Base\Core
             Task\Entity::METHOD         => null,
             Task\Entity::TYPE           => Task\Type::SUBSCRIPTION,
             Task\Entity::SCHEDULE_ID    => $schedule->getId(),
-            // TODO: During first charge auth txn, update the task's next run_at.
             Task\Entity::NEXT_RUN_AT    => $subscription->getStartAt(),
         ];
 

@@ -11,18 +11,16 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const AMOUNT            = 'amount';
-    const CURRENCY          = 'currency';
     const PERIOD            = 'period';
     const INTERVAL          = 'interval';
-    const NAME              = 'name';
     const NOTES             = 'notes';
     const MERCHANT_ID       = 'merchant_id';
     const ITEM_ID           = 'item_id';
 
     // Input Keys
-
-    // const FREQUENCY         = 'frequency';
+    const AMOUNT            = 'amount';
+    const CURRENCY          = 'currency';
+    const NAME              = 'name';
 
     protected static $sign = 'plan';
 

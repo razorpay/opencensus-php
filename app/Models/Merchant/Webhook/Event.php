@@ -25,7 +25,7 @@ class Event
     const SUBSCRIPTION_ACTIVATED    = 'subscription.activated';
     const SUBSCRIPTION_OVERDUE      = 'subscription.overdue';
     const SUBSCRIPTION_ON_HOLD      = 'subscription.on_hold';
-    const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
+    // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
 
     protected static $events = array(
         self::PAYMENT_AUTHORIZED,
@@ -40,7 +40,7 @@ class Event
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_OVERDUE,
         self::SUBSCRIPTION_ON_HOLD,
-        self::SUBSCRIPTION_EXPIRED,
+        // self::SUBSCRIPTION_EXPIRED,
     );
 
     protected static $bitMap = array(
@@ -55,7 +55,7 @@ class Event
         self::SUBSCRIPTION_ACTIVATED    => 0x9,
         self::SUBSCRIPTION_OVERDUE      => 0x10,
         self::SUBSCRIPTION_ON_HOLD      => 0x11,
-        self::SUBSCRIPTION_EXPIRED      => 0x12,
+        // self::SUBSCRIPTION_EXPIRED      => 0x12,
     );
 
     /**
@@ -75,7 +75,7 @@ class Event
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_OVERDUE,
         self::SUBSCRIPTION_ON_HOLD,
-        self::SUBSCRIPTION_EXPIRED,
+        // self::SUBSCRIPTION_EXPIRED,
     );
 
     protected static $bitPosition = array(
@@ -91,7 +91,7 @@ class Event
         self::SUBSCRIPTION_ACTIVATED    => 10,
         self::SUBSCRIPTION_OVERDUE      => 11,
         self::SUBSCRIPTION_ON_HOLD      => 12,
-        self::SUBSCRIPTION_EXPIRED      => 13,
+        // self::SUBSCRIPTION_EXPIRED      => 13,
     );
 
     /**
@@ -111,7 +111,7 @@ class Event
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_OVERDUE,
         self::SUBSCRIPTION_ON_HOLD,
-        self::SUBSCRIPTION_EXPIRED,
+        // self::SUBSCRIPTION_EXPIRED,
     );
 
     /**
@@ -129,7 +129,7 @@ class Event
         self::SUBSCRIPTION_ACTIVATED    => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_OVERDUE      => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_ON_HOLD      => Entity::SUBSCRIPTION,
-        self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
+        // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
     ];
 
     /**

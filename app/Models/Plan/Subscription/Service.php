@@ -10,6 +10,7 @@ use RZP\Models\Customer;
 use RZP\Models\Plan;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Invoice;
 
 class Service extends Base\Service
 {
@@ -178,29 +179,43 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function chargeSubscriptionInvoiceManually(string $subscriptionId, string $invoiceId)
+    public function chargeSubscriptionInvoiceManually(string $invoiceId)
     {
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $this->merchant);
 
-        $invoice = $this->repo->invoice->findByPublicIdAndSubscription($invoiceId, $subscription);
+        $subscription = $invoice->subscription;
 
         $this->trace->info(
             TraceCode::SUBSCRIPTION_INVOICE_MANUAL_CHARGE,
             [
                 'invoice_id'        => $invoiceId,
-                'subscription_id'   => $subscriptionId,
+                'subscription_id'   => $subscription->getId(),
                 'invoice_status'    => $invoice->getStatus(),
                 'subscription'      => $subscription->toArray(),
             ]);
 
-        if ($invoice->isIssued() === false)
+        if (($subscription->isActivated() === false) or
+            ($subscription->isOnHold() === false))
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_IN_ISSUED,
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_ON_HOLD_STATE,
+                'status',
+                [
+                    'susbscription_id'      => $subscription->getId(),
+                    'invoice_id'            => $invoice->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+        }
+
+        if (($invoice->isIssued() === false) or 
+            ($invoice->getSubStatus() !== Invoice\Status::ON_HOLD))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED,
                 null,
                 [
                     'invoice_id'        => $invoiceId,
-                    'subscription_id'   => $subscriptionId,
+                    'subscription_id'   => $subscription->getId(),
                     'invoice_status'    => $invoice->getStatus(),
                 ]);
         }

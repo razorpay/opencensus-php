@@ -1087,13 +1087,10 @@ class Processor
         $subscription = $payment->subscription;
 
         //
-        // On late authorization, we should not be capturing the payment
-        // if the charge for this billing has not been captured already.
-        // Since, right now, we don't have a way to figure out which period
-        // is this being charged for, we are not going to auto capture it.
-        // Once we start using invoices with this, it'll be easier to
-        // identify.
-        // TODO: Handle late auth for authenticated and for new subscriptions.
+        // Late authorizations are not going to happen here because
+        // everything is S2S. On the off chance that it happens,
+        // we log it and see what to do about it.
+        //
         if ($payment->isLateAuthorized() === true)
         {
             $this->trace->critical(

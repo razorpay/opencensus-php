@@ -30,9 +30,6 @@ class CreateLineItems extends Migration
             $table->char(Entity::ITEM_ID, Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Entity::ADD_ON_ID, Entity::ID_LENGTH)
-                  ->nullable();
-
             $table->string(Entity::NAME, 512);
 
             $table->string(Entity::DESCRIPTION, 2048)
@@ -46,6 +43,10 @@ class CreateLineItems extends Migration
 
             $table->string(Entity::ENTITY_TYPE, 32);
 
+            $table->char(Entity::REF_ID, Entity::ID_LENGTH);
+
+            $table->string(Entity::REF_TYPE, 32);
+
             $table->integer(Entity::QUANTITY);
 
             $table->integer(Entity::CREATED_AT);
@@ -58,6 +59,8 @@ class CreateLineItems extends Migration
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::ENTITY_ID);
             $table->index(Entity::ENTITY_TYPE);
+            $table->index(Entity::REF_ID);
+            $table->index(Entity::REF_TYPE);
 
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

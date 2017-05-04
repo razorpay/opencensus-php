@@ -227,7 +227,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
-        self::SUBSCRIPTION_ID,
+        // self::SUBSCRIPTION_ID,
         self::CREATED_AT,
     ];
 

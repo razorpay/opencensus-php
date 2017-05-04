@@ -1950,6 +1950,7 @@ ALTER TABLE refunds
 UPDATE refunds SET status = "processed", attempts = 1, last_attempted_at = created_at WHERE status is null;
 
 # ---- subscriptions ----
+
 ALTER TABLE payments
     ADD COLUMN subscription_id CHAR(14) DEFAULT NULL AFTER invoice_id;
 
@@ -1965,7 +1966,10 @@ ALTER TABLE items
     ADD INDEX items_type_index (type);
 
 ALTER TABLE line_items
-    ADD COLUMN add_on_id CHAR(14) DEFAULT NULL AFTER item_id;
+    ADD COLUMN ref_id CHAR(14) DEFAULT NULL AFTER item_id,
+    ADD COLUMN ref_type VARCHAR(32) DEFAULT NULL AFTER ref_id,
+    CREATE INDEX line_items_ref_id_index (entity_id),
+    CREATE INDEX line_items_ref_type_index ON line_items (ref_type);
 
 ALTER TABLE schedules
     DROP INDEX `schedules_type_index`,

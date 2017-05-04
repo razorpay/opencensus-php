@@ -30,15 +30,15 @@ class CreatePlan extends Migration
 
             $table->char(Entity::ITEM_ID, Entity::ID_LENGTH);
 
-            $table->integer(Entity::AMOUNT);
+            // $table->integer(Entity::AMOUNT);
 
-            $table->char(Entity::CURRENCY, Payment\Entity::CURRENCY_LENGTH);
+            // $table->char(Entity::CURRENCY, Payment\Entity::CURRENCY_LENGTH);
 
             $table->string(Entity::PERIOD, 16);
 
             $table->integer(Entity::INTERVAL);
 
-            $table->string(Entity::NAME, 256);
+            // $table->string(Entity::NAME, 256);
 
             $table->text(Entity::NOTES);
 

@@ -117,5 +117,10 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Invoice\Entity');
     }
 
+    public function lineItems()
+    {
+        return $this->morphMany('RZP\Models\LineItem\Entity', 'ref');
+    }
+
     // -------------------- End Relations -----------------------
 }

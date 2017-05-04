@@ -238,6 +238,8 @@ class Charge extends Base\Core
         }
 
         $this->repo->saveOrFail($subscription);
+
+        (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus());
     }
 
     /**
@@ -297,7 +299,7 @@ class Charge extends Base\Core
         // Not sending webhook here because the transaction might fail later
         // in the flow. Will be sending it after the transaction is committed.
         //
-        $subscription->setStatus(Status::ACTIVE, false);
+        $subscription->setStatus(Status::ACTIVE);
 
         $this->resetErrorStatusForSuccessfulCapture($subscription, $capturedPayment);
 

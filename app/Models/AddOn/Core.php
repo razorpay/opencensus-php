@@ -26,7 +26,7 @@ class Core extends Base\Core
             {
                 $merchant = $subscription->merchant;
 
-                $item = $this->createItemForAddOn($input, $merchant);
+                $item = (new Item\Core)->createItemForType($input, $merchant, Item\Type::ADD_ON);
 
                 $this->createAddOnAssociations($addOn, $merchant, $item, $subscription);
 
@@ -34,30 +34,6 @@ class Core extends Base\Core
             });
 
         return $addOn;
-    }
-
-    protected function createItemForAddOn(array $input, Merchant\Entity $merchant)
-    {
-        if (empty($input[Entity::ITEM_ID]) === false)
-        {
-            $item = $this->repo->item->findByPublicIdAndMerchantForType(
-                                                            $input[Entity::ITEM_ID],
-                                                            $merchant,
-                                                            Item\Type::ADD_ON);
-        }
-        else
-        {
-            $itemInput = [
-                Item\Entity::NAME       => $input[Entity::NAME],
-                Item\Entity::AMOUNT     => $input[Entity::AMOUNT],
-                Item\Entity::CURRENCY   => $input[Entity::CURRENCY],
-                Item\Entity::TYPE       => Item\Type::ADD_ON,
-            ];
-
-            $item = (new Item\Core)->create($itemInput, $merchant);
-        }
-
-        return $item;
     }
 
     protected function createAddOnAssociations(

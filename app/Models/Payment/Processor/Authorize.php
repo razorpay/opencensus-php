@@ -440,11 +440,11 @@ trait Authorize
 
         if ($subscription->isCreated() === true)
         {
-            $this->validateNewSubscription($subscription, $payment, $input);
+            $this->validateNewSubscription($subscription, $payment);
         }
         else if ($subscription->hasBeenAuthenticated() === true)
         {
-            $this->validateAuthenticatedSubscription($subscription, $payment, $input);
+            $this->validateAuthenticatedSubscription($subscription, $payment);
         }
         else
         {
@@ -485,11 +485,23 @@ trait Authorize
                     'paid_count'            => $subscription->getPaidCount(),
                 ]);
         }
+
+        //
+        // This would basically be the retry flow.
+        // The customer would be trying to change his card
+        // here. Hence, it would be on public auth.
+        //
+        if ((($subscription->isOnHold() === true) or
+             ($subscription->isOverDue() === true)) and
+            ($this->app['basicauth']->isPublicAuth() === true))
+        {
+            $this->validateSubscriptionAmount($subscription, $payment->getAmount());
+        }
     }
 
-    protected function validateNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment, array $input)
+    protected function validateNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
     {
-        $this->validateSubscriptionAmount($subscription, $input[Payment\Entity::AMOUNT]);
+        $this->validateSubscriptionAmount($subscription, $payment->getAmount());
 
         $subscription->getValidator()->validateStartAtForAuthTransaction();
 
@@ -1840,9 +1852,6 @@ trait Authorize
                 return;
             }
 
-            //
-            // TODO: For subscription ones, will be handled separately.
-            //
             $trigger = $hasInvoiceAndNotSubscription ? Notify::INVOICE_PAYMENT_AUTHORIZED : Notify::FAILED_TO_AUTHORIZED;
         }
         else

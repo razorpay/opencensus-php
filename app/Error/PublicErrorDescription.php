@@ -248,6 +248,9 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_EXPIRED                                      = 'The subscription has been expired.';
     const BAD_REQUEST_SUBSCRIPTION_INVOICE_ALREADY_PAID                         = 'The invoice of the subscription is already paid and cannot be charged again.';
     const BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_IN_ISSUED                        = 'The invoice of the subscription is not in issued state and hence cannot be charged.';
+    const BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_ON_HOLD_STATE               = 'The subscription should be in either active or on_hold state to charge an on_hold invoice';
+    const BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED                    = 'This invoice of the subscription cannot be charged.';
+    const BAD_REQUEST_SUBSCRIPTION_2FA_NOT_ALLOWED                              = 'Customer payment not allowed for the subscription at this stage.';
 
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';

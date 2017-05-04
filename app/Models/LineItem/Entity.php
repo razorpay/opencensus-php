@@ -17,7 +17,8 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE      = 'entity_type';
     const MERCHANT_ID      = 'merchant_id';
     const ITEM_ID          = 'item_id';
-    const ADD_ON_ID        = 'add_on_id';
+    const REF_ID           = 'ref_id';
+    const REF_TYPE         = 'ref_type';
     const NAME             = 'name';
     const DESCRIPTION      = 'description';
     const AMOUNT           = 'amount';
@@ -31,6 +32,9 @@ class Entity extends Base\PublicEntity
 
     const LINE_ITEMS       = 'line_items';
     const IDS              = 'ids';
+    // This is used to send the whole ref object
+    // as part of the line item itself.
+    const REF              = 'ref';
 
     protected static $sign = 'li';
 
@@ -50,7 +54,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::QUANTITY,
         self::ITEM_ID,
-        self::ADD_ON_ID,
+        self::REF_ID,
+        self::REF_TYPE,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -64,7 +69,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         // Uncomment later when required
         // self::ITEM_ID,
-        // self::ADD_ON_ID,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -89,7 +93,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ITEM_ID,
-        self::ADD_ON_ID,
     ];
 
     //
@@ -129,16 +132,21 @@ class Entity extends Base\PublicEntity
         $array[self::ITEM_ID] = Item\Entity::getSignedIdOrNull($this->getAttribute(self::ITEM_ID));
     }
 
-    protected function setPublicAddOnIdAttribute(array & $array)
-    {
-        $array[self::ADD_ON_ID] = AddOn\Entity::getSignedIdOrNull($this->getAttribute(self::ADD_ON_ID));
-    }
+    // protected function setPublicAddOnIdAttribute(array & $array)
+    // {
+    //     $array[self::ADD_ON_ID] = AddOn\Entity::getSignedIdOrNull($this->getAttribute(self::ADD_ON_ID));
+    // }
 
     // -------------------------- Public Setters Ends --------------------------
 
     // -------------------- Relations ---------------------------
 
     public function entity()
+    {
+        return $this->morphTo();
+    }
+
+    public function ref()
     {
         return $this->morphTo();
     }

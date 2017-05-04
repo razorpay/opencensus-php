@@ -88,7 +88,6 @@ class Checkout
 
     protected function checkAndAddDetailsForSubscription(array $input, Merchant\Entity $merchant, array & $data)
     {
-        // TODO: Figure out the implications of exposing subscription_id publicly.
         if (empty($input['subscription_id']) === true)
         {
             return;
@@ -96,7 +95,6 @@ class Checkout
 
         $subscriptionId = $input['subscription_id'];
 
-        // TODO: Should we also ask the checkout to send plan_id, since subscription is always associated with a plan?
         $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($merchant, $subscriptionId);
     }
 

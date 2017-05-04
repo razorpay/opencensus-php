@@ -20,6 +20,13 @@ class Entity extends Base\PublicEntity
     const TYPE                  = 'type';
     const DELETED_AT            = 'deleted_at';
 
+    /**
+     * This is used when other entities need
+     * to create an item and item_id is passed
+     * in the request input.
+     */
+    const ITEM_ID               = 'item_id';
+
     protected static $sign      = 'item';
 
     protected $entity           = 'item';

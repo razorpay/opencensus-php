@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const AUTH_ATTEMPTS     = 'auth_attempts';
     const ERROR_STATUS      = 'error_status';
     const SCHEDULE_ID       = 'schedule_id';
+    const CUSTOMER_NOTIFY   = 'customer_notify';
 
     const FAILED_AT         = 'failed_at';
     const AUTHENTICATED_AT  = 'authenticated_at';
@@ -81,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::START_AT,
         self::TOTAL_COUNT,
         self::END_AT,
+        self::CUSTOMER_NOTIFY,
     ];
 
     protected $public = [
@@ -100,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::AUTH_ATTEMPTS,
         self::TOTAL_COUNT,
         self::PAID_COUNT,
+        self::CUSTOMER_NOTIFY,
     ];
 
     protected $casts = [
@@ -110,6 +113,7 @@ class Entity extends Base\PublicEntity
         self::CURRENT_END       => 'int',
         self::TOTAL_COUNT       => 'int',
         self::PAID_COUNT        => 'int',
+        self::CUSTOMER_NOTIFY   => 'bool',
     ];
 
     protected $publicSetters = [
@@ -138,7 +142,7 @@ class Entity extends Base\PublicEntity
     {
         $quantity = $this->getQuantity();
 
-        $planAmount = $this->plan->getAmount();
+        $planAmount = $this->plan->item->getAmount();
 
         $chargeableAmount = $quantity * $planAmount;
 
@@ -245,6 +249,21 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::AUTHENTICATED);
     }
 
+    public function isActivated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::ACTIVE);
+    }
+
+    public function isOverDue()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::OVERDUE);
+    }
+
+    public function isOnHold()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::ON_HOLD);
+    }
+
     public function isExpired()
     {
         return ($this->getAttribute(self::STATUS) === Status::EXPIRED);
@@ -284,7 +303,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENDED_AT, $endAt);
     }
 
-    public function setStatus($status, $sendWebhook = true)
+    public function setStatus($status)
     {
         Status::checkStatus($status);
 
@@ -297,11 +316,6 @@ class Entity extends Base\PublicEntity
             $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
             $this->setAttribute($timestampKey, $currentTime);
-        }
-
-        if ($sendWebhook === true)
-        {
-            (new Core)->fireWebhookForStatusUpdate($this, $status);
         }
     }
 
@@ -429,7 +443,6 @@ class Entity extends Base\PublicEntity
 
     // --------------------- GENERATORS ---------------------
 
-    // TODO: This will need to move to schedule's getNextRunAt
     public function generateChargeAt($input)
     {
         if (empty($input[Entity::START_AT]) === true)

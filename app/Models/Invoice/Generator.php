@@ -48,6 +48,13 @@ class Generator extends Base\Core
      */
     protected $baseInvoiceUrl;
 
+    /**
+     * The subscription associated for the invoice.
+     *
+     * @var Subscription\Entity
+     */
+    protected $subscription;
+
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -67,16 +74,28 @@ class Generator extends Base\Core
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
-    public function generate(array $input, $subscription = null)
+    /**
+     * @param null|Subscription\Entity $subscription
+     *
+     * @return $this
+     */
+    public function setSubscription($subscription)
+    {
+        $this->subscription = $subscription;
+
+        return $this;
+    }
+
+    public function generate(array $input)
     {
         $this->generateInvoiceSkeleton($input);
 
         try
         {
             $this->repo->transaction(
-                function() use ($input, $subscription)
+                function() use ($input)
                 {
-                    $this->preProcessGeneration($input, $subscription);
+                    $this->preProcessGeneration($input);
 
                     if ($this->invoice->getStatus() === Status::ISSUED)
                     {
@@ -96,19 +115,18 @@ class Generator extends Base\Core
 
     /**
      * @param array                     $input
-     * @param Subscription\Entity|null  $subscription Cannot type hint this because of null.
      *
      * @throws BadRequestValidationFailureException
      */
-    protected function preProcessGeneration(array $input, $subscription = null)
+    protected function preProcessGeneration(array $input)
     {
         $this->associateCustomerWithInvoice($input);
 
-        if ($subscription !== null)
+        if ($this->subscription !== null)
         {
-            $this->invoice->subscription()->associate($subscription);
+            $this->invoice->subscription()->associate($this->subscription);
 
-            if ($subscription->getStatus() === Subscription\Status::ON_HOLD)
+            if ($this->subscription->getStatus() === Subscription\Status::ON_HOLD)
             {
                 $this->invoice->setSubStatus(Status::ON_HOLD);
             }
@@ -245,12 +263,6 @@ class Generator extends Base\Core
 
         $this->createAndAssociateOrderForInvoice();
 
-        // TODO: We may not want to generate a link at all
-        // in case of subscriptions. The reason being, there's
-        // a gap between issuing the invoice and automatically
-        // paying it.
-        // We may want to explicitly generate a link when the
-        // authorization fails after multiple retries.
         $this->setShortUrl();
     }
 
@@ -269,6 +281,17 @@ class Generator extends Base\Core
                 'long_url'       => $longUrl,
             ]);
 
+        //
+        // TODO: Currently, since we are not exposing the invoice
+        // to the customer at all, should we NOT generate
+        // a short_url at all? We can start exposing it when
+        // we start exposing the invoices to the customer.
+        // This might create issues because the merchant, when
+        // he sees a short_url, he might send the link to the
+        // customer and the customer might try paying it.
+        // We will have to make changes in the invoice
+        // template to remove the pay link.
+        //
         $this->invoice->setShortUrl($shortenedUrl);
     }
 

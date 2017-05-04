@@ -19,7 +19,7 @@ class Contains
         Type::SUBSCRIPTION_ACTIVATED    => [Constants\Entity::SUBSCRIPTION],
         Type::SUBSCRIPTION_OVERDUE      => [Constants\Entity::SUBSCRIPTION],
         Type::SUBSCRIPTION_ON_HOLD      => [Constants\Entity::SUBSCRIPTION],
-        Type::SUBSCRIPTION_EXPIRED      => [Constants\Entity::SUBSCRIPTION],
+        // Type::SUBSCRIPTION_EXPIRED      => [Constants\Entity::SUBSCRIPTION],
     );
 
     public static function getEntityNamesForEvent($event)

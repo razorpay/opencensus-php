@@ -40,7 +40,7 @@ class Core extends Base\Core
 
         $this->setItemAssociationAndUpdateInput($lineItem, $input, $merchant);
 
-        $this->setAddOnAssociationIfApplicable($input, $lineItem, $merchant);
+        $this->setRefAssociationIfApplicable($input, $lineItem);
 
         $lineItem->build($input);
 
@@ -253,27 +253,25 @@ class Core extends Base\Core
             });
     }
 
-    protected function setAddOnAssociationIfApplicable(
+    protected function setRefAssociationIfApplicable(
         array $input,
-        Entity $lineItem,
-        Merchant\Entity $merchant)
+        Entity $lineItem)
     {
-        if (empty($input[Entity::ADD_ON_ID]) === true)
+        //
+        // We are passing the ref object in line_item input
+        // rather than passing the entity to the function because
+        // one invoice can have multiple line_items and add_ons
+        // are associated with the line_item and not an invoice.
+        // Hence, while creating an invoice, associating the add_ons
+        // with line_items becomes difficult otherwise.
+        //
+
+        if (empty($input[Entity::REF]) === true)
         {
             return;
         }
 
-        $addOnId = $input[Entity::ADD_ON_ID];
-
-        //
-        // Ideally, we would have wanted to search with the invoice_id also,
-        // but at this point (while creating an invoice), the add_on has not
-        // been associated with the invoice yet, because the invoice has not
-        // been created yet.
-        //
-        $addOn = $this->repo->add_on->findByPublicIdAndMerchant($addOnId, $merchant);
-
-        $lineItem->addOn()->associate($addOn);
+        $lineItem->ref()->associate($input[Entity::REF]);
     }
 
     /**

@@ -18,7 +18,19 @@ class Billing extends Base\Core
 {
     public function createInvoiceAndCharge(Entity $subscription)
     {
-        $invoice = $this->createInvoiceBeforeCharge($subscription);
+        $data = $this->createInvoiceBeforeCharge($subscription);
+
+        if ($data['activated'] === true)
+        {
+            //
+            // Might have to fire a webhook in sync --
+            // otherwise charge webhook might go before this
+            // since our queue doesn't maintain order.
+            //
+            (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
+        }
+
+        $invoice = $data['invoice'];
 
         //
         // We should not charge any invoice which is in on_hold status,
@@ -57,7 +69,7 @@ class Billing extends Base\Core
 
                 $invoiceInput = $this->getInvoiceInput($subscription, $addOns, $first);
 
-                $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+                $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription, $addOns);
 
                 $this->associateInvoiceToAddOns($invoice, $addOns);
 
@@ -78,6 +90,8 @@ class Billing extends Base\Core
         return $this->repo->transaction(
             function() use ($subscription)
             {
+                $activated = false;
+
                 //
                 // If first charge, we set the status to active.
                 // If not, the status would already be active or
@@ -86,13 +100,15 @@ class Billing extends Base\Core
                 if ($subscription->getPaidCount() === 0)
                 {
                     $this->activateSubscription($subscription);
+
+                    $activated = true;
                 }
 
                 $addOns = $this->repo->add_on->getUnusedAddOnsForSubscription($subscription);
 
                 $invoice = $this->createInvoiceForSubscription($subscription, $addOns);
 
-                return $invoice;
+                return ['invoice' => $invoice, 'activated' => $activated];
             });
     }
 
@@ -108,8 +124,6 @@ class Billing extends Base\Core
                     'subscription_id' => $subscription->getId()
                 ]);
         }
-
-        // TODO: Fire a webhook in sync for activate subscription -- otherwise charge webhook might go before this.
 
         $subscription->setStatus(Status::ACTIVE);
         $this->repo->saveOrFail($subscription);
@@ -134,7 +148,7 @@ class Billing extends Base\Core
         $invoiceInput = [
             Invoice\Entity::CUSTOMER_ID     => $customer->getPublicId(),
             Invoice\Entity::LINE_ITEMS      => $lineItems,
-            Invoice\Entity::CURRENCY        => $plan->getCurrency(),
+            Invoice\Entity::CURRENCY        => $plan->item->getCurrency(),
             Invoice\Entity::SMS_NOTIFY      => '0',
             Invoice\Entity::EMAIL_NOTIFY    => '0',
         ];
@@ -160,9 +174,9 @@ class Billing extends Base\Core
             // TODO: The amount may differ in the case of pro-rate.
 
             $mainLineItem = [
-                LineItem\Entity::NAME     => $plan->getName(),
-                LineItem\Entity::AMOUNT   => $plan->getAmount(),
-                LineItem\Entity::CURRENCY => $plan->getCurrency(),
+                LineItem\Entity::NAME     => $plan->item->getName(),
+                LineItem\Entity::AMOUNT   => $plan->item->getAmount(),
+                LineItem\Entity::CURRENCY => $plan->item->getCurrency(),
                 LineItem\Entity::QUANTITY => $subscription->getQuantity(),
             ];
 
@@ -171,9 +185,16 @@ class Billing extends Base\Core
 
         foreach ($addOns as $addOn)
         {
+            //
+            // Though line_item can get the item from the add_on,
+            // we don't do that, because add_on is basically a ref for
+            // line_item. All refs may not have an item associated with
+            // it like add_on does. Hence, line_item expects item_id
+            // or item_input also to be sent in its input.
+            //
             $addOnLineItem = [
-                LineItem\Entity::ITEM_ID    => $addOn->item->getPublicId(),
-                LineItem\Entity::ADD_ON_ID  => $addOn->getPublicId(),
+                LineItem\Entity::ITEM_ID  => $addOn->item->getPublicId(),
+                LineItem\Entity::REF      => $addOn,
             ];
 
             $lineItems[] = $addOnLineItem;

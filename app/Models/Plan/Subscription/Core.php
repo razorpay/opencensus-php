@@ -200,30 +200,39 @@ class Core extends Base\Core
      * @param Entity $subscription
      *
      * @return int
+     * @throws BadRequestException
      * @throws LogicException
      */
-    public function getAuthTransactionAmount(Entity $subscription) : int
+    public function getAuthTransactionAmount(Entity $subscription): int
     {
-        $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+        //
+        // Currently, we allow a 2FA txn to be done only if
+        // it's a new subscription or if the card needs to be
+        // changed because subscription is in overdue or in
+        // on_hold state.
+        // Going forward, we can change this to allow change
+        // of card even if there's no issue with the current
+        // card and the subscription is in active state.
+        //
 
-        $invoicesCount = $invoices->count();
-
-        if ($invoicesCount === 0)
+        if (($subscription->isOnHold() === true) or
+            ($subscription->isOverDue() === true))
         {
-            $authAmount = Entity::DEFAULT_AUTH_AMOUNT;
+            $authAmount = $this->getAuthTransactionAmountForRetry();
         }
-        else if ($invoicesCount === 1)
+        else if ($subscription->isCreated() === true)
         {
-            $authAmount = $invoices->first()->getAmount();
+            $authAmount = $this->getAuthTransactionAmountForNewSubscription($subscription);
         }
         else
         {
-            throw new LogicException(
-                'Number of invoices found for subscription does not match 1',
-                ErrorCode::SERVER_ERROR_INVOICE_COUNT_MISMATCH,
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_2FA_NOT_ALLOWED,
+                null,
                 [
-                    'count'             => $invoicesCount,
                     'subscription_id'   => $subscription->getId(),
+                    'status'            => $subscription->getStatus(),
+                    'error_status'      => $subscription->getErrorStatus(),
                 ]);
         }
 
@@ -284,6 +293,39 @@ class Core extends Base\Core
                 $this->app['queue']->push(Charge::class . '@fireCharge', $queuePayload);
             }
         );
+    }
+
+    protected function getAuthTransactionAmountForNewSubscription(Entity $subscription)
+    {
+        $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+
+        $invoicesCount = $invoices->count();
+
+        if ($invoicesCount === 0)
+        {
+            $authAmount = Entity::DEFAULT_AUTH_AMOUNT;
+        }
+        else if ($invoicesCount === 1)
+        {
+            $authAmount = $invoices->first()->getAmount();
+        }
+        else
+        {
+            throw new LogicException(
+                'Number of invoices found for subscription does not match 1',
+                ErrorCode::SERVER_ERROR_INVOICE_COUNT_MISMATCH,
+                [
+                    'count'             => $invoicesCount,
+                    'subscription_id'   => $subscription->getId(),
+                ]);
+        }
+
+        return $authAmount;
+    }
+
+    protected function getAuthTransactionAmountForRetry()
+    {
+        return Entity::DEFAULT_AUTH_AMOUNT;
     }
 
     protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice)

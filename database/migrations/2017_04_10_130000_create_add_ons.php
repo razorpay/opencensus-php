@@ -65,15 +65,15 @@ class CreateAddOns extends Migration
                   ->on(Table::INVOICE)
                   ->on_delete('restrict');
 
-            // This should be here and not in payments table because
-            // subscription table is created after payments.
-            Schema::table(Table::LINE_ITEM, function($table)
-            {
-                $table->foreign(LineItem\Entity::ADD_ON_ID)
-                      ->references(Entity::ID)
-                      ->on(Table::ADD_ON)
-                      ->on_delete('restrict');
-            });
+            // // This should be here and not in line_items table because
+            // // add_ons table is created after line_items.
+            // Schema::table(Table::LINE_ITEM, function($table)
+            // {
+            //     $table->foreign(LineItem\Entity::ADD_ON_ID)
+            //           ->references(Entity::ID)
+            //           ->on(Table::ADD_ON)
+            //           ->on_delete('restrict');
+            // });
         });
     }
 
