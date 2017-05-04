@@ -39,6 +39,8 @@ class CreateAeps extends Migration
 
             $table->string(Aeps::ERROR_DESCRIPTION)->nullable();
 
+            $table->string(Aeps::COUNTER)->nullable();
+
             $table->string(Aeps::RRN)->nullable();
 
             $table->integer(Aeps::CREATED_AT);

@@ -15,6 +15,7 @@ class Entity extends Base\Entity
     const ERROR_DESCRIPTION     = 'error_description';
     const AADHAAR_NUMBER        = 'aadhaar_number';
     const RRN                   = 'rrn';
+    const COUNTER               = 'counter';
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
 
