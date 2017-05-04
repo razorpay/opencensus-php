@@ -1088,30 +1088,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Fetches bank account details for a merchant from the API
-     * @param  string $merchantId Merchant Id
-     * @return array Bank Account Details
-     */
-    public function fetchBankAccount($merchantId)
-    {
-        $this->setApiCredentials();
-
-        try
-        {
-            $ba = $this->api->merchant
-                ->setId($merchantId)
-                ->fetchBankAccount()
-                ->toArray();
-
-            return [null, $ba];
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    /**
      * Incoming data is what is stored in the merchant details table
      * outgoing is what we store in the bank account itself
      * on the API

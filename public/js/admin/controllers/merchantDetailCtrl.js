@@ -1026,9 +1026,15 @@ app
       };
       $scope.openChangeBankAccountDetails = function() {
         $scope.merchant.bank_account = {};
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/bank_account'
-        );
+        var data = {
+          route_name: 'merchant_fetch_bank_account',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
         request.success(function(data) {
           if (data.success) {
             $scope.merchant.bank_account = data.data;

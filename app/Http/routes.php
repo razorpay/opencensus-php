@@ -164,8 +164,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature')
                 ->name('admin_delete_features');
 
-        // This is the merchant's bank account
-        Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
         Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin')
                ->name('admin_merchant_login');
         Route::get('/admin/activity', 'AdminController@getAdminActivity');

@@ -329,9 +329,11 @@ return [
 
         'merchant_assign_pricing'           => 'merchants/{id}/pricing',
 
+        // Banks
         'merchant_get_banks'                => 'merchants/{id}/banks',
-
         'merchant_set_banks'                => 'merchants/{id}/banks',
+
+        'merchant_fetch_bank_account'       => 'merchants/{id}/bank_account',
 
         'merchant_action'                   => 'merchants/{id}/action',
         'merchant_live_enable'              => 'merchants/{id}/live/enable',

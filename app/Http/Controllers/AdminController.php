@@ -769,13 +769,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse([], $company->fetch());
     }
 
-    public function getMerchantBankAccount($merchantId)
-    {
-        list($error, $bankAccount) = (new Admin\Service)->fetchBankAccount($merchantId);
-
-        return AppResponse::jsonResponse($error, $bankAccount);
-    }
-
     public function postReconciliate($mode)
     {
         $input = Input::all();
