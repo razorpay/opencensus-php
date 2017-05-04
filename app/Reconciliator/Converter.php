@@ -331,6 +331,7 @@ class Converter
 
         foreach ($rowIterator as $row)
         {
+            // this deals with the empty rows
             if (max($row) === "")
             {
                 continue;
@@ -345,6 +346,14 @@ class Converter
                 if (count($sheetHeaders) === count($row))
                 {
                     $allSheetsContent[$sheetName][] = array_combine($sheetHeaders, $row);
+                }
+                // breaking case when header count is not same as row.
+                else
+                {
+                    throw new Exception\ReconciliationException(
+                            'The number of columns in the row does not match the column headers count.',
+                            ['column_headers' => $sheetHeaders, 'row' => $row]
+                        );
                 }
             }
         }
