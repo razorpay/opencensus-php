@@ -65,7 +65,6 @@ class Entity extends Base\Entity
 
     protected $publicSetters = [
         self::ID,
-        self::WORKFLOW_ORGS,
     ];
 
     protected static function boot()
@@ -97,23 +96,13 @@ class Entity extends Base\Entity
         return $this->morphedByMany(Org\Entity::class, 'entity', Table::PERMISSION_MAP);
     }
 
+    public function workflow_orgs()
+    {
+        return $this->orgs()->where('enable_workflow', '=', 1);
+    }
+
     public function workflows()
     {
         return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSIONS);
-    }
-
-    public function setPublicWorkflowOrgsAttribute(array &$attributes)
-    {
-        $orgs = $this->getAttribute(Entity::WORKFLOW_ORGS);
-
-        if ($orgs !== null)
-        {
-            $attributes[Entity::WORKFLOW_ORGS] = $orgs->toArrayPublic()['items'];
-        }
-    }
-
-    public function setWorkflowOrgs($orgs)
-    {
-        $this->attributes[Entity::WORKFLOW_ORGS] = $orgs;
     }
 }
