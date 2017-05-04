@@ -200,4 +200,32 @@ class UserController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    public function checkLoggedIn()
+    {
+        list($error, $data) = (new User\Service)->checkLoggedIn();
+
+        if ($data !== null)
+        {
+            $response = AppResponse::jsonResponse([], $data);
+            $response->header('Access-Control-Allow-Origin', 'http://localhost:8000');
+            $response->header('Access-Control-Allow-Credentials', 'true');
+        }
+        else
+        {
+            $response = AppResponse::unauthorizedResponse($error);
+            $response->header('Access-Control-Allow-Origin', 'http://localhost:8000');
+            $response->header('Access-Control-Allow-Credentials', 'true');
+        }
+        return $response;
+    }
+
+    public function getDetailsFromToken(string $token)
+    {
+        list($error, $data) = (new User\Service)->getDetailsFromToken($token);
+
+        $response = AppResponse::jsonResponse($error, $data);
+
+        return $response;
+    }
 }

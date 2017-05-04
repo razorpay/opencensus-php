@@ -30,6 +30,15 @@ class Service extends Base\Service
     const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
     const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
 
+    public function __construct()
+    {
+        $app = \App::getFacadeRoot();
+
+        $this->app = $app;
+
+        $this->cache = $app['cache'];
+    }
+
     protected function getRef(array &$input)
     {
         $referer = false;
@@ -790,5 +799,43 @@ class Service extends Base\Service
         $response = $this->api->user->changePassword($user->id, ['password' => $user->password]);
 
         return $response;
+    }
+
+    public function checkLoggedIn()
+    {
+        $user = Auth::user();
+        $data = null;
+        $error = [];
+        if ($user !== null)
+        {
+            $token = str_random(30);
+            $cacheKey = 'oauthtokens.'.$token; //Move to constants
+            $this->cache->put($cacheKey, $user->id.','.$user->getCurrentMerchantId(), 10);
+
+            $data['token'] = $token;
+        }
+
+        return [$error, $data];
+    }
+
+    public function getDetailsFromToken($token)
+    {
+        $error = [];
+        $data = null;
+        $cacheKey = 'oauthtokens.'.$token;
+
+        if ($this->cache->has($cacheKey) === true)
+        {
+            $token_data = $this->cache->get($cacheKey);
+            $token_data = explode(',', $token_data); //Decide on data to send and structure
+            $data['user_id'] = $token_data[0];
+            $data['merchant_id'] = $token_data[1];
+        }
+        else
+        {
+            // handle cases
+        }
+
+        return [$error, $data];
     }
 }

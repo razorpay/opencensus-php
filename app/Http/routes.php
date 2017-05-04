@@ -45,6 +45,8 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/user/pre_signup', 'MerchantController@postSignup');
             Route::get('/user/pre_signup', 'MerchantController@getSignup');
             Route::post('/user/track_lead', 'UserController@trackLead');
+            Route::get('/user/logged_in', 'UserController@checkLoggedIn'); //Better routes
+            Route::get('/user/{token}/detail', 'UserController@getDetailsFromToken');
         });
     });
 
