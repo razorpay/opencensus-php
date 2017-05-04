@@ -164,6 +164,7 @@ return array(
     ),
 
     'aeps_icici' => [
+        'terminal_id'           => env('AEPS_TERMINAL_ID'),
     ],
 
     'upi_idfc' => [

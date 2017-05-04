@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Terminal;
 
 class Gateway extends Base\Gateway
 {
@@ -17,6 +18,8 @@ class Gateway extends Base\Gateway
     const ACQUIRER = 'icici';
 
     const CACHE_TTL = 60;
+
+    const TERMINAL_ID = 'terminal_id';
 
     public function __construct()
     {
@@ -182,7 +185,7 @@ class Gateway extends Base\Gateway
 
         $counter = $this->getCounter();
 
-        $terminalId = '77777777';
+        $terminalId = $this->getTerminalId();
 
         $date = Carbon::now('Asia/Kolkata')->format('Y-m-d\TH:i:s');
 
@@ -206,6 +209,16 @@ class Gateway extends Base\Gateway
         ];
 
         return $data;
+    }
+
+    protected function getTerminalId()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config[self::TERMINAL_ID];
+        }
+
+        return $terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
     }
 
     protected function getCounter()
