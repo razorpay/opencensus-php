@@ -60,7 +60,7 @@ class CreateAeps extends Migration
             $table->integer(Aeps::UPDATED_AT);
 
             $table->foreign(Aeps::PAYMENT_ID)
-                  ->references(Payment\Entity::ID)
+                  ->references(Payment::ID)
                   ->on(Table::PAYMENT)
                   ->on_delete('restrict');
 
