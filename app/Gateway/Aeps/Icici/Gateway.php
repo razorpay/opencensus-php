@@ -42,13 +42,13 @@ class Gateway extends Base\Gateway
             unset($input['encrypted']);
         }
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($input);
-
         // This need to be done for reversal request,
         // As reversal is done in the same flow skipping for now
         //$this->setEncryptedFingerPrintDataInCache($input);
 
         $requestData = $this->getRequestData($input);
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($input, $requestData);
 
         $requestXmlData = $this->getRequestXml($requestData);
 
@@ -105,9 +105,19 @@ class Gateway extends Base\Gateway
         return Cache::store($this->secureCacheDriver)->get($key) ?: [];
     }
 
-    protected function createGatewayPaymentEntity($input)
+    protected function createGatewayPaymentEntity($input, $requestData)
     {
-        //TODO store aadhaar number
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $gatewayPayment->setPaymentId($input['payment'][Payment\Entity::ID]);
+
+        $gatewayPayment->setAadhaarNumber($input['aadhaar_number']);
+
+        $gatewayPayment->setCounter($requestData[RequestConstants::COUNTER]);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 
     protected function parseResponse($response)
@@ -183,28 +193,30 @@ class Gateway extends Base\Gateway
 
         $amount = str_pad($input['payment']['amount'], 12, '0', STR_PAD_LEFT);
 
-
         $terminalId = $this->getTerminalId();
 
         $date = Carbon::now('Asia/Kolkata')->format('Y-m-d\TH:i:s');
 
-        // TODO fill field 60 n 127
+        $extraBlock = '001344' . $input['aadhaar_session_key'] . '002008' . $input['aadhaar_cert_expiry'] . '003064' . $input['aadhaar_hmac'];
+
+        $fpInfo = '001009nnnyFMRnn008001X401019' . $date . '402001F403001Y404006607580412008' . $terminalId;
+
         $data = [
-            '0'   => $msgType,
-            '2'   => $bankIin . '0' . $input['aadhaar_number'],
-            '3'   => '421000',
-            '4'   => $amount,
-            '11'  => $counter,
-            '22'  => '019',
-            '24'  => '001',
-            '25'  => '05',
-            '36'  => 'WDLS C1||,,,,,,',
-            '41'  => $terminalId,
-            '42'  => '       RAZORPAY',
-            '60'  => $input['aadhaar_fingerprint'],
-            '125' => $transactionType,
-            '126' => '"001009nnnyFMRnn008001X401019' . $date . '402001F403001Y404006607580412008' . $terminalId,
-            '127' => '001344' . $input['aadhaar_session_key'] . '002008' . $input['aadhaar_cert_expiry'] . '003064' . $input['aadhaar_hmac'],
+            RequestConstants::MSG_TYPE    => $msgType,
+            RequestConstants::ACC_NO      => $bankIin . '0' . $input['aadhaar_number'],
+            RequestConstants::REQ_TYPE    => '421000',
+            RequestConstants::AMOUNT      => $amount,
+            RequestConstants::COUNTER     => $counter,
+            RequestConstants::F22         => '019',
+            RequestConstants::F24         => '001',
+            RequestConstants::F25         => '05',
+            RequestConstants::F36         => 'WDLS C1||,,,,,,',
+            RequestConstants::TERMINAL_ID => $terminalId,
+            RequestConstants::F42         => '       RAZORPAY',
+            RequestConstants::PID_BLOCK   => $input['aadhaar_fingerprint'],
+            RequestConstants::TRANS_TYPE  => $transactionType,
+            RequestConstants::FP_INFO     => $fpInfo,
+            RequestConstants::EXTRA_BLOCK => $extraBlock,
         ];
 
         return $data;
