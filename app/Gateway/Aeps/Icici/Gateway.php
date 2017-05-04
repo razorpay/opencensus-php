@@ -62,7 +62,7 @@ class Gateway extends Base\Gateway
 
             $paymentStatus = $this->updateGatewayPaymentAndGetStatus($gatewayPayment, $parsedResponse);
 
-            if ($paymentStatus === SELF::FAILED)
+            if ($paymentStatus !== SELF::SUCCESS)
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
