@@ -73,6 +73,11 @@ class Gateway extends Base\Gateway
                 $parsedReversalResponse = $this->parseResponse($reversalResponse);
 
                 $this->updateGatewayPayment($parsedReversalResponse);
+
+                // After reverse is complete, We have to throw exception as
+                // paymnet failed overall
+                throw new Exception\ServerErrorException(
+                    'Payment Failed and Reversed');
             }
             catch (\Exception $e)
             {
@@ -87,7 +92,8 @@ class Gateway extends Base\Gateway
             //$this->deleteEncryptedFingerPrintDataFromCache($input);
         }
 
-        return $this->getPaymentResponseData($gatewayPayment);
+        //TODO IN future we may want to return RRN number
+        //return $this->getPaymentResponseData($gatewayPayment);
     }
 
     protected function setEncryptedFingerPrintDataInCache($input)
