@@ -155,6 +155,7 @@ class Entity extends Base\PublicEntity
             {
                 case Payment\Method::NETBANKING:
                 case Payment\Method::WALLET:
+                case Payment\MEthod::UPI:
                     $input[Entity::NETWORK] = Entity::NA;
                     break;
 
@@ -175,6 +176,7 @@ class Entity extends Base\PublicEntity
             {
                 case Payment\Method::NETBANKING:
                 case Payment\Method::WALLET:
+                case Payment\MEthod::UPI:
                     $input[Entity::CARD_TYPE] = Entity::NA;
                     break;
 
@@ -197,7 +199,8 @@ class Entity extends Base\PublicEntity
 
                     $gateway = $input[Entity::GATEWAY];
 
-                    $input[Entity::ISSUER] = Entity::UNKNOWN;
+                    // For shared netbanking gateways if issuer is null then set it to ALL
+                    $input[Entity::ISSUER] = Entity::ALL;
 
                     // If gateway is a direct netbanking gateway we set the issuer
                     if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
@@ -221,6 +224,13 @@ class Entity extends Base\PublicEntity
                     // we could also assume all. But we are playing
                     // safe here
                     $input[Entity::ISSUER] = Entity::UNKNOWN;
+
+                    break;
+
+                case Payment\Method::UPI:
+
+                    $input[Entity::ISSUER] = Entity::UNKNOWN;
+
                     break;
             }
         }

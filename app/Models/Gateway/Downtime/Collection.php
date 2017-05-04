@@ -44,14 +44,6 @@ class Collection extends Base\PublicCollection
 
                     $downtimeData = $downtime->toArrayExternal();
 
-                    $issuer = $downtime->getIssuer();
-
-                    // For wallet and UPI if issuer is unknown ot NA don't display the data
-                    if ($this->isUnknownOrNA($issuer) === true)
-                    {
-                        $downtimeData = null;
-                    }
-
                     break;
 
                 default:
