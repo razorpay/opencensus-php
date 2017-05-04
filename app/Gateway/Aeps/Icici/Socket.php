@@ -31,7 +31,7 @@ class Socket extends Base\Core
 
         list($address, $port) = $this->getAddressAndPort();
 
-        $result = socket_connect($sock, $address, $port);
+        $result = socket_connect($this->sock, $address, $port);
 
         if ($result === false)
         {

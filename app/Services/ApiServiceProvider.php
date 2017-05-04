@@ -266,7 +266,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'payout'          => Payout\Entity::class,
 
             'bank_account'    => BankAccount\Entity::class,
-            'aadhaaar'        => Aadhaar\Entity::class,
         ]);
     }
 

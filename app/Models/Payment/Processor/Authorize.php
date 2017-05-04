@@ -15,7 +15,6 @@ use RZP\Exception;
 use RZP\Models\Admin;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
-use RZP\Models\Aadhaar;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;

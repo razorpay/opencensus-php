@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Aeps\Base;
 
+use Crypt;
 use RZP\Constants;
 use RZP\Gateway\Base;
 
@@ -48,4 +49,21 @@ class Entity extends Base\Entity
     ];
 
     protected $entity = Constants\Entity::AEPS;
+
+    public function setAadhaarNumber($aadhaarNumber)
+    {
+        $encrypterAadhaar = Crypt::encrypt($aadhaarNumber);
+
+        $this->setAttribute(self::AADHAAR_NUMBER, $encrypterAadhaar);
+    }
+
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setCounter($counter)
+    {
+        $this->setAttribute(self::COUNTER, $counter);
+    }
 }
