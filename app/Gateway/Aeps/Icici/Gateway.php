@@ -42,9 +42,9 @@ class Gateway extends Base\Gateway
             unset($input['encrypted']);
         }
 
-        // This need to be done for reversal request,
+        // This need to be done for reversal request via cron,
         // As reversal is done in the same flow skipping for now
-        //$this->setEncryptedFingerPrintDataInCache($input);
+        // $this->setEncryptedFingerPrintDataInCache($input);
 
         $requestData = $this->getRequestData($input);
 
@@ -113,6 +113,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setAadhaarNumber($input['aadhaar_number']);
 
+        $gatewayPayment->setAmount($input['payment']['amount']);
+
         $gatewayPayment->setCounter($requestData[RequestConstants::COUNTER]);
 
         $this->repo->saveOrFail($gatewayPayment);
@@ -157,9 +159,60 @@ class Gateway extends Base\Gateway
         //TODO : Write Response Parser
     }
 
-    protected function updateGatewayPayment($response)
+    protected function updateGatewayPaymentForReversal($gatewayPayment, $response)
     {
-        //TODO : FIX IT
+        if (isset($response[ResponseConstants::STATUS]) === true)
+        {
+            if ($response[ResponseConstants::STATUS] === '00')
+            {
+                $gatewayPayment->setReversed(true);
+            }
+            else
+            {
+                $gatewayPayment->setReversed(false);
+
+                $gatewayPayment->setReversalErrorCode($response[ResponseConstants::STATUS]);
+
+                if (isset($response[ResponseConstants::DESCRIPTION]) === true)
+                {
+                    $gatewayPayment->setReversalErrorDescription($response[ResponseConstants::DESCRIPTION]);
+                }
+            }
+        }
+        else
+        {
+            $gatewayPayment->setReversed(false);
+        }
+    }
+
+    protected function updateGatewayPayment($gatewayPayment, $response)
+    {
+        if (isset($response[ResponseConstants::RRN]) === true)
+        {
+            $gatewayPayment->setRrn($response[ResponseConstants::RRN]);
+        }
+
+        if (isset($response[ResponseConstants::STATUS]) === true)
+        {
+            if ($response[ResponseConstants::STATUS] === '00')
+            {
+                $gatewayPayment->setReceived(true);
+            }
+            else
+            {
+                $gatewayPayment->setReceived(false);
+                $gatewayPayment->setErrorCode($response[ResponseConstants::STATUS]);
+
+                if (isset($response[ResponseConstants::DESCRIPTION]) === true)
+                {
+                    $gatewayPayment->setErrorDescription($response[ResponseConstants::DESCRIPTION]);
+                }
+            }
+        }
+        else
+        {
+            $gatewayPayment->setReceived(false);
+        }
     }
 
     protected function sendReversalRequest($reversalRequestXmlData)
