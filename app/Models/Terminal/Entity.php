@@ -284,6 +284,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UPI);
     }
 
+    public function isAepsEnabled()
+    {
+        return $this->getAttribute(self::AEPS);
+    }
+
     public function isShared()
     {
         $merchantId = $this->getAttribute(self::MERCHANT_ID);
@@ -515,11 +520,6 @@ class Entity extends Base\PublicEntity
     public function isGateway($gateway)
     {
         return ($this->getAttribute(self::GATEWAY) === $gateway);
-    }
-
-    public function isAepsTerminal()
-    {
-        return (substr($this->gateway, 0, 4) === 'aeps');
     }
 
     public function isGatewayAcquirer($acquirer)

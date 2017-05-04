@@ -14,6 +14,7 @@ class Socket extends Base\Core
 
     public function __construct()
     {
+        // TODO: See if socket_stream can be used isntead of this
         $this->sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
         if ($this->sock === false)
@@ -59,8 +60,8 @@ class Socket extends Base\Core
             SOL_SOCKET,
             SO_RCVTIMEO,
             [
-                "sec"  => self::TIMEOUT,
-                "usec" => 0
+                'sec'  => self::TIMEOUT,
+                'usec' => 0
             ]);
 
         $data = socket_read($this->sock, $maxDataSize);

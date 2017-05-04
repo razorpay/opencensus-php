@@ -22,7 +22,6 @@ class AddressTest extends TestCase
 
     public function testCreateShippingAddress()
     {
-        sd('skip it');
         $this->startTest();
     }
 

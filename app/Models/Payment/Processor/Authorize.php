@@ -386,7 +386,7 @@ trait Authorize
 
         $this->validateRecurringIfApplicable($payment, $input);
 
-        //$this->validateS2SIfApplicable($payment);
+        $this->validateS2SIfApplicable($payment);
 
         $this->verifyPaymentMethodEnabled($payment);
 
@@ -446,6 +446,10 @@ trait Authorize
         else if ($payment->isUpi() === true)
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SUPI);
+        }
+        else if ($payment->isAeps() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SAEPS);
         }
         else
         {
@@ -797,24 +801,25 @@ trait Authorize
 
     protected function setGatewayInputForAeps($input, & $gatewayInput)
     {
-        $gatewayInput['aadhaar_number'] = $input['aadhaar']['number'];
-
         if ((isset($input['aadhaar']['fingerprint']) === true) and
             (isset($input['aadhaar']['session_key']) === true) and
             (isset($input['aadhaar']['hmac']) === true))
         {
-            $gatewayInput['aadhaar_fingerprint'] = $input['aadhaar']['fingerprint'];
-
-            $gatewayInput['aadhaar_session_key'] = $input['aadhaar']['session_key'];
-
-            $gatewayInput['aadhaar_hmac'] = $input['aadhaar']['hmac'];
+            $gatewayInput['aadhaar'] = [
+                'fingerprint' => $input['aadhaar']['fingerprint'],
+                'session_key' => $input['aadhaar']['session_key'],
+                'hmac' => $input['aadhaar']['hmac']
+            ];
         }
         else
         {
-            $gatewayInput['encrypted'] = false;
-
-            $gatewayInput['aadhaar_fingerprint'] = $input['aadhaar']['fingerprint'];
+            $gatewayInput['aadhaar'] = [
+                'encrypted' => false,
+                'fingerprint' => $input['aadhaar']['fingerprint'],
+            ];
         }
+
+        $gatewayInput['aadhaar']['number'] = $input['aadhaar']['number'];
     }
 
     protected function preProcessPaymentWithoutSaving($payment, array & $input, array & $gatewayInput)
@@ -1208,21 +1213,6 @@ trait Authorize
         return $response;
     }
 
-    /**
-     * @see  CoProto supports direct payments https://github.com/razorpay/api/wiki/COPROTO
-     * @param $request
-     * @param Payment\Entity $payment
-     * @return array payment response
-     */
-    protected function getFinalPaymentCreatedResponse($request, Payment\Entity $payment)
-    {
-        $response = $payment->toArrayPublic();
-
-        $this->segment->trackPayment($payment, TraceCode::FINAL_PAYMENT_RESPONSE, $response);
-
-        return $response;
-    }
-
     protected function getFirstPaymentCreatedResponse(array $request, Payment\Entity $payment): array
     {
         $data['type'] = 'first';
@@ -1366,11 +1356,6 @@ trait Authorize
             'razorpay_payment_id' => $payment->getPublicId()
         ];
 
-        if ($payment->isAeps())
-        {
-            $this->fillReturnDataWithAepsInfo($payment, $returnData);
-        }
-
         if ($payment->getApiOrderId() !== null)
         {
             $this->fillReturnDataWithOrder($payment, $returnData);
@@ -1401,13 +1386,6 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AEPS_NOT_ENABLED_FOR_MERCHANT);
         }
-    }
-
-    protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
-    {
-        $data['razorpay_order_id'] = $payment->order->getPublicId();
-
-        $data['razorpay_signature'] = $this->getSignature($data);
     }
 
     /**

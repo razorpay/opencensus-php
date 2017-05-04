@@ -220,7 +220,7 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForUPI($rules);
         }
-        else if ($method === Payment\Method::UPI)
+        else if ($method === Payment\Method::AEPS)
         {
             $rule = $this->getRelevantPricingRuleForAeps($rules);
         }
@@ -245,7 +245,7 @@ class FeeCalculator
         return $this->validateAndGetOnePricingRule($rules);
     }
 
-    protected function getRelevantPricingRuleForAEPS($rules)
+    protected function getRelevantPricingRuleForAeps($rules)
     {
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
@@ -700,7 +700,7 @@ class FeeCalculator
 
         $numerator = $fee * $taxPercentage;
 
-        $denominator = 10000 + $taxPercentage ;
+        $denominator = 10000 + $taxPercentage;
 
         return ceil($numerator / $denominator);
     }

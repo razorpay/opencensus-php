@@ -553,16 +553,6 @@ class Gateway
     }
 
     /**
-     * Whether the gateway supports direct return for  payments
-     * @param  string $gateway
-     * @return boolean
-     */
-    public static function supportsDirect($gateway)
-    {
-        return in_array($gateway, self::$direct, true);
-    }
-
-    /**
      * Whether the gateway supports async payments
      * @param  string $gateway
      * @return boolean

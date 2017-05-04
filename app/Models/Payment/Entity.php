@@ -66,8 +66,6 @@ class Entity extends Base\PublicEntity
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
     const EMI_DURATION          = 'emi_duration';
-    const ENTITY_ID             = 'entity_id';
-    const ENTITY_TYPE           = 'entity_type';
     const TRANSACTION_ID        = 'transaction_id';
     const AUTO_CAPTURED         = 'auto_captured';
     const AUTHORIZED_AT         = 'authorized_at';
@@ -88,12 +86,6 @@ class Entity extends Base\PublicEntity
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
-
-    /* Finger Print Data should not be stored in Db
-     * but are referenced at various points
-     * and the values are held in-memory.
-     */
-    const FINGERPRINT           = 'fingerprint';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -133,8 +125,6 @@ class Entity extends Base\PublicEntity
         self::SAVE,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
     ];
 
     protected $visible = [
@@ -199,8 +189,6 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
     ];
 
     protected $public = [
@@ -1563,10 +1551,6 @@ class Entity extends Base\PublicEntity
     }
 // --------------- Relation to other entities ----------------------------------
 
-    public function entity()
-    {
-        return $this->morphTo();
-    }
     public function card()
     {
         return $this->belongsTo('RZP\Models\Card\Entity');

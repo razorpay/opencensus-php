@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Aeps\Icici;
 
 use Cache;
-use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;
@@ -30,21 +29,17 @@ class Gateway extends Base\Gateway
     {
         parent::__construct();
 
-        $this->secureCacheDriver = Config::get('cache.secure_default');
-
         $this->cache = Cache::getFacadeRoot();
     }
 
     public function authorize(array $input)
     {
-        if ((isset($input['encrypted']) === true) and
-            ($input['encrypted'] === false))
+        if ((isset($input['aadhaar']['encrypted']) === true) and
+            ($input['aadhaar']['encrypted'] === false))
         {
             $encryptor = (new Encryptor);
 
             $encryptor->encryptInput($input);
-
-            unset($input['encrypted']);
         }
 
         // This need to be done for reversal request via cron,
@@ -69,7 +64,6 @@ class Gateway extends Base\Gateway
             {
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-
             }
         }
         catch (Exception\GatewayTimeoutException $e)
@@ -258,13 +252,13 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::now('Asia/Kolkata')->format('Y-m-d\TH:i:s');
 
-        $extraBlock = '001344' . $input['aadhaar_session_key'] . '002008' . $input['aadhaar_cert_expiry'] . '003064' . $input['aadhaar_hmac'];
+        $extraBlock = '001344' . $input['aadhaar']['session_key'] . '002008' . $input['aadhaar']['cert_expiry'] . '003064' . $input['aadhaar']['hmac'];
 
         $fpInfo = '001009nnnyFMRnn008001X401019' . $date . '402001F403001Y404006607580412008' . $terminalId;
 
         $data = [
             RequestConstants::MSG_TYPE    => $msgType,
-            RequestConstants::ACC_NO      => $bankIin . '0' . $input['aadhaar_number'],
+            RequestConstants::ACC_NO      => $bankIin . '0' . $input['aadhaar']['number'],
             RequestConstants::REQ_TYPE    => '421000',
             RequestConstants::AMOUNT      => $amount,
             RequestConstants::COUNTER     => $counter,
@@ -274,7 +268,7 @@ class Gateway extends Base\Gateway
             RequestConstants::F36         => 'WDLS C1||,,,,,,',
             RequestConstants::TERMINAL_ID => $terminalId,
             RequestConstants::F42         => '       RAZORPAY',
-            RequestConstants::PID_BLOCK   => $input['aadhaar_fingerprint'],
+            RequestConstants::PID_BLOCK   => $input['aadhaar']['fingerprint'],
             RequestConstants::TRANS_TYPE  => $transactionType,
             RequestConstants::FP_INFO     => $fpInfo,
             RequestConstants::EXTRA_BLOCK => $extraBlock,
@@ -295,7 +289,7 @@ class Gateway extends Base\Gateway
             return $this->config[self::TERMINAL_ID];
         }
 
-        return $terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
+        return $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
     }
 
     protected function getCounter()
@@ -331,7 +325,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setPaymentId($input['payment'][Payment\Entity::ID]);
 
-        $gatewayPayment->setAadhaarNumber($input['aadhaar_number']);
+        $gatewayPayment->setAadhaarNumber($input['aadhaar']['number']);
 
         $gatewayPayment->setAmount($input['payment']['amount']);
 

@@ -48,11 +48,23 @@ class Entity extends Base\Entity
 
     protected $entity = Constants\Entity::AEPS;
 
+    protected function setAadhaarNumberAttribute($aadhaarNumber)
+    {
+        $encryptedAadhaar = Crypt::encrypt($aadhaarNumber);
+
+        $this->attributes[self::AADHAAR_NUMBER] = $encryptedAadhaar;
+    }
+
+    protected function getAadhaarNumberAttribute()
+    {
+        $encryptedAadhaar = $this->attributes[self::AADHAAR_NUMBER];
+
+        return Crypt::decrypt($encryptedAadhaar);
+    }
+
     public function setAadhaarNumber($aadhaarNumber)
     {
-        $encrypterAadhaar = Crypt::encrypt($aadhaarNumber);
-
-        $this->setAttribute(self::AADHAAR_NUMBER, $encrypterAadhaar);
+        $this->setAttribute(self::AADHAAR_NUMBER, $aadhaarNumber);
     }
 
     public function setAmount($amount)
