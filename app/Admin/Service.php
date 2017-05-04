@@ -1120,33 +1120,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function postMerchantPricing($id, $input)
-    {
-        $error = array();
-        $data = array();
-
-        $originalInput = $input;
-
-        if (isset($input['pricing_plan_name']))
-        {
-            unset($input['pricing_plan_name']);
-        }
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $data = $this->api->merchant->fetch($id)->setPricing($input)->toArray();
-            $this->logActionToSlack($id, Actions::PRICING_PLAN_SET, $originalInput);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
     /**
      * Fetches bank account details for a merchant from the API
      * @param  string $merchantId Merchant Id

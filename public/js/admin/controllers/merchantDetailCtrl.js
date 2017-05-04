@@ -416,11 +416,17 @@ app
       $scope.assignPricing = function(data) {
         data = { pricing_plan_id: data.id, pricing_plan_name: data.name };
 
+        var pricingData = {
+          route_name: 'merchant_assign_pricing',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/pricing',
-          transformRequest: transformRequestAsFormPost,
-          data: data,
+          url: '/admin/generic',
+          data: pricingData,
         });
         request
           .success(function(data) {

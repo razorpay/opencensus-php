@@ -286,15 +286,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postMerchantPricing($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postMerchantPricing($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getMerchantActivation($id)
     {
         $dashboardOnly = Input::get('dashboard', false);
