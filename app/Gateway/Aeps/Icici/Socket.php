@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Aeps\Icici;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 
 class Socket extends Base\Core

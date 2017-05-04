@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Aeps\Icici;
 
+use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Error\ErrorCode;
 
 class Gateway extends Base\Gateway
 {
@@ -22,7 +24,7 @@ class Gateway extends Base\Gateway
             unset($input['encrypted']);
         }
 
-        $this->createGatewayPayment($input);
+        $gatewayPayment = $this->createGatewayPaymentEntity($input);
 
         // This need to be done for reversal request,
         $this->setEncryptedFingerPrintDataInRedis($input);
@@ -45,11 +47,19 @@ class Gateway extends Base\Gateway
 
             $reversalRequestXmlData = $this->getRequestXml($input, $reversal);
 
-            $reversalResponse = $this->sendReversalRequest($reversalRequestXmlData);
+            try
+            {
+                $reversalResponse = $this->sendReversalRequest($reversalRequestXmlData);
 
-            $parsedReversalResponse = $this->parseResponse($reversalResponse);
+                $parsedReversalResponse = $this->parseResponse($reversalResponse);
 
-            $this->updateGatewayPayment($parsedReversalResponse);
+                $this->updateGatewayPayment($parsedReversalResponse);
+            }
+            catch (\Exception $e)
+            {
+                //TODO trace and silently exit
+
+            }
         }
         finally
         {
@@ -59,7 +69,17 @@ class Gateway extends Base\Gateway
         return $this->getPaymentResponseData($gatewayPayment);
     }
 
-    protected function createGatewayPayment($input)
+    protected function setEncryptedFingerPrintDataInRedis($input)
+    {
+
+    }
+
+    protected function deleteEncryptedFingerPrintDataInRedis($input)
+    {
+
+    }
+
+    protected function createGatewayPaymentEntity($input)
     {
         //TODO store aadhaar number
     }
@@ -67,6 +87,12 @@ class Gateway extends Base\Gateway
     protected function parseResponse($response)
     {
         $responseArray = [];
+
+        if ($response === null)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+        }
 
         $fieldCount = $response->count();
 
@@ -102,14 +128,7 @@ class Gateway extends Base\Gateway
 
     protected function sendReversalRequest($reversalRequestXmlData)
     {
-        try
-        {
-            $response = $this->sendRequest($reversalRequestXmlData);
-        }
-        catch (\Exception $e)
-        {
-            // Trace as reversal has also failed, and think of a better way to handle this
-        }
+        $response = $this->sendRequest($reversalRequestXmlData);
     }
 
     protected function sendRequest($requestXmlData)
@@ -140,6 +159,8 @@ class Gateway extends Base\Gateway
 
         $date = '2017-04-09T11:11:10';
 
+        // FIX IT
+        $input['aadhaar_no'] = '123456789012';
         // TODO fill field 60 n 127
         $data = [
             '0'   => $msgType,
@@ -162,7 +183,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getRequestXml($input, $reversal)
+    protected function getRequestXml($input, $reversal = false)
     {
         $xmlString = '';
 
@@ -170,7 +191,7 @@ class Gateway extends Base\Gateway
 
         $xmlStringPostfix = '</isomsg>';
 
-        $data = $this->getRequestData();
+        $data = $this->getRequestData($input, $reversal);
 
         foreach ($data as $key => $value)
         {
