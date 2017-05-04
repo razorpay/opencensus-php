@@ -23,18 +23,16 @@ class CreateAeps extends Migration
 
             $table->increments(Aeps::ID);
 
+            $table->string(Aeps::ACQUIRER, 20);
+
             $table->string(Aeps::PAYMENT_ID, Payment::ID_LENGTH);
 
             $table->string(Aeps::REFUND_ID, Refund::ID_LENGTH)
                   ->nullable();
 
+            $table->string(Aeps::ACTION);
+
             $table->integer(Aeps::AMOUNT);
-
-            $table->tinyInteger(Aeps::RECEIVED)
-                  ->default(0);
-
-            $table->tinyInteger(Aeps::REVERSED)
-                  ->default(0);
 
             $table->string(Aeps::ERROR_CODE)
                   ->nullable();
@@ -45,11 +43,17 @@ class CreateAeps extends Migration
             $table->string(Aeps::AADHAAR_NUMBER)
                   ->nullable();
 
+            $table->tinyInteger(Aeps::REVERSED)
+                  ->default(0);
+
             $table->string(Aeps::COUNTER)
                   ->nullable();
 
             $table->string(Aeps::RRN)
                   ->nullable();
+
+            $table->tinyInteger(Aeps::RECEIVED)
+                  ->default(0);
 
             $table->integer(Aeps::CREATED_AT);
 

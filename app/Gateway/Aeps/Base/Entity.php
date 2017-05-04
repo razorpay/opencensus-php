@@ -9,7 +9,9 @@ use RZP\Gateway\Base;
 class Entity extends Base\Entity
 {
     const ID                    = 'id';
+    const ACTION                = 'action';
     const AMOUNT                = 'amount';
+    const ACQUIRER              = 'acquirer';
     const RECEIVED              = 'received';
     const REVERSED              = 'reversed';
     const ERROR_CODE            = 'error_code';
@@ -21,7 +23,9 @@ class Entity extends Base\Entity
     const REFUND_ID             = 'refund_id';
 
     protected $fields = [
+        self::ACTION,
         self::AMOUNT,
+        self::ACQUIRER,
         self::RECEIVED,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
@@ -32,13 +36,15 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
-        self::RRN,
-        self::AMOUNT,
-        self::RECEIVED,
-        self::REVERSED,
-        self::ERROR_CODE,
         self::PAYMENT_ID,
         self::REFUND_ID,
+        self::ACTION,
+        self::AMOUNT,
+        self::ACQUIRER,
+        self::RECEIVED,
+        self::REVERSED,
+        self::RRN,
+        self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
     ];
 
@@ -67,9 +73,19 @@ class Entity extends Base\Entity
         $this->setAttribute(self::AADHAAR_NUMBER, $aadhaarNumber);
     }
 
+    public function setAction($action)
+    {
+        $this->setAttribute(self::ACTION, $action);
+    }
+
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setAcquirer($acquirer)
+    {
+        $this->setAttribute(self::ACQUIRER, $acquirer);
     }
 
     public function setCounter($counter)

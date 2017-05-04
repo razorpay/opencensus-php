@@ -34,6 +34,8 @@ class Gateway extends Base\Gateway
 
     public function authorize(array $input)
     {
+        parent::authorize($input);
+
         if ((isset($input['aadhaar']['encrypted']) === true) and
             ($input['aadhaar']['encrypted'] === false))
         {
@@ -328,6 +330,10 @@ class Gateway extends Base\Gateway
         $gatewayPayment->setAadhaarNumber($input['aadhaar']['number']);
 
         $gatewayPayment->setAmount($input['payment']['amount']);
+
+        $gatewayPayment->setAcquirer($input['terminal']['gateway_acquirer']);
+
+        $gatewayPayment->setAction($this->action);
 
         $gatewayPayment->setCounter($requestData[RequestConstants::COUNTER]);
 
