@@ -36,6 +36,11 @@ export default class ReferralsListContainer extends ListContainer {
       ),
     });
   };
+
+  switchMerchant = merchantId => {
+    return this.props.switchMerchant(merchantId);
+  };
+
   showCreateMerchantModal = () => {
     this.props.openModal({
       component: (
@@ -71,9 +76,10 @@ export default class ReferralsListContainer extends ListContainer {
               highlightRow={referral => referral.id === highlightReferralId}
               showCreateLoginModal={this.showCreateLoginModal}
               highlightReferralId={highlightReferralId}
+              switchMerchant={this.switchMerchant}
             />
 
-            {!loading
+            {!loading && user.tags.indexOf('Aggregator') !== -1
               ? <div class="panel-footer">
                   <div class="row">
                     <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">

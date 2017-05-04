@@ -7,6 +7,7 @@ const HIGHLIGHT_REFERRAL = 'HIGHLIGHT_REFERRAL';
 const REMOVE_HIGHLIGHT_REFERRAL = 'REMOVE_HIGHLIGHT_REFERRAL';
 const LOGIN_CREATE = 'LOGIN_CREATE';
 const MERCHANT_CREATE = 'MERCHANT_CREATE';
+const MERCHANT_SWITCH = 'MERCHANT_SWITCH';
 
 export const fetchReferrals = params => {
   return dispatch => {
@@ -18,12 +19,12 @@ export const fetchReferrals = params => {
   };
 };
 
-export const newReferral = params => {
-  var referral = new Referral(params);
+export const switchMerchant = merchantId => {
+  var referral = new Referral();
   return dispatch => {
     return dispatch({
-      type: REFERRALS_NEW,
-      payload: referral.save(),
+      type: MERCHANT_SWITCH,
+      payload: referral.switchMerchant(merchantId),
     });
   };
 };

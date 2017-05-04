@@ -1,13 +1,10 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { Field, reduxForm } from 'redux-form';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
-import Amount from 'rzp/ui/Amount';
-import { isBlank } from 'rzp/utils/rzp-utils';
 import { closeModal } from 'rzp/modules/modals';
 
 function validate(values) {
@@ -47,12 +44,9 @@ function validate(values) {
   validate,
 })
 export default class CreateLogin extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      errors: null,
-    };
-  }
+  state = {
+    errors: null,
+  };
 
   componentWillMount() {
     let referral = this.props.referral;
@@ -72,7 +66,6 @@ export default class CreateLogin extends Component {
         this.props.showNotification({
           type: 'success',
           message: `Login created for the merchant ${props.name}`,
-          closeTimeout: 5000,
         });
         this.props.closeModal();
       })
@@ -80,7 +73,6 @@ export default class CreateLogin extends Component {
         this.props.showNotification({
           type: 'error',
           message: errors,
-          closeTimeout: 5000,
         });
       });
   };

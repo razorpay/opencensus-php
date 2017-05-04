@@ -24,6 +24,15 @@ export default class Referral extends Entity {
     });
   }
 
+  switchMerchant(merchantId) {
+    /* TODO: remove reload once ported entirely to React */
+
+    return ajax({
+      url: `/settings/merchants/switch/${merchantId}`,
+      appendModeInURL: false,
+    }).then(response => window.location.reload());
+  }
+
   createLogin(params = {}) {
     const Klass = this.constructor;
     let data = params;

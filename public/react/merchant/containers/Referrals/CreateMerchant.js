@@ -1,14 +1,11 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { Field, reduxForm } from 'redux-form';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import Alert from 'rzp/ui/Forms/Alert';
-import Amount from 'rzp/ui/Amount';
 import { required, email } from 'rzp/utils/validators';
-import { isBlank } from 'rzp/utils/rzp-utils';
 import { closeModal } from 'rzp/modules/modals';
 import { highlightReferral } from 'merchant/modules/referrals';
 
@@ -24,12 +21,9 @@ import { highlightReferral } from 'merchant/modules/referrals';
   form: 'createMerchant',
 })
 export default class CreateMerchant extends Component {
-  constructor() {
-    super(...arguments);
-    this.state = {
-      errors: null,
-    };
-  }
+  state = {
+    errors: null,
+  };
 
   componentWillMount() {
     let referral = this.props.referral;
@@ -47,7 +41,6 @@ export default class CreateMerchant extends Component {
         this.props.showNotification({
           type: 'success',
           message: 'Merchant created',
-          closeTimeout: 5000,
         });
         this.props.closeModal();
       })
@@ -55,7 +48,6 @@ export default class CreateMerchant extends Component {
         this.props.showNotification({
           type: 'error',
           message: errors,
-          closeTimeout: 5000,
         });
       });
   };

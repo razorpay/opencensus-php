@@ -1,12 +1,11 @@
 import TableBody from '../TableBody';
 import Time from 'rzp/ui/Time';
 import CheckIcon from 'rzp/ui/CheckIcon';
-import Referral from 'merchant/models/Referral';
 
 const ReferralsListItem = props => {
-  let mode = props.mode;
   let user = props.user;
   let canHighlight = props.canHighlight;
+  let isAggregator = user.tags.indexOf('Aggregator') !== -1;
   let {
     id,
     name,
@@ -19,7 +18,14 @@ const ReferralsListItem = props => {
   return (
     <tr class={canHighlight ? 'luminate' : ''}>
       <td>
-        {id}
+        <span
+          onClick={() => {
+            isAggregator && props.switchMerchant(id);
+          }}
+          style={isAggregator && { cursor: 'pointer' }}
+        >
+          {id}
+        </span>
       </td>
       <td>
         {name}
@@ -31,10 +37,10 @@ const ReferralsListItem = props => {
         <Time value={created_at} format={'MMM Do, YYYY hh:mm:ss A'} />
       </td>
       <td>
-        <CheckIcon value={merchant_details.submitted === 1} />
+        <CheckIcon value={merchant_details.submitted} />
       </td>
       <td>
-        <CheckIcon value={activated === 1} />
+        <CheckIcon value={activated} />
       </td>
       <td>
         {email !== user.email &&
@@ -58,6 +64,7 @@ export default props => {
     user,
     showCreateLoginModal,
     highlightRow,
+    switchMerchant,
   } = props;
 
   return (
@@ -83,6 +90,7 @@ export default props => {
                 user={user}
                 canHighlight={highlightRow(referral)}
                 showCreateLoginModal={showCreateLoginModal}
+                switchMerchant={switchMerchant}
               />
             ))}
           </TableBody>
