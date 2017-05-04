@@ -387,7 +387,7 @@ trait Authorize
 
         $this->validateRecurringIfApplicable($payment, $input);
 
-        $this->validateS2SIfApplicable($payment);
+        //$this->validateS2SIfApplicable($payment);
 
         $this->verifyPaymentMethodEnabled($payment);
 

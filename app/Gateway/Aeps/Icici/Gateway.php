@@ -166,6 +166,13 @@ class Gateway extends Base\Gateway
             $msgType = RequestConstants::REVERSAL_MSG_TYPE;
         }
 
+        $transactionType = RequestConstants::OFFUS;
+
+        if ($input['payment']['bank'] === IFSC::ICIC)
+        {
+            $transactionType = RequestConstants::ONUS;
+        }
+
         $bankIin = BankIin::$map[$input['payment']['bank']];
 
         $amount = str_pad($input['payment']['amount'], 12, '0', STR_PAD_LEFT);
@@ -192,7 +199,7 @@ class Gateway extends Base\Gateway
             '41'  => $terminalId,
             '42'  => '       RAZORPAY',
             '60'  => '',
-            '125' => 'OFFUS.APAY',
+            '125' => $transactionType,
             '126' => '"001009nnnyFMRnn008001X401019' . $date . '402001F403001Y404006607580412008' . $terminalId,
             '127' => '',
         ];
