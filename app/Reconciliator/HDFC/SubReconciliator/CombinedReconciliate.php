@@ -11,13 +11,25 @@ class CombinedReconciliate  extends Base\CombinedReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_ENTITY_TYPE  = 'rec_fmt';
+    const COLUMN_ENTITY_TYPE  = ['rec_fmt', 'REC FMT'];
 
     const UNKNOWN_COLUMN_ENTITY_TYPES = ['CDP', 'CBR', 'AMC', 'MCC'];
 
     protected function getReconciliationTypeForRow($row)
     {
-        $entityType = trim($row[self::COLUMN_ENTITY_TYPE]);
+        $entityType = null;
+
+        foreach (self::COLUMN_ENTITY_TYPE as $cet)
+        {
+            if (isset($row[$cet]) === true)
+            {
+                $entityType = $row[$cet];
+
+                $entityType = trim($entityType);
+
+                break;
+            }
+        }
 
         if ($entityType === 'CVD')
         {

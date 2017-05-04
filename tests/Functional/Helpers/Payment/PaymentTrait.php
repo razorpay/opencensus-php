@@ -155,7 +155,7 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = [
-            'url' => '/payments/autocapture',
+            'url'    => '/payments/autocapture',
             'method' => 'post'
         ];
 
@@ -167,7 +167,7 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = [
-            'url' => '/payments/autocapture/email',
+            'url'    => '/payments/autocapture/email',
             'method' => 'get'
         ];
 
@@ -222,8 +222,8 @@ trait PaymentTrait
         $content = array_merge($content, $payment);
 
         $request = [
-            'method' => 'GET',
-            'url' => '/payments/create/jsonp',
+            'method'  => 'GET',
+            'url'     => '/payments/create/jsonp',
             'content' => $content
         ];
 
@@ -247,8 +247,8 @@ trait PaymentTrait
         }
 
         $request = [
-            'method' => 'POST',
-            'url' => '/payments',
+            'method'  => 'POST',
+            'url'     => '/payments',
             'content' => $payment
         ];
 
@@ -272,8 +272,8 @@ trait PaymentTrait
         }
 
         $request = [
-            'method' => 'POST',
-            'url' => '/payments/create/redirect',
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
             'content' => $payment
         ];
 
@@ -302,7 +302,7 @@ trait PaymentTrait
         return $paymentRequest;
     }
 
-    protected function doS2SRecurringPayment($payment = null)
+    protected function doS2SRecurringPayment($payment = null, $server = null)
     {
         if ($payment === null)
         {
@@ -310,8 +310,8 @@ trait PaymentTrait
         }
 
         $request = [
-            'method' => 'POST',
-            'url' => '/payments/create/recurring',
+            'method'  => 'POST',
+            'url'     => '/payments/create/recurring',
             'content' => $payment
         ];
 
@@ -327,7 +327,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doS2sUpiPayment($payment = null)
+    protected function doS2sUpiPayment($payment = null, $server = null)
     {
         if ($payment === null)
         {
@@ -335,8 +335,8 @@ trait PaymentTrait
         }
 
         $request = [
-            'method' => 'POST',
-            'url' => '/payments/create/upi',
+            'method'  => 'POST',
+            'url'     => '/payments/create/upi',
             'content' => $payment
         ];
 
@@ -411,8 +411,8 @@ trait PaymentTrait
 
         $request = [
             'content' => $payment,
-            'url' => '/payments/create/ajax',
-            'method' => 'post'
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
         ];
 
         $this->ba->publicAuth();
@@ -429,8 +429,8 @@ trait PaymentTrait
 
         $request = [
             'content' => $payment,
-            'url' => '/payments/create/checkout',
-            'method' => 'post'
+            'url'     => '/payments/create/checkout',
+            'method'  => 'post'
         ];
 
         $this->ba->publicAuth();
@@ -444,7 +444,7 @@ trait PaymentTrait
             'url'       => $url,
             'method'    => 'POST',
             'content'   => [
-                'otp' => $this->getOtp(),
+                'otp'  => $this->getOtp(),
                 'type' => 'otp'
             ],
         ];
@@ -468,8 +468,8 @@ trait PaymentTrait
     protected function doWalletTopup($id)
     {
         $request = [
-            'method' => 'POST',
-            'url' => '/payments/'.$id.'/topup',
+            'method'  => 'POST',
+            'url'     => '/payments/'.$id.'/topup',
             'content' => []
         ];
 
@@ -485,8 +485,8 @@ trait PaymentTrait
     protected function doWalletTopupViaAjaxRoute($id)
     {
         $request = [
-            'method' => 'POST',
-            'url' => '/payments/'.$id.'/topup/ajax',
+            'method'  => 'POST',
+            'url'     => '/payments/'.$id.'/topup/ajax',
             'content' => []
         ];
 
@@ -567,8 +567,8 @@ trait PaymentTrait
     protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0)
     {
         $request = array(
-            'method' => 'POST',
-            'url' => '/payments/' . $id . '/capture',
+            'method'  => 'POST',
+            'url'     => '/payments/' . $id . '/capture',
             'content' => array('amount' => $amount));
 
         if ($currency !== 'INR')
@@ -599,8 +599,8 @@ trait PaymentTrait
     protected function cancelPayment($id, $content = [])
     {
         $request = array(
-            'method' => 'GET',
-            'url' => '/payments/'.$id.'/cancel',
+            'method'  => 'GET',
+            'url'     => '/payments/'.$id.'/cancel',
             'content' => $content
         );
 
@@ -629,8 +629,8 @@ trait PaymentTrait
     protected function addPaymentMetadata($id, $content)
     {
         $request = array(
-            'method' => 'POST',
-            'url' => '/payments/'.$id.'/metadata',
+            'method'  => 'POST',
+            'url'     => '/payments/'.$id.'/metadata',
             'content' => $content);
 
         $this->ba->publicAuth();
@@ -641,7 +641,7 @@ trait PaymentTrait
     protected function verifyPayment($id)
     {
         $request = array(
-            'url' => '/payments/'.$id.'/verify',
+            'url'    => '/payments/'.$id.'/verify',
             'method' => 'GET');
 
         $this->ba->appAuth();
@@ -654,7 +654,7 @@ trait PaymentTrait
     protected function verifyMultiplePayments($filter)
     {
         $request = array(
-            'url' => '/payments/verify/'.$filter,
+            'url'    => '/payments/verify/'.$filter,
             'method' => 'GET');
 
         $this->ba->appAuth();
@@ -722,8 +722,8 @@ trait PaymentTrait
         $content = [];
 
         $request = array(
-            'method' => 'POST',
-            'url' => '/refunds/'.$id.'/verify',
+            'method'  => 'POST',
+            'url'     => '/refunds/'.$id.'/verify',
             'content' => $content);
 
         $response = $this->makeRequestAndGetContent($request);
@@ -738,8 +738,8 @@ trait PaymentTrait
         $content = [];
 
         $request = array(
-            'method' => 'POST',
-            'url' => '/refunds/retry/failed',
+            'method'  => 'POST',
+            'url'     => '/refunds/retry/failed',
             'content' => $content
         );
 
@@ -753,8 +753,8 @@ trait PaymentTrait
         $this->ba->proxyAuth();
 
         $request = array(
-            'method' => 'POST',
-            'url' => '/payments/'.$id.'/authorize_refund',
+            'method'  => 'POST',
+            'url'     => '/payments/'.$id.'/authorize_refund',
             'content' => $input);
 
         $refund = $this->makeRequestAndGetContent($request);
@@ -769,8 +769,8 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = array(
-            'method' => 'POST',
-            'url' => '/payments/refund/authorized',
+            'method'  => 'POST',
+            'url'     => '/payments/refund/authorized',
             'content' => []);
 
         $data = $this->makeRequestAndGetContent($request);
@@ -781,7 +781,7 @@ trait PaymentTrait
     protected function authorizeFailedPayment($id)
     {
         $request = array(
-            'url' => '/payments/'.$id.'/authorize_failed',
+            'url'    => '/payments/'.$id.'/authorize_failed',
             'method' => 'post');
 
         $this->ba->appAuth();
@@ -794,8 +794,8 @@ trait PaymentTrait
     protected function forceAuthorizeFailedPayment($id, $content)
     {
         $request = array(
-            'url' => '/payments/'.$id.'/force_authorize',
-            'method' => 'post',
+            'url'     => '/payments/'.$id.'/force_authorize',
+            'method'  => 'post',
             'content' => $content);
 
         $this->ba->appAuth();
@@ -959,8 +959,8 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = array(
-            'url' => '/refunds/netbanking/excel',
-            'method' => 'post',
+            'url'     => '/refunds/netbanking/excel',
+            'method'  => 'post',
             'content' => [
                 'bank'   => $bank
             ],
