@@ -18,14 +18,15 @@ const ReferralsListItem = props => {
   return (
     <tr class={canHighlight ? 'luminate' : ''}>
       <td>
-        <span
-          onClick={() => {
-            isAggregator && props.switchMerchant(id);
-          }}
-          style={isAggregator && { cursor: 'pointer' }}
-        >
-          {id}
-        </span>
+        {isAggregator
+          ? <a
+              onClick={() => {
+                props.switchMerchant(id);
+              }}
+            >
+              {id}
+            </a>
+          : <span>{id}</span>}
       </td>
       <td>
         {name}

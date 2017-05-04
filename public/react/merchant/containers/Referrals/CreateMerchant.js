@@ -19,19 +19,15 @@ import { highlightReferral } from 'merchant/modules/referrals';
 )
 @reduxForm({
   form: 'createMerchant',
+  initialValues: {
+    name: '',
+    email: '',
+  },
 })
 export default class CreateMerchant extends Component {
   state = {
     errors: null,
   };
-
-  componentWillMount() {
-    let referral = this.props.referral;
-    this.props.initialize({
-      name: '',
-      email: '',
-    });
-  }
 
   save = props => {
     return this.props
@@ -58,7 +54,7 @@ export default class CreateMerchant extends Component {
     return (
       <div>
         <ModalHeader
-          title="Create Login"
+          title="Create Merchant"
           onCloseClick={this.props.closeModal}
         />
 
@@ -108,8 +104,8 @@ export default class CreateMerchant extends Component {
             <AsyncButton
               type="submit"
               class="btn btn-primary btn-rounded"
-              text="Create Login"
-              pendingText="Creating Login..."
+              text="Create Merchant"
+              pendingText="Creating Merchant..."
               onClick={handleSubmit(this.save)}
             />
           </div>

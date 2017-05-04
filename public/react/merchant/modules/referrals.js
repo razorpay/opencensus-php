@@ -2,7 +2,6 @@ import { set, merge, push } from 'rzp/utils/immutable';
 import Referral from 'merchant/models/Referral';
 
 const REFERRALS_FETCH = 'REFERRALS_FETCH';
-const REFERRALS_NEW = 'REFERRALS_NEW';
 const HIGHLIGHT_REFERRAL = 'HIGHLIGHT_REFERRAL';
 const REMOVE_HIGHLIGHT_REFERRAL = 'REMOVE_HIGHLIGHT_REFERRAL';
 const LOGIN_CREATE = 'LOGIN_CREATE';
@@ -74,7 +73,6 @@ let initialState = {
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${REFERRALS_FETCH}::PENDING`:
-    case `${REFERRALS_NEW}::PENDING`:
       return merge(state, {
         loading: true,
       });
@@ -84,12 +82,6 @@ export default function(state = initialState, action) {
         loading: false,
         referrals: action.payload.data,
         count: action.payload.data.length,
-      });
-
-    case `${REFERRALS_NEW}::SUCCESS`:
-      return merge(state, {
-        loading: false,
-        referrals: [action.payload],
       });
 
     case `${MERCHANT_CREATE}::SUCCESS`:
