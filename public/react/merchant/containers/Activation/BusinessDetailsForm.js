@@ -359,6 +359,7 @@ export default class BusinessDetailsForm extends Component {
                       component={InputField}
                       type="date"
                       max={moment().format('YYYY-MM-DD')}
+                      placeholder="Date of Establishment (YYYY-MM-DD)"
                       class="form-control"
                       disabled={locked}
                       validate={[required()]}
