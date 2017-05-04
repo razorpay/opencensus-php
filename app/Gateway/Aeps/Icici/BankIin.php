@@ -6,7 +6,7 @@ use RZP\Models\Bank\IFSC;
 
 class BankIin
 {
-    protected static $map = [
+    public static $map = [
         IFSC::CNRB => '607396',
         IFSC::ICIC => '508534',
     ];

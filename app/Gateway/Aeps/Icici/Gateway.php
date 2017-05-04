@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Aeps\Icici;
 
 use Cache;
+use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
@@ -158,16 +159,16 @@ class Gateway extends Base\Gateway
 
     protected function getRequestData($input, $reversal)
     {
-        $msgType = '0100';
+        $msgType = RequestConstants::REQUEST_MSG_TYPE;
 
         if ($reversal === true)
         {
-            $msgType = '0400';
+            $msgType = RequestConstants::REVERSAL_MSG_TYPE;
         }
 
-        $bankIin = '607202';
+        $bankIin = BankIin::$map[$input['payment']['bank']];
 
-        $amount = str_pad($input['amount'], 12, '0', STR_PAD_LEFT);
+        $amount = str_pad($input['payment']['amount'], 12, '0', STR_PAD_LEFT);
 
         $randomNo = '000013';
 

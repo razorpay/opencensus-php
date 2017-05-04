@@ -28,7 +28,6 @@ class Table
     const UPI_VPA               = 'upi_vpa';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
-    const AADHAAR               = 'aadhaars';
     const ADDRESS               = 'addresses';
     const FEATURE               = 'features';
     const SCHEDULE              = 'schedules';
