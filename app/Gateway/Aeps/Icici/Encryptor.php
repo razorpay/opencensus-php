@@ -3,11 +3,21 @@
 namespace RZP\Gateway\Aeps\Icici;
 
 use phpseclib\Crypt\AES;
+use Carbon\Carbon;
 
 class Encryptor
 {
     const CERT_PATH  = 'certs/public.cer';
     const CERT_EXPIRY = '20191230';
+
+    protected function createPidXml($fpData)
+    {
+        $date = Carbon::now('Asia/Kolkata')->format('Y-m-d\TH:i:s');
+
+        $pidBlock = '<Pid ts=' . $date . ' ver="1.0"><Bios><Bio type="FMR" posh="UNKNOWN">' . $fpData . '</Bio></Bios></Pid>';
+
+        return $pidBlock;
+    }
 
     public function encryptUsingSessionKey($fpData, $skey)
     {
@@ -15,7 +25,9 @@ class Encryptor
 
         $cipher->setKey($skey);
 
-        return $cipher->encrypt($fpData);
+        $pidBlock = $this->createPidXml($fpData);
+
+        return $cipher->encrypt($pidBlock);
     }
 
     public function encryptSessionKey($skey)
