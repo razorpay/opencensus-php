@@ -19,6 +19,9 @@ export default class Referral extends Entity {
       appendModeInQueryParam,
       data,
     }).then(response => {
+      /* `fetchAll` for referrals send `response.data` instead of
+       * `response.data.items`
+       */
       response.data = response.data.map(item => new Klass().deserialize(item));
       return response;
     });
