@@ -16,5 +16,9 @@ class Encryptor
     {
         $this->encryptUsingSessionKey();
         $this->encryptSessionKey();
+
+        $input['aadhaar_hmac'] = 'test';
+        $input['aadhaar_session_key'] = 'test';
+        $input['aadhaar_cert_expiry'] = 'test';
     }
 }

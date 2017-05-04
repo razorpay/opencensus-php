@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Bank\IFSC;
 
 class Gateway extends Base\Gateway
 {
@@ -183,25 +184,23 @@ class Gateway extends Base\Gateway
 
         $date = Carbon::now('Asia/Kolkata')->format('Y-m-d\TH:i:s');
 
-        // FIX IT
-        $input['aadhaar_no'] = '123456789012';
         // TODO fill field 60 n 127
         $data = [
             '0'   => $msgType,
-            '2'   => $bankIin . '0' . $input['aadhaar_no'],
+            '2'   => $bankIin . '0' . $input['aadhaar_number'],
             '3'   => '421000',
             '4'   => $amount,
             '11'  => $randomNo,
-            '22'  => "019",
+            '22'  => '019',
             '24'  => '001',
             '25'  => '05',
             '36'  => 'WDLS C1||,,,,,,',
             '41'  => $terminalId,
             '42'  => '       RAZORPAY',
-            '60'  => '',
+            '60'  => $input['aadhaar_fingerprint'],
             '125' => $transactionType,
             '126' => '"001009nnnyFMRnn008001X401019' . $date . '402001F403001Y404006607580412008' . $terminalId,
-            '127' => '',
+            '127' => '001344' . $input['aadhaar_session_key'] . '002008' . $input['aadhaar_cert_expiry'] . '003064' . $input['aadhaar_hmac'],
         ];
 
         return $data;

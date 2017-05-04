@@ -788,7 +788,34 @@ trait Authorize
             $this->validateUpiPspIsAllowed($payment);
         }
 
+        if ($payment->isAeps())
+        {
+            $this->setGatewayInputForAeps($input, $gatewayInput);
+        }
+
         $payment->setInternational();
+    }
+
+    protected function setGatewayInputForAeps($input, & $gatewayInput)
+    {
+        $gatewayInput['aadhaar_number'] = $input['aadhaar']['number'];
+
+        if ((isset($input['aadhaar']['fingerprint']) === true) and
+            (isset($input['aadhaar']['session_key']) === true) and
+            (isset($input['aadhaar']['hmac']) === true))
+        {
+            $gatewayInput['aadhaar_fingerprint'] = $input['aadhaar']['fingerprint'];
+
+            $gatewayInput['aadhaar_session_key'] = $input['aadhaar']['session_key'];
+
+            $gatewayInput['aadhaar_hmac'] = $input['aadhaar']['hmac'];
+        }
+        else
+        {
+            $gatewayInput['encrypted'] = false;
+
+            $gatewayInput['aadhaar_fingerprint'] = $input['aadhaar']['fingerprint'];
+        }
     }
 
     protected function preProcessPaymentWithoutSaving($payment, array & $input, array & $gatewayInput)
