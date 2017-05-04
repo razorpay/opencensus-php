@@ -16,12 +16,14 @@ class Entity extends Base\Entity
     const AADHAAR_NUMBER        = 'aadhaar_number';
     const RRN                   = 'rrn';
     const PAYMENT_ID            = 'payment_id';
+    const REFUND_ID             = 'refund_id';
 
     protected $fields = [
         self::AMOUNT,
         self::RECEIVED,
         self::ERROR_CODE,
         self::PAYMENT_ID,
+        self::REFUND_ID,
         self::REVERSED,
         self::RRN,
         self::ERROR_DESCRIPTION,
@@ -34,6 +36,7 @@ class Entity extends Base\Entity
         self::REVERSED,
         self::ERROR_CODE,
         self::PAYMENT_ID,
+        self::REFUND_ID,
         self::ERROR_DESCRIPTION,
     ];
 

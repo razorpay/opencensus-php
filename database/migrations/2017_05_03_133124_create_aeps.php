@@ -25,6 +25,8 @@ class CreateAeps extends Migration
 
             $table->string(Aeps::PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
 
+            $table->string(Aeps::REFUND_ID, UniqueIdEntity::ID_LENGTH);
+
             $table->integer(Aeps::AMOUNT);
 
             $table->tinyInteger(Aeps::RECEIVED)->default(0);
