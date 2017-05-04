@@ -194,9 +194,13 @@ class Gateway extends Base\Gateway
         {
             $itc = $gatewayPayment->getCapsPaymentId();
         }
-        else
+        else if (empty($gatewayPayment->getReference1()) === false)
         {
             $itc = $gatewayPayment->getReference1();
+        }
+        else
+        {
+            $itc = $this->getMerchantId();
         }
 
         return $itc;
