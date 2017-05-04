@@ -41,5 +41,5 @@ class Entity extends Base\Entity
         self::AMOUNT        => 'int',
     ];
 
-    protected $entity = Constants\Entity::EBS;
+    protected $entity = Constants\Entity::AEPS;
 }

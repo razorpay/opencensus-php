@@ -11,7 +11,7 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'aeps_icici';
 
-    const ACQUIREE = 'icici';
+    const ACQUIRER = 'icici';
 
     const CACHE_TTL = 60;
 
