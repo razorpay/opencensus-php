@@ -67,6 +67,13 @@ class Socket extends Base\Core
 
         $this->closeSocket();
 
+        // IF we do not receive any data, throw a TIMEOUT exception,
+        // so reversal request can be done
+        if ($data === null)
+        {
+            throw new Exception\GatewayTimeoutException('Socket Read timeed out');
+        }
+
         return $data;
     }
 

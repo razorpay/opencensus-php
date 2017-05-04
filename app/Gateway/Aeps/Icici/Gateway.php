@@ -60,10 +60,8 @@ class Gateway extends Base\Gateway
 
             $this->updateGatewayPayment($parsedResponse);
         }
-        catch (\Exception $e)
+        catch (Exception\GatewayTimeoutException $e)
         {
-            //TODO catch Timeout exception, instead of generic Exception
-            // Timeout should be 90 secs
             $reversalRequestData = $this->getReversalData($requestData);
 
             $reversalRequestXmlData = $this->getRequestXml($reversalRequestData);
