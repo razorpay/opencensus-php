@@ -6,10 +6,10 @@ use phpseclib\Crypt\AES;
 
 class Encryptor
 {
-    const CERT_PATH  = 'certs\public.cer';
+    const CERT_PATH  = 'certs/public.cer';
     const CERT_EXPIRY = '20191230';
 
-    public function encryptUsingSessionKey($fpData, $sKey)
+    public function encryptUsingSessionKey($fpData, $skey)
     {
         $cipher = new AES;
 
@@ -20,7 +20,7 @@ class Encryptor
 
     public function encryptSessionKey($skey)
     {
-        $publicKey = file_get_contents(self::CERT_PATH);
+        $publicKey = file_get_contents(__DIR__ . '/' .self::CERT_PATH);
 
         openssl_public_encrypt($skey, $encrypted, $publicKey);
 
@@ -29,7 +29,7 @@ class Encryptor
         return $encoded;
     }
 
-    public function generateHmac($fpData, $sKey)
+    public function generateHmac($fpData, $skey)
     {
         return hash('sha256', $fpData, true);
     }
@@ -38,11 +38,9 @@ class Encryptor
     {
         $skey = $this->generateSkey();
 
-        $this->encryptUsingSessionKey();
-
         $input['aadhaar_hmac'] = $this->generateHmac($input['aadhaar_fingerprint'], $skey);
 
-        $input['aadhaar_fingerprint'] = $this->encryptSessionKey($input['aadhaar_fingerprint'], $skey);
+        $input['aadhaar_fingerprint'] = $this->encryptUsingSessionKey($input['aadhaar_fingerprint'], $skey);
 
         $input['aadhaar_session_key'] = $this->encryptSessionKey($skey);
 
