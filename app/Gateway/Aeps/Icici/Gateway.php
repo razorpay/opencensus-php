@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Aeps\Icici;
 
+use RZP\Gateway\Base;
+
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'aeps_icici';

@@ -67,7 +67,7 @@ return array(
     'mock_wallet_jiomoney'    => env('JIOMONEY_MOCK'),
     'mock_upi_icici'          => env('UPI_ICICI_MOCK'),
     'mock_upi_idfc'           => env('UPI_IDFC_MOCK'),
-    'mock_aeps_icici'           => env('AEPS_ICICI_MOCK'),
+    'mock_aeps_icici'         => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'  => env('FREECHARGE_MOCK'),
 
     'certificate_path'        => env('CERTIFICATE_DIR_PATH'),
