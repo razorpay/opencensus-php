@@ -76,8 +76,9 @@ class Gateway extends Base\Gateway
             }
             catch (\Exception $e)
             {
-                //TODO trace and silently exit
-
+                $this->trace->error(
+                    TraceCode::PAYMENT_REVERSE_FAILURE,
+                    $e->getMessage());
             }
         }
         finally
