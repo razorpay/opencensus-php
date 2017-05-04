@@ -13,6 +13,7 @@ class Entity extends Base\Entity
     const REVERSED              = 'reversed';
     const ERROR_CODE            = 'error_code';
     const ERROR_DESCRIPTION     = 'error_description';
+    const AADHAAR_NUMBER        = 'aadhaar_number';
     const RRN                   = 'rrn';
     const PAYMENT_ID            = 'payment_id';
 

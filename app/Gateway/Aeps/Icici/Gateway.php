@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Aeps\Icici;
 
+use Cache;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Error\ErrorCode;
@@ -11,6 +12,15 @@ class Gateway extends Base\Gateway
     protected $gateway = 'aeps_icici';
 
     const ACQUIREE = 'icici';
+
+    const CACHE_TTL = 60;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->secureCacheDriver = Config::get('cache.secure_default');
+    }
 
     public function authorize(array $input)
     {
@@ -27,7 +37,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->createGatewayPaymentEntity($input);
 
         // This need to be done for reversal request,
-        $this->setEncryptedFingerPrintDataInRedis($input);
+        // As reversal is done in the same flow skipping for now
+        //$this->setEncryptedFingerPrintDataInCache($input);
 
         $requestXmlData = $this->getRequestXml($input);
 
@@ -63,20 +74,24 @@ class Gateway extends Base\Gateway
         }
         finally
         {
-            $this->deleteEncryptedFingerPrintDataInRedis($input);
+            //$this->deleteEncryptedFingerPrintDataFromCache($input);
         }
 
         return $this->getPaymentResponseData($gatewayPayment);
     }
 
-    protected function setEncryptedFingerPrintDataInRedis($input)
+    protected function setEncryptedFingerPrintDataInCache($input)
     {
+        $key = $this->getCacheKey($input['payment']['id']);
 
+        Cache::store($this->secureCacheDriver)->put($key, $input, self::CACHE_TTL);
     }
 
-    protected function deleteEncryptedFingerPrintDataInRedis($input)
+    protected function deleteEncryptedFingerPrintDataFromCache($input)
     {
+        $key = $this->getCacheKey($input['payment']['id']);
 
+        return Cache::store($this->secureCacheDriver)->get($key) ?: [];
     }
 
     protected function createGatewayPaymentEntity($input)
