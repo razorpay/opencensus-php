@@ -1198,15 +1198,7 @@ class BasicAuth
 
         $allScopes = $this->scopes ?? [];
 
-        foreach ($allScopes as $tokenScope)
-        {
-            if ($tokenScope === $scope)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return (in_array($scope, $allScopes, true) === true);
     }
 
     protected function setKeyFromQueryParams()

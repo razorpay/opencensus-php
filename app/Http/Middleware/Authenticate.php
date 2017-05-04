@@ -75,6 +75,9 @@ class Authenticate
             $ret = $this->authenticateBasicAuth($route);
         }
 
+        // Post process after auth completes
+        $ret = $this->postAuthenticationProcessing($ret);
+
         if ($ret !== null)
         {
             return $ret;
@@ -190,5 +193,28 @@ class Authenticate
         }
 
         return false;
+    }
+
+    /**
+     * Post process after auth completes
+     * Function returns non-null value for failure flow
+     *
+     * @param $authReturn
+     *
+     * @return mixed
+     */
+    protected function postAuthenticationProcessing($authReturn)
+    {
+        if ($authReturn !== null)
+        {
+            return $authReturn;
+        }
+
+        $featureCheck = $this->ba->feature();
+
+        if ($featureCheck !== null)
+        {
+            return $featureCheck;
+        }
     }
 }
