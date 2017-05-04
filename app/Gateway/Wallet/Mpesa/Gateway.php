@@ -517,7 +517,7 @@ class Gateway extends Base\Gateway
         return $actionParamXml;
     }
 
-    protected function sendSoapRequest($data, $soapRoot, $method)
+    protected function sendSoapRequest(array $data, string $soapRoot, string $method)
     {
         $this->trace->info(
             TraceCode::GATEWAY_SOAP_REQUEST,

@@ -21,7 +21,7 @@ class Gateway extends Mpesa\Gateway
         return $request;
     }
 
-    protected function sendSoapRequest($data, $soapRoot, $method)
+    protected function sendSoapRequest(array $data, string $soapRoot, string $method)
     {
         $this->trace->info(
             TraceCode::GATEWAY_SOAP_REQUEST,
