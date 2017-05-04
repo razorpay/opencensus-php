@@ -19,15 +19,13 @@ class Encryptor
         return $pidBlock;
     }
 
-    public function encryptUsingSessionKey($fpData, $skey)
+    public function encryptUsingSessionKey($data, $skey)
     {
         $cipher = new AES;
 
         $cipher->setKey($skey);
 
-        $pidBlock = $this->createPidXml($fpData);
-
-        return $cipher->encrypt($pidBlock);
+        return $cipher->encrypt($data);
     }
 
     public function encryptSessionKey($skey)
@@ -43,18 +41,24 @@ class Encryptor
 
     public function generateHmac($fpData, $skey)
     {
-        return hash('sha256', $fpData, true);
+        $hash = hash('sha256', $fpData, true);
+
+        $encryptedHash = $this->encryptUsingSessionKey($hash, $skey);
+
+        return $encryptedHash;
     }
 
     public function encryptInput(array & $input)
     {
         $skey = $this->generateSkey();
 
-        $input['aadhaar_hmac'] = $this->generateHmac($input['aadhaar_fingerprint'], $skey);
+        $pidBlock = $this->createPidXml($input['aadhaar_fingerprint']);
 
-        $input['aadhaar_fingerprint'] = $this->encryptUsingSessionKey($input['aadhaar_fingerprint'], $skey);
+        $input['aadhaar_hmac'] = base64_encode($this->generateHmac($pidBlock, $skey));
 
-        $input['aadhaar_session_key'] = $this->encryptSessionKey($skey);
+        $input['aadhaar_fingerprint'] = base64_encode($this->encryptUsingSessionKey($pidBlock, $skey));
+
+        $input['aadhaar_session_key'] = base64_encode($this->encryptSessionKey($skey));
 
         $input['aadhaar_cert_expiry'] = self::CERT_EXPIRY;
     }
