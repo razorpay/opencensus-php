@@ -34,7 +34,7 @@ class Shared
     const CYBERSOURCE_AXIS_TERMINAL         = '1000CybAxTrmnl';
     const FIRST_DATA_RAZORPAY_TERMINAL      = '1000FrstDataTl';
     const UPI_ICICI_RAZORPAY_TERMINAL       = '100UPIICICITml';
-    const AEPS_ICICI_RAZORPAY_TERMINAL      = '100AEPSICICITm';
+    const AEPS_ICICI_RAZORPAY_TERMINAL      = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL     = '100ArtlMnyTmnl';
     const JIOMONEY_RAZORPAY_TERMINAL        = '1000JioMnyTmnl';
     const OPENWALLET_RAZORPAY_TERMINAL      = '100OpenwalltTl';
