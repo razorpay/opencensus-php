@@ -21,11 +21,11 @@ class Encryptor
 
     public function encryptUsingSessionKey($data, $skey)
     {
-        $cipher = new AES;
+        $cipher = new AES(1);
 
         $cipher->setKey($skey);
 
-        return $cipher->encrypt($data);
+        return base64_encode($cipher->encrypt($data));
     }
 
     public function encryptSessionKey($skey)
@@ -54,11 +54,11 @@ class Encryptor
 
         $pidBlock = $this->createPidXml($input['aadhaar_fingerprint']);
 
-        $input['aadhaar_hmac'] = base64_encode($this->generateHmac($pidBlock, $skey));
+        $input['aadhaar_hmac'] = $this->generateHmac($pidBlock, $skey);
 
-        $input['aadhaar_fingerprint'] = base64_encode($this->encryptUsingSessionKey($pidBlock, $skey));
+        $input['aadhaar_fingerprint'] = $this->encryptUsingSessionKey($pidBlock, $skey);
 
-        $input['aadhaar_session_key'] = base64_encode($this->encryptSessionKey($skey));
+        $input['aadhaar_session_key'] = $this->encryptSessionKey('1234567890123456');
 
         $input['aadhaar_cert_expiry'] = self::CERT_EXPIRY;
     }
