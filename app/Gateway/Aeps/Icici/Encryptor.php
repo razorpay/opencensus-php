@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Aeps\Icici;
 
+use phpseclib\Crypt\AES;
+
 class Encryptor
 {
     const CERT_PATH  = 'certs\public.cer';
@@ -9,6 +11,11 @@ class Encryptor
 
     public function encryptUsingSessionKey($fpData, $sKey)
     {
+        $cipher = new AES;
+
+        $cipher->setKey($skey);
+
+        return $cipher->encrypt($fpData);
     }
 
     public function encryptSessionKey($skey)
@@ -24,6 +31,7 @@ class Encryptor
 
     public function generateHmac($fpData, $sKey)
     {
+        return hash('sha256', $fpData, true);
     }
 
     public function encryptInput(array & $input)
