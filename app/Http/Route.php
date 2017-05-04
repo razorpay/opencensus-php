@@ -530,7 +530,6 @@ final class Route
         'merchant_checkout_preferences',
         'mock_atom_init_payment',
         'mock_acs',
-        'mock_aeps_icici_payment',
         'mock_atom_choose_org',
         'mock_atom_rzp_payment',
         'mock_atom_rzp_payment_submit',
