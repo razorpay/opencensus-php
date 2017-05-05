@@ -41,10 +41,11 @@ class KeyStore:
 class SlackNotifier:
     def __init__(self):
         # currently hardcoding this. We need to arrive at this value later
-        self.channel = "C52PN72AK"  # tech_deploys
+        #self.channel = "C52PN72AK"  # tech_deploys
+        self.channel  = "C0KHQBRJN"  # dev-test-2
         self.icon_url = 'https://s3-us-west-2.amazonaws.com/slack-files2/bot_icons/2015-06-25/6837962368_48.png'
-        self.url = 'https://razorpay.slack.com/services/hooks/incoming-webhook?token=%s' % (
-            KeyStore.get_slack_token())
+        self.base_slack_url = 'https://razorpay.slack.com'
+        self.url = '%s/services/hooks/incoming-webhook?token=%s' %(self.base_slack_url, KeyStore.get_slack_token())
         self.username = 'wercker'
 
     def formatSlackMessage(self, message):
@@ -62,11 +63,13 @@ class SlackNotifier:
         attachments['mrkdwn_in'] = ['text', 'fields']
         fields = []
         for commit in message['commits']:
-            tmp = {
-                'short': True,
-                'title': 'PR:#%s' % (commit['pr']),
-                'value': '%s\n%s' % (commit['title'], commit['pr_url'])
-            }
+            tmp = {'short': True}
+            if 'pr' in commit:
+                tmp['title'] = 'PR:#%s' % (commit['pr'])
+                tmp['value'] = '%s\n%s' % (commit['title'], commit['pr_url'])
+            else:
+                tmp['title'] = commit['title']
+                tmp['value'] = commit['url']
             fields.append(tmp)
         fields.append(
             {'short': True, 'title': 'Deploy Started', 'value': startTime})
@@ -96,8 +99,9 @@ class GitProcessor:
 
     def __init__(self):
         self.github_token = KeyStore.get_github_token()
+        self.base_api_url = 'https://github.com/razorpay/api'
         self.base_url = 'https://api.github.com/repos/razorpay/api/pulls/'
-        self.base_pr_url = 'https://github.com/razorpay/api/pull/'
+        self.base_pr_url = "%s/pull/" % (self.base_api_url)
 
     def process_pr_details(self, pr):
         url = "%s%s" % (self.base_url, pr)
@@ -112,12 +116,15 @@ class GitProcessor:
             print "Exception fetching github details for commit : %s, url:%s, Exception:%s" % (pr, url, e)
             sys.exit(0)
 
+    def process_commit_details(self, commitHash):
+        return "%s/commit/%s" % (self.base_api_url, commitHash)
+
 
 class MergeCommitParser:
 
     def __init__(self):
         self.base_url = "https://app.wercker.com/api/v3/runs"
-        self.limit = 2  # get the most recent deploys alone
+        self.limit = 1  # get the most recent deploys alone
         self.branch = "master"
         self.result = "passed"
         self.status = "finished"
@@ -164,8 +171,12 @@ class MergeCommitParser:
         runs = self.get_pipeline_runs()
         metadata = {}
         commits = []
+        id = 1
         if len(runs) > 0:
             firstRun = runs[0]
+            if firstRun['result'] != 'passed':
+                print "Deploy Failed. Exiting"
+                sys.exit(0)
             metadata = {
                 'startedAt': datetime.strptime(firstRun['startedAt'], '%Y-%m-%dT%H:%M:%S.%fZ'),
                 'finishedAt': datetime.strptime(firstRun['finishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ'),
@@ -181,6 +192,12 @@ class MergeCommitParser:
                     'pr_nums': pr_nums
                 }
                 commits.append(message)
+            else:
+                message = {
+                    'commitHash': run['commitHash'],
+                    'message': run['message']
+                }
+                commits.append(message)
         return {'metadata': metadata, 'commits': commits}
 
     def getDeployDetails(self):
@@ -188,16 +205,26 @@ class MergeCommitParser:
         parsed_messages = {'metadata': messages['metadata']}
         commits = []
         for m in messages['commits']:
-            pr_nums = m['pr_nums']
-            pr_details = {}
-            for p in pr_nums:
-                title, body = self.github_processor.process_pr_details(p)
-                pr_details['title'] = title
-                pr_details['details'] = body
-                pr_details['pr'] = p
-                pr_details['pr_url'] = '%s%s' % (self.base_pr_url, p)
-            del m['pr_nums']
-            m.update(pr_details)
+            pr_nums = m.get('pr_nums', None)
+            if pr_nums:
+                pr_details = {}
+                for p in pr_nums:
+                    title, body = self.github_processor.process_pr_details(p)
+                    pr_details['title'] = title
+                    pr_details['details'] = body
+                    pr_details['pr'] = p
+                    pr_details['pr_url'] = '%s%s' % (self.base_pr_url, p)
+                del m['pr_nums']
+                m.update(pr_details)
+            else:
+                message = m['message']
+                commit_details = {}
+                commit_details['title'] = message
+                commit_details['url'] = self.github_processor.process_commit_details(
+                    m['commitHash'])
+                del m['commitHash']
+                del m['message']
+                m.update(commit_details)
             commits.append(m)
         parsed_messages['commits'] = commits
         return parsed_messages
