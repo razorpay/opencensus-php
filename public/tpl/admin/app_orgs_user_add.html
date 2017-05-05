@@ -104,10 +104,19 @@
         <!--Role-->
         <div class="form-group" ng-if="fields.indexOf('roles') !== -1">
           <label class="col-lg-2 control-label">Role</label>
-          <div class="col-lg-10" >
-            <select class="form-control m-b" ng-model="obBug.role">
-               <option ng-repeat="(key, value) in roles" ng-selected = "obBug.role === key" value='{{key}}'>{{value}}</option>
+          <div class="col-lg-10">
+            <div class="pills-container-users">
+              <span class="pills-label assignee-label" ng-repeat="(index, roleId) in selected_roles track by $index">
+                {{roleNames[roleId]}}
+                <i class="delete-btn fa fa-times m-l" ng-click="removeRole(roleId)" />
+              </span>
+            </div>
+
+            <!-- Role Selection -->
+            <select class="select2 role-select2" multiple="multiple" style="width: 100%" ng-model="roleSelect" role-select="Select a Role">
+              <option  ng-repeat="role in roles | filter:filterRoles" value="{{role.id}}">{{role.name}}</option>
             </select>
+
           </div>
         </div>
         <!--Groups-->
@@ -134,6 +143,7 @@
             </table>
           </div>
         </div>
+
         <!--Action Btn-->
         <div class="panel-footer">
           <div class="center col-lg-2">

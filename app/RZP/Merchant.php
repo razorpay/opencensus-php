@@ -79,9 +79,15 @@ class Merchant extends Entity
 
     public function edit($params)
     {
+        // For empty arrays (groups [heimdall] in this case)
+        ApiRequest::addHeader('Content-Type', 'application/json');
+
+        // JSON encoding is also requried
+        $body = json_encode($params);
+
         $relativeUrl = $this->getEntityUrl().$this->id;
 
-        return $this->request('PUT', $relativeUrl, $params);
+        return $this->request('PUT', $relativeUrl, $body);
     }
 
     public function editEmail($params)

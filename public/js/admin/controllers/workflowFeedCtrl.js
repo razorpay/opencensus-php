@@ -198,7 +198,7 @@ app
             // Level(step) structure having roles names
             for (var key in steps) {
               if (!$scope.levels[steps[key].level]) {
-                $scope.levels[steps[key].level] = []
+                $scope.levels[steps[key].level] = [];
               }
               $scope.levels[steps[key].level].push(steps[key].role.name);
             }
@@ -300,6 +300,7 @@ app
       };
       $scope.setTitleInactive = function() {
         $scope.titleActive = false;
+        $('#title-input').blur();
       };
       $scope.setDescActive = function() {
         $scope.descActive = true;
@@ -307,6 +308,7 @@ app
       };
       $scope.setDescInactive = function() {
         $scope.descActive = false;
+        $('#desc-textarea').blur();
       };
 
       $scope.saveTitle = function() {

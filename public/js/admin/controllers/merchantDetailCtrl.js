@@ -280,9 +280,17 @@ app
         $scope.editMerchant(merchantEdit);
       };
       $scope.enableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/enable'
-        );
+        var data = {
+          route_name: 'merchant_live_enable',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          }
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -304,9 +312,17 @@ app
           });
       };
       $scope.disableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/disable'
-        );
+        var data = {
+          route_name: 'merchant_live_disable',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          }
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -527,6 +543,14 @@ app
         // If the second parameter was not provided
         // we don't try to edit the groups and don't
         // send the field instead.
+        for (var key in selected_groups) {
+          if (selected_groups.hasOwnProperty(key)) {
+            if (!selected_groups[key]) {
+              delete selected_groups[key];
+            }
+          }
+        }
+
         if (typeof selected_groups === 'undefined') {
           selected_groups = {};
         } else {
@@ -659,9 +683,18 @@ app
           });
       };
       $scope.archiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/archive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          },
+          body: {action: 'archive'}
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -683,9 +716,18 @@ app
           });
       };
       $scope.unarchiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unarchive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          },
+          body: {action: 'unarchive'}
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -708,9 +750,18 @@ app
       };
 
       $scope.suspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/suspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          },
+          body: {action: 'suspend'}
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -733,9 +784,18 @@ app
       };
 
       $scope.unsuspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unsuspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}' : $scope.merchant.id
+          },
+          body: {action: 'unsuspend'}
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -1360,6 +1420,7 @@ app
       // This lets us display methods that are not returned
       // by the API as false
       var forcedMethods = [
+        'aeps',
         'mobikwik',
         'payzapp',
         'payumoney',

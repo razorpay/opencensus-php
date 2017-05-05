@@ -11,6 +11,8 @@ use GuzzleHttp\Post\PostFile;
 
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors as RZPErrors;
+use Trace;
+use App\Trace\TraceCode;
 
 // This is the default class we use for making requests
 use App\RZP\Api as Api;
@@ -158,9 +160,29 @@ class RawApiRequest
      */
     protected function setContentType($default = 'application/x-www-form-urlencoded')
     {
+        $contentType = Input::get('content_type', $default);
+
+        if ($contentType === "application/json")
+        {
+            // To check if the the content is already a JSON, we decode the content
+            // and check for any JSON error. If no error then it is already a valid JSON
+            // and there is no need to do a json_encode
+            $bodyIsArray = is_array($this->params['body']);
+
+            if ($bodyIsArray === false)
+            {
+                json_decode($this->params['body']);
+            }
+
+            if ($bodyIsArray or json_last_error() !== JSON_ERROR_NONE)
+            {
+                $this->params['body'] = json_encode($this->params['body']);
+            }
+        }
+
         // The content type header might be missing and in those cases
         // We let guzzle figure it out.
-        $this->params['headers']['Content-Type'] = Input::get('content_type', $default);
+        $this->params['headers']['Content-Type'] = $contentType;
     }
 
     /**
@@ -211,9 +233,12 @@ class RawApiRequest
         // We just pass the body as it is
         else
         {
-            $this->setContentType('application/x-www-form-urlencoded');
+            // Setting the body before the content type is important.
+            // Why? Check setContentType function
 
             $this->params['body'] = $this->input['body'] ?? Input::get('body', '');
+
+            $this->setContentType();
         }
     }
 
@@ -223,6 +248,7 @@ class RawApiRequest
      */
     public function send()
     {
+        $exception = null;
         $errors = [];
         $response = null;
 
@@ -239,10 +265,12 @@ class RawApiRequest
         // This captures all the errors that might happen for now
         catch(\GuzzleHttp\Exception\ConnectException $e)
         {
+            $exception = $e;
             $errors = ["Error in connecting to API"];
         }
         catch(\GuzzleHttp\Exception\GuzzleException $e)
         {
+            $exception = $e;
             $json = $e->getResponse()->json();
             $errors = [$json['error']['description'], "Status Code: {$e->getResponse()->getStatusCode()}"];
         }
@@ -253,11 +281,26 @@ class RawApiRequest
         }
         catch(\GuzzleHttp\Exception\ServerException $e)
         {
+            $exception = $e;
             $errors = [$e->getMessage()];
         }
         catch(RZPErrors\Error $e)
         {
+            $exception = $e;
             $errors = [$e->getMessage()];
+        }
+
+        // Logs non-client side exceptions.
+        // Use case: Request didn't reach API, or failed with 5xx before API made
+        // a log of it. In such case we don't know what happened. Dashboard as a
+        // client should at least log for all server errors received from API.
+        if ($exception !== null)
+        {
+            Trace::error(
+                TraceCode::API_REQUEST_FAILURE,
+                [
+                    'message' => $e->getMessage(),
+                ]);
         }
 
         return [$errors, null];
