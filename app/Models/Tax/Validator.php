@@ -40,15 +40,13 @@ class Validator extends Base\Validator
      */
     public function validateRate(array $input)
     {
-        $tax = $this->entity;
-
         // $rateType and $rate we get from either input or the entity itself
         // to ensure that validation happened with combinations(create, update
         // with rate,rate_type or both etc.) of use cases.
 
-        $rateType = $input[Entity::RATE_TYPE] ?? $tax->getRateType();
+        $rateType = $input[Entity::RATE_TYPE] ?? $this->entity->getRateType();
 
-        $rate = $input[Entity::RATE] ?? $tax->getRate();
+        $rate = $input[Entity::RATE] ?? $this->entity->getRate();
 
         switch ($rateType)
         {

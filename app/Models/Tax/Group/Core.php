@@ -67,7 +67,7 @@ class Core extends Base\Core
      *
      * @return
      */
-    private function processTaxIdsOfInput(Entity $group, array $input)
+    protected function processTaxIdsOfInput(Entity $group, array $input)
     {
         $inputTaxIds = $input[Entity::TAX_IDS] ?? [];
 
