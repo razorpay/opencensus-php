@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 class SlackActions
 {
+    // descriptions/messages
     const FUNDS_HELD            = 'Funds put on hold';
     const FUNDS_RELEASED        = 'Funds Released';
     const RISK_RATING_CHANGED   = 'Risk Rating Changed';
@@ -26,6 +27,8 @@ class SlackActions
     const TAGGED                = 'Tagged';
     const CONFIRMED             = 'Confirmed';
     const ADMIN_EDIT            = 'Admin Edited';
+
+    // code
     const ARCHIVE               = 'archive';
     const UNARCHIVE             = 'unarchive';
     const SUSPEND               = 'suspend';
@@ -38,15 +41,15 @@ class SlackActions
     const ASSIGN_BANKS          = 'assign_banks';
 
     public static $actionMsgMap = [
-        self::ARCHIVE => self::ARCHIVED,
-        self::UNARCHIVE => self::UNARCHIVED,
-        self::SUSPEND => self::SUSPENDED,
-        self::UNSUSPEND => self::UNSUSPENDED,
-        self::ENABLE => self::LIVE_ENABLED,
-        self::DISABLE => self::LIVE_DISABLED,
-        self::LOCK => self::FORM_LOCKED,
-        self::UNLOCK => self::FORM_UNLOCKED,
-        self::ASSIGN_PRICING => self::PRICING_PLAN_SET,
-        self::ASSIGN_BANKS => self::BANK_LIST_EDITED,
+        self::ARCHIVE           => self::ARCHIVED,
+        self::UNARCHIVE         => self::UNARCHIVED,
+        self::SUSPEND           => self::SUSPENDED,
+        self::UNSUSPEND         => self::UNSUSPENDED,
+        self::ENABLE            => self::LIVE_ENABLED,
+        self::DISABLE           => self::LIVE_DISABLED,
+        self::LOCK              => self::FORM_LOCKED,
+        self::UNLOCK            => self::FORM_UNLOCKED,
+        self::ASSIGN_PRICING    => self::PRICING_PLAN_SET,
+        self::ASSIGN_BANKS      => self::BANK_LIST_EDITED,
     ];
 }

@@ -29,6 +29,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Constants\MailTags;
+use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
 {
@@ -320,7 +321,7 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
-        $this->logActionToSlack($merchant, 'assign_pricing', $input);
+        $this->logActionToSlack($merchant, SlackActions::ASSIGN_PRICING, $input);
 
         return $plan->toArrayPublic();
     }
@@ -579,7 +580,7 @@ class Service extends Base\Service
         $enabledDisabledBanks = (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input);
 
-        $this->logActionToSlack($merchant, 'assign_banks');
+        $this->logActionToSlack($merchant, SlackActions::ASSIGN_BANKS);
 
         return $enabledDisabledBanks;
     }

@@ -144,7 +144,7 @@ class Service extends Base\Service
 
     public function editMerchantDetails($id, array $input)
     {
-        if (isset($input['locked']))
+        if (isset($input['locked']) === true)
         {
             $lockAction = ($input['locked'] === true) ? 'lock' : 'unlock';
 
@@ -169,10 +169,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchantDetails);
 
-        if (isset($input['locked']))
+        if (isset($lockAction) === true)
         {
-            $lockAction = ($input['locked'] === true) ? 'lock' : 'unlock';
-
             $this->logActionToSlack($merchant, $lockAction);
         }
 
