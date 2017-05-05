@@ -53,6 +53,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($input, $requestData);
 
+        $this->traceRequest($requestData);
+
         $requestXmlData = $this->getRequestXml($requestData);
 
         try
@@ -65,6 +67,11 @@ class Gateway extends Base\Gateway
             ]);
 
             $parsedResponse = $this->parseResponse($response);
+
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+                'gateway' => $this->gateway,
+                'response' => $parsedResponse
+            ]);
 
             $paymentStatus = $this->updateGatewayPaymentAndGetStatus($gatewayPayment, $parsedResponse);
 
@@ -290,6 +297,18 @@ class Gateway extends Base\Gateway
         ];
 
         return $data;
+    }
+
+    protected function traceRequest($data)
+    {
+        unset($data[RequestConstants::PID_BLOCK]);
+
+        unset($data[RequestConstants::EXTRA_BLOCK]);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, [
+                'gateway' => $this->gateway,
+                'request' => $data
+            ]);
     }
 
     protected function getReversalData($data)
