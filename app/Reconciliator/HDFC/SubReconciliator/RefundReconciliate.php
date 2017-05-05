@@ -12,14 +12,25 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID      = 'merchant_trackid';
-    const COLUMN_REFUND_AMOUNT  = 'domestic_amt';
-    const COLUMN_RRN            = 'arn_no';
+    const COLUMN_REFUND_ID      = ['merchant_trackid', 'MERCHANT_TRACKID'];
+    const COLUMN_REFUND_AMOUNT  = ['domestic_amt', 'DOMESTIC AMT'];
+    const COLUMN_RRN            = ['arn_no', 'ARN NO'];
 
     protected function getRefundId(array $row)
     {
-        $refundId = $row[self::COLUMN_REFUND_ID];
-        $refundId = trim(str_replace("'", '', $refundId));
+        $refundId = null;
+
+        foreach (self::COLUMN_REFUND_ID as $cri)
+        {
+            if (empty($row[$cri]) === false)
+            {
+                $refundId = $row[$cri];
+
+                $refundId = trim(str_replace("'", '', $refundId));
+
+                break;
+            }
+        }
 
         return $refundId;
     }
@@ -42,16 +53,38 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getRrn(array $row)
     {
-        if (empty($row[self::COLUMN_RRN]) === true)
+        $rrn = null;
+
+        foreach (self::COLUMN_RRN as $cr)
         {
-            return null;
+            if (empty($row[$cr]) === false)
+            {
+                $rrn = $row[$cr];
+
+                $rrn = trim(str_replace("'", '', $rrn));
+
+                break;
+            }
         }
 
-        $rrn = $row[self::COLUMN_RRN];
-
-        $rrn = trim(str_replace("'", '', $rrn));
-
         return $rrn;
+    }
+
+    protected function getRefundAmount(array $row)
+    {
+        $refundAmount = null;
+
+        foreach (self::COLUMN_REFUND_AMOUNT as $cra)
+        {
+            if (isset($row[$cra]) === true)
+            {
+                $refundAmount = $row[$cra];
+
+                break;
+            }
+        }
+
+        return floatval($refundAmount) * 100;
     }
 
     protected function getGatewayRefund(string $refundId)

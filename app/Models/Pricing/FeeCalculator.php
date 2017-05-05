@@ -2,17 +2,14 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
-use RZP\Models\Merchant;
 use RZP\Models\Base;
 use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class FeeCalculator
@@ -32,7 +29,7 @@ class FeeCalculator
     /**
      * For which fees needs to be calculated.
      *
-     * @var RZP\Models\Payment\Entity
+     * @var \RZP\Models\Payment\Entity
      */
     protected $entity;
 
@@ -97,7 +94,11 @@ class FeeCalculator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
-                Payment\Entity::AMOUNT);
+                Payment\Entity::AMOUNT,
+                [
+                    'amount' => $amount,
+                    'fees'   => $totalFees
+                ]);
         }
 
         return [$totalFees, $totalTaxes];
@@ -219,6 +220,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForUPI($rules);
         }
+        else if ($method === Payment\Method::AEPS)
+        {
+            $rule = $this->getRelevantPricingRuleForAeps($rules);
+        }
         else if ($method === Payment\Method::EMI)
         {
             $rule = $this->getRelevantPricingRuleForEmi($rules);
@@ -238,6 +243,11 @@ class FeeCalculator
     protected function getRelevantPricingRuleForMethod($rules)
     {
         return $this->validateAndGetOnePricingRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForAeps($rules)
+    {
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
     protected function getRelevantPricingRuleForUPI($rules)
@@ -453,6 +463,12 @@ class FeeCalculator
      * We are modifying Customer subvention to choose rule based on original
      * amount only. This implies that only the merchant subvention rule selection
      * will be applied, irrespective of the subvention type.
+     *
+     * @param $rules
+     * @param $amount
+     * @param $subventionType
+     *
+     * @return null
      */
     protected function chooseRuleWithAmount($rules, $amount, $subventionType)
     {
@@ -463,6 +479,12 @@ class FeeCalculator
      * If the rules are amount range active rules,
      * choose rule based on amount
      * else return first available rule.
+     *
+     * @param $rules
+     * @param $amount
+     *
+     * @return null
+     * @throws Exception\RuntimeException
      */
     protected function chooseRuleWithAmountForMerchantSubvention($rules, $amount)
     {
@@ -678,7 +700,7 @@ class FeeCalculator
 
         $numerator = $fee * $taxPercentage;
 
-        $denominator = 10000 + $taxPercentage ;
+        $denominator = 10000 + $taxPercentage;
 
         return ceil($numerator / $denominator);
     }

@@ -502,4 +502,11 @@ class Entity extends Base\Entity
             self::GROUPS,
         ];
     }
+
+    public function hasPermission($permission)
+    {
+        $adminPermissions = $this->getPermissionsList();
+
+        return in_array($permission, $adminPermissions);
+    }
 }

@@ -85,7 +85,7 @@ class Core
      *
      * @return string
      */
-    protected function getInternalUsernameOrEmail(): string
+    public function getInternalUsernameOrEmail(): string
     {
         $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 

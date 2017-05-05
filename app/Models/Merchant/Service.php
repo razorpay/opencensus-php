@@ -32,6 +32,8 @@ use RZP\Constants\MailTags;
 
 class Service extends Base\Service
 {
+    use Notify;
+
     /**
      * Creates a merchant and saves in database
      *
@@ -453,6 +455,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
+        $this->logActionToSlack($merchant, 'enable');
+
         return $merchant->toArrayPublic();
     }
 
@@ -476,6 +480,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
+        $this->logActionToSlack($merchant, 'disable');
+
         return $merchant->toArrayPublic();
     }
 
@@ -483,13 +489,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant->getValidator()->validateInput('action', $input);
-
-        $function = $input['action'];
-
-        $merchant->$function();
-
-        $this->repo->saveOrFail($merchant);
+        $merchant = (new Merchant\Core)->action($merchant, $input);
 
         return $merchant->toArrayPublic();
     }
@@ -796,6 +796,56 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function updateHoldFundsForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('updateHoldFunds', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $holdFunds = $input['hold_funds'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->updateHoldFunds($merchantId, $holdFunds);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
     public function getOffers(string $mid)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
@@ -835,6 +885,15 @@ class Service extends Base\Service
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
         return $data;
+    }
+
+    protected function updateHoldFunds(string $merchantId, bool $holdFunds)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant->setHoldFunds($holdFunds);
+
+        $this->repo->saveOrFail($merchant);
     }
 
     /**

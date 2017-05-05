@@ -1124,8 +1124,15 @@ class Processor
 
         if ($this->mutex->acquire($resource) === false)
         {
+            $data = [
+                'payment_id'  => $payment->getId(),
+                'merchant_id' => $payment->getMerchantId(),
+                'gateway'     => $payment->getGateway(),
+                'terminal_id' => $payment->getTerminalId(),
+            ];
+
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS, null, $data);
         }
     }
 
@@ -1169,9 +1176,9 @@ class Processor
             $this->trace->info(
                 TraceCode::FEES_BREAKUP_ALREADY_EXISTS,
                 [
-                    'transaction_id'    => $txn->getId(),
-                    'payment_id'        => $txn->getEntityId(),
-                    'fee_split'         => $feesSplit->toArrayPublic(),
+                  'transaction_id'    => $txn->getId(),
+                  'payment_id'        => $txn->getEntityId(),
+                  'fee_split'         => $feesSplit->toArrayPublic(),
                 ]);
 
             return;

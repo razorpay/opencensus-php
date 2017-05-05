@@ -5,6 +5,8 @@ namespace RZP\Models\Feature;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use Illuminate\Http\Request;
 
 class Validator extends Base\Validator
 {
@@ -21,8 +23,18 @@ class Validator extends Base\Validator
         if (in_array($value, $allFeatures) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "Invalid feature: $value",
-                $attribute);
+                'Invalid feature',
+                $attribute,
+                $value);
+        }
+   }
+
+   public function validateZoho(Request $request)
+   {
+        if (Merchant\Preferences::checkZohoHeaders($request->headers) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment failed');
         }
    }
 }
