@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::UPI                         => 'sometimes|boolean',
+        Entity::AEPS                        => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::RECURRING                   => 'sometimes|integer|max:7',
@@ -68,6 +69,11 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
+    ];
+
+    protected static $aepsIciciTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:aeps_icici',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num',
     ];
 
     protected static $billdeskTerminalRules = [
