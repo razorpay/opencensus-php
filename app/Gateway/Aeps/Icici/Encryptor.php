@@ -2,13 +2,17 @@
 
 namespace RZP\Gateway\Aeps\Icici;
 
-use phpseclib\Crypt\AES;
 use Carbon\Carbon;
+use phpseclib\Crypt\AES;
+use RZP\Constants\Mode;
 
 class Encryptor
 {
     const CERT_PATH  = 'certs/public.cer';
     const CERT_EXPIRY = '20191230';
+
+    const CERT_PATH_UAT = 'certs/public_uat.cer';
+    const CERT_EXPIRY_UAT = '20171105';
 
     protected function createPidXml($fpData)
     {
@@ -28,9 +32,18 @@ class Encryptor
         return base64_encode($cipher->encrypt($data));
     }
 
-    public function encryptSessionKey($skey)
+    public function encryptSessionKey($skey, $mode)
     {
-        $publicKey = file_get_contents(__DIR__ . '/' .self::CERT_PATH);
+        if ($mode === Mode::LIVE)
+        {
+            $certPath = self::CERT_PATH;
+        }
+        else
+        {
+            $certPath = self::CERT_PATH_UAT;
+        }
+
+        $publicKey = file_get_contents(__DIR__ . '/' . $certPath);
 
         openssl_public_encrypt($skey, $encrypted, $publicKey);
 
@@ -48,7 +61,7 @@ class Encryptor
         return $encryptedHash;
     }
 
-    public function encryptInput(array & $input)
+    public function encryptInput(array & $input, $mode)
     {
         $skey = $this->generateSkey();
 
@@ -58,9 +71,16 @@ class Encryptor
 
         $input['aadhaar']['fingerprint'] = $this->encryptUsingSessionKey($pidBlock, $skey);
 
-        $input['aadhaar']['session_key'] = $this->encryptSessionKey($skey);
+        $input['aadhaar']['session_key'] = $this->encryptSessionKey($skey, $mode);
 
-        $input['aadhaar']['cert_expiry'] = self::CERT_EXPIRY;
+        if ($mode === Mode::LIVE)
+        {
+            $input['aadhaar']['cert_expiry'] = self::CERT_EXPIRY;
+        }
+        else
+        {
+            $input['aadhaar']['cert_expiry'] = self::CERT_EXPIRY_UAT;
+        }
     }
 
     function generateSkey($length = 16)

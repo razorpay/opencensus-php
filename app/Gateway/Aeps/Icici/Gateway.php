@@ -41,7 +41,7 @@ class Gateway extends Base\Gateway
         {
             $encryptor = (new Encryptor);
 
-            $encryptor->encryptInput($input);
+            $encryptor->encryptInput($input, $this->mode);
         }
 
         // This need to be done for reversal request via cron,
