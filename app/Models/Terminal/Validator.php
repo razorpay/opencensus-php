@@ -71,8 +71,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
     ];
 
-    protected static $aepsTerminalRules = [
-        // TODO FIx it
+    protected static $aepsIciciTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:aeps_icici',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num',
     ];
 
     protected static $billdeskTerminalRules = [

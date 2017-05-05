@@ -57,6 +57,7 @@ class Gateway
         self::CYBERSOURCE => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
+        self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
     ];
 
     const POWER_WALLETS = array(
