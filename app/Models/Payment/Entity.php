@@ -382,7 +382,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        if ($input['method'] !== Method::NETBANKING)
+        if (in_array($input['method'], [Method::NETBANKING, Method::AEPS]) === false)
         {
             unset($input['bank']);
         }
@@ -423,7 +423,7 @@ class Entity extends Base\PublicEntity
     protected function modifyBank(& $input)
     {
         if ((isset($input['method'])) and
-            ($input['method'] !== Method::NETBANKING))
+            (in_array($input['method'], [Method::NETBANKING, Method::AEPS]) === false))
         {
             unset($input['bank']);
         }
@@ -828,6 +828,11 @@ class Entity extends Base\PublicEntity
         $secondsSinceCreated = $currentTime - $this->getAttribute(self::CREATED_AT);
 
         return (bool) ($secondsSinceCreated <= (Processor\Processor::ASYNC_PAYMENT_TIMEOUT));
+    }
+
+    public function isAeps()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::AEPS);
     }
 
     public function isAuthorized()
@@ -1309,19 +1314,16 @@ class Entity extends Base\PublicEntity
         {
             case Method::CARD:
                 return [$method, $this->getFormattedCard()];
-                break;
             case Method::EMI:
                 return [$method, $this->getFormattedCard()];
-                break;
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
-                break;
             case Method::WALLET:
                 return [$method, ucfirst($this->getWallet())];
-                break;
             case Method::UPI:
                 return [$method, $this->getVpa()];
-                break;
+            case Method::AEPS:
+                return [$method, ''];
         }
     }
 

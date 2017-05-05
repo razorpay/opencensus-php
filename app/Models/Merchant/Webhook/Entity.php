@@ -128,16 +128,16 @@ class Entity extends Base\PublicEntity
 
     public function getTimeDifferenceFromLastSuccessInHour()
     {
-        $differenceHours = 0;
+        $lastActive = $this->getAttribute(self::LAST_SUCCESSFUL_AT);
 
-        $lastSuccessfulAt = $this->getAttribute(self::LAST_SUCCESSFUL_AT);
-
-        if ($lastSuccessfulAt !== null)
+        if ($lastActive === null)
         {
-            $currentTime = time();
-
-            $differenceHours = ($currentTime - $lastSuccessfulAt) / 3600;
+            $lastActive = $this->getAttribute(self::UPDATED_AT);
         }
+
+        $currentTime = time();
+
+        $differenceHours = ($currentTime - $lastActive) / 3600;
 
         return $differenceHours;
     }

@@ -34,6 +34,7 @@ class Gateway
     const SHARP              = 'sharp';
     const UPI_ICICI          = 'upi_icici';
     const UPI_IDFC           = 'upi_idfc';
+    const AEPS_ICICI         = 'aeps_icici';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
@@ -56,6 +57,7 @@ class Gateway
         self::CYBERSOURCE => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
+        self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
     ];
 
     const POWER_WALLETS = array(
@@ -133,6 +135,7 @@ class Gateway
         self::WALLET_OPENWALLET  => Settlement\Channel::KOTAK,
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
+        self::AEPS_ICICI         => Settlement\Channel::KOTAK,
         self::CYBERSOURCE        => Settlement\Channel::KOTAK,
     ];
 
@@ -187,6 +190,10 @@ class Gateway
         Method::UPI => [
             self::UPI_ICICI,
             self::UPI_IDFC,
+        ],
+
+        Method::AEPS => [
+            self::AEPS_ICICI,
         ],
     ];
 

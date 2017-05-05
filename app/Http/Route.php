@@ -25,6 +25,7 @@ final class Route
         'merchant_checkout_preferences'           => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_private'                  => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
+        'payment_create_aeps'                     => ['post',     'payments/create/aeps',                           'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_recurring'                => ['post',     'payments/create/recurring',                      'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_old'              => ['post',     'payments/create/redirect',                       'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_checkout'                 => ['post',     'payments/create/checkout',                       'PaymentCreateController@postCreatePaymentCheckoutCallback'         ],
@@ -149,6 +150,7 @@ final class Route
         'credits_delete'                          => ['delete',   'merchants/{mid}/credits/{id}',                   'MerchantController@deleteCreditsLog'                               ],
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
         'merchant_update_features'                => ['post',     'merchants/{id}/features',                        'MerchantController@updateMerchantFeatures'                         ],
+        'merchants_update_hold_funds'             => ['put',      'merchants/hold_funds/bulk',                      'MerchantController@updateHoldFundsForMultipleMerchants'            ],
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                      'KeyController@getKey'                                              ],
@@ -599,6 +601,7 @@ final class Route
         'payment_create_recurring',
         'payment_create_wallet',
         'payment_create_upi',
+        'payment_create_aeps',
         'payment_refund',
         'payment_capture',
         'payment_fetch_transfers',
@@ -838,6 +841,7 @@ final class Route
         'merchant_actions',
         'refund_retry_failed',
         'refund_verify_failed',
+        'merchants_update_hold_funds',
     );
 
     public static $proxy = array(
@@ -1240,6 +1244,7 @@ final class Route
         'payment_create_recurring',
         'payment_create_private_old',
         'payment_create_checkout',
+        'payment_create_aeps',
         'payment_create_jsonp',
         'payment_create_ajax',
         'payment_create_fees',

@@ -84,6 +84,7 @@ class Table
     // Gateway related
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
+    const AEPS                  = 'aeps';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const MIGS                  = 'axis';

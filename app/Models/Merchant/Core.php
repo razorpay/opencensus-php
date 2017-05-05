@@ -16,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Core extends Base\Core
@@ -284,7 +285,9 @@ class Core extends Base\Core
 
         $function = $input['action'];
 
-        $hasPermission = $admin->hasPermission($function);
+        $routePermission = Permission\Name::$actionMap[$function];
+
+        $hasPermission = $admin->hasPermission($routePermission);
 
         if ($hasPermission === false)
         {

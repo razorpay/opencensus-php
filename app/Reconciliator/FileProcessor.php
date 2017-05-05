@@ -41,10 +41,22 @@ class FileProcessor
     const EXCEL                   = 'excel';
     const CSV                     = 'csv';
 
-    // This map should have all the extensions mentioned in Validator::ACCEPTED_EXTENSIONS_MAP
-    const FILE_TYPES_MAPPINGS     = [
-        self::EXCEL => ['xls', 'xlsx', 'xlsb'],
-        self::CSV   => ['txt', 'csv', 'text', 'rpt']
+    // This map should have all the mime_types mentioned in Validator::ACCEPTED_EXTENSIONS_MAP
+    const FILE_TYPES_MAPPINGS = [
+        self::EXCEL => [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/zip',
+            'application/octet-stream',
+            'application/excel',
+            'application/vnd.ms-excel',
+            'application/msexcel',
+            'application/vnd.ms-office'],
+        self::CSV => [
+            'text/csv',
+            'text/x-comma-separated-values',
+            'text/comma-separated-values',
+            'text/plain'
+        ]
     ];
 
     /******************************
