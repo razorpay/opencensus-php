@@ -50,6 +50,8 @@ const ReferralsListItem = props => {
             onClick={() => {
               props.showCreateLoginModal(props.referral);
             }}
+            data-tip="Provide login to submerchant with merchant email."
+            data-place="right"
           >
             Create Login
           </button>}
