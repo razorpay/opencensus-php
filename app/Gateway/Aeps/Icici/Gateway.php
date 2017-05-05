@@ -236,6 +236,8 @@ class Gateway extends Base\Gateway
             $gatewayPayment->setReceived(0);
         }
 
+        $this->repo->saveOrFail($gatewayPayment);
+
         return $paymentStatus;
     }
 
