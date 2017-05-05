@@ -97,6 +97,7 @@ return [
             Permission::EDIT_MERCHANT_RELEASE_FUNDS => '',
             Permission::EDIT_MERCHANT_ENABLE_RECEIPT => '',
             Permission::EDIT_MERCHANT_DISABLE_RECEIPT => '',
+            Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS => '',
             Permission::ASSIGN_MERCHANT_TERMINAL => '',
             Permission::ASSIGN_MERCHANT_BANKS => '',
             Permission::ADD_MERCHANT_ADJUSTMENT => '',
@@ -237,6 +238,7 @@ return [
             Permission::EDIT_MERCHANT_LOCK_ACTIVATION     => '',
             Permission::EDIT_MERCHANT_UNLOCK_ACTIVATION   => '',
             Permission::EDIT_MERCHANT_HOLD_FUNDS          => '',
+            Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS     => '',
             Permission::EDIT_MERCHANT_RELEASE_FUNDS       => '',
 
             Permission::VIEW_MERCHANT_BALANCE_TEST        => '',
