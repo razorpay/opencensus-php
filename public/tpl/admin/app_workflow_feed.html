@@ -21,7 +21,7 @@
             <span ng-style="!action_details.admin.name && {'visibility':'collapse'}">performed this action</span>
             <span ng-if="action_details.created_at" title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
 
-            <span class="label pending-bg-color pull-right action-state">{{ action_details.state }}</span>
+            <span class="label pull-right action-state" ng-class="stateClass">{{ action_details.state }}</span>
           </div>
           <div class="wrapper clearfix">
             <div class="heading-container h3 m-b">
@@ -102,7 +102,7 @@
 
                   <div class="level-element">
                     <span class="tick-green"
-                          ng-if="index < action_details.current_level || (['approved', 'executed'].indexOf(action_details.state) !== -1 && index == action_details.current_level)">
+                          ng-if="index < action_details.current_level || (index == action_details.current_level && ['approved', 'executed'].indexOf(action_details.state) !== -1)">
                       <i class="glyphicon glyphicon-ok"/>
                     </span>
                     <div class="pills-label level-label" >STEP {{index}}</div>
