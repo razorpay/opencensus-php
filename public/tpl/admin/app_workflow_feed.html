@@ -101,7 +101,8 @@
                      ng-class="{ 'inactive': action_details.current_level != index }">
 
                   <div class="level-element">
-                    <span class="tick-green" ng-if="index < action_details.current_level">
+                    <span class="tick-green"
+                          ng-if="index < action_details.current_level || (['approved', 'executed'].indexOf(action_details.state) !== -1 && index == action_details.current_level)">
                       <i class="glyphicon glyphicon-ok"/>
                     </span>
                     <div class="pills-label level-label" >STEP {{index}}</div>
