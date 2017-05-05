@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\LoadRule;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -58,7 +59,20 @@ class Core extends Base\Core
     {
         $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
 
-        $applicableRules = $this->repo->gateway_load_rule->fetchApplicableRules($ruleFetchParams);
+        $applicableRules = $this->repo
+                                ->gateway_load_rule
+                                ->fetchApplicableRules($ruleFetchParams);
+
+        // CHecks if merchant specific rules are present. If present we only use them
+        // and discard other rules
+        $merchantSpecificRules = $this->getMerchantSpecificRules(
+                                            $applicableRules,
+                                            $input['merchant']);
+
+        if ($merchantSpecificRules->isEmpty() === false)
+        {
+            $applicableRules = $merchantSpecificRules;
+        }
 
         if ($verbose === true)
         {
@@ -68,6 +82,22 @@ class Core extends Base\Core
         }
 
         return $applicableRules;
+    }
+
+    /**
+     * Selects rules for the merchant from the set of all rules
+     * @param  Base\PublicCollection $rules    Set of all applicable rules
+     * @param  Merchant\Entity       $merchant Merchant making the payment
+     * @return Base\PublicCollection merchant specific rules
+     */
+    protected function getMerchantSpecificRules(
+                            Base\PublicCollection $rules,
+                            Merchant\Entity $merchant): Base\PublicCollection
+    {
+        return $rules->filter(function ($rule) use ($merchant)
+        {
+            return ($rule->getMerchantId() === $merchant->getId());
+        });
     }
 
     /**
