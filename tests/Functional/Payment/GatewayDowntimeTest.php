@@ -497,37 +497,6 @@ class GatewayDowntimeTest extends TestCase
 
     //----- Fetch Tests -----
 
-    public function testGatewayDowntimeForNullToFetch()
-    {
-        $content1 = $this->createGatewayDowntime();
-
-        $this->createGatewayDowntimeNullTo('netbanking_kotak');
-
-        $from = $content1['begin'];
-
-        $request = [
-            'content' => ['begin' => $from],
-            'url' => '/gateway/downtimes',
-            'method' => 'GET'
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        // Downtime 1 starts at query begin time    |████████1███████          |
-        // Downtime 2 extends indefinitely          |    ███████████2██████████|
-        // Query has no end time                    |████████████Q█████████████|
-        // Thus both overlap with query window
-        $this->assertEquals(2, $content['count']);
-
-        $request['content']['gateway'] = 'netbanking_kotak';
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals(1, $content['count']);
-
-        $this->assertEquals(null, $content['items'][0]['end']);
-    }
-
     public function testGatewayDowntimeFetch()
     {
         $content1 = $this->createGatewayDowntime();
@@ -586,7 +555,38 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals(0, $content['count']);
     }
 
-    public function testGatewayDowntimeWithEmptyToFetch()
+    public function testGatewayDowntimeFetchForNullTo()
+    {
+        $content1 = $this->createGatewayDowntime();
+
+        $this->createGatewayDowntimeNullTo('netbanking_kotak');
+
+        $from = $content1['begin'];
+
+        $request = [
+            'content' => ['begin' => $from],
+            'url' => '/gateway/downtimes',
+            'method' => 'GET'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        // Downtime 1 starts at query begin time    |████████1███████          |
+        // Downtime 2 extends indefinitely          |    ███████████2██████████|
+        // Query has no end time                    |████████████Q█████████████|
+        // Thus both overlap with query window
+        $this->assertEquals(2, $content['count']);
+
+        $request['content']['gateway'] = 'netbanking_kotak';
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $content['count']);
+
+        $this->assertEquals(null, $content['items'][0]['end']);
+    }
+
+    public function testGatewayDowntimeFetchForIndefiniteDowntimes()
     {
         $content1 = $this->createGatewayDowntimeWithEmptyTo('netbanking_hdfc',
             Carbon::now()->subMinutes(60)->timestamp);
