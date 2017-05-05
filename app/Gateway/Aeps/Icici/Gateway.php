@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal;
@@ -57,6 +58,11 @@ class Gateway extends Base\Gateway
         try
         {
             $response = $this->sendRequest($requestXmlData);
+
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+                'gateway' => $this->gateway,
+                'response' => $response
+            ]);
 
             $parsedResponse = $this->parseResponse($response);
 
