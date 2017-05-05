@@ -73,7 +73,6 @@ class Validator extends Base\Validator
 
     protected static $aepsIciciTerminalRules = [
         Entity::GATEWAY                     => 'required|in:aeps_icici',
-        Entity::GATEWAY_ACQUIRER            => 'required',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num',
     ];
 
