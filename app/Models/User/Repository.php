@@ -30,15 +30,6 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
-    public function getOwners(string $merchantId)
-    {
-        return $this->newQuery()
-                    ->join(Table::MERCHANT_USERS, Entity::ID, '=', 'merchant_users.user_id')
-                    ->where('merchant_users.merchant_id', '=', $merchantId)
-                    ->where('merchant_users.role', '=', Entity::OWNER)
-                    ->get();
-    }
-
     public function getUsersForMerchant(string $merchantId)
     {
         $query = $this->newQuery()

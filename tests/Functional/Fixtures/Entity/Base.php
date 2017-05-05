@@ -7,8 +7,8 @@ use Eloquent;
 use RZP\Models;
 use RZP\Constants\Entity as E;
 use RZP\Tests\TestDummy\Factory;
-use RZP\Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;
+use RZP\Tests\Functional\Fixtures\Fixtures;
 
 class Base
 {
@@ -21,11 +21,12 @@ class Base
         $this->db = DB::getFacadeRoot();
     }
 
-    protected static $map = array(
+    protected static $map = [
         'key'               => \RZP\Models\Key\Entity::class,
         'iin'               => \RZP\Models\Card\IIN\Entity::class,
         'card'              => \RZP\Models\Card\Entity::class,
         'item'              => \RZP\Models\Item\Entity::class,
+        'user'              => \RZP\Models\User\Entity::class,
         'batch'             => \RZP\Models\Batch\Entity::class,
         'order'             => \RZP\Models\Order\Entity::class,
         'token'             => \RZP\Models\Customer\Token\Entity::class,
@@ -61,17 +62,18 @@ class Base
         'wallet'            => \RZP\Gateway\Wallet\Base\Entity::class,
         'axis_migs'         => \RZP\Gateway\AxisMigs\Entity::class,
         'billdesk'          => \RZP\Gateway\Billdesk\Entity::class,
-    );
+    ];
 
-    protected static $liveAndTest = array(
+    protected static $liveAndTest = [
         'merchant',
         'pricing',
         'methods',
         'emi_plan',
         'iin',
         'schedule',
-        'feature'
-    );
+        'feature',
+        'user',
+    ];
 
     public function create(array $attributes = array())
     {

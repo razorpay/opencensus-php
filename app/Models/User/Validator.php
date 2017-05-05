@@ -40,6 +40,11 @@ class Validator extends Base\Validator
         Entity::PASSWORD              => 'required|between:6,50',
     ];
 
+    protected static $confirmRules = [
+        Entity::CONFIRM_TOKEN         => 'sometimes',
+        Entity::EMAIL                 => 'sometimes|email',
+    ];
+
     protected function validateAction(string $attribute, string $action)
     {
         if (Action::exists($action) === false)
