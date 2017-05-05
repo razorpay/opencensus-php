@@ -17,27 +17,7 @@ class Core extends Base\Core
 
         $loadRule = (new Entity)->build($input);
 
-        // Unsetting load here as it is not required to check for conflicting rules
-        unset($input[Entity::LOAD]);
-
-        // Checks if there is already a rule defined with the exact same criteria
-        $existingRule = $this->repo->gateway_load_rule->findExistingRule($input);
-
-        if ($existingRule !== null)
-        {
-            throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_GATEWAY_LOAD_RULE_EXISTS,
-                        null,
-                        [
-                            'existing_rule_id' => $existingRule->getId(),
-                        ]);
-        }
-
-        // Checks if there are any potential conflicting rules and throws exception
-        // if sum of all loads of such conflicting cases is above 10000
-        $this->checkIfTotalLoadIsValid($loadRule, $input);
-
-        $this->repo->saveOrFail($loadRule);
+        $this->validateNewRule($loadRule, $input);
 
         return $loadRule;
     }
@@ -55,7 +35,9 @@ class Core extends Base\Core
 
         $loadRule->edit($input);
 
-        $this->checkIfTotalLoadIsValid($loadRule, $input);
+        // Checks if the edited load value will cause total load across similar
+        // rules to exceed max load value of 100
+        $this->checkIfTotalLoadIsValid($loadRule);
 
         $this->repo->saveOrFail($loadRule);
 
@@ -75,9 +57,7 @@ class Core extends Base\Core
     {
         $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
 
-        $rules = $this->repo->gateway_load_rule->fetchApplicableRules($ruleFetchParams);
-
-        $applicableRules = (new Filter($input))->filter($rules);
+        $applicableRules = $this->repo->gateway_load_rule->fetchApplicableRules($ruleFetchParams);
 
         if ($verbose === true)
         {
@@ -89,36 +69,66 @@ class Core extends Base\Core
         return $applicableRules;
     }
 
+    /**
+     * Checks if the new rule is not a duplicate and that the total load across
+     * rules with criteria matching the current rule's criteria does not exceed
+     * 100 which is the distribution size limit
+     *
+     * @param  Entity $rule  New rule built from input
+     * @param  array  $input Request data
+     */
+    protected function validateNewRule(Entity $rule, array $input)
+    {
+        // Unsetting load here as it is not required to check for conflicting rules
+        unset($input[Entity::LOAD]);
+
+        // Checks if there is already a rule defined with the exact same criteria
+        $existingRulesCount = $this->repo->gateway_load_rule->fetch($input)->count();
+
+        if ($existingRulesCount > 0)
+        {
+            throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_GATEWAY_LOAD_RULE_EXISTS);
+        }
+
+        // Checks that the total load across all rules with similar criteria doesn't exceed
+        // max load.
+        $this->checkIfTotalLoadIsValid($rule);
+    }
 
     /**
-     * Matches terminals to a rule based on comparing terminal attributes to terminal
-     * related rule attributes. Returns a map, mapping rule id's to terminals like
-     * [
-     *     <rule_id> => [<terminal_ids>]
-     * ]
+     * Checks if the total load across all existing rules matching the criteria
+     * defined by current rule is less than the max load value of 100. This is
+     * required so that we don't end up having rules during terminal sorting whose
+     * total load does not exceed the distribution space of 100 as we are treating
+     * load values as percentages
      *
-     * @param  Base\PublicCollection $terminals collection of available terminals
-     * @param  Base\PublicCollection $rules     collection of applicable rules
-     * @return array                            map of rule_id => terminals
+     * @param  Entity $rule  New rule
+     * @param  array  $input Request data
      */
-    public function matchTerminalsToRule(array $terminals, Base\PublicCollection $rules, bool $verbose = true): array
+    protected function checkIfTotalLoadIsValid(Entity $rule)
     {
-       $map = [];
+        $totalLoadForSimilarRules = $this->repo
+                                         ->gateway_load_rule
+                                         ->getTotalLoadForSimilarRules($rule);
 
-       foreach ($rules as $rule)
-       {
-            foreach ($terminals as $terminal)
-            {
-                if ($rule->matches($terminal) === true)
-                {
-                    $map[$rule->getId()][] = $terminal;
-                }
-            }
-       }
+        $totalLoad = $rule->getLoad() + $totalLoadForSimilarRules;
 
-        $this->traceRuleToTerminalsMap($map, $verbose);
+        if ($totalLoad > Entity::MAX_LOAD)
+        {
+            $data = [
+                'total_load' => $totalLoad,
+            ];
 
-       return $map;
+            $this->trace->info(
+                    TraceCode::GATEWAY_LOAD_RULE_CONFLCT,
+                    $data);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD,
+                null,
+                $data);
+        }
     }
 
     /**
@@ -201,91 +211,16 @@ class Core extends Base\Core
         return $gateways;
     }
 
-    // public function checkAndBalanceLoads(Base\PublicCollection $rules)
-    // {
-    //     $totalLoad = $rules->reduce(function ($carry, $rule)
-    //     {
-    //         $load = $rule->getLoad();
-
-    //         return $carry + $load;
-    //     });
-
-    //     if ($totalLoad > Entity::MAX_LOAD)
-    //     {
-    //         foreach ($rules as $rule)
-    //         {
-    //             $normalizedLoad = $rule->getNormalizedLoad($totalLoad);
-
-    //             $rule->setLoad($normalizedLoad);
-    //         }
-    //     }
-    // }
-
-    protected function checkIfTotalLoadIsValid(Entity $rule, array $input)
+    protected function traceBoostedTerminals(array $terminals, int $chancePercent)
     {
-        $conflictingRules = $this->repo->gateway_load_rule->fetchConflictingRules($input);
+        $traceData = [];
 
-        // If the rule already exists (edit case) then we remove it from the set
-        // of conflicting rules
-        if ($rule->exists === true)
-        {
-            $conflictingRules = $conflictingRules->filter(function ($item) use ($rule)
-            {
-                return ($item->getId() !== $rule->getId());
-            });
-        }
+        $traceData['chance_percent'] = $chancePercent;
 
-        $totalLoad = $conflictingRules->reduce(function ($carry, $rule)
-        {
-            $load = $rule->getLoad();
+        $terminalIds = array_pluck($terminals, 'id');
 
-            return $carry + $load;
-        });
+        $traceData['boosted_terminals'] = $terminalIds;
 
-        $totalLoad += $rule->getLoad();
-
-        if ($totalLoad > Entity::MAX_LOAD)
-        {
-
-            $conflictingRuleIds = $conflictingRules
-                                    ->pluck(Entity::ID)
-                                    ->toArray();
-
-            $data = [
-                'conflicting_rules' => $conflictingRuleIds,
-                'total_load'        => $totalLoad,
-            ];
-
-            $this->trace->info(
-                    TraceCode::GATEWAY_LOAD_RULE_CONFLCT,
-                    $data);
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD,
-                null,
-                $data);
-        }
-    }
-
-    protected function traceRuleToTerminalsMap(array $map, bool $verbose)
-    {
-        if ($verbose === true)
-        {
-            $traceData = [];
-
-            foreach ($map as $ruleId => $terminals)
-            {
-                $terminalIds = [];
-
-                foreach ($terminals as $terminal)
-                {
-                    $terminalIds[] = $terminal->getId();
-                }
-
-                $traceData[$ruleId] = $terminalIds;
-            }
-
-            $this->trace->info(TraceCode::GATEWAY_LOAD_RULES_TO_TERMINALS_MAP, $traceData);
-        }
+        $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS, $traceData);
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\LoadRule;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
