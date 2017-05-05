@@ -10,4 +10,6 @@ class RefundFileFields
     const TRANSACTION_ID     = 'Transaction Id';
     const REFUND_MODE        = 'RFND';
     const BANK_NAME          = 'IndusInd';
+    const REFUND             = 'Refund';
+    const BANK               = 'Bank';
 }
