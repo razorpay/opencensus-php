@@ -80,12 +80,19 @@ class Gateway extends Base\Gateway
 
                 $parsedReversalResponse = $this->parseResponse($reversalResponse);
 
-                $this->updateGatewayPayment($gatewayPayment, $parsedReversalResponse);
+                $paymentStatus = $this->updateGatewayPaymentAndGetStatus($gatewayPayment, $parsedReversalResponse);
 
                 // After reverse is complete, We have to throw exception as
                 // paymnet failed overall
-                throw new Exception\ServerErrorException(
-                    'Payment Failed and Reversed');
+                if ($paymentStatus !== self::SUCCESS)
+                {
+                    $this->trace->error(
+                        TraceCode::PAYMENT_REVERSE_FAILURE);
+                }
+
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+
             }
             catch (\Exception $e)
             {
