@@ -77,6 +77,11 @@ class Validator extends Base\Validator
         'optout_reason'     => 'sometimes|string|max:200'
     ];
 
+    protected static $updateHoldFundsRules = [
+        'hold_funds'   => 'required|boolean',
+        'merchant_ids' => 'required|array'
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];

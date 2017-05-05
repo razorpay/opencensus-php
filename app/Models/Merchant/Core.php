@@ -15,6 +15,7 @@ use RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Action;
+use RZP\Models\Admin\Permission;
 
 use Config;
 
@@ -270,7 +271,9 @@ class Core extends Base\Core
 
         $function = $input['action'];
 
-        $hasPermission = $admin->hasPermission($function);
+        $routePermission = Permission\Name::$actionMap[$function];
+
+        $hasPermission = $admin->hasPermission($routePermission);
 
         if ($hasPermission === false)
         {
