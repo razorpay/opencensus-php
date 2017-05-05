@@ -314,13 +314,15 @@ class Gateway extends Base\Gateway
     {
         $xmlString = '';
 
-        $xmlStringPrefix = '<isomsg direction="incoming"><header>00000000</header>';
+        $xmlStringPrefix = "\n<isomsg direction=\"incoming\">\n<!-- org.jpos.iso.packager.GenericPackager[cfg/iso87binary-sarvatra.xml] -->\n<header>00000000</header>\n";
 
-        $xmlStringPostfix = '</isomsg>';
+        $xmlStringPostfix = "</isomsg>\n";
+
+        $xmlString .= $xmlStringPrefix;
 
         foreach ($data as $key => $value)
         {
-             $xmlString .= '<field id="' . $key . '" value="' . $value . '"/>';
+            $xmlString .= '<field id="' . $key . '" value="' . $value . '"/>' . "\n";
         }
 
         $xmlString .= $xmlStringPostfix;
