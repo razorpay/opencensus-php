@@ -1181,6 +1181,7 @@ final class Route
         'customer_fetch_tokens'             => [Feature::TOKENS],
         'payment_create_wallet'             => [Feature::S2SWALLET],
         'payment_create_upi'                => [Feature::S2SUPI],
+        'payment_create_aeps'               => [Feature::S2SAEPS],
         'payment_create_recurring'          => [Feature::RECURRING],
         'payment_create_private_old'        => [Feature::S2S],
         'setl_combined_report'              => [Feature::SETL_REPORT],
