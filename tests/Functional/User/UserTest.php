@@ -228,7 +228,7 @@ class UserTest extends TestCase
 
         $this->assertEquals(count($addedMerchant), 1);
 
-        $this->assertEquals($addedMerchant[0]['role'], 'owner');
+        $this->assertEquals(array_values($addedMerchant)[0]['role'], 'owner');
     }
 
     public function testDetachMerchant()
