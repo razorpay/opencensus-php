@@ -142,5 +142,7 @@ class Name
         Merchant\Action::UNARCHIVE => self::EDIT_MERCHANT_UNARCHIVE,
         Merchant\Action::SUSPEND => self::EDIT_MERCHANT_SUSPEND,
         Merchant\Action::UNSUSPEND => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::LOCK => self::EDIT_MERCHANT_LOCK_ACTIVATION,
+        Merchant\Action::UNLOCK => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
     ];
 }

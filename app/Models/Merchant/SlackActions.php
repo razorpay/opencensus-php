@@ -32,6 +32,10 @@ class SlackActions
     const UNSUSPEND             = 'unsuspend';
     const ENABLE                = 'enable';
     const DISABLE               = 'disable';
+    const LOCK                  = 'lock';
+    const UNLOCK                = 'unlock';
+    const ASSIGN_PRICING        = 'assign_pricing';
+    const ASSIGN_BANKS          = 'assign_banks';
 
     public static $actionMsgMap = [
         self::ARCHIVE => self::ARCHIVED,
@@ -40,5 +44,9 @@ class SlackActions
         self::UNSUSPEND => self::UNSUSPENDED,
         self::ENABLE => self::LIVE_ENABLED,
         self::DISABLE => self::LIVE_DISABLED,
+        self::LOCK => self::FORM_LOCKED,
+        self::UNLOCK => self::FORM_UNLOCKED,
+        self::ASSIGN_PRICING => self::PRICING_PLAN_SET,
+        self::ASSIGN_BANKS => self::BANK_LIST_EDITED,
     ];
 }

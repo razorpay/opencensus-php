@@ -12,9 +12,13 @@ use RZP\Models\FileStore;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\ValidationFields;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 
 class Service extends Base\Service
 {
+    use NotifyTrait;
+
     public function fetchMerchantDetails()
     {
         $merchantDetails = $this->getMerchantDetails($this->merchant);
@@ -140,6 +144,23 @@ class Service extends Base\Service
 
     public function editMerchantDetails($id, array $input)
     {
+        if (isset($input['locked']))
+        {
+            $lockAction = ($input['locked'] === true) ? 'lock' : 'unlock';
+
+            $admin = $this->app['basicauth']->getAdmin();
+
+            $routePermission = Permission\Name::$actionMap[$lockAction];
+
+            $hasPermission = $admin->hasPermission($routePermission);
+
+            if ($hasPermission === false)
+            {
+                throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+            }
+        }
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchantDetails = $this->getMerchantDetails($merchant);
@@ -147,6 +168,13 @@ class Service extends Base\Service
         $merchantDetails->edit($input);
 
         $this->repo->saveOrFail($merchantDetails);
+
+        if (isset($input['locked']))
+        {
+            $lockAction = ($input['locked'] === true) ? 'lock' : 'unlock';
+
+            $this->logActionToSlack($merchant, $lockAction);
+        }
 
         return $this->createResponse($merchantDetails);
     }

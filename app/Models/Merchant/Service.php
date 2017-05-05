@@ -148,8 +148,8 @@ class Service extends Base\Service
     protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
     {
         $data = [
-            'name'  =>  $subMerchant->name,
-            'email' =>  $subMerchant->email
+            'name'  => $subMerchant->name,
+            'email' => $subMerchant->email
         ];
 
         if ($subMerchant->email !== $aggregator->email)
@@ -319,6 +319,8 @@ class Service extends Base\Service
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);
+
+        $this->logActionToSlack($merchant, 'assign_pricing', $input);
 
         return $plan->toArrayPublic();
     }
@@ -574,8 +576,12 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
+        $enabledDisabledBanks = (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input);
+
+        $this->logActionToSlack($merchant, 'assign_banks');
+
+        return $enabledDisabledBanks;
     }
 
     public function getFeeBearer()
