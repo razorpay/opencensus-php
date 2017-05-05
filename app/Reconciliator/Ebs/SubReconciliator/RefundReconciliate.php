@@ -9,15 +9,21 @@ use RZP\Exception\ReconciliationException;
 class RefundReconciliate extends Base\RefundReconciliate
 {
     // ----- Row header names -----
-    const COLUMN_REFUND_ID          = 'merchant_ref_no';
+    const COLUMN_REFUND_ID          = ['merchant_ref_no', 'merchant_refno'];
 
     const COLUMN_REFUND_AMOUNT      = ['refunded', 'debit'];
 
     protected function getRefundId($row)
     {
-        $refundId = $row[self::COLUMN_REFUND_ID];
+        foreach (self::COLUMN_REFUND_ID as $cri)
+        {
+            if (isset($row[$cri]) === true)
+            {
+                $paymentId = $row[$cri];
 
-        return $refundId;
+                return $paymentId;
+            }
+        }
     }
 
     protected function getPaymentId($row)
@@ -51,7 +57,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             }
         }
 
-        if ($columnServiceTax === null)
+        if ($columnRefundAmount === null)
         {
             $this->messenger->raiseReconAlert(
                 [

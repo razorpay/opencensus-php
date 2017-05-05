@@ -12,11 +12,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_FEE                = 'tdr';
     const COLUMN_KK_CESS            = 'krishi_kalyan_cess';
     const COLUMN_SB_CESS            = 'swachh_bharat_cess';
-    const COLUMN_PAYMENT_ID         = 'merchant_ref_no';
     const COLUMN_SERVICE_TAX        = 'service_tax';
     const COLUMN_BANK_REFERENCE_NO  = 'bank_reference';
 
     const COLUMN_PAYMENT_AMOUNT     = ['captured', 'credit'];
+    const COLUMN_PAYMENT_ID         = ['merchant_ref_no', 'merchant_refno'];
 
     /**
      * Gets payment_id from row data
@@ -26,9 +26,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getPaymentId($row)
     {
-        $paymentId = $row[self::COLUMN_PAYMENT_ID];
+        foreach (self::COLUMN_PAYMENT_ID as $cpi)
+        {
+            if (isset($row[$cpi]) === true)
+            {
+                $paymentId = $row[$cpi];
 
-        return $paymentId;
+                return $paymentId;
+            }
+        }
     }
 
     /**
