@@ -61,17 +61,20 @@ class TerminalLoadSorter extends Terminal\Sorter
     }
 
     /**
-     * Matches terminals to a rule based on comparing terminal attributes to terminal
-     * related rule attributes. Returns a map, mapping rule id's to terminals like
-     * [
-     *     <rule_id> => [<terminal_ids>]
-     * ]
+     * Matches terminals to rules based on comparison of rule attributes and terminal attributes
+     * If the rule load is selected as per the random chance percent value, the matching
+     * terminals to that rule (if any) are boosted over other terminals
      *
-     * @param  Base\PublicCollection $terminals collection of available terminals
-     * @param  Base\PublicCollection $rules     collection of applicable rules
+     * @param  Base\PublicCollection $terminals     collection of available terminals
+     * @param  Base\PublicCollection $rules         collection of applicable rules
+     * @param  int                   $chancePercent randomly selected chance value
+     *                                              (between 0 - 10000)
      * @return array                            map of rule_id => terminals
      */
-    protected function getBoostedTerminals(array $terminals, Base\PublicCollection $rules, int $chancePercent): array
+    protected function getBoostedTerminals(
+                            array $terminals,
+                            Base\PublicCollection $rules,
+                            int $chancePercent): array
     {
        $totalLoad = 0;
 
@@ -91,6 +94,14 @@ class TerminalLoadSorter extends Terminal\Sorter
                 }
             }
 
+            // We iterate through the rule and keep adding the rule load
+            // to the cumulative total load value. If the total load is greater
+            // than chance percentage, that rule is selected. For e.g if we hav
+            // 2 rules R1 - load 30, and R2 load 50. If chance percentage is 40
+            // in the second iteration totalLoad becomes 80 > 40 and we select R2
+            // However if say the chance percentage was 90, then even after all iterations
+            // totalLoad will be 80 which is less than 90 and so no rules will be
+            // selected
             if ($totalLoad >= $chancePercent)
             {
                 if (empty($matchingTerminals) === false)
@@ -105,5 +116,18 @@ class TerminalLoadSorter extends Terminal\Sorter
        }
 
        return $boostedTerminals;
+    }
+
+    protected function traceBoostedTerminals(array $terminals, int $chancePercent)
+    {
+        $traceData = [];
+
+        $traceData['chance_percent'] = $chancePercent;
+
+        $terminalIds = array_pluck($terminals, 'id');
+
+        $traceData['boosted_terminals'] = $terminalIds;
+
+        $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS, $traceData);
     }
 }

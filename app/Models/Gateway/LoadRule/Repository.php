@@ -98,10 +98,6 @@ class Repository extends Base\Repository
                 $query->where($key, '=', $value)
                       ->orWhereNull($key);
             }
-            // else
-            // {
-            //     $query->whereNull($key);
-            // }
         });
     }
 

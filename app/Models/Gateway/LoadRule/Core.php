@@ -19,6 +19,8 @@ class Core extends Base\Core
 
         $this->validateNewRule($loadRule, $input);
 
+        $this->repo->saveOrFail($loadRule);
+
         return $loadRule;
     }
 
@@ -45,8 +47,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Fetches rules from db and filters them as per payment criteria during
-     * terminal selection
+     * Fetches rules from db as per payment criteria during terminal selection
      *
      * @param  array        $terminals Set of all terminals
      * @param  array        $input     Array containing payment, merchant enttties
@@ -151,7 +152,7 @@ class Core extends Base\Core
             Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
             Entity::GATEWAY       => $gateways,
             Entity::METHOD        => $payment->getMethod(),
-            Entity::INTERNATIONAL => $payment->isInternational(),
+            Entity::INTERNATIONAL => false,
         ];
 
         $method = $payment->getMethod();
@@ -197,30 +198,16 @@ class Core extends Base\Core
         $params[Entity::NETWORK] = $card->getNetworkCode();
 
         $params[Entity::ISSUER] = $card->getIssuer();
+
+        $params[Entity::INTERNATIONAL] = $payment->isInternational();
     }
 
     protected function getTerminalGateways(array $terminals): array
     {
-        $gateways = array_map(function ($terminal)
-        {
-            return $terminal->getGateway();
-        }, $terminals);
+        $gateways = array_pluck($terminals, 'gateway');
 
         $gateways = array_values(array_unique($gateways));
 
         return $gateways;
-    }
-
-    protected function traceBoostedTerminals(array $terminals, int $chancePercent)
-    {
-        $traceData = [];
-
-        $traceData['chance_percent'] = $chancePercent;
-
-        $terminalIds = array_pluck($terminals, 'id');
-
-        $traceData['boosted_terminals'] = $terminalIds;
-
-        $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS, $traceData);
     }
 }
