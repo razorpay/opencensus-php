@@ -1420,6 +1420,7 @@ app
       // This lets us display methods that are not returned
       // by the API as false
       var forcedMethods = [
+        'aeps',
         'mobikwik',
         'payzapp',
         'payumoney',
