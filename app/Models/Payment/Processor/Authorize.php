@@ -108,6 +108,7 @@ trait Authorize
 
             $this->segment->trackPayment($payment, TraceCode::GATEWAY_POSTPROCESSING, $segmentCustomProps);
 
+            // TODO: Refactor and move this inside the retry logic=
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
@@ -119,11 +120,11 @@ trait Authorize
 
             // data for terminal analytics
             $terminalData = [
-                            'payment_id'    => $payment['id'],
-                            'input'         => $input,
-                            'terminal_id'   => $payment['terminal_id'],
-                            'start'         => microtime(true),
-                        ];
+                'payment_id'    => $payment['id'],
+                'input'         => $input,
+                'terminal_id'   => $payment['terminal_id'],
+                'start'         => microtime(true),
+            ];
 
             try
             {
@@ -229,6 +230,29 @@ trait Authorize
         $payment = $this->payment;
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function getOtpPaymentCreatedResponse($request, $payment)
+    {
+        $payment->incrementOtpCount();
+
+        $payment->save();
+
+        $response = [
+            'type' => 'otp',
+            'request' => $request,
+            'version' => 1,
+            'payment_id' => $payment->getPublicId(),
+            'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
+            // TODO: Return metadata in a better format
+            'contact' => $payment->getContact(),
+            'amount'  => number_format(($payment->getAmount() / 100), 2),
+            'wallet'  => $payment->getWallet()
+        ];
+
+        $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
+
+        return $response;
     }
 
     protected function updateTwoFactorAuthForOneStepPayment()
@@ -1463,13 +1487,20 @@ trait Authorize
 
     protected function getPaymentGatewayRequestData($request, Payment\Entity $payment): array
     {
-        if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
-            (Payment\Gateway::supportsAsync($payment->getGateway()) === true))
+        switch (true)
         {
-            return $this->getAsyncPaymentCreatedResponse($request, $payment);
-        }
+            case $this->canRunAsyncPaymentFlow($payment):
 
-        return $this->getFirstPaymentCreatedResponse($request, $payment);
+                return $this->getAsyncPaymentCreatedResponse($request, $payment);
+
+            case $this->canRunOtpPaymentFlow($payment):
+
+                return $this->getOtpPaymentCreatedResponse($request, $payment);
+
+            default:
+
+                return $this->getFirstPaymentCreatedResponse($request, $payment);
+        }
     }
 
     /**
@@ -2184,8 +2215,14 @@ trait Authorize
      * @param  array $input
      * @return boolean
      */
-    protected function canRunOtpPaymentFlow(Payment\Entity $payment, array $input): bool
+    protected function canRunOtpPaymentFlow(Payment\Entity $payment, array $input = []): bool
     {
+        // All the IVR terminal use Otp payment flow regardless of their method
+        if ($payment->terminal->isIvr() === true)
+        {
+            return true;
+        }
+
         $wallet = $payment->getWallet();
 
         // Only wallets have otp flow currently.
@@ -2240,6 +2277,17 @@ trait Authorize
         return true;
     }
 
+    protected function canRunAsyncPaymentFlow($payment)
+    {
+        if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
+            (Payment\Gateway::supportsAsync($payment->getGateway()) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function runOtpPaymentFlow(array $gatewayInput, Payment\Entity $payment)
     {
         return $this->callGatewayOtpGenerate($gatewayInput, $payment);
@@ -2253,39 +2301,13 @@ trait Authorize
 
             $request = $this->callGatewayFunction(Action::OTP_GENERATE, $data);
 
-            return $this->processOtpFlowResponse($request, $payment);
+            return $this->processAuthResponse($request, $payment);
         }
         catch (Exception\BaseException $e)
         {
             $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
-        }
-    }
-
-    protected function processOtpFlowResponse($request, Payment\Entity $payment): array
-    {
-        if ($request !== null)
-        {
-            $payment->incrementOtpCount();
-
-            $payment->save();
-
-            $response = [
-                'type' => 'otp',
-                'request' => $request,
-                'version' => 1,
-                'payment_id' => $payment->getPublicId(),
-                'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
-                // TODO: Return metadata in a better format
-                'contact' => $payment->getContact(),
-                'amount'  => number_format(($payment->getAmount() / 100), 2),
-                'wallet'  => $payment->getWallet()
-            ];
-
-            $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
-
-            return $response;
         }
     }
 
