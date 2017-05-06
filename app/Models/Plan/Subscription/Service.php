@@ -207,7 +207,7 @@ class Service extends Base\Service
                 ]);
         }
 
-        if (($invoice->isIssued() === false) or 
+        if (($invoice->isIssued() === false) or
             ($invoice->getSubStatus() !== Invoice\Status::ON_HOLD))
         {
             throw new BadRequestException(

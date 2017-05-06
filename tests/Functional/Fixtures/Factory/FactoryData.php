@@ -521,13 +521,12 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Plan\Entity::class, [
+            'id'                => '1000000000plan',
             'merchant_id'       => '10000000000000',
-            'name'              => 'test plan',
             'period'            => 'monthly',
             'interval'          => 2,
+            'item_id'           => '1000000000item',
             // 'schedule_id'       => null,
-            'amount'            => 2000,
-            'currency'          => 'INR',
             'notes'             => null,
         ]);
 

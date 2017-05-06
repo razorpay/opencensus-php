@@ -40,9 +40,9 @@ class Core extends Base\Core
 
         $this->setItemAssociationAndUpdateInput($lineItem, $input, $merchant);
 
-        $this->setRefAssociationIfApplicable($input, $lineItem);
-
         $lineItem->build($input);
+
+        $this->setRefAssociationIfApplicable($input, $lineItem);
 
         $lineItem->getValidator()->validateCurrency($morphEntity->getCurrency());
 

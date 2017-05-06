@@ -52,7 +52,10 @@ class Billing extends Base\Core
         (new Core)->charge($subscription, $invoice);
     }
 
-    public function createInvoiceForSubscription(Entity $subscription, $addOns, bool $first = false) : Invoice\Entity
+    public function createInvoiceForSubscription(
+        Entity $subscription,
+        Base\PublicCollection $addOns,
+        bool $first = false): Invoice\Entity
     {
         //
         // This is in a transaction even though the calling functions
@@ -69,7 +72,7 @@ class Billing extends Base\Core
 
                 $invoiceInput = $this->getInvoiceInput($subscription, $addOns, $first);
 
-                $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription, $addOns);
+                $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
 
                 $this->associateInvoiceToAddOns($invoice, $addOns);
 
@@ -85,7 +88,7 @@ class Billing extends Base\Core
             });
     }
 
-    protected function createInvoiceBeforeCharge(Entity $subscription) : Invoice\Entity
+    protected function createInvoiceBeforeCharge(Entity $subscription): array
     {
         return $this->repo->transaction(
             function() use ($subscription)
@@ -129,7 +132,7 @@ class Billing extends Base\Core
         $this->repo->saveOrFail($subscription);
     }
 
-    protected function associateInvoiceToAddOns(Invoice\Entity $invoice, $addOns)
+    protected function associateInvoiceToAddOns(Invoice\Entity $invoice, Base\PublicCollection $addOns)
     {
         foreach ($addOns as $addOn)
         {
@@ -138,7 +141,7 @@ class Billing extends Base\Core
         }
     }
 
-    protected function getInvoiceInput(Entity $subscription, $addOns, bool $first) : array
+    protected function getInvoiceInput(Entity $subscription, Base\PublicCollection $addOns, bool $first): array
     {
         $plan = $subscription->plan;
         $customer = $subscription->customer;
@@ -156,7 +159,10 @@ class Billing extends Base\Core
         return $invoiceInput;
     }
 
-    protected function getLineItemsForInvoiceInput(Entity $subscription, $addOns, bool $first) : array
+    protected function getLineItemsForInvoiceInput(
+        Entity $subscription,
+        Base\PublicCollection $addOns,
+        bool $first): array
     {
         $plan = $subscription->plan;
 

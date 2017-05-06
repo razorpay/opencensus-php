@@ -11,10 +11,8 @@ class Validator extends Base\Validator
         Entity::INTERVAL        => 'required|integer|min:1|max:365',
         Entity::PERIOD          => 'required|string|custom',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::ITEM_ID         => 'sometimes|public_id',
-        Entity::NAME            => 'required|string|min:1|max:256',
-        Entity::AMOUNT          => 'required|integer|min:100',
-        Entity::CURRENCY        => 'required|string|size:3|in:INR',
+        Entity::ITEM_ID         => 'required_without:item|public_id',
+        Entity::ITEM            => 'required_without:item_id|array',
     ];
 
     protected static $createValidators = [

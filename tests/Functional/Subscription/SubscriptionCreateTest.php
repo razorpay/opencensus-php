@@ -30,70 +30,173 @@ class SubscriptionCreateTest extends TestCase
 
     // TODO: Add test cases for total_count and end_at generation logic.
 
-    public function testCreatePlan()
+    // ------------------ PLAN TESTS ------------------
+
+    public function testCreatePlanWithItemId()
+    {
+        $this->fixtures->create('item', ['type' => 'plan']);
+
+        $this->startTest();
+    }
+
+    public function testCreatePlanWithItemIdButWrongItemType()
+    {
+        $this->fixtures->create('item');
+
+        $this->startTest();
+    }
+
+    public function testCreatePlanWithoutAnyItem()
     {
         $this->startTest();
+    }
 
-        // $plan = $this->getLastEntity('plan', true);
-        // $schedule = $this->getLastEntity('schedule', true);
-        //
-        // $this->assertEquals($schedule['id'], $plan['schedule_id']);
+    public function testCreatePlanWithoutItemId()
+    {
+        $this->startTest();
     }
 
     public function testCreatePlanWithBadMonthlyIntervalPeriod()
     {
+        $this->fixtures->create('item', ['type' => 'plan']);
+
         $this->startTest();
     }
 
     public function testCreatePlanWithBadYearlyIntervalPeriod()
+    {
+        $this->fixtures->create('item', ['type' => 'plan']);
+
+        $this->startTest();
+    }
+
+    // ------------------ END PLAN TESTS ------------------
+
+    public function testCreateSubscriptionWithoutCustomerId()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateSubscriptionWithoutPlanId()
     {
         $this->startTest();
     }
 
     public function testCreateSubscriptionWithNoStartAt()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $response = $this->startTest($requestContent);
+        $this->startTest();
 
         $invoice = $this->getLastEntity('invoice', true);
 
+        $schedule = $this->getLastEntity('schedule', true);
         $addOn = $this->getLastEntity('add_on', true);
         $lineItems = $this->getEntities('line_item', [], true);
-        $schedule = $this->getLastEntity('schedule', true);
         $scheduleTask = $this->getLastEntity('schedule_task', true);
         $subscription = $this->getLastEntity('subscription', true);
         $plan = $this->getLastEntity('plan', true);
+        $planItem = $this->getLastEntity('item', true);
 
         $this->assertNull($addOn);
 
         $this->assertEquals(1, $lineItems['count']);
-        $this->assertNull($lineItems['items'][0]['add_on_id']);
+        $this->assertNull($lineItems['items'][0]['ref_id']);
+        $this->assertNull($lineItems['items'][0]['ref_type']);
         $this->assertEquals($invoice['id'], 'inv_' . $lineItems['items'][0]['entity_id']);
 
-        $this->assertEquals($response['id'], $invoice['subscription_id']);
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals(2000, $invoice['amount']);
 
         $this->assertEquals($schedule['id'], $subscription['schedule_id']);
 
-        $this->assertEquals($plan['name'], $schedule['name']);
+        $this->assertEquals($planItem['name'], $schedule['name']);
         $this->assertEquals($plan['period'], $schedule['period']);
         $this->assertEquals($plan['interval'], $schedule['interval']);
         // Since there is no start_at, we don't set any anchor.
         // The default is set to 1.
         $this->assertEquals(1, $schedule['anchor']);
+        $this->assertEquals(0, $schedule['delay']);
 
         $this->assertEquals($subscription['id'], 'sub_' . $scheduleTask['entity_id']);
         $this->assertEquals('subscription', $scheduleTask['entity_type']);
         $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
+        $this->assertEquals('subscription', $scheduleTask['type']);
+        // By default, it gets set to start of the day (midnight)
+        $this->assertLessThan(time(), $scheduleTask['next_run_at']);
+    }
+
+    public function testCreateSubscriptionWithStartAt()
+    {
+        $this->createSubscriptionPreRequisiteEntities();
+
+        $this->startTest();
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $plan = $this->getLastEntity('plan', true);
+        $planItem = $this->getLastEntity('item', true);
+        $schedule = $this->getLastEntity('schedule', true);
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $invoice = $this->getLastEntity('invoice', true);
+        $lineItem = $this->getLastEntity('line_item', true);
+        $addOn = $this->getLastEntity('add_on', true);
+
+        $this->assertNull($invoice);
+        $this->assertNull($lineItem);
+        $this->assertNull($addOn);
+
+        $this->assertEquals($schedule['id'], $subscription['schedule_id']);
+
+        $this->assertEquals($planItem['name'], $schedule['name']);
+        $this->assertEquals($plan['period'], $schedule['period']);
+        $this->assertEquals($plan['interval'], $schedule['interval']);
+        // The subscription start is on 20th Jan
+        $this->assertEquals(20, $schedule['anchor']);
+        $this->assertEquals(0, $schedule['delay']);
+
+        $this->assertEquals($subscription['id'], 'sub_' . $scheduleTask['entity_id']);
+        $this->assertEquals('subscription', $scheduleTask['entity_type']);
+        $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
+        $this->assertEquals('subscription', $scheduleTask['type']);
+        // By default, it gets set to start of the day (midnight)
+        $this->assertLessThanOrEqual($subscription['start_at'], $scheduleTask['next_run_at']);
+    }
+
+    public function testCreateSubscriptionWeeklyIntervalWithStartAt()
+    {
+        $this->createSubscriptionPreRequisiteEntities(['period' => 'weekly']);
+
+        $this->startTest();
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $plan = $this->getLastEntity('plan', true);
+        $planItem = $this->getLastEntity('item', true);
+        $schedule = $this->getLastEntity('schedule', true);
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+
+        $this->assertEquals($schedule['id'], $subscription['schedule_id']);
+
+        $this->assertEquals($planItem['name'], $schedule['name']);
+        $this->assertEquals($plan['period'], $schedule['period']);
+        $this->assertEquals($plan['interval'], $schedule['interval']);
+        // The subscription start is on 20th Jan
+        $this->assertEquals(6, $schedule['anchor']);
+        $this->assertEquals(0, $schedule['delay']);
+
+        $this->assertEquals($subscription['id'], 'sub_' . $scheduleTask['entity_id']);
+        $this->assertEquals('subscription', $scheduleTask['entity_type']);
+        $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
+        $this->assertEquals('subscription', $scheduleTask['type']);
+        // By default, it gets set to start of the day (midnight)
+        $this->assertLessThanOrEqual($subscription['start_at'], $scheduleTask['next_run_at']);
     }
 
     public function testCreateSubscriptionWithNoStartAtAndWithAddOn()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $response = $this->startTest($requestContent);
+        $this->startTest();
 
         $subscription = $this->getLastEntity('subscription', true);
         $invoice = $this->getLastEntity('invoice', true);
@@ -101,14 +204,19 @@ class SubscriptionCreateTest extends TestCase
         $addOn = $this->getLastEntity('add_on', true);
         $lineItems = $this->getEntities('line_item', [], true);
 
-        $this->assertEquals(1, $items['count']);
-        $item = $items['items'][0];
-        $this->assertEquals('add_on', $item['type']);
-        $this->assertEquals('Sample Upfront Amount', $item['name']);
-        $this->assertEquals(300, $item['amount']);
+        $this->assertEquals(2, $items['count']);
+
+        $addOnItem = $items['items'][0];
+        $this->assertEquals('add_on', $addOnItem['type']);
+        $this->assertEquals('Sample Upfront Amount', $addOnItem['name']);
+        $this->assertEquals(300, $addOnItem['amount']);
+
+        // This is just created via fixtures
+        $planItem = $items['items'][1];
+        $this->assertEquals('plan', $planItem['type']);
 
         $this->assertEquals($subscription['id'], $addOn['subscription_id']);
-        $this->assertEquals($item['id'], $addOn['item_id']);
+        $this->assertEquals($addOnItem['id'], $addOn['item_id']);
         $this->assertEquals($invoice['id'], $addOn['invoice_id']);
 
         $this->assertEquals(2, $lineItems['count']);
@@ -116,14 +224,15 @@ class SubscriptionCreateTest extends TestCase
         $addOnLi = $lineItems['items'][0];
         $this->assertEquals(300, $addOnLi['amount']);
         $this->assertEquals('Sample Upfront Amount', $addOnLi['name']);
-        $this->assertEquals($addOn['id'], $addOnLi['add_on_id']);
-        $this->assertEquals($item['id'], $addOnLi['item_id']);
+        $this->assertEquals($addOn['id'], $addOnLi['ref_id']);
+        $this->assertEquals('add_on', $addOnLi['ref_type']);
+        $this->assertEquals($addOnItem['id'], $addOnLi['item_id']);
         // This is not visible to the public. Hence, unsigned. Also, polymorphic.
         $this->assertEquals($invoice['id'], 'inv_' . $addOnLi['entity_id']);
 
         $mainLi = $lineItems['items'][1];
         $this->assertNull($mainLi['item_id']);
-        $this->assertNull($mainLi['add_on_id']);
+        $this->assertNull($mainLi['ref_id']);
         $this->assertEquals($invoice['id'], 'inv_' . $mainLi['entity_id']);
         $this->assertEquals(2000, $mainLi['amount']);
 
@@ -132,11 +241,16 @@ class SubscriptionCreateTest extends TestCase
         $this->assertEquals(2300, $invoice['amount']);
     }
 
+    public function testCreateSubscriptionWithNoStartAtAndWithAddOnItemId()
+    {
+
+    }
+
     public function testCreateSubscriptionWithStartAtAndAddOn()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $this->startTest($requestContent);
+        $this->startTest();
 
         $subscription = $this->getLastEntity('subscription', true);
         $invoice = $this->getLastEntity('invoice', true);
@@ -144,11 +258,15 @@ class SubscriptionCreateTest extends TestCase
         $addOn = $this->getLastEntity('add_on', true);
         $lineItems = $this->getEntities('line_item', [], true);
 
-        $this->assertEquals(1, $items['count']);
+        $this->assertEquals(2, $items['count']);
         $item = $items['items'][0];
         $this->assertEquals('add_on', $item['type']);
         $this->assertEquals('Sample Upfront Amount', $item['name']);
         $this->assertEquals(300, $item['amount']);
+
+        // This is just created via fixtures
+        $planItem = $items['items'][1];
+        $this->assertEquals('plan', $planItem['type']);
 
         $this->assertEquals($subscription['id'], $addOn['subscription_id']);
         $this->assertEquals($item['id'], $addOn['item_id']);
@@ -159,7 +277,8 @@ class SubscriptionCreateTest extends TestCase
         $addOnLi = $lineItems['items'][0];
         $this->assertEquals(300, $addOnLi['amount']);
         $this->assertEquals('Sample Upfront Amount', $addOnLi['name']);
-        $this->assertEquals($addOn['id'], $addOnLi['add_on_id']);
+        $this->assertEquals($addOn['id'], $addOnLi['ref_id']);
+        $this->assertEquals('add_on', $addOnLi['ref_type']);
         $this->assertEquals($item['id'], $addOnLi['item_id']);
         // This is not visible to the public. Hence, unsigned. Also, polymorphic.
         $this->assertEquals($invoice['id'], 'inv_' . $addOnLi['entity_id']);
@@ -171,29 +290,23 @@ class SubscriptionCreateTest extends TestCase
 
     public function testCreateSubscriptionWithOneYearLateStartAt()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $this->startTest($requestContent);
+        $this->startTest();
     }
 
     public function testCreateSubscriptionWithPastTime()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $this->startTest($requestContent);
+        $this->startTest();
     }
 
     public function testCreateSubscriptionWithTotalCount()
     {
-        $plan = $this->fixtures->create('plan');
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $planId = $plan->getPublicId();
-
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__, $planId);
-
-        $response = $this->startTest($requestContent);
-
-        $this->assertEquals($planId, $response['plan_id']);
+        $this->startTest();
 
         $invoice = $this->getLastEntity('invoice', true);
 
@@ -202,69 +315,57 @@ class SubscriptionCreateTest extends TestCase
 
     public function testCreateSubscriptionWithEndAt()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $this->startTest($requestContent);
+        $this->startTest();
     }
 
     public function testCreateSubscriptionWithBothTotalCountAndEndAt()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $this->startTest($requestContent);
+        $this->startTest();
     }
 
     public function testCreateSubscriptionWithEndAtLesserThanStartAt()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $this->startTest($requestContent);
+        $this->startTest();
     }
 
     public function testCreateSubscriptionWithVeryFarEndAt()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $this->startTest($requestContent);
+        $this->startTest();
     }
 
     public function testCreateSubscriptionWithoutTotalCountAndEndAt()
     {
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+        $this->createSubscriptionPreRequisiteEntities();
 
-        $this->startTest($requestContent);
+        $this->startTest();
     }
 
-    public function testCreateSubscription1()
+    protected function createSubscriptionPreRequisiteEntities(array $planAttributes = [])
     {
-        $this->markTestSkipped();
+        $customer = $this->fixtures->create('customer');
 
-        $plan = $this->fixtures->create('plan');
+        $planItem = $this->fixtures->create('item', [
+            'name' => 'test plan',
+            'amount' => 2000,
+            'currency' => 'INR',
+            'type' => 'plan',
+        ]);
 
-        $this->ba->publicAuth();
+        $plan = $this->fixtures->create('plan', $planAttributes);
 
-        $paymentRequest = $this->getDefaultRecurringPaymentArray();
-        $recurringPayment = $this->doAuthAndCapturePayment($paymentRequest);
-
-        $tokenId = $recurringPayment['token_id'];
-
-        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__, $plan->getPublicId(), $tokenId);
-
-        $requestContent['request']['url'] = '/plans/' . $plan->getPublicId() . '/subscriptions/';
-
-        $this->ba->privateAuth();
-
-        $this->startTest($requestContent);
-
-        $subscription = $this->getLastEntity('subscription', true);
-
-        $this->assertEquals($subscription['plan_id'], $plan->getPublicId());
-        $this->assertEquals($subscription['customer_id'], 'cust_100000customer');
-        // $this->assertEquals($subscription['token_id'], $tokenId);
-        $this->assertEquals($subscription['start_at'], $subscription['charge_at']);
-
-        // $tokenEntity = $this->getLastEntity('token', true);
-        // $this->assertEquals(true, $tokenEntity['recurring']);
+        return [
+            'plan' => $plan,
+            'customer' => $customer,
+            'plan_item' => $planItem
+        ];
     }
 
     protected function getCreateSubscriptionRequestContent($function, $planId = null)
@@ -278,7 +379,7 @@ class SubscriptionCreateTest extends TestCase
             $planId = $plan->getPublicId();
         }
 
-        $requestContent['request']['url'] = '/plans/' . $planId . '/subscriptions/';
+        $requestContent['response']['content']['plan_id'] = $planId;
         $requestContent['response']['content']['plan_id'] = $planId;
 
         return $requestContent;

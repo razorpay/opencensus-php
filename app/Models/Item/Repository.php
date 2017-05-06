@@ -62,5 +62,7 @@ class Repository extends Base\Repository
                     'item_type'     => $item->getType(),
                 ]);
         }
+
+        return $item;
     }
 }

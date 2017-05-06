@@ -67,17 +67,13 @@ class Core extends Base\Core
         {
             $item = $this->repo->item->findByPublicIdAndMerchantForType(
                                                         $input[Entity::ITEM_ID],
-                                                        $merchant, 
+                                                        $merchant,
                                                         $type);
         }
         else
         {
-            $itemInput = [
-                Entity::NAME       => $input[Entity::NAME],
-                Entity::AMOUNT     => $input[Entity::AMOUNT],
-                Entity::CURRENCY   => $input[Entity::CURRENCY],
-                Entity::TYPE       => $type,
-            ];
+            $itemInput = $input[Entity::ITEM];
+            $itemInput[Entity::TYPE] = $type;
 
             $item = $this->create($itemInput, $merchant);
         }

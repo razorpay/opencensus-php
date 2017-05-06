@@ -18,7 +18,7 @@ class Core extends Base\Core
 
         $plan = (new Entity)->build($input);
 
-        $this->repo->transactions(
+        $this->repo->transaction(
             function() use ($plan, $input, $merchant)
             {
                 $item = (new Item\Core)->createItemForType($input, $merchant, Item\Type::PLAN);

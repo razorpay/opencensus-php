@@ -72,7 +72,7 @@ class Validator extends Base\Validator
         {
             if ($input[Entity::PERIOD] === Period::WEEKLY)
             {
-                $this->validateWeeklyAnchor($input);
+                // $this->validateWeeklyAnchor($input);
             }
             else if (($input[Entity::PERIOD] === Period::DAILY) or
                     ($input[Entity::PERIOD] === Period::HOURLY))

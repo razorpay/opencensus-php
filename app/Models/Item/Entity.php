@@ -21,11 +21,12 @@ class Entity extends Base\PublicEntity
     const DELETED_AT            = 'deleted_at';
 
     /**
-     * This is used when other entities need
-     * to create an item and item_id is passed
+     * These are used when other entities need
+     * to create an item and item_id/item is passed
      * in the request input.
      */
     const ITEM_ID               = 'item_id';
+    const ITEM                  = 'item';
 
     protected static $sign      = 'item';
 
@@ -127,6 +128,11 @@ class Entity extends Base\PublicEntity
     public function lineItems()
     {
         return $this->hasMany('RZP\Models\LineItem\Entity');
+    }
+
+    public function addOns()
+    {
+        return $this->hasMany('RZP\Models\AddOn\Entity');
     }
 
     // -------------------- End Relations -----------------------

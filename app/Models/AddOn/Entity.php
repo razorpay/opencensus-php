@@ -24,6 +24,8 @@ class Entity extends Base\PublicEntity
     const CURRENCY  = 'currency';
     const NAME      = 'name';
 
+    const ITEM      = 'item';
+
     protected static $sign = 'ao';
 
     protected $entity = 'add_on';
@@ -35,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::SUBSCRIPTION_ID,
         self::ITEM_ID,
+        self::ITEM,
         self::MERCHANT_ID,
         self::INVOICE_ID,
         self::CREATED_AT,
@@ -47,13 +50,17 @@ class Entity extends Base\PublicEntity
     // this array (with at least one attribute), `fill`
     // takes all attributes as fillable by default.
     //
-    protected $fillable = [
-        self::ID,
-    ];
+    // protected $fillable = [
+    //     self::ID,
+    // ];
+
+    // Haven't *yet* understood how this works :|
+    protected $guarded = ['item'];
 
     protected $public = [
         self::ID,
-        self::ITEM_ID,
+        self::ENTITY,
+        self::ITEM,
         self::CREATED_AT,
         self::SUBSCRIPTION_ID,
         self::INVOICE_ID,
@@ -70,6 +77,10 @@ class Entity extends Base\PublicEntity
         self::ITEM_ID,
         self::INVOICE_ID,
         self::SUBSCRIPTION_ID,
+    ];
+
+    protected $relations = [
+        self::ITEM,
     ];
 
     // -------------------------- Setters --------------------------

@@ -11,12 +11,13 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Subscription\Entity $subscription)
+    public function create(array $input, Subscription\Entity $subscription): Entity
     {
         $this->trace->info(
             TraceCode::ADD_ON_CREATE_REQUEST,
             [
                 'input' => $input,
+                'subscription_id' => $subscription->getId()
             ]);
 
         $addOn = (new Entity)->build($input);

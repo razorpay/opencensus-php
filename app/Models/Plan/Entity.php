@@ -22,6 +22,8 @@ class Entity extends Base\PublicEntity
     const CURRENCY          = 'currency';
     const NAME              = 'name';
 
+    const ITEM              = 'item';
+
     protected static $sign = 'plan';
 
     protected $entity = 'plan';
@@ -35,30 +37,23 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::AMOUNT,
-        self::CURRENCY,
         self::INTERVAL,
         self::PERIOD,
-        self::NAME,
         self::NOTES,
     ];
 
     protected $public = [
         self::ID,
-        self::AMOUNT,
-        self::CURRENCY,
+        self::ENTITY,
         self::INTERVAL,
         self::PERIOD,
-        self::ITEM_ID,
-        self::NAME,
+        self::ITEM,
         self::NOTES,
-        self::CREATED_AT
+        self::CREATED_AT,
     ];
 
-    protected $publicSetters = [
-        self::ID,
-        self::ENTITY,
-        self::ITEM_ID,
+    protected $relations = [
+        self::ITEM,
     ];
 
     // Used for reporting
@@ -113,11 +108,4 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END RELATIONS ---------------------
-
-    // --------------------- PUBLIC SETTERS ---------------------
-
-    protected function setPublicItemIdAttribute(array & $array)
-    {
-        $array[self::ITEM_ID] = Item\Entity::getSignedIdOrNull($this->getAttribute(self::ITEM_ID));
-    }
 }

@@ -45,6 +45,8 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::QUANTITY    => 1,
         self::DESCRIPTION => null,
+        self::REF_ID      => null,
+        self::REF_TYPE    => null,
     ];
 
     protected $visible = [
@@ -69,6 +71,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         // Uncomment later when required
         // self::ITEM_ID,
+        self::REF_ID,
+        self::REF_TYPE,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -93,6 +97,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ITEM_ID,
+        self::REF_ID,
     ];
 
     //
@@ -132,10 +137,21 @@ class Entity extends Base\PublicEntity
         $array[self::ITEM_ID] = Item\Entity::getSignedIdOrNull($this->getAttribute(self::ITEM_ID));
     }
 
-    // protected function setPublicAddOnIdAttribute(array & $array)
-    // {
-    //     $array[self::ADD_ON_ID] = AddOn\Entity::getSignedIdOrNull($this->getAttribute(self::ADD_ON_ID));
-    // }
+    public function setPublicRefIdAttribute(array & $array)
+    {
+        $refType = $array[self::REF_TYPE];
+
+        if ($refType === null)
+        {
+            return;
+        }
+
+        $entity = Type::getEntityClass($array[self::REF_TYPE]);
+
+        $sign = $entity::getIdPrefix();
+
+        $array[self::REF_ID] = $sign . $array[self::REF_ID];
+    }
 
     // -------------------------- Public Setters Ends --------------------------
 

@@ -3,11 +3,14 @@
 namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Plan;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Schedule\Anchor;
+use RZP\Models\Schedule\Period;
 
 class Entity extends Base\PublicEntity
 {
@@ -87,8 +90,16 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::PLAN_ID,
         self::CUSTOMER_ID,
+        //
+        // We need to expose only the unconsumed ones via the subscription
+        // We cannot expose every single add on ever created for the
+        // subscription. Until we find a good solution to expose this,
+        // keep this commented.
+        //
+        // self::ADD_ONS,
         self::STATUS,
         self::CURRENT_START,
         self::CURRENT_END,
@@ -122,6 +133,12 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::TOKEN_ID,
         self::PLAN_ID,
+    ];
+
+    protected $appends = [
+        // This has to be via appends and not relations
+        // because it's a hasMany relation.
+        self::ADD_ONS,
     ];
 
     protected $dates = [
@@ -229,11 +246,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
-    // public function getUpfrontAmount()
-    // {
-    //     return $this->getAttribute(self::UPFRONT_AMOUNT);
-    // }
-
     public function hasBeenAuthenticated()
     {
         return $this->isAttributeNotNull(self::AUTHENTICATED_AT);
@@ -280,6 +292,23 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END GETTERS ---------------------
+
+    // --------------------- ACCESSORS ---------------------
+
+    public function getAddOnsAttribute()
+    {
+        //
+        // NOTE: This is not a good solution because this will list
+        // down all the add_ons ever created of the subscription and
+        // not just the unconsumed ones.
+        //
+
+        $addOns = $this->addOns()->getResults()->toArrayPublicEmbedded();
+
+        return $addOns;
+    }
+
+    // --------------------- END ACCESSORS ---------------------
 
     // --------------------- SETTERS ---------------------
 
@@ -400,8 +429,12 @@ class Entity extends Base\PublicEntity
 
     public function task()
     {
-        // TODO: Might have to change to morphMany. Check if this works.
         return $this->morphOne('RZP\Models\Schedule\Task\Entity', 'entity');
+    }
+
+    public function addOns()
+    {
+        return $this->hasMany('RZP\Models\AddOn\Entity');
     }
 
     // --------------------- END RELATIONS ---------------------
@@ -470,17 +503,17 @@ class Entity extends Base\PublicEntity
         $this->customer()->associate($customer);
     }
 
-    public function getAnchorForSchedule()
+    public function getAnchorForSchedule(string $period)
     {
-        // TODO: Handle setting anchor for weekly and monthly-week
+        $anchor = null;
 
         if ($this->getStartAt() !== null)
         {
             $startAt = Carbon::createFromTimestamp($this->getStartAt(), 'Asia/Kolkata');
 
-            return $startAt->day;
+            $anchor = $startAt->{Anchor::CHECKS[$period]};
         }
 
-        return null;
+        return $anchor;
     }
 }

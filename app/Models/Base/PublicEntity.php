@@ -140,7 +140,7 @@ class PublicEntity extends UniqueIdEntity
             }
             else
             {
-                $array[$key] = $value;
+                $array[$key] = $value->toArrayPublic();
             }
         }
 

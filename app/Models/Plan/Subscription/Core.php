@@ -29,7 +29,7 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer) : Entity
+    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer): Entity
     {
         return (new Creator)->create($input, $plan, $customer);
     }
@@ -70,7 +70,7 @@ class Core extends Base\Core
 
         $schedule = $subscription->schedule;
 
-        $anchor = $subscription->getAnchorForSchedule();
+        $anchor = $subscription->getAnchorForSchedule($schedule->getPeriod());
 
         $schedule->setAnchor($anchor);
 
@@ -146,7 +146,7 @@ class Core extends Base\Core
      * @param Payment\Entity $capturedPayment
      * @return bool
      */
-    public function shouldUpdateSubscriptionOnCapture(Entity $subscription, Payment\Entity $capturedPayment)
+    public function shouldUpdateSubscriptionOnCapture(Entity $subscription, Payment\Entity $capturedPayment): bool
     {
         $status = $subscription->getStatus();
         $errorStatus = $subscription->getErrorStatus();
@@ -175,7 +175,7 @@ class Core extends Base\Core
         }
     }
 
-    public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId)
+    public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId): array
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $merchant);
 
@@ -295,7 +295,7 @@ class Core extends Base\Core
         );
     }
 
-    protected function getAuthTransactionAmountForNewSubscription(Entity $subscription)
+    protected function getAuthTransactionAmountForNewSubscription(Entity $subscription): int
     {
         $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
@@ -323,12 +323,12 @@ class Core extends Base\Core
         return $authAmount;
     }
 
-    protected function getAuthTransactionAmountForRetry()
+    protected function getAuthTransactionAmountForRetry(): int
     {
         return Entity::DEFAULT_AUTH_AMOUNT;
     }
 
-    protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice)
+    protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice): array
     {
         //
         // Ensure that invoice amount is taken always because

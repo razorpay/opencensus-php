@@ -12,7 +12,7 @@ use RZP\Models\Schedule\Task;
 
 class Creator extends Base\Core
 {
-    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer)
+    public function create(array $input, Plan\Entity $plan, Customer\Entity $customer): Entity
     {
         $subscription = (new Entity)->build($input);
 
@@ -105,7 +105,7 @@ class Creator extends Base\Core
         $this->createTask($subscription);
     }
 
-    protected function createSchedule(Entity $subscription, Plan\Entity $plan)
+    protected function createSchedule(Entity $subscription, Plan\Entity $plan): Schedule\Entity
     {
         $scheduleInput = [
             Schedule\Entity::NAME       => $plan->item->getName(),
@@ -115,15 +115,20 @@ class Creator extends Base\Core
 
         if ($subscription->getStartAt() !== null)
         {
-            $scheduleInput[Schedule\Entity::ANCHOR] = $subscription->getAnchorForSchedule();
+            $scheduleInput[Schedule\Entity::ANCHOR] = $subscription->getAnchorForSchedule($plan->getPeriod());
         }
 
+        //
+        // Currently, a new schedule is created for every subscription
+        // even if a schedule already exists with the same interval,
+        // period, anchor, delay, etc.
+        //
         $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
 
         return $schedule;
     }
 
-    protected function createTask(Entity $subscription)
+    protected function createTask(Entity $subscription): Task\Entity
     {
         $schedule = $subscription->schedule;
 
@@ -134,7 +139,9 @@ class Creator extends Base\Core
             Task\Entity::NEXT_RUN_AT    => $subscription->getStartAt(),
         ];
 
-        (new Task\Core)->createOrUpdate($subscription->merchant, $subscription, $taskInput);
+        $task = (new Task\Core)->createOrUpdate($subscription->merchant, $subscription, $taskInput);
+
+        return $task;
     }
 }
 
