@@ -3,6 +3,7 @@
 namespace RZP\Models\LineItem;
 
 use RZP\Exception;
+use RZP\Constants;
 
 class Type
 {
@@ -19,7 +20,7 @@ class Type
 
     public static function getEntityClass($type)
     {
-        $entity = 'RZP\\Models\\' . studly_case($type) . '\\Entity';
+        $entity = Constants\Entity::$namespace[$type] . '\\Entity';
 
         return $entity;
     }

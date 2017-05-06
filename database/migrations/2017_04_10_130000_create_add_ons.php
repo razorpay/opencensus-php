@@ -20,7 +20,7 @@ class CreateAddons extends Migration
      */
     public function up()
     {
-        Schema::create(Table::ADD_ON, function(Blueprint $table)
+        Schema::create(Table::ADDON, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -74,29 +74,29 @@ class CreateAddons extends Migration
      */
     public function down()
     {
-        Schema::table(Table::ADD_ON, function($table)
+        Schema::table(Table::ADDON, function($table)
         {
             $table->dropForeign
             (
-                Table::ADD_ON . '_' . Entity::MERCHANT_ID . '_foreign'
+                Table::ADDON . '_' . Entity::MERCHANT_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::ADD_ON . '_' . Entity::ITEM_ID . '_foreign'
+                Table::ADDON . '_' . Entity::ITEM_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::ADD_ON . '_' . Entity::SUBSCRIPTION_ID . '_foreign'
+                Table::ADDON . '_' . Entity::SUBSCRIPTION_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::ADD_ON . '_' . Entity::INVOICE_ID . '_foreign'
+                Table::ADDON . '_' . Entity::INVOICE_ID . '_foreign'
             );
         });
 
-        Schema::drop(Table::ADD_ON);
+        Schema::drop(Table::ADDON);
     }
 }
