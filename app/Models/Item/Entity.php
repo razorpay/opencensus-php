@@ -130,9 +130,9 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\LineItem\Entity');
     }
 
-    public function addOns()
+    public function addons()
     {
-        return $this->hasMany('RZP\Models\AddOn\Entity');
+        return $this->hasMany('RZP\Models\Plan\Subscription\Addon\Entity');
     }
 
     // -------------------- End Relations -----------------------

@@ -6,7 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Plan;
 use RZP\Models\Customer;
-use RZP\Models\AddOn;
+use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task;
 
@@ -44,11 +44,11 @@ class Creator extends Base\Core
 
                 //
                 // This needs to be done after saving the subscription
-                // because invoice/add_on is created and saved in the
+                // because invoice/addon is created and saved in the
                 // following step, with the subscription_id.
                 //
 
-                $this->createAddOnsIfApplicable($subscription, $input);
+                $this->createAddonsIfApplicable($subscription, $input);
 
                 $this->createInvoiceIfApplicable($subscription);
             });
@@ -56,20 +56,20 @@ class Creator extends Base\Core
         return $subscription;
     }
 
-    protected function createAddOnsIfApplicable(Entity $subscription, array $input)
+    protected function createAddonsIfApplicable(Entity $subscription, array $input)
     {
-        if (empty($input[Entity::ADD_ONS]) === true)
+        if (empty($input[Entity::ADDONS]) === true)
         {
             return;
         }
 
-        $addOnsInput = $input[Entity::ADD_ONS];
+        $addonsInput = $input[Entity::ADDONS];
 
-        $addOnCore = (new AddOn\Core);
+        $addonCore = (new Addon\Core);
 
-        foreach ($addOnsInput as $addOnInput)
+        foreach ($addonsInput as $addonInput)
         {
-            $addOnCore->create($addOnInput, $subscription);
+            $addonCore->create($addonInput, $subscription);
         }
     }
 
@@ -85,15 +85,15 @@ class Creator extends Base\Core
      */
     protected function createInvoiceIfApplicable(Entity $subscription)
     {
-        $addOns = $this->repo->add_on->getUnusedAddOnsForSubscription($subscription);
+        $addons = $this->repo->addon->getUnusedAddonsForSubscription($subscription);
 
-        if (($addOns->count() === 0) and
+        if (($addons->count() === 0) and
             ($subscription->getStartAt() !== null))
         {
             return;
         }
 
-        (new Billing)->createInvoiceForSubscription($subscription, $addOns, true);
+        (new Billing)->createInvoiceForSubscription($subscription, $addons, true);
     }
 
     protected function createScheduleAndTask(Entity $subscription, Plan\Entity $plan)

@@ -31,7 +31,7 @@ class Entity
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
     const REFUND                = 'refund';
-    const ADD_ON                = 'add_on';
+    const ADDON                 = 'addon';
     const REPORT                = 'report';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';

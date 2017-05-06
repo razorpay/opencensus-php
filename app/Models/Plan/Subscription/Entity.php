@@ -48,7 +48,7 @@ class Entity extends Base\PublicEntity
     // For example, if the subscription is for 3 months, add-on amount can
     // be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
     //
-    const ADD_ONS = 'add_ons';
+    const ADDONS = 'addons';
 
     protected static $sign = 'sub';
 
@@ -99,7 +99,7 @@ class Entity extends Base\PublicEntity
         // subscription. Until we find a good solution to expose this,
         // keep this commented.
         //
-        // self::ADD_ONS,
+        // self::ADDONS,
         self::STATUS,
         self::CURRENT_START,
         self::CURRENT_END,
@@ -138,7 +138,7 @@ class Entity extends Base\PublicEntity
     protected $appends = [
         // This has to be via appends and not relations
         // because it's a hasMany relation.
-        self::ADD_ONS,
+        self::ADDONS,
     ];
 
     protected $dates = [
@@ -295,17 +295,17 @@ class Entity extends Base\PublicEntity
 
     // --------------------- ACCESSORS ---------------------
 
-    public function getAddOnsAttribute()
+    public function getAddonsAttribute()
     {
         //
         // NOTE: This is not a good solution because this will list
-        // down all the add_ons ever created of the subscription and
+        // down all the addons ever created of the subscription and
         // not just the unconsumed ones.
         //
 
-        $addOns = $this->addOns()->getResults()->toArrayPublicEmbedded();
+        $addons = $this->addons()->getResults()->toArrayPublicEmbedded();
 
-        return $addOns;
+        return $addons;
     }
 
     // --------------------- END ACCESSORS ---------------------
@@ -432,9 +432,9 @@ class Entity extends Base\PublicEntity
         return $this->morphOne('RZP\Models\Schedule\Task\Entity', 'entity');
     }
 
-    public function addOns()
+    public function addons()
     {
-        return $this->hasMany('RZP\Models\AddOn\Entity');
+        return $this->hasMany('RZP\Models\Plan\Subscription\Addon\Entity');
     }
 
     // --------------------- END RELATIONS ---------------------

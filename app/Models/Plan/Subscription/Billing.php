@@ -54,7 +54,7 @@ class Billing extends Base\Core
 
     public function createInvoiceForSubscription(
         Entity $subscription,
-        Base\PublicCollection $addOns,
+        Base\PublicCollection $addons,
         bool $first = false): Invoice\Entity
     {
         //
@@ -66,15 +66,15 @@ class Billing extends Base\Core
         //
 
         return $this->repo->transaction(
-            function() use($subscription, $addOns, $first)
+            function() use($subscription, $addons, $first)
             {
                 $merchant = $subscription->merchant;
 
-                $invoiceInput = $this->getInvoiceInput($subscription, $addOns, $first);
+                $invoiceInput = $this->getInvoiceInput($subscription, $addons, $first);
 
                 $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
 
-                $this->associateInvoiceToAddOns($invoice, $addOns);
+                $this->associateInvoiceToAddons($invoice, $addons);
 
                 $this->trace->info(
                     TraceCode::SUBSCRIPTION_INVOICE_CREATED,
@@ -107,9 +107,9 @@ class Billing extends Base\Core
                     $activated = true;
                 }
 
-                $addOns = $this->repo->add_on->getUnusedAddOnsForSubscription($subscription);
+                $addons = $this->repo->addon->getUnusedAddonsForSubscription($subscription);
 
-                $invoice = $this->createInvoiceForSubscription($subscription, $addOns);
+                $invoice = $this->createInvoiceForSubscription($subscription, $addons);
 
                 return ['invoice' => $invoice, 'activated' => $activated];
             });
@@ -132,21 +132,21 @@ class Billing extends Base\Core
         $this->repo->saveOrFail($subscription);
     }
 
-    protected function associateInvoiceToAddOns(Invoice\Entity $invoice, Base\PublicCollection $addOns)
+    protected function associateInvoiceToAddons(Invoice\Entity $invoice, Base\PublicCollection $addons)
     {
-        foreach ($addOns as $addOn)
+        foreach ($addons as $addon)
         {
-            $addOn->invoice()->associate($invoice);
-            $this->repo->saveOrFail($addOn);
+            $addon->invoice()->associate($invoice);
+            $this->repo->saveOrFail($addon);
         }
     }
 
-    protected function getInvoiceInput(Entity $subscription, Base\PublicCollection $addOns, bool $first): array
+    protected function getInvoiceInput(Entity $subscription, Base\PublicCollection $addons, bool $first): array
     {
         $plan = $subscription->plan;
         $customer = $subscription->customer;
 
-        $lineItems = $this->getLineItemsForInvoiceInput($subscription, $addOns, $first);
+        $lineItems = $this->getLineItemsForInvoiceInput($subscription, $addons, $first);
 
         $invoiceInput = [
             Invoice\Entity::CUSTOMER_ID     => $customer->getPublicId(),
@@ -161,7 +161,7 @@ class Billing extends Base\Core
 
     protected function getLineItemsForInvoiceInput(
         Entity $subscription,
-        Base\PublicCollection $addOns,
+        Base\PublicCollection $addons,
         bool $first): array
     {
         $plan = $subscription->plan;
@@ -189,21 +189,21 @@ class Billing extends Base\Core
             $lineItems[] = $mainLineItem;
         }
 
-        foreach ($addOns as $addOn)
+        foreach ($addons as $addon)
         {
             //
-            // Though line_item can get the item from the add_on,
-            // we don't do that, because add_on is basically a ref for
+            // Though line_item can get the item from the addon,
+            // we don't do that, because addon is basically a ref for
             // line_item. All refs may not have an item associated with
-            // it like add_on does. Hence, line_item expects item_id
+            // it like addon does. Hence, line_item expects item_id
             // or item_input also to be sent in its input.
             //
-            $addOnLineItem = [
-                LineItem\Entity::ITEM_ID  => $addOn->item->getPublicId(),
-                LineItem\Entity::REF      => $addOn,
+            $addonLineItem = [
+                LineItem\Entity::ITEM_ID  => $addon->item->getPublicId(),
+                LineItem\Entity::REF      => $addon,
             ];
 
-            $lineItems[] = $addOnLineItem;
+            $lineItems[] = $addonLineItem;
         }
 
         return $lineItems;

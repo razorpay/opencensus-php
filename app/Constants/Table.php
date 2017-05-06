@@ -19,7 +19,7 @@ class Table
     const TOKEN                 = 'tokens';
     const COUPON                = 'coupons';
     const DEVICE                = 'devices';
-    const ADD_ON                = 'add_ons';
+    const ADDON                 = 'addons';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';

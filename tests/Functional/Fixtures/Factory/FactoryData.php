@@ -539,7 +539,7 @@ final class FactoryData
             'notes'         => null,
         ]);
 
-        $factory(\RZP\Models\AddOn\Entity::class, [
+        $factory(\RZP\Models\Plan\Subscription\Addon\Entity::class, [
             'merchant_id'       => '10000000000000',
             'item_id'           => '1000000000item',
             'invoice_id'        => '1000000invoice',

@@ -6,7 +6,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Type
 {
-    const ADD_ON    = 'add_on';
+    const ADDON    = 'addon';
     const INVOICE   = 'invoice';
     const PLAN      = 'plan';
 

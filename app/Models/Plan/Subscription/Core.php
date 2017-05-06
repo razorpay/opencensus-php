@@ -13,7 +13,7 @@ use RZP\Models\Plan;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
-use RZP\Models\AddOn;
+use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task;
 use RZP\Trace\TraceCode;
@@ -187,11 +187,11 @@ class Core extends Base\Core
     }
 
     /**
-     * add_on_amount  | start_at | charge_amount
+     * addon_amount  | start_at | charge_amount
      * ----------------------------------------------------------
-     * yes            | no       | add_on_amount + plan_amount
+     * yes            | no       | addon_amount + plan_amount
      * no             | yes      | default_auth_amount (5rs)
-     * yes            | yes      | add_on_amount
+     * yes            | yes      | addon_amount
      * no             | no       | plan_amount
      *
      * The above amount is taken care of when we create an invoice
@@ -332,7 +332,7 @@ class Core extends Base\Core
     {
         //
         // Ensure that invoice amount is taken always because
-        // that would take care of add_ons and stuff.
+        // that would take care of addons and stuff.
         //
         $subscriptionAmount = $invoice->getAmount();
 

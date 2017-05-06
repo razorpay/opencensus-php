@@ -720,20 +720,20 @@ class Processor
 
         //
         // Invoice would have been created if:
-        // - First charge needs to be done as part of authentication with or without add_ons
-        // - Only add_ons need to be added, and no first charge needs to be done as part of authentication.
+        // - First charge needs to be done as part of authentication with or without addons
+        // - Only addons need to be added, and no first charge needs to be done as part of authentication.
         //
         $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
         //
         // Since the subscription is in created state at this point,
-        // the only add_ons that will be present will be of `upfront_amount`.
+        // the only addons that will be present will be of `upfront_amount`.
         //
-        $addOns = $this->repo->add_on->getAllAddOnsOfSubscription($subscription);
+        $addons = $this->repo->addon->getAllAddonsOfSubscription($subscription);
 
         if ($subscriptionInvoices->count() === 0)
         {
-            if ($addOns->count() === 0)
+            if ($addons->count() === 0)
             {
                 return;
             }
@@ -746,7 +746,7 @@ class Processor
                         'invoices_count'    => $subscriptionInvoices->count(),
                         'subscription_id'   => $subscriptionId,
                         'payment_id'        => $payment->getId(),
-                        'add_ons_count'     => $addOns->count(),
+                        'addons_count'     => $addons->count(),
                     ]);
             }
         }
@@ -1129,7 +1129,7 @@ class Processor
         // We auto capture a subscription only if start_at is absent,
         // which means that the first transaction is being used as the
         // first charge also.
-        // OR we auto capture if upfront_amount (add_on) is present.
+        // OR we auto capture if upfront_amount (addon) is present.
         //
         // We create an invoice if any of the above two conditions are satisfied.
         //

@@ -1537,7 +1537,7 @@ trait Authorize
                 // of the handleCaptureSuccess flow. Hence, we need to save it here
                 // explicitly, to ensure that these are saved even if handleCaptureSuccess
                 // is not called. handleCaptureSuccess is not called in case there's no
-                // add_on or isn't a first charge auth txn.
+                // addon or isn't a first charge auth txn.
                 //
                 $this->repo->saveOrFail($subscription);
             }
@@ -1690,7 +1690,7 @@ trait Authorize
         $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
         //
-        // If add_ons are present or start_at is null (first charge in auth txn itself) (invoice created),
+        // If addons are present or start_at is null (first charge in auth txn itself) (invoice created),
         // the payment should have been captured before it reaches this stage.
         //
         if (($payment->isCaptured() === false) and
@@ -1709,7 +1709,7 @@ trait Authorize
 
         //
         // This would mean that this was a 5rs auth transaction.
-        // There was no add_on (upfront_amount) or this is not being used as first charge.
+        // There was no addon (upfront_amount) or this is not being used as first charge.
         //
         $this->refundAuthorizedPayment($payment);
     }

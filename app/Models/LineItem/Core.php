@@ -260,9 +260,9 @@ class Core extends Base\Core
         //
         // We are passing the ref object in line_item input
         // rather than passing the entity to the function because
-        // one invoice can have multiple line_items and add_ons
+        // one invoice can have multiple line_items and addons
         // are associated with the line_item and not an invoice.
-        // Hence, while creating an invoice, associating the add_ons
+        // Hence, while creating an invoice, associating the addons
         // with line_items becomes difficult otherwise.
         //
 

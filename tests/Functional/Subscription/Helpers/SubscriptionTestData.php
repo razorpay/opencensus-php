@@ -319,7 +319,7 @@ return [
         ],
     ],
 
-    'testCreateSubscriptionWithNoStartAtAndWithAddOn' => [
+    'testCreateSubscriptionWithNoStartAtAndWithAddon' => [
         'request' => [
             'url' => '/subscriptions',
             'method' => 'post',
@@ -329,7 +329,7 @@ return [
                 'quantity'        => 1,
                 'total_count'     => 6, // Every two months
                 'customer_notify' => 0,
-                'add_ons'        => [
+                'addons'        => [
                     [
                         'item' => [
                             'amount' => 300,
@@ -360,7 +360,7 @@ return [
         ],
     ],
 
-    'testCreateSubscriptionWithStartAtAndAddOn' => [
+    'testCreateSubscriptionWithStartAtAndAddon' => [
         'request' => [
             'url' => '/subscriptions',
             'method' => 'post',
@@ -371,7 +371,7 @@ return [
                 'total_count'     => 6, // Every two months
                 'start_at'        => 1516386600,
                 'customer_notify' => 0,
-                'add_ons'        => [
+                'addons'        => [
                     [
                         'item' => [
                             'amount' => 300,

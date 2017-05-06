@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Item;
-use RZP\Models\AddOn;
+use RZP\Models\Plan\Subscription\Addon;
 
 class Entity extends Base\PublicEntity
 {
@@ -172,9 +172,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Item\Entity');
     }
 
-    public function addOn()
+    public function addon()
     {
-        return $this->belongsTo('RZP\Models\AddOn\Entity');
+        return $this->belongsTo('RZP\Models\Plan\Subscription\Addon\Entity');
     }
 
     public function merchant()

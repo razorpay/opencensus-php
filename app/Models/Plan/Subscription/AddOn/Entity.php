@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\AddOn;
+namespace RZP\Models\Plan\Subscription\Addon;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -28,7 +28,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'ao';
 
-    protected $entity = 'add_on';
+    protected $entity = 'addon';
 
     protected $generateIdOnCreate = true;
 

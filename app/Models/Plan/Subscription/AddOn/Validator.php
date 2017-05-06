@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\AddOn;
+namespace RZP\Models\Plan\Subscription\Addon;
 
 use RZP\Base;
 use RZP\Exception;

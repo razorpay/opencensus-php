@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\AddOn;
+namespace RZP\Models\Plan\Subscription\Addon;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -14,37 +14,37 @@ class Core extends Base\Core
     public function create(array $input, Subscription\Entity $subscription): Entity
     {
         $this->trace->info(
-            TraceCode::ADD_ON_CREATE_REQUEST,
+            TraceCode::ADDON_CREATE_REQUEST,
             [
                 'input' => $input,
                 'subscription_id' => $subscription->getId()
             ]);
 
-        $addOn = (new Entity)->build($input);
+        $addon = (new Entity)->build($input);
 
         $this->repo->transaction(
-            function() use ($addOn, $input, $subscription)
+            function() use ($addon, $input, $subscription)
             {
                 $merchant = $subscription->merchant;
 
-                $item = (new Item\Core)->createItemForType($input, $merchant, Item\Type::ADD_ON);
+                $item = (new Item\Core)->createItemForType($input, $merchant, Item\Type::ADDON);
 
-                $this->createAddOnAssociations($addOn, $merchant, $item, $subscription);
+                $this->createAddonAssociations($addon, $merchant, $item, $subscription);
 
-                $this->repo->saveOrFail($addOn);
+                $this->repo->saveOrFail($addon);
             });
 
-        return $addOn;
+        return $addon;
     }
 
-    protected function createAddOnAssociations(
-        Entity $addOn,
+    protected function createAddonAssociations(
+        Entity $addon,
         Merchant\Entity $merchant,
         Item\Entity $item,
         Subscription\Entity $subscription)
     {
-        $addOn->merchant()->associate($merchant);
-        $addOn->item()->associate($item);
-        $addOn->subscription()->associate($subscription);
+        $addon->merchant()->associate($merchant);
+        $addon->item()->associate($item);
+        $addon->subscription()->associate($subscription);
     }
 }

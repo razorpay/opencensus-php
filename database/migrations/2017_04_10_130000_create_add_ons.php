@@ -5,13 +5,13 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Models\Item;
 use RZP\Models\Merchant;
-use RZP\Models\AddOn\Entity;
+use RZP\Models\Plan\Subscription\Addon\Entity;
 use RZP\Models\Invoice;
 use RZP\Models\LineItem;
 use RZP\Constants\Table;
 use RZP\Models\Plan\Subscription;
 
-class CreateAddOns extends Migration
+class CreateAddons extends Migration
 {
     /**
      * Run the migrations.

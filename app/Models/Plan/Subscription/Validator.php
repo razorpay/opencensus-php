@@ -17,10 +17,10 @@ class Validator extends Base\Validator
     const MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION = 1;
 
     /**
-     * Maximum number of add_ons that we allow
+     * Maximum number of addons that we allow
      * as part of the subscription creations
      */
-    const MAX_ALLOWED_ADD_ONS = 5;
+    const MAX_ALLOWED_ADDONS = 5;
 
     const SECONDS_IN_ONE_YEAR = 31536000;
 
@@ -33,10 +33,10 @@ class Validator extends Base\Validator
         Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1|max:365',
         Entity::START_AT        => 'sometimes|integer|custom',
         Entity::END_AT          => 'required_without:total_count|epoch',
-        // This is just for backward compatability. Later, we are going to make `1` as
+        // This is just for backward compatibility. Later, we are going to make `1` as
         // default. Hence, making it compulsory for the merchant to send this as 0 now.
         Entity::CUSTOMER_NOTIFY => 'required|in:0',
-        Entity::ADD_ONS         => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_ADD_ONS,
+        Entity::ADDONS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_ADDONS,
     ];
 
     protected static $createValidators = [

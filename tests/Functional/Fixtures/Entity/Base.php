@@ -30,7 +30,7 @@ class Base
         'token'             => \RZP\Models\Customer\Token\Entity::class,
         'device'            => \RZP\Models\Device\Entity::class,
         'payout'            => \RZP\Models\Payout\Entity::class,
-        'add_on'            => \RZP\Models\AddOn\Entity::class,
+        'addon'             => \RZP\Models\Plan\Subscription\Addon\Entity::class,
         'refund'            => \RZP\Models\Payment\Refund\Entity::class,
         'address'           => \RZP\Models\Address\Entity::class,
         'balance'           => \RZP\Models\Merchant\Balance\Entity::class,

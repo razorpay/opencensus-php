@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\AddOn;
+namespace RZP\Models\Plan\Subscription\Addon;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -10,9 +10,9 @@ use RZP\Constants;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'add_on';
+    protected $entity = 'addon';
 
-    public function getUnusedAddOnsForSubscription(Subscription\Entity $subscription)
+    public function getUnusedAddonsForSubscription(Subscription\Entity $subscription)
     {
         return $this->newQuery()
                     ->whereNull(Entity::INVOICE_ID)
@@ -21,7 +21,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getAllAddOnsOfSubscription(Subscription\Entity $subscription)
+    public function getAllAddonsOfSubscription(Subscription\Entity $subscription)
     {
         return $this->newQuery()
                     ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())

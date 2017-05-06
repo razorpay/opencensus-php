@@ -6,14 +6,14 @@ use RZP\Exception;
 
 class Type
 {
-    const ADD_ON        = 'add_on';
+    const ADDON        = 'addon';
 
     public static function validateType($type)
     {
         if (defined(__CLASS__.'::'.strtoupper($type)) === false)
         {
             throw new Exception\InvalidArgumentException(
-                'Not a valid add_on type: ' . $type);
+                'Not a valid addon type: ' . $type);
         }
     }
 

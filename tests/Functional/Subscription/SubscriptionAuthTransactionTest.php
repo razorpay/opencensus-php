@@ -75,7 +75,7 @@ class SubscriptionAuthTransactionTest extends TestCase
     // TODO: Test subscription charges with multiple quantity.
     // It should get the amount correctly.
 
-    public function testSubscriptionAuthTxnAutoCaptureAddOn()
+    public function testSubscriptionAuthTxnAutoCaptureAddon()
     {
         $plan = $this->fixtures->create(
             'plan',
@@ -94,7 +94,7 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'charge_at' => 1579631400,
             ]);
 
-        $this->createFixturesForAddOn($subscription, $plan, 1000, 1000);
+        $this->createFixturesForAddon($subscription, $plan, 1000, 1000);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['amount'] = 1000;
@@ -128,7 +128,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertNotNull($invoice['issued_at']);
         $this->assertContains('http://bitly', $invoice['short_url']);
         $this->assertEquals($payment['id'], $invoice['payment_id']);
-        // Since the invoice is only for add_ons,
+        // Since the invoice is only for addons,
         // billing_start and billing_end should be null.
         $this->assertNull($invoice['billing_start']);
         $this->assertNull($invoice['billing_end']);
@@ -224,7 +224,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals('paid', $order['status']);
     }
 
-    public function testSubscriptionAuthTxnAutoCaptureFirstChargeAndAddOn()
+    public function testSubscriptionAuthTxnAutoCaptureFirstChargeAndAddon()
     {
         $plan = $this->fixtures->create('plan');
 
@@ -236,7 +236,7 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'total_count' => 3,
             ]);
 
-        $this->createFixturesForAddOn($subscription, $plan, $plan->item->getAmount() + 1000, 1000, true);
+        $this->createFixturesForAddon($subscription, $plan, $plan->item->getAmount() + 1000, 1000, true);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['amount'] = 1000 + $plan->item->getAmount();
@@ -323,7 +323,7 @@ class SubscriptionAuthTransactionTest extends TestCase
                 'total_count' => 3,
             ]);
 
-        $this->createFixturesForAddOn($subscription, $plan, 1000, 1000);
+        $this->createFixturesForAddon($subscription, $plan, 1000, 1000);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
@@ -459,7 +459,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertTrue(false);
     }
 
-    protected function createFixturesForAddOn($subscription, $plan, $totalAmount, $addOnAmount, $first = false)
+    protected function createFixturesForAddon($subscription, $plan, $totalAmount, $addonAmount, $first = false)
     {
         $order = $this->fixtures->create(
             'order',
@@ -486,12 +486,12 @@ class SubscriptionAuthTransactionTest extends TestCase
             'item',
             [
                 'name' => 'Sample Upfront Amount',
-                'amount' => $addOnAmount,
-                'type' => 'add_on',
+                'amount' => $addonAmount,
+                'type' => 'addon',
             ]);
 
         $this->fixtures->create(
-            'add_on',
+            'addon',
             [
                 'subscription_id' => $subscription->getId(),
                 'invoice_id' => $invoice->getId(),
