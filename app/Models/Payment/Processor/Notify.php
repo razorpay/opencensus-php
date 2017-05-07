@@ -106,7 +106,7 @@ class Notify
             {
                 $invoiceData = (new ViewDataSerializer($this->invoice))->get();
 
-                $mailable->setInvoiceDetails($this->invoice->toArrayPublic(), $invoiceData);
+                $mailable->setInvoiceDetails($invoiceData);
             }
 
             if ($this->isCustomerMailEnabled($mailable) === true)
@@ -123,7 +123,7 @@ class Notify
             {
                 $invoiceData = (new ViewDataSerializer($this->invoice))->get();
 
-                $mailable->setInvoiceDetails($this->invoice->toArrayPublic(), $invoiceData);
+                $mailable->setInvoiceDetails($invoiceData);
             }
 
             if ($this->isMerchantMailEnabled($mailable) === true)
@@ -267,73 +267,6 @@ class Notify
         }
     }
 
-// <<<<<<< HEAD
-// =======
-    protected function getLabel($event)
-    {
-        return self::MAIL_TAG_MAP[$event] ?? MailTags::PAYMENT_SUCCESSFUL;
-    }
-
-    protected function getSubject($event, $merchant = true)
-    {
-        $action = $this->getAction($event);
-
-        /**
-         * The reason we have a fallback to the amount here is because
-         * not every merchant necessarily has a proper billing label (most do)
-         * Since the dba field was moved from the dashboard to the API after a
-         * while. All new merchants have this field for sure, though. We
-         * can do a survey later and remove this check from here and other
-         * places
-         */
-        if (isset($this->template['merchant']['billing_label']))
-        {
-            $subject = "$action successful for {$this->template['merchant']['billing_label']}";
-        }
-        else
-        {
-            $subject = "$action successful for {$this->template['payment']['amount']}";
-        }
-
-        if ($event === self::CARD_SAVED)
-        {
-            $subject = "Card successfully saved with Razorpay";
-        }
-
-        // All mails that we send out to the merchant follow the same pattern:
-        // Razorpay | X action taken for Y
-        // Y is usually the merchant name/billing label
-        // But if that is unavailable, we might use amount
-        //
-        // Direct emails to customers are without the prefix
-        if ($merchant === true)
-        {
-            $subject = "Razorpay | $subject";
-        }
-
-        return $subject;
-    }
-
-    protected function getAction($event)
-    {
-        switch ($event)
-        {
-            case self::REFUNDED:
-                $action = 'Refund';
-                break;
-            case self::INVOICE_PAYMENT_AUTHORIZED:
-            case self::INVOICE_PAYMENT_CAPTURED:
-                $action = $this->invoice->getTypeLabel() . '\'s Payment';
-                break;
-            default:
-                $action = 'Payment';
-                break;
-        }
-
-        return $action;
-    }
-
-// >>>>>>> master
     protected function getMerchantForSlack()
     {
         $website = $this->template['merchant']['website'];

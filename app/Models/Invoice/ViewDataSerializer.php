@@ -108,7 +108,26 @@ class ViewDataSerializer extends Base\Core
                 $lineItem['total_amount_formatted'] = number_format(($lineItem['amount'] * $lineItem['quantity']) / 100, 2);
             });
 
+        $this->addExtraInvoicePayLoad($invoiceData);
+
         return $invoiceData;
+    }
+
+    protected function addExtraInvoicePayLoad(array & $data)
+    {
+        $id = $this->invoice->getPublicId();
+
+        $invoiceDashboardPath = $this->invoice->getDashboardPath();
+
+        $dashboardUrl = Config::get('applications.dashboard.url');
+
+        $extraInvoicePayload = [
+            'type_label'    => ucwords($this->invoice->getTypeLabel()),
+            'pdf_url'       => url("v1/invoices/$id/pdf"),
+            'dashboard_url' => $dashboardUrl . $invoiceDashboardPath,
+        ];
+
+        $data += $extraInvoicePayload;
     }
 
     protected function getFormattedMerchantDataForView()

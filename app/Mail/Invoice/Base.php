@@ -12,33 +12,25 @@ use RZP\Models\Invoice\Type;
 
 class Base extends Mailable
 {
-    use InvoiceData;
-
     const MAIL_TAG_MAP = [
         Type::ECOD    => MailTags::ECOD,
         Type::INVOICE => MailTags::INVOICE,
     ];
 
-    protected $invoice;
+    protected $data;
 
-    protected $invoiceData;
-
-    public function __construct(array $invoice, array $invoiceData)
+    public function __construct(array $data)
     {
         parent::__construct();
 
-        $this->invoice = $invoice;
-
-        $this->invoiceData = $invoiceData;
-
-        $this->addExtraInvoicePayLoad();
+        $this->data = $data;
     }
 
     protected function addSender()
     {
         $fromEmail = Constants::MAIL_ADDRESSES[Constants::INVOICES];
 
-        $fromHeader = $this->invoiceData['merchant']['name'];
+        $fromHeader = $this->data['merchant']['name'];
 
         $this->from($fromEmail, $fromHeader);
 
@@ -47,7 +39,7 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $customerEmail = $this->invoiceData['invoice']['customer']['email'];
+        $customerEmail = $this->data['invoice']['customer']['email'];
 
         $this->to($customerEmail);
 
@@ -56,9 +48,7 @@ class Base extends Mailable
 
     protected function addSubject()
     {
-        $merchantName = $this->invoiceData['merchant']['name'];
-
-        $type = $this->invoice['type'];
+        $merchantName = $this->data['merchant']['name'];
 
         $subjectTemplate = $this->getSubjectTemplate();
 
@@ -82,7 +72,7 @@ class Base extends Mailable
 
     protected function addMailData()
     {
-        $this->with($this->invoiceData);
+        $this->with($this->data);
 
         return $this;
     }
@@ -91,13 +81,13 @@ class Base extends Mailable
     {
         $this->withSwiftMessage(function ($message)
         {
-            $invoiceType = $this->invoice['type'];
+            $invoiceType = $this->data['invoice']['type'];
 
             $label = self::MAIL_TAG_MAP[$invoiceType] ?? MailTags::INVOICE;
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, $this->invoice['id']);
+            $headers->addTextHeader(MailTags::HEADER, $this->data['invoice']['id']);
 
             $headers->addTextHeader(MailTags::HEADER, $label);
         });

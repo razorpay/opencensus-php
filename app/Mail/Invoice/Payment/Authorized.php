@@ -4,9 +4,7 @@ namespace RZP\Mail\Invoice\Payment;
 
 use Config;
 use RZP\Constants\MailTags;
-use RZP\Mail\Invoice\InvoiceData;
 use RZP\Mail\Payment\Base;
-use RZP\Models\Invoice\Type;
 
 /**
  * We are extending Mail\Payment\Base class here instead of Invoice|base
@@ -14,22 +12,16 @@ use RZP\Models\Invoice\Type;
  */
 class Authorized extends Base
 {
-    use InvoiceData;
-
-    protected $invoice;
-
     protected $invoiceData;
 
-    public function setInvoiceDetails(array $invoice, array $invoiceData)
+    public function setInvoiceDetails(array $invoiceData)
     {
-        $this->invoice = $invoice;
-
         $this->invoiceData = $invoiceData;
     }
 
     protected function getAction()
     {
-        $typeLabel = Type::getLabel($this->invoice['type']);
+        $typeLabel = $this->invoiceData['invoice']['type_label'];
 
         $action = ucwords($typeLabel) .'\'s Payment';
 
@@ -44,6 +36,17 @@ class Authorized extends Base
     protected function addHtmlView()
     {
         $this->view('emails.invoice.customer.notification');
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $this->data['invoice'] = $this->invoiceData['invoice'];
+
+        $this->data['merchant'] += $this->invoiceData['merchant'];
+
+        $this->with($this->data);
 
         return $this;
     }

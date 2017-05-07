@@ -146,7 +146,6 @@ class Notifier extends Base\Core
         ];
 
         $invoiceIssuedMail = new InvoiceMail\Issued(
-                                    $this->invoice->toArrayPublic(),
                                     $invoiceData,
                                     $fileData);
 
@@ -175,9 +174,7 @@ class Notifier extends Base\Core
 
         $invoiceData = (new ViewDataSerializer($this->invoice))->get();
 
-        $invoiceExpiredMail = new InvoiceMail\Expired(
-                                    $this->invoice->toArrayPublic(),
-                                    $invoiceData);
+        $invoiceExpiredMail = new InvoiceMail\Expired($invoiceData);
 
         Mail::send($invoiceExpiredMail);
 
@@ -241,9 +238,7 @@ class Notifier extends Base\Core
 
         $invoiceData = (new ViewDataSerializer($this->invoice))->get();
 
-        $invoiceExpiringMail = new InvoiceMail\Expiring(
-                                    $this->invoice->toArrayPublic(),
-                                    $invoiceData);
+        $invoiceExpiringMail = new InvoiceMail\Expiring($invoiceData);
 
         Mail::send($invoiceExpiringMail);
 

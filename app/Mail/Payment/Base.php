@@ -19,7 +19,6 @@ class Base extends Mailable
         $this->data = $data;
 
         $this->isMerchantEmail = $isMerchantEmail;
-
     }
 
     protected function addSender()

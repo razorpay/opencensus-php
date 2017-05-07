@@ -14,9 +14,9 @@ class Issued extends Base
 
     protected $fileData;
 
-    public function __construct(array $invoice, array $invoiceData, array $fileData = null)
+    public function __construct(array $data, array $fileData = null)
     {
-        parent::__construct($invoice, $invoiceData);
+        parent::__construct($data);
 
         $this->fileData = $fileData;
     }
@@ -34,9 +34,13 @@ class Issued extends Base
         {
             $pdfDisplayName = $this->fileData['name'];
 
-            $this->attach(
-                $this->fileData['path'],
-                ['as' => $pdfDisplayName, 'mime' => 'application/pdf']);
+            if ($this->fileData['path'] !== null)
+            {
+                $this->attach(
+                    $this->fileData['path'],
+                    ['as' => $pdfDisplayName, 'mime' => 'application/pdf']);
+            }
+
         }
 
         return $this;
@@ -44,7 +48,7 @@ class Issued extends Base
 
     protected function getSubjectTemplate()
     {
-        $type =  $this->invoice['type'];
+        $type =  $this->data['invoice']['type'];
 
         return self::SUBJECT_TEMPLATES[$type];
     }

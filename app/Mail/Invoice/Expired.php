@@ -12,9 +12,9 @@ class Expired extends Base
         Type::INVOICE => ' Invoice from %s has expired',
     ];
 
-    public function __construct(array $invoice, array $invoiceData)
+    public function __construct(array $data)
     {
-        parent::__construct($invoice, $invoiceData);
+        parent::__construct($data);
     }
 
     protected function addHtmlView()
@@ -26,7 +26,7 @@ class Expired extends Base
 
     protected function getSubjectTemplate()
     {
-        $type =  $this->invoice['type'];
+        $type = $this->data['invoice']['type'];
 
         return self::SUBJECT_TEMPLATES[$type];
     }
