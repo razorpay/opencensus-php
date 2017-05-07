@@ -3,9 +3,8 @@
 namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
-use RZP\Exception\LogicException;
+use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Plan;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -53,8 +52,6 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'sub';
 
     protected $entity = 'subscription';
-
-    protected $table = Table::SUBSCRIPTION;
 
     protected $generateIdOnCreate = true;
 
