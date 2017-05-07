@@ -75,14 +75,14 @@ class Repository extends Base\Repository
         $timestamp = time() - Entity::PAYMENT_WINDOW;
 
         $pid = $this->getAttributeWithTableName(Payment\Entity::ID);
-        $paPaymentId = $this->manager
+        $paPaymentId = $this->repo
                             ->payment_analytics
                             ->getAttributeWithTableName(Analytics\Entity::PAYMENT_ID);
 
         $paymentColumns = $this->getAttributeWithTableName('*');
 
-        $paTable = $this->manager->payment_analytics->getTableName();
-        $checkoutIdAttr = $this->manager
+        $paTable = $this->repo->payment_analytics->getTableName();
+        $checkoutIdAttr = $this->repo
                                ->payment_analytics
                                ->getAttributeWithTableName(Analytics\Entity::CHECKOUT_ID);
 
@@ -205,7 +205,7 @@ class Repository extends Base\Repository
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
         $createdAt  = $this->getAttributeWithTableName(Entity::CREATED_AT);
-        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantId = $this->repo->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         return $this->newQuery()
                     ->select($this->getAttributeWithTableName('*'))
@@ -226,7 +226,7 @@ class Repository extends Base\Repository
     public function getAuthorizedPaymentsWithAutoRefundDelay()
     {
         $paymentCreatedAt = $this->getAttributeWithTableName(Entity::CREATED_AT);
-        $merchantId       = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantId       = $this->repo->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
         $maxCreatedAt = Carbon::now()->subDays(7)->timestamp;
@@ -445,7 +445,7 @@ class Repository extends Base\Repository
 
         $paymentId = $this->getAttributeWithTableName(Entity::ID);
 
-        $txnRepo = $this->manager->transaction;
+        $txnRepo = $this->repo->transaction;
 
         $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
 
@@ -482,9 +482,9 @@ class Repository extends Base\Repository
         $paymentGateway = $this->getAttributeWithTableName(Entity::GATEWAY);
         $paymentStatus = $this->getAttributeWithTableName(Entity::STATUS);
 
-        $txnRepo = $this->manager->transaction;
+        $txnRepo = $this->repo->transaction;
 
-        $tRepo = $this->manager->terminal;
+        $tRepo = $this->repo->terminal;
         $tTableName = $tRepo->getTableName();
 
         $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
@@ -623,16 +623,16 @@ class Repository extends Base\Repository
 
         foreach ($joins as $join)
         {
-            if ($join->table === $this->manager->card->getTableName())
+            if ($join->table === $this->repo->card->getTableName())
             {
                 return;
             }
         }
 
         $paymentCardId = $this->getAttributeWithTableName(Payment\Entity::CARD_ID);
-        $cardId = $this->manager->card->getAttributeWithTableName(Card\Entity::ID);
+        $cardId = $this->repo->card->getAttributeWithTableName(Card\Entity::ID);
 
-        $query->join($this->manager->card->getTableName(), $paymentCardId, '=', $cardId);
+        $query->join($this->repo->card->getTableName(), $paymentCardId, '=', $cardId);
     }
 
     public function getYesterdayVolume()
@@ -676,10 +676,10 @@ class Repository extends Base\Repository
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
         $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
-        $mid = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $mid = $this->repo->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->join($this->manager->merchant->getTableName(), $pid, '=', $mid)
+                    ->join($this->repo->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.
@@ -703,10 +703,10 @@ class Repository extends Base\Repository
         $to = Carbon::today('Asia/Kolkata')->timestamp;
 
         $pid = $this->getAttributeWithTableName(Payment\Entity::MERCHANT_ID);
-        $mid = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $mid = $this->repo->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         return $this->newQuery()
-                    ->join($this->manager->merchant->getTableName(), $pid, '=', $mid)
+                    ->join($this->repo->merchant->getTableName(), $pid, '=', $mid)
                     ->selectRaw(
                        Payment\Entity::MERCHANT_ID . ','.
                        Merchant\Entity::NAME . ','.

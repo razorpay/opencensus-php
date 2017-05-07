@@ -59,7 +59,7 @@ class Repository extends Base\Repository
 
     public function fetchUnsettledTransactions($timestamp, $channel)
     {
-        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantId = $this->repo->merchant->getAttributeWithTableName(Merchant\Entity::ID);
 
         $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
         $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
@@ -185,7 +185,7 @@ class Repository extends Base\Repository
             $eagerLoadRelations = $entityToRelationFetchMap[$type] ?? [];
 
             // Queries to eager load the ids of the $type, and also the required relations
-            $typeEntities = $this->manager->$type->findManyWithRelations($ids, $eagerLoadRelations);
+            $typeEntities = $this->repo->$type->findManyWithRelations($ids, $eagerLoadRelations);
 
             // Creates an id to entity map of the above queried entities
             foreach ($typeEntities as $entity)
@@ -356,8 +356,8 @@ class Repository extends Base\Repository
         $billdeskPaymentId = Billdesk\Entity::getAttributeWithTableName(Billdesk\Entity::PAYMENT_ID);
         $billdeskRefStatus = Billdesk\Entity::getAttributeWithTableName('RefStatus');
 
-        $paymentId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
-        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
+        $paymentId = $this->repo->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentStatus = $this->repo->payment->getAttributeWithTableName(Payment\Entity::STATUS);
 
         $transactionEntityId = $this->getAttributeWithTableName(Entity::ENTITY_ID);
         $transactionReconciledAt = $this->getAttributeWithTableName(Entity::RECONCILED_AT);

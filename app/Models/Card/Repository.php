@@ -133,10 +133,10 @@ class Repository extends Base\Repository
 
         Payment\Validator::validateStatusArray($status);
 
-        $paymentCardId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::CARD_ID);
+        $paymentCardId = $this->repo->payment->getAttributeWithTableName(Payment\Entity::CARD_ID);
         $cardId = $this->getAttributeWithTableName(Card\Entity::ID);
 
-        $query->join($this->manager->payment->getTableName(), $paymentCardId, '=', $cardId)
+        $query->join($this->repo->payment->getTableName(), $paymentCardId, '=', $cardId)
               ->whereIn(Payment\Entity::STATUS, $status);
 
         $query->select($query->getModel()->getTable().'.*');

@@ -47,7 +47,7 @@ class Repository extends Base\Repository
         $orgId = $this->getAttributeWithTableName(Entity::ID);
         $orgColumnNames = $this->getAttributeWithTableName('*');
 
-        $orgHostName = $this->manager->org_hostname;
+        $orgHostName = $this->repo->org_hostname;
 
         $orgHostnamesTable = $orgHostName->getTableName();
 

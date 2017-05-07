@@ -78,7 +78,7 @@ class Repository extends Base\Repository
          *
          */
 
-        $acsDao = $this->manager->action_state;
+        $acsDao = $this->repo->action_state;
 
         $acsTable = $acsDao->getTableName();
 

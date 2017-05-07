@@ -29,7 +29,7 @@ class Repository extends Base\Repository
 
     public function getFailedSettlementsForRetry(array $setlIds, $channel)
     {
-        $merchantId = $this->manager->merchant->getAttributeWithTableName(M\Entity::ID);
+        $merchantId = $this->repo->merchant->getAttributeWithTableName(M\Entity::ID);
 
         $settlementMerchantId = $this->getAttributeWithTableName(Settlement\Entity::MERCHANT_ID);
         $settlementId = $this->getAttributeWithTableName(Settlement\Entity::ID);
