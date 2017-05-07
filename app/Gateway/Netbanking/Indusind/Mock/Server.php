@@ -104,9 +104,9 @@ class Server extends Base\Mock\Server
 
         $responseArray = array_flip($responseArray);
 
-        $xml = new \SimpleXMLElement('<VerifyOutput/>');
+        $xml = new \SimpleXMLElement('<xml/>');
 
-        array_walk_recursive($responseArray, array ($xml, 'addAttribute'));
+        array_walk_recursive($responseArray, array ($xml, 'addChild'));
 
         $response = $xml->asXML();
 
@@ -116,7 +116,7 @@ class Server extends Base\Mock\Server
     protected function createResponseArray(array $input)
     {
         return [
-            ResponseFields::STATUS  => Constants::SUCCESS,
+            ResponseFields::VERIFICATION  => Constants::YES,
         ];
     }
 }

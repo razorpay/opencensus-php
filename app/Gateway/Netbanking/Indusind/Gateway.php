@@ -152,7 +152,7 @@ class Gateway extends Base\Gateway
         $verify->gatewaySuccess = false;
 
         if ((isset($response[ResponseFields::VERIFICATION]) === true) and
-            ($response[ResponseFields::VERIFICATION] === Constants::Y))
+            ($response[ResponseFields::VERIFICATION] === Constants::YES))
         {
             $verify->gatewaySuccess = true;
         }
@@ -281,11 +281,12 @@ class Gateway extends Base\Gateway
         if (empty($content) === true)
         {
             $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['encrypted_string' => $encryptedString,
-                 'payment_id'       => $content[ResponseFields::MERCHANT_REFERENCE]]);
+                ['encrypted_string' => $encryptedString]
+            );
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR
+            );
         }
     }
 

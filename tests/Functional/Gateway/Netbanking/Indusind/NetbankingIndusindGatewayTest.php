@@ -22,6 +22,8 @@ class NetbankingIndusindGatewayTest extends TestCase
 
         $this->gateway = 'netbanking_indusind';
 
+        $this->bank = 'INDB';
+
         $this->payment = $this->getDefaultNetbankingPaymentArray('INDB');
 
         $this->setMockGatewayTrue();
@@ -107,40 +109,11 @@ class NetbankingIndusindGatewayTest extends TestCase
         $this->checkMailQueue();
 
         // Hitting the refunds route on API - goes to RefundFile.php
-        $data = $this->generateRefundsExcelForNB('ICIC');
+        $data = $this->generateRefundsExcelForNB($this->bank);
 
         $this->checkRefundFileData($data);
     }
 
-    public function testTpvPayment()
-    {
-        $terminal = $this->fixtures->create('terminal:shared_netbanking_icici_tpv_terminal');
-
-        $this->ba->privateAuth();
-
-        $data = $this->testData[__FUNCTION__]['request']['content'];
-
-        $this->fixtures->merchant->enableTPV();
-
-        $order = $this->startTest();
-        $order = $this->getLastEntity('order');
-
-        $this->payment['order_id'] = $order['id'];
-
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        // Asserting that TPV terminal of ICICI gets picked
-        $this->assertEquals($payment['terminal_id'], $terminal->getId());
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertNotNull($gatewayPayment['account_number']);
-        $this->assertEquals($gatewayPayment['account_number'], $data['account_number']);
-
-        $this->fixtures->merchant->disableTPV();
-    }
 
     public function testFailedAuthPayment()
     {
@@ -234,19 +207,31 @@ class NetbankingIndusindGatewayTest extends TestCase
 
     protected function checkRefundFileData($data)
     {
-        $filePath = $data['netbanking_icici']['file'];
+        $filePath = $data['netbanking_indusind']['file'];
 
         // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
-        $this->assertEquals($data['netbanking_icici']['count'], 3);
+        $this->assertEquals($data['netbanking_indusind']['count'], 3);
         $this->assertTrue(file_exists($filePath));
 
-        $sheet = Excel::load($filePath)->all()->toArray();
+        $refundsFileContents = file($filePath);
 
-        $this->assertEquals(count($sheet[0]), 10);
+        $refundAmounts = ['500', '100', '400'];
 
-        $this->assertEquals($sheet[0]['refund_amount'], 500);
-        $this->assertEquals($sheet[1]['refund_amount'], 100);
-        $this->assertEquals($sheet[2]['refund_amount'], 400);
+        foreach ($refundsFileContents as $row)
+        {
+            $refundsFileRow = explode('||', $row);
+
+            // Asserting that the file contains 5 columns
+            assert(count($refundsFileRow) === 6);
+
+            // Asserting Bank Payment Id
+            assert(trim($refundsFileRow[5]) === '9999999999');
+
+            // Asserting that the refund amounts are correct
+            $rowRefundAmount = $refundsFileRow[4];
+
+            assert(in_array($rowRefundAmount, $refundAmounts));
+        }
 
         unlink($filePath);
     }
@@ -260,7 +245,7 @@ class NetbankingIndusindGatewayTest extends TestCase
                     Mockery::any(),
                     Mockery::on(function ($data)
                     {
-                        $body = 'Please forward the ICICI Netbanking refunds file to UBPS operations team';
+                        $body = 'Please forward the Indusind Netbanking refunds file to UBPS operations team';
 
                         $this->assertEquals($body, $data['body']);
 
@@ -282,7 +267,7 @@ class NetbankingIndusindGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $content['STATUS'] = 'FAILED';
+            $content['VERIFICATION'] = 'N';
         });
     }
 
@@ -292,7 +277,7 @@ class NetbankingIndusindGatewayTest extends TestCase
         {
             if ($action === 'hash')
             {
-                $content['ES'] = 'This_is_a_random_string';
+                $content['RQS'] = '0123456789ABCDEF';
             }
         });
     }
