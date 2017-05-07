@@ -29,7 +29,8 @@ class Validator extends Base\Validator
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_INVALID_TYPE);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_INVALID_TYPE);
         }
     }
 
@@ -37,7 +38,8 @@ class Validator extends Base\Validator
     {
         if (Method::exists($method) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_INVALID_METHOD);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_INVALID_METHOD);
         }
     }
 }

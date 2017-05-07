@@ -317,7 +317,7 @@ class WebhookTest extends TestCase
 
         $inferno->shouldReceive('sendRequest')
             ->once()
-            ->andReturn(false);
+            ->andReturn(true);
 
         $inferno->shouldReceive('sendEmail')
             ->with(Mockery::type('object'), 'deactivate')
@@ -360,7 +360,7 @@ class WebhookTest extends TestCase
 
         $inferno->shouldReceive('sendRequest')
                 ->once()
-                ->andReturn(false);
+                ->andReturn(true);
 
         $this->doAuthPayment();
 
@@ -404,7 +404,7 @@ class WebhookTest extends TestCase
 
         $inferno->shouldReceive('sendRequest')
                 ->once()
-                ->andReturn(false);
+                ->andReturn(true);
 
         $this->doAuthPayment();
 

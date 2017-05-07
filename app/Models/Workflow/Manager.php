@@ -102,6 +102,7 @@ class Manager
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED,
+                null,
                 $data);
         }
     }

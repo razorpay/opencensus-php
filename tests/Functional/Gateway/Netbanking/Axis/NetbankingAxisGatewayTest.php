@@ -26,7 +26,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
     }
 
     public function testPayment()
@@ -41,6 +41,10 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
     }
 
     public function testTpvPayment()
@@ -75,7 +79,11 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertEquals($gatewayEntity['account_number'],
                             $data['request']['content']['account_number']);
 
-        $this->assertEquals($gatewayEntity['status'], 'Y');
+        $this->assertEquals('Y', $gatewayEntity['status']);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
 
         $order = $this->getLastEntity('order', true);
 
@@ -96,13 +104,21 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $gatewayEntity = $this->getLastEntity('netbanking', true);
 
+        $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
+
+        $this->assertEquals($gatewayEntity['reference1'], $verifyResponseContent['ITC']);
+
         $order = $this->getLastEntity('order', true);
 
         $data = $this->testData[__FUNCTION__];
 
         $this->assertEquals($gatewayEntity['account_number'], $data['account_number']);
 
-        $this->assertEquals($gatewayEntity['status'], 'Y');
+        $this->assertEquals('Y', $gatewayEntity['status']);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayEntity['reference1']);
 
         $this->assertArraySelectiveEquals($data, $order);
     }
@@ -113,13 +129,56 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->mockSetBankPaymentId();
 
-        $content = $this->verifyPayment($payment['razorpay_payment_id']);
+        $verify = $this->verifyPayment($payment['razorpay_payment_id']);
 
-        assert($content['payment']['verified'] === 1);
+        assert($verify['payment']['verified'] === 1);
+
+        $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['status'], 'Y');
+        $this->assertEquals($gatewayPayment['reference1'], $verifyResponseContent['ITC']);
+
+        $this->assertEquals('Y', $gatewayPayment['status']);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayPayment['reference1']);
+    }
+
+    /**
+     * This is to test that the payments before April 20th @ 2pm are verified
+     * with the ITC parameter set as caps_payment_id
+     */
+    public function testOldPaymentVerify()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->fixtures->edit(
+            'payment',
+            $payment['id'],
+            [
+                'created_at'    => 1481696800,
+                'authorized_at' => 1481696810,
+                'captured_at'   => 1481696820
+            ]
+        );
+
+        $this->mockSetBankPaymentId();
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        assert($verify['payment']['verified'] === 1);
+
+        $verifyResponseContent = $verify['gateway']['verifyResponseContent'];
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['caps_payment_id'], $verifyResponseContent['ITC']);
+
+        $this->assertEquals('Y', $gatewayPayment['status']);
     }
 
     public function testRefundInFull()
@@ -258,6 +317,10 @@ class NetbankingAxisGatewayTest extends TestCase
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertEquals('Y', $gatewayPayment['status']);
+
+        $gatewayMerchantId = $this->terminal->getGatewayMerchantId();
+
+        $this->assertEquals($gatewayMerchantId, $gatewayPayment['reference1']);
     }
 
     protected function createPaymentsToClaim()

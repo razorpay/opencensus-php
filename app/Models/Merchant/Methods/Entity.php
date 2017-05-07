@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
     const UPI               = 'upi';
+    const AEPS              = 'aeps';
 
     const METHODS           = 'methods';
 
@@ -52,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::OPENWALLET,
         self::EMI,
         self::UPI,
+        self::AEPS,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -73,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::OPENWALLET,
         self::EMI,
         self::UPI,
+        self::AEPS,
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
@@ -96,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::BANKS         => [],
         self::EMI           => false,
         self::UPI           => true,
+        self::AEPS          => false,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
@@ -118,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::AMEX,
         self::UPI,
+        self::AEPS,
         self::NETBANKING,
         self::PAYTM,
         self::MOBIKWIK,
@@ -145,6 +150,7 @@ class Entity extends Base\PublicEntity
         self::OPENWALLET  => 'bool',
         self::EMI         => 'bool',
         self::UPI         => 'bool',
+        self::AEPS        => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -181,6 +187,11 @@ class Entity extends Base\PublicEntity
     public function isUpiEnabled()
     {
         return $this->getAttribute(self::UPI);
+    }
+
+    public function isAepsEnabled()
+    {
+        return $this->getAttribute(self::AEPS);
     }
 
     public function isWalletEnabled($wallet = null)

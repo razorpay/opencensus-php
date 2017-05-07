@@ -216,8 +216,7 @@ class NetbankingFederalGatewayTest extends TestCase
         $data = $this->generateRefundsExcelForNb($this->bank);
 
         // Refund file is never generated as count is 0
-        $this->assertEquals(0, $data['netbanking_federal']['count']);
-        $this->assertFalse(array_key_exists('file', $data));
+        $this->assertEmpty($data['netbanking_federal']['refunds']);
     }
 
     protected function createPaymentsToClaim()
@@ -272,16 +271,31 @@ class NetbankingFederalGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-         // Mail catch with amount and refund everywhere
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        $testData = [
+            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  => 1500,
+                    'refunds' => 500,
+                    'total'   => 1000,
+                ],
+                'count'   => [
+                    'claims'  => 3,
+                    'refunds' => 3,
+                    'total'   => 5
+                ]
+        ];
+
+        Mail::assertSent(RefundFileMail::class, function ($mail) use ($testData)
         {
             $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-            $expectedSubject = 'Federal Netbanking refunds file for ' . $date;
+            $expectedSubject = 'Federal Netbanking claims and refunds file for ' . $date;
 
             $subject = $mail->subject;
 
             $this->assertEquals($expectedSubject, $subject);
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
             return $mail->hasTo('settlements@razorpay.com');
         });
@@ -289,22 +303,16 @@ class NetbankingFederalGatewayTest extends TestCase
 
     protected function checkRefundFileData($data)
     {
-        //
         // Asserting that the file exists
-        // Asserting that the total amount is 1000 rupees
-        // asserting that the total number of refunds is 3
-        //
-        $this->assertTrue(file_exists($data['file'][1]));
-        $this->assertEquals(100000, $data['file'][0]);
-        $this->assertEquals(3, $data['count']);
+        $this->assertTrue(file_exists($data['refunds']));
 
-        $refundsFileContents = file($data['file'][1]);
+        $refundsFileContents = file($data['refunds']);
 
         // 3 refunds + 0 initial line
         assert(count($refundsFileContents) === 3);
 
         // Individual refund amounts to be asserted
-        $refundAmounts = ['10000', '40000', '50000'];
+        $refundAmounts = ['100', '400', '500'];
 
         foreach ($refundsFileContents as $row)
         {
@@ -321,10 +329,10 @@ class NetbankingFederalGatewayTest extends TestCase
 
             // Asserting that the refund amounts are correct
             $rowRefundAmount = trim($refundsFileRow[6]);
-            assert(in_array($rowRefundAmount, $refundAmounts));
+            assert(in_array($rowRefundAmount, $refundAmounts, true));
         }
 
-        unlink($data['file'][1]);
+        unlink($data['refunds']);
     }
 
     protected function mockFailedVerifyResponse()

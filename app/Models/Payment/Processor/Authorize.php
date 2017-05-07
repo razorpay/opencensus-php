@@ -447,6 +447,10 @@ trait Authorize
         {
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SUPI);
         }
+        else if ($payment->isAeps() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SAEPS);
+        }
         else
         {
             // If feature is not present, simply throw invalid url error.
@@ -482,6 +486,19 @@ trait Authorize
             ($payment->isSecondRecurring() === true))
         {
             $this->verifyPrivateAuth();
+
+            $this->verifyAggregatorIfApplicable($merchant);
+        }
+    }
+
+    protected function verifyAggregatorIfApplicable(Merchant\Entity $merchant)
+    {
+        // Zoho requires its merchant to use this route only through Zoho itself
+        // We need to check if merchant is sending the request himself, without Zoho
+        // This is temporary, will be removed when OAuth comes through
+        if ($merchant->isFeatureEnabled(Feature\Constants::ZOHO) === true)
+        {
+            (new Feature\Validator)->validateZoho($this->request);
         }
     }
 
@@ -774,7 +791,36 @@ trait Authorize
             $this->validateUpiPspIsAllowed($payment);
         }
 
+        if ($payment->isAeps())
+        {
+            $this->setGatewayInputForAeps($input, $gatewayInput);
+        }
+
         $payment->setInternational();
+    }
+
+    protected function setGatewayInputForAeps($input, & $gatewayInput)
+    {
+        if ((isset($input['aadhaar']['fingerprint']) === true) and
+            (isset($input['aadhaar']['session_key']) === true) and
+            (isset($input['aadhaar']['hmac']) === true))
+        {
+            $gatewayInput['aadhaar'] = [
+                'fingerprint' => $input['aadhaar']['fingerprint'],
+                'session_key' => $input['aadhaar']['session_key'],
+                'hmac'        => $input['aadhaar']['hmac'],
+                'cert_expiry' => $input['aadhaar']['cert_expiry'],
+            ];
+        }
+        else
+        {
+            $gatewayInput['aadhaar'] = [
+                'encrypted' => false,
+                'fingerprint' => $input['aadhaar']['fingerprint'],
+            ];
+        }
+
+        $gatewayInput['aadhaar']['number'] = $input['aadhaar']['number'];
     }
 
     protected function preProcessPaymentWithoutSaving($payment, array & $input, array & $gatewayInput)
@@ -1056,6 +1102,10 @@ trait Authorize
 
             case Payment\Method::UPI:
                 $this->verifyUpiEnabled();
+                break;
+
+            case Payment\Method::AEPS:
+                $this->verifyAepsEnabled();
                 break;
 
             default:
@@ -1717,6 +1767,18 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyAepsEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isAepsEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AEPS_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 

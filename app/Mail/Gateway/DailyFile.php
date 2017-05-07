@@ -20,7 +20,7 @@ class DailyFile extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Constants::MAIL_ADDRESSES[Constants::SETTLEMENTS];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::REFUNDS];
 
         $fromHeader = $this->data['bankName'] . ' Netbanking Refunds';
 
@@ -97,17 +97,36 @@ class DailyFile extends Mailable
 
     protected function addHeaders()
     {
-        if ($this->data['bankName'] === 'Axis')
-        {
-            $this->withSwiftMessage(function ($message)
-            {
-                $headers = $message->getHeaders();
+        $mailTag = $this->getMailTag();
 
-                $headers->addTextHeader(MailTags::HEADER, MailTags::AXIS_NETBANKING_REFUNDS_MAIL);
-            });
-        }
+        $this->withSwiftMessage(function ($message) use ($mailTag)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $mailTag);
+        });
 
         return $this;
+    }
+
+    protected function getMailTag()
+    {
+        $bankName = $this->data['bankName'];
+
+        switch ($bankName)
+        {
+            case 'Axis':
+
+                return MailTags::AXIS_NETBANKING_REFUNDS_MAIL;
+
+            case 'Federal':
+
+                return MailTags::FEDERAL_NETBANKING_REFUNDS_MAIL;
+
+            case 'Kotak':
+
+                return MailTags::KOTAK_NETBANKING_REFUNDS_MAIL;
+        }
     }
 
     protected function getSubject()

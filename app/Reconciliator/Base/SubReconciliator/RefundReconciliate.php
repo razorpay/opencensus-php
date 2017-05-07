@@ -350,7 +350,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $refundAmount = $this->getRefundAmount($row);
 
-        if (($paymentId === null) or ($refundAmount === null))
+        //
+        // Checking refundAmount with `empty` because there should
+        // never be 0 refund amount if the flow has reached here.
+        //
+        if (($paymentId === null) or (empty($refundAmount) === true))
         {
             $this->trace->info(
                 TraceCode::RECON_INFO_ALERT,

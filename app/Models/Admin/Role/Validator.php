@@ -61,7 +61,7 @@ class Validator extends Base\Validator
         if (empty($diffPerms) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Few permissions are not allowed for the organization',
+                'Few permissions are not allowed for the organization', null,
                 $diffPerms);
         }
     }
