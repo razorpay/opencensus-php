@@ -503,9 +503,11 @@ class Entity extends Base\PublicEntity
         $this->customer()->associate($customer);
     }
 
-    public function getAnchorForSchedule(string $period)
+    public function getAnchorForSchedule()
     {
         $anchor = null;
+
+        $period = $this->plan->getPeriod();
 
         if ($this->getStartAt() !== null)
         {

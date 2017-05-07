@@ -7,8 +7,6 @@ use Config;
 use Mail;
 
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Customer;

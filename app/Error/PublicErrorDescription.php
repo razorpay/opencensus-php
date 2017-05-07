@@ -240,14 +240,10 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
     const BAD_REQUEST_PAYMENT_SUBSCRIPTION_NOT_RECURRING                        = 'Recurring is not set for the subscription payment';
-    const BAD_REQUEST_SUBSCRIPTION_NOT_AUTHENTICATED                            = 'Payment cannot be authorized since subscription is not authenticated';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED                     = 'The subscription already has a token associated with it';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED                         = 'Payment cannot be authorized since subscription does not have any token associated';
     const BAD_REQUEST_SUBSCRIPTION_TOTAL_COUNT_EXCEEDED                         = 'Subscription has already reached its total count of charges';
-    const BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_PAID                             = 'The invoice for the subscription is not yet paid';
     const BAD_REQUEST_SUBSCRIPTION_EXPIRED                                      = 'The subscription has been expired.';
-    const BAD_REQUEST_SUBSCRIPTION_INVOICE_ALREADY_PAID                         = 'The invoice of the subscription is already paid and cannot be charged again.';
-    const BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_IN_ISSUED                        = 'The invoice of the subscription is not in issued state and hence cannot be charged.';
     const BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_ON_HOLD_STATE               = 'The subscription should be in either active or on_hold state to charge an on_hold invoice';
     const BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED                    = 'This invoice of the subscription cannot be charged.';
     const BAD_REQUEST_SUBSCRIPTION_2FA_NOT_ALLOWED                              = 'Customer payment not allowed for the subscription at this stage.';

@@ -24,6 +24,8 @@ class Checkout
 {
     const CHECKOUT_LOGO_SIZE = 'medium';
 
+    const SUBSCRIPTION_ID    = 'subscription_id';
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -88,12 +90,12 @@ class Checkout
 
     protected function checkAndAddDetailsForSubscription(array $input, Merchant\Entity $merchant, array & $data)
     {
-        if (empty($input['subscription_id']) === true)
+        if (empty($input[self::SUBSCRIPTION_ID]) === true)
         {
             return;
         }
 
-        $subscriptionId = $input['subscription_id'];
+        $subscriptionId = $input[self::SUBSCRIPTION_ID];
 
         $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($merchant, $subscriptionId);
     }

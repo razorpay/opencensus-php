@@ -725,14 +725,14 @@ class Processor
         //
         $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
-        //
-        // Since the subscription is in created state at this point,
-        // the only addons that will be present will be of `upfront_amount`.
-        //
-        $addons = $this->repo->addon->getAllAddonsOfSubscription($subscription);
-
         if ($subscriptionInvoices->count() === 0)
         {
+            //
+            // Since the subscription is in created state at this point,
+            // the only addons that will be present will be of `upfront_amount`.
+            //
+            $addons = $this->repo->addon->getAllAddonsOfSubscription($subscription);
+
             if ($addons->count() === 0)
             {
                 return;
@@ -746,7 +746,7 @@ class Processor
                         'invoices_count'    => $subscriptionInvoices->count(),
                         'subscription_id'   => $subscriptionId,
                         'payment_id'        => $payment->getId(),
-                        'addons_count'     => $addons->count(),
+                        'addons_count'      => $addons->count(),
                     ]);
             }
         }

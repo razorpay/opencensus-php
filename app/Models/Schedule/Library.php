@@ -205,9 +205,9 @@ class Library
                 'Invalid period. Should not have reached here.',
                 null,
                 [
-                    'period' => $period,
-                    'schedule_id' => $schedule->getId(),
-                    'anchor' => $schedule->getAnchor(),
+                    'period'        => $period,
+                    'schedule_id'   => $schedule->getId(),
+                    'anchor'        => $schedule->getAnchor(),
                 ]);
         }
     }

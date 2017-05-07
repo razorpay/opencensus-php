@@ -25,19 +25,7 @@ class Service extends Base\Service
 
     public function create(array $input) : array
     {
-        if (empty($input[Entity::CUSTOMER_ID]) === true)
-        {
-            throw new BadRequestValidationFailureException(
-                'customer_id should be sent in the request to create a subscription.',
-                'customer_id');
-        }
-
-        if (empty($input[Entity::PLAN_ID]) === true)
-        {
-            throw new BadRequestValidationFailureException(
-                'plan_id should be sent in the request to create a subscription.',
-                'plan_id');
-        }
+        (new Validator)->validateInputBeforeBuild($input);
 
         $customerId = $input[Entity::CUSTOMER_ID];
         $planId = $input[Entity::PLAN_ID];
@@ -57,11 +45,13 @@ class Service extends Base\Service
         $invoicesCreated = $failed = 0;
         $failures = [];
 
+        $billing = (new Billing);
+
         foreach ($subscriptionsToCharge as $subscription)
         {
             try
             {
-                (new Billing)->createInvoiceAndCharge($subscription);
+                $billing->createInvoiceAndCharge($subscription);
 
                 $invoicesCreated++;
             }

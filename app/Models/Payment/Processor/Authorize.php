@@ -1677,7 +1677,7 @@ trait Authorize
 
         $subscriptionCore->fillScheduleDetailsForNewSubscription($subscription);
 
-        $subscriptionCore->fillEndAtAndTotalCount($subscription, $plan);
+        (new Subscription\Creator)->fillEndAtAndTotalCount($subscription, $plan);
     }
 
     protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)
@@ -1700,10 +1700,10 @@ trait Authorize
                 'The subscription should have been captured by now.',
                 null,
                 [
-                    'subscription_id' => $subscription->getId(),
-                    'payment_id' => $payment->getId(),
-                    'payment_status' => $payment->getStatus(),
-                    'invoice_id' => $subscriptionInvoices->first()->getId(),
+                    'subscription_id'   => $subscription->getId(),
+                    'payment_id'        => $payment->getId(),
+                    'payment_status'    => $payment->getStatus(),
+                    'invoice_id'        => $subscriptionInvoices->first()->getId(),
                 ]);
         }
 

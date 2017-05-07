@@ -4,7 +4,6 @@ namespace RZP\Models\Plan;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
-use RZP\Models\Item;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity

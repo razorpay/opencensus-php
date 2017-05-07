@@ -50,7 +50,7 @@ class Charge extends Base\Core
     public function fireCharge($job, $data)
     {
         $this->trace->info(
-            TraceCode::SUBSCRIPTION_PAYMENT_QUEUE_DATA,
+            TraceCode::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED,
             $data);
 
         //

@@ -70,48 +70,11 @@ class Core extends Base\Core
 
         $schedule = $subscription->schedule;
 
-        $anchor = $subscription->getAnchorForSchedule($schedule->getPeriod());
+        $anchor = $subscription->getAnchorForSchedule();
 
         $schedule->setAnchor($anchor);
 
         $this->repo->saveOrFail($schedule);
-    }
-
-    public function fillEndAtAndTotalCount(Entity $subscription, Plan\Entity $plan)
-    {
-        $startAt = $subscription->getStartAt();
-
-        //
-        // We get the start_at at the time of first charge.
-        // We fill end_at and total_count at that time.
-        //
-        if ($startAt === null)
-        {
-            return;
-        }
-
-        if ($subscription->getTotalCount() === null)
-        {
-            $this->calculateAndSetTotalCount($subscription);
-        }
-        else if ($subscription->getEndAt() === null)
-        {
-            $this->calculateAndSetEndAt($subscription);
-
-            $subscription->getValidator()->validateEndAtAfterGenerating();
-        }
-        else
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT,
-                null,
-                [
-                    'subscription_id'   => $subscription->getId(),
-                    'plan_id'           => $plan->getId(),
-                    'total_count'       => $subscription->getTotalCount(),
-                    'end_at'            => $subscription->getEndAt(),
-                ]);
-        }
     }
 
     public function expireSubscription(Entity $subscription)
@@ -272,7 +235,7 @@ class Core extends Base\Core
                 ];
 
                 $this->trace->info(
-                    TraceCode::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_REQUEST,
+                    TraceCode::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT,
                     $queuePayload);
 
                 // If the status is in created state, this means that the token has not
@@ -313,7 +276,7 @@ class Core extends Base\Core
         {
             throw new LogicException(
                 'Number of invoices found for subscription does not match 1',
-                ErrorCode::SERVER_ERROR_INVOICE_COUNT_MISMATCH,
+                ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
                 [
                     'count'             => $invoicesCount,
                     'subscription_id'   => $subscription->getId(),
@@ -354,19 +317,5 @@ class Core extends Base\Core
         ];
 
         return $recurringPayload;
-    }
-
-    protected function calculateAndSetEndAt(Entity $subscription)
-    {
-        $endAt = Plan\Cycle::getEndTimeForGivenTotalCount($subscription);
-
-        $subscription->setEndAt($endAt);
-    }
-
-    protected function calculateAndSetTotalCount(Entity $subscription)
-    {
-        $totalCount = Plan\Cycle::getTotalCountForGivenInterval($subscription);
-
-        $subscription->setTotalCount($totalCount);
     }
 }

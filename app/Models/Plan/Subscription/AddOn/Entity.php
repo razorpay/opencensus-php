@@ -55,7 +55,7 @@ class Entity extends Base\PublicEntity
     // ];
 
     // Haven't *yet* understood how this works :|
-    protected $guarded = ['item'];
+    protected $guarded = [self::ITEM];
 
     protected $public = [
         self::ID,

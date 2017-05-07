@@ -21,7 +21,7 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($plan, $input, $merchant)
             {
-                $item = (new Item\Core)->createItemForType($input, $merchant, Item\Type::PLAN);
+                $item = (new Item\Core)->getOrCreateItemForType($input, $merchant, Item\Type::PLAN);
 
                 $plan->merchant()->associate($merchant);
 

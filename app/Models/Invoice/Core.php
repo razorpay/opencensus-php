@@ -152,7 +152,7 @@ class Core extends Base\Core
         return $this->repo->invoice->deleteOrFail($invoice);
     }
 
-    public function LineItems(
+    public function addLineItems(
         Entity $invoice,
         array $input,
         Merchant\Entity $merchant)

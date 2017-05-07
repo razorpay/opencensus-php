@@ -1472,10 +1472,10 @@ class Entity extends Base\PublicEntity
 
     public function setPublicSubscriptionIdAttribute(array & $array)
     {
-        if (isset($array[self::SUBSCRIPTION_ID]) === true)
-        {
-            $subscriptionId = $this->getAttribute(self::SUBSCRIPTION_ID);
+        $subscriptionId = $this->getSubscriptionId();
 
+        if (empty($subscriptionId) === false)
+        {
             $array[self::SUBSCRIPTION_ID] = Subscription\Entity::getSignedId($subscriptionId);
         }
         else

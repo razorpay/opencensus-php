@@ -5,6 +5,7 @@ namespace RZP\Models\LineItem;
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Plan\Subscription\Addon;
@@ -71,8 +72,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         // Uncomment later when required
         // self::ITEM_ID,
-        self::REF_ID,
-        self::REF_TYPE,
+        // self::REF_ID,
+        // self::REF_TYPE,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -146,11 +147,9 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $entity = Type::getEntityClass($array[self::REF_TYPE]);
+        $entity = Constants\Entity::getEntityClass($refType);
 
-        $sign = $entity::getIdPrefix();
-
-        $array[self::REF_ID] = $sign . $array[self::REF_ID];
+        $array[self::REF_ID] = $entity::getSignedId($array[self::REF_ID]);
     }
 
     // -------------------------- Public Setters Ends --------------------------

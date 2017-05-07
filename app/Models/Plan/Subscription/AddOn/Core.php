@@ -6,7 +6,6 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Item;
 use RZP\Models\Plan\Subscription;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -16,8 +15,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::ADDON_CREATE_REQUEST,
             [
-                'input' => $input,
-                'subscription_id' => $subscription->getId()
+                'input'             => $input,
+                'subscription_id'   => $subscription->getId()
             ]);
 
         $addon = (new Entity)->build($input);
@@ -27,7 +26,7 @@ class Core extends Base\Core
             {
                 $merchant = $subscription->merchant;
 
-                $item = (new Item\Core)->createItemForType($input, $merchant, Item\Type::ADDON);
+                $item = (new Item\Core)->getOrCreateItemForType($input, $merchant, Item\Type::ADDON);
 
                 $this->createAddonAssociations($addon, $merchant, $item, $subscription);
 

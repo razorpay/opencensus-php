@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Plan;
@@ -38,7 +40,7 @@ class Creator extends Base\Core
                 //
                 $this->createScheduleAndTask($subscription, $plan);
 
-                (new Core)->fillEndAtAndTotalCount($subscription, $plan);
+                $this->fillEndAtAndTotalCount($subscription, $plan);
 
                 $this->repo->saveOrFail($subscription);
 
@@ -54,6 +56,43 @@ class Creator extends Base\Core
             });
 
         return $subscription;
+    }
+
+    public function fillEndAtAndTotalCount(Entity $subscription, Plan\Entity $plan)
+    {
+        $startAt = $subscription->getStartAt();
+
+        //
+        // We get the start_at at the time of first charge.
+        // We fill end_at and total_count at that time.
+        //
+        if ($startAt === null)
+        {
+            return;
+        }
+
+        if ($subscription->getTotalCount() === null)
+        {
+            $this->calculateAndSetTotalCount($subscription);
+        }
+        else if ($subscription->getEndAt() === null)
+        {
+            $this->calculateAndSetEndAt($subscription);
+
+            $subscription->getValidator()->validateEndAtAfterGenerating();
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT,
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'plan_id'           => $plan->getId(),
+                    'total_count'       => $subscription->getTotalCount(),
+                    'end_at'            => $subscription->getEndAt(),
+                ]);
+        }
     }
 
     protected function createAddonsIfApplicable(Entity $subscription, array $input)
@@ -115,7 +154,7 @@ class Creator extends Base\Core
 
         if ($subscription->getStartAt() !== null)
         {
-            $scheduleInput[Schedule\Entity::ANCHOR] = $subscription->getAnchorForSchedule($plan->getPeriod());
+            $scheduleInput[Schedule\Entity::ANCHOR] = $subscription->getAnchorForSchedule();
         }
 
         //
@@ -142,6 +181,20 @@ class Creator extends Base\Core
         $task = (new Task\Core)->createOrUpdate($subscription->merchant, $subscription, $taskInput);
 
         return $task;
+    }
+
+    protected function calculateAndSetEndAt(Entity $subscription)
+    {
+        $endAt = Plan\Cycle::getEndTimeForGivenTotalCount($subscription);
+
+        $subscription->setEndAt($endAt);
+    }
+
+    protected function calculateAndSetTotalCount(Entity $subscription)
+    {
+        $totalCount = Plan\Cycle::getTotalCountForGivenInterval($subscription);
+
+        $subscription->setTotalCount($totalCount);
     }
 }
 

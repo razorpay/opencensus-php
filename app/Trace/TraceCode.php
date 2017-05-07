@@ -199,7 +199,7 @@ class TraceCode
     const INVOICE_ACTION_JOB_RECEIVED                   = 'INVOICE_ACTION_JOB_RECEIVED';
     const INVOICE_ACTION_JOB_HANDLED                    = 'INVOICE_ACTION_JOB_HANDLED';
 
-    const SUBSCRIPTION_PAYMENT_QUEUE_DATA               = 'SUBSCRIPTION_PAYMENT_QUEUE_DATA';
+    const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED    = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED';
     const SUBSCRIPTION_PAYMENT_FAILED                   = 'SUBSCRIPTION_PAYMENT_FAILED';
     const SUBSCRIPTION_PAYMENT_CAPTURE_FAILED           = 'SUBSCRIPTION_PAYMENT_CAPTURE_FAILED';
     const SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED         = 'SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED';
@@ -227,7 +227,7 @@ class TraceCode
     const SUBSCRIPTION_BEFORE_CAPTURE_UPDATE            = 'SUBSCRIPTION_BEFORE_CAPTURE_UPDATE';
     const SUBSCRIPTION_AFTER_CAPTURE_UPDATE             = 'SUBSCRIPTION_AFTER_CAPTURE_UPDATE';
     const SUBSCRIPTION_INVOICE_MANUAL_CHARGE            = 'SUBSCRIPTION_INVOICE_MANUAL_CHARGE';
-    const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_REQUEST     = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_REQUEST';
+    const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT        = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT';
     const PLAN_CREATE_REQUEST                           = 'PLAN_CREATE_REQUEST';
     const ADDON_CREATE_REQUEST                          = 'CREATE_ADDON_REQUEST';
     const RUN_CREATE_REQUEST                            = 'RUN_CREATE_REQUEST';
@@ -827,7 +827,7 @@ class TraceCode
         self::SUBSCRIPTION_ERROR_STATUS_UNEXPECTED      => 'Unexpected error status of subscription',
         self::SUBSCRIPTION_INVOICE_ALREADY_PAID         => 'Subscription invoice has already been paid for',
         self::SUBSCRIPTION_INVOICE_ON_HOLD              => 'Subscription invoice is now in on_hold state',
-        self::SUBSCRIPTION_PAYMENT_QUEUE_DATA           => 'Payment request data received via queue via subscription',
+        self::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED => 'Payment request data received via queue via subscription',
         self::SUBSCRIPTION_PAYMENT_FAILED               => 'Subscription payment failed with an exception',
 
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',

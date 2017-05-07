@@ -25,7 +25,6 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
-                    ->with(Constants\Entity::ITEM)
                     ->get();
     }
 }

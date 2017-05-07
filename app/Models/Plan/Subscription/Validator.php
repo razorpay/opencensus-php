@@ -80,6 +80,23 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateInputBeforeBuild(array $input)
+    {
+        if (empty($input[Entity::CUSTOMER_ID]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'customer_id should be sent in the request to create a subscription.',
+                'customer_id');
+        }
+
+        if (empty($input[Entity::PLAN_ID]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'plan_id should be sent in the request to create a subscription.',
+                'plan_id');
+        }
+    }
+
     protected function validateEndAtWithStartAt(int $startAt, int $endAt)
     {
         if ($endAt < $startAt)

@@ -1954,6 +1954,11 @@ UPDATE refunds SET status = "processed", attempts = 1, last_attempted_at = creat
 ALTER TABLE payments
     ADD COLUMN subscription_id CHAR(14) DEFAULT NULL AFTER invoice_id;
 
+SET foreign_key_checks = 0;
+ALTER TABLE payments
+    ADD CONSTRAINT payments_subscription_id_foreign FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE RESTRICT;
+SET foreign_key_checks = 1;
+
 ALTER TABLE invoices
     ADD COLUMN subscription_id CHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD COLUMN billing_start INT(11) DEFAULT NULL AFTER subscription_id,

@@ -24,6 +24,7 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED])
                     ->whereNull(Entity::ENDED_AT)
                     ->where(Entity::AUTH_ATTEMPTS, '=', 0)
+                    ->limit(100)
                     ->get();
     }
 
