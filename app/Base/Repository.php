@@ -60,13 +60,6 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->auth = $this->app['basicauth'];
 
-        //
-        // Currently, using $this->repo because
-        // we have $this->repo being used for creating queries.
-        // Once we shift to the new way of querying via newQuery()
-        // then we can change this back to $this->repo. Till then,
-        // we will need to keep use of $this->repo to minimum.
-        //
         $this->repo = $this->app['repo'];
     }
 
