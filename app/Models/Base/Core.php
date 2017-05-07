@@ -91,4 +91,38 @@ class Core
 
         return $dashboardInfo['admin_username'] ?? $dashboardInfo['user_email'] ?? 'DASHBOARD_INTERNAL';
     }
+
+    /**
+     * Execute a callable within a transaction.
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    public function transaction($callback, ...$params)
+    {
+        if (is_array($callback))
+        {
+            // It's trying to call a function within the class.
+            // If that function is protected/private, then Repo
+            // won't be able to call it directly.
+            // Wrapping it in a closure resolves the situation.
+
+            $closure = $this->closure($callback[1], ...$params);
+            $callback = $closure;
+        }
+
+        return $this->repo->transaction($callback, $params);
+    }
+
+    /**
+     * Provides a way to pass class private method with parameters
+     * directly wherever closure is required.
+     */
+    public function closure(string $func, ...$params)
+    {
+        return function() use ($func, $params)
+        {
+            return $this->$func(...$params);
+        };
+    }
 }

@@ -16,19 +16,22 @@ class Core extends Base\Core
             TraceCode::PLAN_CREATE_REQUEST,
             $input);
 
+        return $this->transaction([$this, 'createPlan'], $input, $merchant);
+    }
+
+    protected function createPlan(array $input, Merchant\Entity $merchant)
+    {
+        $this->repo->assertTransactionActive();
+
         $plan = (new Entity)->build($input);
 
-        $this->repo->transaction(
-            function() use ($plan, $input, $merchant)
-            {
-                $item = (new Item\Core)->getOrCreateItemForType($input, $merchant, Item\Type::PLAN);
+        $item = (new Item\Core)->getOrCreateItemForType($input, $merchant, Item\Type::PLAN);
 
-                $plan->merchant()->associate($merchant);
+        $plan->merchant()->associate($merchant);
 
-                $plan->item()->associate($item);
+        $plan->item()->associate($item);
 
-                $this->repo->saveOrFail($plan);
-            });
+        $this->repo->saveOrFail($plan);
 
         return $plan;
     }
