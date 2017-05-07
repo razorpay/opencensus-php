@@ -287,9 +287,9 @@ trait RepositoryUpdateTestAndLive
 
     protected function entityShouldSync($entity) : bool
     {
-        $shouldSync = ((method_exists($this, 'shouldSync')) and
-                       ($this->shouldSync($entity) === false));
+        $shouldSync = ((method_exists($this, 'shouldSync') === false) or
+                       ($this->shouldSync($entity) === true));
 
-        return ($shouldSync === false);
+        return $shouldSync;
     }
 }

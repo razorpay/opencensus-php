@@ -28,12 +28,7 @@ class Repository extends Base\Repository
 
     protected function shouldSync($entity) : bool
     {
-        if ($entity->getType() !== Type::SUBSCRIPTION)
-        {
-            return true;
-        }
-
-        return false;
+        return Type::isSyncedInLiveAndTest($entity->getType());
     }
 
     protected function addQueryParamDeleted($query, $params)

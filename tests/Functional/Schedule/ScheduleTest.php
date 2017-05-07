@@ -167,14 +167,27 @@ class ScheduleTest extends TestCase
 
         $this->ba->appAuthLive();
 
-        $testSchedule = $this->fetchSchedule($response['id']);
+        // Settlement schedules are synced in test and live
+        $liveSchedule = $this->fetchSchedule($response['id']);
 
         $this->ba->appAuthTest();
 
+        $testSchedule = $this->fetchSchedule($response['id']);
+
+        $this->assertArraySelectiveEquals($testSchedule, $liveSchedule);
+
+        $this->ba->adminAuth();
+
+        $updateData = ['name' => 'New name'];
+
+        $this->editSchedule($testSchedule['id'], $updateData);
+
+        $this->ba->appAuthLive();
+
         $liveSchedule = $this->fetchSchedule($response['id']);
 
-        // Settlement schedules are synced in test and live
-        $this->assertArraySelectiveEquals($testSchedule, $liveSchedule);
+        // Changes made in test mode are synced in live db
+        $this->assertArraySelectiveEquals($updateData, $liveSchedule);
 
         $input = $this->getDefaultScheduleArray();
 
