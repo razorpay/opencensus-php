@@ -157,4 +157,49 @@ class ScheduleTest extends TestCase
     {
         $this->createAndAssignSchedule();
     }
+
+    public function testScheduleSyncLiveAndTest()
+    {
+        $this->ba->adminAuth();
+
+        // Created schedule has default type settlement
+        $response = $this->createSchedule();
+
+        $this->ba->appAuthLive();
+
+        $testSchedule = $this->fetchSchedule($response['id']);
+
+        $this->ba->appAuthTest();
+
+        $liveSchedule = $this->fetchSchedule($response['id']);
+
+        // Settlement schedules are synced in test and live
+        $this->assertArraySelectiveEquals($testSchedule, $liveSchedule);
+
+        $input = $this->getDefaultScheduleArray();
+
+        // Create another schedule, of type subscription
+        $input['type'] = 'subscription';
+
+        $this->ba->adminAuth();
+
+        $response = $this->createSchedule($input);
+
+        $this->ba->appAuthLive();
+
+        // Schedule was created in test mode, so does not exist in live db
+        $this->runRequestResponseFlow(
+            $this->testData[__FUNCTION__],
+            function() use ($response)
+            {
+                $liveSchedule = $this->fetchSchedule($response['id']);
+            });
+
+        $this->ba->appAuthTest();
+
+        // Schedule does exist in test db, so fetch works
+        $testSchedule = $this->fetchSchedule($response['id']);
+
+        $this->assertEquals($input['type'], $testSchedule['type']);
+    }
 }

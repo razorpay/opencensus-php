@@ -18,6 +18,11 @@ trait RepositoryUpdateTestAndLive
      */
     public function saveOrFail($entity, array $options = array())
     {
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::saveOrFail($entity, $options);
+        }
+
         $this->validateInstanceIsOfCurrentEntity($entity);
         $this->validateIdGenerated($entity);
 
@@ -57,8 +62,13 @@ trait RepositoryUpdateTestAndLive
         $entity->exists = true;
     }
 
-    public function sync($entity, $relation, $ids = array(), bool $detaching = true)
+    public function sync($entity, $relation, $ids = [], bool $detaching = true)
     {
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::sync($entity, $relation, $ids);
+        }
+
         return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids, $detaching)
             {
@@ -89,6 +99,11 @@ trait RepositoryUpdateTestAndLive
 
     public function detach($entity, $relation, $ids = [])
     {
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::detach($entity, $relation, $ids);
+        }
+
         return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids)
             {
@@ -116,6 +131,11 @@ trait RepositoryUpdateTestAndLive
         array $ids = [],
         array $attributes = [], $touch = true)
     {
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::attach($entity, $relation, $ids, $attributes, $touch);
+        }
+
         return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids, $touch)
             {
@@ -136,6 +156,11 @@ trait RepositoryUpdateTestAndLive
 
     public function delete($entity)
     {
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::delete($entity);
+        }
+
         return $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
@@ -161,6 +186,11 @@ trait RepositoryUpdateTestAndLive
 
     public function forceDelete($entity)
     {
+        if ($this->entityShouldSync($entity) === false)
+        {
+            return parent::forceDelete($entity);
+        }
+
         return $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
@@ -253,5 +283,13 @@ trait RepositoryUpdateTestAndLive
 
             throw new Exception\LogicException($msg);
         }
+    }
+
+    protected function entityShouldSync($entity) : bool
+    {
+        $shouldSync = ((method_exists($this, 'shouldSync')) and
+                       ($this->shouldSync($entity) === false));
+
+        return ($shouldSync === false);
     }
 }

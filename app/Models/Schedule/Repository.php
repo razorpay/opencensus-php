@@ -26,6 +26,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    protected function shouldSync($entity) : bool
+    {
+        if ($entity->getType() !== Type::SUBSCRIPTION)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function addQueryParamDeleted($query, $params)
     {
         if ($params[self::WITH_TRASHED] === '1')
