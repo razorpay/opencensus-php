@@ -59,11 +59,11 @@ class Repository extends Base\Repository
 
     public function fetchUnsettledTransactions($timestamp, $channel)
     {
-        $merchantId = $this->repo->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
-        $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
-        $transactionData = $this->getAttributeWithTableName('*');
+        $transactionMerchantId = $this->dbColumn(Transaction\Entity::MERCHANT_ID);
+        $transactionId = $this->dbColumn(Transaction\Entity::ID);
+        $transactionData = $this->dbColumn('*');
 
         $txns = $this->newQuery()
                     ->select($transactionData)
@@ -353,16 +353,16 @@ class Repository extends Base\Repository
 
     public function getCancelledBilldeskTransactions()
     {
-        $billdeskPaymentId = Billdesk\Entity::getAttributeWithTableName(Billdesk\Entity::PAYMENT_ID);
-        $billdeskRefStatus = Billdesk\Entity::getAttributeWithTableName('RefStatus');
+        $billdeskPaymentId = Billdesk\Entity::dbColumn(Billdesk\Entity::PAYMENT_ID);
+        $billdeskRefStatus = Billdesk\Entity::dbColumn('RefStatus');
 
-        $paymentId = $this->repo->payment->getAttributeWithTableName(Payment\Entity::ID);
-        $paymentStatus = $this->repo->payment->getAttributeWithTableName(Payment\Entity::STATUS);
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentStatus = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
 
-        $transactionEntityId = $this->getAttributeWithTableName(Entity::ENTITY_ID);
-        $transactionReconciledAt = $this->getAttributeWithTableName(Entity::RECONCILED_AT);
+        $transactionEntityId = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionReconciledAt = $this->dbColumn(Entity::RECONCILED_AT);
 
-        $transactionData = $this->getAttributeWithTableName('*');
+        $transactionData = $this->dbColumn('*');
 
         return $this->newQuery()
                     ->select($transactionData)

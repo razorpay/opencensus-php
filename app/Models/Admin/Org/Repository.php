@@ -44,15 +44,15 @@ class Repository extends Base\Repository
         // Collect different table names, and their columns to query on
         $hostname = mb_strtolower($hostname);
 
-        $orgId = $this->getAttributeWithTableName(Entity::ID);
-        $orgColumnNames = $this->getAttributeWithTableName('*');
+        $orgId = $this->dbColumn(Entity::ID);
+        $orgColumnNames = $this->dbColumn('*');
 
         $orgHostName = $this->repo->org_hostname;
 
         $orgHostnamesTable = $orgHostName->getTableName();
 
-        $hostnameOrgId = $orgHostName->getAttributeWithTableName(Hostname\Entity::ORG_ID);
-        $hostnameAttr = $orgHostName->getAttributeWithTableName(Hostname\Entity::HOSTNAME);
+        $hostnameOrgId = $orgHostName->dbColumn(Hostname\Entity::ORG_ID);
+        $hostnameAttr = $orgHostName->dbColumn(Hostname\Entity::HOSTNAME);
 
         // Join the orgs, and org_hostname table to get the org with the given hostname
         return $this->newQuery()
@@ -67,8 +67,8 @@ class Repository extends Base\Repository
      */
     public function getOrgsWithWorkflowEnabled(string $permissionId)
     {
-        $orgAttrs = $this->getAttributeWithTableName('*');
-        $orgId = $this->getAttributeWithTableName(Entity::ID);
+        $orgAttrs = $this->dbColumn('*');
+        $orgId = $this->dbColumn(Entity::ID);
 
         $pmTable = Table::PERMISSION_MAP;
 

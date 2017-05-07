@@ -682,7 +682,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $typeName;
     }
 
-    protected function getAttributeWithTableName($col)
+    protected function dbColumn($col)
     {
         return $this->getTableName() . '.' . $col;
     }

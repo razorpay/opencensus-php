@@ -121,7 +121,7 @@ class Repository extends Base\Repository
 
     protected function addQueryParamInternational($query, $params)
     {
-        $international = $this->getAttributeWithTableName(Entity::INTERNATIONAL);
+        $international = $this->dbColumn(Entity::INTERNATIONAL);
 
         $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
@@ -133,8 +133,8 @@ class Repository extends Base\Repository
 
         Payment\Validator::validateStatusArray($status);
 
-        $paymentCardId = $this->repo->payment->getAttributeWithTableName(Payment\Entity::CARD_ID);
-        $cardId = $this->getAttributeWithTableName(Card\Entity::ID);
+        $paymentCardId = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
+        $cardId = $this->dbColumn(Card\Entity::ID);
 
         $query->join($this->repo->payment->getTableName(), $paymentCardId, '=', $cardId)
               ->whereIn(Payment\Entity::STATUS, $status);

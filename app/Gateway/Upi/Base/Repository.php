@@ -33,13 +33,13 @@ class Repository extends Base\Repository
 
     public function fetchAllForBankUpdate($limit = 100, $lastId = 0)
     {
-        $paymentId = $this->repo->payment->getAttributeWithTableName(Payment\Entity::ID);
-        $paymentStatus = $this->repo->payment->getAttributeWithTableName(Payment\Entity::STATUS);
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentStatus = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
 
-        $upiId = $this->getAttributeWithTableName(Entity::ID);
-        $upiVpa = $this->getAttributeWithTableName(Entity::VPA);
-        $upiBank = $this->getAttributeWithTableName(Entity::BANK);
-        $upiPaymentId = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $upiId = $this->dbColumn(Entity::ID);
+        $upiVpa = $this->dbColumn(Entity::VPA);
+        $upiBank = $this->dbColumn(Entity::BANK);
+        $upiPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
 
         return $this->newQuery()
                     ->select($upiId, $upiVpa)
