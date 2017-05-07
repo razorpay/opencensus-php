@@ -867,7 +867,7 @@ class Service extends Base\Service
         {
             try
             {
-                $this->updateBankAccount($merchantId, $bankAccount);
+                $this->addBankAccount($merchantId, $bankAccount);
 
                 $successCount++;
             }
@@ -944,14 +944,6 @@ class Service extends Base\Service
         $merchant->setHoldFunds($holdFunds);
 
         $this->repo->saveOrFail($merchant);
-    }
-
-
-    protected function updateBankAccount(string $merchantId, array $bankAccount)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        (new BankAccount\Core)->createOrChangeBankAccount($bankAccount, $merchant);
     }
 
     /**
