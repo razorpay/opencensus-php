@@ -504,12 +504,10 @@ class Entity extends Base\Entity
         ];
     }
 
-    public function hasPermission($route)
+    public function hasPermission($permission)
     {
         $adminPermissions = $this->getPermissionsList();
 
-        $routePermission = Permission\Name::$actionMap[$route];
-
-        return in_array($routePermission, $adminPermissions);
+        return in_array($permission, $adminPermissions);
     }
 }

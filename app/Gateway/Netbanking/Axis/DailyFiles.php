@@ -57,7 +57,7 @@ class DailyFiles extends Base\DailyFiles
         ];
     }
 
-    protected function sendMail($amount, $claimsFile, $refundsFile, $count=[], $email = null)
+    protected function sendMail($amount, $claimsFile, $refundsFile, $count = [], $email = null)
     {
         $date = Carbon::now('Asia/Kolkata')->format('jS F Y');
 

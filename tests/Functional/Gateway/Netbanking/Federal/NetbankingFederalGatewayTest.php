@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Federal;
 use Mail;
 use Carbon\Carbon;
 
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -271,25 +271,24 @@ class NetbankingFederalGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
+        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+
         $testData = [
-            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+            'subject' => 'Federal Netbanking claims and refund files for '.$date,
                 'amount' => [
                     'claims'  => 1500,
-                    'refunds' => 500,
-                    'total'   => 1000,
+                    'refunds' => 1000,
+                    'total'   => 500,
                 ],
                 'count'   => [
                     'claims'  => 3,
                     'refunds' => 3,
-                    'total'   => 5
                 ]
         ];
 
-        Mail::assertSent(RefundFileMail::class, function ($mail) use ($testData)
+        Mail::assertSent(DailyFileMail::class, function ($mail) use ($testData, $date)
         {
-            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
-
-            $expectedSubject = 'Federal Netbanking claims and refunds file for ' . $date;
+            $expectedSubject = 'Federal Netbanking claims and refund files for ' . $date;
 
             $subject = $mail->subject;
 

@@ -2,9 +2,11 @@
 
 namespace RZP\Gateway\Netbanking\Federal;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
 class DailyFiles extends Base\DailyFiles
 {
@@ -43,5 +45,28 @@ class DailyFiles extends Base\DailyFiles
         }
 
         return ['refunds' => $refundsData['local_file_path']];
+    }
+
+    protected function sendMail($amount, $claimsFile, $refundsFile, $count = [], $email = null)
+    {
+        $date = Carbon::now('Asia/Kolkata')->format('jS F Y');
+
+        $bankName = $this->getBankName();
+
+        $emails = $this->getEmailsToSendTo($email);
+
+        $data = [
+            'bankName'    => $bankName,
+            'amount'      => $amount,
+            'count'       => $count,
+            'date'        => $date,
+            'claimsFile'  => $claimsFile,
+            'refundsFile' => $refundsFile,
+            'emails'      => $emails,
+        ];
+
+        $dailyFileMail = new DailyFileMail($data);
+
+        Mail::queue($dailyFileMail);
     }
 }
