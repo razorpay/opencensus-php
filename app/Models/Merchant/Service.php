@@ -846,6 +846,56 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function updateBankAccountForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('updateBankAccount', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $bankAccount = $input['bank_account'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->updateBankAccount($merchantId, $bankAccount);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
     public function getOffers(string $mid)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
@@ -894,6 +944,14 @@ class Service extends Base\Service
         $merchant->setHoldFunds($holdFunds);
 
         $this->repo->saveOrFail($merchant);
+    }
+
+
+    protected function updateBankAccount(string $merchantId, array $bankAccount)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        (new BankAccount\Core)->createOrChangeBankAccount($bankAccount, $merchant);
     }
 
     /**

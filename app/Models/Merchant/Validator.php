@@ -82,6 +82,11 @@ class Validator extends Base\Validator
         'merchant_ids' => 'required|array'
     ];
 
+    protected static $updateBankAccountRules = [
+        'bank_account'   => 'required|array',
+        'merchant_ids'   => 'required|array'
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
