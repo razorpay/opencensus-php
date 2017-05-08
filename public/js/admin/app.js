@@ -18,7 +18,6 @@ var app = angular
     'ngIdle',
     'ngBusy',
     'angulartics',
-    'angulartics.segment.io',
     'react',
   ])
   .run([
