@@ -390,6 +390,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AUTH_ATTEMPTS, 0);
     }
 
+    /**
+     * This is here just for test cases.
+     *
+     * @param $tokenId
+     */
+    public function setTokenId($tokenId)
+    {
+        $this->setAttribute(self::TOKEN_ID, $tokenId);
+    }
+
     // --------------------- END SETTERS ---------------------
 
     // --------------------- RELATIONS ---------------------

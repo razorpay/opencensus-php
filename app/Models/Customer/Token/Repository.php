@@ -81,13 +81,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByIdAndCustomer($id, Customer\Entity $customer)
-    {
-        return $this->newQuery()
-                    ->customerId($customer->getId())
-                    ->findOrFailPublic($id);
-    }
-
     public function isMerchantIdRequiredForFetch()
     {
         return false;

@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::SCHEDULE_ID,
         self::NEXT_RUN_AT,
+        self::LAST_RUN_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -49,7 +50,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::METHOD,
         self::SCHEDULE_ID,
-        self::NEXT_RUN_AT
+        self::NEXT_RUN_AT,
+        self::LAST_RUN_AT,
     ];
 
     protected $defaults = [

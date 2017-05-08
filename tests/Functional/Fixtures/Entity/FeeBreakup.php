@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 class FeeBreakup extends Base
 {
-
     public function create(array $attributes = array())
     {
         $defaultValues = array(

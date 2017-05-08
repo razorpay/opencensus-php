@@ -165,6 +165,75 @@ return [
         ],
     ],
 
+    'createSubscriptionForAuthTxn' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'plan_id' => 'plan_1000000000plan',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => null,
+                'start_at' => null,
+                'end_at' => null,
+                'total_count' => 6,
+                'paid_count' => 0,
+                'auth_attempts' => 0,
+                'customer_notify' => false,
+            ],
+        ],
+    ],
+
+    'createSubscriptionForAuthTxnWithStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'start_at'      => 1516386600, // 1-20-2017, 12:00:00 AM
+                'quantity'      => 1,
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'plan_id' => 'plan_1000000000plan',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at' => 1542652200, // 12-20-2018, 12:00:00 AM
+                'total_count' => 6,
+                'paid_count' => 0,
+                'auth_attempts' => 0,
+                'customer_notify' => false,
+            ],
+        ],
+    ],
+
     'testCreateSubscriptionWithoutCustomerId' => [
         'request' => [
             'url' => '/subscriptions',

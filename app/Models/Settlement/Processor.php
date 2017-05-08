@@ -44,7 +44,7 @@ class Processor extends Base\Core
             TraceCode::SETTLEMENT_RETRY_REQUEST,
             $input
         );
-        
+
         $this->preSettlementProcessing($input);
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements();
@@ -312,7 +312,7 @@ class Processor extends Base\Core
      *
      * @return bool returns if settlement can be processed now
      */
-    protected function isInvalidSettlementTime() : bool
+    protected function isInvalidSettlementTime(): bool
     {
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;

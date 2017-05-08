@@ -350,22 +350,9 @@ class SubscriptionCreateTest extends TestCase
 
     protected function createSubscriptionPreRequisiteEntities(array $planAttributes = [])
     {
-        $customer = $this->fixtures->create('customer');
+        $this->fixtures->create('customer');
 
-        $planItem = $this->fixtures->create('item', [
-            'name' => 'test plan',
-            'amount' => 2000,
-            'currency' => 'INR',
-            'type' => 'plan',
-        ]);
-
-        $plan = $this->fixtures->create('plan', $planAttributes);
-
-        return [
-            'plan' => $plan,
-            'customer' => $customer,
-            'plan_item' => $planItem
-        ];
+        $this->fixtures->create('plan', $planAttributes);
     }
 
     protected function getCreateSubscriptionRequestContent($function, $planId = null)

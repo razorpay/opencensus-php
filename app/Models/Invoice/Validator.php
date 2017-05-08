@@ -447,9 +447,8 @@ class Validator extends Base\Validator
                 break;
 
             case 'sendSubscriptionNotification':
-                $allowedStatuses = [
-                    Status::PAID,
-                ];
+                // Right now, we don't send anything at all
+                $allowedStatuses = [];
 
                 break;
 

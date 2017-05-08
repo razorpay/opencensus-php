@@ -289,15 +289,23 @@ trait PaymentTrait
         return $content;
     }
 
-    public function getSubscriptionAuthTransactionRequest($subscription)
+    public function getSubscriptionAuthTransactionRequest($subscription, $authAmount = null)
     {
         $paymentRequest = $this->getDefaultRecurringPaymentArray();
 
         // For subscription, we get the customer ID from the subscription entity itself.
         unset($paymentRequest['customer_id']);
 
-        $paymentRequest['subscription_id'] = $subscription['public_id'];
-        $paymentRequest['amount'] = 500;
+        $paymentRequest['subscription_id'] = $subscription['id'];
+
+        if ($authAmount === null)
+        {
+            $paymentRequest['amount'] = 500;
+        }
+        else
+        {
+            $paymentRequest['amount'] = $authAmount;
+        }
 
         return $paymentRequest;
     }
