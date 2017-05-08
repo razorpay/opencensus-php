@@ -19,114 +19,114 @@ class TerminalLoadSorterTest extends TestCase
         parent::setUp();
     }
 
-    public function testCreateGatewayLoadRuleForCard()
+    public function testCreateGatewayRuleForCard()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForCardWithInvalidGateway()
+    public function testCreateGatewayRuleForCardWithInvalidGateway()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForCardWithInvalidCardGateway()
+    public function testCreateGatewayRuleForCardWithInvalidCardGateway()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleWithInvalidMethod()
+    public function testCreateGatewayRuleWithInvalidMethod()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForCardWithInvalidNetwork()
+    public function testCreateGatewayRuleForCardWithInvalidNetwork()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForCardWithInvalidNetworkForGateway()
+    public function testCreateGatewayRuleForCardWithInvalidNetworkForGateway()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForCardWithInvalidIssuer()
+    public function testCreateGatewayRuleForCardWithInvalidIssuer()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForCardWithInvalidCardType()
+    public function testCreateGatewayRuleForCardWithInvalidCardType()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForCardWithInvalidGatewayAcquirer()
+    public function testCreateGatewayRuleForCardWithInvalidGatewayAcquirer()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForNetbanking()
+    public function testCreateGatewayRuleForNetbanking()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForNetbankingWithInvalidGatewayForNetbanking()
+    public function testCreateGatewayRuleForNetbankingWithInvalidGatewayForNetbanking()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForNetbankingWithDirectNetbankingGatewayAndNullIssuer()
+    public function testCreateGatewayRuleForNetbankingWithDirectNetbankingGatewayAndNullIssuer()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForNetbankingWithIssuerNotSupportedByGateway()
+    public function testCreateGatewayRuleForNetbankingWithIssuerNotSupportedByGateway()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForWallet()
+    public function testCreateGatewayRuleForWallet()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleForWalletWithInvalidIssuer()
+    public function testCreateGatewayRuleForWalletWithInvalidIssuer()
     {
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleWithAlreadyExistingRule()
+    public function testCreateGatewayRuleWithAlreadyExistingRule()
     {
-        $existingRule = $this->fixtures->create('gateway_load_rule:card');
+        $existingRule = $this->fixtures->create('gateway_rule:card');
 
         $this->ba->appAuth();
 
@@ -137,9 +137,9 @@ class TerminalLoadSorterTest extends TestCase
      * Tests the case when there is a load existing and new load input potentially
      * conflictes with the new load input but the cumulate load is <= 100 %
      */
-    public function testCreateGatewayLoadRuleWithConflictingRulesButTotalLoadNotExceedingMaxLoad()
+    public function testCreateGatewayRuleWithConflictingRulesButTotalLoadNotExceedingMaxLoad()
     {
-        $existingRule = $this->fixtures->create('gateway_load_rule:card', [
+        $existingRule = $this->fixtures->create('gateway_rule:card', [
             'network' => null,
             'load' => 6000,
         ]);
@@ -149,9 +149,9 @@ class TerminalLoadSorterTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateGatewayLoadRuleWithConflictingRulesButTotalLoadExceedsMaxLoad()
+    public function testCreateGatewayRuleWithConflictingRulesButTotalLoadExceedsMaxLoad()
     {
-        $existingRule = $this->fixtures->create('gateway_load_rule:card', [
+        $existingRule = $this->fixtures->create('gateway_rule:card', [
             'network' => null,
             'load' => 6000,
         ]);
@@ -161,51 +161,49 @@ class TerminalLoadSorterTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdadateGatewayLoadRuleLoad()
+    public function testUpdadateGatewayRuleLoad()
     {
-        $existingRule = $this->fixtures->create('gateway_load_rule:card');
+        $existingRule = $this->fixtures->create('gateway_rule:card');
 
         $this->ba->appAuth();
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/load_rules/' . $existingRule->getId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $existingRule->getId();
 
         $this->startTest();
     }
 
-    public function testUpdateGatewayLoadRuleLoadButWithTotalLoadExceedingMaxLoad()
+    public function testUpdateGatewayRuleLoadButWithTotalLoadExceedingMaxLoad()
     {
-        $rule1 = $this->fixtures->create('gateway_load_rule:card');
+        $rule1 = $this->fixtures->create('gateway_rule:card');
 
-        $rule2 = $existingRule = $this->fixtures->create('gateway_load_rule:card', [
+        $rule2 = $existingRule = $this->fixtures->create('gateway_rule:card', [
             'network' => null,
             'load' => 5000,
         ]);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/load_rules/' . $rule2->getId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $rule2->getId();
 
         $this->ba->appAuth();
 
         $this->startTest();
     }
 
-    public function testDeleteGatewayLoadRule()
+    public function testDeleteGatewayRule()
     {
-        $rule = $this->fixtures->create('gateway_load_rule:card');
+        $rule = $this->fixtures->create('gateway_rule:card');
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/load_rules/' . $rule->getId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $rule->getId();
 
         $this->ba->appAuth();
 
         $content = $this->startTest();
-
-        $this->assertArrayHasKey('deleted_at', $content);
     }
 
-    public function testTerminalSelectionWithLoadRuleApplied()
+    public function testTerminalSelectionWithRuleApplied()
     {
         $this->setUpTerminals();
 
-        $rule = $this->fixtures->create('gateway_load_rule:card', [
+        $rule = $this->fixtures->create('gateway_rule:card', [
             'gateway' => 'axis_migs',
             'method'  => 'card',
             'network' => 'VISA',
@@ -227,11 +225,11 @@ class TerminalLoadSorterTest extends TestCase
      * Tests the case where a load rule is present but it does not satisfy the
      * payment criteria
      */
-    public function testTerminalSelectionWithLoadRulePresentButNotApplied()
+    public function testTerminalSelectionWithRulePresentButNotApplied()
     {
         $this->setUpTerminals();
 
-        $rule = $this->fixtures->create('gateway_load_rule:card', [
+        $rule = $this->fixtures->create('gateway_rule:card', [
             'gateway' => 'axis_migs',
             'method'  => 'card',
             'network' => 'MC',
@@ -253,11 +251,11 @@ class TerminalLoadSorterTest extends TestCase
      * Tests the case where an applicable rule is present but the laod value does
      * not fall into the bucket as set by the chance value
      */
-    public function testTerminalSelectionWithApplicableLoadRulePresentButNotSelectedByChancePercent()
+    public function testTerminalSelectionWithApplicableRulePresentButNotSelectedByChancePercent()
     {
         $this->setUpTerminals();
 
-        $rule = $this->fixtures->create('gateway_load_rule:card', [
+        $rule = $this->fixtures->create('gateway_rule:card', [
             'gateway' => 'axis_migs',
             'method'  => 'card',
             'network' => 'VISA',
@@ -279,11 +277,11 @@ class TerminalLoadSorterTest extends TestCase
      * Tests the case where there are no merchant specific rules present, but a
      * shared rule is present. In this case we operate on the shared rule
      */
-    public function testTerminalSelectionWithSharedLoadRulePresentAndNoMerchantSpecificRules()
+    public function testTerminalSelectionWithSharedRulePresentAndNoMerchantSpecificRules()
     {
         $this->setUpTerminals();
 
-        $rule = $this->fixtures->create('gateway_load_rule:card', [
+        $rule = $this->fixtures->create('gateway_rule:card', [
             'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
             'gateway'     => 'axis_migs',
             'method'      => 'card',
@@ -302,18 +300,18 @@ class TerminalLoadSorterTest extends TestCase
         $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
     }
 
-    public function testTerminalSelectionWithMultipleApplicableLoadRules()
+    public function testTerminalSelectionWithMultipleApplicableRules()
     {
         $this->setUpTerminals();
 
-        $this->fixtures->create('gateway_load_rule:card', [
+        $this->fixtures->create('gateway_rule:card', [
             'gateway' => 'axis_migs',
             'method'  => 'card',
             'network' => 'VISA',
             'load'    => 7000
         ]);
 
-        $this->fixtures->create('gateway_load_rule:card', [
+        $this->fixtures->create('gateway_rule:card', [
             'gateway' => 'hdfc',
             'method'  => 'card',
             'network' => 'VISA',
@@ -335,9 +333,9 @@ class TerminalLoadSorterTest extends TestCase
     {
         $this->setUpTerminals();
 
-        $this->fixtures->create('gateway_load_rule:card', [
+        $this->fixtures->create('gateway_rule:card', [
             'gateway'          => 'cybersource',
-            'card_type'        => 'credit',
+            'method_type'      => 'credit',
             'network'          => 'VISA',
             'issuer'           => 'HDFC',
             'gateway_acquirer' => 'hdfc',
@@ -364,7 +362,7 @@ class TerminalLoadSorterTest extends TestCase
     {
         $this->setUpTerminals();
 
-        $this->fixtures->create('gateway_load_rule:netbanking', [
+        $this->fixtures->create('gateway_rule:netbanking', [
             'gateway' => 'paytm',
             'issuer'  => 'HDFC',
             'load'    => 7000
@@ -386,7 +384,7 @@ class TerminalLoadSorterTest extends TestCase
         $this->fixtures->merchant->enableMobikwik();
         $this->setUpTerminals();
 
-        $this->fixtures->create('gateway_load_rule:wallet', [
+        $this->fixtures->create('gateway_rule:wallet', [
             'gateway' => 'wallet_mobikwik',
             'issuer'  => 'mobikwik',
             'load'    => 7000

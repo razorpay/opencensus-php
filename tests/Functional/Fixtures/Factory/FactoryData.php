@@ -621,7 +621,7 @@ final class FactoryData
             'next_run_at'       => 1451604600,
         ]);
 
-        $factory(\RZP\Models\Gateway\LoadRule\Entity::class, [
+        $factory(\RZP\Models\Gateway\Rule\Entity::class, [
             'id'         => $faker->uniqueid,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\LoadRule;
+namespace RZP\Models\Gateway\Rule;
 
 use RZP\Base;
 use RZP\Exception;
@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY          => 'required|string|max:50|custom',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
         Entity::METHOD           => 'required|string|max:30',
-        Entity::CARD_TYPE        => 'sometimes|filled|string|max:10',
+        Entity::METHOD_TYPE      => 'sometimes|filled|string|max:10',
         Entity::ISSUER           => 'sometimes|filled|string',
         Entity::NETWORK          => 'sometimes|filled|string|max:10',
         Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
@@ -32,7 +32,7 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::METHOD,
-        Entity::CARD_TYPE,
+        Entity::METHOD_TYPE,
         Entity::ISSUER,
         Entity::NETWORK,
         Entity::GATEWAY_ACQUIRER,
@@ -89,18 +89,18 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateCardType(array $input)
+    public function validateMethodType(array $input)
     {
         $method = $input[Entity::METHOD];
 
-        if (empty($input[Entity::CARD_TYPE]) === true)
+        if (empty($input[Entity::METHOD_TYPE]) === true)
         {
             return;
         }
 
         if (in_array($method, [Method::CARD, Method::EMI], true) === true)
         {
-            $cardType = $input[Entity::CARD_TYPE];
+            $cardType = $input[Entity::METHOD_TYPE];
 
             if (Card\Type::isValidType($cardType) === false)
             {

@@ -1,36 +1,54 @@
 <?php
 
-namespace RZP\Models\Gateway\LoadRule;
+namespace RZP\Models\Gateway\Rule;
 
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'gateway_load_rule';
+    protected $entity = 'gateway_rule';
+
+    /**
+     * Attributes used for fetching rules matching these keys from database
+     */
+    const QUERY_ATTRIBUTES = [
+        Entity::MERCHANT_ID,
+        Entity::METHOD,
+        Entity::METHOD_TYPE,
+        Entity::NETWORK,
+        Entity::ISSUER,
+        Entity::INTERNATIONAL,
+    ];
 
     protected $entityFetchParamRules = [
         Entity::GATEWAY          => 'sometimes|string|max:25',
         Entity::MERCHANT_ID      => 'sometimes|alpha_num|size:14',
         Entity::METHOD           => 'sometimes|string',
-        Entity::CARD_TYPE        => 'sometimes|string',
+        Entity::METHOD_TYPE      => 'sometimes|string',
         Entity::GATEWAY_ACQUIRER => 'sometimes|string',
         Entity::NETWORK          => 'sometimes|string',
         Entity::INTERNATIONAL    => 'sometimes|boolean',
         Entity::ISSUER           => 'sometimes|string',
     ];
 
-    public function findExistingRule(array $input)
-    {
-        return $this->fetch($input)->first();
-    }
-
-    public function getTotalLoadForSimilarRules(Entity $rule)
+    /**
+     * If we have rule R1 for gateway A with network null, and we are defining new rule R2
+     * for gateway B with network VISA. For a VISA payment both rules R1 and R2 will
+     * be applicable, i.e rule R1's criteria satisfies R2's criteria.
+     *
+     * This method computes the total load across all such rules which match the
+     * new rule's criteria
+     *
+     * @param  Entity $rule New rule entity
+     * @return int          Total load across matching rules
+     */
+    public function getTotalLoadForRulesWithMatchingCriteria(Entity $rule): int
     {
         $params = [];
 
         $input = $rule->toArray();
 
-        foreach (Entity::QUERY_ATTRIBUTES as $key)
+        foreach (self::QUERY_ATTRIBUTES as $key)
         {
             $params[$key] = $input[$key] ?? null;
         }
@@ -39,19 +57,26 @@ class Repository extends Base\Repository
 
         $this->buildSelectionQuery($query, $params);
 
+        // If the rule against which we are matching is an existing rule, we exclude
+        // it in the query
         if ($rule->exists === true)
         {
             $query->where(Entity::ID, '!=', $rule->getId());
         }
 
-        return $query->sum(Entity::LOAD);
+        return (int) $query->sum(Entity::LOAD);
     }
 
-    public function fetchApplicableRules(array $ruleFetchParams)
+    /**
+     * Fetches rules for terminal selection as per the parameters provided
+     *
+     * @param  array  $params Query parameter values
+     */
+    public function fetchApplicableRules(array $params): Base\PublicCollection
     {
         $query = $this->newQuery();
 
-        $this->buildSelectionQuery($query, $ruleFetchParams);
+        $this->buildSelectionQuery($query, $params);
 
         return $query->get();
     }
@@ -64,7 +89,12 @@ class Repository extends Base\Repository
      *   signifying any/all hence we need to include these rules also
      * - For attributes which are not in NULLABLE_ATTRIBUTES we add clause like
      *   WHERE key = <value>, or WHERE <key> is NULL if the value is null
-     * TODO: add sample query covering all above cases
+     * - Sample query below
+     *   SELECT * FROM load_rules WHERE merchant_id IN (?, ?) AND gateway IN (?, ?, ?)
+     *   AND method = ? AND (method_type = ? OR method_type IS NULL) AND (issuer = ? OR issuer IS NULL)
+     *   AND (network = ? OR network IS NULL) AND (gateway_acquirer = ? OR gateway_acquirer IS NULL)
+     *   AND international = false AND deleted_at IS NOT NULL
+     *
      * @param  Querybuilder  $query  Query object
      * @param  array  $params query params
      */
@@ -87,6 +117,10 @@ class Repository extends Base\Repository
         }
     }
 
+    /**
+     * For attributes for which null values are acceptable we form query like
+     * WHERE key = <val> OR KEY IS NULL
+     */
     protected function addQueryForNullableAttribute($query, $key, $params)
     {
         $value = $params[$key];
@@ -111,7 +145,7 @@ class Repository extends Base\Repository
         }
         else
         {
-            $this->addQueryParamDefault($query, $params, $key);
+            $query->where($key, '=', $params[$key]);
         }
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\LoadRule;
+namespace RZP\Models\Gateway\Rule;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_ACQUIRER = 'gateway_acquirer';
     const INTERNATIONAL    = 'international';
     const METHOD           = 'method';
-    const CARD_TYPE        = 'card_type';
+    const METHOD_TYPE      = 'method_type';
     const NETWORK          = 'network';
     const ISSUER           = 'issuer';
     const LOAD             = 'load';
@@ -30,10 +30,10 @@ class Entity extends Base\PublicEntity
      * Attributes which have a length constraint in database
      */
     const LENGTHS = [
-        self::GATEWAY   => 50,
-        self::NETWORK   => 10,
-        self::METHOD    => 30,
-        self::CARD_TYPE => 10,
+        self::GATEWAY     => 50,
+        self::NETWORK     => 10,
+        self::METHOD      => 30,
+        self::METHOD_TYPE => 10,
     ];
 
     /**
@@ -46,40 +46,17 @@ class Entity extends Base\PublicEntity
     ];
 
     /**
-     * Attributes used for filtering rules based on payment
-     * related criteria
-     */
-    const FILTER_ATTRIBUTES = [
-        self::CARD_TYPE,
-        self::INTERNATIONAL,
-        self::NETWORK,
-        self::ISSUER,
-    ];
-
-    /**
      * Attributes for which the value can be null, signifying any/all values
      * are acceptable for comparison
      */
     const NULLABLE_ATTRIBUTES = [
-        self::CARD_TYPE,
+        self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
         self::GATEWAY_ACQUIRER,
     ];
 
-    /**
-     * Attributes used for fetching rules matching these keys from database
-     */
-    const QUERY_ATTRIBUTES = [
-        self::MERCHANT_ID,
-        self::METHOD,
-        self::CARD_TYPE,
-        self::NETWORK,
-        self::ISSUER,
-        self::INTERNATIONAL,
-    ];
-
-    protected $entity = 'gateway_load_rule';
+    protected $entity = 'gateway_rule';
 
     protected $generateIdOnCreate = true;
 
@@ -92,7 +69,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::MERCHANT_ID,
         self::METHOD,
-        self::CARD_TYPE,
+        self::METHOD_TYPE,
         self::NETWORK,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
@@ -105,7 +82,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::MERCHANT_ID,
         self::METHOD,
-        self::CARD_TYPE,
+        self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
         self::GATEWAY_ACQUIRER,
@@ -114,19 +91,6 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT
-    ];
-
-    protected $public = [
-        self::ID,
-        self::GATEWAY,
-        self::MERCHANT_ID,
-        self::METHOD,
-        self::CARD_TYPE,
-        self::NETWORK,
-        self::GATEWAY_ACQUIRER,
-        self::INTERNATIONAL,
-        self::ISSUER,
-        self::LOAD,
     ];
 
     public function getLoad()
@@ -139,9 +103,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
-    public function getCardType()
+    public function getMethodType()
     {
-        return $this->getAttribute(self::CARD_TYPE);
+        return $this->getAttribute(self::METHOD_TYPE);
     }
 
     public function getNetwork()
@@ -198,7 +162,7 @@ class Entity extends Base\PublicEntity
             // For certain attributes like gateway_acquirer, null means all, hence
             // we don't match if the value for these attributes is null
             if ((in_array($key, self::NULLABLE_ATTRIBUTES, true) === true) and
-                    $this->getAttribute($key) === null)
+                    ($this->getAttribute($key) === null))
             {
                 continue;
             }

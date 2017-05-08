@@ -3,7 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Base;
-use RZP\Models\Gateway\LoadRule;
+use RZP\Models\Gateway\Rule;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
@@ -35,9 +35,9 @@ class TerminalLoadSorter extends Terminal\Sorter
         // sorting using rules
         $verbose = true;
 
-        $loadRuleCore = new LoadRule\Core;
+        $ruleCore = new Rule\Core;
 
-        $applicableRules = $loadRuleCore->fetchApplicableRules($terminals, $input, $verbose);
+        $applicableRules = $ruleCore->fetchApplicableRules($terminals, $input, $verbose);
 
         // If no rules are present for load sorting we return the terminals list as is
         if ($applicableRules->isEmpty() === true)

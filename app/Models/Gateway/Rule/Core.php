@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\LoadRule;
+namespace RZP\Models\Gateway\Rule;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -16,13 +16,13 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::GATEWAY_LOAD_RULE_CREATE_REQUEST, $input);
 
-        $loadRule = (new Entity)->build($input);
+        $rule = (new Entity)->build($input);
 
-        $this->validateNewRule($loadRule, $input);
+        $this->validateNewRule($rule, $input);
 
-        $this->repo->saveOrFail($loadRule);
+        $this->repo->saveOrFail($rule);
 
-        return $loadRule;
+        return $rule;
     }
 
     public function update(string $id, array $input)
@@ -34,17 +34,17 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        $loadRule = $this->repo->gateway_load_rule->findOrFailPublic($id);
+        $rule = $this->repo->gateway_rule->findOrFailPublic($id);
 
-        $loadRule->edit($input);
+        $rule->edit($input);
 
         // Checks if the edited load value will cause total load across similar
         // rules to exceed max load value of 100
-        $this->checkIfTotalLoadIsValid($loadRule);
+        $this->checkIfTotalLoadIsValid($rule);
 
-        $this->repo->saveOrFail($loadRule);
+        $this->repo->saveOrFail($rule);
 
-        return $loadRule;
+        return $rule;
     }
 
     /**
@@ -60,7 +60,7 @@ class Core extends Base\Core
         $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
 
         $applicableRules = $this->repo
-                                ->gateway_load_rule
+                                ->gateway_rule
                                 ->fetchApplicableRules($ruleFetchParams);
 
         // CHecks if merchant specific rules are present. If present we only use them
@@ -114,12 +114,12 @@ class Core extends Base\Core
         unset($input[Entity::LOAD]);
 
         // Checks if there is already a rule defined with the exact same criteria
-        $existingRulesCount = $this->repo->gateway_load_rule->fetch($input)->count();
+        $existingRulesCount = $this->repo->gateway_rule->fetch($input)->count();
 
         if ($existingRulesCount > 0)
         {
             throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_GATEWAY_LOAD_RULE_EXISTS);
+                        ErrorCode::BAD_REQUEST_GATEWAY_RULE_EXISTS);
         }
 
         // Checks that the total load across all rules with similar criteria doesn't exceed
@@ -140,8 +140,8 @@ class Core extends Base\Core
     protected function checkIfTotalLoadIsValid(Entity $rule)
     {
         $totalLoadForSimilarRules = $this->repo
-                                         ->gateway_load_rule
-                                         ->getTotalLoadForSimilarRules($rule);
+                                         ->gateway_rule
+                                         ->getTotalLoadForRulesWithMatchingCriteria($rule);
 
         $totalLoad = $rule->getLoad() + $totalLoadForSimilarRules;
 
@@ -223,7 +223,7 @@ class Core extends Base\Core
     {
         $card = $payment->card;
 
-        $params[Entity::CARD_TYPE] = $card->getType();
+        $params[Entity::METHOD_TYPE] = $card->getType();
 
         $params[Entity::NETWORK] = $card->getNetworkCode();
 

@@ -5,49 +5,49 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testCreateGatewayLoadRuleForCard' => [
+    'testCreateGatewayRuleForCard' => [
         'request' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'axis_migs',
-                'method'  => 'card',
-                'network' => 'VISA',
-                'issuer' => 'HDFC',
-                'international' => 0,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'axis_migs',
+                'method'           => 'card',
+                'network'          => 'VISA',
+                'issuer'           => 'HDFC',
+                'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000
+                'load'             => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'axis_migs',
-                'method'  => 'card',
-                'network' => 'VISA',
-                'issuer' => 'HDFC',
-                'international' => false,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'axis_migs',
+                'method'           => 'card',
+                'network'          => 'VISA',
+                'issuer'           => 'HDFC',
+                'international'    => false,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000,
-                'admin' => true
+                'load'             => 5000,
+                'admin'            => true
             ],
         ],
     ],
 
-    'testCreateGatewayLoadRuleForCardWithInvalidGateway' => [
+    'testCreateGatewayRuleForCardWithInvalidGateway' => [
         'request' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'xyz',
-                'method'  => 'card',
-                'network' => 'VISA',
-                'issuer' => 'HDFC',
-                'international' => 0,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'xyz',
+                'method'           => 'card',
+                'network'          => 'VISA',
+                'issuer'           => 'HDFC',
+                'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000
+                'load'             => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -65,19 +65,19 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForCardWithInvalidCardGateway' => [
+    'testCreateGatewayRuleForCardWithInvalidCardGateway' => [
         'request' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'netbanking_hdfc',
-                'method'  => 'card',
-                'network' => 'VISA',
-                'issuer' => 'HDFC',
-                'international' => 0,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'netbanking_hdfc',
+                'method'           => 'card',
+                'network'          => 'VISA',
+                'issuer'           => 'HDFC',
+                'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000
+                'load'             => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -95,19 +95,19 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleWithInvalidMethod' => [
+    'testCreateGatewayRuleWithInvalidMethod' => [
         'request' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'hdfc',
-                'method'  => 'xyz',
-                'network' => 'VISA',
-                'issuer' => 'HDFC',
-                'international' => 0,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'hdfc',
+                'method'           => 'xyz',
+                'network'          => 'VISA',
+                'issuer'           => 'HDFC',
+                'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000
+                'load'             => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -125,19 +125,19 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForCardWithInvalidNetwork' => [
+    'testCreateGatewayRuleForCardWithInvalidNetwork' => [
         'request' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'hdfc',
-                'method'  => 'card',
-                'network' => 'xyz',
-                'issuer' => 'HDFC',
-                'international' => 0,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'hdfc',
+                'method'           => 'card',
+                'network'          => 'xyz',
+                'issuer'           => 'HDFC',
+                'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000
+                'load'             => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -155,19 +155,19 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForCardWithInvalidNetworkForGateway' => [
+    'testCreateGatewayRuleForCardWithInvalidNetworkForGateway' => [
         'request' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'axis_migs',
-                'method'  => 'card',
-                'network' => 'DICL',
-                'issuer' => 'HDFC',
-                'international' => 0,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'axis_migs',
+                'method'           => 'card',
+                'network'          => 'DICL',
+                'issuer'           => 'HDFC',
+                'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000
+                'load'             => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -185,19 +185,19 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForCardWithInvalidIssuer' => [
+    'testCreateGatewayRuleForCardWithInvalidIssuer' => [
         'request' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'hdfc',
-                'method'  => 'card',
-                'network' => 'VISA',
-                'issuer' => 'XYZ',
-                'international' => 0,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'hdfc',
+                'method'           => 'card',
+                'network'          => 'VISA',
+                'issuer'           => 'XYZ',
+                'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000
+                'load'             => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -215,20 +215,20 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForCardWithInvalidCardType' => [
+    'testCreateGatewayRuleForCardWithInvalidCardType' => [
         'request' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'hdfc',
-                'method'  => 'card',
-                'card_type' => 'xyz',
-                'network' => 'VISA',
-                'issuer' => 'ICIC',
-                'international' => 0,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'hdfc',
+                'method'           => 'card',
+                'method_type'      => 'xyz',
+                'network'          => 'VISA',
+                'issuer'           => 'ICIC',
+                'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000
+                'load'             => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -246,19 +246,19 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForCardWithInvalidGatewayAcquirer' => [
+    'testCreateGatewayRuleForCardWithInvalidGatewayAcquirer' => [
         'request' => [
             'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'hdfc',
-                'method'  => 'card',
-                'network' => 'VISA',
-                'issuer' => 'ICIC',
-                'international' => 0,
+                'merchant_id'      => '10000000000000',
+                'gateway'          => 'hdfc',
+                'method'           => 'card',
+                'network'          => 'VISA',
+                'issuer'           => 'ICIC',
+                'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load' => 5000
+                'load'             => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -276,31 +276,31 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForNetbanking' => [
+    'testCreateGatewayRuleForNetbanking' => [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'billdesk',
-                'method'  => 'netbanking',
-                'issuer' => 'SBIN',
-                'load' => 5000
+                'gateway'     => 'billdesk',
+                'method'      => 'netbanking',
+                'issuer'      => 'SBIN',
+                'load'        => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'billdesk',
-                'method'  => 'netbanking',
-                'issuer' => 'SBIN',
-                'load' => 5000,
-                'admin' => true,
+                'gateway'     => 'billdesk',
+                'method'      => 'netbanking',
+                'issuer'      => 'SBIN',
+                'load'        => 5000,
+                'admin'       => true,
             ],
         ],
     ],
 
-    'testCreateGatewayLoadRuleForNetbankingWithInvalidGatewayForNetbanking' => [
+    'testCreateGatewayRuleForNetbankingWithInvalidGatewayForNetbanking' => [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
@@ -309,7 +309,7 @@ return [
                 'issuer' => 'SBIN',
                 'load' => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -327,7 +327,7 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForNetbankingWithDirectNetbankingGatewayAndNullIssuer' => [
+    'testCreateGatewayRuleForNetbankingWithDirectNetbankingGatewayAndNullIssuer' => [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
@@ -335,7 +335,7 @@ return [
                 'method'  => 'netbanking',
                 'load' => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -353,7 +353,7 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForNetbankingWithIssuerNotSupportedByGateway' => [
+    'testCreateGatewayRuleForNetbankingWithIssuerNotSupportedByGateway' => [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
@@ -362,7 +362,7 @@ return [
                 'method'  => 'netbanking',
                 'load' => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -380,7 +380,7 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForWallet' => [
+    'testCreateGatewayRuleForWallet' => [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
@@ -389,7 +389,7 @@ return [
                 'issuer' => 'jiomoney',
                 'load' => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -404,7 +404,7 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleForWalletWithInvalidIssuer' => [
+    'testCreateGatewayRuleForWalletWithInvalidIssuer' => [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
@@ -413,7 +413,7 @@ return [
                 'issuer' => 'xyz',
                 'load' => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -431,7 +431,7 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleWithAlreadyExistingRule' => [
+    'testCreateGatewayRuleWithAlreadyExistingRule' => [
         'request' => [
             'content' => [
                 'method' => 'card',
@@ -440,25 +440,25 @@ return [
                 'network' => 'VISA',
                 'load' => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'post'
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_GATEWAY_LOAD_RULE_EXISTS
+                    'description' => PublicErrorDescription::BAD_REQUEST_GATEWAY_RULE_EXISTS
                 ]
             ],
             'status_code' => 400
         ],
         'exception' => [
             'class'               => \RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_LOAD_RULE_EXISTS,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_RULE_EXISTS,
         ],
     ],
 
-    'testCreateGatewayLoadRuleWithConflictingRulesButTotalLoadNotExceedingMaxLoad' => [
+    'testCreateGatewayRuleWithConflictingRulesButTotalLoadNotExceedingMaxLoad' => [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
@@ -467,7 +467,7 @@ return [
                 'network' => 'VISA',
                 'load' => 4000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -482,7 +482,7 @@ return [
         ],
     ],
 
-    'testCreateGatewayLoadRuleWithConflictingRulesButTotalLoadExceedsMaxLoad' => [
+    'testCreateGatewayRuleWithConflictingRulesButTotalLoadExceedsMaxLoad' => [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
@@ -491,7 +491,7 @@ return [
                 'network' => 'VISA',
                 'load' => 5000
             ],
-            'url' => '/gateway/load_rules',
+            'url' => '/gateway/rules',
             'method' => 'POST',
         ],
         'response' => [
@@ -509,7 +509,7 @@ return [
         ],
     ],
 
-    'testUpdadateGatewayLoadRuleLoad' => [
+    'testUpdadateGatewayRuleLoad' => [
         'request' => [
             'content' => [
                 'load' => 7000,
@@ -527,7 +527,7 @@ return [
         ],
     ],
 
-    'testUpdateGatewayLoadRuleLoadButWithTotalLoadExceedingMaxLoad' => [
+    'testUpdateGatewayRuleLoadButWithTotalLoadExceedingMaxLoad' => [
         'request' => [
             'content' => [
                 'load' => 7000
@@ -549,17 +549,13 @@ return [
         ],
     ],
 
-    'testDeleteGatewayLoadRule' => [
+    'testDeleteGatewayRule' => [
         'request' => [
             'method' => 'DELETE'
         ],
         'response' => [
             'content' => [
-                'method'      => 'card',
-                'merchant_id' => '10000000000000',
-                'gateway'     => 'hdfc',
-                'network'     => 'VISA',
-                'load'        => 5000
+                'deleted' => true,
             ],
         ],
     ],

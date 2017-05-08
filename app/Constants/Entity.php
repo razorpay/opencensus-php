@@ -61,7 +61,7 @@ class Entity
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
-    const GATEWAY_LOAD_RULE     = 'gateway_load_rule';
+    const GATEWAY_RULE          = 'gateway_rule';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
@@ -158,7 +158,7 @@ class Entity
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
-        self::GATEWAY_LOAD_RULE     => \RZP\Models\Gateway\LoadRule::class,
+        self::GATEWAY_RULE          => \RZP\Models\Gateway\Rule::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
