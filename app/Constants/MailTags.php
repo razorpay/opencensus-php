@@ -34,6 +34,7 @@ class MailTags
     const INVOICE                          = 'invoice';
     const ECOD                             = 'ecod';
 
+    const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const AUTH_REMINDER                    = 'auth_reminder';
     const HOLIDAY_NOTIFICATION             = 'holiday_notification';

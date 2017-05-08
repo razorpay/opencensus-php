@@ -67,7 +67,7 @@ class Gateway extends Base\Gateway
 
         $this->repo->saveOrFail($gatewayEntity);
 
-        $this->checkResponseStatus($attrs, $content);
+        $this->checkCallbackStatus($attrs, $content);
 
         return $this->getCallbackResponseData($input);
     }
@@ -306,7 +306,7 @@ class Gateway extends Base\Gateway
     }
 
 
-    protected function checkResponseStatus(array $attrs, array $content)
+    protected function checkCallbackStatus(array $attrs, array $content)
     {
         if ((isset($attrs['status']) === false) or
             ($attrs['status'] !== Status::YES))

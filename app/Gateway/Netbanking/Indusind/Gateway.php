@@ -50,9 +50,13 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                           ['gateway_response' => $input['gateway'],
-                            'payment_id'       => $input['payment']['id']]);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'gateway_response' => $input['gateway'],
+                'payment_id'       => $input['payment']['id'],
+            ]
+        );
 
         $content = $this->getDataFromResponse($input['gateway']);
 
@@ -62,13 +66,9 @@ class Gateway extends Base\Gateway
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $attrs = $this->getCallbackAttributes($content);
+        $this->saveCallbackResponse($content);
 
-        $gatewayEntity->fill($attrs);
-
-        $this->repo->saveOrFail($gatewayEntity);
-
-        $this->checkResponseStatus($attrs, $content);
+        $this->checkCallbackStatus($attrs, $content);
 
         return $this->getCallbackResponseData($input);
     }
@@ -95,28 +95,35 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request);
+            $request
+        );
 
         $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response->body,
+                'payment_id' => $verify->input['payment']['id'],
+            ]
+        );
 
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
     }
 
     public function verifyPayment(Verify $verify)
     {
-        // Response XML
         $content = $verify->verifyResponseContent;
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            $content);
+        $verify->status = $this->getVerifyMatchStatus($verify, $content);
 
-        $this->getVerifyStatus($verify, $content);
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $this->saveVerifyResponseIfNeeded($verify, $content);
+        $verify->payment = $this->saveVerifyContent($verify);
     }
 
-    protected function getVerifyStatus(Verify $verify, array $response)
+    protected function getVerifyMatchStatus(Verify $verify, array $response)
     {
         $this->checkApiSuccess($verify);
 
@@ -129,9 +136,7 @@ class Gateway extends Base\Gateway
             $status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->status = $status;
-
-        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+        return $status;
     }
 
     protected function checkApiSuccess(Verify $verify)
@@ -269,8 +274,6 @@ class Gateway extends Base\Gateway
 
         parse_str($decryptedString, $response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $response);
-
         $this->checkDecryptionFailure($encryptedString, $response);
 
         return $response;
@@ -280,18 +283,19 @@ class Gateway extends Base\Gateway
     {
         if (empty($content) === true)
         {
-            $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
+            $this->trace->error(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['encrypted_string' => $encryptedString]
             );
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED
             );
         }
     }
 
 
-    protected function checkResponseStatus(array $attrs, array $content)
+    protected function checkCallbackStatus(array $attrs, array $content)
     {
         if ((isset($attrs['status']) === false) or
             ($attrs['status'] !== Constants::YES))
@@ -315,29 +319,30 @@ class Gateway extends Base\Gateway
         return $this->getLiveMerchantId();
     }
 
-    protected function getCallbackAttributes(array $content)
+    protected function saveCallbackResponse(array $content)
     {
-        return [
+        $attrs = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID]
         ];
+
+        $gatewayEntity->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayEntity);
     }
 
-    protected function saveVerifyResponseIfNeeded(Verify $verify, array $content)
+    protected function saveVerifyContent(Verify $verify)
     {
         $gatewayPayment = $verify->payment;
 
-        $bankPaymentId = $gatewayPayment->getBankPaymentId();
+        $content = $verify->verifyResponseContent;
 
         $attributes = $this->getVerifyAttributes($content);
 
-        if ($bankPaymentId === null)
-        {
-            $gatewayPayment->fill($attributes);
+        $gatewayPayment->fill($attributes);
 
-            $this->repo->saveOrFail($gatewayPayment);
-        }
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
