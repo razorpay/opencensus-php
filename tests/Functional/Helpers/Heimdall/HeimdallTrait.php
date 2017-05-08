@@ -6,17 +6,13 @@ use Carbon\Carbon;
 use Config;
 
 use RZP\Models\Admin\Permission;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
 
+/**
+ * IMPORT requestResponseTrait explicitly in all the tests which
+ * require heimdall trait
+ */
 trait HeimdallTrait
 {
-    use EntityActionTrait;
-    use RequestResponseFlowTrait
-    {
-        sendRequest as makeRequestParent;
-    }
-
     protected function deleteAdmin($orgId, $adminId, $token = null)
     {
         $request = [
@@ -117,7 +113,7 @@ trait HeimdallTrait
 
     public function getAssignablePermissions()
     {
-        $assignablePermissions = Config::get('heimdall.assignablePermissions');
+        $assignablePermissions = Config::get('heimdall.assignable_permissions');
 
         $permissions = [];
 

@@ -60,7 +60,7 @@ class MailTags
      * @var array Email tags
      * @static
      */
-    public static $notifyTags = [
+    public static $setlNotifyTags = [
         self::KOTAK_BENEFICIARY_MAIL,
         self::HDFC_NETBANKING_REFUNDS_MAIL,
         self::AXIS_NETBANKING_REFUNDS_MAIL,

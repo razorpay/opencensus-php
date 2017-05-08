@@ -121,7 +121,7 @@ class AxisGatewayTest extends TestCase
         $this->assertSame($paymentId, $refund['payment_id']);
         // $this->assertTestResponse($refund);
 
-        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals(true, $refund['gateway_refunded']);
         $this->assertNull($refund['transaction_id']);
 
         $migs = $this->getLastEntity('axis_migs', true);

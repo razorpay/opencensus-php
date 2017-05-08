@@ -148,7 +148,7 @@ return [
         'response' => [
             'content' => [
                 'enabled' => [
-                    'HDFC' => 'HDFC Bank Ltd',
+                    'HDFC' => 'HDFC Bank',
                     'UTIB' => 'Axis Bank',
                 ],
                 'disabled' => [
@@ -218,5 +218,43 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-    ]
+    ],
+
+    'testCreateMarketplaceLinkedAccount' => [
+        'request' => [
+            'url' => '/submerchants',
+            'method' => 'POST',
+            'content' => [
+                'id'    => '7gcKngYfqyDMjN',
+                'name'  => 'Linked Account 2',
+                'email' => 'linkedaccount@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '7gcKngYfqyDMjN',
+                'name' => 'Linked Account 2',
+                'email' => 'linkedaccount@razorpay.com',
+            ],
+        ],
+    ],
+
+    'testLinkedAccountDefaultSchedule'   => [
+        'request' => [
+            'url' => '/submerchants',
+            'method' => 'POST',
+            'content' => [
+                'id'    => '7gbqextd68Co4t',
+                'name'  => 'Linked Account 3',
+                'email' => 'linkedaccount@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '7gbqextd68Co4t',
+                'name' => 'Linked Account 3',
+                'email' => 'linkedaccount@razorpay.com',
+            ],
+        ],
+    ],
 ];

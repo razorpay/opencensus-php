@@ -13,6 +13,7 @@ class Constants
     const TOKENS              = 'tokens';
     const S2SWALLET           = 's2swallet';
     const S2SUPI              = 's2supi';
+    const S2SAEPS             = 's2saeps';
     const SETL_REPORT         = 'setl_report';
     const NOFLASHCHECKOUT     = 'noflashcheckout';
     const RECURRING           = 'recurring';
@@ -28,6 +29,7 @@ class Constants
     const MARKETPLACE         = 'marketplace';
     const EMAIL_OPTIONAL      = 'email_optional';
     const CONTACT_OPTIONAL    = 'contact_optional';
+    const ZOHO                = 'zoho';
 
     // TODO: Use this instead of alFeatures once in final code change pr
     public static $featureValueMap = [
@@ -37,6 +39,7 @@ class Constants
         self::TOKENS              => true,
         self::S2SWALLET           => true,
         self::S2SUPI              => true,
+        self::S2SAEPS             => true,
         self::SETL_REPORT         => true,
         self::NOFLASHCHECKOUT     => true,
         self::RECURRING           => true,
@@ -52,6 +55,7 @@ class Constants
         self::MARKETPLACE         => true,
         self::EMAIL_OPTIONAL      => true,
         self::CONTACT_OPTIONAL    => true,
+        self::ZOHO                => true,
     ];
 
     public static $visibleFeaturesMap = [

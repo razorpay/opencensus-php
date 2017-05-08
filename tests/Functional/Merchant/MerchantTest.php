@@ -8,8 +8,10 @@ use DB;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -17,10 +19,12 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
-    use PaymentTrait;
     use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
+    use EntityActionTrait;
+    use RequestResponseFlowTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -367,6 +371,13 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
     public function testMerchantArchive()
     {
         $merchant = $this->getLastEntity('merchant', true);
@@ -378,6 +389,10 @@ class MerchantTest extends TestCase
                 'locked'      => true
             ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
 
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
@@ -387,6 +402,10 @@ class MerchantTest extends TestCase
 
     public function testMerchantArchiveWithNoMerchantDetails()
     {
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -396,6 +415,10 @@ class MerchantTest extends TestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => '123456789' ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -404,6 +427,10 @@ class MerchantTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => '123456789' ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
 
@@ -418,12 +445,20 @@ class MerchantTest extends TestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => NULL ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
     public function testMerchantSuspend()
     {
         $merchant = $this->getLastEntity('merchant', true);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
 
@@ -438,6 +473,10 @@ class MerchantTest extends TestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -446,6 +485,10 @@ class MerchantTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
 
@@ -459,6 +502,10 @@ class MerchantTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => NULL ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }
@@ -651,23 +698,39 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
-    public function testGetCheckoutPreferencesWithOffer()
+    public function testGetCheckoutPreferencesWithNonOrderRelatedOffer()
     {
-        $this->markTestSkipped('Skipping till new offers changes are merged');
-
         $this->ba->publicAuth();
 
-        $offer = $this->fixtures->offer->createCardOffer();
+        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
 
-        $content = $this->startTest();
+        $offer = $this->fixtures->create('offer:wallet', [
+                'checkout_display' => true,
+                'display_text'     => 'Some display text',
+                'terms'            => 'Some terms',
+                'starts_at'        => $startsAt,
+            ]);
 
-        $countCardOffers = count($content['offers']['card']['items']);
+        $this->startTest();
+    }
 
-        $countWalletOffers = count($content['offers']['wallet']['items']);
+    public function testGetCheckoutPreferencesWithOrderRelatedOffer()
+    {
+        $this->ba->publicAuth();
 
-        $this->assertEquals(1, $countCardOffers);
+        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
 
-        $this->assertEquals(0, $countWalletOffers);
+        $offer = $this->fixtures->create('offer:card', [
+                'display_text' => 'Some display text',
+                'terms'        => 'Some terms',
+                'starts_at'    => $startsAt
+            ]);
+
+        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+        $this->startTest();
     }
 
     public function testGetCheckoutRouteWithSavedLocal()

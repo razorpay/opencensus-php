@@ -977,12 +977,12 @@ class BasicAuth
 
                 $this->internalApp = $name;
 
-                if ((isset($info['cloud'])) and
-                    ($info['cloud'] === true))
-                {
-                    // Disable internal ip checks for now
-                    // $verify = $this->verifyClientIpInternal();
-                }
+                // if ((isset($info['cloud'])) and
+                //     ($info['cloud'] === true))
+                // {
+                //     Disable internal ip checks for now
+                //     $verify = $this->verifyClientIpInternal();
+                // }
 
                 break;
             }
@@ -1131,6 +1131,11 @@ class BasicAuth
         return ($this->type === Type::ADMIN_AUTH);
     }
 
+    public function isAdmin()
+    {
+        return $this->isAdmin;
+    }
+
     public function isPublicAuth()
     {
         return ($this->type === Type::PUBLIC_AUTH);
@@ -1204,7 +1209,18 @@ class BasicAuth
 
     protected function fetchAdminToken($token)
     {
-        $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
+        if ($this->app->environment('testing') === false)
+        {
+            $mode = Mode::LIVE;
+        }
+        else
+        {
+            $mode = $this->mode;
+        }
+
+        // Admin token check should always be done in the
+        // live mode (since we don't sync it in heimdall)
+        $this->adminToken = $this->repo->admin_token->connection($mode)->findOrFailToken($token);
 
         return $this->adminToken;
     }

@@ -20,12 +20,16 @@ class Repository extends Base\Repository
     ];
 
     protected $proxyFetchParamRules = [
-        Entity::USER_ID          => 'sometimes|alpha_num',
-        Entity::STATUS           => 'sometimes|string',
-        Entity::TYPE             => 'sometimes|string|max:16',
-        Entity::CUSTOMER_NAME    => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
-        Entity::CUSTOMER_CONTACT => 'sometimes|contact_syntax',
-        Entity::CUSTOMER_EMAIL   => 'sometimes|email',
+        Entity::USER_ID           => 'sometimes|alpha_num',
+        Entity::STATUS            => 'sometimes|string',
+        Entity::TYPE              => 'sometimes|string|max:16',
+        Entity::CUSTOMER_NAME     => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
+        Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
+        Entity::CUSTOMER_EMAIL    => 'sometimes|email',
+        Entity::NOTES             => 'sometimes|string|min:1|max:40',
+        EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
+        // TODO: Enable this once the expand pr is back merged.
+        // EsRepository::SEARCH_HITS => 'sometimes|boolean',
     ];
 
     protected $appFetchParamRules = [
@@ -117,7 +121,7 @@ class Repository extends Base\Repository
         $paymentId = $params[Entity::PAYMENT_ID];
         Entity::stripSignWithoutValidation($paymentId);
 
-        $paymentIdAttribute = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentIdAttribute = $this->repo->payment->dbColumn(Payment\Entity::ID);
         $query->where($paymentIdAttribute, '=', $paymentId);
 
         $query->select($query->getModel()->getTable() . '.*');
@@ -127,7 +131,7 @@ class Repository extends Base\Repository
     {
         $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $orderIdAttribute = $this->manager->invoice->getAttributeWithTableName(Entity::ORDER_ID);
+        $orderIdAttribute = $this->repo->invoice->dbColumn(Entity::ORDER_ID);
 
         $query->where($orderIdAttribute, '=', $orderId);
     }
@@ -140,15 +144,15 @@ class Repository extends Base\Repository
 
         foreach ($joins as $join)
         {
-            if ($join->table === $this->manager->payment->getTableName())
+            if ($join->table === $this->repo->payment->getTableName())
             {
                 return;
             }
         }
 
-        $invoiceOrderId = $this->getAttributeWithTableName(Entity::ORDER_ID);
-        $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
+        $invoiceOrderId = $this->dbColumn(Entity::ORDER_ID);
+        $paymentOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
 
-        $query->join($this->manager->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
+        $query->join($this->repo->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
     }
 }

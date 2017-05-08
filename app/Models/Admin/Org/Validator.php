@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Org;
 
 use RZP\Base;
 use RZP\Models\Admin\Org\Hostname;
+use RZP\Models\Admin\Admin;
 use RZP\Exception;
 
 class Validator extends Base\Validator

@@ -16,6 +16,9 @@ class Entity extends Base\Entity
     const CATEGORY          = 'category';
     const ASSIGNABLE        = 'assignable';
 
+    // Input field
+    const WORKFLOW_ORGS     = 'workflow_orgs';
+
     // We sync the new permission with orgs
     const ORGS = 'orgs';
 
@@ -44,6 +47,7 @@ class Entity extends Base\Entity
         self::CATEGORY,
         self::ASSIGNABLE,
         self::ORGS,
+        self::WORKFLOW_ORGS,
     ];
 
     protected $visible = [
@@ -52,10 +56,15 @@ class Entity extends Base\Entity
         self::DESCRIPTION,
         self::CATEGORY,
         self::ASSIGNABLE,
+        self::WORKFLOW_ORGS,
     ];
 
     protected $casts = [
-        self::ASSIGNABLE => 'bool',
+        self::ASSIGNABLE        => 'bool',
+    ];
+
+    protected $publicSetters = [
+        self::ID,
     ];
 
     protected static function boot()
@@ -85,6 +94,11 @@ class Entity extends Base\Entity
     public function orgs()
     {
         return $this->morphedByMany(Org\Entity::class, 'entity', Table::PERMISSION_MAP);
+    }
+
+    public function workflow_orgs()
+    {
+        return $this->orgs()->where('enable_workflow', '=', 1);
     }
 
     public function workflows()

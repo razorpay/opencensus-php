@@ -109,7 +109,7 @@ class Gateway extends Base\Gateway
         $this->verifyAmaTransactionResponse($content, $input);
     }
 
-    public function verifyRefund(array $input)
+    public function verifyInternalRefund(array $input)
     {
         $isRefundRequired = $this->isRefundRequired($input);
 
@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
         // not be called again.
         //
         if ((($input['payment']['transaction_id'] === null) and
-             ($checkTransaction === true))or
+             ($checkTransaction === true)) or
             ($refundedEntities->count() > 0) or
             ((isset($verifyContent['vpc_RefundedAmount']) === true) and
              ($verifyContent['vpc_RefundedAmount'] !== '0')))
@@ -660,7 +660,7 @@ class Gateway extends Base\Gateway
             'vpc_Command'       => AxisMigs\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
             'vpc_Currency'      => $input['currency'],
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_MerchTxnRef'   => $input['refund']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         ];
 
@@ -672,7 +672,7 @@ class Gateway extends Base\Gateway
         $content = [
             'vpc_Command'       => AxisMigs\Command::REVERSAL,
             'vpc_Currency'      => $input['payment']['currency'],
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_MerchTxnRef'   => $input['refund']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         ];
 

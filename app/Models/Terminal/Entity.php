@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const NETBANKING                    = 'netbanking';
     const EMI                           = 'emi';
     const UPI                           = 'upi';
+    const AEPS                          = 'aeps';
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
     const INTERNATIONAL                 = 'international';
@@ -40,6 +41,7 @@ class Entity extends Base\PublicEntity
     const SHARED                        = 'shared';
     const ENABLED                       = 'enabled';
     const NETWORK_CATEGORY              = 'network_category';
+    const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
@@ -61,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::NETWORK_CATEGORY,
         self::UPI,
+        self::AEPS,
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
@@ -89,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::NETWORK_CATEGORY,
         self::UPI,
+        self::AEPS,
         self::EMI,
         self::EMI_DURATION,
         self::RECURRING,
@@ -153,6 +157,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL             => 'boolean',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
+        self::AEPS                      => 'boolean',
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'boolean',
     ];
@@ -277,6 +282,11 @@ class Entity extends Base\PublicEntity
     public function isUpiEnabled()
     {
         return $this->getAttribute(self::UPI);
+    }
+
+    public function isAepsEnabled()
+    {
+        return $this->getAttribute(self::AEPS);
     }
 
     public function isShared()

@@ -19,7 +19,7 @@ class Repository extends Base\Repository
         Entity::STATUS                 => 'sometimes|string',
         Entity::UTR                    => 'sometimes|alpha_num',
         Entity::BATCH_FUND_TRANSFER_ID => 'sometimes|alpha_num|size:14',
-        Entity::VERSION                => 'sometimes|string|in:V1,V2',
+        Entity::VERSION                => 'sometimes|string',
     ];
 
     public function getFundTransferAttemptsByBatchIdWithRelations(
@@ -35,5 +35,16 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    /**
+     * Fetches all attempts pending reconciliation between given timstamps (both including)
+     */
+    public function getAttemptsBetweenTimestampsWithStatus(int $from, int $to, string $status)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->where(Entity::STATUS, '=', $status)
+                    ->get();
     }
 }

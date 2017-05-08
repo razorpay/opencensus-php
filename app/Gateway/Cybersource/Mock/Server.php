@@ -205,7 +205,7 @@ class Server extends Base\Mock\Server
 
         $response[F::PURCHASE_TOTALS][F::CURRENCY] = 'INR';
 
-        $this->content($response);
+        $this->content($response, 'refund');
 
         return $response;
     }
@@ -817,7 +817,12 @@ class Server extends Base\Mock\Server
 
         $this->content($content, 'verify_content');
 
-        $xml = require __DIR__ . '/VerifyResponseXml.php';
+        $xml = '';
+
+        if ($content !== [])
+        {
+            $xml = require __DIR__ . '/VerifyResponseXml.php';
+        }
 
         $this->content($xml, 'verify_xml');
 
@@ -826,8 +831,13 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyContent(array $input)
     {
-        $payment = $this->getRepo()->findByPaymentIdAndActionOrFail(
+        $payment = $this->getRepo()->findByPaymentIdAndAction(
                         $input[F::MERCHANT_REFERENCE_NUMBER], Cybersource\Action::AUTHORIZE);
+
+        if ($payment === null)
+        {
+            return [];
+        }
 
         $amount = ($payment->getAmount() / 100);
 
