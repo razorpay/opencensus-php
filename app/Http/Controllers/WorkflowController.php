@@ -270,4 +270,11 @@ class WorkflowController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getActionsChecked()
+    {
+        $data = (new Workflow\Manager)->getActionsCheckedByAdmin();
+
+        return ApiResponse::json($data);
+    }
 }
