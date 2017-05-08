@@ -76,6 +76,7 @@ class Entity extends Base\Entity
         self::NAME,
         self::USERNAME,
         self::PASSWORD,
+        self::PASSWORD_CONFIRMATION,
         self::REMEMBER_TOKEN,
         self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
@@ -531,8 +532,6 @@ class Entity extends Base\Entity
     {
         $routePermission = Permission\Name::$actionMap[$action];
 
-        $hasPermission = $this->hasPermissionOrFail($routePermission);
-
-        return $hasPermission;
+        return $this->hasPermissionOrFail($routePermission);
     }
 }
