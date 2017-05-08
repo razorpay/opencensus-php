@@ -143,6 +143,12 @@ UPDATE axis SET vpc_Message = "Approved", vpc_TxnResponseCode = "0" WHERE id = 1
 UPDATE billdesk SET RefundId = 'ISBI52218128951' WHERE id = 1135026;
 UPDATE billdesk SET RefundId = 'ISBI52122271361' WHERE id = 1112770;
 
+UPDATE billdesk SET RefundId = 'ISBI52110517641' WHERE id = 1150295;
+UPDATE billdesk SET RefundId = 'ISBI52382251091' WHERE id = 1150292;
+UPDATE billdesk SET RefundId = 'ISBI52324139101' WHERE id = 1150288;
+UPDATE billdesk SET RefundId = 'HSBI51610187981' WHERE id = 1150290;
+UPDATE billdesk SET RefundId = 'ISBI51937601041' WHERE id = 1150293;
+
 # Queries to enable international on select terminals
 UPDATE terminals SET international = 1 WHERE gateway IN ('hdfc', 'cybersource', 'amex');
 UPDATE terminals SET international = 1 WHERE gateway = 'axis_migs' AND merchant_id != '100000Razorpay';
@@ -152,3 +158,191 @@ UPDATE terminals SET international = 1 WHERE gateway = 'sharp';
 
 UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7chy3i1qAAG9iW';
 UPDATE workflow_actions SET workflow_id='7chw9HWaX36o9Y' WHERE id='7d3DLq0w58xHmc';
+
+## Data fix for NonAuthCapture Transactions (PR:2660)
+UPDATE transactions
+    JOIN payments
+    ON transactions.entity_id = payments.id
+    SET transactions.fee = 0,
+        transactions.service_tax = 0
+    WHERE payments.captured_at is null AND
+          transactions.fee > 0;
+
+DELETE FROM fees_breakup
+    WHERE transaction_id IN (
+        SELECT transactions.id
+            FROM transactions
+            JOIN payments
+            ON transactions.entity_id = payments.id
+            WHERE payments.captured_at is null AND
+                  transactions.fee > 0
+        );
+        
+UPDATE settlements
+SET attempts = (
+    SELECT COUNT(id) FROM fund_transfer_attempts
+    WHERE fund_transfer_attempts.source_id = settlements.id
+    AND fund_transfer_attempts.source_type = 'settlement'
+    GROUP BY fund_transfer_attempts.source_id
+);
+
+UPDATE settlements s1 JOIN
+(
+    SELECT t1.id, t1.source_id, t1.remarks
+    FROM fund_transfer_attempts AS t1 JOIN
+    (
+        SELECT MAX(created_at) as latest, source_id
+        FROM fund_transfer_attempts
+        GROUP BY source_id
+    ) AS t2
+    ON t1.source_id = t2.source_id AND t1.created_at = t2.latest
+) AS t3
+ON s1.id = t3.source_id
+SET s1.remarks = t3.remarks
+WHERE t3.remarks IS NOT NULL
+AND s1.remarks IS NULL;
+
+UPDATE billdesk SET RefundId = 'HUBI51422263431' WHERE id = 1177651;
+
+# query to correct date format stored in wallet entity for some jiomoney payments
+UPDATE wallet
+SET date = (CASE id WHEN 395660 THEN "20170213210920"
+                    WHEN 397342 THEN "20170214023856"
+                    WHEN 406882 THEN "20170216095313"
+                    WHEN 408098 THEN "20170216193606"
+                    WHEN 408125 THEN "20170216194336"
+                    WHEN 408183 THEN "20170216195644"
+                    WHEN 420107 THEN "20170221180324"
+                    WHEN 420132 THEN "20170221180820"
+                    WHEN 420361 THEN "20170221201832"
+                    WHEN 421033 THEN "20170222023458"
+                    WHEN 421066 THEN "20170222025114"
+                    WHEN 421176 THEN "20170222034732"
+                    WHEN 422020 THEN "20170222195229"
+                    WHEN 422885 THEN "20170223041803"
+                    WHEN 423328 THEN "20170223154252"
+                    WHEN 423370 THEN "20170223160712"
+                    WHEN 423449 THEN "20170223165843"
+                    WHEN 423533 THEN "20170223174635"
+                    WHEN 424073 THEN "20170223234513"
+                    WHEN 424254 THEN "20170224012844"
+                    WHEN 424982 THEN "20170224144334"
+                    WHEN 424984 THEN "20170224144458"
+                    WHEN 425643 THEN "20170224205305"
+                    WHEN 425860 THEN "20170224225252"
+                    WHEN 426497 THEN "20170225042312"
+                    WHEN 426806 THEN "20170225141645"
+                    WHEN 427087 THEN "20170225170859"
+                    WHEN 427264 THEN "20170225132403"
+                    WHEN 428151 THEN "20170226015634"
+                    WHEN 428396 THEN "20170226041341"
+                    WHEN 428439 THEN "20170226044913"
+                    WHEN 428658 THEN "20170226133618"
+                    WHEN 428970 THEN "20170226171133"
+                    WHEN 429003 THEN "20170226172845"
+                    WHEN 429327 THEN "20170226204104"
+                    WHEN 429481 THEN "20170226220741"
+                    WHEN 429859 THEN "20170227020001"
+                    WHEN 429864 THEN "20170227015856"
+                    WHEN 429936 THEN "20170227023912"
+                    WHEN 430053 THEN "20170227035047"
+                    WHEN 430991 THEN "20170227210819"
+                    WHEN 430993 THEN "20170227210914"
+                    WHEN 430995 THEN "20170227211058"
+                    WHEN 430997 THEN "20170227211206"
+                    WHEN 431000 THEN "20170227211243"
+                    WHEN 431082 THEN "20170227220015"
+                    WHEN 431130 THEN "20170227222655"
+                    WHEN 431133 THEN "20170227222749"
+                    WHEN 431428 THEN "20170228010028"
+                    WHEN 432289 THEN "20170228162411"
+                    WHEN 432323 THEN "20170228165427"
+                    WHEN 432474 THEN "20170228181345"
+                    WHEN 432659 THEN "20170228200050"
+                    WHEN 433135 THEN "20170301001620"
+                    WHEN 433705 THEN "20170301040539"
+                    WHEN 433750 THEN "20170301042012"
+                    WHEN 434411 THEN "20170301164828"
+                    WHEN 436100 THEN "20170302121638"
+                    WHEN 436289 THEN "20170302153404"
+                    WHEN 437170 THEN "20170302235219"
+                    WHEN 437388 THEN "20170303013648"
+                    WHEN 437648 THEN "20170303033835"
+                    WHEN 438196 THEN "20170303152759"
+                    WHEN 438460 THEN "20170303181023"
+                    WHEN 438496 THEN "20170303183449"
+                    WHEN 438574 THEN "20170303191900"
+                    WHEN 438592 THEN "20170303193559"
+                    WHEN 438996 THEN "20170303234650"
+                    WHEN 439631 THEN "20170304053503"
+                    WHEN 440006 THEN "20170304160919"
+                    WHEN 440032 THEN "20170304162119"
+                    WHEN 440041 THEN "20170304162645"
+                    WHEN 440335 THEN "20170304183458"
+                    WHEN 440755 THEN "20170304224217"
+                    WHEN 441147 THEN "20170305023548"
+                    WHEN 441171 THEN "20170305024814"
+                    WHEN 442359 THEN "20170305210640"
+                    WHEN 442714 THEN "20170306004729"
+                    WHEN 442771 THEN "20170306012420"
+                    WHEN 443081 THEN "20170306042118"
+                    WHEN 443123 THEN "20170306045033"
+                    WHEN 443420 THEN "20170306144556"
+                    WHEN 443946 THEN "20170306214759"
+                    WHEN 444111 THEN "20170306233656"
+                    WHEN 444610 THEN "20170307043331"
+                    WHEN 444944 THEN "20170307150314"
+                    WHEN 445756 THEN "20170307184553"
+                    WHEN 445837 THEN "20170307193537"
+                    WHEN 445977 THEN "20170307211605"
+                    WHEN 446413 THEN "20170308090014"
+               END)
+WHERE id IN (395660, 397342, 406882, 408098, 408125, 408183, 420107, 420132, 420361, 421033, 421066, 421176, 422020, 422885, 423328, 423370, 423449, 423533, 424073, 424254, 424982, 424984, 425643, 425860, 426497, 426806, 427087, 427264, 428151, 428396, 428439, 428658, 428970, 429003, 429327, 429481, 429859, 429864, 429936, 430053, 430991, 430993, 430995, 430997, 431000, 431082, 431130, 431133, 431428, 432289, 432323, 432474, 432659, 433135, 433705, 433750, 434411, 436100, 436289, 437170, 437388, 437648, 438196, 438460, 438496, 438574, 438592, 438996, 439631, 440006, 440032, 440041, 440335, 440755, 441147, 441171, 442359, 442714, 442771, 443081, 443123, 443420, 443946, 444111, 444610, 444944, 445756, 445837, 445977, 44641);
+
+update daily_settlements join
+(
+    select batch_fund_transfer_id, count(*) as processed_count
+    from settlements
+    where status = 'processed'
+    group by batch_fund_transfer_id
+) as stats
+on daily_settlements.id =  stats.`batch_fund_transfer_id`
+set daily_settlements.processed_count = stats.processed_count;
+
+update daily_settlements join
+(
+    select batch_fund_transfer_id, count(*) as processed_count
+    from fund_transfer_attempts
+    where status = 'processed'
+    group by batch_fund_transfer_id
+) as stats
+on daily_settlements.id =  stats.`batch_fund_transfer_id`
+set daily_settlements.processed_count = stats.processed_count;
+
+update daily_settlements join
+(
+    select batch_fund_transfer_id, sum(amount) as processed_amount
+    from settlements
+    group by batch_fund_transfer_id
+) as stats
+on daily_settlements.id =  stats.`batch_fund_transfer_id`
+set daily_settlements.processed_amount = stats.processed_amount;
+
+update daily_settlements join
+(
+    select fund_transfer_attempts.batch_fund_transfer_id, sum(settlements.amount) as processed_amount
+    from fund_transfer_attempts join settlements
+    on fund_transfer_attempts.source_id = settlements.`id`
+    where fund_transfer_attempts.status = 'processed'
+    and fund_transfer_attempts.batch_fund_transfer_id = settlements.batch_fund_transfer_id
+    group by fund_transfer_attempts.batch_fund_transfer_id
+) as stats
+on daily_settlements.id =  stats.`batch_fund_transfer_id`
+set daily_settlements.processed_amount = stats.processed_amount;
+
+UPDATE billdesk SET RefundId = 'ISBM52921114461' WHERE id = 1234573;
+
+# See https://github.com/razorpay/api/pull/2719#pullrequestreview-34234085
+# Currently set to CENT which was acquired by HDFC in 2008
+
+UPDATE iins SET issuer="HDFC" WHERE iin IN (421335,421394,422677,434673,472803,472810,489782,530151)

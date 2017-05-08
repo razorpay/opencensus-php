@@ -34,6 +34,7 @@ class Gateway
     const SHARP              = 'sharp';
     const UPI_ICICI          = 'upi_icici';
     const UPI_IDFC           = 'upi_idfc';
+    const AEPS_ICICI         = 'aeps_icici';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
@@ -45,9 +46,19 @@ class Gateway
     const ACQUIRER_HDFC      = 'hdfc';
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
+    const ACQUIRER_AMEX      = 'amex';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
+
+    const GATEWAY_ACQUIRERS = [
+        self::AXIS_MIGS   => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::HDFC        => [self::ACQUIRER_HDFC],
+        self::CYBERSOURCE => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
+        self::FIRST_DATA  => [self::ACQUIRER_ICIC],
+        self::AMEX        => [self::ACQUIRER_AMEX],
+        self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
+    ];
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
@@ -86,6 +97,18 @@ class Gateway
         self::WALLET_JIOMONEY
     ];
 
+    /**
+     * List of gateways that we wish to attempt this with.
+     * This should eventually cover all API based refund
+     * gateways.
+     *
+     * These gateways should have verifyRefund2 implemented.
+     * and be allowed to perform it.
+     * */
+    const REFUND_RETRY_GATEWAYS = [
+        Payment\Gateway::CYBERSOURCE,
+    ];
+
     public static $channels = [
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
@@ -112,6 +135,7 @@ class Gateway
         self::WALLET_OPENWALLET  => Settlement\Channel::KOTAK,
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
+        self::AEPS_ICICI         => Settlement\Channel::KOTAK,
         self::CYBERSOURCE        => Settlement\Channel::KOTAK,
     ];
 
@@ -166,6 +190,10 @@ class Gateway
         Method::UPI => [
             self::UPI_ICICI,
             self::UPI_IDFC,
+        ],
+
+        Method::AEPS => [
+            self::AEPS_ICICI,
         ],
     ];
 
@@ -280,12 +308,13 @@ class Gateway
     );
 
     /**
+     * @deprecated
      * List of gateways for which we run verification checks for all
      * failed payments on a continuous basis.
      *
      * @var array
      */
-    public static $verifyEnabled = array(
+    public static $verifyEnabled = [
         self::AXIS_MIGS,
         self::BILLDESK,
         self::EBS,
@@ -309,7 +338,11 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::UPI_ICICI,
         self::UPI_IDFC,
-    );
+    ];
+
+    public static $verifyDisabled = [
+        self::WALLET_OPENWALLET
+    ];
 
     /**
      * List of gateways that support recurring payments
@@ -354,6 +387,7 @@ class Gateway
     public static $claimsFileToBank = [
         IFSC::KKBK,
         IFSC::UTIB,
+        IFSC::FDRL,
     ];
 
     /**

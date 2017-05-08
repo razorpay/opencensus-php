@@ -264,7 +264,9 @@ class WorkflowController extends Controller
 
     public function getActionsByMaker()
     {
-        $data = (new Workflow\Service)->getActionsByMaker();
+        $input = Request::all();
+
+        $data = (new Workflow\Service)->getActionsByMakerAndType($input);
 
         return ApiResponse::json($data);
     }

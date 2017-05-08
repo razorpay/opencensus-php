@@ -1124,8 +1124,15 @@ class Processor
 
         if ($this->mutex->acquire($resource) === false)
         {
+            $data = [
+                'payment_id'  => $payment->getId(),
+                'merchant_id' => $payment->getMerchantId(),
+                'gateway'     => $payment->getGateway(),
+                'terminal_id' => $payment->getTerminalId(),
+            ];
+
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS, null, $data);
         }
     }
 
@@ -1159,6 +1166,24 @@ class Processor
 
     public function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)
     {
+        // TODO: Remove this check later
+        // This check is needed because the capture payment would fail
+        // for the payments which got authorized by old code, and got captured by new one
+        $existingFeesSplit = $this->repo->fee_breakup->fetchByTransactionId($txn->getId());
+
+        if ($existingFeesSplit->count() !== 0)
+        {
+            $this->trace->info(
+                TraceCode::FEES_BREAKUP_ALREADY_EXISTS,
+                [
+                  'transaction_id'    => $txn->getId(),
+                  'payment_id'        => $txn->getEntityId(),
+                  'fee_split'         => $feesSplit->toArrayPublic(),
+                ]);
+
+            return;
+        }
+
         $this->trace->info(
             TraceCode::CREATING_FEES_BREAKUP,
             [

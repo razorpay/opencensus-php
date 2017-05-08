@@ -33,6 +33,7 @@ return array(
         'upi_idfc',
         'upi_icici',
         'upi_npci',
+        'aeps_icici',
         'wallet_payzapp',
         'wallet_payumoney',
         'wallet_airtelmoney',
@@ -66,6 +67,7 @@ return array(
     'mock_wallet_jiomoney'    => env('JIOMONEY_MOCK'),
     'mock_upi_icici'          => env('UPI_ICICI_MOCK'),
     'mock_upi_idfc'           => env('UPI_IDFC_MOCK'),
+    'mock_aeps_icici'         => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'  => env('FREECHARGE_MOCK'),
 
     'certificate_path'        => env('CERTIFICATE_DIR_PATH'),
@@ -161,6 +163,10 @@ return array(
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
     ),
 
+    'aeps_icici' => [
+        'terminal_id'           => env('AEPS_TERMINAL_ID'),
+    ],
+
     'upi_idfc' => [
         'test_kek'               => env('UPI_IDFC_TEST_KEK'),
         'test_password'          => env('UPI_IDFC_TEST_PASSWORD'),
@@ -254,6 +260,7 @@ return array(
 
     'netbanking_federal' => [
         'test_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_TEST_MERCHANT_ID'),
+        'live_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_LIVE_MERCHANT_ID'),
     ],
 
     'sharp' => array(

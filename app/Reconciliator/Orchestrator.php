@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
+use RZP\Models\FileStore\Format;
 
 class Orchestrator extends Base\Core
 {
@@ -703,9 +704,8 @@ class Orchestrator extends Base\Core
      */
     protected function getFileContentInArrayAndSet($fileDetails)
     {
-        // All file types are segregated into either CSV or Excel.
         $fileType = self::getKeyFromSubArrayMatch(
-            $fileDetails[FileProcessor::EXTENSION], FileProcessor::FILE_TYPES_MAPPINGS);
+            $fileDetails[FileProcessor::MIME_TYPE], FileProcessor::FILE_TYPES_MAPPINGS);
 
         $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
 
@@ -759,7 +759,20 @@ class Orchestrator extends Base\Core
         //
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
 
-        $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
+        // this flag enables us to check if spout lib has been used
+        $spoutLib = false;
+
+        if ($fileDetails[FileProcessor::EXTENSION] === Format::XLSX)
+        {
+            $spoutLib = true;
+
+            // getting contents using spout library for xlsx
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames);
+        }
+        else
+        {
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
+        }
 
         foreach ($sheetsContents as $sheetName => $rows)
         {
@@ -773,7 +786,14 @@ class Orchestrator extends Base\Core
 
             foreach ($rows as $cellCollection)
             {
-                $sheetArray[] = $cellCollection->all();
+                if ($spoutLib === true)
+                {
+                    $sheetArray[] = $cellCollection;
+                }
+                else
+                {
+                    $sheetArray[] = $cellCollection->all();
+                }
             }
 
             $fileDetails[FileProcessor::SHEET_NAME] = $sheetName;
@@ -810,7 +830,9 @@ class Orchestrator extends Base\Core
 
         $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $this->gateway);
+        $delimiter = $this->gatewayReconciliator->getDelimiter();
+
+        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter);
 
         $this->setExtraDetails($csvArray, $fileDetails);
         $this->allFilesContents[] = $csvArray;

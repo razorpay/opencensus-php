@@ -171,6 +171,8 @@ trait SettlementTrait
 
         $bankTransferAtpt->batchFundTransfer()->associate($this->batchFundTransfer);
 
+        $setl->batchFundTransfer()->associate($this->batchFundTransfer);
+
         $this->repo->saveOrFail($setl);
 
         $this->repo->saveOrFail($bankTransferAtpt);
@@ -198,7 +200,7 @@ trait SettlementTrait
                 ['merchant_id' => $merchant->getId()]);
         }
 
-        if (($this->mode !== Mode::TEST) and
+        if (($this->env !== 'testing') and
             ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
         {
             $shouldSettle = false;

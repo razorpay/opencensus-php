@@ -67,6 +67,10 @@ return array(
         'secret'    => env('KOTAK_SECRET'),
     ),
 
+    'yesbank' => array(
+        'secret'    => env('YESBANK_SECRET'),
+    ),
+
     'lumberjack' => array(
         'url'           => env('LUMBERJACK_URL'),
         'secret'        => env('LUMBERJACK_SECRET'),
@@ -92,6 +96,10 @@ return array(
         'mock'      => env('EXCHANGE_MOCK', false),
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
+    ],
+
+    'zoho' => [
+        'header'    => env('ZOHO_HEADER'),
     ],
 
     'drip' => [

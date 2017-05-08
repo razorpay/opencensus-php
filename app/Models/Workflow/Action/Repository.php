@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Action;
 
 use RZP\Models\Workflow\Base;
+use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Action\State;
 use RZP\Constants\Table;
 
@@ -19,7 +20,7 @@ class Repository extends Base\Repository
     public function findByOrgId(string $orgId)
     {
         return $this->newQuery()
-                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->orgId($orgId)
                     ->get();
     }
 
@@ -39,20 +40,6 @@ class Repository extends Base\Repository
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->with($relations)
                     ->firstOrFailPublic();
-    }
-
-    public function findOpenWorkflows(string $workflowId)
-    {
-        /*
-            SELECT *
-            FROM workflow_actions
-            WHERE workflow_id = $workflow_id AND state IN ('open')
-        */
-
-        return $this->newQuery()
-                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
-                    ->whereIn(Entity::STATE, [State\Entity::OPEN])
-                    ->get();
     }
 
     public function findActionsForChecker(array $roleIds)
@@ -81,6 +68,38 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getClosedActionsByAdmin($adminId)
+    {
+        /*
+         * SELECT `workflow_actions`.*
+         * FROM `workflow_actions` wa
+         * JOIN `action_states` acs ON acs.action_id = wa.id
+         *      AND `actions_states`.name = 'closed';
+         *
+         */
+
+        $acsDao = $this->repo->action_state;
+
+        $acsTable = $acsDao->getTableName();
+
+        $attrs = $this->dbColumn('*');
+        $aId = $this->dbColumn(Entity::ID);
+        $acsActionId = $acsDao->dbColumn(State\Entity::ACTION_ID);
+
+        $acsState = $acsDao->dbColumn(State\Entity::NAME);
+
+        // CLOSED is the absolute last state, We can expect unique entries.
+        $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
+
+
+        return $this->newQuery()
+                    ->select($attrs)
+                    ->join($acsTable, $aId, '=', $acsActionId)
+                    ->where($acsState, '=', State\Entity::CLOSED)
+                    ->where($acsAdminId, '=', $adminId)
+                    ->get();
+    }
+
     public function findOpenActionsByOrgId(string $orgId)
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
@@ -89,6 +108,16 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->orgId($orgId)
+                    ->whereIn(Entity::STATE, $openStates)
+                    ->get();
+    }
+
+    public function fetchOpenActionsByWorkflowId(string $workflowId)
+    {
+        $openStates = State\Entity::OPEN_STATES;
+
+        return $this->newQuery()
+                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->whereIn(Entity::STATE, $openStates)
                     ->get();
     }

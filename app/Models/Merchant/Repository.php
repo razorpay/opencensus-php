@@ -125,11 +125,11 @@ class Repository extends Base\Repository
     public function addQueryParamMethods($query, $params)
     {
         $query->join(
-            $this->manager->methods->getTableName(),
+            $this->repo->methods->getTableName(),
             function ($join) use ($params)
             {
-                $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
-                $methodsMerchantId = $this->manager->methods->getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
+                $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+                $methodsMerchantId = $this->repo->methods->dbColumn(Methods\Entity::MERCHANT_ID);
 
                 $methods = json_decode($params[Entity::METHODS], true);
 
@@ -153,14 +153,14 @@ class Repository extends Base\Repository
 
     protected function addQueryParamFeeBearer($query, $params)
     {
-        $feeBearer = $this->getAttributeWithTableName(Entity::FEE_BEARER);
+        $feeBearer = $this->dbColumn(Entity::FEE_BEARER);
 
         $query->where($feeBearer, '=', FeeBearer::getValueForBearerString($params[Entity::FEE_BEARER]));
     }
 
     protected function addQueryParamFeeModel($query, $params)
     {
-        $feeModel = $this->getAttributeWithTableName(Entity::FEE_MODEL);
+        $feeModel = $this->dbColumn(Entity::FEE_MODEL);
 
         $query->where($feeModel, '=', FeeModel::getValueForFeeModelString($params[Entity::FEE_MODEL]));
     }
@@ -254,32 +254,32 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsByFilter(array $merchantIds, array $input)
     {
-        $merchantCreatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
-        $merchantUpdatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
+        $merchantCreatedAt = $this->repo->merchant->dbColumn(Entity::CREATED_AT);
+        $merchantUpdatedAt = $this->repo->merchant->dbColumn(Entity::CREATED_AT);
 
-        $merchantId = $this->manager
+        $merchantId = $this->repo
                            ->merchant_detail
-                           ->getAttributeWithTableName(Merchant\Detail\Entity::MERCHANT_ID);
+                           ->dbColumn(Merchant\Detail\Entity::MERCHANT_ID);
 
-        $submittedAt = $this->manager
+        $submittedAt = $this->repo
                             ->merchant_detail
-                            ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
+                            ->dbColumn(Merchant\Detail\Entity::SUBMITTED_AT);
 
-        $stepsFinished = $this->manager
+        $stepsFinished = $this->repo
                               ->merchant_detail
-                              ->getAttributeWithTableName(Merchant\Detail\Entity::STEPS_FINISHED);
+                              ->dbColumn(Merchant\Detail\Entity::STEPS_FINISHED);
 
-        $activationProgress = $this->manager
+        $activationProgress = $this->repo
                                    ->merchant_detail
-                                   ->getAttributeWithTableName(Merchant\Detail\Entity::ACTIVATION_PROGRESS);
+                                   ->dbColumn(Merchant\Detail\Entity::ACTIVATION_PROGRESS);
 
-        $submitted = $this->manager
+        $submitted = $this->repo
                           ->merchant_detail
-                          ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED);
+                          ->dbColumn(Merchant\Detail\Entity::SUBMITTED);
 
-        $updatedAt = $this->manager
+        $updatedAt = $this->repo
                           ->merchant_detail
-                          ->getAttributeWithTableName(Merchant\Detail\Entity::UPDATED_AT);
+                          ->dbColumn(Merchant\Detail\Entity::UPDATED_AT);
 
         $query = $this->newQuery()
                       ->with('features')

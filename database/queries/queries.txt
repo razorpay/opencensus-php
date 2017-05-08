@@ -1894,10 +1894,63 @@ ALTER TABLE payments
 ALTER TABLE settlements
     ADD COLUMN attempts INTEGER NOT NULL DEFAULT 1 AFTER channel;
 
-UPDATE settlements
-SET attempts = (
-    SELECT COUNT(id) FROM fund_transfer_attempts
-    WHERE fund_transfer_attempts.source_id = settlements.id
-    AND fund_transfer_attempts.source_type = 'settlement'
-    GROUP BY fund_transfer_attempts.source_id
-);
+ALTER TABLE payment_analytics
+    ADD CONSTRAINT payment_analytics_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments(id);
+
+ALTER TABLE upi
+    ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,
+    ADD INDEX upi_refund_id_index (refund_id);
+
+ALTER TABLE daily_settlements
+    ADD COLUMN processed_amount bigint(20) unsigned AFTER amount,
+    ADD COLUMN processed_count int(11) AFTER total_count;
+
+# Query to add checkout_display flag to offers
+ALTER TABLE offers
+    ADD COLUMN checkout_display TINYINT(1) DEFAULT 0 NOT NULL AFTER block;
+
+ALTER TABLE workflow_steps
+    ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;
+
+# Rrn column for refunds
+ALTER TABLE refunds
+    ADD COLUMN rrn VARCHAR(255) AFTER gateway_refunded;
+
+# arn_no column for hdfc
+ALTER TABLE hdfc
+    ADD COLUMN arn_no VARCHAR(255) AFTER avr;
+
+ALTER TABLE axis
+    ADD INDEX axis_vpc_Command_index (vpc_Command),
+    ADD INDEX axis_vpc_MerchTxnRef_index (vpc_MerchTxnRef);
+
+#PR 2989 Adds foreign key for pricing_rule_id in fees_breakup
+SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE fees_breakup
+    ADD CONSTRAINT fees_breakup_pricing_rule_id_foreign FOREIGN KEY (pricing_rule_id) REFERENCES pricing(id);
+SET FOREIGN_KEY_CHECKS=1;
+
+ALTER TABLE permissions
+    ADD COLUMN enable_workflow TINYINT(1) NOT NULL DEFAULT 0 AFTER assignable;
+
+ALTER TABLE permissions DROP COLUMN  `enable_workflow`;
+
+ALTER TABLE permission_map ADD COLUMN `enable_workflow` boolean DEFAULT 0 NOT NULL AFTER entity_type;
+
+ALTER TABLE refunds
+    ADD COLUMN status VARCHAR(255) NULL AFTER base_amount,
+    ADD COLUMN attempts TINYINT(1) NULL AFTER transaction_id,
+    ADD COLUMN last_attempted_at INT NULL DEFAULT NULL AFTER attempts,
+    ADD INDEX refunds_status_index (status),
+    ADD INDEX refunds_attempts_index (attempts),
+    ADD INDEX refunds_created_at_index (created_at),
+    ADD INDEX refunds_last_attempted_at_index (last_attempted_at);
+
+# Post deployment query for updating status of all the refunds #2673
+UPDATE refunds SET status = "processed", attempts = 1, last_attempted_at = created_at WHERE status is null;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE terminals
+    ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;

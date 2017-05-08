@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
+use RZP\Gateway\Upi\Icici\Fields;
 
 class Server extends Base\Mock\Server
 {
@@ -48,14 +49,14 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         $content = [
-            'response'          => $this->getAuthorizeResponseCode(),
-            'merchantId'        => $input['merchantId'],
-            'subMerchantId'     => isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
-            'terminalId'        => isset($input['terminalId']) ? $input['terminalId'] : null,
-            'success'           => 'true',
-            'message'           => 'Transaction initiated',
-            'merchantTranId'    => $input['merchantTranId'],
-            'BankRRN'           => '1234567',
+            Fields::RESPONSE         => $this->getAuthorizeResponseCode(),
+            Fields::MERCHANT_ID      => $input['merchantId'],
+            Fields::SUBMERCHANT_ID   => $input['subMerchantId'] ?? null,
+            Fields::TERMINAL_ID      => $input['terminalId'] ?? null,
+            Fields::SUCCESS          => 'true',
+            Fields::MESSAGE          => 'Transaction initiated',
+            Fields::MERCHANT_TRAN_ID => $input['merchantTranId'],
+            Fields::BANK_RRN         => random_int(1111111111, 9999999999),
         ];
 
         $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
@@ -63,6 +64,43 @@ class Server extends Base\Mock\Server
         $this->content($content);
 
         return $this->makeResponse($content, $dontEncrypt);
+    }
+
+    public function refund($input)
+    {
+        $input = $this->parseInput($input);
+
+        parent::refund($input);
+
+        $this->validateRefundInput($input);
+
+        $this->content($input, 'validateRefund');
+
+        $content = $this->getRefundResponseContent($input);
+
+        $this->content($content, 'refund');
+
+        return $this->makeResponse($content);
+    }
+
+    protected function getRefundResponseContent(array $input)
+    {
+        $vpa = $input['payeeVA'];
+
+        return [
+            // Conditional Fields
+            Fields::MERCHANT_ID           => $input['merchantId'],
+            Fields::SUBMERCHANT_ID        => $input['subMerchantId'],
+            Fields::TERMINAL_ID           => $input['terminalId'],
+            Fields::ORIGINAL_BANK_RRN_REQ => (string) random_int(1111111111, 9999999999),
+
+            // Mandatory fields
+            Fields::MERCHANT_TRAN_ID      => $input['merchantTranId'],
+            Fields::STATUS                => 'SUCCESS',
+            Fields::RESPONSE              => '0',
+            Fields::SUCCESS               => 'true',
+            Fields::MESSAGE               => 'Transaction Successful',
+        ];
     }
 
     public function verify($input)
@@ -104,7 +142,7 @@ class Server extends Base\Mock\Server
             'success'           => $this->getSuccess($responseCode),
             'message'           => $message,
             'merchantTranId'    => $input['merchantTranId'],
-            'OriginalBankRRN'   => (string) mt_rand(1111111, 9999999),
+            'OriginalBankRRN'   => (string) random_int(1111111111, 9999999999),
             'status'            => $status
         ];
 

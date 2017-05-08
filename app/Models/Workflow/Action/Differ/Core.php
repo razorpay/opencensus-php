@@ -61,7 +61,7 @@ class Core extends Base\Core
 
     public function get(string $actionId)
     {
-        $esResponse = $this->esDao->search(
+        $esResponse = $this->esDao->searchByIndexTypeAndActionId(
             strtolower($this->baseIndex), self::ES_TYPE, $actionId);
 
         if ($esResponse === null)
@@ -82,7 +82,7 @@ class Core extends Base\Core
 
     public function fetchRequest(Action\Entity $action)
     {
-        $esResponse = $this->esDao->search(
+        $esResponse = $this->esDao->searchByIndexTypeAndActionId(
             strtolower($this->baseIndex), self::ES_TYPE, $action->getId());
 
         if ($esResponse === null)
@@ -119,7 +119,9 @@ class Core extends Base\Core
         }
         catch(\Exception $e)
         {
-            $this->trace->warning(TraceCode::HEIMDALL_ACTION_LOG_FAIL, ['msg' => $e]);
+            $this->trace->warning(
+                TraceCode::HEIMDALL_ACTION_LOG_FAIL,
+                ['msg' => $e]);
         }
     }
 
@@ -137,22 +139,44 @@ class Core extends Base\Core
 
         $oldEntity = $this->repo->$entity->findByPublicId($entityId);
 
-        $newEntity = clone $oldEntity;
+        $diff = [];
 
-        // Get the appropriate validator
         $validator = EntityValidator::getValidator($differ->getRoute());
 
-        if ($validator !== null)
+        if (empty($validator) === false)
         {
+            $newEntity = clone $oldEntity;
+
             // Run validator
             $newEntity = $newEntity->edit($differ->getPayload(), $validator);
 
             $diff = $this->createDiff(
-                $oldEntity->toArray(),
-                $newEntity->toArray());
-
-            $differ->setDiff($diff);
+                $oldEntity->toArray(), $newEntity->toArray());
         }
+
+        $relations = EntityValidator::getRelations($differ->getRoute());
+
+        if (empty($relations) === false)
+        {
+            foreach ($relations as $relation)
+            {
+                // We want to show empty values for relation as it means we
+                // want to reset the m2m fields.
+                if (isset($differ->getPayload()[$relation]) === true)
+                {
+                    $relationDiff = $this->createDiffForRelations(
+                        $oldEntity,
+                        $relation,
+                        $differ->getPayload()[$relation]);
+
+                    $diff['old'][$relation] = $relationDiff['old'];
+
+                    $diff['new'][$relation] = $relationDiff['new'];
+                }
+            }
+        }
+
+        $differ->setDiff($diff);
 
         // Calls `saveToEs` above
         event(new DifferEvent($differ->toArray()));
@@ -182,9 +206,7 @@ class Core extends Base\Core
         return $diff;
     }
 
-    public function fetchByEntityAndEntityId(
-        string $entity,
-        string $entityId)
+    public function fetchByEntityAndEntityId(string $entity, string $entityId)
     {
         $openStates = State\Entity::OPEN_STATES;
 
@@ -213,11 +235,8 @@ class Core extends Base\Core
         return $esResponse;
     }
 
-    public function updateStateInEs(
-        string $actionId,
-        string $state)
+    public function updateStateInEs(string $actionId, string $state)
     {
-
         $searchTerms = [
             'action_id' => $actionId
         ];
@@ -239,5 +258,37 @@ class Core extends Base\Core
             strtolower($this->baseIndex), self::ES_TYPE, $documentId, $state);
 
         return $esResponse;
+    }
+
+    protected function createDiffForRelations($entity, $relation, $input)
+    {
+        $model = $entity->$relation()->getModel();
+
+        $relatedEntityName = $model->getEntityName();
+
+        $oldIds = $entity->$relation()->getRelatedIds()->toArray();
+
+        $model::getSignedIdMultiple($oldIds);
+
+        $removedEntities = array_diff($oldIds, $input);
+
+        $addedEntities = array_diff($input, $oldIds);
+
+        $newRelatedEntities = $this->repo
+                                   ->$relatedEntityName
+                                   ->findManyByPublicIds($addedEntities)
+                                   ->toArrayDiff();
+
+        $oldRelatedEntities = $this->repo
+                                   ->$relatedEntityName
+                                   ->findManyByPublicIds($removedEntities)
+                                   ->toArrayDiff();
+
+        $diff = [
+            'old' => $oldRelatedEntities,
+            'new' => $newRelatedEntities,
+        ];
+
+        return $diff;
     }
 }

@@ -24,16 +24,13 @@ class Validator extends Base\Validator
         Entity::STATE       => 'sometimes|string|max:25',
     ];
 
-    public function validateLiveActionsOnEntity(
-        string $entity,
-        string $entityId)
+    public function validateLiveActionsOnEntity(string $entity, string $entityId)
     {
         $app = App::getFacadeRoot();
 
         $orgId = $app['basicauth']->getAdminOrgId();
 
-        $actions = (new Differ\Core)->fetchByEntityAndEntityId(
-            $entity, $entityId);
+        $actions = (new Differ\Core)->fetchByEntityAndEntityId($entity, $entityId);
 
         // If there are any action in progress
         if (empty($actions) === false)
@@ -47,7 +44,7 @@ class Validator extends Base\Validator
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS,
-                $actionIds);
+                null, $actionIds);
         }
     }
 
@@ -63,7 +60,7 @@ class Validator extends Base\Validator
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND,
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND, null,
                 $data);
         }
     }
@@ -81,7 +78,22 @@ class Validator extends Base\Validator
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED,
+                null,
                 $data);
+        }
+    }
+
+    public function validateActionIsOpen(Entity $action = null)
+    {
+        if ($action === null)
+        {
+            $action = $this->entity;
+        }
+
+        if ($action->isClosed() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSED);
         }
     }
 }

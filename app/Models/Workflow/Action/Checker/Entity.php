@@ -61,6 +61,13 @@ class Entity extends Base\Entity
         self::APPROVED => 'boolean',
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ADMIN_ID,
+        self::ACTION_ID,
+        self::STEP_ID,
+    ];
+
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
@@ -106,7 +113,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::APPROVED);
     }
 
-    public function getStatus() : string
+    public function getStatus()
     {
         if (empty($this->isApproved()) === true)
         {

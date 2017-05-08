@@ -76,27 +76,27 @@ class EloquentEx extends \Razorpay\Spine\Entity
         return E::getTableNameForEntity($this->entity);
     }
 
-    protected function getAttributeWithTableName($col)
+    protected function dbColumn($col)
     {
         return $this->getTable() . '.' . $col;
     }
 
     public function scopeBetweenTime($query, $from, $to)
     {
-        $createdAtColumn = $this->getAttributeWithTableName(Common::CREATED_AT);
+        $createdAtColumn = $this->dbColumn(Common::CREATED_AT);
         $query->whereBetween($createdAtColumn, [$from, $to]);
     }
 
     public function scopeOrgId($query, $orgId)
     {
-        $orgIdColumn = $this->getAttributeWithTableName('org_id');
+        $orgIdColumn = $this->dbColumn('org_id');
 
         $query->where($orgIdColumn, '=', $orgId);
     }
 
     public function scopeMerchantId($query, $merchantId)
     {
-        $merchantIdColumn = $this->getAttributeWithTableName(Common::MERCHANT_ID);
+        $merchantIdColumn = $this->dbColumn(Common::MERCHANT_ID);
 
         $query->where($merchantIdColumn, '=', $merchantId);
     }
@@ -110,13 +110,13 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public function scopeCreatedAtLessThan($query, $createdAt)
     {
-        $createdAtColumn = $this->getAttributeWithTableName(Common::CREATED_AT);
+        $createdAtColumn = $this->dbColumn(Common::CREATED_AT);
         return $query->where($createdAtColumn, '<', $createdAt);
     }
 
     public function scopeCreatedAtGreaterThan($query, $createdAt)
     {
-        $createdAtColumn = $this->getAttributeWithTableName(Common::CREATED_AT);
+        $createdAtColumn = $this->dbColumn(Common::CREATED_AT);
         return $query->where($createdAtColumn, '>', $createdAt);
     }
 

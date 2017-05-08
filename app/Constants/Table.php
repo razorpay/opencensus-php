@@ -20,6 +20,7 @@ class Table
     const DEVICE                = 'devices';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
+    const REPORT                = 'reports';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
     const METHODS               = 'merchant_banks';
@@ -83,6 +84,7 @@ class Table
     // Gateway related
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
+    const AEPS                  = 'aeps';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const MIGS                  = 'axis';

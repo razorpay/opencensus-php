@@ -13,6 +13,9 @@ use RZP\Models\Base as BaseModel;
 
 class Entity extends BaseModel\PublicEntity
 {
+    const ORG_ID = 'org_id';
+    const STEP_ID = 'step_id';
+
     public function setPublicOrgIdAttribute(array &$attributes)
     {
         $orgId = $this->getAttribute(static::ORG_ID);
@@ -30,6 +33,16 @@ class Entity extends BaseModel\PublicEntity
         if ($roleId !== null)
         {
             $attributes[Step\Entity::ROLE_ID] = Role\Entity::getSignedId($roleId);
+        }
+    }
+
+    public function setPublicStepIdAttribute(array &$attributes)
+    {
+        $stepId = $this->getAttribute(static::STEP_ID);
+
+        if ($stepId !== null)
+        {
+            $attributes[static::STEP_ID] = Step\Entity::getSignedId($stepId);
         }
     }
 

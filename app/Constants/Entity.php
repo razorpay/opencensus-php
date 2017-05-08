@@ -30,6 +30,7 @@ class Entity
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
     const REFUND                = 'refund';
+    const REPORT                = 'report';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';
     const CREDITS               = 'credits';
@@ -92,6 +93,7 @@ class Entity
     // Gateway entities
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
+    const AEPS                  = 'aeps';
     const AMEX                  = 'amex';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
@@ -106,6 +108,7 @@ class Entity
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
+    const AEPS_ICICI            = 'aeps_icici';
     const UPI_ICICI             = 'upi_icici';
     const UPI_IDFC              = 'upi_idfc';
     const NETBANKING_AXIS       = 'netbanking_axis';
@@ -134,6 +137,7 @@ class Entity
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
         self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
+        self::REPORT                => \RZP\Models\Report::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,
         self::CREDITS               => \RZP\Models\Merchant\Credits::class,
         self::METHODS               => \RZP\Models\Merchant\Methods::class,
@@ -172,6 +176,8 @@ class Entity
         self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
         self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
+        self::AEPS                  => \RZP\Gateway\Aeps\Base::class,
+        self::AEPS_ICICI            => \RZP\Gateway\Aeps\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::AXIS_GENIUS           => \RZP\Gateway\AxisGenius::class,
@@ -221,6 +227,7 @@ class Entity
         self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
+        self::AEPS_ICICI         => \RZP\Gateway\Aeps\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
@@ -231,14 +238,6 @@ class Entity
 
     protected static $syncedInLiveAndTest = [
         self::ORG,
-        self::ORG_HOSTNAME,
-        self::ORG_FIELD_MAP,
-        self::ROLE,
-        self::PERMISSION,
-        self::GROUP,
-        self::ADMIN,
-        self::ADMIN_TOKEN,
-        self::ADMIN_LEAD,
         self::IIN,
         self::FEATURE,
         self::METHODS,
@@ -247,12 +246,6 @@ class Entity
         self::MERCHANT,
         self::USER,
         self::SCHEDULE,
-        self::WORKFLOW,
-        self::WORKFLOW_STEP,
-        self::WORKFLOW_ACTION,
-        self::ACTION_CHECKER,
-        self::ACTION_STATE,
-        self::ACTION_COMMENT,
     ];
 
     public static function getEntityNamespace(string $entity)

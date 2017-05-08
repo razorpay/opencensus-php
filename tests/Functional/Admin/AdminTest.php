@@ -12,9 +12,11 @@ use RZP\Models\Admin\Role;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class AdminTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()

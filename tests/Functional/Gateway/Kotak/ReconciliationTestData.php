@@ -58,12 +58,13 @@ return [
         'failure_reason'    => 'Reconciliation',
         'status'            => 'failed',
         'attempts'          => 1,
+        'remarks'           => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
     ],
 
     // status is not matched as we keep it created till 10pm
     'matchSettlementAttemptForReconSuccess' => [
         'channel'           => 'kotak',
-        'version'           => 'V2',
+        'version'           => 'V3',
         'bank_status_code'  => 'P',
         //'status'            => 'created',
         'remarks'           => '',
@@ -72,7 +73,7 @@ return [
 
     'matchSettlementAttemptForReconFailure' => [
         'channel'          => 'kotak',
-        'version'          => 'V2',
+        'version'          => 'V3',
         'bank_status_code' => 'P',
         'status'           => 'failed',
         'remarks'          => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',

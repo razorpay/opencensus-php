@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Admin\Permission;
 
+use RZP\Models\Merchant;
+
 class Name
 {
     const VIEW_ALL_MERCHANTS              = 'view_all_merchants';
@@ -40,6 +42,8 @@ class Name
     const EDIT_MERCHANT_DISABLE_LIVE      = 'edit_merchant_disable_live';
     const EDIT_MERCHANT_ARCHIVE           = 'edit_merchant_archive';
     const EDIT_MERCHANT_UNARCHIVE         = 'edit_merchant_unarchive';
+    const EDIT_MERCHANT_SUSPEND           = 'edit_merchant_suspend';
+    const EDIT_MERCHANT_UNSUSPEND         = 'edit_merchant_unsuspend';
     const EDIT_MERCHANT_METHODS           = 'edit_merchant_methods';
     const EDIT_MERCHANT_INTERNATIONAL     = 'edit_merchant_international';
     const EDIT_MERCHANT_TERMINAL          = 'edit_merchant_terminal';
@@ -132,4 +136,13 @@ class Name
     const VIEW_ALL_WORKFLOW               = 'view_all_workflow';
     const EDIT_WORKFLOW                   = 'edit_workflow';
     const DELETE_WORKFLOW                 = 'delete_workflow';
+
+    public static $actionMap = [
+        Merchant\Action::ARCHIVE    => self::EDIT_MERCHANT_ARCHIVE,
+        Merchant\Action::UNARCHIVE  => self::EDIT_MERCHANT_UNARCHIVE,
+        Merchant\Action::SUSPEND    => self::EDIT_MERCHANT_SUSPEND,
+        Merchant\Action::UNSUSPEND  => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::LOCK       => self::EDIT_MERCHANT_LOCK_ACTIVATION,
+        Merchant\Action::UNLOCK     => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
+    ];
 }

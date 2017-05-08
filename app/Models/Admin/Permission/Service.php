@@ -2,23 +2,45 @@
 
 namespace RZP\Models\Admin\Permission;
 
-use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Base;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Role;
 
 class Service extends Base\Service
 {
     public function createPermission(array $input)
     {
+        if (empty($input[Entity::ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
+        }
+
+        // Orgs for which workflows have to be enabled
+        if (empty($input[Entity::WORKFLOW_ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::WORKFLOW_ORGS]);
+        }
+
         $permission = $this->core()->create($input);
 
-        return $permission->toArrayPublic();
+        $response = $permission->toArrayPublic();
+
+        return $response;
     }
 
     public function getPermission(string $permissionId)
     {
-        Entity::verifyIdAndStripSign($permissionId);
+        $relations = ['orgs'];
 
-        $permission = $this->repo->permission->findOrFailPublic($permissionId);
+        $permission = $this->repo
+                           ->permission
+                           ->findByPublicIdWithRelations(
+                               $permissionId, $relations);
+
+        $workflowOrgs = $this->core()->getOrgsWithWorkflow($permission);
+
+        $permission->setWorkflowOrgs($workflowOrgs);
 
         return $permission->toArrayPublic();
     }
@@ -38,6 +60,18 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
+        if (empty($input[Entity::ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
+        }
+
+        // Orgs for which workflows have to be enabled
+        if (empty($input[Entity::WORKFLOW_ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::WORKFLOW_ORGS]);
+        }
+
         $permission = $this->repo->permission->findOrFail($id);
 
         $permission = $this->core()->edit($permission, $input);
@@ -45,11 +79,13 @@ class Service extends Base\Service
         return $permission->toArrayPublic();
     }
 
-    public function getMultiplePermissions(string $orgId)
+    public function getMultiplePermissions(string $orgId, array $input)
     {
-        Org::verifyIdAndStripSign($orgId);
+        Org\Entity::verifyIdAndStripSign($orgId);
 
-        $perms = $this->repo->permission->fetchAllByOrg($orgId);
+        $type = $input['type'] ?? null;
+
+        $perms = $this->repo->permission->fetchAllByOrg($orgId, $type);
 
         return $perms->toArrayPublic();
     }
@@ -66,5 +102,16 @@ class Service extends Base\Service
         $perms = $this->repo->permission->fetchAll();
 
         return $perms->toArrayPublic();
+    }
+
+    public function getRolesForPermission(string $id)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $orgId = $this->app['basicauth']->getAdminOrgId();
+
+        $roles = $this->repo->role->getRolesForPermission($id, $orgId);
+
+        return $roles->toArrayPublic();
     }
 }

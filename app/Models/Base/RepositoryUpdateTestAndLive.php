@@ -18,7 +18,7 @@ trait RepositoryUpdateTestAndLive
         $this->validateInstanceIsOfCurrentEntity($entity);
         $this->validateIdGenerated($entity);
 
-        $liveEntity = $this->manager->transactionOnLiveAndTest(
+        $liveEntity = $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $options)
             {
                 $exists = $entity->exists;
@@ -56,7 +56,7 @@ trait RepositoryUpdateTestAndLive
 
     public function sync($entity, $relation, $ids = array())
     {
-        return $this->manager->transactionOnLiveAndTest(
+        return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids)
             {
                 $changes = [];
@@ -86,7 +86,7 @@ trait RepositoryUpdateTestAndLive
 
     public function detach($entity, $relation, $ids = [])
     {
-        return $this->manager->transactionOnLiveAndTest(
+        return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids)
             {
                 $changes = [];
@@ -104,15 +104,16 @@ trait RepositoryUpdateTestAndLive
                 Config::set('database.default', Mode::TEST);
                 $testDetachedEntitiesCount = $testEntity->$relation()->detach($ids);
 
-                assert ($liveDetachedEntitiesCount === $testDetachedEntitiesCount);
-
                 return $changes;
             });
     }
 
-    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    public function attach(
+        $entity, $relation,
+        array $ids = [],
+        array $attributes = [], $touch = true)
     {
-        return $this->manager->transactionOnLiveAndTest(
+        return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids, $touch)
             {
                 //
@@ -123,16 +124,16 @@ trait RepositoryUpdateTestAndLive
 
                 // Attach the relationship in both live and test databases.
                 Config::set('database.default', Mode::LIVE);
-                $liveEntity->$relation()->attach($id);
+                $liveEntity->$relation()->attach($ids);
 
                 Config::set('database.default', Mode::TEST);
-                $testEntity->$relation()->attach($id);
+                $testEntity->$relation()->attach($ids);
             });
     }
 
     public function delete($entity)
     {
-        return $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        return $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
 
@@ -157,7 +158,7 @@ trait RepositoryUpdateTestAndLive
 
     public function forceDelete($entity)
     {
-        return $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        return $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
 

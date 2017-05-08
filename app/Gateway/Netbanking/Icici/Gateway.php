@@ -31,7 +31,8 @@ class Gateway extends Base\Gateway
         Status::SUCCESS    => Confirmation::YES,
         Status::FAILED     => Confirmation::NO,
         Status::REVERSED   => Confirmation::NO,
-        Status::IN_PROCESS => Confirmation::NO
+        Status::IN_PROCESS => Confirmation::NO,
+        Status::ERROR      => Confirmation::NO
     ];
 
     public function authorize(array $input)
@@ -94,7 +95,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
-                'request' => $request
+                'payment_id' => $verify->input['payment']['id'],
+                'request'    => $request
             ]);
 
         $response = $this->sendGatewayRequest($request);
@@ -104,7 +106,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
-                'response' => $responseBody
+                'payment_id' => $verify->input['payment']['id'],
+                'response'   => $responseBody
             ]);
 
         $verify->verifyResponseContent = $this->getResponseArray($responseBody);
@@ -323,6 +326,11 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseContent;
 
+        if (empty($content) === true)
+        {
+            return;
+        }
+
         $gatewayPayment = $verify->payment;
 
         $status = self::VERIFY_STATUS_TO_CALLBACK[$content[ResponseFields::STATUS]];
@@ -353,6 +361,11 @@ class Gateway extends Base\Gateway
     protected function getResponseArray($content)
     {
         $xml = (array) simplexml_load_string($content);
+
+        if (isset($xml['@attributes']) === false)
+        {
+            return [];
+        }
 
         return $xml['@attributes'];
     }

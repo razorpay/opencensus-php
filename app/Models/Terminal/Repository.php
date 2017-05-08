@@ -19,7 +19,7 @@ class Repository extends Base\Repository
         Entity::NETBANKING          => 'sometimes|boolean',
         Entity::SHARED              => 'sometimes|boolean',
         Entity::CATEGORY            => 'sometimes|integer|digits:4',
-        'deleted'                   => 'sometimes|boolean',
+        Entity::DELETED             => 'sometimes|boolean',
         Entity::GATEWAY_MERCHANT_ID => 'sometimes|string|max:50',
         Entity::GATEWAY_ACQUIRER    => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID => 'sometimes|alpha_num',
@@ -44,9 +44,21 @@ class Repository extends Base\Repository
 
     public function addQueryParamDeleted($query, $params)
     {
-        if ($params['deleted'] === '1')
+        if ($params[Entity::DELETED] === '1')
         {
             $query->withTrashed();
+        }
+    }
+
+    protected function addQueryParamShared($query, $params)
+    {
+        if ($params[Entity::SHARED] === '1')
+        {
+            $query->where(Entity::MERCHANT_ID, '=', Merchant\Account::SHARED_ACCOUNT);
+        }
+        else if ($params[Entity::SHARED] === '0')
+        {
+            $query->where(Entity::MERCHANT_ID, '!=', Merchant\Account::SHARED_ACCOUNT);
         }
     }
 

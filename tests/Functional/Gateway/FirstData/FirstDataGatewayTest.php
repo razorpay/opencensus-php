@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Gateway\FirstData;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\FirstData\Gateway;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FirstDataGatewayTest extends TestCase
@@ -25,8 +24,6 @@ class FirstDataGatewayTest extends TestCase
         $this->gateway = 'first_data';
 
         $this->payment = $this->getDefaultPaymentArray();
-
-        Gateway::setTestChance(4);
     }
 
     public function testRecurringPayment()
@@ -54,7 +51,7 @@ class FirstDataGatewayTest extends TestCase
         // Switch to private auth for second recurring payment
         $this->ba->privateAuth();
 
-        $response = $this->doS2SRecurringPayment($payment);
+        $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
         $this->capturePayment($paymentId, $payment['amount']);
 
@@ -70,12 +67,12 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($paymentId, $firstDataEntity['payment_id']);
 
         // Another payment to test auto-refund
-        $response = $this->doS2SRecurringPayment($payment);
+        $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
         $this->refundAuthorizedPayment($paymentId);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals($payment['status'], 'refunded');
+        $this->assertEquals('refunded', $payment['status']);
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
         $refund = $this->getLastEntity('refund', true);
@@ -88,13 +85,14 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'authorized');
+        $this->assertEquals('authorized', $payment['status']);
 
         $this->capturePayment($authResponse['razorpay_payment_id'], $payment['amount']);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('passed', $payment['two_factor_auth']);
     }
 
     public function testMaestroCard()
@@ -107,7 +105,7 @@ class FirstDataGatewayTest extends TestCase
 
         $paymentRes = $this->getLastPayment(true);
 
-        $this->assertEquals($paymentRes['gateway'], 'first_data');
+        $this->assertEquals('first_data', $paymentRes['gateway']);
     }
 
     public function testIciciCardIsFiltered()
@@ -130,7 +128,7 @@ class FirstDataGatewayTest extends TestCase
 
         // FirstData is preferred over Sharp, but does not get selected
         // as ICICI cards are disabled on FirstData
-        $this->assertNotEquals($paymentRes['gateway'], 'first_data');
+        $this->assertNotEquals('first_data', $paymentRes['gateway']);
     }
 
     public function testPaymentVerify()
@@ -143,7 +141,7 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertSame($payment['verified'], 1);
+        $this->assertEquals(1, $payment['verified']);
     }
 
     public function testPaymentRefund()
@@ -160,7 +158,7 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'refunded');
+        $this->assertEquals('refunded', $payment['status']);
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
@@ -183,7 +181,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refund = $this->getLastEntity('refund', true);
 
-        $this->assertEquals($payment['status'], 'captured');
+        $this->assertEquals('captured', $payment['status']);
 
         $this->assertEquals($refund['payment_id'], $payment['public_id']);
 
@@ -213,11 +211,11 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['status'], 'refunded');
+        $this->assertEquals('refunded', $payment['status']);
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals($gatewayPayment['action'], 'reverse');
+        $this->assertEquals('reverse', $gatewayPayment['action']);
     }
 
     public function testPaymentAuthAndAlreadyCaptured()
@@ -288,7 +286,7 @@ class FirstDataGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertEquals($gatewayPayment['approval_code'], "N:mocked failure approval code");
+        $this->assertEquals("N:mocked failure approval code", $gatewayPayment['approval_code']);
     }
 
     public function testFailedAuthUnknownError()
@@ -312,9 +310,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->getErrorInReturn();
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->refundpayment($payment['id']);
-        });
+        $this->refundpayment($payment['id']);
     }
 
     public function testFailedCapture()
