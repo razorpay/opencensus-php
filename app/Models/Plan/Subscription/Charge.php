@@ -6,7 +6,6 @@ use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Exception\LogicException;
-use RZP\Jobs\InvoiceAction;
 use RZP\Models\Schedule\Library;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -219,8 +218,6 @@ class Charge extends Base\Core
             // TODO: Make this merchant configurable. It can either
             // go into on_hold or cancelled state.
             $subscription->setStatus(Status::ON_HOLD);
-
-            // TODO: Notify merchant about the failure.
         }
         else
         {

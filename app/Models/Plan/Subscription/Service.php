@@ -43,13 +43,13 @@ class Service extends Base\Service
         $invoicesCreated = $failed = 0;
         $failures = [];
 
-        $billing = (new Billing);
+        $biller = (new Biller);
 
         foreach ($subscriptionsToCharge as $subscription)
         {
             try
             {
-                $billing->createInvoiceAndCharge($subscription);
+                $biller->createInvoiceAndCharge($subscription);
 
                 $invoicesCreated++;
             }

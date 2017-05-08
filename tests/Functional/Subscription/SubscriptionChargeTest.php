@@ -119,8 +119,8 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->createSubscription(true, [], [], true);
 
         // Subscription is not authenticated before start_at
-        $expireBy = Carbon::createFromTimestamp($subscription['start_at']+1);
-        Carbon::setTestNow($expireBy, 'Asia/Kolkata');
+        $expireBy = Carbon::createFromTimestamp($subscription['start_at']+1, 'Asia/Kolkata');
+        Carbon::setTestNow($expireBy);
         $result = $this->makeSubscriptionExpireCronRequest();
         // Invoice got created
         $this->assertEquals(1, $result['expired']);
@@ -128,6 +128,8 @@ class SubscriptionChargeTest extends TestCase
         // Subscription marked as expired
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('expired', $subscription['status']);
+
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionFirstCharge()

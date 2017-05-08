@@ -101,7 +101,9 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicSubscriptionIdAttribute(array & $array)
     {
-        $array[self::SUBSCRIPTION_ID] = Subscription\Entity::getSignedIdOrNull($this->getAttribute(self::SUBSCRIPTION_ID));
+        $subscriptionId = $this->getAttribute(self::SUBSCRIPTION_ID);
+
+        $array[self::SUBSCRIPTION_ID] = Subscription\Entity::getSignedIdOrNull($subscriptionId);
     }
 
     // -------------------------- Public Setters Ends --------------------------

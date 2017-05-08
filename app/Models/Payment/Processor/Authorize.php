@@ -1614,9 +1614,9 @@ trait Authorize
                     'The subscription should have been in either created or authenticated state.',
                     null,
                     [
-                        'subscription_id'       => $subscription->getId(),
-                        'subscription_status'   => $subscription->getStatus(),
-                        'subscription_auth'     => $subscription->hasBeenAuthenticated(),
+                        'subscription_id'     => $subscription->getId(),
+                        'subscription_status' => $subscription->getStatus(),
+                        'subscription_auth'   => $subscription->hasBeenAuthenticated(),
                     ]);
             }
         }
