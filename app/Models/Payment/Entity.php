@@ -1076,6 +1076,13 @@ class Entity extends Base\PublicEntity
         return ($this->getWallet() === Processor\Wallet::OPENWALLET);
     }
 
+    public function isCustomerMailAbsent(): bool
+    {
+        $email = $this->getEmail();
+
+        return ((empty($email) === true) or ($email === self::DUMMY_EMAIL));
+    }
+
 // ----------------------- Getters ---------------------------------------------
 
     public function getTransferId()
