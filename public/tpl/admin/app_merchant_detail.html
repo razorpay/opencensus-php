@@ -115,11 +115,11 @@
         >
           Archive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" dynamic-tooltip="edit_merchant_unarchive" ng-show="merchant.details.suspended_at != null && admin.permissions.indexOf('edit_merchant_unarchive') !== -1" ng-click="unsuspendMerchant()"
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_unsuspend" ng-show="merchant.details.suspended_at != null && admin.permissions.indexOf('edit_merchant_unsuspend') !== -1" ng-click="unsuspendMerchant()"
         >
           Unsuspend Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" dynamic-tooltip="edit_merchant_archive" ng-show="merchant.details.suspended_at === null && admin.permissions.indexOf('edit_merchant_archive') !== -1" ng-click="suspendMerchant()" ng-confirm-click="Are you sure you want to suspend merchant? (Make sure you have attempted all ways of convincing him before doing this)"
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_suspend" ng-show="merchant.details.suspended_at === null && admin.permissions.indexOf('edit_merchant_suspend') !== -1" ng-click="suspendMerchant()" ng-confirm-click="Are you sure you want to suspend merchant? (Make sure you have attempted all ways of convincing him before doing this)"
         >
           Suspend Merchant <i class="pull-right fa fa-archive"></i>
         </a>
