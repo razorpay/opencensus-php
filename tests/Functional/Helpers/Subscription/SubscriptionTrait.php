@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\Subscription;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 trait SubscriptionTrait
@@ -171,5 +172,17 @@ trait SubscriptionTrait
             {
                 // Do nothing
             });
+    }
+
+    protected function chargeSubscriptionsViaCron(string $timestamp = null)
+    {
+        if ($timestamp !== null)
+        {
+            $chargeAt = Carbon::createFromTimestamp($timestamp+1);
+
+            Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
+        }
+
+        return $this->makeSubscriptionChargeCronRequest();
     }
 }

@@ -40,9 +40,7 @@ class SubscriptionChargeTest extends TestCase
 
         while ($expectedPaidCount < $subscription['total_count'])
         {
-            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at']+1);
-            Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
-            $result = $this->makeSubscriptionChargeCronRequest();
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
             // Subscription got charged
             $this->assertEquals(1, $result['total']);
 
@@ -65,8 +63,9 @@ class SubscriptionChargeTest extends TestCase
         $this->assertNotNull($subscription['ended_at']);
 
         // Long time from now
-        Carbon::setTestNow(Carbon::now()->addYear(), 'Asia/Kolkata');
-        $result = $this->makeSubscriptionChargeCronRequest();
+        $longTimeFromNow = Carbon::now()->addYear()->timestamp;
+        $result = $this->chargeSubscriptionsViaCron($longTimeFromNow);
+
         // Subscription is complete, so will not get charged
         $this->assertEquals(0, $result['total']);
 
@@ -86,9 +85,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->failCharge();
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at']+1);
-        Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
-        $result = $this->makeSubscriptionChargeCronRequest();
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         // Invoice got created
         $this->assertEquals(1, $result['invoices_created']);
 
@@ -113,6 +110,57 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSubscriptionOnHold()
+    {
+        $this->doAuthTxnForSubscriptionWithAddOn();
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('authenticated', $subscription['status']);
+        $expectedPaidCount = 0;
+
+        // Subscription has only been authenticated, never paid
+        $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+
+        $this->failCharge();
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        // Invoice got created
+        $this->assertEquals(1, $result['invoices_created']);
+        $payment = $this->getLastEntity('payment', true);
+        // But subscription charge failed
+        $this->assertEquals('failed', $payment['status']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals(1, $subscription['auth_attempts']);
+
+        while($subscription['auth_attempts'] < 3)
+        {
+            // Subscription marked as overdue
+            $this->assertEquals('overdue', $subscription['status']);
+
+            $result = $this->makeSubscriptionRetryCronRequest();
+            $this->assertEquals(1, $result['queued']);
+            $subscription = $this->getLastEntity('subscription', true);
+        }
+
+        // Retries exhausted, subscription marked as on_hold
+        $this->assertEquals('on_hold', $subscription['status']);
+
+        $this->passCharge();
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+
+        // Auth successful, subscription marked as active again
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('active', $subscription['status']);
+
+       // Reset time
+       Carbon::setTestNow();
+    }
+
     public function testSubscriptionExpire()
     {
         // Subscription is created with start_at and with add_on
@@ -129,6 +177,7 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('expired', $subscription['status']);
 
+        // Reset time
         Carbon::setTestNow();
     }
 
