@@ -17,9 +17,13 @@ use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task;
 use RZP\Trace\TraceCode;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Jobs\Plan\Subscription\Charge as ChargeJob;
 
 class Core extends Base\Core
 {
+    use DispatchesJobs;
+
     protected $mutex;
 
     public function __construct()
@@ -253,7 +257,7 @@ class Core extends Base\Core
                         ]);
                 }
 
-                $this->app['queue']->push(Charge::class . '@fireCharge', $queuePayload);
+                $this->dispatch((new ChargeJob($queuePayload)));
             }
         );
     }

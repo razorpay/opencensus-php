@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::AMOUNT              => 'required|integer|min:100',
         Entity::CURRENCY            => 'required|size:3|in:INR',
-        Entity::TYPE                => 'required|string|max:16|custom',
+        Entity::TYPE                => 'sometimes|string|max:16|custom',
     ];
 
     protected static $editRules  = [

@@ -33,21 +33,22 @@ class Charge extends Base\Core
      */
     protected $processor;
 
-    const MAX_JOB_ATTEMPTS = 3;
-    const JOB_RELEASE_WAIT = 300;
-
+    /**
+     * Maximum authorization attempts allowed for subscription charge.
+     *
+     * TODO: Make this merchant configurable.
+     */
     const MAX_AUTH_ATTEMPTS = 3;
 
     /**
      * This is called via the queue to initiate the actual
      * charge process.
      *
-     * @param $job
      * @param $data
      *
      * @throws LogicException
      */
-    public function fireCharge($job, $data)
+    public function fireCharge(array $data)
     {
         $this->trace->info(
             TraceCode::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED,
@@ -101,10 +102,6 @@ class Charge extends Base\Core
             }
 
             return;
-        }
-        finally
-        {
-            $job->delete();
         }
 
         //
@@ -211,7 +208,6 @@ class Charge extends Base\Core
 
         $authAttempts = $subscription->getAuthAttempts();
 
-        // TODO: Make max_auth_attempts configurable at a merchant level.
         if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
         {
             $subscription->setStatus(Status::OVERDUE);
