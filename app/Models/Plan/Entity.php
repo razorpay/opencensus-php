@@ -49,10 +49,6 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
     ];
 
-    protected $appends = [
-        self::ITEM,
-    ];
-
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
@@ -102,34 +98,11 @@ class Entity extends Base\PublicEntity
 
     // --------------------- END GETTERS ---------------------
 
-    // --------------------- ACCESSORS ---------------------
-
-    /**
-     * TODO: Remove this post expand pr is merged. Also remove from $appends.
-     *
-     * @return Base\PublicCollection
-     */
-    protected function getItemAttribute()
-    {
-        $item = $this->item()->get()->first();
-
-        return $item;
-    }
-
-    // --------------------- END ACCESSORS ---------------------
-
     // --------------------- PUBLIC SETTERS ---------------------
 
-    protected function setPublicItemAttribute()
+    protected function setPublicItemAttribute(array & $array)
     {
-        if (empty($array[self::ITEM]) === true)
-        {
-            return;
-        }
-
-        $array[self::ITEM] = $array[self::ITEM]->toArrayPublic();
-
-        unset($array[self::ITEM][Item\Entity::ID]);
+        $array[self::ITEM] = $this->item->toArrayPublic();
     }
 
     // --------------------- END PUBLIC SETTERS ---------------------
