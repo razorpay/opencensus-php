@@ -116,16 +116,19 @@ class EventTrackerClient extends Base\Core
                 return;
             }
 
-            $options = ['json' => $eventData];
+            $request  = [
+                'url'       => $url,
+                'headers'   => $headers,
+                'content'   => json_encode($eventData),
+            ];
 
-            $client = new Client(['headers' => $headers, 'http_errors' => false]);
+            $job = new RequestJob($request);
 
-            $response = $client->request('POST', $url, $options);
-
+            $this->dispatch($job);
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_QUEUE_SEND_FAILED);
         }
         finally
         {
