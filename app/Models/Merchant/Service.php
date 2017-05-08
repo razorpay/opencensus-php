@@ -10,6 +10,9 @@ use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Org;
 use RZP\Models\BankAccount;
 use RZP\Models\Base;
 use RZP\Models\Emi;
@@ -26,8 +29,6 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Terminal;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
-use RZP\Models\Admin;
-use RZP\Models\Admin\Group;
 use RZP\Constants\MailTags;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
@@ -43,20 +44,16 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
-        if (empty($input['admin_id']) === false)
+        if (empty($input[Entity::ADMINS]) === false)
         {
-            $adminId = $input['admin_id'];
-
-            $adminId = Admin\Admin\Entity::verifyIdAndStripSign($adminId);
-
-            unset($input['admin_id']);
+            Admin\Entity::verifyIdAndStripSignMultiple($input[Entity::ADMINS]);
         }
 
-        if (empty($input['org_id']) === true)
+        if (empty($input[Entity::ORG_ID]) === true)
         {
             // If the organization ID is not present,
             // assume the organization is razorpay
-            $orgId = Admin\Org\Entity::RAZORPAY_ORG_ID;
+            $input[Entity::ORG_ID] = Org\Entity::RAZORPAY_ORG_ID;
 
             $this->trace->info(
                 TraceCode::MERCHANT_ORG_NOT_GIVEN,
@@ -67,36 +64,10 @@ class Service extends Base\Service
         }
         else
         {
-            $orgId = $input['org_id'];
-
-            $orgId = Admin\Org\Entity::verifyIdAndStripSign($orgId);
-
-            unset($input['org_id']);
+            Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
         $merchant = (new Merchant\Core)->create($input);
-
-        //
-        // Once the merchant is created we must
-        // tag him to the admin referral
-        //
-        if (empty($adminId) === false)
-        {
-            //
-            // This step is important to ensure that we are
-            // attaching a valid admin in merchant_map table.
-            // This will throw an exception if adminId doesn't exist.
-            //
-            $admin = $this->repo->admin->findOrFailPublic($adminId);
-
-            // Attach merchant to admin
-            $this->repo->sync($merchant, 'admins', [$adminId]);
-        }
-
-        $org = $this->repo->org->findOrFailPublic($orgId);
-
-        // Update merchant org
-        $merchant->org()->associate($org);
 
         $this->repo->saveOrFail($merchant);
 
@@ -125,16 +96,19 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        if (isset($input['groups']) === true)
+        if (empty($input[Entity::GROUPS]) === false)
         {
-            $groupIds = [];
+            Group\Entity::verifyIdAndStripSignMultiple($input[Entity::GROUPS]);
+        }
 
-            foreach ($input['groups'] as $id)
-            {
-                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
-            }
+        if (empty($input[Entity::ADMINS]) === false)
+        {
+            Admin\Entity::verifyIdAndStripSignMultiple($input[Entity::ADMINS]);
+        }
 
-            $input['groups'] = $groupIds;
+        if (isset($input[Entity::ORG_ID]) === true)
+        {
+            Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
         $merchant = (new Merchant\Core)->edit($merchant, $input);
@@ -209,7 +183,7 @@ class Service extends Base\Service
     public function fetch($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
-            $id, ['methods', 'groups']);
+            $id, ['methods', Entity::GROUPS]);
 
         return $merchant->toArrayPublic();
     }
