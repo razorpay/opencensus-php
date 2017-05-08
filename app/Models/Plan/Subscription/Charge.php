@@ -134,7 +134,7 @@ class Charge extends Base\Core
         // on_hold. If this happened, we should not attempt
         // to charge the subscription now.
         //
-        else if ($invoice->getSubStatus() === Invoice\Status::ON_HOLD)
+        else if ($invoice->getSubscriptionStatus() === Invoice\Status::ON_HOLD)
         {
             $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ON_HOLD;
 

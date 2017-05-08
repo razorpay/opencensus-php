@@ -146,7 +146,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         // billing_start and billing_end should be null.
         $this->assertNull($invoice['billing_start']);
         $this->assertNull($invoice['billing_end']);
-        $this->assertNull($invoice['sub_status']);
+        $this->assertNull($invoice['subscription_status']);
         $this->assertContains('http://dwarf.razorpay.dev', $invoice['short_url']);
         $this->assertEquals($payment['id'], $invoice['payment_id']);
         // TODO: expire_by should be null for subscriptions.
@@ -213,7 +213,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals($payment['created_at'], $invoice['billing_start']);
         $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
         $this->assertEquals(2300, $invoice['amount']);
-        $this->assertNull($invoice['sub_status']);
+        $this->assertNull($invoice['subscription_status']);
         $this->assertNotNull($invoice['issued_at']);
         $this->assertEquals($payment['id'], $invoice['payment_id']);
         $this->assertNotNull($invoice['billing_start']);

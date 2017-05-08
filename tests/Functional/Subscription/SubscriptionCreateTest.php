@@ -36,10 +36,7 @@ class SubscriptionCreateTest extends TestCase
     {
         $this->fixtures->create('item', ['type' => 'plan']);
 
-        $x = $this->startTest();
-        $y = $this->getLastEntity('plan', true);
-
-        sd($x, $y);
+        $this->startTest();
     }
 
     public function testCreatePlanWithItemIdButWrongItemType()

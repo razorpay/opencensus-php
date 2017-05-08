@@ -184,7 +184,7 @@ class Service extends Base\Service
                 'subscription'      => $subscription->toArray(),
             ]);
 
-        if (($subscription->isActivated() === false) and
+        if (($subscription->isActive() === false) and
             ($subscription->isOnHold() === false))
         {
             throw new BadRequestException(
@@ -198,7 +198,7 @@ class Service extends Base\Service
         }
 
         if (($invoice->isIssued() === false) or
-            ($invoice->getSubStatus() !== Invoice\Status::ON_HOLD))
+            ($invoice->getSubscriptionStatus() !== Invoice\Status::ON_HOLD))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED,

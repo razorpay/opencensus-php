@@ -1963,8 +1963,8 @@ ALTER TABLE invoices
     ADD COLUMN subscription_id CHAR(14) DEFAULT NULL AFTER merchant_id,
     ADD COLUMN billing_start INT(11) DEFAULT NULL AFTER subscription_id,
     ADD COLUMN billing_end INT(11) DEFAULT NULL AFTER billing_start,
-    ADD COLUMN sub_status VARCHAR(32) NULL AFTER status,
-    ADD INDEX invoices_sub_status_index (sub_status);
+    ADD COLUMN subscription_status VARCHAR(32) NULL AFTER status,
+    ADD INDEX invoices_subscription_status_index (subscription_status);
 
 ALTER TABLE items
     ADD COLUMN type VARCHAR(16) DEFAULT 'invoice' AFTER currency,

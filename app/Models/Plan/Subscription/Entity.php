@@ -257,7 +257,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::AUTHENTICATED);
     }
 
-    public function isActivated()
+    public function isActive()
     {
         return ($this->getAttribute(self::STATUS) === Status::ACTIVE);
     }

@@ -132,7 +132,7 @@ class Creator extends Base\Core
             return;
         }
 
-        (new Billing)->createInvoiceForSubscription($subscription, $addons, true);
+        (new Biller)->createInvoiceForSubscription($subscription, $addons, true);
     }
 
     protected function createScheduleAndTask(Entity $subscription, Plan\Entity $plan)

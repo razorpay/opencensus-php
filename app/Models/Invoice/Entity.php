@@ -34,7 +34,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_BILLING_ADDR_ID = 'customer_billing_addr_id';
     const CUSTOMER_CONTACT         = 'customer_contact';
     const STATUS                   = 'status';
-    const SUB_STATUS               = 'sub_status';
+    const SUBSCRIPTION_STATUS      = 'subscription_status';
     const DATE                     = 'date';
     const DUE_BY                   = 'due_by';
     const SCHEDULED_AT             = 'scheduled_at';
@@ -120,7 +120,7 @@ class Entity extends Base\PublicEntity
         // For a draft state, it has to be sent explicitly in the request.
         // It's created in the issued state otherwise.
         self::STATUS                   => Status::ISSUED,
-        self::SUB_STATUS               => null,
+        self::SUBSCRIPTION_STATUS      => null,
         // self::ADJUSTMENT            => 0,
         // self::SHIPPING              => 0,
         self::SUBSCRIPTION_ID          => null,
@@ -192,7 +192,7 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::RECEIPT,
         self::STATUS,
-        self::SUB_STATUS,
+        self::SUBSCRIPTION_STATUS,
         self::CUSTOMER_ID,
         self::CUSTOMER,
         self::MERCHANT_ID,
@@ -389,9 +389,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VIEW_LESS);
     }
 
-    public function getSubStatus()
+    public function getSubscriptionStatus()
     {
-        return $this->getAttribute(self::SUB_STATUS);
+        return $this->getAttribute(self::SUBSCRIPTION_STATUS);
     }
 
     public function getPaymentId()
@@ -627,11 +627,11 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setSubStatus($subStatus)
+    public function setSubscriptionStatus($subscriptionStatus)
     {
-        Status::checkSubStatus($subStatus);
+        Status::checkSubscriptionStatus($subscriptionStatus);
 
-        $this->setAttribute(self::SUB_STATUS, $subStatus);
+        $this->setAttribute(self::SUBSCRIPTION_STATUS, $subscriptionStatus);
     }
 
     public function setShortUrl($shortUrl)

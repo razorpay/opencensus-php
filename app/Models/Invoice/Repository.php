@@ -130,7 +130,7 @@ class Repository extends Base\Repository
         $invoices = $this->newQuery()
                          ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                          ->where(Entity::STATUS, '=', Status::ISSUED)
-                         ->where(Entity::SUB_STATUS, '!=', Status::ON_HOLD)
+                         ->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::ON_HOLD)
                          ->get();
 
         if ($invoices->count() !== 1)

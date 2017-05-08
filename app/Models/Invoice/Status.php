@@ -44,7 +44,7 @@ class Status
         self::EXPIRED,
     ];
 
-    public static $subStatuses = [
+    public static $subscriptionStatuses = [
         //
         // All the invoices created when the subscription
         // was on_hold, are not charged by our system.
@@ -67,16 +67,16 @@ class Status
         }
     }
 
-    public static function isSubStatusValid($subStatus) : bool
+    public static function isSubscriptionStatusValid($subscriptionStatus) : bool
     {
-        return in_array($subStatus, self::$subStatuses, true);
+        return in_array($subscriptionStatus, self::$subscriptionStatuses, true);
     }
 
-    public static function checkSubStatus($subStatus)
+    public static function checkSubscriptionStatus($subscriptionStatus)
     {
-        if (self::isSubStatusValid($subStatus) === false)
+        if (self::isSubscriptionStatusValid($subscriptionStatus) === false)
         {
-            throw new \InvalidArgumentException("Not a valid sub status: " . $subStatus);
+            throw new \InvalidArgumentException("Not a valid subscription status: " . $subscriptionStatus);
         }
     }
 }

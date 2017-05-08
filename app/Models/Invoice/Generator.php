@@ -128,7 +128,7 @@ class Generator extends Base\Core
 
             if ($this->subscription->getStatus() === Subscription\Status::ON_HOLD)
             {
-                $this->invoice->setSubStatus(Status::ON_HOLD);
+                $this->invoice->setSubscriptionStatus(Status::ON_HOLD);
             }
         }
 

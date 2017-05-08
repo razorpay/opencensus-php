@@ -14,7 +14,7 @@ use RZP\Trace\TraceCode;
  * First time invoice creation for a subscription when auth is being done
  * is a special case.
  */
-class Billing extends Base\Core
+class Biller extends Base\Core
 {
     public function createInvoiceAndCharge(Entity $subscription)
     {
@@ -37,7 +37,7 @@ class Billing extends Base\Core
         // since, the subscription would also be in on_hold status here.
         // We do not charge on_hold subscriptions, we only create an invoice.
         //
-        if ($invoice->getSubStatus() === Invoice\Status::ON_HOLD)
+        if ($invoice->getSubscriptionStatus() === Invoice\Status::ON_HOLD)
         {
             $this->trace->info(
                 TraceCode::SUBSCRIPTION_INVOICE_ON_HOLD,

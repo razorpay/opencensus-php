@@ -10,6 +10,6 @@ class Service extends Base\Service
     {
         $plan = (new Core)->create($input, $this->merchant);
 
-        return $plan->toArray();
+        return $plan->toArrayPublic();
     }
 }
