@@ -59,6 +59,21 @@ trait SubscriptionTrait
         return json_decode($response->getContent(), true);
     }
 
+    public function makeSubscriptionExpireCronRequest()
+    {
+        $request = [
+            'url'     => '/subscriptions/expire',
+            'action'  => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     protected function createSubscription(
         $startAt = false,
         $planAttributes = [],

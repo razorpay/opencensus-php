@@ -88,6 +88,7 @@ class Service extends Base\Service
         $subscriptionsToExpire = $this->repo->subscription->getSubscriptionsToExpire();
 
         $failed = 0;
+        $subscriptionsExpired = 0;
         $failures = [];
 
         foreach ($subscriptionsToExpire as $subscription)
@@ -95,6 +96,8 @@ class Service extends Base\Service
             try
             {
                 $this->core->expireSubscription($subscription);
+
+                $subscriptionsExpired++;
             }
             catch (\Exception $ex)
             {
@@ -113,6 +116,7 @@ class Service extends Base\Service
 
         $summary = [
             'total'    => $subscriptionsToExpire->count(),
+            'expired'  => $subscriptionsExpired,
             'failed'   => $failed,
             'failures' => $failures,
         ];

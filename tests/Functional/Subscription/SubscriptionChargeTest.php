@@ -113,6 +113,23 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSubscriptionExpire()
+    {
+        // Subscription is created with start_at and with add_on
+        $subscription = $this->createSubscription(true, [], [], true);
+
+        // Subscription is not authenticated before start_at
+        $expireBy = Carbon::createFromTimestamp($subscription['start_at']+1);
+        Carbon::setTestNow($expireBy, 'Asia/Kolkata');
+        $result = $this->makeSubscriptionExpireCronRequest();
+        // Invoice got created
+        $this->assertEquals(1, $result['expired']);
+
+        // Subscription marked as expired
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('expired', $subscription['status']);
+    }
+
     public function testSubscriptionFirstCharge()
     {
         $details = $this->doAuthTxnForNewSubscription();
