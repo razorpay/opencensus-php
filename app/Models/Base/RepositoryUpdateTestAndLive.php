@@ -21,7 +21,7 @@ trait RepositoryUpdateTestAndLive
         $this->validateInstanceIsOfCurrentEntity($entity);
         $this->validateIdGenerated($entity);
 
-        $liveEntity = $this->manager->transactionOnLiveAndTest(
+        $liveEntity = $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $options)
             {
                 $exists = $entity->exists;
@@ -59,7 +59,7 @@ trait RepositoryUpdateTestAndLive
 
     public function sync($entity, $relation, $ids = array())
     {
-        return $this->manager->transactionOnLiveAndTest(
+        return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids)
             {
                 $changes = [];
@@ -89,7 +89,7 @@ trait RepositoryUpdateTestAndLive
 
     public function detach($entity, $relation, $ids = [])
     {
-        return $this->manager->transactionOnLiveAndTest(
+        return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids)
             {
                 $changes = [];
@@ -116,7 +116,7 @@ trait RepositoryUpdateTestAndLive
         array $ids = [],
         array $attributes = [], $touch = true)
     {
-        return $this->manager->transactionOnLiveAndTest(
+        return $this->repo->transactionOnLiveAndTest(
             function () use ($entity, $relation, $ids, $touch)
             {
                 //
@@ -136,7 +136,7 @@ trait RepositoryUpdateTestAndLive
 
     public function delete($entity)
     {
-        return $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        return $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
 
@@ -161,7 +161,7 @@ trait RepositoryUpdateTestAndLive
 
     public function forceDelete($entity)
     {
-        return $this->manager->transactionOnLiveAndTest(function () use ($entity)
+        return $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
             list($liveEntity, $testEntity) = $this->cloneEntity($entity);
 

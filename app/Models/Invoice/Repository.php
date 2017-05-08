@@ -163,7 +163,7 @@ class Repository extends Base\Repository
         $paymentId = $params[Entity::PAYMENT_ID];
         Entity::stripSignWithoutValidation($paymentId);
 
-        $paymentIdAttribute = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentIdAttribute = $this->repo->payment->dbColumn(Payment\Entity::ID);
         $query->where($paymentIdAttribute, '=', $paymentId);
 
         $query->select($query->getModel()->getTable() . '.*');
@@ -173,7 +173,7 @@ class Repository extends Base\Repository
     {
         $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $orderIdAttribute = $this->manager->invoice->getAttributeWithTableName(Entity::ORDER_ID);
+        $orderIdAttribute = $this->repo->invoice->dbColumn(Entity::ORDER_ID);
 
         $query->where($orderIdAttribute, '=', $orderId);
     }
@@ -186,15 +186,15 @@ class Repository extends Base\Repository
 
         foreach ($joins as $join)
         {
-            if ($join->table === $this->manager->payment->getTableName())
+            if ($join->table === $this->repo->payment->getTableName())
             {
                 return;
             }
         }
 
-        $invoiceOrderId = $this->getAttributeWithTableName(Entity::ORDER_ID);
-        $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
+        $invoiceOrderId = $this->dbColumn(Entity::ORDER_ID);
+        $paymentOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
 
-        $query->join($this->manager->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
+        $query->join($this->repo->payment->getTableName(), $invoiceOrderId, '=', $paymentOrderId);
     }
 }

@@ -313,18 +313,12 @@ class Service extends Base\Service
             return;
         }
 
-        $from       = 'support@razorpay.com';
-        $replyTo    = 'support@razorpay.com';
-        $fromHeader = 'Team Razorpay';
-        $to         = $admin->getEmail();
-        $subject    = 'Your admin account details for ' . $org->getDisplayName() . ' dashboard';
-
         $view = [
             'html' => 'emails.admin.user',
             'text' => 'emails.admin.user_text'
         ];
 
-        $template = [
+        $data = [
             'user' => [
                 'email' => $admin->getEmail(),
                 // todo: Hack for now. Remove it
@@ -336,18 +330,19 @@ class Service extends Base\Service
 
         Mail::queue(
             $view,
-            $template,
-            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo)
+            $data,
+            function ($message) use ($admin, $org)
             {
-                $message->to($to);
-                $message->from($from, $fromHeader);
+                $subject    = 'Your admin account details for ' . $org->getDisplayName() . ' dashboard';
+
+                $message->to($admin->getEmail());
+                $message->from('support@razorpay.com', 'Team Razorpay');
                 $message->subject($subject);
-                $message->replyTo($replyTo);
+                $message->replyTo('support@razorpay.com');
 
                 $headers = $message->getHeaders();
                 $headers->addTextHeader(MailTags::HEADER, MailTags::ADMIN_CREATE);
-            }
-        );
+            });
     }
 
     public function getAdmin(string $orgId, string $adminId)

@@ -173,7 +173,7 @@ class Processor extends Base\Core
             $totalTxns += $setlTxnsCount;
         }
 
-        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel, false);
+        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
 
         return $response;
     }

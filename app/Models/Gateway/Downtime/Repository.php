@@ -107,30 +107,21 @@ class Repository extends Base\Repository
 
     protected function addQueryParamBegin($query, $params)
     {
-        $query->where(Entity::BEGIN, '<=', $params[Entity::BEGIN]);
-    }
+        // The default value for Entity::END is null. This is because we do not
+        // necessarily know the end time in case of an unscheduled downtime.
+        //
+        // If an end time does exist, downtime should have ended after
+        // the start of the query begin time for there to be an overlap
+        $query->whereNull(Entity::END)
+              ->orWhere(Entity::END, '>=', $params[Entity::BEGIN]);
 
-    protected function addQueryParamEnd($query, $params)
-    {
-        // The default value for Entity::END is null. This is because we do not necessarily know
-        // the end time in case of an unscheduled downtime. So, for all these scenarios, we are
-        // setting the $to value to $input['end'] if available or $input['begin']. The essential
-        // idea is to fetch the list of gateways/issuers at the current point in time.
-        $to = $params[Entity::END] ?? null;
-
-        if ((empty($to) === true) and
-            (isset($params[Entity::BEGIN]) === true))
+        // We allow queries without an end time, in which case everything goes.
+        //
+        // If query does have an endtime, then downtime should
+        // have begun before it for there to be an overlap
+        if (isset($params[Entity::END]) === true)
         {
-            $to = $params[Entity::BEGIN];
-        }
-
-        if (empty($to) === false)
-        {
-            $query->where(function ($query) use ($to)
-            {
-                $query->whereNull(Entity::END);
-                $query->orWhere(Entity::END, '>=', $to);
-            });
+            $query->where(Entity::BEGIN, '<=', $params[Entity::END]);
         }
     }
 }

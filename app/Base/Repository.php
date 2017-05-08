@@ -60,14 +60,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->auth = $this->app['basicauth'];
 
-        //
-        // Currently, using $this->manager because
-        // we have $this->repo being used for creating queries.
-        // Once we shift to the new way of querying via newQuery()
-        // then we can change this back to $this->repo. Till then,
-        // we will need to keep use of $this->manager to minimum.
-        //
-        $this->manager = $this->app['repo'];
+        $this->repo = $this->app['repo'];
     }
 
     public static function getTableNameForEntity(string $entity)
@@ -291,7 +284,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         foreach ($relationships as $type => $ids)
         {
-            $typeEntities = $this->manager->$type->findMany($ids);
+            $typeEntities = $this->repo->$type->findMany($ids);
 
             foreach ($typeEntities as $entity)
             {
@@ -687,7 +680,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $typeName;
     }
 
-    protected function getAttributeWithTableName($col)
+    protected function dbColumn($col)
     {
         return $this->getTableName() . '.' . $col;
     }

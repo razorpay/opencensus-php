@@ -23,6 +23,7 @@ use RZP\Models\Gateway\Downtime;
 class Checkout
 {
     const CHECKOUT_LOGO_SIZE = 'medium';
+    const CHECKOUT_DEFAULT_THEME_COLOR = '#3594E2';
 
     const SUBSCRIPTION_ID    = 'subscription_id';
 

@@ -1991,3 +1991,9 @@ ALTER TABLE schedule_tasks
     ADD INDEX schedule_tasks_created_at_index (created_at);
 
 # ---- End subscriptions ----
+
+ALTER TABLE merchant_banks
+    ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE terminals
+    ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;

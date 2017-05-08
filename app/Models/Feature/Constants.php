@@ -13,6 +13,7 @@ class Constants
     const TOKENS              = 'tokens';
     const S2SWALLET           = 's2swallet';
     const S2SUPI              = 's2supi';
+    const S2SAEPS             = 's2saeps';
     const SETL_REPORT         = 'setl_report';
     const NOFLASHCHECKOUT     = 'noflashcheckout';
     const RECURRING           = 'recurring';
@@ -40,6 +41,7 @@ class Constants
         self::TOKENS              => true,
         self::S2SWALLET           => true,
         self::S2SUPI              => true,
+        self::S2SAEPS             => true,
         self::SETL_REPORT         => true,
         self::NOFLASHCHECKOUT     => true,
         self::RECURRING           => true,

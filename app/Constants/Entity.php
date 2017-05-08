@@ -96,6 +96,7 @@ class Entity
     // Gateway entities
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
+    const AEPS                  = 'aeps';
     const AMEX                  = 'amex';
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
@@ -110,6 +111,7 @@ class Entity
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
+    const AEPS_ICICI            = 'aeps_icici';
     const UPI_ICICI             = 'upi_icici';
     const UPI_IDFC              = 'upi_idfc';
     const NETBANKING_AXIS       = 'netbanking_axis';
@@ -185,6 +187,8 @@ class Entity
         self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
         self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
+        self::AEPS                  => \RZP\Gateway\Aeps\Base::class,
+        self::AEPS_ICICI            => \RZP\Gateway\Aeps\Icici::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
         self::NETBANKING            => \RZP\Gateway\Netbanking\Base::class,
@@ -232,6 +236,7 @@ class Entity
         self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
+        self::AEPS_ICICI         => \RZP\Gateway\Aeps\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
