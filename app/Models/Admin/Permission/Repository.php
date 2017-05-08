@@ -48,7 +48,7 @@ class Repository extends Base\Repository
 
     public function fetchAllByOrg(string $orgId, string $type = null)
     {
-        $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
+        $pid = $this->dbColumn(Permission\Entity::ID);
 
         $pmTable = Table::PERMISSION_MAP;
 
@@ -83,7 +83,7 @@ class Repository extends Base\Repository
 
     public function retrieveIdsByNamesAndOrg(array $permissionNames, string $orgId)
     {
-        $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
+        $pid = $this->dbColumn(Permission\Entity::ID);
 
         $pmTable = Table::PERMISSION_MAP;
 
@@ -114,9 +114,9 @@ class Repository extends Base\Repository
 
     public function getPermissionsWithWorkflowEnabled(string $orgId)
     {
-        $attributes = $this->getAttributeWithTableName('*');
+        $attributes = $this->dbColumn('*');
 
-        $pid = $this->getAttributeWithTableName(Permission\Entity::ID);
+        $pid = $this->dbColumn(Permission\Entity::ID);
 
         $pmTable = Table::PERMISSION_MAP;
 

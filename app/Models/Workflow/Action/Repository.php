@@ -78,18 +78,18 @@ class Repository extends Base\Repository
          *
          */
 
-        $acsDao = $this->manager->action_state;
+        $acsDao = $this->repo->action_state;
 
         $acsTable = $acsDao->getTableName();
 
-        $attrs = $this->getAttributeWithTableName('*');
-        $aId = $this->getAttributeWithTableName(Entity::ID);
-        $acsActionId = $acsDao->getAttributeWithTableName(State\Entity::ACTION_ID);
+        $attrs = $this->dbColumn('*');
+        $aId = $this->dbColumn(Entity::ID);
+        $acsActionId = $acsDao->dbColumn(State\Entity::ACTION_ID);
 
-        $acsState = $acsDao->getAttributeWithTableName(State\Entity::NAME);
+        $acsState = $acsDao->dbColumn(State\Entity::NAME);
 
         // CLOSED is the absolute last state, We can expect unique entries.
-        $acsAdminId = $acsDao->getAttributeWithTableName(State\Entity::ADMIN_ID);
+        $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
 
 
         return $this->newQuery()

@@ -1950,3 +1950,9 @@ ALTER TABLE refunds
 
 # Post deployment query for updating status of all the refunds #2673
 UPDATE refunds SET status = "processed", attempts = 1, last_attempted_at = created_at WHERE status is null;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE terminals
+    ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;

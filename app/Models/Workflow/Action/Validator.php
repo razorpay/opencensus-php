@@ -44,7 +44,7 @@ class Validator extends Base\Validator
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS,
-                $actionIds);
+                null, $actionIds);
         }
     }
 
@@ -60,7 +60,7 @@ class Validator extends Base\Validator
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND,
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND, null,
                 $data);
         }
     }
@@ -78,6 +78,7 @@ class Validator extends Base\Validator
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED,
+                null,
                 $data);
         }
     }
