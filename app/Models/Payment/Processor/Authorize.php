@@ -2618,6 +2618,9 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
+        // For dual (and null) terminal type, we check if the card
+        // network supports purchase or auth+capture. Eg. FSS uses
+        // auth+capture for MC/VISA and purchase for Rupay/DICL/MAESTRO
         $terminalType = $payment->terminal->getType();
 
         if ($terminalType === Terminal\Type::AUTH_CAPTURE)
@@ -2629,9 +2632,6 @@ trait Authorize
             return false;
         }
 
-        // For dual (and null) terminal type, we check if the card
-        // network supports purchase or auth+capture. Eg. FSS uses
-        // auth+capture for MC/VISA and purchase for Rupay/DICL/MAESTRO
         $gateway = $payment->getGateway();
 
         $networkCode = null;

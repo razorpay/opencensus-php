@@ -37,7 +37,7 @@ class Gateway extends Base\Gateway
 
         if ($this->isRecurringPaymentRequest($input) === true)
         {
-            return $this->authorizeRecurring($content);
+            return $this->authorizeRecurring($content, $input);
         }
 
         $request = $this->getAuthRequestArray($content);
@@ -45,13 +45,20 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function authorizeRecurring(array $content)
+    protected function authorizeRecurring(array $content, array $input)
     {
-        $response = $this->postAmaTransactionRequestAndGetContent($content, $this->input);
+        $response = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
-        // $this->traceGatewayResponse(
-            // TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE, $response);
-        sd($response);
+        $this->traceGatewayResponse(
+            TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE, $response);
+
+        $response['received'] = '1';
+
+        $this->gatewayEntity->fill($response);
+
+        $this->repo->saveOrFail($gatewayEntity);
+
+        $this->verifyAmaTransactionResponse($response, $input);
     }
 
     public function callback(array $input)
@@ -626,12 +633,6 @@ class Gateway extends Base\Gateway
 //            'vpc_OrderInfo'             => 'testinfo',
         ];
 
-        if ($this->isRecurringPaymentRequest($input) === true)
-        {
-            $content['vpc_TxSourceSubType'] = 'RECURRING';
-            unset($content['vpc_CardSecurityCode']);
-        }
-
         $content = array_merge($attributes, $content);
 
         if (($this->mode === Mode::TEST) and
@@ -641,6 +642,17 @@ class Gateway extends Base\Gateway
         }
 
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
+
+        if ($this->isRecurringPaymentRequest($input) === true)
+        {
+            $content['vpc_TxSourceSubType'] = 'RECURRING';
+            $content['vpc_ReturnAuthResponseData'] = 'Y';
+            unset($content['vpc_CardSecurityCode']);
+            unset($content['vpc_Card']);
+            unset($content['vpc_ReturnURL']);
+            unset($content['vpc_Version']);
+            unset($content['vpc_gateway']);
+        }
 
         return $content;
     }
@@ -759,6 +771,8 @@ class Gateway extends Base\Gateway
         $payment->fill($attributes);
 
         $payment->saveOrFail();
+
+        $this->gatewayEntity = $payment;
 
         return $payment;
     }
