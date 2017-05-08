@@ -49,7 +49,7 @@ export const unshift = (array, value) => {
 };
 
 export const push = (array, value) => {
-  return insertItem(array, array.length - 1, value);
+  return insertItem(array, array.length, value);
 };
 
 export const set = (state, prop, value) => {

@@ -42,6 +42,37 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
   content: $supportkit-text;
 }
 
+.dynamic-tooltip {
+  padding: 5px 10px;
+  position: absolute;
+  border-radius: 4px;
+  color: #fff;
+  background-color: #000;
+  z-index: 200;
+  animation: fadeIn 0.5s;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: -8px;
+    width: 0;
+    height: 0;
+    transform: translate(0, 50%);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-right: 10px solid #000;
+  }
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 .list-group-item pre {
 	font-family: Menlo, Monaco, "Ubuntu Mono", Consolas, "Courier New", monospace;
 	letter-spacing: 0.0625em;
@@ -500,9 +531,6 @@ a.highlight:hover, a.highlight:focus {
   .faded-text {
     color: #ccc;
   }
-  .timestamp {
-    cursor: help;
-  }
   .right-label {
     text-transform: uppercase;
     font-weight: bold;
@@ -513,6 +541,18 @@ a.highlight:hover, a.highlight:focus {
   }
   .desc-edit-icon > i {
     opacity: 0;
+  }
+  .desc-remove-icon {
+    position: absolute;
+    font-size: 14px;
+    z-index: 100;
+    cursor: pointer;
+    color: #e8e8e8;
+    top: 17px;
+
+    &:hover {
+      color: #c2c2c2;
+    }
   }
   .title-text {
     position: absolute;
@@ -638,14 +678,6 @@ a.highlight:hover, a.highlight:focus {
       width: auto !important;
     }
   }
-  .delete-btn {
-    line-height: 20px;
-    color: #ccc;
-    cursor: pointer;
-    &:hover {
-      color: inherit;
-    }
-  }
   .perm-row {
     height: 42px;
   }
@@ -710,15 +742,9 @@ a.highlight:hover, a.highlight:focus {
     font-weight: 600;
   }
   .pills-label {
-    border-radius: 4px;
-    font-weight: bold;
+    margin: 4px 8px;
     padding: 4px 8px;
-    margin: 8px;
-  }
-  .assignee-label {
-    background: #EBEBEB;
-    margin-right: 12px;
-    line-height: 36px;
+    display: inline-block;
   }
   .help-label {
     font-size: 12px;
@@ -727,10 +753,43 @@ a.highlight:hover, a.highlight:focus {
   .save-btn {
     border-radius: 17px;
   }
-  .select2-selection {
-    border-color: #cfdadd;
-  }
   .name-input {
     font-size: 14px;
+  }
+}
+
+.select2-selection {
+  border-color: #cfdadd !important;
+
+  &__rendered {
+    width: 90%;
+  }
+}
+
+.pills-container-users {
+  margin-bottom: 16px;
+
+  .pills-label {
+    margin-left: 0;
+  }
+}
+
+.pills-label {
+  border-radius: 4px;
+  font-weight: bold;
+  padding: 4px 8px;
+}
+
+.assignee-label {
+  background: #EBEBEB;
+  margin-right: 12px;
+}
+
+.delete-btn {
+  line-height: 20px;
+  color: #ccc;
+  cursor: pointer;
+  &:hover {
+    color: inherit;
   }
 }

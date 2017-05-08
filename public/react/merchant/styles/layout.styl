@@ -194,6 +194,22 @@ body.ReactModal__Body--open {
       border-top-color: transparent;
     }
   }
+
+  &[data-place=right] {
+    &:after {
+      left: auto;
+      right: 0;
+      transform: translateY(6px) scale(0.92);
+    }
+  }
+
+  &[data-place=left] {
+    &:after {
+      left: 0;
+      transform: translateY(6px) scale(0.92);
+    }
+  }
+
   &:before, &:after {
     opacity: 0;
     transform: translateX(-50%) translateY(6px) scale(.92);
@@ -227,6 +243,12 @@ body.ReactModal__Body--open {
     &:before, &:after {
       opacity: 1;
       transform: translateX(-50%);
+    }
+
+    &[data-place=right], &[data-place=left]{
+      &:after {
+        transform: none;
+      }
     }
   }
   &[data-event=active] {

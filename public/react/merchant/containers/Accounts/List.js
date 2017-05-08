@@ -138,7 +138,7 @@ export default class AccountsListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={accounts.length}
-              onClick={this.fetchAll}
+              onClick={this.paginate}
             />
           </div>
         </div>

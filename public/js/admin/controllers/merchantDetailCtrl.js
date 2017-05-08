@@ -50,9 +50,21 @@ app
 
       generateMerchant();
       $scope.lockForm = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/lock'
-        );
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            locked: true,
+          },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -215,9 +227,21 @@ app
       };
 
       $scope.unlockForm = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unlock'
-        );
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            locked: false,
+          },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -280,9 +304,17 @@ app
         $scope.editMerchant(merchantEdit);
       };
       $scope.enableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/enable'
-        );
+        var data = {
+          route_name: 'merchant_live_enable',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -304,9 +336,17 @@ app
           });
       };
       $scope.disableLive = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/live/disable'
-        );
+        var data = {
+          route_name: 'merchant_live_disable',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -376,11 +416,17 @@ app
       $scope.assignPricing = function(data) {
         data = { pricing_plan_id: data.id, pricing_plan_name: data.name };
 
+        var pricingData = {
+          route_name: 'merchant_assign_pricing',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/pricing',
-          transformRequest: transformRequestAsFormPost,
-          data: data,
+          url: '/admin/generic',
+          data: pricingData,
         });
         request
           .success(function(data) {
@@ -468,10 +514,17 @@ app
             data.banks.push(e);
           }
         });
+        var data = {
+          route_name: 'merchant_set_banks',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/banks',
-          data: angular.toJson(data),
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {
@@ -527,6 +580,14 @@ app
         // If the second parameter was not provided
         // we don't try to edit the groups and don't
         // send the field instead.
+        for (var key in selected_groups) {
+          if (selected_groups.hasOwnProperty(key)) {
+            if (!selected_groups[key]) {
+              delete selected_groups[key];
+            }
+          }
+        }
+
         if (typeof selected_groups === 'undefined') {
           selected_groups = {};
         } else {
@@ -659,9 +720,18 @@ app
           });
       };
       $scope.archiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/archive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'archive' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -683,9 +753,18 @@ app
           });
       };
       $scope.unarchiveMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unarchive'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'unarchive' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -708,9 +787,18 @@ app
       };
 
       $scope.suspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/suspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'suspend' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -733,9 +821,18 @@ app
       };
 
       $scope.unsuspendMerchant = function() {
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/unsuspend'
-        );
+        var data = {
+          route_name: 'merchant_action',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: { action: 'unsuspend' },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -929,9 +1026,15 @@ app
       };
       $scope.openChangeBankAccountDetails = function() {
         $scope.merchant.bank_account = {};
-        var request = $http.get(
-          '/admin/merchant/' + $scope.merchant.id + '/bank_account'
-        );
+        var data = {
+          route_name: 'merchant_fetch_bank_account',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
         request.success(function(data) {
           if (data.success) {
             $scope.merchant.bank_account = data.data;
@@ -1360,6 +1463,7 @@ app
       // This lets us display methods that are not returned
       // by the API as false
       var forcedMethods = [
+        'aeps',
         'mobikwik',
         'payzapp',
         'payumoney',
@@ -1452,7 +1556,15 @@ app
           $scope.bankdata[e] = value;
         });
       };
-      var request = $http.get('/admin/merchant/' + current + '/banks');
+      var data = {
+        route_name: 'merchant_get_banks',
+        url_params: {
+          '{id}': current,
+        },
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request.success(function(data) {
         if (data.success) {
           $scope.banks = data.data;

@@ -4,19 +4,11 @@ app.controller('PermissionDetailCtrl', [
   'alertsFactory',
   '$stateParams',
   '$state',
-  'transformRequestAsFormPost',
   'utils',
-  function(
-    $scope,
-    $http,
-    alertsFactory,
-    $stateParams,
-    $state,
-    transformRequestAsFormPost,
-    utils
-  ) {
+  function($scope, $http, alertsFactory, $stateParams, $state, utils) {
     $scope.select_all = false;
     $scope.selected_organizations = {};
+    $scope.workflow_orgs = {}; // Workflow enabled/disabled field corresponding to each org
 
     // Fetch orgs having permissions
     $scope.fetchPermission = function(id) {
@@ -39,6 +31,11 @@ app.controller('PermissionDetailCtrl', [
           permission.orgs.forEach(function(org) {
             $scope.selected_organizations[org.id] = true;
           });
+
+          // auto-select workflow_orgs from the response payload
+          permission.workflow_orgs.forEach(function(org) {
+            $scope.workflow_orgs[org.id] = true;
+          });
         }
       });
     };
@@ -49,6 +46,7 @@ app.controller('PermissionDetailCtrl', [
       $scope.selected_organizations = {};
 
       if (!$scope.select_all) {
+        $scope.workflow_orgs = {}; // Empty workflow_orgs if toggleAll checkbox is turned off
         return;
       } else {
         $scope.organizations.map(function(perm) {
@@ -57,10 +55,16 @@ app.controller('PermissionDetailCtrl', [
       }
     };
 
-    // Deselect in view
-    $scope.updateSelAllTag = function(id) {
+    // If an org is (un)selected, perform actions
+    $scope.updateIfOrgsChanged = function(id) {
+      // If org id is removed from selected_organizations then set select_all tag to false
       if (!$scope.selected_organizations[id]) {
         $scope.select_all = false;
+      }
+
+      // Auto unselect workflow enable tag for corresponding org if this org is (un)selected
+      if ($scope.workflow_orgs[id]) {
+        $scope.workflow_orgs[id] = false;
       }
     };
 
@@ -114,10 +118,16 @@ app.controller('PermissionDetailCtrl', [
         return $scope.selected_organizations[key];
       });
 
+      // Safe check way to include only those workflow_org which have corresponding org id in selected_organizations.
+      permission.workflow_orgs = permission.orgs.filter(function(id) {
+        return $scope.workflow_orgs[id];
+      });
+
       // edit
       if (permission.id) {
         var data = {
           route_name: 'permission_edit',
+          content_type: 'application/json',
           url_params: {
             '{id}': $scope.permission.id,
           },
@@ -129,7 +139,6 @@ app.controller('PermissionDetailCtrl', [
           method: 'put',
           url: '/admin/generic',
           data: data,
-          transformRequest: transformRequestAsFormPost,
         });
       } else {
         // add
@@ -142,7 +151,6 @@ app.controller('PermissionDetailCtrl', [
           method: 'post',
           url: '/admin/generic',
           data: data,
-          transformRequest: transformRequestAsFormPost,
         });
       }
 

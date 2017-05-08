@@ -25,6 +25,7 @@ import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 import paymentsReducer from 'merchant/modules/payments/list';
 import paymentReducer from 'merchant/modules/payments/details';
 import accountsReducer from 'merchant/modules/accounts';
+import referralsReducer from 'merchant/modules/referrals';
 
 export default combineReducers({
   form: formReducer,
@@ -52,6 +53,7 @@ export default combineReducers({
   credits: creditsReducer,
   refunds: refundsReducer,
   refund: refundReducer,
+  referrals: referralsReducer,
   batchuploads: batchuploadsReducer,
   accounts: accountsReducer,
 });

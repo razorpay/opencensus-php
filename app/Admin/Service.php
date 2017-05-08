@@ -593,8 +593,6 @@ class Service extends Base\Service
         // Merchant\Validator::checkAPIMatch($merchant, $response);
 
         $response = [
-            'archived_at'         => $merchant['archived_at'],
-            'suspended_at'        => $merchant['suspended_at'],
             'steps_finished'      => $merchantDetail['steps_finished'],
             'locked'              => $merchantDetail['locked'],
             'submitted'           => $merchantDetail['submitted'],
@@ -618,15 +616,6 @@ class Service extends Base\Service
         $live = $this->api->merchant->setId($id)->fetchBalance()->toArray();
 
         return compact('test', 'live');
-    }
-
-    public function fetchMerchantBanks($id)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->merchant->setId($id)->fetchBanks()->toArray();
-
-        return $response;
     }
 
     public function postEditMerchant($id, $input)
@@ -823,30 +812,6 @@ class Service extends Base\Service
         return [$error, $comment];
     }
 
-    public function postMerchantBanks($id, $input)
-    {
-        $error = (new Merchant\Validator)->validateInput('banks', $input)->messages();
-
-        $data = [];
-
-        if (empty($error))
-        {
-            $this->setApiCredentials();
-
-            try
-            {
-                $data = $this->api->merchant->fetch($id)->setBanks($input)->toArray();
-                $this->logActionToSlack($id, Actions::BANK_LIST_EDITED);
-            }
-            catch (\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error[] = $e->getMessage();
-            }
-        }
-
-        return array($error, $data);
-    }
-
     public function postAddAdjustment($id, $input)
     {
         $data = [];
@@ -1024,19 +989,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function unlockMerchant($id)
-    {
-        $error = $merchantDetails = [];
-
-        $params = ['locked' => false];
-
-        list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
-
-        $this->logActionToSlack($id, Actions::FORM_UNLOCKED);
-
-        return $error;
-    }
-
     public function fetchMerchantTerminal($id)
     {
         $this->setApiCredentials();
@@ -1131,57 +1083,6 @@ class Service extends Base\Service
         $response = $this->api->admin->fetchMultipleEntities('schedule_task', ['merchant_id' => $id])->toArray();
 
         return $response;
-    }
-
-    public function postMerchantPricing($id, $input)
-    {
-        $error = array();
-        $data = array();
-
-        $originalInput = $input;
-
-        if (isset($input['pricing_plan_name']))
-        {
-            unset($input['pricing_plan_name']);
-        }
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $data = $this->api->merchant->fetch($id)->setPricing($input)->toArray();
-            $this->logActionToSlack($id, Actions::PRICING_PLAN_SET, $originalInput);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
-    /**
-     * Fetches bank account details for a merchant from the API
-     * @param  string $merchantId Merchant Id
-     * @return array Bank Account Details
-     */
-    public function fetchBankAccount($merchantId)
-    {
-        $this->setApiCredentials();
-
-        try
-        {
-            $ba = $this->api->merchant
-                ->setId($merchantId)
-                ->fetchBankAccount()
-                ->toArray();
-
-            return [null, $ba];
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
     }
 
     /**

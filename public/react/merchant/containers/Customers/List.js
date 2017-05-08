@@ -99,7 +99,7 @@ export default class CustomersListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={customers.length}
-              onClick={this.fetchAll}
+              onClick={this.paginate}
             />
           </div>
         </div>

@@ -90,6 +90,3 @@ deploy:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
-      - akelmanson/rollbar-notify:
-          access-token: $ROLLBAR_ACCESS_TOKEN
-          environment: $WERCKER_DEPLOYTARGET_NAME

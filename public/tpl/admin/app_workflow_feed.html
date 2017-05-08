@@ -38,7 +38,14 @@
                    ng-if="action_details && allowFieldEdit">
                 <div class="col-xs-12" style="padding: 0 7px;">
                   <div class="input-group input-group-lg">
-                    <input type="text" class="form-control " id="title-input" aria-describedby="sizing-addon1" ng-model="action_details.title"> <!-- placeholder="Add a title" -->
+                    <input type="text" class="form-control " id="title-input"
+                           aria-describedby="sizing-addon1"
+                           ng-model="action_details.title"
+                           style="padding-right: 40px;"> <!-- placeholder="Add a title" -->
+                    <span class="desc-remove-icon glyphicon glyphicon-remove"
+                          ng-click="setTitleInactive()"
+                          style="right: 88px;"
+                          ng-if="titleActive"></span>
                     <span class="input-group-btn " >
                       <button
                         class="btn btn-info "
@@ -61,6 +68,10 @@
             <div class="description" ng-class="{'desc-active': descActive}" ng-if="action_details && allowFieldEdit">
               <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>
               <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea"></textarea>
+              <span class="desc-remove-icon glyphicon glyphicon-remove"
+                    ng-click="setDescInactive()"
+                    style="right: 10px;"
+                    ng-if="descActive"></span>
               <div class="desc-text wrapper-sm" ng-click="setDescActive();alerts.resetAlerts();" >
                 <!-- <div class="bg-white"></div> -->
                 <span class="description-text">
@@ -196,7 +207,7 @@
           </div>
         </div>
 
-        <div ng-if="rejectorList && rejectorList .length">
+        <div ng-if="rejectorList && rejectorList.length">
           <div class="right-label m-b m-t">Rejected by</div>
           <div class="assignee-list m-b">
             <div>

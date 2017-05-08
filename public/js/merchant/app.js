@@ -19,7 +19,6 @@ var app = angular
     'ngBusy',
     'noCAPTCHA',
     'angulartics',
-    'angulartics.segment.io',
     'react',
   ])
   .run([
@@ -133,10 +132,6 @@ var app = angular
         .state('app.activationold', {
           url: '/activationold',
           templateUrl: 'tpl/app_activation.html',
-        })
-        .state('app.referrals', {
-          url: '/referral',
-          templateUrl: 'tpl/app_referrals.html',
         })
         .state('app.profile', {
           url: '/profile',
@@ -330,6 +325,10 @@ var app = angular
         .state('app.accounts', {
           url: '/accounts',
           templateProvider: reactTemplateProvider('<accounts-list />'),
+        })
+        .state('app.referrals', {
+          url: '/referral',
+          templateProvider: reactTemplateProvider('<referrals-list />'),
         })
         //Guest Routes
         .state('access', {

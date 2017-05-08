@@ -1,13 +1,17 @@
 <?php
 
+// We use {orgId} when frontend is not supposed to pass it
+// and resolve (on the backend) automagically.
+
 return [
     // auth
     'admin' => [
         'org_create'                        => 'orgs',
         'org_get_multiple'                  => 'orgs',
-        'org_get'                           => 'orgs/{orgId}',
-        'org_edit'                          => 'orgs/{orgId}',
-        'org_delete'                        => 'orgs/{orgId}',
+        // this should not be {orgId}
+        'org_get'                           => 'orgs/{id}',
+        'org_edit'                          => 'orgs/{id}',
+        'org_delete'                        => 'orgs/{id}',
 
         // Roles
         'role_get_multiple'                 => 'orgs/{orgId}/roles',
@@ -320,5 +324,19 @@ return [
         'merchant_put_payment_methods'      => 'merchants/{mid}/methods',
 
         'feature_get_multiple'              => 'features/{entityId}',
+
+        'merchant_activation_update'        => 'merchant/activation/{id}/update',
+
+        'merchant_assign_pricing'           => 'merchants/{id}/pricing',
+
+        // Banks
+        'merchant_get_banks'                => 'merchants/{id}/banks',
+        'merchant_set_banks'                => 'merchants/{id}/banks',
+
+        'merchant_fetch_bank_account'       => 'merchants/{id}/bank_account',
+
+        'merchant_action'                   => 'merchants/{id}/action',
+        'merchant_live_enable'              => 'merchants/{id}/live/enable',
+        'merchant_live_disable'             => 'merchants/{id}/live/disable',
     ],
 ];
