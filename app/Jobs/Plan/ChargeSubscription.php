@@ -47,7 +47,7 @@ class ChargeSubscription extends Job implements ShouldQueue
         }
         finally
         {
-            $job->delete();
+            $this->delete();
         }
     }
 }
