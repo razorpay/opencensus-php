@@ -5,14 +5,14 @@ namespace RZP\Tests\Functional\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Plan\Subscription;
 
 class SubscriptionAuthTransactionTest extends TestCase
 {
-    use PaymentTrait;
+    use SubscriptionTrait;
 
     public function setUp()
     {
@@ -347,7 +347,9 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (LogicException $ex)
         {
-            $this->assertEquals('Subscription is neither in created state nor has ever been authenticated.', $ex->getMessage());
+            $this->assertEquals(
+                'Subscription is neither in created state nor has ever been authenticated.',
+                $ex->getMessage());
 
             return;
         }
@@ -469,56 +471,5 @@ class SubscriptionAuthTransactionTest extends TestCase
                     'item_id' => null,
                 ]);
         }
-    }
-
-    protected function createSubscription(
-        $startAt = false,
-        $planAttributes = [],
-        $subscriptionAttributes = [],
-        $addons = false,
-        $emptyResponseContent = false)
-    {
-        $this->fixtures->create('customer');
-
-        $this->fixtures->create('plan', $planAttributes);
-
-        if ($startAt === false)
-        {
-            $testFuncName = 'createSubscriptionForAuthTxn';
-        }
-        else
-        {
-            $testFuncName = 'createSubscriptionForAuthTxnWithStartAt';
-        }
-
-        $requestContent = $this->testData[$testFuncName];
-
-        if (empty($subscriptionAttributes) === false)
-        {
-            $requestContent['request']['content'] = array_merge(
-                $requestContent['request']['content'], $subscriptionAttributes);
-        }
-
-        if ($addons === true)
-        {
-            $requestContent['request']['content']['addons'] = [
-                [
-                    'item' => [
-                        'amount' => 300,
-                        'currency' => 'INR',
-                        'name' => 'Sample Upfront Amount'
-                    ]
-                ]
-            ];
-        }
-
-        if ($emptyResponseContent === true)
-        {
-            $requestContent['response']['content'] = [];
-        }
-
-        $subscriptionResponse = $this->startTest($requestContent);
-
-        return $subscriptionResponse;
     }
 }

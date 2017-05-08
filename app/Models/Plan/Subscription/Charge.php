@@ -354,11 +354,11 @@ class Charge extends Base\Core
 
     protected function sendInvoiceEmail(Invoice\Entity $invoice)
     {
-        (new Invoice\Core)->dispatchQueueJob(
-            $this->mode,
-            InvoiceAction::SUBSCRIPTION_CHARGED,
-            $invoice->getId()
-        );
+        // (new Invoice\Core)->dispatchQueueJob(
+        //     $this->mode,
+        //     InvoiceAction::SUBSCRIPTION_CHARGED,
+        //     $invoice->getId()
+        // );
     }
 
     protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)

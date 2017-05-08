@@ -3,13 +3,13 @@
 namespace RZP\Tests\Functional\Subscription;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 use Mockery;
 use Carbon\Carbon;
 
 class SubscriptionChargeTest extends TestCase
 {
-    use PaymentTrait;
+    use SubscriptionTrait;
 
     public function setUp()
     {
@@ -30,13 +30,6 @@ class SubscriptionChargeTest extends TestCase
         $this->mockTokenex();
     }
 
-    public function testSubscriptionCreateAuthTxnAllCharges()
-    {
-        // Test creation of plan, subscription
-        // make auth transaction
-        // make all the charges
-    }
-
     public function testSubscriptionFirstCharge()
     {
         $details = $this->doAuthTxnForNewSubscription();
@@ -55,22 +48,15 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(500, $authPayment['amount']);
         $this->assertEquals('refunded', $authPayment['status']);
 
-        Carbon::setTestNow(Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata'));
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1);
 
-        $result = $this->makeCreateSubscriptionInvoicesRequest();
+        Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
 
-        $this->assertEquals(1, $result['total']);
-        $this->assertEquals(1, $result['invoices_created']);
+        $task = $this->getLastEntity('schedule_task', true);
 
-        $invoice = $this->getLastEntity('invoice', true);
-
-        $this->assertEquals('issued', $invoice['status']);
-        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
-
-        $result = $this->makeChargeCronRequest();
+        $result = $this->makeSubscriptionChargeCronRequest();
 
         $this->assertEquals(1, $result['total']);
-        $this->assertEquals(1, $result['queued']);
 
         $subscription = $this->getLastEntity('subscription', true);
         $chargedPayment = $this->getLastEntity('payment', true);
@@ -87,39 +73,5 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(2, $allPayments['count']);
 
         Carbon::setTestNow();
-    }
-
-    protected function doAuthTxnForNewSubscription($plan = null, $subscription = null)
-    {
-        if ($plan === null)
-        {
-            $plan = $this->fixtures->create('plan');
-        }
-
-        if ($subscription === null)
-        {
-            // This is required so that the auth transaction
-            // is not made with past start_at.
-            $currentTime = time() + 10;
-
-            $subscription = $this->fixtures->create(
-                'subscription',
-                [
-                    'plan_id' => $plan->getId(),
-                    'start_at' => $currentTime,
-                    'end_at' => $currentTime + 20736000, // add 8 months
-                    'charge_at' => $currentTime,
-                ]);
-        }
-
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
-
-        $recurringPayment = $this->doAuthPayment($paymentRequest);
-
-        return [
-            'subscription_id'   => $subscription->getId(),
-            'plan_id'           => $plan->getId(),
-            'payment_id'        => $recurringPayment['razorpay_payment_id'],
-        ];
     }
 }

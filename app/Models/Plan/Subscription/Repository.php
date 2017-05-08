@@ -62,13 +62,12 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->select($subscriptionAttrs)
-                    ->join(Table::SCHEDULE_TASK, $subscriptionIdAttr, $taskEntityIdAttr)
+                    ->join(Table::SCHEDULE_TASK, $subscriptionIdAttr, '=', $taskEntityIdAttr)
                     ->where($taskNextRunAttr, '<', $currentTime)
                     ->where(function($query) use ($currentTime)
-                            {
-                                $query->whereNull(Entity::CURRENT_END)
-                                    ->orWhere(Entity::CURRENT_END, '<', $currentTime);
-                            })
-                    ->with(['plan', 'merchant']);
+                    {
+                        $query->whereNull(Entity::CURRENT_END)
+                            ->orWhere(Entity::CURRENT_END, '<', $currentTime);
+                    })->with(['plan', 'merchant']);
     }
 }

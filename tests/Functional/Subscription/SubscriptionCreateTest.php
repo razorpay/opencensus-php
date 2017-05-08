@@ -3,13 +3,13 @@
 namespace RZP\Tests\Functional\Subscription;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 use Mockery;
 use Carbon\Carbon;
 
 class SubscriptionCreateTest extends TestCase
 {
-    use PaymentTrait;
+    use SubscriptionTrait;
 
     public function setUp()
     {

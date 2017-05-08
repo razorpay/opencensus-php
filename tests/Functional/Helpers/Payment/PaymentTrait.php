@@ -264,7 +264,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doS2SPrivateAuthPayment($payment = null, $server = null)
+    protected function doS2sPrivateAuthPayment($payment = null, $server = null)
     {
         if ($payment === null)
         {
@@ -289,28 +289,7 @@ trait PaymentTrait
         return $content;
     }
 
-    public function getSubscriptionAuthTransactionRequest($subscription, $authAmount = null)
-    {
-        $paymentRequest = $this->getDefaultRecurringPaymentArray();
-
-        // For subscription, we get the customer ID from the subscription entity itself.
-        unset($paymentRequest['customer_id']);
-
-        $paymentRequest['subscription_id'] = $subscription['id'];
-
-        if ($authAmount === null)
-        {
-            $paymentRequest['amount'] = 500;
-        }
-        else
-        {
-            $paymentRequest['amount'] = $authAmount;
-        }
-
-        return $paymentRequest;
-    }
-
-    protected function doS2SRecurringPayment($payment = null, $server = null)
+    protected function doS2sRecurringPayment($payment = null, $server = null)
     {
         if ($payment === null)
         {
@@ -378,36 +357,6 @@ trait PaymentTrait
         $payment['wallet'] = $wallet;
 
         return $this->doAuthPayment($payment);
-    }
-
-    public function makeChargeCronRequest()
-    {
-        $request = [
-            'url'     => '/subscriptions/invoices/charge',
-            'action'  => 'post',
-            'content' => [],
-        ];
-
-        $this->ba->appAuth();
-
-        $response = $this->sendRequest($request);
-
-        return json_decode($response->getContent(), true);
-    }
-
-    public function makeCreateSubscriptionInvoicesRequest()
-    {
-        $request = [
-            'url'     => '/subscriptions/invoices',
-            'action'  => 'post',
-            'content' => [],
-        ];
-
-        $this->ba->appAuth();
-
-        $response = $this->sendRequest($request);
-
-        return json_decode($response->getContent(), true);
     }
 
     protected function doAuthPaymentViaAjaxRoute($payment)

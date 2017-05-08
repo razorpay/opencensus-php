@@ -204,7 +204,7 @@ class Core extends Base\Core
 
     public function fireWebhookForStatusUpdate(Entity $subscription, string $status)
     {
-        if (array_key_exists($status, Status::$webhookStatuses[$status]) === false)
+        if (array_key_exists($status, Status::$webhookStatuses) === false)
         {
             return;
         }

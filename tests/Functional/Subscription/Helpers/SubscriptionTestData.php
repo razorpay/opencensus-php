@@ -18,18 +18,18 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity' => 'plan',
+                'entity'   => 'plan',
                 'interval' => 2,
-                'period' => 'monthly',
-                'notes' => [],
-                'item' => [
-                    'id' => 'item_1000000000item',
-                    'active' => true,
-                    'name' => 'Some item name',
+                'period'   => 'monthly',
+                'notes'    => [],
+                'item'     => [
+                    'id'          => 'item_1000000000item',
+                    'active'      => true,
+                    'name'        => 'Some item name',
                     'description' => 'Some item description',
-                    'amount' => 100000,
-                    'currency' => 'INR',
-                    'type' => 'plan',
+                    'amount'      => 100000,
+                    'currency'    => 'INR',
+                    'type'        => 'plan',
                 ]
             ],
         ],
@@ -62,30 +62,30 @@ return [
 
     'testCreatePlanWithoutItemId' => [
         'request' => [
-            'url' => '/plans',
-            'method' => 'post',
+            'url'     => '/plans',
+            'method'  => 'post',
             'content' => [
                 'period'    => 'monthly',
                 'interval'  => 2,
                 'item'      => [
-                    'name' => 'test plan',
-                    'amount' => 20000,
+                    'name'     => 'test plan',
+                    'amount'   => 20000,
                     'currency' => 'INR',
                 ],
             ],
         ],
         'response' => [
             'content' => [
-                'entity' => 'plan',
+                'entity'   => 'plan',
                 'interval' => 2,
-                'period' => 'monthly',
-                'notes' => [],
-                'item' => [
-                    'active' => true,
-                    'name' => 'test plan',
-                    'amount' => 20000,
+                'period'   => 'monthly',
+                'notes'    => [],
+                'item'     => [
+                    'active'   => true,
+                    'name'     => 'test plan',
+                    'amount'   => 20000,
                     'currency' => 'INR',
-                    'type' => 'plan',
+                    'type'     => 'plan',
                 ]
             ],
         ],
