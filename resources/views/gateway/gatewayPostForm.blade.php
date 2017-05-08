@@ -237,24 +237,21 @@ body{
   <div style="display:inline-block;vertical-align:middle;height:100%"></div>
   <form id="form1" name="form1" action="{{$data['request']['url']}}" method="post" onsubmit="return true;">
   @foreach ($data['request']['content'] as $key => $value)
-     <input type="hidden" name="{{$key}}" value="{{$value}}">
-     <br />
+    <input type="hidden" name="{{$key}}" value="{{$value}}">
   @endforeach
   </form>
-  <br>
   <form id="form2" name="form2">
-     <input type="hidden" name="type" value="{{$data['type']}}">
-     <input type="hidden" name="gateway" value="{{$data['gateway']}}">
+    <input type="hidden" name="type" value="{{$data['type']}}">
+    <input type="hidden" name="gateway" value="{{$data['gateway']}}">
   </form>
   <script>
-    var gel = document.getElementById.bind(document);
     setTimeout(function() {
       document.body.className = 'loaded';
     }, 10);
 
     setTimeout(function(){
-      gel('title').innerHTML = 'Still trying to load...';
-      gel('msg').innerHTML = 'The bank page is taking time to load.';
+      document.getElementById('title').innerHTML = 'Still trying to load...';
+      document.getElementById('msg').innerHTML = 'The bank page is taking time to load.';
     }, 10000);
   </script>
 </body>
