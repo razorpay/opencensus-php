@@ -19,4 +19,16 @@ class FileStoreController extends Controller
 
         return Redirect::to($signedUrl);
     }
+
+    /**
+     * 'file_get_signed_url' : GET /files/{entity}/{entityId}/signed-url
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function getSignedUrlForEntity(string $entity, string $entityId)
+    {
+        $signedUrl = (new FileStore\Service)->fetchFileSignedUrlForEntity($entity, $entityId);
+
+        return Redirect::to($signedUrl);
+    }
 }

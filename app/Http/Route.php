@@ -365,6 +365,8 @@ final class Route
         'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
         'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
         'gateway_validate_unknown_refund'         => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
+        'reports_fetch_multiple'                  => ['get',      'reports',                                        'ReportController@getReports'                                       ],
+        'file_get_signed_url'                     => ['get',      'files/{entity}/{entityId}/signed-url',           'FileStoreController@getSignedUrlForEntity'                         ],
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
@@ -504,7 +506,6 @@ final class Route
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
-        'reports_fetch_multiple'                  => ['get',      'reports',                                        'ReportController@getReports'                                       ],
     );
 
     public static $public = array(
@@ -900,6 +901,7 @@ final class Route
         'offer_fetch_multiple',
         'offer_fetch_by_id',
         'reports_fetch_multiple',
+        'file_get_signed_url',
     );
 
     public static $admin = [

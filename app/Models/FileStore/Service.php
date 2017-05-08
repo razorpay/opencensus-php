@@ -26,4 +26,21 @@ class Service extends Base\Service
 
         return $signedUrl;
     }
+
+    /**
+     * Fetches signed url, given entity and entity id,
+     * for the file assosciated with entity
+     *
+     * @param string $entity
+     * @param string $entityId
+     *
+     * @return string $signedUrl
+     * @throws Exception\BadRequestException
+     */
+    public function fetchFileSignedUrlForEntity(string $entity, string $entityId)
+    {
+        $signedUrl = (new Accessor)->signedUrlForEntityFile($entity, $entityId);
+
+        return $signedUrl;
+    }
 }
