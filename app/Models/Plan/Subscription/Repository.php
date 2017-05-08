@@ -51,12 +51,12 @@ class Repository extends Base\Repository
 
     protected function getBaseSubscriptionsQuery()
     {
-        $subscriptionIdAttr = $this->getAttributeWithTableName(Entity::ID);
+        $subscriptionIdAttr = $this->dbColumn(Entity::ID);
 
-        $taskEntityIdAttr = $this->manager->schedule_task->getAttributeWithTableName(Task\Entity::ENTITY_ID);
-        $taskNextRunAttr = $this->manager->schedule_task->getAttributeWithTableName(Task\Entity::NEXT_RUN_AT);
+        $taskEntityIdAttr = $this->repo->schedule_task->dbColumn(Task\Entity::ENTITY_ID);
+        $taskNextRunAttr = $this->repo->schedule_task->dbColumn(Task\Entity::NEXT_RUN_AT);
 
-        $subscriptionAttrs = $this->getAttributeWithTableName('*');
+        $subscriptionAttrs = $this->dbColumn('*');
 
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 

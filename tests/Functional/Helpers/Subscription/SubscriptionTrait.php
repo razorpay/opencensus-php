@@ -77,9 +77,9 @@ trait SubscriptionTrait
             $requestContent['request']['content']['addons'] = [
                 [
                     'item' => [
-                        'amount' => 300,
+                        'amount'   => 300,
                         'currency' => 'INR',
-                        'name' => 'Sample Upfront Amount'
+                        'name'     => 'Sample Upfront Amount'
                     ]
                 ]
             ];

@@ -53,8 +53,7 @@ class CreateSubscription extends Migration
             $table->integer(Entity::AUTH_ATTEMPTS)
                   ->default(0);
 
-            $table->tinyInteger(Entity::CUSTOMER_NOTIFY)
-                  ->default(0);
+            $table->tinyInteger(Entity::CUSTOMER_NOTIFY);
 
             $table->text(Entity::NOTES);
 
