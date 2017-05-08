@@ -107,7 +107,6 @@ const concatJs = lazypipe().pipe(concatMulti, {
     'public/js/angular/ng-react.js',
     'public/js/libs/angular-file-upload.min.js',
     'public/js/libs/angulartics.min.js',
-    'public/js/libs/angulartics-segmentio.min.js',
     'public/js/libs/filesaver.min.js',
     'public/js/libs/jquery-tourbus.js',
     'public/js/themes/init.js',
