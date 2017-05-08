@@ -44,7 +44,7 @@ class Processor extends Base\Core
             TraceCode::SETTLEMENT_RETRY_REQUEST,
             $input
         );
-        
+
         $this->preSettlementProcessing($input);
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements();
@@ -176,7 +176,7 @@ class Processor extends Base\Core
             $totalTxns += $setlTxnsCount;
         }
 
-        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel, false);
+        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
 
         return $response;
     }
