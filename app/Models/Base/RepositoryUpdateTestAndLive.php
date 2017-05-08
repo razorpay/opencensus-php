@@ -284,7 +284,20 @@ trait RepositoryUpdateTestAndLive
             throw new Exception\LogicException($msg);
         }
     }
-
+    
+    /**
+    * Check if changes to the entity should be sync'd on test and live?
+    *
+    * - Including this trait in the corresponding repo class will enable 
+    *   sync for the entity
+    * - For cases where we want to sync based on conditions: define
+    *   function `shouldSync` in the entity's repository class, returning
+    *   `boolean`
+    *   Example: `Schedule\Repository::shouldSync()`
+    *
+    * @param PublicEntity $entity
+    * @return bool
+    */
     protected function entityShouldSync($entity) : bool
     {
         $shouldSync = ((method_exists($this, 'shouldSync') === false) or
