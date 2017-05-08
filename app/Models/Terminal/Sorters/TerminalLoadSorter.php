@@ -31,13 +31,22 @@ class TerminalLoadSorter extends Terminal\Sorter
             return $terminals;
         }
 
+        if ($options->isLoadSortingFallbackEnabled() === true)
+        {
+            $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_FALLBACK);
+
+            $terminals = (new OldTerminalLoadSorter)->sort($terminals, $input, false, $options);
+
+            return $terminals;
+        }
+
         // @note: Temporarily setting verbose to true here for logging of terminal
         // sorting using rules
         $verbose = true;
 
         $ruleCore = new Rule\Core;
 
-        $applicableRules = $ruleCore->fetchApplicableRules($terminals, $input, $verbose);
+        $applicableRules = $ruleCore->fetchApplicableRulesForPayment($terminals, $input, $verbose);
 
         // If no rules are present for load sorting we return the terminals list as is
         if ($applicableRules->isEmpty() === true)

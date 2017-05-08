@@ -40,7 +40,7 @@ class Core extends Base\Core
 
         // Checks if the edited load value will cause total load across similar
         // rules to exceed max load value of 100
-        $this->checkIfTotalLoadIsValid($rule);
+        $this->validateTotalLoad($rule);
 
         $this->repo->saveOrFail($rule);
 
@@ -55,13 +55,16 @@ class Core extends Base\Core
      * @param  bool         $verbose
      * @return PublicCollection collection of applicable rules
      */
-    public function fetchApplicableRules(array $terminals, array $input, bool $verbose = false): Base\PublicCollection
+    public function fetchApplicableRulesForPayment(
+                        array $terminals,
+                        array $input,
+                        bool $verbose = false): Base\PublicCollection
     {
         $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
 
         $applicableRules = $this->repo
                                 ->gateway_rule
-                                ->fetchApplicableRules($ruleFetchParams);
+                                ->fetchApplicableRulesForPayment($ruleFetchParams);
 
         // CHecks if merchant specific rules are present. If present we only use them
         // and discard other rules
@@ -124,7 +127,7 @@ class Core extends Base\Core
 
         // Checks that the total load across all rules with similar criteria doesn't exceed
         // max load.
-        $this->checkIfTotalLoadIsValid($rule);
+        $this->validateTotalLoad($rule);
     }
 
     /**
@@ -137,7 +140,7 @@ class Core extends Base\Core
      * @param  Entity $rule  New rule
      * @param  array  $input Request data
      */
-    protected function checkIfTotalLoadIsValid(Entity $rule)
+    protected function validateTotalLoad(Entity $rule)
     {
         $totalLoadForSimilarRules = $this->repo
                                          ->gateway_rule
@@ -205,14 +208,8 @@ class Core extends Base\Core
 
                 break;
 
-            case Payment\Method::WALLET:
-
-                $params[Entity::ISSUER] = $payment->getWallet();
-
-                break;
-
             default:
-                // For UPI payments, there is no issuer or network
+                // For UPI or wallet payments, there is no issuer or network
                 break;
         }
 

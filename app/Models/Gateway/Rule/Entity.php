@@ -133,13 +133,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
-    public function getNormalizedLoad(int $totalLoad)
-    {
-        $load = ($this->getLoad() / $totalLoad) * self::MAX_LOAD;
-
-        return intval(number_format($load, 2, '.', ''));
-    }
-
     //-----------------Setters----------------------
     public function setLoad(int $load)
     {
@@ -162,7 +155,7 @@ class Entity extends Base\PublicEntity
             // For certain attributes like gateway_acquirer, null means all, hence
             // we don't match if the value for these attributes is null
             if ((in_array($key, self::NULLABLE_ATTRIBUTES, true) === true) and
-                    ($this->getAttribute($key) === null))
+                ($this->isAttributeNull($key) === true))
             {
                 continue;
             }

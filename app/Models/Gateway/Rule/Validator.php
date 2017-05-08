@@ -133,15 +133,9 @@ class Validator extends Base\Validator
 
                 break;
 
-            case Method::WALLET:
-
-                $this->validateWalletIssuer($method, $issuer);
-
-                break;
-
             default:
 
-                // For certain methods like UPI there is no concept of issuer, so
+                // For certain methods like UPI / wallet there is no concept of issuer, so
                 // we don't validate if issuer is null
                 if ($issuer === null)
                 {
@@ -184,15 +178,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a supported bank for gateway ' . $gateway);
-        }
-    }
-
-    protected function validateWalletIssuer(string $method, string $issuer = null)
-    {
-        if (Wallet::exists($issuer) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                $issuer . ' is not a valid wallet');
         }
     }
 

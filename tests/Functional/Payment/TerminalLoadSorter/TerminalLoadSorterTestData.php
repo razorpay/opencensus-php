@@ -386,7 +386,6 @@ return [
                 'merchant_id' => '10000000000000',
                 'gateway' => 'wallet_jiomoney',
                 'method'  => 'wallet',
-                'issuer' => 'jiomoney',
                 'load' => 5000
             ],
             'url' => '/gateway/rules',
@@ -397,37 +396,9 @@ return [
                 'merchant_id' => '10000000000000',
                 'gateway' => 'wallet_jiomoney',
                 'method'  => 'wallet',
-                'issuer' => 'jiomoney',
                 'load' => 5000,
                 'admin' => true,
             ],
-        ],
-    ],
-
-    'testCreateGatewayRuleForWalletWithInvalidIssuer' => [
-        'request' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'gateway' => 'wallet_jiomoney',
-                'method'  => 'wallet',
-                'issuer' => 'xyz',
-                'load' => 5000
-            ],
-            'url' => '/gateway/rules',
-            'method' => 'POST',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'xyz is not a valid wallet',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

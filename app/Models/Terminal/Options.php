@@ -14,6 +14,10 @@ class Options
 
     protected $hasMultiple = false;
 
+    protected $loadSortingFallback;
+
+    protected static $loadSortingFallbackForTest;
+
     protected $failedTerminals = [];
 
     public function __construct()
@@ -21,6 +25,8 @@ class Options
         $this->setChance();
 
         $this->setMultiple();
+
+        $this->setLoadSortingFallback(true);
     }
 
     public function setMultiple($multiple = true)
@@ -49,6 +55,35 @@ class Options
         }
 
         $this->chance = $chance;
+    }
+
+    public function isLoadSortingFallbackEnabled()
+    {
+        return $this->loadSortingFallback;
+    }
+
+    public function setLoadSortingFallback(bool $val)
+    {
+        $loadSortingFallbackForTest = static::getLoadSortingFallbackForTest();
+
+        if ($loadSortingFallbackForTest === null)
+        {
+            $this->loadSortingFallback = $val;
+
+            return;
+        }
+
+        $this->loadSortingFallback = $loadSortingFallbackForTest;
+    }
+
+    public static function getLoadSortingFallbackForTest()
+    {
+        return static::$loadSortingFallbackForTest;
+    }
+
+    public static function setLoadSortingFallbackForTest(bool $val)
+    {
+        static::$loadSortingFallbackForTest = $val;
     }
 
     public function setFailedTerminals(array $exclude)

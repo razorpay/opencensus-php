@@ -117,13 +117,6 @@ class TerminalLoadSorterTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateGatewayRuleForWalletWithInvalidIssuer()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
     public function testCreateGatewayRuleWithAlreadyExistingRule()
     {
         $existingRule = $this->fixtures->create('gateway_rule:card');
@@ -386,7 +379,6 @@ class TerminalLoadSorterTest extends TestCase
 
         $this->fixtures->create('gateway_rule:wallet', [
             'gateway' => 'wallet_mobikwik',
-            'issuer'  => 'mobikwik',
             'load'    => 7000
         ]);
 
@@ -408,5 +400,6 @@ class TerminalLoadSorterTest extends TestCase
         $this->fixtures->create('terminal:all_shared_terminals');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->mockTokenex();
+        Options::setLoadSortingFallbackForTest(false);
     }
 }

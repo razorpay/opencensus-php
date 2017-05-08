@@ -72,7 +72,7 @@ class Repository extends Base\Repository
      *
      * @param  array  $params Query parameter values
      */
-    public function fetchApplicableRules(array $params): Base\PublicCollection
+    public function fetchApplicableRulesForPayment(array $params): Base\PublicCollection
     {
         $query = $this->newQuery();
 
@@ -87,8 +87,6 @@ class Repository extends Base\Repository
      * - If the key belongs to NULLABLE_ATTRIBUTES builds query like WHERE (key = val OR key IS NULL)
      *   This is required to handle cases where some rules can have null value for thse attributes
      *   signifying any/all hence we need to include these rules also
-     * - For attributes which are not in NULLABLE_ATTRIBUTES we add clause like
-     *   WHERE key = <value>, or WHERE <key> is NULL if the value is null
      * - Sample query below
      *   SELECT * FROM load_rules WHERE merchant_id IN (?, ?) AND gateway IN (?, ?, ?)
      *   AND method = ? AND (method_type = ? OR method_type IS NULL) AND (issuer = ? OR issuer IS NULL)
@@ -106,22 +104,14 @@ class Repository extends Base\Repository
             {
                 $query->whereIn($key, $value);
             }
-            else if ((in_array($key, Entity::NULLABLE_ATTRIBUTES, true) === true))
-            {
-                $this->addQueryForNullableAttribute($query, $key, $params);
-            }
             else
             {
-                $this->addQueryForNonNullableAttribute($query, $key, $params);
+                $this->addQueryForAttribute($query, $key, $params);
             }
         }
     }
 
-    /**
-     * For attributes for which null values are acceptable we form query like
-     * WHERE key = <val> OR KEY IS NULL
-     */
-    protected function addQueryForNullableAttribute($query, $key, $params)
+    protected function addQueryForAttribute($query, $key, $params)
     {
         $value = $params[$key];
 
@@ -129,36 +119,15 @@ class Repository extends Base\Repository
         {
             if ($value !== null)
             {
-                $query->where($key, '=', $value)
-                      ->orWhereNull($key);
+                $query->where($key, '=', $value);
+
+                // For some attributes in which null satisfies the selection
+                // criteria add a clause like IR WHERE <key> IS NULL
+                if (in_array($key, Entity::NULLABLE_ATTRIBUTES, true) === true)
+                {
+                    $query->orWhereNull($key);
+                }
             }
         });
-    }
-
-    protected function addQueryForNonNullableAttribute($query, $key, $params)
-    {
-        $func = 'addQueryParam'.studly_case($key);
-
-        if (method_exists($this, $func))
-        {
-            $this->$func($query, $params);
-        }
-        else
-        {
-            $query->where($key, '=', $params[$key]);
-        }
-    }
-
-    /**
-     * Special handling for intternational attribute, as it is a boolean, so if it
-     * is not present or null we want to cast it to bool and then add query
-     * @param $query  Selection query
-     * @param array $params query params
-     */
-    protected function addQueryParamInternational($query, $params)
-    {
-        $international = (bool) $params[Entity::INTERNATIONAL];
-
-        $query->where(Entity::INTERNATIONAL, '=', $international);
     }
 }
