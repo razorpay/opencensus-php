@@ -1,19 +1,19 @@
 <?php
 
-namespace RZP\Models\Report;
+namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
 
-use RZP\Models\Base\Core;
+use RZP\Models\Base;
 
-class Base extends Core
+class BaseReport extends Base\Core
 {
     protected static $rules = [
-        'year'  =>  'required|digits:4',
-        'month' =>  'required|digits_between:1,2',
-        'day'   =>  'sometimes|digits_between:1,2',
-        'count' =>  'sometimes|integer|min:1',
-        'skip'  =>  'sometimes|integer|min:0',
+        'year'  => 'required|digits:4',
+        'month' => 'required|digits_between:1,2',
+        'day'   => 'sometimes|digits_between:1,2',
+        'count' => 'sometimes|integer|min:1',
+        'skip'  => 'sometimes|integer|min:0',
     ];
 
     protected function getTimestamps($input): array

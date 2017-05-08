@@ -5,10 +5,10 @@ namespace RZP\Models\Transaction;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Report;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
+use RZP\Models\Report\Types\BasicEntityReport;
 
 class Service extends Base\Service
 {
@@ -34,7 +34,7 @@ class Service extends Base\Service
 
     public function getReport($input)
     {
-        $report = new Report\BasicEntityReport(Constants\Entity::TRANSACTION);
+        $report = new BasicEntityReport(Constants\Entity::TRANSACTION);
 
         return $report->getReport($input);
     }

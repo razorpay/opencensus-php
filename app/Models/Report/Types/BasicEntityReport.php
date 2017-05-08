@@ -1,11 +1,12 @@
 <?php
 
-namespace RZP\Models\Report;
+namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use RZP\Exception;
+use RZP\Models\Report;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\JitValidator;
@@ -13,7 +14,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
-class BasicEntityReport extends Base
+class BasicEntityReport extends BaseReport
 {
     use FileHandlerTrait;
 
@@ -106,7 +107,13 @@ class BasicEntityReport extends Base
         $append = false;
 
         // get or create report entity
-        $report = (new Core)->getReportEntity($from, $to, $this->entity, $input);
+        $entityParams = [
+            'from'   => $from,
+            'to'     => $to,
+            'entity' => $this->entity
+        ];
+
+        $report = (new Report\Core)->buildEntity($entityParams + $input, $this->merchant);
 
         // set generatedAt value for report
         // this is set as `now` because

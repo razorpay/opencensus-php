@@ -504,6 +504,7 @@ final class Route
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
+        'reports_fetch_multiple'                  => ['get',      'reports',                                        'ReportController@getReports'                                       ],
     );
 
     public static $public = array(
@@ -898,6 +899,7 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'reports_fetch_multiple',
     );
 
     public static $admin = [

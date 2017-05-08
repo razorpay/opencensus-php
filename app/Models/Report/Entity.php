@@ -18,7 +18,7 @@ class Entity extends Base\PublicEntity
     const GENERATED_AT  = 'generated_at';
     const GENERATED_BY  = 'generated_by';
 
-    protected $entity = 'report';
+    protected $entity   = 'report';
 
     protected $generateIdOnCreate = true;
 
