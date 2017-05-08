@@ -21,13 +21,96 @@ class SubscriptionChargeTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['recurring', 'tokens']);
 
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
 
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
-
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->gateway = 'first_data';
 
         $this->mockTokenex();
+    }
+
+    public function testSubscriptionCompleteCycle()
+    {
+        $this->doAuthTxnForSubscriptionWithAddOn();
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('authenticated', $subscription['status']);
+        $expectedPaidCount = 0;
+        // Subscription has only been authenticated, never paid
+        $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+
+        while ($expectedPaidCount < $subscription['total_count'])
+        {
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at']+1);
+            Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
+            $result = $this->makeSubscriptionChargeCronRequest();
+            // Subscription got charged
+            $this->assertEquals(1, $result['total']);
+
+            $expectedPaidCount += 1;
+
+            $subscription = $this->getLastEntity('subscription', true);
+            $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+
+            $expectedStatus = 'active';
+
+            // After large charge, subscription is marked completed
+            if ($expectedPaidCount === $subscription['total_count'])
+            {
+                $expectedStatus = 'completed';
+            }
+            $this->assertEquals($expectedStatus, $subscription['status']);
+        }
+
+        $this->assertNull($subscription['charge_at']);
+        $this->assertNotNull($subscription['ended_at']);
+
+        // Long time from now
+        Carbon::setTestNow(Carbon::now()->addYear(), 'Asia/Kolkata');
+        $result = $this->makeSubscriptionChargeCronRequest();
+        // Subscription is complete, so will not get charged
+        $this->assertEquals(0, $result['total']);
+
+        // Reset time
+        Carbon::setTestNow();
+    }
+
+    public function testSubscriptionRetry()
+    {
+        $this->doAuthTxnForSubscriptionWithAddOn();
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('authenticated', $subscription['status']);
+        $expectedPaidCount = 0;
+        // Subscription has only been authenticated, never paid
+        $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+
+        $this->failCharge();
+
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at']+1);
+        Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
+        $result = $this->makeSubscriptionChargeCronRequest();
+        // Invoice got created
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $payment = $this->getLastEntity('payment', true);
+        // But subscription charge failed
+        $this->assertEquals('failed', $payment['status']);
+
+        // Subscription marked as overdue
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('overdue', $subscription['status']);
+
+        $this->passCharge();
+
+        $result = $this->makeSubscriptionRetryCronRequest();
+        $this->assertEquals(1, $result['queued']);
+
+        // Retry succeeded, subscription marked as active
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('active', $subscription['status']);
+
+        // Reset time
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionFirstCharge()
@@ -51,8 +134,6 @@ class SubscriptionChargeTest extends TestCase
         $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1);
 
         Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
-
-        $task = $this->getLastEntity('schedule_task', true);
 
         $result = $this->makeSubscriptionChargeCronRequest();
 

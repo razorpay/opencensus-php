@@ -44,6 +44,21 @@ trait SubscriptionTrait
         return json_decode($response->getContent(), true);
     }
 
+    public function makeSubscriptionRetryCronRequest()
+    {
+        $request = [
+            'url'     => '/subscriptions/retry/auth',
+            'action'  => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     protected function createSubscription(
         $startAt = false,
         $planAttributes = [],
@@ -107,5 +122,39 @@ trait SubscriptionTrait
             'subscription_id'   => $subscription['id'],
             'payment_id'        => $recurringPayment['razorpay_payment_id'],
         ];
+    }
+
+    protected function doAuthTxnForSubscriptionWithAddOn()
+    {
+        // Subscription is created with start_at and with add_on
+        $subscription = $this->createSubscription(true, [], [], true);
+        $this->assertEquals('created', $subscription['status']);
+
+        $addon = $this->getLastEntity('addon', true);
+        $this->assertEquals($subscription['id'], $addon['subscription_id']);
+        $item = $this->getLastEntity('item', true);
+        $this->assertEquals($item['id'], $addon['item_id']);
+
+        // Charge amount is addon amount
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, $item['amount']);
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+    }
+
+    protected function failCharge()
+    {
+        $this->mockServerContentFunction(function(&$content)
+        {
+            $content['ApprovalCode']      = 'N:-10503:Poor excude for an error message';
+            $content['TransactionResult'] = 'FAILED';
+        });
+    }
+
+    protected function passCharge()
+    {
+        $this->mockServerContentFunction(function(&$content)
+            {
+                // Do nothing
+            });
     }
 }
