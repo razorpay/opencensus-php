@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Jobs\Plan\Subscription;
+namespace RZP\Jobs\Plan;
 
-use App;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+use RZP\Jobs\Job;
 use RZP\Models\Plan\Subscription;
 
 /**
@@ -15,7 +15,7 @@ use RZP\Models\Plan\Subscription;
  * and pushes this job onto a queue.
  *
  */
-class Charge extends Job implements ShouldQueue
+class ChargeSubscription extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 

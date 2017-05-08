@@ -18,7 +18,7 @@ use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task;
 use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Bus\DispatchesJobs;
-use RZP\Jobs\Plan\Subscription\Charge as ChargeJob;
+use RZP\Jobs\Plan\ChargeSubscription;
 
 class Core extends Base\Core
 {
@@ -257,7 +257,7 @@ class Core extends Base\Core
                         ]);
                 }
 
-                $this->dispatch((new ChargeJob($queuePayload)));
+                $this->dispatch((new ChargeSubscription($queuePayload)));
             }
         );
     }
