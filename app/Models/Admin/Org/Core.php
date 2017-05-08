@@ -43,7 +43,6 @@ class Core extends Base\Core
 
         $this->repo->transactionOnLiveAndTest(function() use($org, $input)
         {
-
             $this->repo->saveOrFail($org);
 
             if (isset($input[Entity::PERMISSIONS]) === true)
