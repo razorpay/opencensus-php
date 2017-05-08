@@ -3,13 +3,12 @@
 namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
-use RZP\Exception;
+
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Plan;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Schedule\Anchor;
-use RZP\Models\Schedule\Period;
 
 class Entity extends Base\PublicEntity
 {
@@ -44,7 +43,7 @@ class Entity extends Base\PublicEntity
     //
     // Add-on needs to be at a subscription level because
     // the add-on amount can change based on the subscription period.
-    // For example, if the subscription is for 3 months, add-on amount can
+    // For example: if the subscription is for 3 months, add-on amount can
     // be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
     //
     const ADDONS = 'addons';
@@ -152,7 +151,7 @@ class Entity extends Base\PublicEntity
 
     // --------------------- GETTERS ---------------------
 
-    public function getChargeableAmount()
+    public function getChargeableAmount() : int
     {
         $quantity = $this->getQuantity();
 
@@ -284,7 +283,6 @@ class Entity extends Base\PublicEntity
         // This signifies that the auth transaction also
         // includes the first charge of the subscription.
         //
-
         return ($this->isAttributeNull(self::START_AT) === true);
     }
 
@@ -299,7 +297,6 @@ class Entity extends Base\PublicEntity
         // down all the addons ever created of the subscription and
         // not just the unconsumed ones.
         //
-
         $addons = $this->addons()->getResults()->toArrayPublicEmbedded();
 
         return $addons;
@@ -451,32 +448,23 @@ class Entity extends Base\PublicEntity
 
     public function setPublicPlanIdAttribute(array & $array)
     {
-        if (isset($array[self::PLAN_ID]))
-        {
-            $planId = $this->getAttribute(self::PLAN_ID);
+        $planId = $this->getAttribute(self::PLAN_ID);
 
-            $array[self::PLAN_ID] = Plan\Entity::getSignedId($planId);
-        }
+        $array[self::PLAN_ID] = Plan\Entity::getSignedIdOrNull($planId);
     }
 
     public function setPublicCustomerIdAttribute(array & $array)
     {
-        if (isset($array[self::CUSTOMER_ID]) === true)
-        {
-            $customerId = $this->getAttribute(self::CUSTOMER_ID);
+        $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-            $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
-        }
+        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
     public function setPublicTokenIdAttribute(array & $array)
     {
-        if (isset($array[self::TOKEN_ID]))
-        {
-            $tokenId = $this->getAttribute(self::TOKEN_ID);
+        $tokenId = $this->getAttribute(self::TOKEN_ID);
 
-            $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedId($tokenId);
-        }
+        $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedIdOrNull($tokenId);
     }
 
     // --------------------- END PUBLIC SETTERS ---------------------

@@ -2,10 +2,11 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Carbon\Carbon;
 
 class Validator extends Base\Validator
 {
@@ -27,7 +28,6 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::CUSTOMER_ID     => 'required|string|size:19|public_id',
         Entity::PLAN_ID         => 'required|string|size:19|public_id',
-        // Entity::TOKEN_ID     => 'required|string|size:20',
         Entity::QUANTITY        => 'required|integer|min:1|max:500',
         Entity::NOTES           => 'sometimes|notes',
         Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1|max:365',
