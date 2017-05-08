@@ -23,23 +23,6 @@ app
     ) {
       admin.identity().then(function(data) {
         $scope.admin = data;
-        // console.log(data);
-
-        Rollbar.configure({
-          payload: {
-            person: {
-              id: data.id,
-              name: data.name,
-              email: data.email,
-              role: 'admin',
-            },
-          },
-        });
-        analytics.identify(data.id, {
-          name: data.name,
-          email: data.email,
-          role: 'admin',
-        });
       });
       $scope.alerts = alertsFactory.getHandler();
       $scope.changePassword = function() {

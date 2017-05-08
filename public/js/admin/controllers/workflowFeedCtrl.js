@@ -184,12 +184,20 @@ app
 
             $scope.cards = $scope.cards.concat(checkers);
 
-            $scope.approverList = $scope.cards.filter(function(card) {
-              return card.approved;
+            // Sort the cards by timestamp
+
+            $scope.cards.sort(function(a, b) {
+              return a.created_at - b.created_at;
             });
 
-            $scope.rejectorList = $scope.cards.filter(function(card) {
-              return !card.approved;
+            // Prepare the list of approvers
+            $scope.approverList = checkers.filter(function(checker) {
+              return checker.approved;
+            });
+
+            // Prepare the list of rejectors
+            $scope.rejectorList = checkers.filter(function(checker) {
+              return !checker.approved;
             });
 
             $scope.levels = {};
@@ -215,6 +223,8 @@ app
 
       // Cards data
 
+      // This is purely for display purposes, don't work on it
+      // to do any sort of computation/calculation.
       $scope.cards = [];
 
       $scope.actionStateChange = function(state) {
