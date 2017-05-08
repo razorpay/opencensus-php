@@ -160,6 +160,8 @@ class RepositoryManager extends \Illuminate\Support\Manager
      * $callback is not type-hinted as callable to support arrays.
      *
      * @param callable $callback
+     * @param array    $params
+     *
      * @return mixed
      */
     public function transaction($callback, ...$params)

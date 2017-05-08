@@ -4,13 +4,12 @@ namespace RZP\Models\Plan;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Schedule;
 use RZP\Trace\TraceCode;
 use RZP\Models\Item;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant\Entity $merchant): Entity
+    public function create(array $input, Merchant\Entity $merchant) : Entity
     {
         $this->trace->info(
             TraceCode::PLAN_CREATE_REQUEST,
@@ -19,7 +18,7 @@ class Core extends Base\Core
         return $this->transaction([$this, 'createPlan'], $input, $merchant);
     }
 
-    protected function createPlan(array $input, Merchant\Entity $merchant)
+    protected function createPlan(array $input, Merchant\Entity $merchant) : Entity
     {
         $this->repo->assertTransactionActive();
 

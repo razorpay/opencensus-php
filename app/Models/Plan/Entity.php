@@ -3,7 +3,6 @@
 namespace RZP\Models\Plan;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -26,8 +25,6 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'plan';
 
     protected $entity = 'plan';
-
-    protected $table = Table::PLAN;
 
     protected $generateIdOnCreate = true;
 
@@ -55,7 +52,11 @@ class Entity extends Base\PublicEntity
         self::ITEM,
     ];
 
-    // Used for reporting
+    /**
+     * Amount attributes. used for reporting
+     *
+     * @var array
+     */
     protected $amounts = [
         self::AMOUNT,
     ];

@@ -3,9 +3,9 @@
 namespace RZP\Models\Plan;
 
 use Carbon\Carbon;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Exception\LogicException;
+
 use RZP\Models\Schedule\Library;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Cycle
 {
@@ -41,17 +41,12 @@ class Cycle
         self::DAILY     => 'days',
     ];
 
-    public static function isPeriodValid(string $period)
+    public static function isPeriodValid(string $period) : bool
     {
-        if (in_array($period, self::$validPeriods, true) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return (in_array($period, self::$validPeriods, true) === true);
     }
 
-    public static function getMaxAllowedInterval(string $period)
+    public static function getMaxAllowedInterval(string $period) : int
     {
         if (self::isPeriodValid($period) === false)
         {
@@ -63,7 +58,7 @@ class Cycle
         return self::$allowedMaxInterval[$period];
     }
 
-    public static function getTotalCountForGivenInterval(Subscription\Entity $subscription)
+    public static function getTotalCountForGivenInterval(Subscription\Entity $subscription) : int
     {
         $start = $subscription->getStartAt();
         $end = $subscription->getEndAt();
