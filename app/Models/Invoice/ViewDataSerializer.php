@@ -82,8 +82,13 @@ class ViewDataSerializer extends Base\Core
     {
         $invoiceData = $this->invoice->toArrayPublic();
 
-        $invoiceData['is_paid'] = ($this->invoice->isPaid());
-        $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);
+        $isInvoicePaid = $this->invoice->isPaid();
+        $invoiceAmountFormatted = number_format($invoiceData['amount']/100, 2);
+
+        $invoiceData += [
+            'is_paid'          => $isInvoicePaid,
+            'amount_formatted' => $invoiceAmountFormatted,
+        ];
 
         foreach (self::$appendEpochsFormatted as $key)
         {
@@ -95,8 +100,10 @@ class ViewDataSerializer extends Base\Core
             }
             else
             {
-                $invoiceData[$key . '_formatted'] = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
-                                                          ->format('j M Y');
+                $formattedEpoch = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
+                                        ->format('j M Y');
+
+                $invoiceData[$key . '_formatted'] = $formattedEpoch;
             }
         }
 
@@ -104,8 +111,14 @@ class ViewDataSerializer extends Base\Core
             $invoiceData['line_items'],
             function (& $lineItem, $i)
             {
-                $lineItem['amount_formatted'] = number_format($lineItem['amount'] / 100, 2);
-                $lineItem['total_amount_formatted'] = number_format(($lineItem['amount'] * $lineItem['quantity']) / 100, 2);
+                $amountFormatted = number_format($lineItem['amount'] / 100, 2);
+                $totalAmount = $lineItem['amount'] * $lineItem['quantity'];
+                $totalAmountFormatted = number_format($totalAmount / 100, 2);
+
+                $lineItem += [
+                    'amount_formatted'       => $amountFormatted,
+                    'total_amount_formatted' => $totalAmountFormatted,
+                ];
             });
 
         return $invoiceData;

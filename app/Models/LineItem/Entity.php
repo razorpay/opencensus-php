@@ -2,7 +2,6 @@
 
 namespace RZP\Models\LineItem;
 
-use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Constants;
@@ -23,19 +22,29 @@ class Entity extends Base\PublicEntity
     const NAME             = 'name';
     const DESCRIPTION      = 'description';
     const AMOUNT           = 'amount';
+    const TOTAL_AMOUNT     = 'total_amount';
+    const TAX_AMOUNT       = 'tax_amount';
+    const NET_AMOUNT       = 'net_amount';
     const CURRENCY         = 'currency';
+    const TAX_INCLUSIVE    = 'tax_inclusive';
+    const UNIT             = 'unit';
     const QUANTITY         = 'quantity';
     const DELETED_AT       = 'deleted_at';
 
-    //
     // Input keys
-    //
 
     const LINE_ITEMS       = 'line_items';
     const IDS              = 'ids';
+
     // This is used to send the whole ref object
     // as part of the line item itself.
     const REF              = 'ref';
+    const TAX_ID           = 'tax_id';
+    const TAX_GROUP_ID     = 'tax_group_id';
+
+    // Output keys
+
+    const TAXES            = 'taxes';
 
     protected static $sign = 'li';
 
@@ -62,7 +71,12 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
+        self::TOTAL_AMOUNT,
+        self::TAX_AMOUNT,
+        self::NET_AMOUNT,
         self::CURRENCY,
+        self::TAX_INCLUSIVE,
+        self::UNIT,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -77,8 +91,14 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
+        self::TOTAL_AMOUNT,
+        self::TAX_AMOUNT,
+        self::NET_AMOUNT,
         self::CURRENCY,
+        self::TAX_INCLUSIVE,
+        self::UNIT,
         self::QUANTITY,
+        self::TAXES,
     ];
 
     protected $fillable = [
@@ -86,12 +106,18 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::TAX_INCLUSIVE,
+        self::UNIT,
         self::QUANTITY,
     ];
 
     protected $casts = [
-        self::AMOUNT    => 'int',
-        self::QUANTITY  => 'int',
+        self::AMOUNT        => 'int',
+        self::TOTAL_AMOUNT  => 'int',
+        self::TAX_AMOUNT    => 'int',
+        self::NET_AMOUNT    => 'int',
+        self::TAX_INCLUSIVE => 'bool',
+        self::QUANTITY      => 'int',
     ];
 
     protected $publicSetters = [
@@ -110,9 +136,13 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::UNIT,
+        self::TAX_INCLUSIVE,
+        self::TAX_ID,
+        self::TAX_GROUP_ID,
     ];
 
-    // -------------------------- Getters --------------------------
+    // -------------------------- Getters ----------------------------
 
     public function getAmount()
     {
@@ -129,9 +159,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::QUANTITY);
     }
 
-    // -------------------------- Getters Ends --------------------------
+    // -------------------------- Getters Ends -----------------------
 
-    // -------------------------- Public Setters --------------------------
+    // -------------------------- Public Setters ---------------------
 
     protected function setPublicItemIdAttribute(array & $array)
     {
@@ -152,9 +182,9 @@ class Entity extends Base\PublicEntity
         $array[self::REF_ID] = $entity::getSignedId($array[self::REF_ID]);
     }
 
-    // -------------------------- Public Setters Ends --------------------------
+    // -------------------------- Public Setters Ends ----------------
 
-    // -------------------- Relations ---------------------------
+    // -------------------- Relations --------------------------------
 
     public function entity()
     {
@@ -181,5 +211,10 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    // -------------------- End Relations -----------------------
+    public function taxes()
+    {
+        return $this->hasMany('RZP\Models\LineItem\Tax\Entity');
+    }
+
+    // -------------------- End Relations ----------------------------
 }

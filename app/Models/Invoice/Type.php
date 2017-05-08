@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class Type
 {
     const ECOD    = 'ecod';
@@ -17,7 +19,8 @@ class Type
     {
         if (self::isTypeValid($type) === false)
         {
-            throw new \InvalidArgumentException('Not a valid type: ' . $type);
+            throw new BadRequestValidationFailureException(
+                'Not a valid type: ' . $type);
         }
     }
 

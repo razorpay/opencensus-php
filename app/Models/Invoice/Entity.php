@@ -13,13 +13,13 @@ use RZP\Models\Order;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Address;
 use RZP\Models\FileStore;
+use RZP\Models\LineItem;
 
 class Entity extends Base\PublicEntity
 {
     const PDF_PREFIX = 'pdfs/';
 
     use NotesTrait;
-
     use SoftDeletes;
 
     // ------------------ Entity Keys --------------------------------
@@ -52,15 +52,18 @@ class Entity extends Base\PublicEntity
     const SHORT_URL                = 'short_url';
     const VIEW_LESS                = 'view_less';
     const AMOUNT                   = 'amount';
+    const TAX_AMOUNT               = 'tax_amount';
+    const NET_AMOUNT               = 'net_amount';
     const CURRENCY                 = 'currency';
     const USER_ID                  = 'user_id';
     const SOURCE                   = 'source';
     const BILLING_START            = 'billing_start';
     const BILLING_END              = 'billing_end';
     const TYPE                     = 'type';
+    const SHOW_TAXES_GROUPED       = 'show_taxes_grouped';
     const DELETED_AT               = 'deleted_at';
 
-    // ---------------------- Input Keys -------------------------------------
+    // ---------------------- Input Keys -----------------------------
 
     const LINE_ITEMS               = 'line_items';
     const CUSTOMER                 = 'customer';
@@ -68,16 +71,16 @@ class Entity extends Base\PublicEntity
     const SMS_NOTIFY               = 'sms_notify';
     const DRAFT                    = 'draft';
 
-    // ---------------------- Input Keys End -------------------------------------
+    // ---------------------- Input Keys End -------------------------
 
-    // ------------------------- Output Keys --------------------------------------
+    // ------------------------- Output Keys -------------------------
 
     const CUSTOMER_DETAILS         = 'customer_details';
     const CUSTOMER_ADDRESS         = 'customer_address';
     const CUSTOMER_BILLING_ADDRESS = 'customer_billing_address';
     const PAYMENT_ID               = 'payment_id';
 
-    // ------------------------ Output Keys End -----------------------------------
+    // ------------------------ Output Keys End ----------------------
 
 
     const EMAIL                    = 'email';
@@ -117,12 +120,8 @@ class Entity extends Base\PublicEntity
         // This is null by default because we don't create an order
         // when the invoice is being generated in a draft state.
         self::ORDER_ID                 => null,
-        // For a draft state, it has to be sent explicitly in the request.
-        // It's created in the issued state otherwise.
         self::STATUS                   => Status::ISSUED,
         self::SUBSCRIPTION_STATUS      => null,
-        // self::ADJUSTMENT            => 0,
-        // self::SHIPPING              => 0,
         self::SUBSCRIPTION_ID          => null,
         self::DATE                     => null,
         self::ISSUED_AT                => null,
@@ -138,6 +137,8 @@ class Entity extends Base\PublicEntity
         self::TYPE                     => Type::INVOICE,
         self::USER_ID                  => null,
         self::AMOUNT                   => null,
+        self::TAX_AMOUNT               => null,
+        self::NET_AMOUNT               => null,
         self::CURRENCY                 => 'INR',
         self::BILLING_START            => null,
         self::BILLING_END              => null,
@@ -145,12 +146,10 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_EMAIL           => null,
         self::CUSTOMER_CONTACT         => null,
         self::CUSTOMER_BILLING_ADDR_ID => null,
+        self::SHOW_TAXES_GROUPED       => false,
     ];
 
-    // Generates fields to be filled in the DB.
-    // No validation performed on these fields.
     protected static $generators = [
-        // self::DISCOUNT,
         self::DATE,
         self::DUE_BY,
         self::SCHEDULED_AT,
@@ -159,11 +158,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
     ];
 
-    // Fields that can be inserted by ->fill() directly
-    // This array should also include the fields mentioned in the generator.
     protected $fillable = [
-        // self::DUE_BY,
-        // self::SCHEDULED_AT,
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::DATE,
@@ -181,12 +176,8 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::USER_ID,
         self::EXPIRE_BY,
-        // self::ADJUSTMENT,
-        // self::SHIPPING,
-        // self::DISCOUNT,
     ];
 
-    // Fields to be exposed by the entity in general
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,
@@ -221,16 +212,18 @@ class Entity extends Base\PublicEntity
         self::VIEW_LESS,
         self::SOURCE,
         self::TYPE,
+        self::SHOW_TAXES_GROUPED,
         self::AMOUNT,
         self::BILLING_START,
         self::BILLING_END,
+        self::TAX_AMOUNT,
+        self::NET_AMOUNT,
         self::USER_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
     ];
 
-    // Fields to be exposed to the client
     protected $public = [
         self::ID,
         self::ENTITY,
@@ -243,8 +236,6 @@ class Entity extends Base\PublicEntity
         self::LINE_ITEMS,
         self::PAYMENT_ID,
         self::STATUS,
-        // self::DUE_BY,
-        // self::SCHEDULED_AT,
         self::EXPIRE_BY,
         self::ISSUED_AT,
         self::PAID_AT,
@@ -255,21 +246,22 @@ class Entity extends Base\PublicEntity
         self::DATE,
         self::TERMS,
         self::AMOUNT,
+        self::TAX_AMOUNT,
+        self::NET_AMOUNT,
+        self::CURRENCY,
         self::DESCRIPTION,
         self::NOTES,
         self::COMMENT,
-        self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
         self::BILLING_START,
         self::BILLING_END,
         self::TYPE,
+        self::SHOW_TAXES_GROUPED,
         self::USER_ID,
-        // self::TOTAL_AMOUNT,
         self::CREATED_AT,
     ];
 
-    // Fields to be added while retrieving the entity
     protected $appends = [
         self::PUBLIC_ID,
         self::ENTITY,
@@ -278,8 +270,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
     ];
 
-    // The functions for these fields will be called only
-    // via toArrayPublic()
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
@@ -292,12 +282,14 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::VIEW_LESS  => 'bool',
         self::AMOUNT     => 'int',
+        self::TAX_AMOUNT => 'int',
+        self::NET_AMOUNT => 'int',
         self::DATE       => 'int',
         self::EXPIRE_BY  => 'int',
         self::EXPIRED_AT => 'int',
     ];
 
-    // -------------------------------------- Mutators --------------------------------------
+    // -------------------------------------- Mutators ---------------
 
     public function setDateAttribute($date)
     {
@@ -310,9 +302,9 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::DATE] = $date;
     }
 
-    // -------------------------------------- End Mutators --------------------------------------
+    // -------------------------------------- End Mutators -----------
 
-    // -------------------------------------- Getters --------------------------------------
+    // -------------------------------------- Getters ----------------
 
     public function getEmailStatus()
     {
@@ -541,10 +533,10 @@ class Entity extends Base\PublicEntity
         return sanitizeFilename("Invoice $receipt from $from ($status)");
     }
 
-    // -------------------------------------- End Getters --------------------------------------
+    // -------------------------------------- End Getters ------------
 
 
-    // -------------------------------------- Setters --------------------------------------
+    // -------------------------------------- Setters ----------------
 
     public function setCustomerDetails(Customer\Entity $customer)
     {
@@ -563,7 +555,10 @@ class Entity extends Base\PublicEntity
 
         $repo = App::getFacadeRoot()['repo'];
 
-        $billingAddress = $repo->address->fetchPrimaryAddressOfEntityOfType($customer, Address\Type::BILLING_ADDRESS);
+        $billingAddress = $repo->address
+                               ->fetchPrimaryAddressOfEntityOfType(
+                                    $customer,
+                                    Address\Type::BILLING_ADDRESS);
 
         if ($billingAddress !== null)
         {
@@ -674,9 +669,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRE_BY, $expireBy);
     }
 
-    // -------------------------------------- End Setters --------------------------------------
+    // -------------------------------------- End Setters ------------
 
-    // -------------------------------------- Accessors --------------------------------------
+    // -------------------------------------- Accessors --------------
 
     /**
      * @deprecated Replaced with setPublicCustomerAttribute method.
@@ -686,10 +681,10 @@ class Entity extends Base\PublicEntity
     protected function getCustomerDetailsAttribute()
     {
         return [
-            self::CUSTOMER_NAME            => $this->getAttribute(self::CUSTOMER_NAME),
-            self::CUSTOMER_EMAIL           => $this->getAttribute(self::CUSTOMER_EMAIL),
-            self::CUSTOMER_CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
-            self::CUSTOMER_ADDRESS         => null,
+            self::CUSTOMER_NAME    => $this->getAttribute(self::CUSTOMER_NAME),
+            self::CUSTOMER_EMAIL   => $this->getAttribute(self::CUSTOMER_EMAIL),
+            self::CUSTOMER_CONTACT => $this->getAttribute(self::CUSTOMER_CONTACT),
+            self::CUSTOMER_ADDRESS => null,
         ];
     }
 
@@ -700,7 +695,9 @@ class Entity extends Base\PublicEntity
      */
     protected function getLineItemsAttribute()
     {
-        $lineItems = $this->lineItems()->getResults()->toArrayPublicEmbedded();
+        $lineItems = $this->lineItems()->with(LineItem\Entity::TAXES)
+                                       ->getResults()
+                                       ->toArrayPublicEmbedded();
 
         return $lineItems;
     }
@@ -730,9 +727,9 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
-    // -------------------------------------- End Accessors --------------------------------------
+    // -------------------------------------- End Accessors ----------
 
-    // -------------------------------------- Public Setters --------------------------------------
+    // -------------------------------------- Public Setters ---------
 
     protected function setPublicCustomerIdAttribute(array & $array)
     {
@@ -792,9 +789,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    // -------------------------------------- End Public Setters --------------------------------------
+    // -------------------------------------- End Public Setters -----
 
-    // -------------------------------------- Generators --------------------------------------
+    // -------------------------------------- Generators -------------
 
     public function generateDate($input)
     {
@@ -840,7 +837,8 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $dueBy = Carbon::now('Asia/Kolkata')->addDays(self::DEFAULT_DUE_DAYS)->timestamp;
+            $dueBy = Carbon::now('Asia/Kolkata')->addDays(self::DEFAULT_DUE_DAYS)
+                                                ->timestamp;
         }
 
         $this->setAttribute(self::DUE_BY, $dueBy);
@@ -881,45 +879,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    // public function generateDiscount($input)
-    // {
-    //     if (isset($input[self::DISCOUNT_FLAT]))
-    //     {
-    //         $this->useDiscountFlatToSetDiscount($input);
-    //     }
-    //
-    //     if (isset($input[self::DISCOUNT_PERCENT]))
-    //     {
-    //         $this->useDiscountPercentToSetDiscount($input);
-    //     }
-    // }
+    // -------------------------------------- End Generators ---------
 
-    // protected function useDiscountPercentToSetDiscount($input)
-    // {
-    //     $discountPercent = $input[self::DISCOUNT_PERCENT]/100;
-    //
-    //     $totalAmount = $discountableAmount = $input[self::TOTAL_AMOUNT];
-    //
-    //     if (isset($input[self::TOTAL_TAX]) === true)
-    //     {
-    //         $discountableAmount = $totalAmount - $input[self::TOTAL_TAX];
-    //     }
-    //
-    //     $discount = $discountableAmount * $discountPercent;
-    //
-    //     $this->setAttribute(self::DISCOUNT, round($discount));
-    // }
-
-    // protected function useDiscountFlatToSetDiscount($input)
-    // {
-    //     $discount = $input[self::DISCOUNT_FLAT];
-    //
-    //     $this->setAttribute(self::DISCOUNT, $discount);
-    // }
-
-    // -------------------------------------- End Generators --------------------------------------
-
-    // -------------------------------------- Relations --------------------------------------
+    // -------------------------------------- Relations --------------
 
     public function order()
     {
@@ -974,16 +936,7 @@ class Entity extends Base\PublicEntity
                     ->first();
     }
 
-    // -------------------------------------- End Relations --------------------------------------
-
-    // -------------------------------------- Query scopes --------------------------------------
-
-    public function scopeStatus($query, $status)
-    {
-        return $query->where(Entity::STATUS, '=', $status);
-    }
-
-    // -------------------------------------- Query scopes section ends --------------------------------------
+    // -------------------------------------- End Relations ----------
 
     public function getValidOperations()
     {

@@ -108,7 +108,7 @@ class Entity extends Base\PublicEntity
         self::TAX_GROUP_ID,
     ];
 
-    // -------------------------- Getters --------------------------
+    // -------------------------- Getters ----------------------------
 
     public function getName()
     {
@@ -160,7 +160,7 @@ class Entity extends Base\PublicEntity
         return ($this->isActive() === false);
     }
 
-    // -------------------------- End Getters --------------------------
+    // -------------------------- End Getters ------------------------
 
     // Public setters
 
@@ -178,7 +178,7 @@ class Entity extends Base\PublicEntity
         $output[self::TAX_GROUP_ID] = Tax\Group\Entity::getSignedIdOrNull($taxGroupId);
     }
 
-    // -------------------- Relations ---------------------------
+    // -------------------- Relations --------------------------------
 
     public function merchant()
     {
@@ -205,5 +205,5 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Tax\Group\Entity');
     }
 
-    // -------------------- End Relations -----------------------
+    // -------------------- End Relations ----------------------------
 }
