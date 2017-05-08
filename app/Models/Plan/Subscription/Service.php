@@ -4,9 +4,7 @@ namespace RZP\Models\Plan\Subscription;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
-use RZP\Models\Customer;
 use RZP\Models\Plan;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -139,11 +137,13 @@ class Service extends Base\Service
             try
             {
                 $this->core->retry($subscription);
+
                 $queued++;
             }
             catch (\Exception $ex)
             {
                 $failed++;
+
                 $failures[] = $subscription->getId();
 
                 $this->trace->traceException(

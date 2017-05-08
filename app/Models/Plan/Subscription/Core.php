@@ -7,15 +7,10 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
-use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Plan;
 use RZP\Models\Customer;
-use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
-use RZP\Models\Plan\Subscription\Addon;
-use RZP\Models\Schedule;
-use RZP\Models\Schedule\Task;
 use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Jobs\Plan\ChargeSubscription;
@@ -142,7 +137,15 @@ class Core extends Base\Core
         }
     }
 
-    public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId): array
+    /**
+     * Get subscription data for the checkout preferences route
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $subscriptionId
+     *
+     * @return array
+     */
+    public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId) : array
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $merchant);
 
@@ -170,7 +173,7 @@ class Core extends Base\Core
      * @throws BadRequestException
      * @throws LogicException
      */
-    public function getAuthTransactionAmount(Entity $subscription): int
+    public function getAuthTransactionAmount(Entity $subscription) : int
     {
         //
         // Currently, we allow a 2FA txn to be done only if
@@ -241,9 +244,11 @@ class Core extends Base\Core
                     TraceCode::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT,
                     $queuePayload);
 
+                //
                 // If the status is in created state, this means that the token has not
                 // been associated with it yet. An authorized payment for this subscription
                 // has not been done.
+                //
                 if ($subscription->getStatus() === Status::CREATED)
                 {
                     throw new LogicException(
@@ -261,7 +266,7 @@ class Core extends Base\Core
         );
     }
 
-    protected function getAuthTransactionAmountForNewSubscription(Entity $subscription): int
+    protected function getAuthTransactionAmountForNewSubscription(Entity $subscription) : int
     {
         $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
@@ -289,12 +294,12 @@ class Core extends Base\Core
         return $authAmount;
     }
 
-    protected function getAuthTransactionAmountForRetry(): int
+    protected function getAuthTransactionAmountForRetry() : int
     {
         return Entity::DEFAULT_AUTH_AMOUNT;
     }
 
-    protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice): array
+    protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice) : array
     {
         //
         // Ensure that invoice amount is taken always because
