@@ -34,7 +34,7 @@ class SubscriptionCreateTest extends TestCase
 
     public function testCreatePlanWithItemId()
     {
-        $this->fixtures->create('item', ['type' => 'plan']);
+        $this->fixtures->item->createPlanType();
 
         $this->startTest();
     }
@@ -58,14 +58,37 @@ class SubscriptionCreateTest extends TestCase
 
     public function testCreatePlanWithBadMonthlyIntervalPeriod()
     {
-        $this->fixtures->create('item', ['type' => 'plan']);
+        $this->fixtures->item->createPlanType();
 
         $this->startTest();
     }
 
     public function testCreatePlanWithBadYearlyIntervalPeriod()
     {
-        $this->fixtures->create('item', ['type' => 'plan']);
+        $this->fixtures->item->createPlanType();
+
+        $this->startTest();
+    }
+
+    public function testFetchPlan()
+    {
+        $this->fixtures->plan->create();
+
+        $this->startTest();
+    }
+
+    public function testFetchMultiplePlan()
+    {
+        $this->fixtures->plan->create();
+
+        $this->fixtures->plan->create(
+            [
+                'id' => '1000000001plan'
+            ],
+            [
+                'id'   => '1000000001item',
+                'name' => 'Plan #2',
+            ]);
 
         $this->startTest();
     }
@@ -348,11 +371,32 @@ class SubscriptionCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchSubscription()
+    {
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->ba->privateAuth();
+
+        $subscriptionId = $subscription['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = "/subscriptions/$subscriptionId";
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $subscriptionId;
+
+        $this->startTest();
+    }
+
+    public function testFetchMultipleSubscription()
+    {
+    }
+
     protected function createSubscriptionPreRequisiteEntities(array $planAttributes = [])
     {
         $this->fixtures->create('customer');
 
-        $this->fixtures->create('plan', $planAttributes);
+        $this->fixtures->plan->create($planAttributes);
     }
 
     protected function getCreateSubscriptionRequestContent($function, $planId = null)
@@ -361,7 +405,7 @@ class SubscriptionCreateTest extends TestCase
 
         if ($planId === null)
         {
-            $plan = $this->fixtures->create('plan');
+            $plan = $this->fixtures->plan->create();
 
             $planId = $plan->getPublicId();
         }

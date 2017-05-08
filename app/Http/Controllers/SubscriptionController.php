@@ -21,6 +21,8 @@ class SubscriptionController extends Controller
         $this->subscriptionService = $subscriptionService;
     }
 
+    // -------------------- Plan endpoints start --------------------
+
     public function postCreatePlan()
     {
         $input = Request::all();
@@ -30,6 +32,24 @@ class SubscriptionController extends Controller
         return ApiResponse::json($plan);
     }
 
+    public function getPlan(string $id)
+    {
+        $plan = $this->planService->fetch($id);
+
+        return ApiResponse::json($plan);
+    }
+
+    public function getPlans()
+    {
+        $input = Request::all();
+
+        $plans = $this->planService->fetchMultiple($input);
+
+        return ApiResponse::json($plans);
+    }
+
+    // -------------------- Plan endpoints end --------------------
+
     public function postCreateSubscription()
     {
         $input = Request::all();
@@ -37,6 +57,22 @@ class SubscriptionController extends Controller
         $subscription = $this->subscriptionService->create($input);
 
         return ApiResponse::json($subscription);
+    }
+
+    public function getSubscription(string $id)
+    {
+        $subscription = $this->subscriptionService->fetch($id);
+
+        return ApiResponse::json($subscription);
+    }
+
+    public function getSubscriptions()
+    {
+        $input = Request::input();
+
+        $subscriptions = $this->subscriptionService->fetchMultiple($input);
+
+        return ApiResponse::json($subscriptions);
     }
 
     public function postCreateAndChargeSubscriptionInvoices()

@@ -12,4 +12,19 @@ class Service extends Base\Service
 
         return $plan->toArrayPublic();
     }
+
+    public function fetch(string $id): array
+    {
+        $plan = $this->repo->plan
+                           ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $plan->toArrayPublic();
+    }
+
+    public function fetchMultiple(array $input): array
+    {
+        $plans = $this->repo->plan->fetch($input, $this->merchant->getId());
+
+        return $plans->toArrayPublic();
+    }
 }

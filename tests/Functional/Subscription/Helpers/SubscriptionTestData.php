@@ -164,6 +164,74 @@ return [
         ],
     ],
 
+    'testFetchPlan' => [
+        'request' => [
+            'url'     => '/plans/plan_1000000000plan',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'       => 'plan_1000000000plan',
+                'entity'   => 'plan',
+                'interval' => 2,
+                'period'   => 'monthly',
+                'notes'    => [],
+                'item'     => [
+                    'active'   => true,
+                    'name'     => 'test plan',
+                    'amount'   => 2000,
+                    'currency' => 'INR',
+                    'type'     => 'plan',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultiplePlan' => [
+        'request' => [
+            'url'     => '/plans',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'       => 'plan_1000000001plan',
+                        'entity'   => 'plan',
+                        'interval' => 2,
+                        'period'   => 'monthly',
+                        'notes'    => [],
+                        'item'     => [
+                            'active'   => true,
+                            'name'     => 'Plan #2',
+                            'amount'   => 2000,
+                            'currency' => 'INR',
+                            'type'     => 'plan',
+                        ],
+                    ],
+                    [
+                        'id'       => 'plan_1000000000plan',
+                        'entity'   => 'plan',
+                        'interval' => 2,
+                        'period'   => 'monthly',
+                        'notes'    => [],
+                        'item'     => [
+                            'active'   => true,
+                            'name'     => 'test plan',
+                            'amount'   => 2000,
+                            'currency' => 'INR',
+                            'type'     => 'plan',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'createSubscriptionForAuthTxn' => [
         'request' => [
             'url' => '/subscriptions',
@@ -701,6 +769,41 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchSubscription' => [
+        'request' => [
+            // 'url'     => '/subscriptions/{id}',
+            'method'  => 'get',
+            'content' => [
+                'customer_id'     => 'cust_100000customer',
+                'plan_id'         => 'plan_1000000000plan',
+                'quantity'        => 1,
+                'total_count'     => 6,
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'id'               => 'sub_7oKmlxFlg8HlDN',
+                'plan_id'          => 'plan_1000000000plan',
+                'customer_id'      => 'cust_100000customer',
+                'token_id'         => null,
+                'status'           => 'created',
+                'quantity'         => 1,
+                'total_count'      => 6,
+                'paid_count'       => 0,
+                'auth_attempts'    => 0,
+                'customer_notify'  => false,
+                'notes'            => [],
+                'current_start'    => null,
+                'current_end'      => null,
+                'start_at'         => null,
+                'end_at'           => null,
+                'charge_at'        => null,
+                'ended_at'         => null,
+            ],
         ],
     ],
 

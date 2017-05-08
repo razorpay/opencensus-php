@@ -36,6 +36,24 @@ class Service extends Base\Service
         return $subscription->toArrayPublic();
     }
 
+    public function fetch(string $id): array
+    {
+        $subscription = $this->repo
+                             ->subscription
+                             ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $subscription->toArrayPublic();
+    }
+
+    public function fetchMultiple(array $input): array
+    {
+        $subscriptions = $this->repo
+                              ->subscription
+                              ->fetch($input, $this->merchant->getId());
+
+        return $subscriptions->toArrayPublic();
+    }
+
     public function createAndChargeInvoices()
     {
         $subscriptionsToCharge = $this->repo->subscription->getSubscriptionsToCharge();

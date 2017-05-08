@@ -83,7 +83,7 @@ trait SubscriptionTrait
     {
         $this->fixtures->create('customer');
 
-        $this->fixtures->create('plan', $planAttributes);
+        $this->fixtures->plan->create($planAttributes);
 
         if ($startAt === false)
         {
