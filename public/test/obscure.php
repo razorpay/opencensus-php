@@ -7,7 +7,7 @@ $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
 $key_id = $_GET['key'] ?? 'rzp_test_1DP5mmOlF5G5ag';
 $secret = 'thisissupersecret';
 
-$public_url = $key_id.'@'.$baseurl;
+$public_url = $baseurl;
 $private_url = $key_id.':'.$secret.'@'.$baseurl;
 $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 ?>
@@ -163,7 +163,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
     <tr>
         <td colspan='40'>Razorpay Order Id:</td>
-        <td><input type="text" name="order_id" size="25" value=""></td>
+        <!-- <td><input type="text" name="order_id" size="25" value=""></td> -->
     </tr>
     <tr>
         <td colspan='40'>Order Id:</td>
