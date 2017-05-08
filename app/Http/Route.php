@@ -1050,6 +1050,12 @@ final class Route
         'merchant_live_enable'             => [Permission::EDIT_MERCHANT_ENABLE_LIVE],
         'merchant_live_disable'            => [Permission::EDIT_MERCHANT_DISABLE_LIVE],
         'admin_fetch_entity_by_id'         => ['*'],
+        // Permission handled in code
+        'merchant_activation_update'       => ['*'],
+        'merchant_assign_pricing'          => [Permission::EDIT_MERCHANT_PRICING],
+        'merchant_get_banks'               => [Permission::VIEW_MERCHANT_BANKS],
+        'merchant_set_banks'               => [Permission::EDIT_MERCHANT_BANKS],
+        'merchant_fetch_bank_account'      => [Permission::VIEW_MERCHANT_BANK_ACCOUNTS],
     ];
 
     public static $direct = array(

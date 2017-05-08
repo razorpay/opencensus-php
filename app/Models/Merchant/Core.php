@@ -269,23 +269,16 @@ class Core extends Base\Core
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        $function = $input['action'];
+        $action = $input['action'];
 
-        $routePermission = Permission\Name::$actionMap[$function];
+        // Check for admin permissions
+        $admin->hasMerchantActionPermissionOrFail($action);
 
-        $hasPermission = $admin->hasPermission($routePermission);
-
-        if ($hasPermission === false)
-        {
-            throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ACCESS_DENIED);
-        }
-
-        $merchant->$function();
+        $merchant->$action();
 
         $this->repo->saveOrFail($merchant);
 
-        $this->logActionToSlack($merchant, $function);
+        $this->logActionToSlack($merchant, $action);
 
         return $merchant;
     }

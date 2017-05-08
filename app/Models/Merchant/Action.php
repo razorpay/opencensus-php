@@ -10,6 +10,8 @@ class Action
     const UNSUSPEND = 'unsuspend';
     const CREATED   = 'created';
     const ACTIVATED = 'activated';
+    const LOCK      = 'lock';
+    const UNLOCK    = 'unlock';
 
     public static function exists($action)
     {
