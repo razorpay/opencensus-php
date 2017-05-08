@@ -104,7 +104,7 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
-    public function setAdminForInternalAuth()
+    protected function setAdminForInternalAuth()
     {
         $this->org = $this->fixtures->create('org');
 

@@ -510,7 +510,7 @@ class Entity extends Base\Entity
     {
         $adminPermissions = $this->getPermissionsList();
 
-        return in_array($permission, $adminPermissions);
+        return (in_array($permission, $adminPermissions, true) === true);
     }
 
     public function hasPermissionOrFail($permission)

@@ -141,6 +141,8 @@ class Service extends Base\Service
 
     public function editMerchantDetails($id, array $input)
     {
+        $lockAction = null;
+
         if (isset($input['locked']) === true)
         {
             $lockAction = ($input['locked'] === true) ? 'lock' : 'unlock';
