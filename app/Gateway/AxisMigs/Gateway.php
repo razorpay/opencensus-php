@@ -660,7 +660,7 @@ class Gateway extends Base\Gateway
             'vpc_Command'       => AxisMigs\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
             'vpc_Currency'      => $input['currency'],
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_MerchTxnRef'   => $input['refund']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         ];
 
@@ -672,7 +672,7 @@ class Gateway extends Base\Gateway
         $content = [
             'vpc_Command'       => AxisMigs\Command::REVERSAL,
             'vpc_Currency'      => $input['payment']['currency'],
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_MerchTxnRef'   => $input['refund']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         ];
 
