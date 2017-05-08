@@ -71,8 +71,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
     ];
 
-    protected static $aepsTerminalRules = [
-        // TODO FIx it
+    protected static $aepsIciciTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:aeps_icici',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num',
     ];
 
     protected static $billdeskTerminalRules = [
@@ -96,6 +97,7 @@ class Validator extends Base\Validator
     protected static $firstDataTerminalRules = [
         Entity::GATEWAY                     => 'required|in:first_data',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:5',
+        Entity::GATEWAY_ACQUIRER            => 'required|string|in:icic',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string|min:5',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string|min:5',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string|min:5',
@@ -311,6 +313,13 @@ class Validator extends Base\Validator
         if (isset(Payment\Gateway::GATEWAY_ACQUIRERS[$gateway]) === false)
         {
             return;
+        }
+
+        // Gateway acquirer is required
+        if (empty($input[Entity::GATEWAY_ACQUIRER]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway acquirer is required for ' . $gateway);
         }
 
         $gatewayAcquirer = $input[Entity::GATEWAY_ACQUIRER];

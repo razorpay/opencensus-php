@@ -19,41 +19,41 @@ class Repository extends Base\Repository
 
     public function fetchFeesBreakupForInvoice($merchantId, $from, $to)
     {
-        $feeBreakupAmount = $this->manager
+        $feeBreakupAmount = $this->repo
                                  ->fee_breakup
-                                 ->getAttributeWithTableName(Entity::AMOUNT);
+                                 ->dbColumn(Entity::AMOUNT);
 
-        $feeBreakupTransactionId = $this->manager
+        $feeBreakupTransactionId = $this->repo
                                         ->fee_breakup
-                                        ->getAttributeWithTableName(Entity::TRANSACTION_ID);
+                                        ->dbColumn(Entity::TRANSACTION_ID);
 
-        $transactionId = $this->manager
+        $transactionId = $this->repo
                               ->transaction
-                              ->getAttributeWithTableName(Transaction\Entity::ID);
+                              ->dbColumn(Transaction\Entity::ID);
 
-        $entityId = $this->manager
+        $entityId = $this->repo
                          ->transaction
-                         ->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
+                         ->dbColumn(Transaction\Entity::ENTITY_ID);
 
-        $transactionMerchantId = $this->manager
+        $transactionMerchantId = $this->repo
                                       ->transaction
-                                      ->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
+                                      ->dbColumn(Transaction\Entity::MERCHANT_ID);
 
-        $type = $this->manager
+        $type = $this->repo
                      ->transaction
-                     ->getAttributeWithTableName(Transaction\Entity::TYPE);
+                     ->dbColumn(Transaction\Entity::TYPE);
 
-        $transactionCreatedAt = $this->manager
+        $transactionCreatedAt = $this->repo
                                      ->transaction
-                                     ->getAttributeWithTableName(Transaction\Entity::CREATED_AT);
+                                     ->dbColumn(Transaction\Entity::CREATED_AT);
 
-        $paymentId = $this->manager
+        $paymentId = $this->repo
                           ->payment
-                          ->getAttributeWithTableName(Payment\Entity::ID);
+                          ->dbColumn(Payment\Entity::ID);
 
-        $capturedAt = $this->manager
+        $capturedAt = $this->repo
                            ->payment
-                           ->getAttributeWithTableName(Payment\Entity::CAPTURED_AT);
+                           ->dbColumn(Payment\Entity::CAPTURED_AT);
 
         $feesBreakup = $this->newQuery()
                             ->selectRaw(Entity::NAME . ','.
