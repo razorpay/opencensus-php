@@ -36,7 +36,10 @@ class SubscriptionCreateTest extends TestCase
     {
         $this->fixtures->create('item', ['type' => 'plan']);
 
-        $this->startTest();
+        $x = $this->startTest();
+        $y = $this->getLastEntity('plan', true);
+
+        sd($x, $y);
     }
 
     public function testCreatePlanWithItemIdButWrongItemType()
@@ -111,7 +114,7 @@ class SubscriptionCreateTest extends TestCase
 
         $this->assertEquals($schedule['id'], $subscription['schedule_id']);
 
-        $this->assertEquals($planItem['name'], $schedule['name']);
+        $this->assertEquals('2/monthly', $schedule['name']);
         $this->assertEquals($plan['period'], $schedule['period']);
         $this->assertEquals($plan['interval'], $schedule['interval']);
         // Since there is no start_at, we don't set any anchor.
@@ -148,7 +151,7 @@ class SubscriptionCreateTest extends TestCase
 
         $this->assertEquals($schedule['id'], $subscription['schedule_id']);
 
-        $this->assertEquals($planItem['name'], $schedule['name']);
+        $this->assertEquals('2/monthly/20', $schedule['name']);
         $this->assertEquals($plan['period'], $schedule['period']);
         $this->assertEquals($plan['interval'], $schedule['interval']);
         // The subscription start is on 20th Jan
@@ -177,7 +180,7 @@ class SubscriptionCreateTest extends TestCase
 
         $this->assertEquals($schedule['id'], $subscription['schedule_id']);
 
-        $this->assertEquals($planItem['name'], $schedule['name']);
+        $this->assertEquals('2/weekly/6', $schedule['name']);
         $this->assertEquals($plan['period'], $schedule['period']);
         $this->assertEquals($plan['interval'], $schedule['interval']);
         // The subscription start is on 20th Jan
@@ -231,7 +234,7 @@ class SubscriptionCreateTest extends TestCase
         $this->assertEquals($invoice['id'], 'inv_' . $addonLi['entity_id']);
 
         $mainLi = $lineItems['items'][1];
-        $this->assertNull($mainLi['item_id']);
+        $this->assertEquals($planItem['id'], $mainLi['item_id']);
         $this->assertNull($mainLi['ref_id']);
         $this->assertEquals($invoice['id'], 'inv_' . $mainLi['entity_id']);
         $this->assertEquals(2000, $mainLi['amount']);

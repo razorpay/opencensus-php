@@ -182,8 +182,7 @@ class Core extends Base\Core
         // card and the subscription is in active state.
         //
 
-        if (($subscription->isOnHold() === true) or
-            ($subscription->isOverDue() === true))
+        if ($subscription->isChangeCardStatus() === true)
         {
             $authAmount = $this->getAuthTransactionAmountForRetry();
         }

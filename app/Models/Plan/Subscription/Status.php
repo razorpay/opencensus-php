@@ -83,6 +83,12 @@ class Status
         // self::EXPIRED   => Event::SUBSCRIPTION_EXPIRED,
     ];
 
+    public static $changeCardStatuses = [
+        self::ACTIVE,
+        self::OVERDUE,
+        self::ON_HOLD,
+    ];
+
     public static function isStatusValid($status) : bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($status)));

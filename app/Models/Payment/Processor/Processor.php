@@ -713,6 +713,12 @@ class Processor
 
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
+        //
+        // In case the subscription is in active or on_hold state,
+        // we don't want to add the order_id to the input.
+        // 1. It would already be present if it's automated charge.
+        // 2. Change card flow is being done. Hence, no invoice and stuff.
+        //
         if ($subscription->isCreated() === false)
         {
             return;

@@ -151,7 +151,7 @@ class Entity extends Base\PublicEntity
 
     // --------------------- GETTERS ---------------------
 
-    public function getChargeableAmount() : int
+    public function getChargeableAmount(): int
     {
         $quantity = $this->getQuantity();
 
@@ -284,6 +284,11 @@ class Entity extends Base\PublicEntity
         // includes the first charge of the subscription.
         //
         return ($this->isAttributeNull(self::START_AT) === true);
+    }
+
+    public function isChangeCardStatus()
+    {
+        return (in_array($this->getStatus(), Status::$changeCardStatuses, true) === true);
     }
 
     // --------------------- END GETTERS ---------------------

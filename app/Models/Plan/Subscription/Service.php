@@ -184,14 +184,14 @@ class Service extends Base\Service
                 'subscription'      => $subscription->toArray(),
             ]);
 
-        if (($subscription->isActivated() === false) or
+        if (($subscription->isActivated() === false) and
             ($subscription->isOnHold() === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_ON_HOLD_STATE,
                 'status',
                 [
-                    'susbscription_id'      => $subscription->getId(),
+                    'subscription_id'       => $subscription->getId(),
                     'invoice_id'            => $invoice->getId(),
                     'subscription_status'   => $subscription->getStatus(),
                 ]);

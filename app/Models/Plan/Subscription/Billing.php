@@ -180,9 +180,10 @@ class Billing extends Base\Core
             // TODO: The amount may differ in the case of pro-rate.
 
             $mainLineItem = [
-                LineItem\Entity::NAME     => $plan->item->getName(),
-                LineItem\Entity::AMOUNT   => $plan->item->getAmount(),
-                LineItem\Entity::CURRENCY => $plan->item->getCurrency(),
+                // LineItem\Entity::NAME     => $plan->item->getName(),
+                // LineItem\Entity::AMOUNT   => $plan->item->getAmount(),
+                // LineItem\Entity::CURRENCY => $plan->item->getCurrency(),
+                LineItem\Entity::ITEM_ID  => $plan->item->getPublicId(),
                 LineItem\Entity::QUANTITY => $subscription->getQuantity(),
             ];
 

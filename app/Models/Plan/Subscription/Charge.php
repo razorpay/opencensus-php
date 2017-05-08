@@ -291,6 +291,8 @@ class Charge extends Base\Core
                 'payment_id'        => $capturedPayment->getId(),
             ]);
 
+        $oldStatus = $subscription->getStatus();
+
         //
         // Not sending webhook here because the transaction might fail later
         // in the flow. Will be sending it after the transaction is committed.
@@ -320,7 +322,10 @@ class Charge extends Base\Core
 
         $this->setEndedAtIfApplicable($subscription);
 
-        $this->setActivatedAt($subscription, $capturedPayment);
+        if ($oldStatus === Status::AUTHENTICATED)
+        {
+            $this->setActivatedAt($subscription, $capturedPayment);
+        }
 
         $this->repo->transaction(
             function() use ($task, $invoice, $subscription)
@@ -345,16 +350,7 @@ class Charge extends Base\Core
         // to ensure that we don't send an email when we were not able
         // to charge the subscription.
         //
-        $this->sendInvoiceEmail($invoice);
-    }
-
-    protected function sendInvoiceEmail(Invoice\Entity $invoice)
-    {
-        // (new Invoice\Core)->dispatchQueueJob(
-        //     $this->mode,
-        //     InvoiceAction::SUBSCRIPTION_CHARGED,
-        //     $invoice->getId()
-        // );
+        // $this->sendInvoiceEmail($invoice);
     }
 
     protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
@@ -460,28 +456,6 @@ class Charge extends Base\Core
         }
 
         $subscription->setChargeAt($nextChargeAt);
-
-        // $currentChargeAt = $subscription->getChargeAt();
-        //
-        // $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);
-        //
-        // $intervalFunc = $this->getIntervalFunction($plan);
-        //
-        // $intervalCount = $plan->getIntervalCount();
-        //
-        // // Modifies currentChargeAt variable.
-        // $currentChargeAt->$intervalFunc($intervalCount);
-        //
-        // $nextChargeAt = $currentChargeAt->timestamp;
-        //
-        // $endAt = $subscription->getEndAt();
-        //
-        // if ($nextChargeAt > $endAt)
-        // {
-        //     $nextChargeAt = null;
-        // }
-        //
-        // $subscription->setChargeAt($nextChargeAt);
     }
 
     /**

@@ -147,7 +147,8 @@ class Creator extends Base\Core
     protected function createSchedule(Entity $subscription, Plan\Entity $plan): Schedule\Entity
     {
         $scheduleInput = [
-            Schedule\Entity::NAME       => $plan->item->getName(),
+            // Harman (Chief Master Namer) says this is how we should name it.
+            Schedule\Entity::NAME       => $plan->getInterval() . '/' . $plan->getPeriod(),
             Schedule\Entity::INTERVAL   => $plan->getInterval(),
             Schedule\Entity::PERIOD     => $plan->getPeriod(),
         ];
@@ -155,6 +156,7 @@ class Creator extends Base\Core
         if ($subscription->getStartAt() !== null)
         {
             $scheduleInput[Schedule\Entity::ANCHOR] = $subscription->getAnchorForSchedule();
+            $scheduleInput[Schedule\Entity::NAME] .= '/' . $scheduleInput[Schedule\Entity::ANCHOR];
         }
 
         //

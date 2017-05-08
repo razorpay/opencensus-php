@@ -397,7 +397,7 @@ trait Authorize
 
         $this->validateS2SIfApplicable($payment);
 
-        $this->validateSubscriptionInputIfPresent($payment, $input);
+        $this->validateSubscriptionInputIfPresent($payment);
 
         $this->verifyPaymentMethodEnabled($payment);
 
@@ -406,14 +406,15 @@ trait Authorize
         $this->runInternationalChecks($payment);
     }
 
-    protected function validateSubscriptionInputIfPresent(Payment\Entity $payment, array $input)
+    protected function validateSubscriptionInputIfPresent(Payment\Entity $payment)
     {
-        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        //
+        // Subscription association to payment happens in pre-process
+        //
+        if ($payment->subscription === null)
         {
             return;
         }
-
-        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
 
         if ($payment->isRecurring() === false)
         {
@@ -422,11 +423,11 @@ trait Authorize
                 null,
                 [
                     'payment_id'        => $payment->getId(),
-                    'subscription_id'   => $subscriptionId,
+                    'subscription_id'   => $payment->subscription->getId(),
                 ]);
         }
 
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+        $subscription = $payment->subscription;
 
         if ($subscription->isExpired() === true)
         {
@@ -458,9 +459,31 @@ trait Authorize
         }
     }
 
-    protected function validateAuthenticatedSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
+    protected function validateAuthenticatedSubscription(
+        Subscription\Entity $subscription,
+        Payment\Entity $payment)
     {
-        if ($subscription->hasToken() === false)
+        $publicAuth = $this->app['basicauth']->isPublicAuth();
+
+        if (($publicAuth === true) and
+            ($subscription->isChangeCardStatus() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CHANGE_CARD_NOT_ALLOWED,
+                null,
+                [
+                    'subscription_id' => $subscription->getId(),
+                    'status' => $subscription->getStatus(),
+                ]);
+        }
+
+        //
+        // Public auth when subscription is already authenticated means
+        // that it is in retry flow. In retry flow, token is expected
+        // to be already present, and hence we don't throw an exception.
+        //
+        if (($publicAuth === false) and
+            ($subscription->hasToken() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED,
@@ -491,9 +514,8 @@ trait Authorize
         // The customer would be trying to change his card
         // here. Hence, it would be on public auth.
         //
-        if ((($subscription->isOnHold() === true) or
-             ($subscription->isOverDue() === true)) and
-            ($this->app['basicauth']->isPublicAuth() === true))
+        if (($subscription->isChangeCardStatus() === true) and
+            ($publicAuth === true))
         {
             $this->validateSubscriptionAmount($subscription, $payment->getAmount());
         }
@@ -921,7 +943,9 @@ trait Authorize
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
     {
-        $this->setCustomerIdForSubscriptionInput($input);
+        $this->associateSubscriptionIfApplicable($payment, $input);
+
+        $this->setCustomerIdForSubscriptionInput($payment, $input);
 
         //
         // Either the customer ID or the app token ID is required to get the customer.
@@ -968,8 +992,6 @@ trait Authorize
         }
 
         $payment->setInternational();
-
-        $this->associateSubscriptionIfApplicable($payment, $input);
     }
 
     protected function associateSubscriptionIfApplicable(Payment\Entity $payment, array $input)
@@ -1371,11 +1393,11 @@ trait Authorize
         }
     }
 
-    protected function setCustomerIdForSubscriptionInput(array & $input)
+    protected function setCustomerIdForSubscriptionInput(Payment\Entity $payment, array & $input)
     {
         if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
         {
-            $subscription = $this->repo->subscription->findByPublicId($input[Payment\Entity::SUBSCRIPTION_ID]);
+            $subscription = $payment->subscription;
 
             $input[Payment\Entity::CUSTOMER_ID] = Customer\Entity::getSignedId($subscription->getCustomerId());
         }
@@ -1621,7 +1643,9 @@ trait Authorize
         }
     }
 
-    protected function processAlreadyAuthenticatedSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
+    protected function processAlreadyAuthenticatedSubscription(
+        Subscription\Entity $subscription,
+        Payment\Entity $payment)
     {
         if ($subscription->hasBeenAuthenticated() === false)
         {
@@ -1635,6 +1659,16 @@ trait Authorize
                 ]);
         }
 
+        //
+        // This means that it's a change card flow
+        //
+        if ($this->app['basicauth']->isPublicAuth() === true)
+        {
+            $this->processChangeCardForSubscription($subscription, $payment);
+
+            return;
+        }
+
         if ($this->shouldAutoCaptureAlreadyAuthenticatedSubscription($payment) === true)
         {
             $this->autoCapturePayment($payment);
@@ -1643,6 +1677,38 @@ trait Authorize
 
             (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }
+    }
+
+    protected function processChangeCardForSubscription(
+        Subscription\Entity $subscription,
+        Payment\Entity $payment): bool
+    {
+        //
+        // We need this to fire a webhook later.
+        //
+        $activated = false;
+
+        $oldStatus = $subscription->getStatus();
+
+        if ($oldStatus !== Subscription\Status::ACTIVE)
+        {
+            $subscription->setStatus(Subscription\Status::ACTIVE);
+
+            $activated = true;
+        }
+
+        $this->updateSubscriptionToken($subscription, $payment);
+
+        $this->refundAuthorizedPayment($payment);
+
+        $this->repo->saveOrFail($subscription);
+
+        if ($activated === true)
+        {
+            (new Subscription\Core)->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE);
+        }
+
+        return $activated;
     }
 
     protected function processNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
@@ -1764,14 +1830,17 @@ trait Authorize
                 'payment_token_id'  => $paymentToken->getId(),
             ]);
 
-        // TODO: Should we do a reload of subscription here? In case some other payment is setting the token?
+        //
+        // We are commenting this piece of code because token can be associated even if is
+        // in active state and not only in created state. Basically, a change card/token flow.
+        //
 
-        $valid = $this->validateSubscriptionState($payment, $paymentToken, $subscription);
+        // $valid = $this->validateSubscriptionState($payment, $paymentToken, $subscription);
 
-        if ($valid === false)
-        {
-            return;
-        }
+        // if ($valid === false)
+        // {
+        //     return;
+        // }
 
         $subscription->token()->associate($paymentToken);
     }
