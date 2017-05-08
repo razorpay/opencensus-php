@@ -63,12 +63,9 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
 
-        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+        $this->saveCallbackResponse($content, $input['payment']['id']);
 
-        $this->saveCallbackResponse($content);
-
-        $this->checkCallbackStatus($attrs, $content);
+        $this->checkCallbackStatus($content);
 
         return $this->getCallbackResponseData($input);
     }
@@ -118,7 +115,7 @@ class Gateway extends Base\Gateway
 
         $verify->status = $this->getVerifyMatchStatus($verify, $content);
 
-        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $verify->payment = $this->saveVerifyContent($verify);
     }
@@ -295,10 +292,10 @@ class Gateway extends Base\Gateway
     }
 
 
-    protected function checkCallbackStatus(array $attrs, array $content)
+    protected function checkCallbackStatus(array $content)
     {
-        if ((isset($attrs['status']) === false) or
-            ($attrs['status'] !== Constants::YES))
+        if ((isset($content[ResponseFields::PAID]) === false) or
+            ($content[ResponseFields::PAID] !== Constants::YES))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -319,8 +316,11 @@ class Gateway extends Base\Gateway
         return $this->getLiveMerchantId();
     }
 
-    protected function saveCallbackResponse(array $content)
+    protected function saveCallbackResponse(array $content, string $paymentId)
     {
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
+            $paymentId, Action::AUTHORIZE);
+
         $attrs = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
