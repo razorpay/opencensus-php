@@ -3,6 +3,7 @@
 namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
+
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Schedule\Task;
@@ -65,9 +66,10 @@ class Repository extends Base\Repository
                     ->join(Table::SCHEDULE_TASK, $subscriptionIdAttr, '=', $taskEntityIdAttr)
                     ->where($taskNextRunAttr, '<', $currentTime)
                     ->where(function($query) use ($currentTime)
-                    {
-                        $query->whereNull(Entity::CURRENT_END)
-                            ->orWhere(Entity::CURRENT_END, '<', $currentTime);
-                    })->with(['plan', 'merchant']);
+                        {
+                            $query->whereNull(Entity::CURRENT_END)
+                                  ->orWhere(Entity::CURRENT_END, '<', $currentTime);
+                        })
+                    ->with(['plan', 'merchant']);
     }
 }

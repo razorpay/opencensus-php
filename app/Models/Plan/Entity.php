@@ -3,6 +3,7 @@
 namespace RZP\Models\Plan;
 
 use RZP\Models\Base;
+use RZP\Models\Item;
 use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
@@ -46,6 +47,12 @@ class Entity extends Base\PublicEntity
         self::ITEM,
         self::NOTES,
         self::CREATED_AT,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ITEM
     ];
 
     protected $relations = [
@@ -108,4 +115,14 @@ class Entity extends Base\PublicEntity
     }
 
     // --------------------- END RELATIONS ---------------------
+
+    public function setPublicItemAttribute(array & $array)
+    {
+        if (empty($array[self::ITEM]) === true)
+        {
+            return;
+        }
+
+        unset($array[self::ITEM][Item\Entity::ID]);
+    }
 }

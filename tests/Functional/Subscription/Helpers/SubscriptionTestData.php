@@ -23,7 +23,6 @@ return [
                 'period'   => 'monthly',
                 'notes'    => [],
                 'item'     => [
-                    'id'          => 'item_1000000000item',
                     'active'      => true,
                     'name'        => 'Some item name',
                     'description' => 'Some item description',
