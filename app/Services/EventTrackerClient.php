@@ -10,12 +10,16 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Jobs\RequestJob;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 use GuzzleHttp\Client;
 
 class EventTrackerClient extends Base\Core
 {
+    use DispatchesJobs;
+
     protected $mock;
 
     protected $request;
@@ -117,6 +121,7 @@ class EventTrackerClient extends Base\Core
             }
 
             $request  = [
+                'method'    => 'post',
                 'url'       => $url,
                 'headers'   => $headers,
                 'content'   => json_encode($eventData),
