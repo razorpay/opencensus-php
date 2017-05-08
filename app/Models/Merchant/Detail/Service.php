@@ -4,15 +4,12 @@ namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
 use Throwable;
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\ValidationFields;
-use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 
 class Service extends Base\Service
@@ -150,15 +147,7 @@ class Service extends Base\Service
 
             $admin = $this->app['basicauth']->getAdmin();
 
-            $routePermission = Permission\Name::$actionMap[$lockAction];
-
-            $hasPermission = $admin->hasPermission($routePermission);
-
-            if ($hasPermission === false)
-            {
-                throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_ACCESS_DENIED);
-            }
+            $admin->hasMerchantActionPermissionOrFail($lockAction);
         }
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
