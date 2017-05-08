@@ -11,9 +11,12 @@ class Core extends Base\Core
     /**
      * builds the report entity, given params
      *
-     * @param   $input
-     *          Expected params in $input are : start_time, end_time, entity
-     * @return  Entity
+     * @param   $input    array
+     *          Expected params in $input are :
+     *          start_time, end_time, entity, day, month, year
+     * @param   $merchant Merchant\Entity
+     *
+     * @return  $report Entity
      */
     public function buildEntity(array $input, Merchant\Entity $merchant)
     {
