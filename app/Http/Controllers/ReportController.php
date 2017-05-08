@@ -2,9 +2,10 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Models\Report;
-
 use Request;
+use ApiResponse;
+
+use RZP\Models\Report;
 
 class ReportController extends Controller
 {
