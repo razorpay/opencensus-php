@@ -212,7 +212,7 @@ class Core extends Base\Core
                 break;
 
             default:
-                // Not implemented for other methods as of now
+                // For UPI payments, there is no issuer or network
                 break;
         }
 

@@ -196,15 +196,14 @@ class TerminalLoadSorterTest extends TestCase
 
         $this->ba->appAuth();
 
-        $this->startTest();
-    }
+        $content = $this->startTest();
 
+        $this->assertArrayHasKey('deleted_at', $content);
+    }
 
     public function testTerminalSelectionWithLoadRuleApplied()
     {
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->setUpTerminals();
 
         $rule = $this->fixtures->create('gateway_load_rule:card', [
             'gateway' => 'axis_migs',
@@ -224,11 +223,13 @@ class TerminalLoadSorterTest extends TestCase
         $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
     }
 
+    /**
+     * Tests the case where a load rule is present but it does not satisfy the
+     * payment criteria
+     */
     public function testTerminalSelectionWithLoadRulePresentButNotApplied()
     {
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->setUpTerminals();
 
         $rule = $this->fixtures->create('gateway_load_rule:card', [
             'gateway' => 'axis_migs',
@@ -248,11 +249,13 @@ class TerminalLoadSorterTest extends TestCase
         $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
     }
 
+    /**
+     * Tests the case where an applicable rule is present but the laod value does
+     * not fall into the bucket as set by the chance value
+     */
     public function testTerminalSelectionWithApplicableLoadRulePresentButNotSelectedByChancePercent()
     {
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->setUpTerminals();
 
         $rule = $this->fixtures->create('gateway_load_rule:card', [
             'gateway' => 'axis_migs',
@@ -272,11 +275,13 @@ class TerminalLoadSorterTest extends TestCase
         $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
     }
 
+    /**
+     * Tests the case where there are no merchant specific rules present, but a
+     * shared rule is present. In this case we operate on the shared rule
+     */
     public function testTerminalSelectionWithSharedLoadRulePresentAndNoMerchantSpecificRules()
     {
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->setUpTerminals();
 
         $rule = $this->fixtures->create('gateway_load_rule:card', [
             'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
@@ -299,9 +304,7 @@ class TerminalLoadSorterTest extends TestCase
 
     public function testTerminalSelectionWithMultipleApplicableLoadRules()
     {
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->setUpTerminals();
 
         $this->fixtures->create('gateway_load_rule:card', [
             'gateway' => 'axis_migs',
@@ -330,9 +333,7 @@ class TerminalLoadSorterTest extends TestCase
 
     public function testTerminalSelectionWithCardPaymentAllRuleDetailsPresent()
     {
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->setUpTerminals();
 
         $this->fixtures->create('gateway_load_rule:card', [
             'gateway'          => 'cybersource',
@@ -354,11 +355,14 @@ class TerminalLoadSorterTest extends TestCase
         $this->assertEquals('1000CybrsTrmnl', $payment['terminal_id']);
     }
 
+    /**
+     * Tests terminal selection for netbanking when a shared netbanking gateway
+     * like billdesk is given precedence over a direct netbanking gateway as
+     * per rule defined in the load sorter
+     */
     public function testTerminalSelectionWithNetbankingPaymentWithRulePresentForNonDirectGateway()
     {
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->setUpTerminals();
 
         $this->fixtures->create('gateway_load_rule:netbanking', [
             'gateway' => 'paytm',
@@ -380,9 +384,7 @@ class TerminalLoadSorterTest extends TestCase
     public function testTerminalSelectionWithWalletPaymentWithRulePresentForWalletGateway()
     {
         $this->fixtures->merchant->enableMobikwik();
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
+        $this->setUpTerminals();
 
         $this->fixtures->create('gateway_load_rule:wallet', [
             'gateway' => 'wallet_mobikwik',
@@ -401,5 +403,12 @@ class TerminalLoadSorterTest extends TestCase
         $this->assertEquals('1000MobiKwikTl', $payment['terminal_id']);
 
         $this->fixtures->merchant->disableMobikwik();
+    }
+
+    protected function setUpTerminals()
+    {
+        $this->fixtures->create('terminal:all_shared_terminals');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->mockTokenex();
     }
 }
