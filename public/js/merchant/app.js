@@ -19,7 +19,6 @@ var app = angular
     'ngBusy',
     'noCAPTCHA',
     'angulartics',
-    'angulartics.segment.io',
     'react',
   ])
   .run([
