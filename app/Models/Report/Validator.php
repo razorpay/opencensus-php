@@ -48,7 +48,7 @@ class Validator extends Base\Validator
      */
     public function validateAllowedEntity(string $entity)
     {
-        if (in_array($this->entity, $this->allowed, true) === false)
+        if (in_array($entity, $this->allowed, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot get report for the given entity');
