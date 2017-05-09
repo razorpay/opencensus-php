@@ -132,6 +132,9 @@ class SubscriptionChargeTest extends TestCase
         // Subscription has only been authenticated, never paid
         $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
 
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertNotNull($invoice);
+
         while ($expectedPaidCount < $subscription['total_count'])
         {
             $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
@@ -150,11 +153,17 @@ class SubscriptionChargeTest extends TestCase
             {
                 $expectedStatus = 'completed';
             }
+
             $this->assertEquals($expectedStatus, $subscription['status']);
         }
 
         $this->assertNull($subscription['charge_at']);
-        $this->assertNotNull($subscription['ended_at']);
+
+        $this->assertEquals($subscription['end_at'], $subscription['ended_at']);
+
+        $invoices = $this->getEntities('invoice', [], true);
+
+        $this->assertEquals($subscription['total_count'] + 1, $invoices['count']);
 
         // Long time from now
         $longTimeFromNow = Carbon::now()->addYear()->timestamp;
@@ -167,7 +176,7 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testSubscriptionRetry()
+    public function testSubscriptionRetryAuth()
     {
         $this->doAuthTxnForSubscriptionWithAddOn();
 
@@ -202,6 +211,12 @@ class SubscriptionChargeTest extends TestCase
         // Subscription marked as overdue
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('overdue', $subscription['status']);
+        $this->assertEquals(1, $subscription['auth_attempts']);
+        $this->assertEquals('auth_failure', $subscription['error_status']);
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals('issued', $invoice['status']);
+        $this->assertNull($invoice['subscription_status']);
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         // Subscription is in overdue state, so won't be picked up by charge cron
@@ -262,7 +277,22 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testSubscriptionOnHold()
+    public function testSubscriptionRetryAuthAndThenCapture()
+    {
+
+    }
+
+    public function testSubscriptionManualRetrySuccess()
+    {
+
+    }
+
+    public function testSubscriptionManualRetryFailure()
+    {
+
+    }
+
+    public function testSubscriptionOnHoldAuth()
     {
         $this->doAuthTxnForSubscriptionWithAddOn();
         $subscription = $this->getLastEntity('subscription', true);
@@ -311,6 +341,11 @@ class SubscriptionChargeTest extends TestCase
 
         // Reset time
         Carbon::setTestNow();
+    }
+
+    public function testSubscriptionOnHoldCapture()
+    {
+
     }
 
     public function testSubscriptionExpire()

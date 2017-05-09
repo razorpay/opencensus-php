@@ -29,7 +29,6 @@ class Constants
     const MARKETPLACE         = 'marketplace';
     const EMAIL_OPTIONAL      = 'email_optional';
     const CONTACT_OPTIONAL    = 'contact_optional';
-    const CHARGE_AT_WILL      = 'charge_at_will';
     const SUBSCRIPTIONS       = 'subscriptions';
     const ZOHO                = 'zoho';
     const EXPOSE_DOWNTIMES    = 'expose_downtimes';
@@ -58,7 +57,6 @@ class Constants
         self::MARKETPLACE         => true,
         self::EMAIL_OPTIONAL      => true,
         self::CONTACT_OPTIONAL    => true,
-        self::CHARGE_AT_WILL      => true,
         self::SUBSCRIPTIONS       => true,
         self::ZOHO                => true,
         self::EXPOSE_DOWNTIMES    => true,

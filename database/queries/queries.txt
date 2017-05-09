@@ -1973,8 +1973,8 @@ ALTER TABLE items
 ALTER TABLE line_items
     ADD COLUMN ref_id CHAR(14) DEFAULT NULL AFTER item_id,
     ADD COLUMN ref_type VARCHAR(32) DEFAULT NULL AFTER ref_id,
-    CREATE INDEX line_items_ref_id_index (entity_id),
-    CREATE INDEX line_items_ref_type_index ON line_items (ref_type);
+    ADD INDEX line_items_ref_id_index (ref_id),
+    ADD INDEX line_items_ref_type_index (ref_type);
 
 ALTER TABLE schedules
     DROP INDEX `schedules_type_index`,

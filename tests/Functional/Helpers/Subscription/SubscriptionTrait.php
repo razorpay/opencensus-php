@@ -266,13 +266,13 @@ trait SubscriptionTrait
         $times);
     }
 
-    protected function chargeSubscriptionsViaCron(string $timestamp = null)
+    protected function chargeSubscriptionsViaCron($timestamp = null)
     {
         if ($timestamp !== null)
         {
-            $chargeAt = Carbon::createFromTimestamp($timestamp + 1);
+            $chargeAt = Carbon::createFromTimestamp($timestamp + 1, 'Asia/Kolkata');
 
-            Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
+            Carbon::setTestNow($chargeAt);
         }
 
         return $this->makeSubscriptionChargeCronRequest();
