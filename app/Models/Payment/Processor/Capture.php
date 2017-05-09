@@ -108,7 +108,7 @@ trait Capture
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 null,
                 [
-                    'payment_id' => $payment->getId(),
+                    'payment_id'     => $payment->getId(),
                     'payment_status' => $payment->getStatus(),
                 ]);
         }

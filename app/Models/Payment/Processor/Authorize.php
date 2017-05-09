@@ -678,19 +678,24 @@ trait Authorize
 
         if ($authType === BasicAuth\Type::PRIVATE_AUTH)
         {
-            // Ensure that the merchant is allowed to do recurring payments.
+            // Merchants with subscriptions feature cannot make S2S calls
+            // for recurring payments.
             $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
         }
         else if ($authType === BasicAuth\Type::PUBLIC_AUTH)
         {
-            // Ensure that the merchant is allowed to do recurring payments.
+            // Public payments can be made for recurring for merchants with either
+            // subscriptions or recurring features enabled.
             $this->verifyAtLeastOneFeatureEnabledForMerchant(
                 $merchant, [Feature\Constants::SUBSCRIPTIONS, Feature\Constants::RECURRING]);
         }
         else if ($authType === BasicAuth\Type::PRIVILEGE_AUTH)
         {
-            $this->verifyAtLeastOneFeatureEnabledForMerchant(
-                $merchant, [Feature\Constants::SUBSCRIPTIONS, Feature\Constants::RECURRING]);
+            // Privilege auth for recurring should be used only for merchants
+            // who have subscriptions.
+            // But, since it's privilege auth, it can be used for merchants with
+            // recurring feature also, but no requirement right now.
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::SUBSCRIPTIONS);
         }
         else
         {

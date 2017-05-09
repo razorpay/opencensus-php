@@ -19,13 +19,105 @@ class SubscriptionChargeTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->addFeatures(['recurring', 'tokens']);
+        $this->fixtures->merchant->addFeatures(['subscriptions']);
 
         $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
 
         $this->gateway = 'first_data';
 
         $this->mockTokenex();
+    }
+
+    public function testSubscriptionFirstCharge()
+    {
+        $details = $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertEquals('authenticated', $subscription['status']);
+        $this->assertEquals(0, $subscription['auth_attempts']);
+        $this->assertNotNull($subscription['end_at']);
+
+        $authPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($details['payment_id'], $authPayment['id']);
+        $this->assertEquals($subscription['id'], $authPayment['subscription_id']);
+        $this->assertEquals(500, $authPayment['amount']);
+        $this->assertEquals('refunded', $authPayment['status']);
+
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+
+        Carbon::setTestNow($chargeAt);
+
+        $result = $this->makeSubscriptionChargeCronRequest();
+
+        $this->assertEquals(1, $result['total']);
+
+        $plan = $this->getLastEntity('plan', true);
+        $item = $this->getLastEntity('item', true);
+        $lineItems = $this->getEntities('line_item', [], true);
+        $invoice = $this->getLastEntity('invoice', true);
+        $order = $this->getLastEntity('order', true);
+        $chargedPayment = $this->getLastEntity('payment', true);
+        $subscription = $this->getLastEntity('subscription', true);
+        $token = $this->getLastEntity('token', true);
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+
+        $this->assertEquals($order['id'], $invoice['order_id']);
+        $this->assertEquals('cust_100000customer', $invoice['customer_id']);
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
+        $this->assertEquals('paid', $invoice['status']);
+        $this->assertNull($invoice['subscription_status']);
+        $this->assertNull($invoice['email_status']);
+        $this->assertEquals(2000, $invoice['amount']);
+        $this->assertEquals($subscription['start_at'], $invoice['billing_start']);
+        $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
+        $this->assertEquals($chargedPayment['id'], $invoice['payment_id']);
+
+        $this->assertCount(1, $lineItems['items']);
+        $lineItem = $lineItems['items'][0];
+        $this->assertEquals($invoice['id'], 'inv_' . $lineItem['entity_id']);
+        $this->assertEquals(2000, $lineItem['amount']);
+        $this->assertEquals($plan['item']['name'], $lineItem['name']);
+        $this->assertEquals($item['id'], $lineItem['item_id']);
+
+        $this->assertEquals($plan['item']['id'], $item['id']);
+        $this->assertEquals('plan', $item['type']);
+        $this->assertEquals(2000, $item['amount']);
+
+        $this->assertEquals('paid', $order['status']);
+        $this->assertEquals(2000, $order['amount']);
+
+        $this->assertEquals('active', $subscription['status']);
+        $this->assertEquals(1, $subscription['paid_count']);
+        $this->assertNull($subscription['error_status']);
+        $this->assertEquals(0, $subscription['auth_attempts']);
+        $this->assertEquals($subscription['start_at'], $subscription['current_start']);
+        $expectedEndAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
+                               ->addMonths(2)
+                               ->startOfDay()
+                               ->timestamp;
+        $this->assertEquals($expectedEndAt, $subscription['current_end']);
+        $this->assertEquals($expectedEndAt, $subscription['charge_at']);
+        $this->assertNull($subscription['ended_at']);
+
+        $this->assertEquals('captured', $chargedPayment['status']);
+        $this->assertEquals(2000, $chargedPayment['amount']);
+        $this->assertEquals($subscription['id'], $chargedPayment['subscription_id']);
+        $this->assertEquals($order['id'], $chargedPayment['order_id']);
+        $this->assertEquals($invoice['id'], $chargedPayment['invoice_id']);
+        $this->assertEquals($token['id'], $chargedPayment['token_id']);
+        $this->assertTrue($chargedPayment['recurring']);
+
+        $this->assertNotNull($scheduleTask['last_run_at']);
+        $this->assertEquals($subscription['charge_at'], $scheduleTask['next_run_at']);
+
+        $allPayments = $this->getEntities('payment', [], true);
+
+        $this->assertEquals(2, $allPayments['count']);
+
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionCompleteCycle()
@@ -216,49 +308,6 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('expired', $subscription['status']);
 
         // Reset time
-        Carbon::setTestNow();
-    }
-
-    public function testSubscriptionFirstCharge()
-    {
-        $details = $this->doAuthTxnForNewSubscription();
-
-        $subscription = $this->getLastEntity('subscription', true);
-
-        $this->assertEquals(0, $subscription['paid_count']);
-        $this->assertEquals('authenticated', $subscription['status']);
-        $this->assertEquals(0, $subscription['auth_attempts']);
-        $this->assertNotNull($subscription['end_at']);
-
-        $authPayment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($details['payment_id'], $authPayment['id']);
-        $this->assertEquals($subscription['id'], $authPayment['subscription_id']);
-        $this->assertEquals(500, $authPayment['amount']);
-        $this->assertEquals('refunded', $authPayment['status']);
-
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1);
-
-        Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
-
-        $result = $this->makeSubscriptionChargeCronRequest();
-
-        $this->assertEquals(1, $result['total']);
-
-        $subscription = $this->getLastEntity('subscription', true);
-        $chargedPayment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('active', $subscription['status']);
-        $this->assertEquals(1, $subscription['paid_count']);
-
-        $this->assertEquals('captured', $chargedPayment['status']);
-        $this->assertEquals(2000, $chargedPayment['amount']);
-        $this->assertEquals($subscription['id'], $chargedPayment['subscription_id']);
-
-        $allPayments = $this->getEntities('payment', [], true);
-
-        $this->assertEquals(2, $allPayments['count']);
-
         Carbon::setTestNow();
     }
 }

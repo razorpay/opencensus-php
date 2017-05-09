@@ -195,7 +195,7 @@ class Charge extends Base\Core
         $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED;
         $errorStatus = Status::AUTH_FAILURE;
 
-        if ($captureFailure === false)
+        if ($captureFailure === true)
         {
             $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED;
             $errorStatus = Status::CAPTURE_FAILURE;
@@ -332,7 +332,10 @@ class Charge extends Base\Core
                 'task_details' => $task->toArray()
             ]);
 
-        (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
+        if ($oldStatus !== Status::ACTIVE)
+        {
+            (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
+        }
 
         //
         // This must be sent after saving the invoice and subscription
