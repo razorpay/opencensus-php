@@ -37,9 +37,9 @@ class Service extends Base\Service
      * @return string $signedUrl
      * @throws Exception\BadRequestException
      */
-    public function fetchFileSignedUrlForEntity(string $entity, string $entityId)
+    public function fetchSignedUrlForEntityFile(string $entity, string $entityId)
     {
-        $signedUrl = (new Accessor)->signedUrlForEntityFile($entity, $entityId);
+        $signedUrl = (new Core)->signedUrlForEntityFile($entity, $entityId);
 
         return $signedUrl;
     }

@@ -9,7 +9,7 @@ class Service extends Base\Service
 {
     public function fetchMultiple($input)
     {
-        $reports = $this->repo->reports->fetch($input, $this->merchant->getId());
+        $reports = $this->repo->report->fetch($input, $this->merchant->getId());
 
         return $reports->toArrayPubilc();
     }
