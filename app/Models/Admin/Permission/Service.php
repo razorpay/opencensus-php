@@ -29,18 +29,13 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function getPermission(string $permissionId)
+    public function getPermission(string $id)
     {
-        $relations = ['orgs'];
+        Entity::verifyIdAndStripSign($id);
 
-        $permission = $this->repo
-                           ->permission
-                           ->findByPublicIdWithRelations(
-                               $permissionId, $relations);
+        $relations = ['orgs', 'workflow_orgs'];
 
-        $workflowOrgs = $this->core()->getOrgsWithWorkflow($permission);
-
-        $permission->setWorkflowOrgs($workflowOrgs);
+        $permission = $this->core()->get($id, $relations);
 
         return $permission->toArrayPublic();
     }

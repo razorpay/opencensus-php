@@ -29,6 +29,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Constants\MailTags;
+use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
 {
@@ -148,8 +149,8 @@ class Service extends Base\Service
     protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
     {
         $data = [
-            'name'  =>  $subMerchant->name,
-            'email' =>  $subMerchant->email
+            'name'  => $subMerchant->name,
+            'email' => $subMerchant->email
         ];
 
         if ($subMerchant->email !== $aggregator->email)
@@ -319,6 +320,8 @@ class Service extends Base\Service
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);
+
+        $this->logActionToSlack($merchant, SlackActions::ASSIGN_PRICING, $input);
 
         return $plan->toArrayPublic();
     }
@@ -574,8 +577,12 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
+        $enabledDisabledBanks = (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input);
+
+        $this->logActionToSlack($merchant, SlackActions::ASSIGN_BANKS);
+
+        return $enabledDisabledBanks;
     }
 
     public function getFeeBearer()
@@ -840,6 +847,56 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
+    public function updateBankAccountForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('updateBankAccount', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $bankAccount = $input['bank_account'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->addBankAccount($merchantId, $bankAccount);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_RESPONSE,
             $response
         );
 

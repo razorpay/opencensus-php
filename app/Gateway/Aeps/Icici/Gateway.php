@@ -236,6 +236,8 @@ class Gateway extends Base\Gateway
             $gatewayPayment->setReceived(0);
         }
 
+        $this->repo->saveOrFail($gatewayPayment);
+
         return $paymentStatus;
     }
 
@@ -323,7 +325,7 @@ class Gateway extends Base\Gateway
             return $this->config[self::TERMINAL_ID];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
+        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
 
     protected function getCounter()

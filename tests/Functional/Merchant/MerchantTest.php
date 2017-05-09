@@ -8,8 +8,10 @@ use DB;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -20,6 +22,8 @@ class MerchantTest extends TestCase
     use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
+    use EntityActionTrait;
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
