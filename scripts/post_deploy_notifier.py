@@ -71,6 +71,11 @@ class SlackNotifier:
                 tmp['title'] = commit['title']
                 tmp['value'] = commit['url']
             fields.append(tmp)
+        ## the below hack is only for formatting. Basically, check if the number
+        ## of items is even, else append a dummy one so the metadata gets
+        ## to the next line
+        if len(fields) % 2 != 0:
+            fields.append({'short': True, 'title':'', 'value':''})
         fields.append(
             {'short': True, 'title': 'Deploy Started', 'value': startTime})
         fields.append(
@@ -150,7 +155,7 @@ class MergeCommitParser:
                 self.base_url, headers=headers, params=params, verify=True)
             return response.json()
         except Exception, e:
-            print "Exception making request:%s" % (e)
+            print "Exception making pipeline_run request:%s, Exception:%s" % (self.base_url, e)
             sys.exit(1)
 
     def findMergedPrs(self, msg):
@@ -167,11 +172,36 @@ class MergeCommitParser:
                 sys.exit(0)
         return pr_nums
 
+    def parseDeployCommits(self, run_url, commitHash):
+        wercker_api_token = KeyStore.get_wercker_api_token()
+        headers = {'Authorization': 'Bearer %s' %(wercker_api_token)}
+        commit_pr_nums = []
+        commit_messages = []
+        try:
+            response = requests.get(run_url, headers = headers, verify=True)
+            data = response.json()
+            commits = data.get('commits', [])
+            for commit in commits:
+                pr_nums = self.findMergedPrs(commit['message'])
+                if len(pr_nums) > 0:
+                    commit_pr_nums.extend(pr_nums)
+                else:
+                    commit_hash = commit['commit']
+                    if commit_hash != commitHash:
+                        tmp = {
+                            'commitHash' : commit['commit'],
+                            'message' : commit['message']
+                        }
+                        commit_messages.append(tmp)
+        except Exception, e:
+            print "Exception Fetching Run url:%s, Exception:%s" %(run_url, e)
+        return [commit_pr_nums, commit_messages]
+
     def parseMergeCommit(self):
         runs = self.get_pipeline_runs()
         metadata = {}
         commits = []
-        id = 1
+        firstRun = None
         if len(runs) > 0:
             firstRun = runs[0]
             if firstRun['result'] != 'passed':
@@ -182,22 +212,28 @@ class MergeCommitParser:
                 'finishedAt': datetime.strptime(firstRun['finishedAt'], '%Y-%m-%dT%H:%M:%S.%fZ'),
                 'deployed_by': firstRun['user']['name'],
             }
-        for run in runs:
-            # todo: exclude current run
-            msg = run['message']
+
+        if firstRun != None:
+            msg = firstRun['message']
             pr_nums = self.findMergedPrs(msg)
+            run_url = str(firstRun['url'])
+            commit_prs, message_hashes = self.parseDeployCommits(run_url, firstRun['commitHash'])
+            pr_nums.extend(commit_prs)
+            pr_nums = list(set(pr_nums))
             if len(pr_nums) > 0:
                 message = {
-                    'commitHash': run['commitHash'],
+                    'commitHash': firstRun['commitHash'],
                     'pr_nums': pr_nums
                 }
                 commits.append(message)
             else:
                 message = {
-                    'commitHash': run['commitHash'],
-                    'message': run['message']
+                    'commitHash': firstRun['commitHash'],
+                    'message': firstRun['message']
                 }
                 commits.append(message)
+            if len(message_hashes) > 0:
+                commits.extend(message_hashes)
         return {'metadata': metadata, 'commits': commits}
 
     def getDeployDetails(self):
