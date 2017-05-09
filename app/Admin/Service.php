@@ -984,8 +984,6 @@ class Service extends Base\Service
 
         list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
 
-        $this->logActionToSlack($id, Actions::FORM_LOCKED);
-
         return $error;
     }
 
