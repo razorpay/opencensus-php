@@ -5,6 +5,7 @@ namespace RZP\Models\LineItem\Tax;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Tax as TaxModel;
 
 class Entity extends Base\PublicEntity
 {
@@ -72,6 +73,30 @@ class Entity extends Base\PublicEntity
         self::TAX_AMOUNT => 'int',
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::TAX_ID,
+        self::GROUP_ID,
+    ];
+
+    // Public setters
+
+
+    protected function setPublicTaxIdAttribute(array & $array)
+    {
+        $taxId = $this->getAttribute(self::TAX_ID);
+
+        $array[self::TAX_ID] = TaxModel\Entity::getSignedId($taxId);
+    }
+
+    protected function setPublicGroupIdAttribute(array & $array)
+    {
+        $groupId = $this->getAttribute(self::GROUP_ID);
+
+        $array[self::GROUP_ID] = TaxModel\Group\Entity::getSignedIdOrNull($groupId);
+    }
+
     // Relations
 
     public function lineItem()
@@ -86,6 +111,6 @@ class Entity extends Base\PublicEntity
 
     public function taxGroup()
     {
-        return $this->belongsTo('RZP\Models\Tax\Group\Entity');
+        return $this->belongsTo('RZP\Models\Tax\Group\Entity', Entity::GROUP_ID);
     }
 }

@@ -43,13 +43,12 @@ class CreateLineItemTaxes extends Migration
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
-            $table->integer(Entity::DELETED_AT);
+            $table->integer(Entity::DELETED_AT)
+                  ->nullable();
 
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::DELETED_AT);
-
-            $table->unique([Entity::LINE_ITEM_ID, Entity::TAX_ID]);
         });
 
         // TODO: Add references on tax_id and tax_group_id

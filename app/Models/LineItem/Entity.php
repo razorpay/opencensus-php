@@ -138,8 +138,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::UNIT,
         self::TAX_INCLUSIVE,
-        // self::TAX_ID,
-        // self::TAX_GROUP_ID,
+        self::TAX_ID,
+        self::TAX_GROUP_ID,
     ];
 
     // -------------------------- Getters ----------------------------
@@ -249,4 +249,21 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------- End Relations ----------------------------
+
+    // Query scopes
+
+    /**
+     * Scopes result based on morphed entity relationship.
+     *
+     * @param \RZP\Base\BuilderEx $query
+     * @param Base\PublicEntity   $entity
+     *
+     */
+    public function scopeEntity(
+        \RZP\Base\BuilderEx $query,
+        Base\PublicEntity $entity)
+    {
+        $query->where(Entity::ENTITY_ID, '=', $entity->getId())
+              ->where(Entity::ENTITY_TYPE, '=', $entity->getEntity());
+    }
 }

@@ -178,7 +178,7 @@ class Core extends Base\Core
             {
                 $this->lineItemCore->createMany($input, $merchant, $invoice);
 
-                (new Calculator\Amount($invoice))->calculateAndSetAmounts();
+                $this->calculateAndSetAmountsOfInvoice($invoice);
 
                 $this->repo->saveOrFail($invoice);
             });
@@ -213,7 +213,7 @@ class Core extends Base\Core
                     $invoice
                 );
 
-                (new Calculator\Amount($invoice))->calculateAndSetAmounts();
+                $this->calculateAndSetAmountsOfInvoice($invoice);
 
                 $this->repo->saveOrFail($invoice);
             });
@@ -241,7 +241,7 @@ class Core extends Base\Core
             {
                 $this->lineItemCore->delete($lineItem, $invoice);
 
-                (new Calculator\Amount($invoice))->calculateAndSetAmounts();
+                $this->calculateAndSetAmountsOfInvoice($invoice);
 
                 $this->repo->saveOrFail($invoice);
             });
@@ -268,7 +268,7 @@ class Core extends Base\Core
             {
                 $this->lineItemCore->deleteMany($lineItems);
 
-                (new Calculator\Amount($invoice))->calculateAndSetAmounts();
+                $this->calculateAndSetAmountsOfInvoice($invoice);
 
                 $this->repo->saveOrFail($invoice);
             });
@@ -599,6 +599,42 @@ class Core extends Base\Core
         }
 
         $this->dispatch($job);
+    }
+
+    /**
+     * Calculates and sets derived amounts of invoice.
+     *
+     * @param Entity $invoice
+     *
+     */
+    public function calculateAndSetAmountsOfInvoice(Entity $invoice)
+    {
+        $lineItems = $invoice->lineItems()->get();
+
+        if ($lineItems->count() === 0)
+        {
+            if ($invoice->isTypeInvoice() === true)
+            {
+                $invoice->setAmountsToNull();
+            }
+
+            return;
+        }
+
+        $amount = $taxAmount = $netAmount = 0;
+
+        foreach ($lineItems as $lineItem)
+        {
+            $amount    += $lineItem->getTotalAmount();
+            $taxAmount += $lineItem->getTaxAmount();
+            $netAmount += $lineItem->getNetAmount();
+        }
+
+        $invoice->setAmount($amount);
+        $invoice->setTaxAmount($taxAmount);
+        $invoice->setNetAmount($netAmount);
+
+        $invoice->getValidator()->validateMaxAllowedAmount($amount);
     }
 
     // -------------------- Protected methods --------------------

@@ -24,7 +24,7 @@ class Core extends Base\Core
             ]
         );
 
-        $lineItem = new Entity;
+        $lineItem = (new Entity)->generateId();
 
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
@@ -50,7 +50,9 @@ class Core extends Base\Core
 
         $this->setRefAssociationIfApplicable($input, $lineItem);
 
-        (new Calculator\Amount($lineItem))->calculateAndSetAmounts();
+        (new Tax\Core)->createLineItemTaxes($lineItem, $input, $merchant);
+
+        $this->calculateAndSetAmountsOfLineItem($lineItem);
 
         $this->repo->saveOrFail($lineItem);
 
@@ -104,7 +106,12 @@ class Core extends Base\Core
         $lineItem->getValidator()
                  ->validateCurrency($morphEntity->getCurrency());
 
-        (new Calculator\Amount($lineItem))->calculateAndSetAmounts();
+        (new Tax\Core)->cleanUpAndCreateLineItemTaxes(
+                            $lineItem,
+                            $input,
+                            $merchant);
+
+        $this->calculateAndSetAmountsOfLineItem($lineItem);
 
         $this->repo->saveOrFail($lineItem);
 
@@ -306,5 +313,25 @@ class Core extends Base\Core
                         array_flip(Entity::$itemFields));
 
         $input = array_merge($itemFields, $input);
+    }
+
+    /**
+     * Calculates and sets derived amounts of line item.
+     *
+     * @param Entity $lineItem
+     *
+     */
+    protected function calculateAndSetAmountsOfLineItem(Entity $lineItem)
+    {
+        $totalAmount = $lineItem->getAmount() * $lineItem->getQuantity();
+
+        $lineItem->setTotalAmount($totalAmount);
+
+
+        // @todo: Ref to forumallae to set tax amount and net amount
+
+
+        $lineItem->setTaxAmount(0);
+        $lineItem->setNetAmount(0);
     }
 }

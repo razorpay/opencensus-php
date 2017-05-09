@@ -97,7 +97,7 @@ class Generator extends Base\Core
                 {
                     $this->preProcessGeneration($input);
 
-                    (new Calculator\Amount($this->invoice))->calculateAndSetAmounts();
+                    (new Core)->calculateAndSetAmountsOfInvoice($this->invoice);
 
                     if ($this->invoice->getStatus() === Status::ISSUED)
                     {
@@ -157,7 +157,7 @@ class Generator extends Base\Core
                 $this->invoice);
         }
 
-        (new Calculator\Amount($this->invoice))->calculateAndSetAmounts();
+        (new Core)->calculateAndSetAmountsOfInvoice($this->invoice);
 
         if ($this->invoice->getStatus() === Status::ISSUED)
         {

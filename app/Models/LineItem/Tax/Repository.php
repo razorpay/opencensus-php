@@ -3,6 +3,7 @@
 namespace RZP\Models\LineItem\Tax;
 
 use RZP\Models\Base;
+use RZP\Models\LineItem;
 
 class Repository extends Base\Repository
 {
