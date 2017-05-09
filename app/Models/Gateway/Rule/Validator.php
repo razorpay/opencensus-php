@@ -9,8 +9,6 @@ use RZP\Models\Card\Network;
 use RZP\Models\Card;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
@@ -123,13 +121,13 @@ class Validator extends Base\Validator
             case Method::CARD:
             case Method::EMI:
 
-                $this->validateCardIssuer($method, $issuer);
+                $this->validateCardIssuer($issuer);
 
                 break;
 
             case Method::NETBANKING:
 
-                $this->validateNetbankingIssuer($gateway, $method, $issuer);
+                $this->validateNetbankingIssuer($gateway, $issuer);
 
                 break;
 
@@ -137,38 +135,31 @@ class Validator extends Base\Validator
 
                 // For certain methods like UPI / wallet there is no concept of issuer, so
                 // we don't validate if issuer is null
-                if ($issuer === null)
+                if ($issuer !== null)
                 {
-                    return;
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Issuer ' . $issuer . ' for method ' . $method . ' is not supported');
                 }
-
-                throw new Exception\BadRequestValidationFailureException(
-                    'Issuer ' . $issuer . ' for method ' . $method . ' is not supported');
         }
     }
 
-    protected function validateCardIssuer(string $method, string $issuer = null)
+    protected function validateCardIssuer(string $issuer = null)
     {
-        if ($issuer === null)
-        {
-            return;
-        }
-
-        if (IFSC::exists($issuer) === false)
+        if (($issuer !== null) and (IFSC::exists($issuer) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a valid bank code');
         }
     }
 
-    protected function validateNetbankingIssuer(string $gateway, string $method, string $issuer = null)
+    protected function validateNetbankingIssuer(string $gateway, string $issuer = null)
     {
         if ($issuer === null)
         {
             if (in_array($gateway, Gateway::$netbankingGateways, true) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    "issuer can be null only for shared netbanking gateways");
+                    'issuer can be null only for shared netbanking gateways');
             }
         }
 

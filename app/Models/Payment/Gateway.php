@@ -487,7 +487,7 @@ class Gateway
 
     public static function isValidGatewayAcquirer(string $gatewayAcquirer)
     {
-        return in_array($gatewayAcquirer, self::GATEWAY_ACQUIRERS, true);
+        return array_key_exists($gatewayAcquirer, self::GATEWAY_ACQUIRERS);
     }
 
     public static function isValidAcquirerForGateway(string $gatewayAcquirer, string $gateway): bool

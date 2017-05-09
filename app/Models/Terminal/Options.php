@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
-use RZP\Models\Gateway\LoadRule;
+use RZP\Models\Gateway\Rule;
 
 class Options
 {
@@ -14,10 +14,6 @@ class Options
 
     protected $hasMultiple = false;
 
-    protected $loadSortingFallback;
-
-    protected static $loadSortingFallbackForTest;
-
     protected $failedTerminals = [];
 
     public function __construct()
@@ -25,8 +21,6 @@ class Options
         $this->setChance();
 
         $this->setMultiple();
-
-        $this->setLoadSortingFallback(true);
     }
 
     public function setMultiple($multiple = true)
@@ -50,40 +44,11 @@ class Options
 
         if ($chance === null)
         {
-            $this->chance = rand(0, LoadRule\Entity::MAX_LOAD);
+            $this->chance = rand(0, Rule\Entity::MAX_LOAD);
             return;
         }
 
         $this->chance = $chance;
-    }
-
-    public function isLoadSortingFallbackEnabled()
-    {
-        return $this->loadSortingFallback;
-    }
-
-    public function setLoadSortingFallback(bool $val)
-    {
-        $loadSortingFallbackForTest = static::getLoadSortingFallbackForTest();
-
-        if ($loadSortingFallbackForTest === null)
-        {
-            $this->loadSortingFallback = $val;
-
-            return;
-        }
-
-        $this->loadSortingFallback = $loadSortingFallbackForTest;
-    }
-
-    public static function getLoadSortingFallbackForTest()
-    {
-        return static::$loadSortingFallbackForTest;
-    }
-
-    public static function setLoadSortingFallbackForTest(bool $val)
-    {
-        static::$loadSortingFallbackForTest = $val;
     }
 
     public function setFailedTerminals(array $exclude)

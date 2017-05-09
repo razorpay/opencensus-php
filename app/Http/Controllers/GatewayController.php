@@ -378,22 +378,6 @@ class GatewayController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchGatewayRules(Rule\Service $service)
-    {
-        $input = Request::all();
-
-        $data = $service->fetchMultiple($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function findGatewayRule(Rule\Service $service, string $id)
-    {
-        $data = $service->find($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function deleteGatewayRule(Rule\Service $service, string $id)
     {
         $data = $service->delete($id);

@@ -14,24 +14,10 @@ class Service extends Base\Service
         return $rule->toArrayAdmin();
     }
 
-    public function fetchMultiple(array $input)
-    {
-        $rules = $this->repo->gateway_rule->fetch($input);
-
-        return $rules->toArrayAdmin();
-    }
-
-    public function find(string $id)
-    {
-        $rule = $this->repo->gateway_rule->findOrFailPublic($id);
-
-        return $rule->toArrayAdmin();
-    }
-
     public function delete(string $id)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_LOAD_RULE_DELETE_REQUEST,
+            TraceCode::GATEWAY_RULE_DELETE_REQUEST,
             [
                 'id' => $id,
             ]);

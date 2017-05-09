@@ -300,17 +300,17 @@ class TerminalSelectionTest extends TestCase
             //[ 'chanceValue' => 98,  'expected_terminal_id' => '1000FrstDataTl' ],
             //[ 'chanceValue' => 96,  'expected_terminal_id' => '1000FrstDataTl' ],
             // Chance from 5100 to 9500 should give AxisMigs
-            [ 'chanceValue' => 9500, 'expected_terminal_id' => '1000AxisMigsTl' ],
-            [ 'chanceValue' => 7000, 'expected_terminal_id' => '1000AxisMigsTl' ],
-            [ 'chanceValue' => 5100, 'expected_terminal_id' => '1000AxisMigsTl' ],
+            ['chanceValue' => 9500, 'expected_terminal_id' => '1000AxisMigsTl'],
+            ['chanceValue' => 7000, 'expected_terminal_id' => '1000AxisMigsTl'],
+            ['chanceValue' => 5100, 'expected_terminal_id' => '1000AxisMigsTl'],
             // Chance from 4600 to 5000 should give Cybersource axis
-            [ 'chanceValue' => 5000, 'expected_terminal_id' => '1000CybAxTrmnl' ],
-            [ 'chanceValue' => 4700, 'expected_terminal_id' => '1000CybAxTrmnl' ],
-            [ 'chanceValue' => 4600, 'expected_terminal_id' => '1000CybAxTrmnl' ],
+            ['chanceValue' => 5000, 'expected_terminal_id' => '1000CybAxTrmnl'],
+            ['chanceValue' => 4700, 'expected_terminal_id' => '1000CybAxTrmnl'],
+            ['chanceValue' => 4600, 'expected_terminal_id' => '1000CybAxTrmnl'],
             // Chance 4500 or below should give HDFC
-            [ 'chanceValue' => 4500,   'expected_terminal_id' => '1000HdfcShared' ],
-            [ 'chanceValue' => 2000,   'expected_terminal_id' => '1000HdfcShared' ],
-            [ 'chanceValue' => 000,   'expected_terminal_id' => '1000HdfcShared' ],
+            ['chanceValue' => 4500, 'expected_terminal_id' => '1000HdfcShared'],
+            ['chanceValue' => 2000, 'expected_terminal_id' => '1000HdfcShared'],
+            ['chanceValue' => 0, 'expected_terminal_id' => '1000HdfcShared'],
         ];
 
         foreach ($chances as $chance)

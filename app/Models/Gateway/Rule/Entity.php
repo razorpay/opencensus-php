@@ -27,16 +27,6 @@ class Entity extends Base\PublicEntity
     const MAX_LOAD = 10000;
 
     /**
-     * Attributes which have a length constraint in database
-     */
-    const LENGTHS = [
-        self::GATEWAY     => 50,
-        self::NETWORK     => 10,
-        self::METHOD      => 30,
-        self::METHOD_TYPE => 10,
-    ];
-
-    /**
      * Attributes used for comparing terminal to rule
      */
     const COMPARISON_ATTRIBUTES = [

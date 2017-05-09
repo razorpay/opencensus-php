@@ -14,7 +14,7 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
-        $this->trace->info(TraceCode::GATEWAY_LOAD_RULE_CREATE_REQUEST, $input);
+        $this->trace->info(TraceCode::GATEWAY_RULE_CREATE_REQUEST, $input);
 
         $rule = (new Entity)->build($input);
 
@@ -28,7 +28,7 @@ class Core extends Base\Core
     public function update(string $id, array $input)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_LOAD_RULE_UPDATE_REQUEST,
+            TraceCode::GATEWAY_RULE_UPDATE_REQUEST,
             [
                 'id'    => $id,
                 'input' => $input
@@ -80,7 +80,7 @@ class Core extends Base\Core
         if ($verbose === true)
         {
             $this->trace->info(
-                TraceCode::GATEWAY_LOAD_RULES_POST_FILTER,
+                TraceCode::GATEWAY_RULES_POST_FILTER,
                 $applicableRules->pluck(Entity::ID)->toArray());
         }
 
@@ -122,7 +122,7 @@ class Core extends Base\Core
         if ($existingRulesCount > 0)
         {
             throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_GATEWAY_RULE_EXISTS);
+                ErrorCode::BAD_REQUEST_GATEWAY_RULE_EXISTS);
         }
 
         // Checks that the total load across all rules with similar criteria doesn't exceed
@@ -155,11 +155,11 @@ class Core extends Base\Core
             ];
 
             $this->trace->info(
-                    TraceCode::GATEWAY_LOAD_RULE_CONFLCT,
-                    $data);
+                TraceCode::GATEWAY_RULE_CONFLICT,
+                $data);
 
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD,
+            throw new Exception\BadRequestValidationFailureException(
+                'Load across all gateway rules must be less than 100 percent',
                 null,
                 $data);
         }
@@ -190,9 +190,7 @@ class Core extends Base\Core
 
         $method = $payment->getMethod();
 
-        // We include null in the list of possible values here for issuer, network etc
-        // as we also want to fetch rules where thes attributes are set to null, as it
-        // has a meaning of any/all.
+        // For UPI or wallet payments, there is no issuer or network
         switch ($method)
         {
             case Payment\Method::CARD:
@@ -206,10 +204,6 @@ class Core extends Base\Core
 
                 $params[Entity::ISSUER] = $payment->getBank();
 
-                break;
-
-            default:
-                // For UPI or wallet payments, there is no issuer or network
                 break;
         }
 

@@ -2,9 +2,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Payment\Gateway;
-
 use RZP\Models\Terminal;
-
 use RZP\Trace\TraceCode;
 
 /**

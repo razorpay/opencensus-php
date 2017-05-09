@@ -31,6 +31,7 @@ class Constants
     const CONTACT_OPTIONAL    = 'contact_optional';
     const ZOHO                = 'zoho';
     const EXPOSE_DOWNTIMES    = 'expose_downtimes';
+    const NEW_LOAD_SORTING    = 'new_load_sorting';
 
     // TODO: Use this instead of alFeatures once in final code change pr
     public static $featureValueMap = [
@@ -58,6 +59,7 @@ class Constants
         self::CONTACT_OPTIONAL    => true,
         self::ZOHO                => true,
         self::EXPOSE_DOWNTIMES    => true,
+        self::NEW_LOAD_SORTING    => true,
     ];
 
     public static $visibleFeaturesMap = [

@@ -21,53 +21,46 @@ class CreateGatewayRules extends Migration
             $table->engine = 'InnoDB';
 
             $table->string(Rule::ID, Rule::ID_LENGTH)
-                    ->primary();
+                  ->primary();
 
-            $table->string(Rule::GATEWAY, Rule::LENGTHS[Rule::GATEWAY]);
+            $table->string(Rule::GATEWAY, 50);
 
-            $table->string(Rule::MERCHANT_ID, Rule::ID_LENGTH);
+            $table->string(Rule::MERCHANT_ID, Merchant::ID_LENGTH);
 
             $table->string(Rule::GATEWAY_ACQUIRER)
-                    ->nullable();
+                  ->nullable();
 
             $table->tinyInteger(Rule::INTERNATIONAL)
-                    ->default(0);
+                  ->default(0);
 
-            $table->string(Rule::NETWORK, Rule::LENGTHS[Rule::NETWORK])
-                    ->nullable();
+            $table->string(Rule::NETWORK, 10)
+                  ->nullable();
 
-            $table->string(Rule::METHOD, Rule::LENGTHS[Rule::METHOD]);
+            $table->string(Rule::METHOD, 30);
 
-            $table->string(Rule::METHOD_TYPE, Rule::LENGTHS[Rule::METHOD_TYPE])
-                    ->nullable();
+            $table->string(Rule::METHOD_TYPE, 10)
+                  ->nullable();
 
             $table->string(Rule::ISSUER)
-                    ->nullable();
+                  ->nullable();
 
             $table->integer(Rule::LOAD)
-                    ->default(0);
+                  ->default(0);
 
             $table->integer(Rule::CREATED_AT);
 
             $table->integer(Rule::UPDATED_AT);
 
             $table->integer(Rule::DELETED_AT)
-                    ->nullable();
+                  ->nullable();
 
             $table->index(Rule::GATEWAY);
-
             $table->index(Rule::GATEWAY_ACQUIRER);
-
             $table->index(Rule::INTERNATIONAL);
-
             $table->index(Rule::NETWORK);
-
             $table->index(Rule::METHOD);
-
             $table->index(Rule::METHOD_TYPE);
-
             $table->index(Rule::ISSUER);
-
             $table->index(Rule::DELETED_AT);
 
             $table->foreign(Rule::MERCHANT_ID)

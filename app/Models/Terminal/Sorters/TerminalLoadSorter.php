@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
@@ -31,7 +32,9 @@ class TerminalLoadSorter extends Terminal\Sorter
             return $terminals;
         }
 
-        if ($options->isLoadSortingFallbackEnabled() === true)
+        $merchant = $input['merchant'];
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::NEW_LOAD_SORTING) === false)
         {
             $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_FALLBACK);
 
