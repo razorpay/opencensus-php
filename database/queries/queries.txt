@@ -1954,3 +1954,7 @@ ALTER TABLE merchant_banks
 
 ALTER TABLE terminals
     ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+# Add FK for file in reports
+ALTER TABLE reports
+    ADD CONSTRAINT report_file_id_foreign FOREIGN KEY (file_id) REFERENCES files(id);

@@ -4,6 +4,7 @@ use RZP\Constants\Table;
 
 use RZP\Models\Report\Entity as Report;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\FileStore\Entity as FileStore;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
@@ -26,8 +27,7 @@ class CreateReportTable extends Migration
 
             $table->char(Report::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->char(Report::FILE_ID)
-                  ->nullable();
+            $table->char(Report::FILE_ID, FileStore::ID_LENGTH);
 
             $table->char(Report::TYPE);
 
@@ -57,10 +57,16 @@ class CreateReportTable extends Migration
 
             $table->integer(Report::UPDATED_AT);
 
-            // References Merchant Id add
+            // References Merchant Id
             $table->foreign(Report::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
+            // References FileStore Id
+            $table->foreign(Report::FILE_ID)
+                  ->references(FileStore::ID)
+                  ->on(Table::FILE_STORE)
                   ->on_delete('restrict');
 
             $table->index(Report::CREATED_AT);
@@ -80,6 +86,9 @@ class CreateReportTable extends Migration
         {
             $table->dropForeign(
                 Table::REPORT . '_' . Report::MERCHANT_ID.'_foreign');
+
+            $table->dropForeign(
+                Table::REPORT . '_' . Report::FILE_ID.'_foreign');
         });
 
         Schema::drop(Table::REPORT);

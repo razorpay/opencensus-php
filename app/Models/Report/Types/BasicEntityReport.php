@@ -132,12 +132,12 @@ class BasicEntityReport extends BaseReport
             $append = true;
         }
 
-        $fileData = $this->createFileAndSave($fullpath, $fileName);
+        $s3File = $this->createFileAndSave($fullpath, $fileName);
 
-        $signedUrl = $fileData['url'];
+        $signedUrl = $s3File->getSignedUrl();
 
-        // set fileId/UFH
-        $report->setFileId($fileData['id']);
+        // set file/UFH
+        $report->file()->associate($s3File);
 
         // save changes to report
         $this->repo->saveOrFail($report);
@@ -308,7 +308,7 @@ class BasicEntityReport extends BaseReport
                           ->type(FileStore\Type::REPORT)
                           ->merchant($this->merchant)
                           ->save()
-                          ->getSignedUrl();
+                          ->getFileInstance();
 
         return $s3File;
     }

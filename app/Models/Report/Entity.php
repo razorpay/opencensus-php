@@ -76,6 +76,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function file()
+    {
+        return $this->belongsTo('RZP\Models\FileStore\Entity');
+    }
+
     // ----------------------------------- RELATIONS END -----------------------------
 
     // ----------------------------------- SETTERS -----------------------------------
@@ -85,24 +90,5 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GENERATED_AT, $time);
     }
 
-    public function setFileId($fileId)
-    {
-        $this->setAttribute(self::FILE_ID, $fileId);
-    }
-
     // ----------------------------------- SETTERS END -------------------------------
-
-    // ----------------------------------- GETTERS -----------------------------------
-
-    public function getFileId()
-    {
-        return $this->getAttribute(self::FILE_ID);
-    }
-
-    public function getType()
-    {
-        return $this->getAttribute(self::TYPE);
-    }
-
-    // ----------------------------------- GETTERS END --------------------------------
 }
