@@ -1,32 +1,54 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import Modal from 'react-modal';
 
 import { NavLink, withRouter } from 'react-router-dom';
 
-import Payments from 'merchant/containers/Payments/List';
-import Refunds from 'merchant/containers/Refunds/List';
-import Orders from 'merchant/containers/Orders/List';
+import PaymentsList from 'merchant/containers/Payments/List';
+import PaymentDetails from 'merchant/containers/Payments/Details';
+import RefundsList from 'merchant/containers/Refunds/List';
+import RefundDetails from 'merchant/containers/Refunds/Details';
+import OrdersList from 'merchant/containers/Orders/List';
+import OrderDetails from 'merchant/containers/Orders/Details';
 
-const transactionsRoutes = {
-  '/refunds': <Refunds />,
-  '/orders': <Orders />,
+const components = {
+  refunds: [<RefundsList />, id => <RefundDetails id={id} />],
+  orders: [<OrdersList />, id => <OrderDetails id={id} />],
+  payments: [<PaymentsList />, id => <PaymentDetails id={id} />],
 };
 
 @withRouter
 export default class TransactionsContainer extends Component {
   render() {
-    let content =
-      transactionsRoutes[this.props.location.pathname] || <Payments />;
+    let urlFragments = this.props.location.pathname.match(
+      /\/app\/(\w+)\/?(\w*)/
+    );
+    let component = components[urlFragments[1]];
+    let entityId = urlFragments[2];
     return (
       <tabbed-container>
         <header>
-          <NavLink to="/payments">Payments</NavLink>
-          <NavLink to="/refunds">Refunds</NavLink>
-          <NavLink to="/orders">Orders</NavLink>
+          <NavLink to="/app/payments">Payments</NavLink>
+          <NavLink to="/app/refunds">Refunds</NavLink>
+          <NavLink to="/app/orders">Orders</NavLink>
           <NavLink to="/batch-refunds">Batch Refunds</NavLink>
         </header>
-        {content}
+        {component[0]}
+        {entityId &&
+          <Modal
+            onRequestClose={goBack}
+            isOpen={true}
+            contentLabel="💩"
+            className="side-pane"
+            overlayClassName="main-content side-overlay"
+          >
+            {component[1](entityId)}
+          </Modal>}
       </tabbed-container>
     );
   }
+}
+
+function goBack() {
+  location.hash = location.hash.replace(/\/\w+$/, '');
 }

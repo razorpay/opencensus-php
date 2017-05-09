@@ -87,24 +87,17 @@ export default class PaymentDetailsContainer extends Component {
     }
 
     return (
-      <div class="react-root">
-        <Header title="Payment Details" />
-
-        <div class="content-wrapper">
-          <PaymentDetails
-            payment={payment}
-            card={card}
-            refunds={refunds}
-            isLoading={loading}
-            statusMsg={statusMsg}
-            onToggleCardDetails={this.fetchCardDetails}
-            onToggleRefundList={this.fetchRefunds}
-            confirmCapture={this.confirmCapture}
-            openRefundModal={this.openRefundModal}
-            ngRouter={this.context.ngRouter}
-          />
-        </div>
-      </div>
+      <PaymentDetails
+        payment={payment}
+        card={card}
+        refunds={refunds}
+        isLoading={loading}
+        statusMsg={statusMsg}
+        onToggleCardDetails={this.fetchCardDetails}
+        onToggleRefundList={this.fetchRefunds}
+        confirmCapture={this.confirmCapture}
+        openRefundModal={this.openRefundModal}
+      />
     );
   }
 }

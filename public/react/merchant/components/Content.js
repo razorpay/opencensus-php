@@ -20,9 +20,9 @@ export default () => {
     <main class="main-content">
 
       {/* Transaction routes */}
-      <Route path="/payments" component={Transactions} />
-      <Route path="/refunds" component={Transactions} />
-      <Route path="/orders" component={Transactions} />
+      <Route path="/app/payments" component={Transactions} />
+      <Route path="/app/refunds" component={Transactions} />
+      <Route path="/app/orders" component={Transactions} />
       <Route path="/batch-refunds" component={Transactions} />
 
       <Route path="/settlements" component={Settlements} />

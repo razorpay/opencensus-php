@@ -7,7 +7,7 @@ export default class Sidebar extends Component {
   // currently active routes in tabbed containers
   // populated with initial values
   routes = {
-    transactions: '/payments',
+    transactions: '/app/payments',
   };
 
   render() {
@@ -18,7 +18,7 @@ export default class Sidebar extends Component {
     let isMerchant = !!user.current;
     let { pathname } = location;
 
-    if (/^\/(payments|refunds|orders|batch-refunds)/.test(pathname)) {
+    if (/^\/app\/(payments|refunds|orders|batch-refunds)/.test(pathname)) {
       routes.transactions = pathname;
     }
 

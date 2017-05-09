@@ -23,6 +23,15 @@ body {
   }
 }
 
+.main-content {
+  position: fixed;
+  height: 100%;
+  left: 200px;
+  right: 0;
+  overflow: auto;
+  padding-top: 50px;
+}
+
 #react-root {
   .sidebar {
     position: fixed;
@@ -83,12 +92,6 @@ body {
         text-decoration: none;
       }
     }
-  }
-
-  .main-content {
-    margin-left: 200px;
-    margin-top: 50px;
-    padding-top: 1px;
   }
 
   .dropdown--active > .dropdown__content > .dropdown-menu {
@@ -161,6 +164,32 @@ body.ReactModal__Body--open {
   }
   &--before-close {
     transform: translateY(-15%);
+  }
+}
+
+.side-overlay {
+  overflow-x: hidden;
+  z-index: 9999;
+  background: rgba(0, 0, 0, .4);
+}
+
+.side-pane {
+  background: #fff;
+  float: right;
+  width: 100%;
+  max-width: 600px;
+  min-height: 100%;
+  transform: translateX(20%);
+  opacity: 0;
+  
+  .spinner {
+    display: block;
+    margin: 60px auto;
+  }
+
+  &.ReactModal__Content--after-open {
+    transform: none;
+    opacity: 1;
   }
 }
 
