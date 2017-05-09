@@ -54,4 +54,10 @@ class BaseReport extends Base\Core
 
         return [$from, $to];
     }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(501);
+    }
 }

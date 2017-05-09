@@ -367,6 +367,7 @@ final class Route
         'gateway_validate_unknown_refund'         => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
         'reports_fetch_multiple'                  => ['get',      'reports',                                        'ReportController@getReports'                                       ],
         'file_get_signed_url'                     => ['get',      'files/{entity}/{entityId}/signed-url',           'FileStoreController@getSignedUrlForEntity'                         ],
+        'reports_generate'                        => ['post',     'reports/{entity}/generate',                      'ReportController@generateReport'                                   ],
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
@@ -903,6 +904,7 @@ final class Route
         'offer_fetch_by_id',
         'reports_fetch_multiple',
         'file_get_signed_url',
+        'reports_generate',
     );
 
     public static $admin = [

@@ -282,12 +282,6 @@ class BasicEntityReport extends BaseReport
         return [$count, $skip];
     }
 
-    protected function increaseAllowedSystemLimits()
-    {
-        RuntimeManager::setMemoryLimit('1024M');
-        RuntimeManager::setTimeLimit(501);
-    }
-
     /**
      * Creates uploded file &
      * Uses UFH to save file to s3
