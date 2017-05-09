@@ -3,14 +3,12 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use RZP\Exception;
 use RZP\Models\Report;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\JitValidator;
-use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
@@ -19,6 +17,12 @@ class BasicEntityReport extends BaseReport
     use FileHandlerTrait;
 
     const BATCH_LIMIT = 20000;
+
+    protected $entity;
+
+    protected $report;
+
+    protected $relationsToFetch;
 
     // Maps the entity to the relations that need to be fetched for it
     protected $entityToRelationFetchMap = [
@@ -39,11 +43,8 @@ class BasicEntityReport extends BaseReport
         E::REVERSAL     => [],
     ];
 
-    protected $entity;
-
-    protected $relationsToFetch;
-
-    protected $allowed = array(
+    // Entities for which report-generation is allowed
+    protected $allowed = [
         E::ORDER,
         E::REFUND,
         E::PAYMENT,
@@ -52,7 +53,7 @@ class BasicEntityReport extends BaseReport
         E::MERCHANT,
         E::TRANSFER,
         E::REVERSAL,
-    );
+    ];
 
     public function __construct(string $entity)
     {
@@ -61,6 +62,7 @@ class BasicEntityReport extends BaseReport
         //
         // For linked account report, the entity is exposed as 'account' but is
         // the merchant entity.
+        // Derived from BasicEntityReport
         // @todo: Change this when account onboarding goes live.
         //
         if ($entity === 'account')
@@ -70,86 +72,193 @@ class BasicEntityReport extends BaseReport
 
         $this->entity = $entity;
 
-        $this->relationsToFetch = $this->entityToRelationFetchMap[$this->entity];
+        $this->relationsToFetch = $this->entityToRelationFetchMap[$entity];
     }
 
+    /**
+     * Gets report data as array
+     *
+     * Not being used anywhere on dashboard
+     * Keeping it to maintain backward compatibility
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     * @return $data array
+     */
     public function getReport(array $input)
     {
         $this->preReportProcessing($input);
 
-        list($from, $to) = $this->getTimestamps($input);
-
-        //list($count, $skip) = $this->getFetchLimits($input);
-
-        // currently limiting the api response can break the merchant integration
-        // so overwriting the limits for now
-        list($count, $skip) = [200000, 0];
+        list($from, $to, $count, $skip) = $this->getParamsForReport($input);
 
         list($data, $count) = $this->getReportData($from, $to, $count, $skip);
 
         return $data;
     }
 
-    public function getReportUrl(array $input): array
+    /**
+     * Gets url for report data
+     *
+     * Not being used anywhere on dashboard
+     * Keeping it to maintain backward compatibility
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     * @return array
+     */
+    public function getReportUrl(array $input)
+    {
+        $this->generateReport();
+
+        $file = $this->report->file;
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+        return ['url' => $signedUrl];
+    }
+
+    /**
+     * 1. Pre report processing - increasing memory limit,
+     *    checking if entity is allowed, etc
+     *
+     * 2. Set report entity with params
+     *
+     * 3. Edits and saves report entity
+     *
+     * 4. Generate filename and fullpath
+     *
+     * 5. Saves file to AWS using UFH
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     * @return void
+     */
+    public function generateReport(array $input)
     {
         $this->preReportProcessing($input);
 
-        list($from, $to) = $this->getTimestamps($input);
+        $this->createReportEntity($input);
 
-        list($count, $skip) = $this->getFetchLimits($input);
+        $now = Carbon::now()->timestamp;
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $filename = $this->generateFilename($now);
 
-        $merchantId = $this->merchant->getId();
+        $fullpath = $this->writeDataToCsv($input, $filename);
 
-        $fileName = $merchantId . '_' . $this->entity . '_' . $now;
+        $s3File = $this->createFileAndSave($fullpath, $filename);
+
+        $this->editReportEntityAndSave($now, $s3File);
+
+        $this->unlinkFile($fullpath);
+    }
+
+    /**
+     * Generates report data and creates the csv file
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     * @param $filename  string
+     * @return $fullpath string
+     */
+    protected function writeDataToCsv(array $input, $filename)
+    {
+        list($from, $to, $count, $skip) = $this->getParamsForReport($input);
 
         $append = false;
-
-        // get or create report entity
-        $entityParams = [
-            'from'   => $from,
-            'to'     => $to,
-            'entity' => $this->entity
-        ];
-
-        $report = (new Report\Core)->buildEntity($entityParams + $input, $this->merchant);
-
-        // set generatedAt value for report
-        // this is set as `now` because
-        // generated_at represents the time
-        // right before `getReportData` is envoked
-        $report->setGeneratedAt($now);
 
         while ($count === self::BATCH_LIMIT)
         {
             list($data, $count) = $this->getReportData($from, $to, self::BATCH_LIMIT, $skip);
 
-            $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report', $append);
+            $fullpath = $this->createCsvFile($data, $filename, null, 'files/report', $append);
 
             $skip += $count;
 
             $append = true;
         }
 
-        $s3File = $this->createFileAndSave($fullpath, $fileName);
+        return $fullpath;
+    }
 
-        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($s3File);
+    /**
+     * Gets params needed to generate report
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     * @return array
+     */
+    protected function getParamsForReport(array $input)
+    {
+        list($from, $to) = $this->getTimestamps($input);
 
-        // set file/UFH
-        $report->file()->associate($s3File);
+        list($count, $skip) = $this->getFetchLimits($input);
 
-        // save changes to report
-        $this->repo->saveOrFail($report);
+        return [$from, $to, $count, $skip];
+    }
 
+    /**
+     * Generates filename basis merchant_id, entity and timestamp
+     *
+     * @param  $timestamp
+     * @return $filename string
+     */
+    protected function generateFilename($timestamp) : string
+    {
+        $merchantId = $this->merchant->getId();
+
+        $filename = implode('_', [$merchantId, $this->entity, $timestamp]);
+
+        return $filename;
+    }
+
+    /**
+     * Gets limits in which the data is to be fetched from db
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     * @return array
+     */
+    protected function getFetchLimits($input): array
+    {
+        $count = self::BATCH_LIMIT;
+        $skip = 0;
+
+        if (isset($input['count']) === true)
+        {
+            $count = min($count, (int) $input['count']);
+        }
+
+        if (isset($input['skip']) === true)
+        {
+            $skip = (int) $input['skip'];
+        }
+
+        return [$count, $skip];
+    }
+
+    /**
+     * unlinks the file from path after it is saved to AWS
+     *
+     * @param $fullpath string
+     */
+    protected function unlinkFile(string $fullpath)
+    {
         if (file_exists($fullpath) === true)
         {
             unlink($fullpath);
         }
-
-        return ['url' => $signedUrl];
     }
 
+    // ------ Data-fetching operations ------
+
+    /**
+     * Gets report data for concerned entity
+     * 1. Fetches entities to be added in report
+     * 2. Formats data to be shown in report
+     *
+     * @param $from, $to, $count, $skip
+     * @return [$formattedData, $fetchCount] array
+     */
     protected function getReportData($from, $to, $count, $skip): array
     {
         $merchantId = $this->merchant->getId();
@@ -206,49 +315,22 @@ class BasicEntityReport extends BaseReport
     }
 
     /**
-     * 1. Checks if entity is allowed for report
-     * 2. Increases system limits
-     * 3. Validates input
-     * 4. Sets timezone
+     * Returns formatted data to be shown in report
      *
-     * @param $input array
+     * @param $entities array
+     * @return array
      */
-    protected function preReportProcessing(array $input)
-    {
-        $this->checkAllowedEntity();
-
-        $this->increaseAllowedSystemLimits();
-
-        (new JitValidator)->rules(self::$rules)->input($input)->validate();
-
-        date_default_timezone_set('Asia/Kolkata');
-    }
-
-    /**
-     * Checks if the entity is allowed
-     * to be made a report of
-     */
-    protected function checkAllowedEntity()
-    {
-        if (in_array($this->entity, $this->allowed, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Cannot get report for the given entity');
-        }
-
-        if (($this->entity === E::MERCHANT) and
-            ($this->merchant->isMarketplace() === false))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Exporting this data is not allowed for the merchant');
-        }
-    }
-
     protected function fetchFormattedDataForReport($entities): array
     {
         return $entities->toArrayReport();
     }
 
+    /**
+     * Returns all the data to be shown in report
+     * This function is overridden in concerned repo
+     * If not, it is executed from base repo
+     *
+     */
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         $entity = $this->entity;
@@ -264,28 +346,32 @@ class BasicEntityReport extends BaseReport
                         $this->relationsToFetch);
     }
 
-    protected function getFetchLimits($input): array
+    // ------ Write operations ------
+
+    /**
+     * Sets report entity by building it from params
+     * The resultant report entity is not yet saved to DB
+     *
+     * @param $from  integer
+     * @param $to    integer
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     */
+    protected function createReportEntity(array $input)
     {
-        $count = self::BATCH_LIMIT;
-        $skip = 0;
+        list($from, $to) = $this->getTimestamps($input);
 
-        if (isset($input['count']))
-        {
-            $count = min($count, (int) $input['count']);
-        }
+        $params = [
+            'from'      => $from,
+            'to'        => $to,
+            'entity'    => $this->entity,
+        ];
 
-        if (isset($input['skip']))
-        {
-            $skip = (int) $input['skip'];
-        }
+        $params = $input + $params;
 
-        return [$count, $skip];
-    }
+        $report = (new Report\Core)->buildEntity($params, $this->merchant);
 
-    protected function increaseAllowedSystemLimits()
-    {
-        RuntimeManager::setMemoryLimit('1024M');
-        RuntimeManager::setTimeLimit(501);
+        $this->report = $report;
     }
 
     /**
@@ -294,7 +380,7 @@ class BasicEntityReport extends BaseReport
      *
      * @param  $filePath string
      * @param  $fileName string
-     * @return $s3File   array containing fileId and url
+     * @return $s3File   FileStore\Entity
      */
     protected function createFileAndSave($filePath, $fileName)
     {
@@ -311,5 +397,73 @@ class BasicEntityReport extends BaseReport
                           ->getFileInstance();
 
         return $s3File;
+    }
+
+    /**
+     * Set generated_at & file_id for report entity,
+     * Save the report entity.
+     *
+     * generated_at is set as `$now` because it represents the time
+     * right before `getReportData` is envoked.
+     *
+     * Not storing file as foreign key because we only need the id
+     * to get the signed url from FileStore Service
+     *
+     * @param  $generatedAt integer
+     * @param  $file        FileStore\Entity
+     */
+    protected function editReportEntityAndSave($generatedAt, FileStore\Entity $file)
+    {
+        $report = $this->report;
+
+        // set generatedAt value for report
+        $report->setGeneratedAt($generatedAt);
+
+        // associate file with report
+        $report->file()->associate($file);
+
+        $this->repo->saveOrFail($report);
+    }
+
+    // ------ Processes before starting report-generation ------
+
+    /**
+     * 1. Checks if entity is allowed for report
+     * 2. Increases system limits
+     * 3. Validates input
+     * 4. Sets timezone
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     */
+    protected function preReportProcessing(array $input)
+    {
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
+
+        $this->checkAllowedEntity();
+
+        $this->increaseAllowedSystemLimits();
+
+        date_default_timezone_set('Asia/Kolkata');
+    }
+
+    /**
+     * Checks if the entity is allowed to be made a report of
+     * Thows exception
+     */
+    protected function checkAllowedEntity()
+    {
+        if (in_array($this->entity, $this->allowed, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot get report for the given entity');
+        }
+
+        if (($this->entity === E::MERCHANT) and
+            ($this->merchant->isMarketplace() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Exporting this data is not allowed for the merchant');
+        }
     }
 }
