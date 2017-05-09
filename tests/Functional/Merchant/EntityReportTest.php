@@ -286,7 +286,7 @@ class EntityReportTest extends TestCase
         assert($reports['count'] === 1);
     }
 
-    public function phPayment()
+    public function testGenerateReportPayment()
     {
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
