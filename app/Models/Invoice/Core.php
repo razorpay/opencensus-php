@@ -652,7 +652,7 @@ class Core extends Base\Core
 
     protected function validateIfInvoiceCanBeCancelled(Entity $invoice)
     {
-        $count = $this->repo->invoice->getNonFailedPaymentsCount($invoice);
+        $count = $this->repo->invoice->getSucceedingPaymentsCount($invoice);
 
         if ($count !== 0)
         {
@@ -663,7 +663,7 @@ class Core extends Base\Core
 
     protected function validateIfInvoiceCanBeExpired(Entity $invoice)
     {
-        $count = $this->repo->invoice->getNonFailedPaymentsCount($invoice);
+        $count = $this->repo->invoice->getSucceedingPaymentsCount($invoice);
 
         if ($count !== 0)
         {

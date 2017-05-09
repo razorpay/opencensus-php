@@ -25,10 +25,6 @@ class Validator extends Base\Validator
         Entity::PERMISSIONS         => 'required|array',
     ];
 
-    protected static $createValidators = [
-        Entity::AUTH_TYPE,
-    ];
-
     protected static $editRules = [
         Entity::DISPLAY_NAME        => 'sometimes|string|max:255',
         Entity::BUSINESS_NAME       => 'sometimes|string|max:255',
@@ -58,32 +54,6 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'Invalid domain name provided', $attribute, $domain);
             }
-        }
-    }
-
-    protected function validateAuthType(array $input)
-    {
-        $admin = $input[Entity::ADMIN];
-
-        if ($input[Entity::AUTH_TYPE] === AuthType::PASSWORD)
-        {
-            $keys = [
-                Admin\Entity::USERNAME,
-                Admin\Entity::PASSWORD,
-                Admin\Entity::PASSWORD_CONFIRMATION,
-            ];
-
-            $adminInput = [];
-
-            foreach ($admin as $key => $value)
-            {
-                if (in_array($key, $keys, true) === true)
-                {
-                    $adminInput[$key] = $admin[$key];
-                }
-            }
-
-            (new Admin\Validator)->validateInput('password_auth', $adminInput);
         }
     }
 }

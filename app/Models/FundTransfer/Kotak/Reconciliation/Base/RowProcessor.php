@@ -82,22 +82,23 @@ class RowProcessor extends BaseCore
         {
             $remarks = $this->parsedData['remarks'];
 
-            // If current time is before 10 pm, dont mark the settlement as
-            // processed and update only the utr
-            if (($now < $tenPm) and ($this->env !== 'testing'))
-            {
-                $status = $this->reconEntity->getStatus();
-            }
-            else if ((empty($remarks) === true) or
-                (in_array($remarks, self::SUCCESS_STATUS) === true))
-            {
-                $status = $class::PROCESSED;
-            }
-            else
+            if ((empty($remarks) === false) and
+                (in_array($remarks, self::SUCCESS_STATUS) === false))
             {
                 $status = $class::FAILED;
 
                 $failureReason = 'Reconciliation';
+            }
+            else
+            {
+                $status = $class::PROCESSED;
+
+                // If current time is before 10 pm, dont mark the settlement as
+                // processed and update only the utr
+                if (($now < $tenPm) and ($this->env !== 'testing'))
+                {
+                    $status = $this->reconEntity->getStatus();
+                }
             }
         }
 

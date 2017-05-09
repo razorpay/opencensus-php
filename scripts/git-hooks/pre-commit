@@ -2,6 +2,17 @@
 
 EXIT_CODE=0
 
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+
+if [[ $BRANCH == "master" ]]; then
+  echo "You appear to be trying to commit to master."\"
+       "You probably don't want to do that."
+  exec < /dev/tty
+  read -p "Enter new branch name: " branch_name
+  exec <&-
+  git checkout -b $branch_name
+fi
+
 TMP_STAGING=".staging"
 
 rm -rf $TMP_STAGING
@@ -10,12 +21,12 @@ printf "Running Linter\n"
 
 while read FILE; do
 if [[ -f $FILE ]]; then
-    mkdir -p "$TMP_STAGING/$(dirname $FILE)"
-    git show :$FILE > "$TMP_STAGING/$FILE"
-    php -l "$TMP_STAGING/$FILE" 1> /dev/null
-    if [ $? -ne 0 ]; then
-        EXIT_CODE=1
-    fi
+  mkdir -p "$TMP_STAGING/$(dirname $FILE)"
+  git show :$FILE > "$TMP_STAGING/$FILE"
+  php -l "$TMP_STAGING/$FILE" 1> /dev/null
+  if [ $? -ne 0 ]; then
+    EXIT_CODE=1
+  fi
 fi
 done < <(git diff --cached --name-only | grep -i ".php$")
 
