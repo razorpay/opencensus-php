@@ -5,6 +5,7 @@ namespace RZP\Models\Report\Types;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Base\RuntimeManager;
 
 class BaseReport extends Base\Core
 {
@@ -53,5 +54,11 @@ class BaseReport extends Base\Core
         }
 
         return [$from, $to];
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(501);
     }
 }
