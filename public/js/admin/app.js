@@ -17,7 +17,6 @@ var app = angular
     'angularFileUpload',
     'ngIdle',
     'ngBusy',
-    'angulartics',
     'react',
   ])
   .run([
@@ -63,15 +62,13 @@ var app = angular
     '$compileProvider',
     '$filterProvider',
     '$provide',
-    '$analyticsProvider',
     function(
       $stateProvider,
       $urlRouterProvider,
       $controllerProvider,
       $compileProvider,
       $filterProvider,
-      $provide,
-      $analyticsProvider
+      $provide
     ) {
       // lazy controller, directive and service
       app.controller = $controllerProvider.register;
