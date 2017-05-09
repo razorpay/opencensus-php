@@ -24,6 +24,8 @@ class Service
 
     protected $entity;
 
+    protected $config;
+
     protected $permission = [];
 
     protected $diff = [];
@@ -33,6 +35,8 @@ class Service
         $this->app = $app;
 
         $this->router = $this->app['router'];
+
+        $this->config = $this->app['config'];
 
         $this->request = $this->app['request'];
 
@@ -192,8 +196,9 @@ class Service
     {
         // 1. If the permission has no workflow then don't do anything
         // 2. If this is an execute call, then return as well
-
+        //
         if (($this->permissionHasWorkflow() === false) or
+            ($this->config->get('heimdall.workflows.mock') === true)
             ($this->isExecuteCall() === true))
         {
             // Run the callback though, as it might have business

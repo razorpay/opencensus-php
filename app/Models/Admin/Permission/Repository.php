@@ -92,7 +92,7 @@ class Repository extends Base\Repository
                     ->where($pmTable . '.entity_id', '=', $orgId)
                     ->where($pmTable . '.entity_type', '=', 'org')
                     ->where(Entity::NAME, $permissionName)
-                    ->first(['id']);
+                    ->pluck('id');
     }
 
     /**

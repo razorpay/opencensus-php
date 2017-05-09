@@ -375,6 +375,8 @@ class MerchantTest extends TestCase
     {
         $this->org = $this->fixtures->create('org');
 
+        $this->addAssignablePermissionsToOrg($this->org);
+
         $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
 

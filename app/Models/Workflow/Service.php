@@ -127,9 +127,10 @@ class Service extends Base\Service
         $permissionId = $this->repo
                              ->permission
                              ->retrieveIdsByNamesAndOrg($routePermission, $orgId)
-                             ->toArray()['id'];
+                             ->toArray()[0];
 
-        $workflows = (new Action\Core)->getWorkflowsForPermission($permissionId, $orgId);
+        $workflows = (new Action\Core)->getWorkflowsForPermission(
+            $permissionId, $orgId);
 
         return ($workflows->isEmpty() === false);
     }
