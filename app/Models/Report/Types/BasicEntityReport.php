@@ -108,7 +108,7 @@ class BasicEntityReport extends BaseReport
      */
     public function getReportUrl(array $input)
     {
-        $this->generateReport();
+        $this->generateReport($input);
 
         $file = $this->report->file;
 
