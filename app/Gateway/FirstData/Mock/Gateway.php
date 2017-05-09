@@ -21,6 +21,16 @@ class Gateway extends FirstData\Gateway
 
         $subscriptionId = $input['payment']['subscription_id'];
 
+        //
+        // For subscriptions, we want to test by failing some captures
+        // on the gateway end.
+        //
+
+        if ($subscriptionId === null)
+        {
+            return;
+        }
+
         $subscription = $this->app['repo']->subscription->findOrFail($subscriptionId);
 
         $notes = $subscription->getNotes()->toArray();

@@ -22,7 +22,7 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
+        $this->fixtures->merchant->addFeatures(['subscriptions']);
 
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
 

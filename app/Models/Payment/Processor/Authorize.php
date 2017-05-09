@@ -9,6 +9,7 @@ use Crypt;
 use Lib\PhoneBook;
 use Mail;
 use RZP\Constants\Mode;
+use RZP\Http\BasicAuth;
 use RZP\Models\Plan\Subscription;
 use RZP\Error;
 use RZP\Error\ErrorCode;
@@ -630,7 +631,11 @@ trait Authorize
         {
             // If feature is not present, simply throw invalid url error.
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+                null,
+                [
+                    'payment_id' => $payment->getId()
+                ]);
         }
     }
 
@@ -645,8 +650,7 @@ trait Authorize
 
         $merchant = $payment->merchant;
 
-        // Ensure that the merchant is allowed to do recurring payments.
-        $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
+        $this->verifyFeatureForRecurring($merchant, $payment);
 
         // Validate that the card supports recurring
         $this->validateRecurringCard($payment);
@@ -665,6 +669,38 @@ trait Authorize
             $this->verifyAuthForRecurring();
 
             $this->verifyAggregatorIfApplicable($merchant);
+        }
+    }
+
+    protected function verifyFeatureForRecurring(Merchant\Entity $merchant, Payment\Entity $payment)
+    {
+        $authType = $this->app['basicauth']->getAuthType();
+
+        if ($authType === BasicAuth\Type::PRIVATE_AUTH)
+        {
+            // Ensure that the merchant is allowed to do recurring payments.
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
+        }
+        else if ($authType === BasicAuth\Type::PUBLIC_AUTH)
+        {
+            // Ensure that the merchant is allowed to do recurring payments.
+            $this->verifyAtLeastOneFeatureEnabledForMerchant(
+                $merchant, [Feature\Constants::SUBSCRIPTIONS, Feature\Constants::RECURRING]);
+        }
+        else if ($authType === BasicAuth\Type::PRIVILEGE_AUTH)
+        {
+            $this->verifyAtLeastOneFeatureEnabledForMerchant(
+                $merchant, [Feature\Constants::SUBSCRIPTIONS, Feature\Constants::RECURRING]);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'auth_type' => $authType
+                ]);
         }
     }
 
@@ -846,33 +882,6 @@ trait Authorize
 
             $this->setPayment($payment);
         });
-    }
-
-    protected function verifyMerchantFeatures(Payment\Entity $payment, array $input)
-    {
-        $merchant = $payment->merchant;
-
-        if ($payment->isRecurring() === true)
-        {
-            $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
-        }
-
-        if ((empty($input[Payment\Entity::TOKEN]) === false) and
-            ($payment->isSecondRecurring() === true))
-        {
-            $this->verifyAuthForRecurring();
-        }
-        else if ($this->app['basicauth']->isPrivateAuth() === true)
-        {
-            if ($payment->isWallet())
-            {
-                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
-            }
-            else
-            {
-                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2S);
-            }
-        }
     }
 
     protected function verifyAuthForRecurring()
@@ -2207,9 +2216,11 @@ trait Authorize
     /**
      * creates gateway input using saved card token, this method is used for
      * local card saving and we can associate the same card with the payment
-     * @param $token
-     * @param $input
-     * @return
+     *
+     * @param Token\Entity $token
+     * @param array        $input
+     *
+     * @return array
      * @throws \Exception
      */
     protected function associateAndGetCardArrayForSavedToken(Token\Entity $token, array & $input): array
@@ -2235,9 +2246,11 @@ trait Authorize
      * creates gateway input using saved card token, this method is used for
      * global card saving. we need to create a new card entity for merchant
      * and associate with the payment
-     * @param $token
-     * @param array $input
-     * @return
+     *
+     * @param Token\Entity $token
+     * @param array        $input
+     *
+     * @return array
      * @throws \Exception
      */
     protected function createCardEntityFromSavedToken(Token\Entity $token, array & $input): array
@@ -2388,6 +2401,33 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
+    }
+
+    protected function verifyAtLeastOneFeatureEnabledForMerchant(Merchant\Entity $merchant, array $features)
+    {
+        $atLeastOneEnabled = false;
+
+        foreach ($features as $feature)
+        {
+            if ($merchant->isFeatureEnabled($feature) === true)
+            {
+                $atLeastOneEnabled = true;
+
+                break;
+            }
+        }
+
+        if ($atLeastOneEnabled === false)
+        {
+            //
+            // If not even one of the features is enabled for the merchant,
+            // throw an invalid URL error
+            //
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        return $atLeastOneEnabled;
     }
 
     protected function validateCardAndCvv(Payment\Entity $payment, array $input)

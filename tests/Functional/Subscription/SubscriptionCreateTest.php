@@ -19,13 +19,7 @@ class SubscriptionCreateTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->addFeatures(['recurring']);
-
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
-
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
-
-        $this->mockTokenex();
+        $this->fixtures->merchant->addFeatures(['subscriptions']);
     }
 
     // TODO: Add test cases for total_count and end_at generation logic.

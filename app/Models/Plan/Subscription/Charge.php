@@ -66,15 +66,6 @@ class Charge extends Base\Core
 
         $invoice = $this->repo->invoice->findOrFail($data['invoice_id']);
 
-        $valid = $this->validateInvoiceStatusBeforeCharging($invoice, $subscription);
-
-        if ($valid === false)
-        {
-            return;
-        }
-
-        $this->processor = new Payment\Processor\Processor($subscription->merchant);
-
         //
         // We should not go through the failure flow if the request was
         // done manually from the dashboard or something.
@@ -84,6 +75,15 @@ class Charge extends Base\Core
         // of times manually from multiple places.
         //
         $manual = $data['manual'];
+
+        $valid = $this->validateInvoiceStatusBeforeCharging($invoice, $subscription, $manual);
+
+        if ($valid === false)
+        {
+            return false;
+        }
+
+        $this->processor = new Payment\Processor\Processor($subscription->merchant);
 
         if ($manual === false)
         {
@@ -112,6 +112,11 @@ class Charge extends Base\Core
             return false;
         }
 
+        //
+        // If it's already captured, `handleCaptureSuccess` would have been
+        // called in the auto capture flow itself.
+        // Hence, we don't have to handle for captured successfully flow, here.
+        //
         if (($payment->isCaptured() === false) and
             ($manual === false))
         {
@@ -123,7 +128,10 @@ class Charge extends Base\Core
         return true;
     }
 
-    protected function validateInvoiceStatusBeforeCharging(Invoice\Entity $invoice, Entity $subscription)
+    protected function validateInvoiceStatusBeforeCharging(
+        Invoice\Entity $invoice,
+        Entity $subscription,
+        bool $manual)
     {
         $valid = true;
 
@@ -145,7 +153,8 @@ class Charge extends Base\Core
         // on_hold. If this happened, we should not attempt
         // to charge the subscription now.
         //
-        else if ($invoice->getSubscriptionStatus() === Invoice\Status::ON_HOLD)
+        else if (($invoice->getSubscriptionStatus() === Invoice\Status::ON_HOLD) and
+                 ($manual === false))
         {
             $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ON_HOLD;
 
@@ -172,20 +181,6 @@ class Charge extends Base\Core
         $authorizedPayment = $this->repo->payment->findByPublicId($recurringPayment['razorpay_payment_id']);
 
         return $authorizedPayment;
-    }
-
-    protected function handleChargeSuccess(Payment\Entity $payment, Entity $subscription)
-    {
-        //
-        // If it's already captured, `handleCaptureSuccess` would have been
-        // called in the auto capture flow itself.
-        // Hence, we don't have to handle for captured successfully flow, here.
-        //
-
-        if ($payment->isCaptured() === false)
-        {
-            $this->handleAuthorizationOrCaptureFailure($subscription, true);
-        }
     }
 
     protected function resetErrorFields(Entity $subscription)

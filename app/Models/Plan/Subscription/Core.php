@@ -33,7 +33,7 @@ class Core extends Base\Core
         return (new Creator)->create($input, $plan, $customer);
     }
 
-    public function retry(Entity $subscription, $errorStatus)
+    public function retry(Entity $subscription, string $errorStatus)
     {
         $invoice = $this->repo->invoice->fetchIssuedAndNotOnHoldInvoiceForSubscription($subscription);
 

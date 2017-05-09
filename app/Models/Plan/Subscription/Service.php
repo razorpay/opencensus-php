@@ -153,18 +153,28 @@ class Service extends Base\Service
     {
         $subscriptionsToRetry = $this->repo->subscription->getSubscriptionsToRetry();
 
-        $queued = $failed = 0;
+        $success = $failed = 0;
         $failures = [];
 
         foreach ($subscriptionsToRetry as $subscription)
         {
             $errorStatus = $subscription->getErrorStatus();
 
+            if ($errorStatus === null)
+            {
+                throw new LogicException(
+                    'Only subscriptions with an error status should be retried!',
+                    null,
+                    [
+                        'subscription_id' => $subscription->getId(),
+                    ]);
+            }
+
             try
             {
                 $this->core->retry($subscription, $errorStatus);
 
-                $queued++;
+                $success++;
             }
             catch (\Exception $ex)
             {
@@ -182,7 +192,7 @@ class Service extends Base\Service
 
         $summary = [
             'total'                 => $subscriptionsToRetry->count(),
-            'queued'                => $queued,
+            'queued'                => $success,
             'failed'                => $failed,
             'failure_subscriptions' => $failures,
         ];
@@ -238,13 +248,13 @@ class Service extends Base\Service
 
         $capture = $this->shouldCaptureInvoice($invoice, $subscription);
 
-        if ($capture === false)
+        if ($capture === true)
         {
-            $this->core->charge($subscription, $invoice, true);
+            $this->core->retryCapture($subscription, $invoice);
         }
         else
         {
-            $this->core->retryCapture($subscription, $invoice);
+            $this->core->charge($subscription, $invoice, true);
         }
     }
 
