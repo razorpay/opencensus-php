@@ -55,6 +55,7 @@ class Validator extends Base\Validator
         'emi'                                       => '',
         'emi_duration'                              => '',
         'shared'                                    => '',
+        'international'                             => '',
         'category'                                  => '',
         'gateway_acquirer'                          => 'sometimes|string',
     );
@@ -64,7 +65,7 @@ class Validator extends Base\Validator
     );
 
     protected static $updateTeamMemberRules = array(
-        'role'  => 'required|in:owner,manager,operations,finance,support,admin'
+        'role'  => 'required|in:owner,manager,operations,finance,support,admin,sellerapp'
     );
 
     protected static $api_dashboard_mappings = array(

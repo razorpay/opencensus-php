@@ -1,6 +1,6 @@
-import GenericEntity from './GenericEntity'
-import ajax from 'merchant/utils/ajax'
-import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils'
+import GenericEntity from './GenericEntity';
+import ajax from 'merchant/utils/ajax';
+import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
 
 const createFields = [
   'id',
@@ -19,7 +19,7 @@ const createFields = [
   'receipt',
   'notes',
   'comment',
-]
+];
 
 const editableFieldsInIssuedState = [
   'date',
@@ -27,31 +27,33 @@ const editableFieldsInIssuedState = [
   'notes',
   'receipt',
   'comment',
-]
+];
 
 export default class Invoice extends GenericEntity {
-  listRouteName = 'invoice_fetch_multiple'
-  detailsRouteName = 'invoice_fetch'
-  deleteRouteName = 'invoice_delete'
-  currency = 'INR'
+  listRouteName = 'invoice_fetch_multiple';
+  detailsRouteName = 'invoice_fetch';
+  deleteRouteName = 'invoice_delete';
+  currency = 'INR';
 
   getRouteName() {
-    return this.isNew ? 'invoice_create' : 'invoice_update'
+    return this.isNew ? 'invoice_create' : 'invoice_update';
   }
 
   resourceFields() {
-    return this.status === 'issued' ? editableFieldsInIssuedState : createFields
+    return this.status === 'issued'
+      ? editableFieldsInIssuedState
+      : createFields;
   }
 
   get isEditable() {
-    return this.status !== 'paid'
+    return this.status !== 'paid';
   }
 
   notify(type) {
     return ajax({
       url: `/invoices/${this.id}/notify/${type}`,
       method: 'post',
-    })
+    });
   }
 
   markAsIssued() {
@@ -62,101 +64,102 @@ export default class Invoice extends GenericEntity {
         url_params: JSON.stringify({
           '{id}': this.id,
         }),
-      }
-    }).then((response) => {
-      return new Invoice().deserialize(response.data)
-    })
+      },
+    }).then(response => {
+      return new Invoice().deserialize(response.data);
+    });
   }
 
-  expire() {
+  cancel() {
     return this.makeGenericAjaxCall({
       method: 'post',
       data: {
-        route_name: 'invoice_expire',
+        route_name: 'invoice_cancel',
         url_params: JSON.stringify({
           '{id}': this.id,
         }),
-      }
-    }).then((response) => {
-      return new Invoice().deserialize(response.data)
-    })
+      },
+    }).then(response => {
+      return new Invoice().deserialize(response.data);
+    });
   }
 
   serializeProperty(prop) {
     if (prop === 'sms_notify' || prop === 'email_notify') {
-      return this[prop] ? 1 : 0
+      return this[prop] ? 1 : 0;
     }
 
     if (prop === 'amount' && !isBlank(this.amountInINR)) {
-      return Number(this.amountInINR) * 100
+      return Number(this.amountInINR) * 100;
     }
 
     if (prop === 'customer' && this.type === 'invoice' && !this.isNew) {
-      return undefined
+      return undefined;
     }
 
     if (prop === 'line_items' && !isBlank(this.line_items)) {
       if (this.type === 'link') {
-        return this.line_items.map((item) => {
+        return this.line_items.map(item => {
           return {
             name: item.name,
-            amount: Number(item.amount) * 100
-          }
-        })
+            amount: Number(item.amount) * 100,
+          };
+        });
       } else if (this.type === 'invoice') {
         return this.line_items
-          .filter((item) => !!(item.item_id || item.id || item.name))
+          .filter(item => !!(item.item_id || item.id || item.name))
           .map((item, index) => {
             let lineItem = {
               quantity: item.quantity,
-              description: item.description
-            }
+              description: item.description,
+              amount: item.amountInINR * 100,
+            };
 
             if (item.item_id) {
-              lineItem.item_id = item.item_id
+              lineItem.item_id = item.item_id;
             } else {
-              lineItem.id = item.id
+              lineItem.id = item.id;
             }
 
-            return lineItem
-          })
+            return lineItem;
+          });
       }
     }
 
-    return super.serializeProperty(prop)
+    return super.serializeProperty(prop);
   }
 
   deserializeProperty(prop, value) {
-    switch(prop) {
+    switch (prop) {
       case 'customer_details':
         this.customer = {
           name: value.customer_name,
           email: value.customer_email,
           contact: value.customer_contact,
-          address: value.customer_address
-        }
-        break
+          address: value.customer_address,
+        };
+        break;
 
       case 'amount':
-        this.amountInINR = getFixedINRAmount(value)
-        break
+        this.amountInINR = getFixedINRAmount(value);
+        break;
 
       case 'line_items':
-        value = value.map((item) => {
-          item.amountInINR = getFixedINRAmount(item.amount)
-          return item
-        })
-        break
+        value = value.map(item => {
+          item.amountInINR = getFixedINRAmount(item.amount);
+          return item;
+        });
+        break;
 
       case 'sms_status':
-        this.sms_notify = !isBlank(value)
-        break
+        this.sms_notify = !isBlank(value);
+        break;
 
       case 'email_status':
-        this.email_notify = !isBlank(value)
-        break
+        this.email_notify = !isBlank(value);
+        break;
     }
 
-    return super.deserializeProperty(prop, value)
+    return super.deserializeProperty(prop, value);
   }
 }

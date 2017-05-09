@@ -25,6 +25,9 @@
 * `yarn global add gulp`
 * `gulp`
 * `gulp watch`
+* Setup the following integrations in your editor:
+    - [editorconfig](http://editorconfig.org/#download)
+    - [prettier](https://github.com/prettier/prettier#editor-integration). The config is documented in `package.json`. We use `--single-quote` and enable semicolons.
 
 - Open <http://dashboard.razorpay.dev> and login as `test@razorpay.com/123456`.
 - To sign in as an admin, open <http://dashboard.razorpay.dev/admin> after setting OAUTH_MOCK=true in your .env.dev. (If you would like to use the oauth flow in dev environment then add an entry with you razorpay email to admins table in local database or change the code to use any email already in your database.)

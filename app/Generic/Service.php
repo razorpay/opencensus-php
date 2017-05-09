@@ -6,6 +6,8 @@ use App\Base;
 use App\Admin;
 use App\Trace\TraceCode;
 use Input;
+use Config;
+use Auth;
 
 class Service extends Base\Service
 {
@@ -14,10 +16,17 @@ class Service extends Base\Service
         $app = \App::getFacadeRoot();
 
         $this->trace = $app['trace'];
+
+        $this->adminUser = Auth::guard('api')->user();
     }
 
-    public function call(array $input, $route, $auth)
+    // public function call(array $input, $route, $auth)
+    public function call(string $method, array $input)
     {
+        $input += ['method' => $method];
+
+        list($auth, $route) = $this->resolveRoute($input);
+
         list($error, $response) = $this->makeRawApiCall($input, $route, $auth);
 
         return [$error, $response];
@@ -58,5 +67,112 @@ class Service extends Base\Service
         $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery);
 
         return $request->send();
+    }
+
+    /*
+        Resolvers and Helpers
+    */
+
+    private function resolveRoute($input)
+    {
+        $routeName = $input['route_name'];
+
+        if (! isset($routeName))
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'Route mapping not found',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        $routeMap = Config::get('api-route-map');
+
+        foreach ($routeMap as $auth => $routes)
+        {
+            if (isset($routes[$routeName]))
+            {
+                $route = $routes[$routeName];
+
+                break;
+            }
+        }
+
+        if (! isset($route))
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'Route mapping not found',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        /**
+         * 2 different formats:
+         * 'payment_fetch_multiple' => 'payments'
+         *
+         * 'payment_fetch_multiple' => [
+         *      'url'       => 'payments',
+         *      'routeName' => 'get_payments'
+         * ],
+         */
+        if (is_array($route))
+        {
+            $endpointUrl = $route['url'];
+
+            // Permission checker for merchant users
+            if ( isset($route['routeName']) && empty($this->adminUser) )
+            {
+                $routeName = $route['routeName'];
+
+                if (\Gate::has($routeName) and \Gate::denies($routeName))
+                {
+                    abort(403, 'Forbidden');
+                }
+            }
+        }
+        else
+        {
+            $endpointUrl = $route;
+        }
+
+        $route = $this->parseUrlParams($endpointUrl, $input);
+
+        return [ $auth, $route ];
+    }
+
+    private function parseUrlParams($route, $input)
+    {
+
+        // Logic to parse URL Params
+        // Eg: /orgs/{id} becomes /orgs/6dLbNSpv5XbCOG (actual ID passed in `url_params`)
+
+        // Will be JSON string / array
+        $urlParams = $input['url_params'] ?? [];
+
+        if (! is_array($urlParams))
+        {
+            $urlParams = json_decode($urlParams, true) ?: [];
+        }
+
+        // Check if the route is for an orgs/... related API call
+        $pos = strpos($route, '{orgId}');
+
+        if ($pos !== false and !isset($urlParams['{orgId}']))
+        {
+            $urlParams['{orgId}'] = Auth::guard('api')->user()->org_id;
+        }
+
+        if (! empty($urlParams))
+        {
+            $keys = array_keys($urlParams);
+            $vals = array_values($urlParams);
+
+            $vals = array_map('basename', $vals);
+
+            $route = str_replace($keys, $vals, $route);
+        }
+
+        return $route;
     }
 }

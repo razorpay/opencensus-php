@@ -17,10 +17,6 @@
     </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
-        <a href class="list-group-item" ng-click="openInitiateSetl()"
-          ng-show="admin.permissions.indexOf('create_settlement_initiate') !== -1">
-          Initiate Settlement
-        </a>
         <a href class="list-group-item" ng-click="openSetlUpload()"
           ng-show="admin.permissions.indexOf('add_settlement_reconciliation') !== -1">
           Upload Settlement Reconciliation (UTR)
@@ -37,41 +33,22 @@
           ng-show="admin.permissions.indexOf('create_emi_plan') !== -1">
           Add EMI Plan
         </a>
-        <a href class="list-group-item" ng-click="openVerifyPayment()"
-          ng-show="admin.permissions.indexOf('edit_verify_payments') !== -1">
-          Verify Payment
-        </a>
-        <a href class="list-group-item" ng-click="openArchiveMerchant()"
-          ng-show="admin.permissions.indexOf('edit_merchant_archive') !== -1">
-          Archive Merchant
-        </a>
         <a href class="list-group-item" ng-click="openConfirmUser()"
           ng-show="admin.permissions.indexOf('edit_merchant_confirm') !== -1">
           Confirm User
-        </a>
-        <a href class="list-group-item" ng-click="verifyAllPayments()"
-          ng-show="admin.permissions.indexOf('edit_verify_payments') !== -1">
-          Verify All Payments
         </a>
         <a href class="list-group-item" ng-click="openGenerateRefund()"
           ng-show="admin.permissions.indexOf('create_netbanking_refund') !== -1">
           Generate Refunds Excel (Netbanking)
         </a>
-        <a href class="list-group-item" ng-click="generateBeneficiaryFile()"
-          ng-show="admin.permissions.indexOf('create_beneficiary_file') !== -1">
-          Generate Beneficiary File
-        </a>
-        <a href class="list-group-item" ng-click="downloadBeneficiaryFile()"
-          ng-show="admin.permissions.indexOf('view_beneficiary_file') !== -1">
-          Download Beneficiary File
-        </a>
         <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()"
           ng-show="admin.permissions.indexOf('edit_authorized_failed_payment') !== -1">
           Authorize Failed Payment
-        <a href class="list-group-item" ng-click="openEditNewsletter()"
+        </a>
+        <!-- <a href class="list-group-item" ng-click="openEditNewsletter()"
           ng-show="admin.permissions.indexOf('send_newsletter') !== -1">
           Send Merchant Newsletter
-        </a>
+        </a> -->
         <a href class="list-group-item" ng-click="openAddSchedule()" ng-show="admin.permissions.indexOf('schedule_create') !== -1">
           Create Schedule
         </a>
@@ -147,27 +124,6 @@
     <button class="btn btn-primary modal-ok" ng-click="ok(lists, subject, message, template)"
       ng-confirm-click="Please make sure you have sent a test email to yourself before sending a newsletter. Click OK only after that."
     >OK</button>
-  </div>
-</script>
-<script type="text/ng-template" id="initiateSetlModalContent.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Initiate Settlement</h3>
-  </div>
-  <div class="modal-body settlement-modal">
-    <form class="form-horizontal" ng-init="channel='kotak'">
-      <div class="form-group">
-        <label for="channel" class="col-lg-2 control-label">Channel</label>
-        <div class="col-lg-10" >
-          <select class="form-control m-b" name="channel" ng-model="channel">
-            <option value="kotak">Kotak</option>
-          </select>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(channel)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="addIINModalContent.html">
@@ -301,6 +257,7 @@
             <option value="UTIB">Axis</option>
             <option value="ICIC">ICICI</option>
             <option value="FDRL">Federal</option>
+            <option value="INDB">Indusind</option>
           </select>
         </div>
       </div>
@@ -595,6 +552,7 @@
             <option value="Jiomoney">Jiomoney</option>
             <option value="NetbankingAxis">Netbanking AXIS</option>
             <option value="NetbankingIcici">Netbanking ICICI</option>
+            <option value="NetbankingFederal">Netbanking Federal</option>
           </select>
         </div>
       </div>
@@ -612,28 +570,6 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-click="ok(mode, data)">OK</button>
-  </div>
-</script>
-
-<script type="text/ng-template" id="downloadBeneficiaryFile.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Download Beneficiary File</h3>
-  </div>
-  <div class="modal-body terminal-modal">
-    <form class="form-horizontal">
-      <div class="form-group">
-        <label for="date" class="col-lg-2 control-label">Date: </label>
-        <div class="col-lg-10" >
-          <p class="input-group">
-            <input type="date" class="form-control" ng-model="date">
-          </p>
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(date)">Download</button>
   </div>
 </script>
 
@@ -677,6 +613,7 @@
             <option value="UTIB">Axis</option>
             <option value="ICIC">ICICI</option>
             <option value="FDRL">Federal</option>
+            <option value="INDB">Indusind</option>
           </select>
         </div>
       </div>
@@ -715,7 +652,7 @@
           <select class="form-control m-b" name="period" ng-model="schedule.period" required>
             <option value="hourly">Hourly</option>
             <option value="daily">Daily</option>
-            <option value="Weekly">Weekly</option>
+            <option value="weekly">Weekly</option>
             <option value="monthly-date">Monthly-Date</option>
             <option value="monthly-week">Monthly-Week</option>
           </select>

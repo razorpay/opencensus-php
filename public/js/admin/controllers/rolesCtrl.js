@@ -6,7 +6,14 @@ app.controller('RolesCtrl', [
   'transformRequestAsFormPost',
   'organization',
   'alertsFactory',
-  function ($scope, $http, $modal, transformRequestAsFormPost, organization, alertsFactory) {
+  function(
+    $scope,
+    $http,
+    $modal,
+    transformRequestAsFormPost,
+    organization,
+    alertsFactory
+  ) {
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.roles = [];
@@ -17,7 +24,7 @@ app.controller('RolesCtrl', [
      *  Modals
     **/
 
-    $scope.openEditRole= function (id) {
+    $scope.openEditRole = function(id) {
       $scope.selected = $scope.roles.filter(function(x) {
         return x['id'] === id;
       });
@@ -25,34 +32,36 @@ app.controller('RolesCtrl', [
         templateUrl: 'editRoleModalContent.html',
         controller: 'editRoleCtrl',
         resolve: {
-          current: function () {
+          current: function() {
             return jQuery.extend(true, {}, $scope.selected[0]);
           },
-          permissions: function () {
+          permissions: function() {
             return jQuery.extend({}, $scope.permissions);
           },
-        }
+        },
       });
-      modalInstance.result.then(function (role) {
+      modalInstance.result.then(function(role) {
         $scope.editRole(role);
       }, $.noop);
     };
-
 
     /**
      *  Actions
     **/
 
-    organization.fetchRoles().then(function(roles) {
-      $scope.roles = roles;
-      $scope.count = $scope.roles.length;
-    }).catch(function(errors){
-      $scope.alerts.resetAlerts();
+    organization
+      .fetchRoles()
+      .then(function(roles) {
+        $scope.roles = roles;
+        $scope.count = $scope.roles.length;
+      })
+      .catch(function(errors) {
+        $scope.alerts.resetAlerts();
 
-      angular.forEach(errors, function (value, key) {
-        $scope.alerts.addAlert('danger', value);
+        angular.forEach(errors, function(value, key) {
+          $scope.alerts.addAlert('danger', value);
+        });
       });
-    });
 
     $scope.deleteRole = function(id) {
       var request = $http.delete('/admin/generic', {
@@ -60,22 +69,22 @@ app.controller('RolesCtrl', [
           route_name: 'role_delete',
 
           url_params: {
-            '{roleId}': id
-          }
-        }
+            '{roleId}': id,
+          },
+        },
       });
-      request.success(function (data) {
+      request.success(function(data) {
         /* TODO: change this */
         if (data.success) {
-          $scope.roles = $scope.roles.filter(function (x) {
-            return x.id !== id
+          $scope.roles = $scope.roles.filter(function(x) {
+            return x.id !== id;
           });
           $scope.count = $scope.roles.length;
         }
       });
     };
 
-    $scope.editRole = function (role) {
+    $scope.editRole = function(role) {
       var data = {};
       var route_name = 'role_edit';
 
@@ -83,7 +92,7 @@ app.controller('RolesCtrl', [
         name: role.name,
         description: role.description,
         permissions: role.permissions,
-      }
+      };
       data.route_name = route_name;
 
       delete data.body.route_name;
@@ -93,18 +102,18 @@ app.controller('RolesCtrl', [
           route_name: route_name,
 
           url_params: {
-            '{roleId}' : role.id
-          }
-        }
+            '{roleId}': role.id,
+          },
+        },
       });
 
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
           // Update the org model (todo: make this a helper)
 
           var index = null;
 
-          $scope.roles.forEach(function (v, i) {
+          $scope.roles.forEach(function(v, i) {
             if (v.id === data.data.id) {
               index = i;
             }
@@ -115,16 +124,14 @@ app.controller('RolesCtrl', [
           }
 
           $scope.alerts.addAlert('success', 'Role updated', true);
-        }
-        else {
+        } else {
           $scope.alerts.resetAlerts();
 
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function(value, key) {
             $scope.alerts.addAlert('danger', value);
           });
         }
-
       });
     };
-  }
+  },
 ]);

@@ -6,6 +6,7 @@
 @import 'react-power-select/dist/react-power-select.css';
 @import 'react-simple-dropdown/styles/Dropdown.css';
 @import './invoice'
+@import './activation'
 
 .react-root {
   ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
@@ -29,14 +30,26 @@
     font-weight: bold;
     font-size: 20px;
   }
-}
-
-.content-wrapper {
-  padding: 30px 20px;
 
   a {
     color: #337ab7;
   }
+
+  .alert {
+    border-radius: 0;
+
+    > ul > li {
+      line-height: 2;
+    }
+  }
+
+  input[type='color'] {
+    padding: 0 3px;
+  }
+}
+
+.content-wrapper {
+  padding: 30px 20px;
 }
 
 // React Modal Style Overrides
@@ -80,6 +93,11 @@ body.ReactModal__Body--open {
   }
 }
 
+.Modal .modal-body > .alert-dismissable {
+  margin-left: -24px;
+  margin-right: -24px;
+}
+
 // React Tooltip
 
 [data-tip] {
@@ -93,6 +111,22 @@ body.ReactModal__Body--open {
       border-top-color: transparent;
     }
   }
+
+  &[data-place=right] {
+    &:after {
+      left: auto;
+      right: 0;
+      transform: translateY(6px) scale(0.92);
+    }
+  }
+
+  &[data-place=left] {
+    &:after {
+      left: 0;
+      transform: translateY(6px) scale(0.92);
+    }
+  }
+
   &:before, &:after {
     opacity: 0;
     transform: translateX(-50%) translateY(6px) scale(.92);
@@ -126,6 +160,12 @@ body.ReactModal__Body--open {
     &:before, &:after {
       opacity: 1;
       transform: translateX(-50%);
+    }
+
+    &[data-place=right], &[data-place=left]{
+      &:after {
+        transform: none;
+      }
     }
   }
   &[data-event=active] {
@@ -169,8 +209,17 @@ body.ReactModal__Body--open {
   width: 100%;
 }
 
+.DateInput--disabled {
+  background-color: #eee;
+}
+
 .DateInput__display-text {
   color: #aaa;
+  font-size: 12px;
+}
+
+.DateInput__display-text--disabled {
+  font-style: normal;
 }
 
 .DateInput__display-text--focused {
@@ -279,7 +328,7 @@ tr:hover .row-action > .btn-group {
 }
 
 .alert-sm {
-  padding: 2px 4px;
+  padding: 6px 8px;
   font-size: 12px;
 }
 
@@ -349,15 +398,11 @@ tr:hover .row-action > .btn-group {
 .breadcrumb__backNav {
   padding: 0;
   background-color: transparent;
-  margin-bottom: 25px;
+  margin-bottom: 16px;
 }
 
 .breadcrumb__backNav--heading {
   display: inline-block;
-}
-
-.breadcrumb__backNav--heading + .label-draft {
-  margin-left: 5px;
 }
 
 a.breadcrumb__backNav--link {
@@ -366,8 +411,8 @@ a.breadcrumb__backNav--link {
 
 .breadcrumb > li + li {
   padding-left: 16px;
-  margin-left: 16px;
   position: relative;
+  line-height: 24px;
 
   &:before {
     content: '';
@@ -428,11 +473,6 @@ a.breadcrumb__backNav--link {
 }
 
 .Modal {
-  .alert {
-    margin-left: -24px;
-    margin-right: -24px;
-  }
-
   .form-group > label {
     font-weight: bold;
   }

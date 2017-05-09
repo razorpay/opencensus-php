@@ -6,9 +6,49 @@ app.controller('AddOrgCtrl', [
   '$upload',
   'organization',
   'transformRequestAsFormPost',
-  function ($scope, $http, alertsFactory, $stateParams, $upload, organization, transformRequestAsFormPost) {
-    $scope.permissions = organization.fetchPermissions();
+  '$state',
+  function(
+    $scope,
+    $http,
+    alertsFactory,
+    $stateParams,
+    $upload,
+    organization,
+    transformRequestAsFormPost,
+    $state
+  ) {
     $scope.selected_permissions = {};
+    $scope.select_all = false;
+
+    var getAllPermissions = function() {
+      var request = $http({
+        url: '/admin/generic',
+        params: {
+          route_name: 'permission_get_by_type',
+          url_params: {
+            '{type}': 'all',
+          },
+        },
+      });
+
+      request.success(function(data) {
+        $scope.permissions = data.data.items;
+      });
+    };
+
+    getAllPermissions();
+
+    $scope.selectAll = function() {
+      $scope.selected_permissions = {};
+
+      if (!$scope.select_all) {
+        return;
+      }
+
+      $scope.permissions.map(function(perm) {
+        $scope.selected_permissions[perm.id] = true;
+      });
+    };
 
     $scope.fetchOrg = function(id) {
       var request = $http({
@@ -16,75 +56,79 @@ app.controller('AddOrgCtrl', [
         params: {
           route_name: 'org_get',
           url_params: {
-            '{id}' : id
-          }
-        }
+            '{id}': id,
+          },
+        },
       });
 
       request.success(function(data) {
         if (data.success) {
-          var organization = data.data
-          $scope.organization = organization
+          var organization = data.data;
+          $scope.organization = organization;
 
-          organization.permissions.forEach(function (perm) {
+          organization.permissions.forEach(function(perm) {
             $scope.selected_permissions[perm.id] = true;
-          })
+          });
         }
-      })
+      });
     };
 
-    $scope.fetchAssignablePermissions = function () {
+    $scope.fetchAssignablePermissions = function() {
       var request = $http({
         url: '/admin/generic',
         params: {
-          route_name: 'permission_get_assignable'
-        }
+          route_name: 'permission_get_by_type',
+          url_params: {
+            '{type}': 'assignable',
+          },
+        },
       });
 
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
-          data.data.items.forEach(function (perm) {
+          data.data.items.forEach(function(perm) {
             $scope.selected_permissions[perm.id] = true;
-          })
+          });
         }
       });
     };
 
     $scope.organization = {
-      auth_type: 'password'
+      auth_type: 'password',
     };
 
     if ($stateParams.id) {
       // Edit page
-      $scope.fetchOrg($stateParams.id)
-    }
-    else {
+      $scope.fetchOrg($stateParams.id);
+    } else {
       // Add page
 
       // Fetch all the assignable permissions
       $scope.fetchAssignablePermissions();
     }
 
-    $scope.uploadFile = function (file, fieldName, type) {
+    $scope.uploadFile = function(file, fieldName, type) {
       return $upload.upload({
         url: '/admin/org/' + $scope.organization.id,
         method: 'POST',
         file: file,
         fileFormDataName: fieldName,
-        data: { type: type }
-      })
-    }
-
-    $scope.onInvoiceLogoSelect = function ($files) {
-      var file = $files[0];
-      $scope.uploadFile(file, 'invoice_logo', 'invoice').success(function(response) {
-        if (response.success) {
-          $scope.organization.invoice_logo_url = response.data;
-        }
+        data: { type: type },
       });
     };
 
-    $scope.onMainLogoSelect = function ($files) {
+    $scope.onInvoiceLogoSelect = function($files) {
+      var file = $files[0];
+      $scope
+        .uploadFile(file, 'invoice_logo', 'invoice')
+        .success(function(response) {
+          if (response.success) {
+            $scope.organization.invoice_logo_url = response.data;
+          }
+        });
+    };
+
+    $scope.onMainLogoSelect = function($files) {
       var file = $files[0];
       $scope.uploadFile(file, 'main_logo', 'main').success(function(response) {
         if (response.success) {
@@ -93,13 +137,15 @@ app.controller('AddOrgCtrl', [
       });
     };
 
-    $scope.onLoginLogoSelect = function ($files, fieldname) {
+    $scope.onLoginLogoSelect = function($files, fieldname) {
       var file = $files[0];
-      $scope.uploadFile(file, 'login_logo', 'login').success(function(response) {
-        if (response.success) {
-          $scope.organization.login_logo_url = response.data;
-        }
-      });
+      $scope
+        .uploadFile(file, 'login_logo', 'login')
+        .success(function(response) {
+          if (response.success) {
+            $scope.organization.login_logo_url = response.data;
+          }
+        });
     };
 
     $scope.save = function(organization) {
@@ -113,11 +159,9 @@ app.controller('AddOrgCtrl', [
 
       for (var key in $scope.selected_permissions) {
         if ($scope.selected_permissions.hasOwnProperty(key)) {
-
           if ($scope.selected_permissions[key]) {
             organization.permissions.push(key);
           }
-
         }
       }
 
@@ -133,14 +177,13 @@ app.controller('AddOrgCtrl', [
           params: {
             route_name: 'org_edit',
             url_params: {
-              '{id}' : $scope.organization.id
-            }
+              '{id}': $scope.organization.id,
+            },
           },
-          transformRequest: transformRequestAsFormPost
+          transformRequest: transformRequestAsFormPost,
         });
-      }
-      // add
-      else {
+      } else {
+        // add
         data.body = organization;
         data.route_name = 'org_create';
 
@@ -148,25 +191,31 @@ app.controller('AddOrgCtrl', [
           method: 'post',
           url: '/admin/generic',
           data: data,
-          transformRequest: transformRequestAsFormPost
+          transformRequest: transformRequestAsFormPost,
         });
       }
 
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Organization saved successfully.', true);
-          $state.go('app.orgs.edit', {id: data.data.id});
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert(
+              'success',
+              'Organization saved successfully.',
+              true
+            );
+            $state.go('app.orgs.edit', { id: data.data.id });
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
 
-      return request
-    }
-  }
-])
+      return request;
+    };
+  },
+]);

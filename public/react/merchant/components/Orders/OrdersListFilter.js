@@ -1,38 +1,30 @@
-import ListFilter from '../ListFilter'
-import { Field } from 'redux-form'
+import ListFilter from '../ListFilter';
+import { Field } from 'redux-form';
 
-export default (props) => {
+export default props => {
   return (
     <ListFilter {...props}>
-      <div class='form-group list-filter-item'>
+      <div class="form-group list-filter-item">
         <label>Order ID:</label>
-        <Field
-          name='id'
-          component='input'
-          class='form-control input-sm'
-        />
+        <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
-      <div class='form-group list-filter-item'>
+      <div class="form-group list-filter-item">
         <label>Receipt:</label>
-        <Field
-          name='receipt'
-          component='input'
-          class='form-control input-sm'
-        />
+        <Field name="receipt" component="input" class="form-control input-sm" />
       </div>
 
-      <div class='form-group list-filter-item count'>
+      <div class="form-group list-filter-item count">
         <label>Count</label>
         <Field
-          name='count'
-          component='input'
+          name="count"
+          component="input"
           min={1}
           max={100}
-          type='number'
-          class='form-control input-sm'
+          type="number"
+          class="form-control input-sm"
         />
       </div>
     </ListFilter>
-  )
-}
+  );
+};

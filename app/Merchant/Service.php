@@ -12,9 +12,9 @@ use App\Merchant;
 use App\User;
 use App\Invitation;
 use App\MerchantDetails;
+use App\Mailers\UserMailer;
 use App\Admin;
 use App\Exceptions\EntityNotFoundException;
-use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 
@@ -88,7 +88,7 @@ class Service extends Base\Service
     {
         $currentMerchant = $this->currentMerchant;
 
-        $isLinkedAccount = \Input::get('account') ?? false;
+        $isLinkedAccount = (bool) (\Input::get('account') ?? false);
 
         if ($isLinkedAccount === true)
         {
@@ -180,8 +180,13 @@ class Service extends Base\Service
                 $user = (new User\Service)->createUserForSubmerchant($input);
                 $user->save();
 
+                $userApiData = (new User\Service)->getUserApiData($user);
+                (new User\Service)->createUserOnApi($userApiData);
+
                 // Finally attach the new user to the sub merchant
                 $user->joinMerchantByIdWithRole($input['id'], 'owner');
+
+                (new User\Service)->attachMerchantUserOnApi($user->id, $input['id'], 'owner');
 
                 return [null, $user->toArray()];
             }
@@ -322,28 +327,11 @@ class Service extends Base\Service
         $merchant->save();
     }
 
-    public function createMerchantOnApi($merchantId)
+    public function createMerchantOnApi($merchantId, $adminId = null)
     {
         $merchant = Merchant\Entity::findOrFail($merchantId);
 
-        $merchantApiData = $merchant->generateApiData();
-
-        // Once the merchant is created we also have to tag him
-        // with the admin if he was invited by one.
-        $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
-
-        if ($lead)
-        {
-            $merchantApiData['admin_id'] = $lead->admin_id;
-        }
-
-        // Fetch org by hostname and set the orgId in the input
-        // so that the merchant can be tagged to the Org
-        $domain = \Request::server('SERVER_NAME');
-
-        list($error, $org) = (new Admin\Service)->getOrg($domain);
-
-        $merchantApiData['org_id'] = $org['id'];
+        $merchantApiData = $this->getMerchantApiData($merchant, $adminId);
 
         // This is internal auth as of now
         // We need to shift this to some other auth
@@ -358,6 +346,26 @@ class Service extends Base\Service
         }
 
         return $merchant;
+    }
+
+    public function getMerchantApiData($merchant, $adminId)
+    {
+        $merchantApiData = $merchant->generateApiData();
+
+        if (! empty($adminId))
+        {
+            $merchantApiData['admin_id'] = $adminId;
+        }
+
+        // Fetch org by hostname and set the orgId in the input
+        // so that the merchant can be tagged to the Org
+        $domain = \Request::server('SERVER_NAME');
+
+        list($error, $org) = (new Admin\Service)->getOrg($domain);
+
+        $merchantApiData['org_id'] = $org['id'];
+
+        return $merchantApiData;
     }
 
     public function tagAdmin($merchantOnApi)
@@ -381,7 +389,7 @@ class Service extends Base\Service
 
             if ($user->once($credentials))
             {
-                $user = Auth::user()->get();
+                $user = Auth::user();
 
                 if ($user->getConfirmToken() === null)
                 {
@@ -389,6 +397,7 @@ class Service extends Base\Service
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
                 }
 
+                $user->token = $user->getConfirmToken();
                 (new UserMailer($user))->accountVerification()->queueAndDeliver();
 
                 return array(array(),array());
@@ -668,6 +677,8 @@ class Service extends Base\Service
             ]
         );
 
+        (new User\Service)->updateMerchantUserMappingOnApi($userId, $this->currentMerchant->id, $input['role']);
+
         list($error, $merchant) = (new User\Service)->getOwnedMerchantForUser($this->currentUser);
 
         return [$error, $merchant];
@@ -765,20 +776,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function getInvitationDetails($token)
-    {
-        $error = $data = null;
-
-        $lead = \DB::table('admin_leads')->where('token', '=', $token)->first();
-
-        if (empty($lead))
-        {
-            $error = true;
-        }
-
-        return [$error, $lead];
-    }
-
     public function savePreSignupDetails($merchantId, $input)
     {
         $error = (new MerchantDetails\Entity)->edit($input, 'preSignup');
@@ -801,12 +798,16 @@ class Service extends Base\Service
 
                 $user = $merchant->primaryOwner();
 
-                $user->edit([
-                        'contact_mobile' => $input['contact_mobile'],
-                        'name'           => $input['contact_name']
-                    ], 'preSignup');
+                $userEditData = [
+                    'contact_mobile' => $input['contact_mobile'],
+                    'name'           => $input['contact_name']
+                ];
+
+                $user->edit($userEditData, 'preSignup');
 
                 $user->saveOrFail();
+
+                (new User\Service)->editUserOnApi($userEditData, $user->id);
 
                 $zapierData = (new User\Service)->getZapierData($merchant, $input);
 

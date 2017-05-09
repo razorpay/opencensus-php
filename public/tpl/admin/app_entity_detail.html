@@ -134,6 +134,7 @@
              <option value="netbanking_airtel">Netbanking AIRTEL</option>
              <option value="netbanking_icici">Netbanking ICICI</option>
              <option value="netbanking_federal">Netbanking Federal</option>
+             <option value="netbanking_indusind">Netbanking Indusind</option>
              <option value="cybersource">Cybersource</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>
@@ -206,6 +207,15 @@
         <label for="tpv" class="col-lg-4 control-label">TPV:</label>
         <div class="col-lg-8" >
           <select class="form-control m-b" ng-model="terminal.tpv">
+             <option value="1" selected>Yes</option>
+             <option value="0">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="international" class="col-lg-4 control-label">International:</label>
+        <div class="col-lg-8" >
+          <select class="form-control m-b" ng-model="terminal.international">
              <option value="1" selected>Yes</option>
              <option value="0">No</option>
           </select>

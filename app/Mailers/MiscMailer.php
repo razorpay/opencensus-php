@@ -20,20 +20,7 @@ class MiscMailer extends Mailer
 
         $this->email = $invitation->email;
         $this->subject = 'Invitation to join a team | Razorpay';
-
-        return $this;
-    }
-
-    public function sendMerchantInvitationEmail($invitation, $admin)
-    {
-        $invitation_array = (array) $invitation;
-
-        $this->view = 'emails.leads.admin';
-
-        $this->data = compact('invitation_array', 'admin');
-
-        $this->email = $invitation_array['email'];
-        $this->subject = 'Invitation to signup - HDFC Merchant Services'; //TODO add org name and better the subject line
+        $this->mailTag = MailTags::MEMBER_INVITATION_MAIL;
 
         return $this;
     }

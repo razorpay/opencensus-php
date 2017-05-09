@@ -2,46 +2,50 @@
 app.controller('MerchantsCtrl', [
   '$scope',
   '$http',
-  function ($scope, $http) {
+  '$state',
+  '$stateParams',
+  function($scope, $http, $state, $stateParams) {
+    $scope.merchant_type_request = $stateParams.type;
     $scope.merchants = {};
     $scope.count = 0;
 
-    $scope.regenerate = function () {
-      $scope.merchant_type = '1';
+    $scope.regenerate = function() {
+      $scope.merchant_type_request = $scope.merchant_type_request
+        ? $scope.merchant_type_request
+        : 'activated';
       $scope.sub_accounts = {
-        'all': false,
-        'id': ''
+        all: false,
+        id: '',
       };
       $scope.tags = '';
       $scope.filter();
     };
 
-    $scope.filter = function () {
+    $scope.filter = function() {
       var query = {};
-      switch ($scope.merchant_type) {
-
-        case '1':
-          query.activated  = 1;
+      switch ($scope.merchant_type_request) {
+        case 'activated':
+          query.activated = 1;
           break;
 
-        case '2':
-          query.activated  = 0;
+        case 'notactivated':
+          query.activated = 0;
           break;
 
-        case '3':
-          query.pending    = 1;
+        case 'pending':
+          query.pending = 1;
           break;
 
-        case '5':
-          query.dead       = 1;
+        case 'dead':
+          query.dead = 1;
           break;
 
-        case '6':
-          query.archived   = 1;
+        case 'archived':
+          query.archived = 1;
           break;
 
-        case '7':
-          query.suspended   = 1;
+        case 'suspended':
+          query.suspended = 1;
           break;
       }
 
@@ -67,6 +71,10 @@ app.controller('MerchantsCtrl', [
 
     $scope.regenerate();
 
+    $scope.changeMerchantTypeUrl = function() {
+      $state.go('app.merchants.list', { type: $scope.merchant_type_request });
+    };
+
     function generate(query) {
       var url = '/admin/merchant/list';
 
@@ -74,19 +82,19 @@ app.controller('MerchantsCtrl', [
       if ($scope.pending) {
         query = {
           pending: 1,
-          sub_accounts: query.sub_accounts
+          sub_accounts: query.sub_accounts,
         };
       }
 
       var request = $http.get(url, {
-        params: query
+        params: query,
       });
 
-      request.success(function (data) {
+      request.success(function(data) {
         if (data.success) {
           $scope.merchants = data.data.data;
           $scope.count = data.data.count;
-          angular.forEach($scope.merchants, function (i) {
+          angular.forEach($scope.merchants, function(i) {
             i.tags = i.tagged.map(function(tagModel) {
               return tagModel.tag_name;
             });
@@ -95,5 +103,5 @@ app.controller('MerchantsCtrl', [
         }
       });
     }
-  }
+  },
 ]);

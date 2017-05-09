@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 //Entities Listing Controller
 app.controller('EntitiesCtrl', [
   '$scope',
@@ -10,7 +10,17 @@ app.controller('EntitiesCtrl', [
   'admin',
   'statusClass',
   'getState',
-  function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin, getStatusClass, getState) {
+  function(
+    $scope,
+    $http,
+    alertsFactory,
+    $state,
+    $modal,
+    $stateParams,
+    admin,
+    getStatusClass,
+    getState
+  ) {
     $scope.getStatusClass = getStatusClass;
     $scope.entity_type = $stateParams.type || 'payment';
     $scope.mode = $stateParams.mode;
@@ -28,24 +38,24 @@ app.controller('EntitiesCtrl', [
       count: 0,
       countStart: 0,
       countEnd: 0,
-      skip: 0
+      skip: 0,
     };
     $scope.minTimestamp = moment('2015-01-01').unix();
     $scope.maxTimestamp = moment().unix();
-    admin.identity().then(function (data) {
+    admin.identity().then(function(data) {
       $scope.admin = data;
     });
-    $scope.timestamps = function (type) {
+    $scope.timestamps = function(type) {
       var ts = 0;
       switch (type) {
-      case 'from':
-        ts = $scope.from;
-        break;
-      case 'to':
-        ts = $scope.to;
-        break;
-      default:
-        return 'Timestamp Error';
+        case 'from':
+          ts = $scope.from;
+          break;
+        case 'to':
+          ts = $scope.to;
+          break;
+        default:
+          return 'Timestamp Error';
       }
       if (typeof ts === 'undefined') {
         return '';
@@ -56,6 +66,7 @@ app.controller('EntitiesCtrl', [
       'all',
       'amex',
       'atom',
+      'aeps_icici',
       'axis_genius',
       'axis_migs',
       'billdesk',
@@ -73,6 +84,7 @@ app.controller('EntitiesCtrl', [
       'netbanking_icici',
       'netbanking_airtel',
       'netbanking_federal',
+      'netbanking_indusind',
       'paytm',
       'sharp',
       'upi_icici',
@@ -82,7 +94,7 @@ app.controller('EntitiesCtrl', [
       'wallet_airtelmoney',
       'wallet_freecharge',
       'wallet_jiomoney',
-      'wallet_openwallet'
+      'wallet_openwallet',
     ];
     var walletList = [
       'all',
@@ -95,29 +107,18 @@ app.controller('EntitiesCtrl', [
       'freecharge',
       'jiomoney',
       'ezeclick',
-      'openwallet'
+      'openwallet',
     ];
-    var upiBankList = [
-      'all',
-      'icici',
-    ];
-    var booleanList = [
-      'all',
-      0,
-      1
-    ];
-    var booleanList2 = [
-      'all',
-      true,
-      false
-    ];
+    var upiBankList = ['all', 'icici'];
+    var booleanList = ['all', 0, 1];
+    var booleanList2 = ['all', true, false];
     var statusList = [
       'all',
       'created',
       'authorized',
       'failed',
       'captured',
-      'refunded'
+      'refunded',
     ];
     var methodList = [
       'all',
@@ -136,17 +137,17 @@ app.controller('EntitiesCtrl', [
       amex: {
         payment_id: ['Payment Id'],
         received: booleanList,
-        vpc_ReceiptNo: ['Receipt Number']
+        vpc_ReceiptNo: ['Receipt Number'],
       },
       app_token: {
         customer_id: ['Customer Id'],
         device_token: ['Device Token'],
-        merchant_id: ['Merchant Id']
+        merchant_id: ['Merchant Id'],
       },
       axis_genius: {
         payment_id: ['Payment Id'],
         received: booleanList,
-        vpc_ReceiptNo: ['Receipt Number']
+        vpc_ReceiptNo: ['Receipt Number'],
       },
       axis_migs: {
         payment_id: ['Payment Id'],
@@ -155,50 +156,28 @@ app.controller('EntitiesCtrl', [
         vpc_ShopTransactionNo: ['Shop Transaction No'],
         vpc_TransactionNo: ['Transaction No'],
         vpc_TxnResponseCode: ['Txn Response Code'],
-        vpc_3DSstatus: [
-            'all',
-            'Y',
-            'N',
-            'U',
-            'A'
-        ],
+        vpc_3DSstatus: ['all', 'Y', 'N', 'U', 'A'],
       },
       bank_account: {
         deleted: booleanList,
         entity_id: ['Entity Id'],
         merchant_id: ['Merchant Id'],
-        type: [
-          'all',
-          'customer',
-          'merchant'
-        ]
+        type: ['all', 'customer', 'merchant'],
       },
       balance: {},
       ebs: {},
       billdesk: {
-        AuthStatus: [
-          'all',
-          '0001',
-          '0300',
-          '0002',
-          '0399',
-          'NA'
-        ],
+        AuthStatus: ['all', '0001', '0300', '0002', '0399', 'NA'],
         BankReferenceNo: ['Bank Reference No'],
         payment_id: ['Payment Id'],
         received: booleanList,
         RefStatus: ['Refund Status'],
         RefundId: ['Billdesk Refund Id'],
-        TxnReferenceNo: ['Txn Reference No']
+        TxnReferenceNo: ['Txn Reference No'],
       },
       batch: {
         merchant_id: ['Merchant Id'],
-        status: [
-          'all',
-          'created',
-          'processing',
-          'processed'
-        ],
+        status: ['all', 'created', 'processing', 'processed'],
       },
       card: {
         global_card_id: ['Global Card Id'],
@@ -215,25 +194,21 @@ app.controller('EntitiesCtrl', [
           'American Express',
           'RuPay',
           'Unknown',
-          'Discover'
+          'Discover',
         ],
         status: statusList,
         vault: ['Vault'],
         vault_token: ['Vault Token'],
       },
       credits: {
-          merchant_id: ['Merchant Id'],
-          type: [
-             'all',
-             'fee',
-             'amount'
-          ]
+        merchant_id: ['Merchant Id'],
+        type: ['all', 'fee', 'amount'],
       },
       customer: {
         merchant_id: ['Merchant Id'],
         email: ['Email'],
         active: booleanList,
-        contact: ['Contact']
+        contact: ['Contact'],
       },
       customer_balance: {
         merchant_id: ['Merchant ID'],
@@ -243,17 +218,13 @@ app.controller('EntitiesCtrl', [
         entity_id: ['Payment/Refund Id'],
         merchant_id: ['Merchant ID'],
         customer_id: ['Customer ID'],
-        type: [
-          'all',
-          'transfer',
-          'refund'
-        ]
+        type: ['all', 'transfer', 'refund'],
       },
       cybersource: {
         payment_id: ['Payment ID'],
         received: booleanList,
         ref: ['Reference'],
-        capture_ref: ['Capture Reference']
+        capture_ref: ['Capture Reference'],
       },
       fee_breakup: {
         transaction_id: ['Transaction Id'],
@@ -268,41 +239,33 @@ app.controller('EntitiesCtrl', [
         tdate: ['Tdate'],
       },
       batch_fund_transfer: {
-        type: [
-          'all',
-          'settlement',
-          'payout'
-        ],
+        type: ['all', 'settlement', 'payout'],
         date: ['Date'],
       },
       emi_plan: {
         bank: ['Bank'],
-        network: ['Network']
+        network: ['Network'],
       },
       feature: {
         entity_id: ['Entity Id'],
         entity_type: ['Entity Type'],
-        name: ['Name']
+        name: ['Name'],
       },
       file_store: {
         entity_id: ['Entity Id'],
-        type: ['Type']
+        type: ['Type'],
       },
       fund_transfer_attempt: {
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],
-        source_type: [
-          'all',
-          'settlement',
-          'payout'
-        ],
+        source_type: ['all', 'settlement', 'payout'],
         source_id: ['Source Id'],
         status: ['all', 'created', 'failed', 'processed'],
-        utr: ['UTR']
+        utr: ['UTR'],
       },
       gateway_downtime: {
         method: methodList,
         gateway: gatewayList,
-        bank: ['Bank']
+        bank: ['Bank'],
       },
       hdfc: {
         auth: ['Auth Code'],
@@ -310,7 +273,7 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         refund_id: ['Refund Id'],
         received: booleanList,
-        ref: ['Reference']
+        ref: ['Reference'],
       },
       iin: {
         emi: booleanList,
@@ -319,39 +282,22 @@ app.controller('EntitiesCtrl', [
         international: booleanList,
         issuer: ['Issuer'],
         network: ['Network'],
-        type: [
-          'all',
-          'credit',
-          'debit',
-          'unknown'
-        ]
+        type: ['all', 'credit', 'debit', 'unknown'],
       },
-      invoice:
-      {
+      invoice: {
         payment_id: ['Payment Id'],
         receipt: ['Receipt'],
         user_id: ['User Id'],
-        status: [
-          'all',
-          'draft',
-          'issued',
-          'paid',
-          'expired'
-        ],
-        type: [
-          'all',
-          'ecod',
-          'link',
-          'invoice'
-        ],
+        status: ['all', 'draft', 'issued', 'paid', 'cancelled', 'expired'],
+        type: ['all', 'ecod', 'link', 'invoice'],
         merchant_id: ['Merchant Id'],
         order_id: ['Order Id'],
         customer_name: ['Customer Name'],
         customer_email: ['Customer Email'],
-        customer_contact: ['Customer Contact']
+        customer_contact: ['Customer Contact'],
       },
       key: {
-        merchant_id: ['Merchant Id']
+        merchant_id: ['Merchant Id'],
       },
       merchant: {
         activated: booleanList,
@@ -374,24 +320,11 @@ app.controller('EntitiesCtrl', [
         pricing_plan_id: ['Pricing Plan Id'],
         parent_id: ['Marketplace Parent Id'],
         receipt_email_enabled: booleanList,
-        fee_bearer: [
-            'all',
-            'platform',
-            'customer'
-        ],
-        fee_model: [
-            'all',
-            'prepaid',
-            'postpaid'
-        ],
-        risk_rating: [
-            'all',
-            1, 2, 3, 4, 5
-        ],
+        fee_bearer: ['all', 'platform', 'customer'],
+        fee_model: ['all', 'prepaid', 'postpaid'],
+        risk_rating: ['all', 1, 2, 3, 4, 5],
       },
-      merchant_detail: {
-
-      },
+      merchant_detail: {},
       methods: {
         amex: booleanList,
         card: booleanList,
@@ -405,31 +338,26 @@ app.controller('EntitiesCtrl', [
         airtelmoney: booleanList,
         freecharge: booleanList,
         jiomoney: booleanList,
-        merchant_id: ['Merchant Id']
+        merchant_id: ['Merchant Id'],
       },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
         caps_payment_id: ['Caps Payment Id'],
         int_payment_id: ['Int Payment Id'],
         payment_id: ['Payment Id'],
-        received: booleanList
+        received: booleanList,
       },
       order: {
         account_number: ['Account Number'],
         authorized: booleanList,
         merchant_id: ['Merchant Id'],
         receipt: ['Receipt'],
-        status: [
-          'all',
-          'created',
-          'attempted',
-          'paid',
-        ]
+        status: ['all', 'created', 'attempted', 'paid'],
       },
       payment_analytics: {
         checkout_id: ['Checkout Id'],
         payment_id: ['Payment Id'],
-        merchant_id: ['Merchant Id']
+        merchant_id: ['Merchant Id'],
       },
       payment: {
         app_token: ['App Token'],
@@ -449,72 +377,53 @@ app.controller('EntitiesCtrl', [
         method: methodList,
         notes: ['Notes'],
         order_id: ['Order Id'],
-        refund_status: [
-          'all',
-          'null',
-          'partial',
-          'full'
-        ],
+        refund_status: ['all', 'null', 'partial', 'full'],
         save: booleanList,
         status: statusList,
         terminal_id: ['Terminal ID'],
         token_id: ['Token Id'],
         transfer_id: ['Transfer Id'],
-        verified: [
-          'all',
-          'null',
-          0,
-          1,
-          2
-        ],
-        wallet: walletList
+        verified: ['all', 'null', 0, 1, 2],
+        wallet: walletList,
       },
       payout: {
         merchant_id: ['Merchant Id'],
         customer_id: ['Customer Id'],
         destination: ['Bank Account Id'],
-        method: [
-          'all',
-          'fund_transfer'
-        ]
+        method: ['all', 'fund_transfer'],
       },
       paytm: {
         payment_id: ['Payment Id'],
-        received: booleanList
+        received: booleanList,
       },
       pricing: {
-        plan_id: ['Plan Id']
+        plan_id: ['Plan Id'],
       },
       mobikwik: {
         payment_id: ['Payment Id'],
-        received: booleanList
+        received: booleanList,
       },
       refund: {
         merchant_id: ['Merchant Id'],
         payment_id: ['Payment Id'],
-        status: [
-            'all',
-            'created',
-            'failed',
-            'processed'
-        ],
+        status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
-        batch_id: ['Batch Id']
+        batch_id: ['Batch Id'],
       },
       reversal: {
         merchant_id: ['Merchant Id'],
-        transfer_id: ['Transfer Id']
+        transfer_id: ['Transfer Id'],
       },
       settlement: {
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
-        utr: ['UTR']
+        utr: ['UTR'],
       },
       settlement_details: {
         merchant_id: ['Merchant Id'],
-        settlement_id: ['Settlement Id']
+        settlement_id: ['Settlement Id'],
       },
       terminal: {
         enabled: booleanList,
@@ -525,12 +434,8 @@ app.controller('EntitiesCtrl', [
         gateway_merchant_id: ['Gateway Merchant Id'],
         gateway_terminal_id: ['Gateway Terminal Id'],
         network_category: ['Network Category'],
-        gateway_acquirer: [
-            'all',
-            'axis',
-            'hdfc'
-        ],
-        emi: booleanList
+        gateway_acquirer: ['all', 'axis', 'hdfc', 'icic'],
+        emi: booleanList,
       },
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
@@ -547,13 +452,13 @@ app.controller('EntitiesCtrl', [
           'adjustment',
           'transfer',
           'reversal',
-          'payout'
-        ]
+          'payout',
+        ],
       },
       transfer: {
         source: ['Source Payment/Merchant Id'],
         recipient: ['Recipient Merchant/Customer Id'],
-        merchant_id: ['Merchant Id']
+        merchant_id: ['Merchant Id'],
       },
       token: {
         bank: ['Bank Code'],
@@ -563,22 +468,22 @@ app.controller('EntitiesCtrl', [
         method: methodList,
         terminal_id: ['Terminal Id'],
         token: ['Token'],
-        wallet: walletList
+        wallet: walletList,
       },
       wallet: {
         payment_id: ['Payment Id'],
-        wallet: walletList
+        wallet: walletList,
       },
       upi: {
         payment_id: ['Payment Id'],
-        bank: upiBankList
+        bank: upiBankList,
       },
       webhook: {
         merchant_id: ['Merchant Id'],
       },
       schedule: {
-        merchant_id: ['Merchant Id']
-      }
+        merchant_id: ['Merchant Id'],
+      },
     };
 
     var onWatchUpdate = function(newValue, oldValue) {
@@ -602,15 +507,18 @@ app.controller('EntitiesCtrl', [
       }
     }
 
-
-    $scope.$watch('mode + entity_type + from + to', function () {
-      $state.go('app.entities', {
-        mode: $scope.mode,
-        type: $scope.entity_type
-      }, { notify: false });
+    $scope.$watch('mode + entity_type + from + to', function() {
+      $state.go(
+        'app.entities',
+        {
+          mode: $scope.mode,
+          type: $scope.entity_type,
+        },
+        { notify: false }
+      );
       $scope.showTable();
     });
-    $scope.notSorted = function (obj) {
+    $scope.notSorted = function(obj) {
       if (!obj) {
         return [];
       }
@@ -618,7 +526,7 @@ app.controller('EntitiesCtrl', [
       data.splice(-1, 1);
       return data;
     };
-    $scope.displayFilter = function (val) {
+    $scope.displayFilter = function(val) {
       var labels = {
         0: 'no',
         1: 'yes',
@@ -628,7 +536,7 @@ app.controller('EntitiesCtrl', [
         '0300': 'Success',
         '0002': 'Bank Pending',
         '0399': 'Bank Cancel Auth Error',
-        'NA': 'Invalid Input'
+        NA: 'Invalid Input',
       };
       if (val in labels) {
         return labels[val];
@@ -636,18 +544,18 @@ app.controller('EntitiesCtrl', [
         return val;
       }
     };
-    $scope.next = function () {
+    $scope.next = function() {
       clear('id');
       $scope.entity.skip += $scope.count;
       $scope.generateTable();
     };
-    $scope.prev = function () {
+    $scope.prev = function() {
       clear('id');
       $scope.entity.skip -= $scope.count;
       $scope.generateTable();
     };
 
-    $scope.getEntityListForUI = function () {
+    $scope.getEntityListForUI = function() {
       var uiEntities = {};
       for (var entity in $scope.availableFilters) {
         uiEntities[entity] = entity.replace('_', ' ');
@@ -655,33 +563,46 @@ app.controller('EntitiesCtrl', [
 
       return uiEntities;
     };
-    $scope.search = function () {
+    $scope.search = function() {
+      if (!$scope.entity.id) {
+        return;
+      }
       clear('skip');
-      var request = $http.get('/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type + '/' + $scope.entity.id);
-      request.success(function (data) {
-        $scope.alerts.resetAlerts();
-        if (data.success) {
-          var entity = data.data.entity;
-          var stateArray = {
-              'payment': 'app.payments',
-              'merchant': 'app.merchants.detail'
-            }, state = 'app.entitiesdetail';
-          if (entity in stateArray) {
-            state = stateArray[entity];
+      var request = $http.get(
+        '/admin/' +
+          $scope.mode +
+          '/fetchentity/' +
+          $scope.entity_type +
+          '/' +
+          $scope.entity.id
+      );
+      request
+        .success(function(data) {
+          $scope.alerts.resetAlerts();
+          if (data.success) {
+            var entity = data.data.entity;
+            var stateArray = {
+              payment: 'app.payments',
+              merchant: 'app.merchants.detail',
+            },
+              state = 'app.entitiesdetail';
+            if (entity in stateArray) {
+              state = stateArray[entity];
+            }
+            $state.go(state, {
+              mode: $scope.mode,
+              id: data.data.id,
+              type: entity,
+            });
+          } else {
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
           }
-          $state.go(state, {
-            mode: $scope.mode,
-            id: data.data.id,
-            type: entity
-          });
-        } else {
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function (res) {
-        $scope.alerts.addAlert('danger', res ? res : null, true);
-      });
+        })
+        .error(function(res) {
+          $scope.alerts.addAlert('danger', res ? res : null, true);
+        });
     };
     if ($stateParams.type && $stateParams.id) {
       $scope.entity.id = $stateParams.id;
@@ -689,12 +610,10 @@ app.controller('EntitiesCtrl', [
       $scope.search();
     }
     function clear(field) {
-      if (field == 'id')
-        $scope.entity.id = '';
-      else
-        $scope.entity.skip = 0;
+      if (field == 'id') $scope.entity.id = '';
+      else $scope.entity.skip = 0;
     }
-    $scope.showTable = function () {
+    $scope.showTable = function() {
       clear('id');
       clear('skip');
       $scope.generateTable();
@@ -703,7 +622,7 @@ app.controller('EntitiesCtrl', [
     function generateQueryParams(count, skip, entity, filters, from, to) {
       var query = {
         count: count,
-        skip: skip
+        skip: skip,
       };
       if (from !== 0) {
         query.from = from;
@@ -713,7 +632,8 @@ app.controller('EntitiesCtrl', [
       }
       // We send the methods param in a JSON encoded format
       if (entity === 'merchant') {
-        var methods = {}, validMethods = [
+        var methods = {},
+          validMethods = [
             'amex',
             'card',
             'emi',
@@ -740,44 +660,54 @@ app.controller('EntitiesCtrl', [
       }
       return query;
     }
-    $scope.generateTable = function (csv) {
+    $scope.generateTable = function(csv) {
       if (!$scope.entity_type) {
         console.log('Error: No Entity Type Specified');
         return;
       }
-      var query = generateQueryParams($scope.count, $scope.entity.skip, $scope.entity_type, $scope.filters, $scope.from, $scope.to);
+      var query = generateQueryParams(
+        $scope.count,
+        $scope.entity.skip,
+        $scope.entity_type,
+        $scope.filters,
+        $scope.from,
+        $scope.to
+      );
       var url = '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
       if (csv) {
         window.open(url + '/csv?' + $.param(query));
         return;
       }
       var request = $http.get(url, { params: query });
-      request.success(function (data) {
-        $scope.alerts.resetAlerts();
-        if (data.success) {
-          $scope.headings = data.data.headings;
-          $scope.entity.items = data.data.items;
+      request
+        .success(function(data) {
+          $scope.alerts.resetAlerts();
+          if (data.success) {
+            $scope.headings = data.data.headings;
+            $scope.entity.items = data.data.items;
 
-          $scope.entity.count = parseInt(data.data.count);
-          $scope.entity.countStart = $scope.entity.skip + 1;
-          if (data.data.count === 0)
-            $scope.entity.countEnd = $scope.entity.countStart;
-          else
-            $scope.entity.countEnd = $scope.entity.countStart + $scope.entity.count - 1;
-          $scope.allowPrev = $scope.entity.countStart != 1;
-          $scope.allowNext = $scope.entity.count >= $scope.count;
-        } else {
-          if (data.errors) {
-            angular.forEach(data.errors, function (value) {
-              $scope.alerts.addAlert('danger', value);
-            });
+            $scope.entity.count = parseInt(data.data.count);
+            $scope.entity.countStart = $scope.entity.skip + 1;
+            if (data.data.count === 0)
+              $scope.entity.countEnd = $scope.entity.countStart;
+            else
+              $scope.entity.countEnd =
+                $scope.entity.countStart + $scope.entity.count - 1;
+            $scope.allowPrev = $scope.entity.countStart != 1;
+            $scope.allowNext = $scope.entity.count >= $scope.count;
           } else {
-            $scope.alerts.addAlert('danger', null, true);
+            if (data.errors) {
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            } else {
+              $scope.alerts.addAlert('danger', null, true);
+            }
           }
-        }
-      }).error(function (res) {
-        $scope.alerts.addAlert('danger', res ? res : null, true);
-      });
+        })
+        .error(function(res) {
+          $scope.alerts.addAlert('danger', res ? res : null, true);
+        });
     };
-  }
+  },
 ]);

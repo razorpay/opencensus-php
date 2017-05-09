@@ -1,0 +1,267 @@
+<div class="workflow-feed-page" ng-controller="WorkflowFeedCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h3 class="m-n font-thin">
+      Action {{action_id}}
+      <spinner class="inline"></spinner>
+
+      <a class='btn btn-info pull-right' href="javascript:void(0);" ng-click="showActionChanges()">
+        View Changes
+      </a>
+    </h3>
+  </div>
+  <div class="wrapper-md">
+    <div class="row panel-container">
+      <div class="text-center m-t">
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+      </div>
+      <div class="col-xs-9">
+        <div class="action-desc-panel panel panel-default">
+          <div class="panel-heading">
+            <strong ng-if="action_details.admin.name">{{ action_details.admin.name }}</strong>
+            <span ng-style="!action_details.admin.name && {'visibility':'collapse'}">performed this action</span>
+            <span ng-if="action_details.created_at" title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
+
+            <span class="label pending-bg-color pull-right action-state">{{ action_details.state }}</span>
+          </div>
+          <div class="wrapper clearfix">
+            <div class="heading-container h3 m-b">
+              <div class="title-text wrapper-sm" ng-click="setTitleActive();alerts.resetAlerts();" ng-show="!titleActive" ng-if="action_details && allowFieldEdit">
+                <div class="bg-white"></div>
+                <span class="heading-text">
+                  {{ action_details.title || "Click to add a title" }}
+                </span>
+                <span class="desc-edit-icon"><i class="fa fa-pencil"></i></span>
+                <div class="clearfix"></div>
+              </div>
+              <div class="row title-highlight-container "
+                   ng-class="{'title-active': titleActive}"
+                   ng-if="action_details && allowFieldEdit">
+                <div class="col-xs-12" style="padding: 0 7px;">
+                  <div class="input-group input-group-lg">
+                    <input type="text" class="form-control " id="title-input"
+                           aria-describedby="sizing-addon1"
+                           ng-model="action_details.title"
+                           style="padding-right: 40px;"> <!-- placeholder="Add a title" -->
+                    <span class="desc-remove-icon glyphicon glyphicon-remove"
+                          ng-click="setTitleInactive()"
+                          style="right: 88px;"
+                          ng-if="titleActive"></span>
+                    <span class="input-group-btn " >
+                      <button
+                        class="btn btn-info "
+                        id="title-input-button"
+                        type="button"
+                        ng-click="saveTitle()"
+                      >{{titleActive ? (titleStatus === "saving" ? "Saving" : "Save") : "Click to edit"}}</button>
+                    </span>
+                  </div>
+                  <div class="clearfix"></div>
+                </div>
+              </div>
+            </div>
+            <div class="heading-container h3 m-b" style="padding: 10px 0;" ng-show="!titleActive" ng-if="action_details && !allowFieldEdit">
+                <span class="heading-text">
+                  {{ action_details.title || 'No Title' }}
+                </span>
+            </div>
+            <div class="border-bottom m-b"></div>
+            <div class="description" ng-class="{'desc-active': descActive}" ng-if="action_details && allowFieldEdit">
+              <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>
+              <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea"></textarea>
+              <span class="desc-remove-icon glyphicon glyphicon-remove"
+                    ng-click="setDescInactive()"
+                    style="right: 10px;"
+                    ng-if="descActive"></span>
+              <div class="desc-text wrapper-sm" ng-click="setDescActive();alerts.resetAlerts();" >
+                <!-- <div class="bg-white"></div> -->
+                <span class="description-text">
+                  {{ action_details.description || "Click to add a description" }}
+                </span>
+                <span class="desc-edit-icon"><i class="fa fa-pencil"></i></span>
+                <div class="clearfix"></div>
+              </div>
+              <button class="pull-right btn btn-info save-desc-btn" type="submit" ng-click="saveDesc()">{{descActive ? (descStatus === "saving" ? "Saving" : "Save") : "Click to edit"}}</button>
+              <!-- <div class="description-text">
+                {{ action_details.description || "Click to add a description" }}
+              </div> -->
+              <div class="clearfix"></div>
+            </div>
+
+            <div class="description" style="padding: 10px 0;" ng-if="action_details && !allowFieldEdit">
+                <span class="">
+                  {{ action_details.description || "No description" }}
+                </span>
+            </div>
+            <div class="assignment-container ">
+              <div class="strong assignee-heading m-t"><strong>Assigned to:</strong></div>
+
+              <div style="position: relative; margin: 16px 0;">
+                <div class="assignees-container m-b"
+                     ng-repeat="(index, level) in levels"
+                     ng-class="{ 'inactive': action_details.current_level != index }">
+
+                  <div class="level-element">
+                    <span class="tick-green" ng-if="index < action_details.current_level">
+                      <i class="glyphicon glyphicon-ok"/>
+                    </span>
+                    <div class="pills-label level-label" >STEP {{index}}</div>
+                    <div class="vertical-line" ng-if="totalLevels > index"></div>
+                    {{keys(levels).length}}
+                  </div>
+
+                  <div class="role-element">
+                    <div class="pills-label assignee-label" ng-repeat="role in level track by $index">
+                      {{ role }}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <div class="border-bottom m-b"></div>
+            <div class="pull-left faded-text">{{comment_count}} Comments</div>
+          </div>
+        </div>
+
+        <!-- Cards Start -->
+
+        <div class="cards" ng-repeat="card in cards" ng-switch on="card.type">
+
+          <div class="panel panel-default wrapper" ng-switch-when="status">
+            <i class="fa {{ card.approved ? 'fa-check-circle approved-color' : 'fa-times-circle rejected-color' }}"></i>
+            <strong>{{ card.admin_name }}</strong>
+            {{ card.approved ? 'approved' : 'rejected' }} at
+            <span title="{{feed.timestamp}}" class="timestamp">
+              {{ card.created_at * 1000 | date:'medium' }}
+            </span>
+          </div>
+
+          <div class="action-desc-panel panel panel-default" ng-switch-when="comment">
+            <div class="panel-heading">
+              <strong>{{ card.admin_name }}</strong>
+              commented at
+              <span title="{{feed.timestamp}}" class="timestamp">
+                {{ card.created_at * 1000 | date:'medium' }}
+              </span>
+            </div>
+            <div class="wrapper clearfix">
+              <div class="">{{ card.comment }}</div>
+            </div>
+          </div>
+
+          <!-- <div class="panel panel-default wrapper">
+            <i class="fa fa-times-circle rejected-color"></i> <strong>Ashmeet Sidhu</strong> <span class="">rejected</span> <span title="{{feed.timestamp}}" class="timestamp">{{feed.timeago}}</span>
+          </div> -->
+
+        </div>
+
+        <!-- Cards End -->
+
+        <div class="panel panel-default">
+          <form class="panel-heading clearfix wrapper-sm">
+            <textarea class="form-control wrapper-xs" rows="4" id="comment" ng-model="new_comment"></textarea>
+            <button id="comment-btn" class="pull-right btn btn-info " type="submit" ng-click="saveComment()">Comment</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-xs-3" ng-if="['open', 'approved'].indexOf(action_details.state) !== -1 && action_details.state">
+        <div class="right-label m-b">Actions</div>
+        <div class="row btn-group-vertical btn-block m-b" role="group" aria-label="...">
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('approve')" ng-if="['approved'].indexOf(action_details.state) === -1"
+                  ng-confirm-click="Are you sure you want to Approve this request?">
+            <i class="fa fa-check-circle approved-color"></i>
+            Approve
+          </button>
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('reject')" ng-if="['approved'].indexOf(action_details.state) === -1"
+                  ng-confirm-click="Are you sure you want to Reject this request?">
+            <i class="fa fa-times-circle rejected-color"></i>
+            Reject
+          </button>
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('close')"
+                  ng-confirm-click="Are you sure you want to Close this request?">
+            <i class="fa fa-times-circle pending-color"></i>
+            Close
+          </button>
+          <button type="button" class="btn btn-default wrapper-sm" ng-click="actionStateChange('execute')" ng-if="['approved'].indexOf(action_details.state) !== -1"
+                  ng-confirm-click="Are you sure you want to Execute this request?">
+            <i class="fa fa-arrow-circle-up approved-color"></i>
+            Execute
+          </button>
+          <!-- <button type="button" class="btn btn-default wrapper-sm">
+            <i class="fa fa-eye-slash pending-color"></i>
+            Ignore
+          </button> -->
+        </div>
+      </div>
+
+      <!-- Approver/Rejector list-->
+      <div class="col-xs-3">
+        <div ng-if="approverList && approverList.length">
+        <div class="right-label m-b m-t">Approved by</div>
+          <div class="assignee-list m-b">
+            <div>
+              <span class="pills-label assignee-label" ng-repeat="card in approverList">
+                {{card.admin_name}}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div ng-if="rejectorList && rejectorList.length">
+          <div class="right-label m-b m-t">Rejected by</div>
+          <div class="assignee-list m-b">
+            <div>
+              <span class="pills-label assignee-label" ng-repeat="card in rejectorList ">
+                {{card.admin_name}}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/ng-template" id="actionChanges.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Entity Changes</h3>
+  </div>
+
+  <div class="modal-body new-key-modal" style="overflow: auto;">
+
+
+    <h4 ng-if="data.data">Change</h4>
+    <table ng-if="data.data" class="table table-striped b-t b-light">
+      <thead>
+      <tr>
+        <th>Property</th>
+        <th>Old Value</th>
+        <th>New Value</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr></tr>
+      <tr ng-repeat="type in dataKeys">
+        <td>{{ type }}</td>
+        <td ng-if="data">
+          <ul ng-if="isArray(data.data.old[type])" class="comparison-list">
+            <li ng-repeat="obj in data.data.old[type]" ng-if="obj.name">{{obj.name}}</li>
+          </ul>
+          <span ng-if="!isArray(data.data.old[type])">{{data.data.old[type]}}</span>
+        </td>
+        <td ng-if="data">
+          <ul ng-if="isArray(data.data.new[type])" class="comparison-list">
+            <li ng-repeat="obj in data.data.new[type]"  ng-if="obj.name">{{obj.name}}</li>
+          </ul>
+          <span ng-if="!isArray(data.data.new[type])">{{data.data.new[type]}}</span>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Close</button>
+  </div>
+</script>

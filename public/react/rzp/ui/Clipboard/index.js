@@ -1,55 +1,55 @@
-import { Component } from 'react'
-import { findDOMNode } from 'react-dom'
-import { Field } from 'redux-form'
-import './Clipboard.styl'
+import { Component } from 'react';
+import { findDOMNode } from 'react-dom';
+import { Field } from 'redux-form';
+import './Clipboard.styl';
 
 export default class Clipboard extends Component {
   constructor() {
-    super(...arguments)
-    this.state = {}
-    this.copyToClipboard = ::this.copyToClipboard
-    this.selectValue = ::this.selectValue
+    super(...arguments);
+    this.state = {};
+    this.copyToClipboard = ::this.copyToClipboard;
+    this.selectValue = ::this.selectValue;
   }
 
   componentWillMount() {
     if (document.execCommand) {
-      this.supported = true
+      this.supported = true;
     }
   }
 
   selectValue() {
-    if(this.input.select) {
-      this.input.select()
+    if (this.input.select) {
+      this.input.select();
     }
   }
 
   copyToClipboard() {
-    this.selectValue()
-    document.execCommand('copy')
+    this.selectValue();
+    document.execCommand('copy');
   }
 
   render() {
     return (
-      <div class={`input-group Clipboard ${this.supported ? '' : 'Clipboard--unsupported'}`}>
+      <div
+        class={`input-group Clipboard ${this.supported ? '' : 'Clipboard--unsupported'}`}
+      >
         <input
           value={this.props.value}
-          class='form-control Clipboard__input'
+          class="form-control Clipboard__input"
           readOnly={true}
-          ref={(input) => this.input = input}
+          ref={input => (this.input = input)}
           onFocus={this.selectValue}
         />
-        {
-          this.supported &&
+        {this.supported &&
           <span
-            class='input-group-addon'
+            class="input-group-addon"
             onClick={this.copyToClipboard}
-            data-tip='Copied'
-            data-event='active'
+            data-tip="Copied"
+            data-event="active"
           >
             Copy Link
-          </span>
-        }
+          </span>}
       </div>
-    )
+    );
   }
 }

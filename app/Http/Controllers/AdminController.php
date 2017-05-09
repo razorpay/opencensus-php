@@ -286,15 +286,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postMerchantPricing($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postMerchantPricing($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getMerchantActivation($id)
     {
         $dashboardOnly = Input::get('dashboard', false);
@@ -378,55 +369,11 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function postEditMethods($id)
-    {
-        $input = \Input::all();
-
-        $error = (new Admin\Service)->editMethods($id, $input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getLockMerchantDetails($id)
-    {
-        $error = (new Admin\Service)->lockMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getUnlockMerchantDetails($id)
-    {
-        $error = (new Admin\Service)->unlockMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getMerchantDetails($id)
     {
         list($error, $data) = (new Admin\Service)->fetchMerchantAndActivationDetails($id);
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getEntityFeatures($entityId)
-    {
-        list($error, $data) = (new Admin\Service)->fetchEntityFeatures($entityId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getMerchantBalance($id)
-    {
-        $data = (new Merchant\Service)->fetchMerchantBalance($id);
-
-        return AppResponse::jsonResponse([], $data);
-    }
-
-    public function getMerchantBanks($id)
-    {
-        $data = (new Admin\Service)->fetchMerchantBanks($id);
-
-        return AppResponse::jsonResponse([], $data);
     }
 
     public function postEditMerchant($id)
@@ -465,36 +412,11 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postMerchantBanks($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postMerchantBanks($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postAddAdjustment($id)
     {
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postAddAdjustment($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postInitiateSetl($channel)
-    {
-        list($error, $data) = (new Admin\Service)->postInitiateSetl($channel);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postAddIIN()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postAddIIN($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -506,27 +428,11 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getVerifyPayment($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Admin\Service)->getVerifyPayment($mode, $id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getPaymentAnalytics($mode, $id)
     {
         $this->checkMode($mode);
 
         list($error, $data) = (new Admin\Service)->getPaymentAnalytics($mode, $id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postAuthorizeFailedPayment($mode, $id)
-    {
-        list($error, $data) = (new Admin\Service)->authorizeFailedPayment($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -624,31 +530,11 @@ class AdminController extends Controller
         $file->download('xlsx');
     }
 
-    public function getBeneficiaryFile()
-    {
-        $input = Input::all();
-
-        list($error, $url) = (new Admin\Service)->getBeneficiaryFile($input);
-
-        if(empty($error) === false)
-        {
-            return AppResponse::jsonResponse($error);
-        }
-
-        return Redirect::to($url);
-    }
-
     public function getUploadedFile($id)
     {
         list($error, $url) = (new Admin\Service)->getUploadedFile($id);
 
         return Redirect::to($url);
-    }
-
-    public function generateBeneficiaryFile()
-    {
-        $error = (new Admin\Service)->generateBeneficiaryFile();
-        return AppResponse::jsonResponse($error);
     }
 
     public function postSendTestNewsletter()
@@ -665,13 +551,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->sendNewsletter($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function triggerError()
-    {
-        list($error, $data) = (new Admin\Service)->triggerError();
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -730,22 +609,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->toggleTerminal($mode, $terminalId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function verifyAllPayments()
-    {
-        list($error, $data) = (new Admin\Service)->verifyAllPayments();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function generateNetBankingRefunds()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->generateNetBankingRefunds($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -872,16 +735,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postAddEMIPlan()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)
-            ->addEMI($input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postSlackQuery()
     {
         $input = Input::all();
@@ -916,13 +769,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse([], $company->fetch());
     }
 
-    public function getMerchantBankAccount($merchantId)
-    {
-        list($error, $bankAccount) = (new Admin\Service)->fetchBankAccount($merchantId);
-
-        return AppResponse::jsonResponse($error, $bankAccount);
-    }
-
     public function postReconciliate($mode)
     {
         $input = Input::all();
@@ -943,54 +789,6 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $response);
     }
-    // ----- Credits -----
-
-    // Get log of merchant's credit entries
-    public function getMerchantCreditsLog($merchantId)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->getMerchantCreditsLog($merchantId, $input['mode']);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    // Add free credits for the merchant
-    public function addMerchantCredits($merchantId)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->addMerchantCredits($merchantId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function deleteMerchantCredit($merchantId, $creditId)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->deleteMerchantCredit($merchantId, $creditId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function postSendMerchantInvitation()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->sendInvitation($input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantInvitations()
-    {
-        list($error, $data) = (new Admin\Service)->getAdminLeads();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    // ----- /Credits -----
 
     // ----- Heimdall (Whitelabel) -----
 
@@ -1019,12 +817,33 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function createSchedule()
+    public function getEmailLogs()
     {
         $input = Input::all();
 
-        list($error, $response) = (new Admin\Service)->createSchedule($input);
+        list($error, $response) = (new Admin\Service)->getEmailLogs($input);
 
         return AppResponse::jsonResponse($error, $response);
     }
+
+    /**
+     * Check if email address exists in bounce list
+     */
+    public function getEmailBounce($email)
+    {
+        list($error, $response) = (new Admin\Service)->getEmailBounce($email);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    /**
+     * Delete email address from bounce list
+     */
+    public function deleteEmailBounce($email)
+    {
+        list($error, $response) = (new Admin\Service)->deleteEmailBounce($email);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
 }

@@ -1,21 +1,19 @@
-import { PropTypes } from 'react'
+import { PropTypes } from 'react';
 
-const ModalHeader = (props) => (
-  <div class='modal-header'>
-    {
-      props.onCloseClick &&
-      <button type='button' class='close' onClick={props.onCloseClick}>
-        <i class='fa fa-times'></i>
-      </button>
-    }
+const ModalHeader = props => (
+  <div class="modal-header">
+    {props.onCloseClick &&
+      <button type="button" class="close" onClick={props.onCloseClick}>
+        <i class="fa fa-times" />
+      </button>}
 
-    <h3 class='modal-title'>{props.title}</h3>
+    <h3 class="modal-title">{props.title}</h3>
   </div>
-)
+);
 
 ModalHeader.propTypes = {
   title: PropTypes.string.isRequired,
-  onCloseClick: PropTypes.func
-}
+  onCloseClick: PropTypes.func,
+};
 
-export default ModalHeader
+export default ModalHeader;

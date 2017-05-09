@@ -1,4 +1,4 @@
-import { PowerSelect } from 'react-power-select'
-import ReduxPowerSelectHOC from './ReduxPowerSelect'
+import { PowerSelect } from 'react-power-select';
+import ReduxPowerSelectHOC from './ReduxPowerSelect';
 
-export default ReduxPowerSelectHOC(PowerSelect)
+export default ReduxPowerSelectHOC(PowerSelect);

@@ -1,66 +1,68 @@
-import { PropTypes, Component } from 'react'
+import { PropTypes, Component } from 'react';
 
 export default class Pager extends Component {
   constructor() {
-    super(...arguments)
-    this.onNext = ::this.onNext
-    this.onPrev = ::this.onPrev
+    super(...arguments);
+    this.onNext = ::this.onNext;
+    this.onPrev = ::this.onPrev;
   }
 
   onNext() {
     let newParams = {
       skip: Number(this.props.skip) + Number(this.props.count),
-      count: this.props.count
-    }
-    this.props.onClick(newParams)
+      count: +this.props.count,
+    };
+    this.props.onClick(newParams);
   }
 
   onPrev() {
     let newParams = {
       skip: Number(this.props.skip) - Number(this.props.count),
-      count: this.props.count
-    }
-    this.props.onClick(newParams)
+      count: +this.props.count,
+    };
+    this.props.onClick(newParams);
   }
 
   render() {
-    let { length, onClick } = this.props
-    let count = +this.props.count
-    let skip = +this.props.skip
-    let nextDisabled = length < count
-    let prevDisabled = !skip
+    let { length, onClick } = this.props;
+    let count = +this.props.count;
+    let skip = +this.props.skip;
+    let nextDisabled = length < count;
+    let prevDisabled = !skip;
 
     return (
-      <div class='clearfix text-center' style={{
-        margin: '20px'
-      }}>
-        {
-          !(nextDisabled && prevDisabled) ?
-          <div class='btn-group pull-right'>
-            <button
-              type='button'
-              class='btn btn-default btn-sm fa fa-chevron-left'
-              disabled={prevDisabled}
-              onClick={this.onPrev}
-            ></button>
-            <button
-              type='button'
-              class='btn btn-default btn-sm fa fa-chevron-right'
-              disabled={nextDisabled}
-              onClick={this.onNext}
-            ></button>
-          </div> : null
-        }
+      <div
+        class="clearfix text-center"
+        style={{
+          margin: '20px',
+        }}
+      >
+        {!(nextDisabled && prevDisabled)
+          ? <div class="btn-group pull-right">
+              <button
+                type="button"
+                class="btn btn-default btn-sm fa fa-chevron-left"
+                disabled={prevDisabled}
+                onClick={this.onPrev}
+              />
+              <button
+                type="button"
+                class="btn btn-default btn-sm fa fa-chevron-right"
+                disabled={nextDisabled}
+                onClick={this.onNext}
+              />
+            </div>
+          : null}
 
-        <small class='text-muted'>
-          Showing {skip + 1} - { skip + length }
+        <small class="text-muted">
+          Showing {skip + 1} - {skip + length}
         </small>
       </div>
-    )
+    );
   }
 }
 
 Pager.defaultProps = {
   count: 25,
-  skip: 0
-}
+  skip: 0,
+};

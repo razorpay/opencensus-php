@@ -1,4 +1,4 @@
-import { objectDiff, isBlank } from 'rzp/utils/rzp-utils'
+import { objectDiff, isBlank } from 'rzp/utils/rzp-utils';
 
 /*
   - Model-based approach makes it more handy to handle the serialization/deserialization of crud calls.
@@ -15,45 +15,51 @@ import { objectDiff, isBlank } from 'rzp/utils/rzp-utils'
 */
 
 export default class BaseModel {
-  resourceIdField = 'id'
+  resourceIdField = 'id';
 
   constructor(props = {}) {
-    Object.assign(this, props)
-    this.stashPayload(props)
+    Object.assign(this, props);
+    this.stashPayload(props);
   }
 
   get isNew() {
-    return !this[this.resourceIdField]
+    return !this[this.resourceIdField];
   }
 
   getResourceUrl() {
     if (this.isNew) {
-      return this.resourceUrl
+      return this.resourceUrl;
     }
-    return `${this.resourceUrl}/${this[this.resourceIdField]}`
+    return `${this.resourceUrl}/${this[this.resourceIdField]}`;
   }
 
   getResourceMethod() {
-    return this.isNew ? 'post' : 'patch'
+    return this.isNew ? 'post' : 'patch';
   }
 
   getResourceUrlAndMethod() {
-    return [ this.getResourceUrl() , this.getResourceMethod() ]
+    return [this.getResourceUrl(), this.getResourceMethod()];
   }
 
   /*
     Returns JSON payload with only properties specified in `resourceFields`
   */
   serialize() {
-    let fields = (typeof this.resourceFields === 'function') ? this.resourceFields() : this.resourceFields
-    let serializedModel = {}
+    let fields = typeof this.resourceFields === 'function'
+      ? this.resourceFields()
+      : this.resourceFields;
+    let serializedModel = {};
 
     for (let i = 0, len = fields.length; i < len; i++) {
-      let prop = fields[i]
-      serializedModel[prop] = this.serializeProperty(prop)
+      let prop = fields[i];
+      serializedModel[prop] = this.serializeProperty(prop);
     }
 
-    return objectDiff(this.__stashed__, serializedModel)
+    if (this.getResourceMethod() === 'put') {
+      return serializedModel;
+    }
+
+    return objectDiff(this.__stashed__, serializedModel);
   }
 
   /*
@@ -61,7 +67,7 @@ export default class BaseModel {
     Make sure you return `super.serializeProperty(prop)` on the overriding method
    */
   serializeProperty(prop) {
-    return this[prop]
+    return this[prop];
   }
 
   /*
@@ -69,12 +75,12 @@ export default class BaseModel {
    */
   deserialize(json) {
     for (let prop in json) {
-      this.deserializeProperty(prop, json[prop])
+      this.deserializeProperty(prop, json[prop], json);
     }
 
-    this.didDeserialize()
-    this.stashPayload(json)
-    return this
+    this.didDeserialize();
+    this.stashPayload(json);
+    return this;
   }
 
   /*
@@ -82,13 +88,17 @@ export default class BaseModel {
     Make sure you return `super.deserializeProperty(prop, value)` on the overriding method
    */
   deserializeProperty(prop, value) {
-    this[prop] = value
+    this[prop] = value;
   }
 
   stashPayload(json) {
     if (!this.isNew && isBlank(this.__stashed__)) {
-      this.__stashed__ = json
+      this.__stashed__ = json;
     }
+  }
+
+  getPayload() {
+    return this.__stashed__;
   }
 
   /*
@@ -97,6 +107,6 @@ export default class BaseModel {
   didDeserialize() {}
 
   toString() {
-    return 'model'
+    return 'model';
   }
 }
