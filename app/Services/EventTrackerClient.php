@@ -10,12 +10,16 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Jobs\RequestJob;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 use GuzzleHttp\Client;
 
 class EventTrackerClient extends Base\Core
 {
+    use DispatchesJobs;
+
     protected $mock;
 
     protected $request;
@@ -78,7 +82,7 @@ class EventTrackerClient extends Base\Core
      */
     public function buildRequestAndSend()
     {
-        $url = $this->ljConfig['url'].self::TRACK_EVENT_URLPATTERN;
+        $url = $this->ljConfig['url'] . self::TRACK_EVENT_URLPATTERN;
 
         $headers = [
             'content-type'  => 'application/json',
@@ -116,16 +120,21 @@ class EventTrackerClient extends Base\Core
                 return;
             }
 
-            $options = ['json' => $eventData];
+            $request  = [
+                'method'    => 'post',
+                'url'       => $url,
+                'headers'   => $headers,
+                'content'   => json_encode($eventData),
+                'options'   => [],
+            ];
 
-            $client = new Client(['headers' => $headers, 'http_errors' => false]);
+            $job = new RequestJob($request);
 
-            $response = $client->request('POST', $url, $options);
-
+            $this->dispatch($job);
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_QUEUE_SEND_FAILED);
         }
         finally
         {

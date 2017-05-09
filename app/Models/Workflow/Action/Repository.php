@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Action\State;
+use RZP\Models\Workflow\Action\Checker;
 use RZP\Constants\Table;
 
 class Repository extends Base\Repository
@@ -119,6 +120,26 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->whereIn(Entity::STATE, $openStates)
+                    ->get();
+    }
+
+    public function getActionsCheckedByAdmin(string $adminId)
+    {
+        $checkerRepo = $this->repo->action_checker;
+
+        $attributes = $this->dbColumn('*');
+        $aId = $this->repo->workflow_action->dbColumn(Entity::ID);
+
+        $cActionId = $checkerRepo->dbColumn(Checker\Entity::ACTION_ID);
+
+        $cAdminId = $checkerRepo->dbColumn(Checker\Entity::ADMIN_ID);
+
+        $checkerTable = Table::ACTION_CHECKER;
+
+        return $this->newQuery()
+                    ->select($attributes)
+                    ->join($checkerTable, $aId, '=', $cActionId)
+                    ->where($cAdminId, '=', $adminId)
                     ->get();
     }
 }

@@ -30,6 +30,7 @@ class Constants
     const EMAIL_OPTIONAL      = 'email_optional';
     const CONTACT_OPTIONAL    = 'contact_optional';
     const ZOHO                = 'zoho';
+    const EXPOSE_DOWNTIMES    = 'expose_downtimes';
 
     // TODO: Use this instead of alFeatures once in final code change pr
     public static $featureValueMap = [
@@ -56,6 +57,7 @@ class Constants
         self::EMAIL_OPTIONAL      => true,
         self::CONTACT_OPTIONAL    => true,
         self::ZOHO                => true,
+        self::EXPOSE_DOWNTIMES    => true,
     ];
 
     public static $visibleFeaturesMap = [
