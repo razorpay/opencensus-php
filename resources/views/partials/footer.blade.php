@@ -6,7 +6,7 @@
     })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
     ga('create', 'UA-53341507-2', 'auto');
-    // ga('send', 'pageview'); angulartics takes care of it
+    ga('send', 'pageview');
   }
   </script>
 </body>

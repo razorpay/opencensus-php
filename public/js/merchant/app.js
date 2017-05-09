@@ -18,7 +18,6 @@ var app = angular
     'ngIdle',
     'ngBusy',
     'noCAPTCHA',
-    'angulartics',
     'react',
   ])
   .run([
