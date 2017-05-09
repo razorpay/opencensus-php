@@ -817,4 +817,18 @@ return [
             'content' => []
         ],
     ],
+
+    'subscriptionWebhookData' => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'   => 'event',
+            'contains' => [
+                'subscription',
+            ],
+            'payload'  => [
+                'subscription' => [
+                ],
+            ],
+        ],
+    ]
 ];

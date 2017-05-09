@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Helpers\Subscription;
 
+use Mockery;
+use Closure;
 use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -169,9 +171,9 @@ trait SubscriptionTrait
     protected function passCharge()
     {
         $this->mockServerContentFunction(function(&$content)
-            {
-                // Do nothing
-            });
+        {
+
+        });
     }
 
     protected function failOnCapture($subscription)
@@ -198,11 +200,77 @@ trait SubscriptionTrait
             ]);
     }
 
+    protected function mockInfernoFire(Closure $closure, $times = 1)
+    {
+        $class = \RZP\Models\Merchant\Webhook\Inferno::class;
+
+        $inferno = Mockery::mock($class, [])->makePartial();
+
+        $inferno->shouldReceive('fire')
+                ->times($times)
+                ->with(
+                    Mockery::type('RZP\Jobs\WebHook'),
+                    Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
+    }
+
+    protected function mockAndTestWebhookData(string $event, $times = 1)
+    {
+        $testData = $this->testData['subscriptionWebhookData'];
+
+        $this->mockInfernoFire(function ($data) use ($testData, $event)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
+            $this->assertArrayHasKey('event', $data['event']);
+
+            $this->assertEquals($event, $data['event']['event']);
+
+            $payload = $data['event']['payload'];
+
+            $this->assertArrayHasKey('subscription', $payload);
+            $this->assertArrayHasKey('entity', $payload['subscription']);
+
+            $this->assertArrayHasKey('entity', $payload['subscription']['entity']);
+
+            $subscription = $payload['subscription']['entity'];
+
+            $this->assertEquals('subscription', $subscription['entity']);
+
+            $this->assertArrayHasKey('id'              , $subscription);
+            $this->assertArrayHasKey('entity'          , $subscription);
+            $this->assertArrayHasKey('plan_id'         , $subscription);
+            $this->assertArrayHasKey('customer_id'     , $subscription);
+            $this->assertArrayHasKey('status'          , $subscription);
+            $this->assertArrayHasKey('current_start'   , $subscription);
+            $this->assertArrayHasKey('current_end'     , $subscription);
+            $this->assertArrayHasKey('ended_at'        , $subscription);
+            $this->assertArrayHasKey('quantity'        , $subscription);
+            $this->assertArrayHasKey('token_id'        , $subscription);
+            $this->assertArrayHasKey('notes'           , $subscription);
+            $this->assertArrayHasKey('charge_at'       , $subscription);
+            $this->assertArrayHasKey('start_at'        , $subscription);
+            $this->assertArrayHasKey('end_at'          , $subscription);
+            $this->assertArrayHasKey('auth_attempts'   , $subscription);
+            $this->assertArrayHasKey('total_count'     , $subscription);
+            $this->assertArrayHasKey('paid_count'      , $subscription);
+            $this->assertArrayHasKey('customer_notify' , $subscription);
+
+            return true;
+        },
+        $times);
+    }
+
     protected function chargeSubscriptionsViaCron(string $timestamp = null)
     {
         if ($timestamp !== null)
         {
-            $chargeAt = Carbon::createFromTimestamp($timestamp+1);
+            $chargeAt = Carbon::createFromTimestamp($timestamp + 1);
 
             Carbon::setTestNow($chargeAt, 'Asia/Kolkata');
         }
