@@ -1272,28 +1272,6 @@ class Service extends Base\Service
         return [[], $file];
     }
 
-    public function liveEnableMerchant($id)
-    {
-        $error = [];
-
-        $this->setApiCredentials();
-
-        try
-
-        {
-            $this->api->merchant->fetch($id)->enable();
-
-            $merchant = Merchant\Entity::findOrSoftFail($id);
-            $this->logActionToSlack($merchant, Actions::LIVE_ENABLED);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return $error;
-    }
-
     /**
      * Merchant Archive
      * Conditions: merchant_details->submitted != null
@@ -1362,27 +1340,6 @@ class Service extends Base\Service
             $merchant->save();
 
             $this->logActionToSlack($merchant, Actions::UNSUSPENDED);
-        }
-
-        return $error;
-    }
-
-    public function liveDisableMerchant($id)
-    {
-        $error = [];
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $this->api->merchant->fetch($id)->disable();
-
-            $merchant = Merchant\Entity::findOrSoftFail($id);
-            $this->logActionToSlack($merchant, Actions::LIVE_DISABLED);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage;
         }
 
         return $error;

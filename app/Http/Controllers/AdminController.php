@@ -295,21 +295,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function getMerchantLiveEnable($id)
-    {
-
-        $error = (new Admin\Service)->liveEnableMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantLiveDisable($id)
-    {
-        $error = (new Admin\Service)->liveDisableMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getMerchantArchive($id)
     {
         $error = (new Admin\Service)->archiveMerchant($id);
