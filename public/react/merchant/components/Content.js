@@ -1,6 +1,7 @@
 import { Route } from 'react-router-dom';
 
 import Payments from 'merchant/containers/Payments/List';
+import Transactions from 'merchant/containers/Transactions';
 import Refunds from 'merchant/containers/Refunds/List';
 import Orders from 'merchant/containers/Orders/List';
 import Settlements from 'merchant/containers/Settlements/List';
@@ -17,9 +18,9 @@ import Configuration from 'merchant/containers/Configuration';
 export default () => {
   return (
     <main class="main-content">
-      <Route path="/payments" component={Payments} />
-      <Route path="/refunds" component={Refunds} />
-      <Route path="/orders" component={Orders} />
+      <Route path="/payments" component={Transactions} />
+      <Route path="/refunds" component={Transactions} />
+      <Route path="/orders" component={Transactions} />
       <Route path="/settlements" component={Settlements} />
       <Route path="/invoices" component={Invoices} />
       <Route path="/reports" component={Reports} />
