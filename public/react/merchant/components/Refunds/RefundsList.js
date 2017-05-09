@@ -1,13 +1,14 @@
 import Time from 'rzp/ui/Time';
 import TableBody from '../TableBody';
+import { NavLink } from 'react-router-dom';
 
 const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <a target="_blank" href={`#/app/refunds/${refund.id}`}>
+        <NavLink to={`/app/refunds/${refund.id}`}>
           {refund.id}
-        </a>
+        </NavLink>
       </td>
       <td>
         <a target="_blank" href={`#/app/payments/${refund.payment_id}`}>
