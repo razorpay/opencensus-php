@@ -315,9 +315,9 @@ class Charge extends Base\Core
 
         $this->updateScheduleTask($task);
 
-        $this->incrementPaidCount($subscription);
-
         $this->setEndedAtIfApplicable($subscription);
+
+        $this->incrementPaidCount($subscription);
 
         if ($oldStatus === Status::AUTHENTICATED)
         {
@@ -474,7 +474,16 @@ class Charge extends Base\Core
     {
         if ($subscription->getChargeAt() === null)
         {
-            $subscription->setEndedAt($subscription->getCurrentEnd());
+            //
+            // If the last charge of the subscription is on 20th August,
+            // ideally, the end date would be 20th August only.. but,
+            // the subscription would go on until 20th October.
+            // Not sure whether to set the ended_at as 20th August
+            // or 20th October. For now, setting it as 20th August.
+            // Current period in subscriptions and invoices
+            // would be 20th August to 20th October.
+            //
+            $subscription->setEndedAt($subscription->getCurrentStart());
 
             $subscription->setStatus(Status::COMPLETED);
         }

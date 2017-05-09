@@ -157,6 +157,8 @@ class SubscriptionChargeTest extends TestCase
             $this->assertEquals($expectedStatus, $subscription['status']);
         }
 
+        $subscription = $this->getLastEntity('subscription', true);
+
         $this->assertNull($subscription['charge_at']);
 
         $this->assertEquals($subscription['end_at'], $subscription['ended_at']);
@@ -456,6 +458,8 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals('paid', $invoice['status']);
         $this->assertEquals($payments['items'][0]['id'], $invoice['payment_id']);
+
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionManualRetryFailure()
