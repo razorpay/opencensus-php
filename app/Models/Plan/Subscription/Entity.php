@@ -120,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::CURRENT_END       => 'int',
         self::TOTAL_COUNT       => 'int',
         self::PAID_COUNT        => 'int',
+        self::AUTH_ATTEMPTS     => 'int',
         self::CUSTOMER_NOTIFY   => 'bool',
     ];
 
