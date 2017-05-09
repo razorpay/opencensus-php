@@ -160,22 +160,4 @@ class Merchant extends Entity
 
         return $res;
     }
-
-    public function actions($merchantId, $params)
-    {
-        $error = $response = null;
-
-        try
-        {
-            $relativeUrl = "merchants/$merchantId/action";
-
-            $response = $this->request('PUT', $relativeUrl, $params)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [ $e->getMessage() ];
-        }
-
-        return [ $error, $response ];
-    }
 }

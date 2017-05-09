@@ -2172,27 +2172,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function actions($merchantId, $action)
-    {
-        $params = ['action' => $action ];
-
-        $this->setApiCredentials();
-
-        list($error, $merchant) = $this->api
-                                       ->merchant
-                                       ->actions($merchantId, $params);
-
-        if (empty($error) === false)
-        {
-            $this->trace->debug('MISC_TRACE_CODE', [
-                    'error'     => "Error occured while updating merchant details on API",
-                    'exception' => $error,
-            ]);
-        }
-
-        return $error;
-    }
-
     public function getEmailLogs($input)
     {
         $error = $data = null;
