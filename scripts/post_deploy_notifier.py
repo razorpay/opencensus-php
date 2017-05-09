@@ -41,11 +41,12 @@ class KeyStore:
 class SlackNotifier:
     def __init__(self):
         # currently hardcoding this. We need to arrive at this value later
-        #self.channel = "C52PN72AK"  # tech_deploys
-        self.channel  = "C0KHQBRJN"  # dev-test-2
+        self.channel = "C52PN72AK"  # tech_deploys
+        # self.channel = "C0KHQBRJN"  # dev-test-2
         self.icon_url = 'https://s3-us-west-2.amazonaws.com/slack-files2/bot_icons/2015-06-25/6837962368_48.png'
         self.base_slack_url = 'https://razorpay.slack.com'
-        self.url = '%s/services/hooks/incoming-webhook?token=%s' %(self.base_slack_url, KeyStore.get_slack_token())
+        self.url = '%s/services/hooks/incoming-webhook?token=%s' % (
+            self.base_slack_url, KeyStore.get_slack_token())
         self.username = 'wercker'
 
     def formatSlackMessage(self, message):
@@ -71,11 +72,11 @@ class SlackNotifier:
                 tmp['title'] = commit['title']
                 tmp['value'] = commit['url']
             fields.append(tmp)
-        ## the below hack is only for formatting. Basically, check if the number
-        ## of items is even, else append a dummy one so the metadata gets
-        ## to the next line
+        # the below hack is only for formatting. Basically, check if the number
+        # of items is even, else append a dummy one so the metadata gets
+        # to the next line
         if len(fields) % 2 != 0:
-            fields.append({'short': True, 'title':'', 'value':''})
+            fields.append({'short': True, 'title': '', 'value': ''})
         fields.append(
             {'short': True, 'title': 'Deploy Started', 'value': startTime})
         fields.append(
@@ -174,11 +175,11 @@ class MergeCommitParser:
 
     def parseDeployCommits(self, run_url, commitHash):
         wercker_api_token = KeyStore.get_wercker_api_token()
-        headers = {'Authorization': 'Bearer %s' %(wercker_api_token)}
+        headers = {'Authorization': 'Bearer %s' % (wercker_api_token)}
         commit_pr_nums = []
         commit_messages = []
         try:
-            response = requests.get(run_url, headers = headers, verify=True)
+            response = requests.get(run_url, headers=headers, verify=True)
             data = response.json()
             commits = data.get('commits', [])
             for commit in commits:
@@ -189,12 +190,12 @@ class MergeCommitParser:
                     commit_hash = commit['commit']
                     if commit_hash != commitHash:
                         tmp = {
-                            'commitHash' : commit['commit'],
-                            'message' : commit['message']
+                            'commitHash': commit['commit'],
+                            'message': commit['message']
                         }
                         commit_messages.append(tmp)
         except Exception, e:
-            print "Exception Fetching Run url:%s, Exception:%s" %(run_url, e)
+            print "Exception Fetching Run url:%s, Exception:%s" % (run_url, e)
         return [commit_pr_nums, commit_messages]
 
     def parseMergeCommit(self):
@@ -217,7 +218,8 @@ class MergeCommitParser:
             msg = firstRun['message']
             pr_nums = self.findMergedPrs(msg)
             run_url = str(firstRun['url'])
-            commit_prs, message_hashes = self.parseDeployCommits(run_url, firstRun['commitHash'])
+            commit_prs, message_hashes = self.parseDeployCommits(
+                run_url, firstRun['commitHash'])
             pr_nums.extend(commit_prs)
             pr_nums = list(set(pr_nums))
             if len(pr_nums) > 0:
