@@ -134,10 +134,6 @@ const concatJs = lazypipe().pipe(concatMulti, {
   ],
 
   'js/generated/merchant_react.js': ['public/react/dist/merchant_react.js'],
-  'js/generated/merchant_new_react.js': [
-    'public/js/jquery/jquery-2.1.4.min.js',
-    'public/react/dist/merchant_new_react.js',
-  ],
 
   'js/generated/admin_react.js': ['public/react/dist/admin_react.js'],
 

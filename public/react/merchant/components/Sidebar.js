@@ -17,13 +17,23 @@ export default ({ user }) => {
           : <ul class="nav">
               <ShowWhen notMyRole="sellerapp">
                 <li>
-                  <NavLink to="/orders">Orders</NavLink>
+                  <NavLink to="/payments">Transactions</NavLink>
                 </li>
               </ShowWhen>
 
               <ShowWhen notMyRole="sellerapp">
                 <li>
-                  <NavLink to="/refunds">Refunds</NavLink>
+                  <NavLink to="/settlements">Settlements</NavLink>
+                </li>
+              </ShowWhen>
+
+              <li>
+                <NavLink to="/invoices">Invoices</NavLink>
+              </li>
+
+              <ShowWhen myRole="owner">
+                <li>
+                  <NavLink to="/team">Manage Team</NavLink>
                 </li>
               </ShowWhen>
             </ul>}

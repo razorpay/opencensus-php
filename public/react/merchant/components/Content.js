@@ -1,13 +1,34 @@
 import { Route } from 'react-router-dom';
 
-import Orders from 'merchant/containers/Orders/List';
+import Payments from 'merchant/containers/Payments/List';
 import Refunds from 'merchant/containers/Refunds/List';
+import Orders from 'merchant/containers/Orders/List';
+import Settlements from 'merchant/containers/Settlements/List';
+import Invoices from 'merchant/containers/Invoices/List';
+import AddFunds from 'merchant/containers/AddFunds';
+import Reports from 'merchant/containers/Reports';
+import TeamManagement from 'merchant/containers/Team';
+import Credits from 'merchant/containers/Credits/List';
+import Keys from 'merchant/containers/Keys/List';
+import Activation from 'merchant/containers/Activation';
+import Webhooks from 'merchant/containers/Webhooks/List';
+import Configuration from 'merchant/containers/Configuration';
 
 export default () => {
   return (
     <main class="main-content">
-      <Route path="/orders" component={Orders} />
+      <Route path="/payments" component={Payments} />
       <Route path="/refunds" component={Refunds} />
+      <Route path="/orders" component={Orders} />
+      <Route path="/settlements" component={Settlements} />
+      <Route path="/invoices" component={Invoices} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/team" component={TeamManagement} />
+      <Route path="/credits" component={Credits} />
+      <Route path="/keys" component={Keys} />
+      <Route path="/activation" component={Activation} />
+      <Route path="/webhooks" component={Webhooks} />
+      <Route path="/settings" component={Configuration} />
     </main>
   );
 };
