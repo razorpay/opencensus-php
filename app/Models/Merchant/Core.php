@@ -16,6 +16,8 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Permission;
+use RZP\Services\Workflow as WorkflowAppService;
+use ApiResponse;
 
 use Config;
 
@@ -274,7 +276,18 @@ class Core extends Base\Core
         // Check for admin permissions
         $admin->hasMerchantActionPermissionOrFail($action);
 
-        $merchant->$action();
+        $routePermission = Permission\Name::$actionMap[$action];
+
+        // Workflow Start
+
+        $workflowService = new WorkflowAppService($routePermission);
+
+        $workflowService->handle($merchant, function ($merchant) use ($action)
+        {
+            $merchant->$action();
+        });
+
+        // Workflow End
 
         $this->repo->saveOrFail($merchant);
 

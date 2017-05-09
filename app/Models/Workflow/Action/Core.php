@@ -28,17 +28,35 @@ class Core extends Base\Core
 
         $orgId = $admin->getOrgId();
 
-        $routePermissions = $input[Differ\Entity::PERMISSIONS];
+        $routePermission = $input[Differ\Entity::PERMISSION];
 
-        // Not all route permissions could be present in admin.
-        $commonPermissions = array_intersect($routePermissions, $adminPermissions);
+        // Implicit check for permission existance in the organisation.
+        $permissionId = $this->repo
+                             ->permission
+                             ->retrieveIdsByNamesAndOrg($routePermission, $orgId)
+                             ->toArray()['id'];
 
-        $workflows = $this->getWorkflowsForPermissions($commonPermissions, $orgId);
+        // We don't need to check the following 2 things:
+        //
+        // - Whether a workflow exists against the routePermission
+        // because this is already done in workflow middleware
+        //
+        // - Whether the admin has access to this permission because
+        // that is also done in the middleware or should be done
+        // from whereever this code is called/triggered.
+
+        // Currently single permission can have only 1 workflow
+        // App level checks are in place. But this is sort of progressive
+        // code where a single permission might have multiple workflows
+        // in future.
+        $workflows = $this->getWorkflowsForPermission($permissionId, $orgId);
 
         // More than one workflow could be found.
         $workflow = $workflows->first();
 
         $params[Entity::WORKFLOW_ID] = $workflow->getId();
+
+        $params[Entity::PERMISSION_ID] = $permissionId;
 
         $params[Entity::DIFFER] = $input;
 
@@ -54,8 +72,7 @@ class Core extends Base\Core
 
             unset($differ[Entity::ORG_ID]);
 
-            unset($differ[Differ\Entity::PERMISSIONS]);
-
+            // Create the diff for the entity
             (new Differ\Core)->create($action, $differ);
         });
 
@@ -84,21 +101,12 @@ class Core extends Base\Core
      * @param string $orgId
      * @return array
      **/
-    public function getWorkflowsForPermissions(array $permissions, string $orgId)
+    public function getWorkflowsForPermission(string $permissionId, string $orgId)
     {
-        // Implicit check for permission existance in the organisation.
-        $permissionIds = $this->repo
-                              ->permission
-                              ->retrieveIdsByNamesAndOrg($permissions, $orgId)
-                              ->map(function ($permission){
-                                    return $permission->getId();
-                                })
-                              ->toArray();
-
         // Implicit check for workflow in the organisation against permission ids.
         $workflows = $this->repo
                           ->workflow
-                          ->fetchWorkflowsByPermissionsAndOrgId($permissionIds, $orgId);
+                          ->fetchWorkflowsByPermissionsAndOrgId($permissionId, $orgId);
 
         return $workflows;
     }

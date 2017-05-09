@@ -15,6 +15,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use RZP\Exception\EarlyWorkflowResponse;
 
 class Handler extends ExceptionHandler
 {
@@ -80,6 +81,10 @@ class Handler extends ExceptionHandler
 
             case $e instanceof MethodNotAllowedHttpException:
                 $response = ApiResponse::httpMethodNotAllowed();
+                break;
+
+            case $e instanceof EarlyWorkflowResponse;
+                $response = ApiResponse::json(json_decode($e->getMessage(), true));
                 break;
         }
 
