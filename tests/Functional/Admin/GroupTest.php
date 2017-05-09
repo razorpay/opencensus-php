@@ -8,6 +8,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class GroupTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()

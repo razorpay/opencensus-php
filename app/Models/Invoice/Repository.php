@@ -107,10 +107,28 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getNonFailedPaymentsCount(Entity $invoice)
+    /**
+     * Returns counts of payment which are succeeding(i.e. either created,
+     * authorized or captured) for given invoice.
+     *
+     * This method gets used in validation(in conjunction with invoice being
+     * in 'issued' state) when expiring/canceling an invoice, we don't allow the
+     * former when there are succeeding payments.
+     *
+     * @param Entity $invoice
+     *
+     * @return int
+     */
+    public function getSucceedingPaymentsCount(Entity $invoice): int
     {
         return $invoice->payments()
-                       ->where(Payment\Entity::STATUS, '!=', Payment\Status::FAILED)
+                       ->whereIn(
+                            Payment\Entity::STATUS,
+                            [
+                                Payment\Status::CREATED,
+                                Payment\Status::AUTHORIZED,
+                                Payment\Status::CAPTURED,
+                            ])
                        ->count();
     }
 
