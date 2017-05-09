@@ -28,7 +28,7 @@ class Core extends Base\Core
         Entity::verifyIdAndStripSign($orgId);
 
         return $this->repo->org->findOrFailPublicWithRelations(
-            $orgId, ['hostnames', 'permissions']);
+            $orgId, ['hostnames', 'permissions', 'workflow_permissions']);
     }
 
     public function edit(string $orgId, array $input)
@@ -55,6 +55,25 @@ class Core extends Base\Core
                 $this->deleteUnassignedPermissionsFromRoles($org, $diffPerms);
 
                 $this->addOrgRelatedEntities($org, $input);
+            }
+
+            if (isset($input[Entity::WORKFLOW_PERMISSIONS]) === true)
+            {
+                $perms = $input[Entity::WORKFLOW_PERMISSIONS];
+
+                $oldPerms = $this->repo->permission
+                                       ->fetchAllByOrg($org->getId(), 'workflow')
+                                       ->toArray();
+
+                $oldPerms = array_map(function($perm) {
+                    return $perm['id'];
+                }, $oldPerms);
+
+                $diffPerms = array_diff($oldPerms, $perms);
+
+                $this->disableWorkflowPermissionsForOrg($org, $diffPerms);
+
+                $this->enableWorkflowPermissionsForOrg($org, $perms);
             }
         });
 
@@ -141,5 +160,27 @@ class Core extends Base\Core
             $this->repo->sync(
                 $org, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
         }
+
+        if (isset($input[Entity::WORKFLOW_PERMISSIONS]) === true)
+        {
+            $this->enableWorkflowPermissionsForOrg(
+                $org, $input[Entity::WORKFLOW_PERMISSIONS]);
+        }
+    }
+
+    protected function enableWorkflowPermissionsForOrg(
+        Entity $org,
+        array $permissions)
+    {
+        $this->repo->permission->toggleWorkflowOnOrgForPermissions(
+            $org->getId(), $permissions, true);
+    }
+
+    protected function disableWorkflowPermissionsForOrg(
+        Entity $org,
+        array $permissions)
+    {
+        $this->repo->permission->toggleWorkflowOnOrgForPermissions(
+            $org->getId(), $permissions, false);
     }
 }

@@ -18,6 +18,12 @@ class Service extends Base\Service
                 $input[Entity::PERMISSIONS]);
         }
 
+        if (empty($input[Entity::WORKFLOW_PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::WORKFLOW_PERMISSIONS]);
+        }
+
         $org = $this->repo->transactionOnLiveAndTest(function() use ($input)
         {
             $org = $this->core()->create($input);
@@ -118,6 +124,12 @@ class Service extends Base\Service
         {
             Permission\Entity::verifyIdAndStripSignMultiple(
                 $input[Entity::PERMISSIONS]);
+        }
+
+        if (empty($input[Entity::WORKFLOW_PERMISSIONS]) === false)
+        {
+            Permission\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::WORKFLOW_PERMISSIONS]);
         }
 
         $org = $this->repo->transactionOnLiveAndTest(function() use ($id, $input)
