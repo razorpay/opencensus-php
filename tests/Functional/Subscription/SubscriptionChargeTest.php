@@ -110,6 +110,44 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSubscriptionRetryCapture()
+    {
+        $this->doAuthTxnForSubscriptionWithAddOn();
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('authenticated', $subscription['status']);
+        $expectedPaidCount = 0;
+        // Subscription has only been authenticated, never paid
+        $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+
+        // This tells the gateways to fail on capture
+        $this->failOnCapture($subscription);
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        // Invoice got created
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $payment = $this->getLastEntity('payment', true);
+        // Failure was on capture, so payment is in authorized state
+        $this->assertEquals('authorized', $payment['status']);
+
+        // Subscription marked as overdue
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('overdue', $subscription['status']);
+
+        $this->passOnCapture($subscription);
+
+        $result = $this->makeSubscriptionRetryCronRequest();
+        $this->assertEquals(1, $result['queued']);
+
+        // Retry succeeded, subscription marked as active
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('active', $subscription['status']);
+
+        // Reset time
+        Carbon::setTestNow();
+    }
+
     public function testSubscriptionOnHold()
     {
         $this->doAuthTxnForSubscriptionWithAddOn();

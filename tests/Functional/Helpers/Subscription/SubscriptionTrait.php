@@ -48,7 +48,7 @@ trait SubscriptionTrait
     public function makeSubscriptionRetryCronRequest()
     {
         $request = [
-            'url'     => '/subscriptions/retry/auth',
+            'url'     => '/subscriptions/retry',
             'action'  => 'post',
             'content' => [],
         ];
@@ -172,6 +172,30 @@ trait SubscriptionTrait
             {
                 // Do nothing
             });
+    }
+
+    protected function failOnCapture($subscription)
+    {
+        // This tells the gateways to fail on capture
+        $this->fixtures->edit(
+            'subscription',
+            $subscription['id'],
+            [
+                'notes' => [
+                    'fail' => 'capture',
+                ],
+            ]);
+    }
+
+    protected function passOnCapture($subscription)
+    {
+        // This tells the gateways to fail on capture
+        $this->fixtures->edit(
+            'subscription',
+            $subscription['id'],
+            [
+                'notes' => [],
+            ]);
     }
 
     protected function chargeSubscriptionsViaCron(string $timestamp = null)
