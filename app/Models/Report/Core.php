@@ -54,7 +54,7 @@ class Core extends Base\Core
      * @param $entity string
      * @return void
      */
-    public function queueGenerateReport(array $input, array $entity)
+    public function queueGenerateReport(array $input, string $entity)
     {
         try
         {
