@@ -702,6 +702,8 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'ALL',
             'issuer'  => 'ALL',
@@ -713,6 +715,8 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown()
     {
         $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
 
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'first_data',
@@ -728,6 +732,8 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'hdfc',
             'issuer'  => 'ALL',
@@ -739,6 +745,8 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithCardDowntimeWithGatewayExclusiveNetworkDown()
     {
         $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
 
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'hdfc',
@@ -752,6 +760,8 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'ALL',
             'issuer'  => 'HDFC',]);
@@ -762,6 +772,8 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithNetbankingDowntimeWithSharedNetbankingGateway()
     {
         $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
@@ -774,6 +786,8 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
          $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
             'issuer'  => 'ALLA',]);
@@ -785,6 +799,8 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
             'issuer'      => 'ALL',]);
@@ -795,6 +811,8 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithWalletDowntime()
     {
         $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
 
         $this->fixtures->create('gateway_downtime:wallet', [
             'gateway' => 'wallet_olamoney',

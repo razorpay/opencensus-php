@@ -401,11 +401,14 @@ class Checkout
 
     public function checkAndFillGatewayDowntime(Merchant\Entity $merchant, array & $data)
     {
-        $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
-
-        if (empty($downtimeData) === false)
+        if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
         {
-            $data['downtime'] = $downtimeData;
+            $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+
+            if (empty($downtimeData) === false)
+            {
+                $data['downtime'] = $downtimeData;
+            }
         }
     }
 }
