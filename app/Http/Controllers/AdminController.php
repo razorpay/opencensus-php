@@ -295,13 +295,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function getMerchantSuspend($id)
-    {
-        $error = (new Admin\Service)->suspendMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     /**
      * Calls the Creevey service over a queue to capture screenshots
      * @param  string $id Merchant Id
@@ -329,13 +322,6 @@ class AdminController extends Controller
         $input = \Input::all();
 
         $error = (new Admin\Service)->saveScreenshot($id, $input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantUnsuspend($id)
-    {
-        $error = (new Admin\Service)->unsuspendMerchant($id);
 
         return AppResponse::jsonResponse($error);
     }

@@ -194,8 +194,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
         Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
-        Route::get('/admin/merchant/{id}/suspend', 'AdminController@getMerchantSuspend');
-        Route::get('/admin/merchant/{id}/unsuspend', 'AdminController@getMerchantUnsuspend');
         Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
         Route::post('/admin/merchants/{id}/international', 'AdminController@postSetMerchantInternational');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');

@@ -1272,37 +1272,6 @@ class Service extends Base\Service
         return [[], $file];
     }
 
-    public function suspendMerchant($id)
-    {
-        $error = $this->actions($id, 'suspend');
-
-        if (empty($error))
-        {
-            $merchant = Merchant\Entity::findOrSoftFail($id);
-            $merchant->suspend();
-
-            $this->logActionToSlack($merchant, Actions::SUSPENDED);
-        }
-
-        return $error;
-    }
-
-    public function unsuspendMerchant($id)
-    {
-        $error = $this->actions($id, 'unsuspend');
-
-        if (empty($error))
-        {
-            $merchant = Merchant\Entity::findorfail($id);
-            $merchant->suspended_at = null;
-            $merchant->save();
-
-            $this->logActionToSlack($merchant, Actions::UNSUSPENDED);
-        }
-
-        return $error;
-    }
-
     public function fetchPricingPlan($id)
     {
         $errors = array();
