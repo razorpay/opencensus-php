@@ -32,6 +32,7 @@ class Constants
     const CHARGE_AT_WILL      = 'charge_at_will';
     const SUBSCRIPTIONS       = 'subscriptions';
     const ZOHO                = 'zoho';
+    const EXPOSE_DOWNTIMES    = 'expose_downtimes';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -60,6 +61,7 @@ class Constants
         self::CHARGE_AT_WILL      => true,
         self::SUBSCRIPTIONS       => true,
         self::ZOHO                => true,
+        self::EXPOSE_DOWNTIMES    => true,
     ];
 
     public static $visibleFeaturesMap = [

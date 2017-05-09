@@ -2772,7 +2772,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'total_invoices_count' => 2,
+                'total_invoices_count' => 3,
                 'failed_invoice_ids'   => [
                     '1000005invoice',
                 ],
