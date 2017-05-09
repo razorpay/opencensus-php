@@ -47,6 +47,21 @@ trait SubscriptionTrait
         return json_decode($response->getContent(), true);
     }
 
+    public function makeSubscriptionInvoiceChargeManualRequest($invoiceId)
+    {
+        $request = [
+            'url'       => "/invoices/$invoiceId/charge",
+            'action'    => 'post',
+            'content'   => []
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     public function makeSubscriptionRetryCronRequest()
     {
         $request = [
@@ -276,5 +291,10 @@ trait SubscriptionTrait
         }
 
         return $this->makeSubscriptionChargeCronRequest();
+    }
+
+    protected function chargeSubscriptionInvoiceManually($invoice)
+    {
+        return $this->makeSubscriptionInvoiceChargeManualRequest($invoice['id']);
     }
 }

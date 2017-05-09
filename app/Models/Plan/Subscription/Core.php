@@ -280,9 +280,15 @@ class Core extends Base\Core
 
                 if ($manual === false)
                 {
-                    $this->dispatch((new ChargeSubscription($queuePayload)));
+                    return (new Charge)->fireCharge($queuePayload);
 
-                    return true;
+                    //
+                    // We should move to queue. But, right now we are not, because
+                    // of issues with figuring out the auth for recurring.
+                    // Will fix this later and then move to queue.
+                    //
+                    // $this->dispatch((new ChargeSubscription($queuePayload)));
+                    // return true;
                 }
                 else
                 {

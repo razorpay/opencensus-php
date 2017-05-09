@@ -106,7 +106,7 @@ class Charge extends Base\Core
 
             if ($manual === false)
             {
-                $this->handleAuthorizationOrCaptureFailure($subscription);
+                $this->handleAuthorizationOrCaptureFailure($subscription, $invoice);
             }
 
             return false;
@@ -120,7 +120,7 @@ class Charge extends Base\Core
         if (($payment->isCaptured() === false) and
             ($manual === false))
         {
-            $this->handleAuthorizationOrCaptureFailure($subscription, true);
+            $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, true);
 
             return false;
         }
@@ -190,7 +190,10 @@ class Charge extends Base\Core
         $subscription->resetAuthAttempts();
     }
 
-    protected function handleAuthorizationOrCaptureFailure(Entity $subscription, bool $captureFailure = false)
+    protected function handleAuthorizationOrCaptureFailure(
+        Entity $subscription,
+        Invoice\Entity $invoice,
+        bool $captureFailure = false)
     {
         $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED;
         $errorStatus = Status::AUTH_FAILURE;
@@ -220,6 +223,7 @@ class Charge extends Base\Core
             // TODO: Make this merchant configurable. It can either
             // go into on_hold or cancelled state.
             $subscription->setStatus(Status::ON_HOLD);
+            $invoice->setSubscriptionStatus(Invoice\Status::ON_HOLD);
         }
         else
         {
@@ -232,7 +236,11 @@ class Charge extends Base\Core
                 ]);
         }
 
-        $this->repo->saveOrFail($subscription);
+        $this->repo->transaction(function() use ($invoice, $subscription)
+            {
+                $this->repo->saveOrFail($invoice);
+                $this->repo->saveOrFail($subscription);
+            });
 
         (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus());
     }

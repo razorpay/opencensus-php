@@ -678,9 +678,25 @@ trait Authorize
 
         if ($authType === BasicAuth\Type::PRIVATE_AUTH)
         {
-            // Merchants with subscriptions feature cannot make S2S calls
-            // for recurring payments.
-            $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
+            //
+            // Subscriptions can also actually make payments in private auth
+            // In case of manual retry, they can do it from either the dashboard
+            // or API directly. But, if it's from API directly, it would mean
+            // they are doing a S2S recurring payment. We cannot allow that.
+            // Hence, we are going to ensure that retry can happen only from the
+            // dashboard and not from the API.
+            //
+            if ($this->app['basicauth']->isProxyAuth() === true)
+            {
+                $this->verifyAtLeastOneFeatureEnabledForMerchant(
+                    $merchant, [Feature\Constants::SUBSCRIPTIONS, Feature\Constants::RECURRING]);
+            }
+            else
+            {
+                // Merchants with subscriptions feature cannot make S2S calls
+                // for recurring payments.
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
+            }
         }
         else if ($authType === BasicAuth\Type::PUBLIC_AUTH)
         {
