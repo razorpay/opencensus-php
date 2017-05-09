@@ -18,7 +18,6 @@ var app = angular
     'ngIdle',
     'ngBusy',
     'noCAPTCHA',
-    'angulartics',
     'react',
   ])
   .run([
@@ -437,6 +436,10 @@ var reactTemplateProvider = function(template) {
         }
       } else {
         deferred.resolve(template);
+        if (window.ga) {
+          ga('set', 'page', '/' + location.hash);
+          ga('send', 'pageview');
+        }
       }
       return deferred.promise;
     },
