@@ -2,26 +2,16 @@
 
 namespace RZP\Jobs;
 
-use RZP\Jobs\Job;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 use App;
 use Requests;
+
 use RZP\Trace\Trace;
+use RZP\Jobs\BaseJob;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
-class RequestJob extends Job implements ShouldQueue
+class RequestJob extends BaseJob
 {
-    use InteractsWithQueue;
-
-    const MAX_ALLOWED_ATTEMPTS = 5;
-    const RELEASE_WAIT_SECS    = 60;
-
-    const JOB_DELETED          = 'job_deleted';
-    const JOB_RELEASED         = 'job_released';
-
     protected $trace;
     protected $request;
 
@@ -52,33 +42,13 @@ class RequestJob extends Job implements ShouldQueue
         }
         catch(\Requests_Exception $e)
         {
-            $this->handleException($e);
+            $this->handleException($e, TraceCode::REQUESTS_JOB_ERROR);
         }
-    }
-
-    protected function init()
-    {
-        $app = App::getFacadeRoot();
-
-        $this->trace = $app['trace'];
-    }
-
-    protected function traceRequest()
-    {
-        $this->trace->info(
-            TraceCode::REQUESTS_JOB_REQUEST,
-            [
-                'request' => [
-                    'url'     => $this->request['url'],
-                    'content' => $this->request['content'],
-                    'options' => $this->request['options'],
-                ]
-            ]);
     }
 
     private function handleRequest()
     {
-        $this->traceRequest();
+        $this->trace->info(TraceCode::REQUESTS_JOB_REQUEST, ['request' => $this->request]);
 
         $timeStarted = microtime(true);
 
@@ -99,34 +69,5 @@ class RequestJob extends Job implements ShouldQueue
                 'attempts'   => $this->attempts(),
                 'response'   => $response->body
             ]);
-    }
-
-    /**
-     * When an exception occurs, the job gets deleted if it has
-     * exceeded the maximum attempts. Otherwise it is released back
-     * into the queue after the set release wait time
-     *
-     * @param Throwable $e
-     */
-    protected function handleException(\Throwable $e)
-    {
-        $jobAction = self::JOB_DELETED;
-
-        if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
-        {
-            $this->delete();
-        }
-        else
-        {
-            $this->release(self::RELEASE_WAIT_SECS);
-
-            $jobAction = self::JOB_RELEASED;
-        }
-
-        $this->trace->traceException(
-            $e,
-            Trace::ERROR,
-            TraceCode::REQUESTS_JOB_ERROR,
-            ['job_action' => $jobAction]);
     }
 }

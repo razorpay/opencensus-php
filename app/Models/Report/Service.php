@@ -7,6 +7,8 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\ReportsJob;
 
+use Illuminate\Foundation\Bus\DispatchesJobs;
+
 class Service extends Base\Service
 {
     use DispatchesJobs;
@@ -20,9 +22,9 @@ class Service extends Base\Service
      */
     public function fetchMultiple(array $input)
     {
-        $reports = $this->repo->reports->fetch($input, $this->merchant->getId());
+        $reports = $this->repo->report->fetch($input, $this->merchant->getId())->toArrayPublic();
 
-        return $reports->toArrayPubilc();
+        return $reports;
     }
 
     /**

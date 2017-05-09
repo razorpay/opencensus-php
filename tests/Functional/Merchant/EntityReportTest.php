@@ -241,4 +241,70 @@ class EntityReportTest extends TestCase
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    public function testGenerateReportCombined()
+    {
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $entity = 'transaction';
+
+        $this->generateEntityReport($entity, $input);
+
+        $reports = $this->fetchReports(['type' => 'transaction']);
+
+        assert($reports['count'] === 1);
+    }
+
+    public function testGenerateReportSettlement()
+    {
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $entity = 'settlement';
+
+        $this->generateEntityReport($entity, $input);
+
+        $reports = $this->fetchReports(['type' => 'settlement']);
+
+        assert($reports['count'] === 1);
+    }
+
+    public function phPayment()
+    {
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $entity = 'payment';
+
+        $this->generateEntityReport($entity, $input);
+
+        $reports = $this->fetchReports(['type' => 'payment']);
+
+        assert($reports['count'] === 1);
+    }
 }

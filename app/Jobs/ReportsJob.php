@@ -2,23 +2,28 @@
 
 namespace RZP\Jobs;
 
-use RZP\Jobs\Job;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App;
 
-class ReportsJob extends Job implements ShouldQueue
+use RZP\Jobs\BaseJob;
+use RZP\Trace\TraceCode;
+use RZP\Models\Report\Types\EntityReport;
+
+class ReportsJob extends BaseJob
 {
-    use InteractsWithQueue, SerializesModels;
+    protected $input;
+
+    protected $entity;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(array $input, string $entity)
     {
-        //
+        $this->input = $input;
+
+        $this->entity = $entity;
     }
 
     /**
@@ -28,6 +33,17 @@ class ReportsJob extends Job implements ShouldQueue
      */
     public function handle()
     {
-        //
+        try
+        {
+            $this->init();
+
+            $reportType = new EntityReport($this->entity);
+
+            $reportType->generateReport($this->input);
+        }
+        catch (\Exception $e)
+        {
+            $this->handleException($e, TraceCode::REPORT_REQUEST_FAILED);
+        }
     }
 }

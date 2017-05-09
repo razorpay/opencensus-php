@@ -5,6 +5,7 @@ namespace RZP\Models\Report\Types;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Base\RuntimeManager;
 
 class BaseReport extends Base\Core
 {

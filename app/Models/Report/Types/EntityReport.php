@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Report\Type;
+namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
 
@@ -9,7 +9,6 @@ use RZP\Models\Report;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\JitValidator;
-use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
@@ -17,7 +16,7 @@ class EntityReport extends BaseReport
 {
     use FileHandlerTrait;
 
-    const BATCH_LIMIT       = 20000;
+    const BATCH_LIMIT = 20000;
 
     protected $entity;
 
