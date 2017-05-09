@@ -1272,48 +1272,6 @@ class Service extends Base\Service
         return [[], $file];
     }
 
-    /**
-     * Merchant Archive
-     * Conditions: merchant_details->submitted != null
-     *             and merchant_details->locked = true
-     *             and merchant->activated = false
-     *
-     * @param  string $id
-     * @return array
-     */
-    public function archiveMerchant($id)
-    {
-        $error = $this->actions($id, 'archive');
-
-        if (empty($error) === true)
-        {
-            // For backward compatibility
-            $merchant = Merchant\Entity::findOrSoftFail($id);
-            $merchant->archive();
-
-            $this->logActionToSlack($merchant, Actions::ARCHIVED);
-        }
-
-        return $error;
-    }
-
-    public function unarchiveMerchant($id)
-    {
-        $error = $this->actions($id, 'unarchive');
-
-        if (empty($error))
-        {
-            // For backward compatibility
-            $merchant = Merchant\Entity::findorfail($id);
-            $merchant->archived_at = null;
-            $merchant->save();
-
-            $this->logActionToSlack($merchant, Actions::UNARCHIVED);
-        }
-
-        return $error;
-    }
-
     public function suspendMerchant($id)
     {
         $error = $this->actions($id, 'suspend');

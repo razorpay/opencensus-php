@@ -295,13 +295,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function getMerchantArchive($id)
-    {
-        $error = (new Admin\Service)->archiveMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getMerchantSuspend($id)
     {
         $error = (new Admin\Service)->suspendMerchant($id);
@@ -336,13 +329,6 @@ class AdminController extends Controller
         $input = \Input::all();
 
         $error = (new Admin\Service)->saveScreenshot($id, $input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantUnarchive($id)
-    {
-        $error = (new Admin\Service)->unarchiveMerchant($id);
 
         return AppResponse::jsonResponse($error);
     }
