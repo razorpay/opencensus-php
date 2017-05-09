@@ -124,6 +124,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerSesClient();
 
         $this->registerDrip();
+
+        $this->registerWorkflow();
     }
 
     /**
@@ -151,6 +153,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'webhook.inferno',
             'exchange',
             'pigeon',
+            'workflow',
         ];
     }
 
@@ -302,6 +305,14 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new Drip($app);
+        });
+    }
+
+    protected function registerWorkflow()
+    {
+        $this->app->singleton('workflow', function ($app)
+        {
+            return new Workflow\Service($app);
         });
     }
 }

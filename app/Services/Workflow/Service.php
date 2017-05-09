@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Services;
+namespace RZP\Services\Workflow;
 
 use RZP\Exception;
 use RZP\Http\Route;
@@ -12,7 +12,7 @@ use RZP\Models\Workflow\Action\State;
 use RZP\Exception\EarlyWorkflowResponse;
 use RZP\Models\Workflow\Service as WorkflowService;
 
-class Workflow
+class Service
 {
     const WILDCARD_PERMISSION = '*';
 
@@ -28,25 +28,22 @@ class Workflow
 
     protected $diff = [];
 
-    public function __construct($routePermission = null)
+    public function __construct($app)
     {
-        $this->app = App::getFacadeRoot();
+        $this->app = $app;
 
         $this->router = $this->app['router'];
 
         $this->request = $this->app['request'];
 
         $this->ba = $this->app['basicauth'];
-
-        if (empty($routePermission) === false)
-        {
-            $this->setPermission($routePermission);
-        }
     }
 
     public function setEntity($entity)
     {
         $this->entity = $entity;
+
+        return $this;
     }
 
     public function trigger()
@@ -135,6 +132,8 @@ class Workflow
     public function setPermission($permission)
     {
         $this->permission = $permission;
+
+        return $this;
     }
 
     public function getPermission()

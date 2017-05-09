@@ -13,7 +13,7 @@ use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Service as WorkflowService;
 use Illuminate\Foundation\Application;
-use RZP\Services\Workflow as WorkflowAppService;
+use Workflow as WorkflowFacade;
 
 class Workflow
 {
@@ -83,13 +83,9 @@ class Workflow
 
         $entity = Route::$workflowRoutes[$routeName] ?? null;
 
-        $workflowService = new WorkflowAppService();
+        WorkflowFacade::setEntity($entity)->setPermission($permission);
 
-        $workflowService->setEntity($entity);
-
-        $workflowService->setPermission($permission);
-
-        return $workflowService->trigger();
+        return WorkflowFacade::trigger();
     }
 
     private function getRoutePermission($routeName)
