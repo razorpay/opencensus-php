@@ -8,6 +8,8 @@ export default class Sidebar extends Component {
   // populated with initial values
   routes = {
     transactions: '/app/payments',
+    account: '/app/profile',
+    settings: '/app/config',
   };
 
   render() {
@@ -22,6 +24,14 @@ export default class Sidebar extends Component {
       routes.transactions = pathname;
     }
 
+    if (/^\/app\/(profile|activation|credits|addfunds)/.test(pathname)) {
+      routes.account = pathname;
+    }
+
+    if (/^\/app\/(config|webhooks|keys)/.test(pathname)) {
+      routes.settings = pathname;
+    }
+
     return (
       <div class="sidebar">
         <section class="brand-logo">
@@ -34,21 +44,31 @@ export default class Sidebar extends Component {
             ? null
             : <div class="nav">
                 <ShowWhen notMyRole="sellerapp">
+                  <NavLink exact to="/">Home</NavLink>
+                </ShowWhen>
+
+                <ShowWhen notMyRole="sellerapp">
                   <NavLink to={routes.transactions}>Transactions</NavLink>
                 </ShowWhen>
 
                 <ShowWhen notMyRole="sellerapp">
-                  <NavLink to="/settlements">Settlements</NavLink>
+                  <NavLink to="/app/settlements">Settlements</NavLink>
                 </ShowWhen>
 
-                <NavLink to="/invoices">Invoices</NavLink>
+                <NavLink to="/app/invoices">Invoices</NavLink>
 
                 <ShowWhen notMyRole="sellerapp">
-                  <NavLink to="/reports">Reports</NavLink>
+                  <NavLink to="/app/reports">Reports</NavLink>
                 </ShowWhen>
 
                 <ShowWhen myRole="owner">
-                  <NavLink to="/team">Manage Team</NavLink>
+                  <NavLink to="/app/team">Manage Team</NavLink>
+                </ShowWhen>
+
+                <NavLink to={routes.account}>My Account</NavLink>
+
+                <ShowWhen myRole="owner manager admin">
+                  <NavLink to={routes.settings}>Settings</NavLink>
                 </ShowWhen>
               </div>}
         </nav>
