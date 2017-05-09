@@ -175,6 +175,19 @@ class Service
         return false;
     }
 
+    /*
+        Can be used like this:
+
+        Workflow::setPermission($permission)
+                ->handle($entity, function ($entity) {
+                    // Execute business logic on the $entity
+                })
+
+        $entity is supposed to be the main entity on which
+        diff will be computed pre callback execution and post
+        callback execution which will change the $entity due to
+        the business logic code.
+    */
     public function handle($entity, $callback)
     {
         // 1. If the permission has no workflow then don't do anything
