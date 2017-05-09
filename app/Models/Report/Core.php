@@ -8,8 +8,12 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\ReportsJob;
 
+use Illuminate\Foundation\Bus\DispatchesJobs;
+
 class Core extends Base\Core
 {
+    use DispatchesJobs;
+
     /**
      * builds the report entity, given params
      *

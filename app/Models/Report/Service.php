@@ -4,12 +4,8 @@ namespace RZP\Models\Report;
 
 use RZP\Models\Base;
 
-use Illuminate\Foundation\Bus\DispatchesJobs;
-
 class Service extends Base\Service
 {
-    use DispatchesJobs;
-
     /**
      * Fetches reports for merchant
      *
