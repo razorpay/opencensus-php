@@ -835,7 +835,6 @@ final class Route
         'merchant_actions',
         'refund_retry_failed',
         'refund_verify_failed',
-        'merchants_update_hold_funds',
         'merchants_update_bank_account',
     );
 
@@ -973,6 +972,7 @@ final class Route
         'workflow_get_actions_for_checker',
         'workflow_get_actions_by_maker',
         'workflow_get_actions_checked',
+        'merchants_update_hold_funds',
     ];
 
     public static $routePermission = [
@@ -1061,6 +1061,7 @@ final class Route
         'merchant_get_banks'               => [Permission::VIEW_MERCHANT_BANKS],
         'merchant_set_banks'               => [Permission::EDIT_MERCHANT_BANKS],
         'merchant_fetch_bank_account'      => [Permission::VIEW_MERCHANT_BANK_ACCOUNTS],
+        'merchants_update_hold_funds'      => [Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS],
     ];
 
     public static $direct = array(
