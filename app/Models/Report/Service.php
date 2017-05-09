@@ -2,10 +2,7 @@
 
 namespace RZP\Models\Report;
 
-use RZP\Trace\Trace;
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
-use RZP\Jobs\ReportsJob;
 
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
@@ -28,7 +25,7 @@ class Service extends Base\Service
     }
 
     /**
-     * Generates report for merchant
+     * Queues Generate-report for merchant
      *
      * @param $input array
      *        expected : 'day', 'month', 'year'
@@ -37,13 +34,6 @@ class Service extends Base\Service
      */
     public function generateReport(array $input, string $entity)
     {
-        try
-        {
-            $this->dispatch(new ReportsJob($input, $entity));
-        }
-        catch (Exception $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::REPORT_REQUEST_FAILED);
-        }
+        (new Core)->queueGenerateReport($input, $entity);
     }
 }

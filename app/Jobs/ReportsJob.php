@@ -6,7 +6,7 @@ use App;
 
 use RZP\Jobs\BaseJob;
 use RZP\Trace\TraceCode;
-use RZP\Models\Report\Types\EntityReport;
+use RZP\Models\Report\Types\BasicEntityReport;
 
 class ReportsJob extends BaseJob
 {

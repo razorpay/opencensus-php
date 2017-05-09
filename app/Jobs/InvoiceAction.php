@@ -77,9 +77,7 @@ class InvoiceAction extends BaseJob
         {
             $payload = $this->getTracePayload();
 
-            $this->handleException($e,
-                                   TraceCode::INVOICE_ACTION_JOB_ERROR,
-                                   $payload);
+            $this->handleException($e, TraceCode::INVOICE_ACTION_JOB_ERROR, $payload);
         }
     }
 
