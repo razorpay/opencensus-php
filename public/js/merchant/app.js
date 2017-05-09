@@ -132,15 +132,15 @@ var app = angular
           url: '/activationold',
           templateUrl: 'tpl/app_activation.html',
         })
-        .state('app.profile', {
-          url: '/profile',
-          templateUrl: 'tpl/app_profile.html',
-        })
         .state('app.accountsold', {
           url: '/accountsold',
           templateUrl: 'tpl/app_accounts.html',
         })
         // React
+        .state('app.profile', {
+          url: '/profile',
+          templateProvider: reactTemplateProvider('<profile-new />'),
+        })
         .state('app.invoices', {
           url: '/invoices',
           templateUrl: 'tpl/app_invoices.html',

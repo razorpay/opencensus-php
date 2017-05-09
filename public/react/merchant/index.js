@@ -22,6 +22,7 @@ import InvoiceDetailsContainer from './containers/Invoices/Details';
 import OrdersListContainer from './containers/Orders/List';
 import OrderDetailsContainer from './containers/Orders/Details';
 import WebhooksContainer from './containers/Webhooks/List';
+import ProfileContainer from './containers/Profile';
 import AddFundsContainer from './containers/AddFunds';
 
 import SettlementsListContainer from './containers/Settlements/List';
@@ -139,6 +140,7 @@ createNgDirective('settlementsList', SettlementsListContainer);
 createNgDirective('settlementDetails', SettlementDetailsContainer, ['id']);
 
 createNgDirective('webhooksList', WebhooksContainer);
+createNgDirective('profileNew', ProfileContainer);
 
 createNgDirective('keysList', KeysListContainer);
 createNgDirective('addFunds', AddFundsContainer);
