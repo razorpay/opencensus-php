@@ -39,7 +39,7 @@ class ViewDataSerializer extends Base\Core
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function get()
+    public function get(): array
     {
         $publicId = $this->invoice->getPublicId();
 
@@ -78,7 +78,7 @@ class ViewDataSerializer extends Base\Core
         ];
     }
 
-    protected function getFormattedInvoiceDataForView()
+    protected function getFormattedInvoiceDataForView(): array
     {
         $invoiceData = $this->invoice->toArrayPublic();
 
@@ -124,7 +124,7 @@ class ViewDataSerializer extends Base\Core
         return $invoiceData;
     }
 
-    protected function getFormattedMerchantDataForView()
+    protected function getFormattedMerchantDataForView(): array
     {
         $merchantBrandColor = $this->merchant->getBrandColor();
 

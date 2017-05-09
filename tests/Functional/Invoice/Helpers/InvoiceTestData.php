@@ -1154,7 +1154,7 @@ return [
                 'email_status'         => null,
                 'date'                 => 1480506888,
                 'terms'                => 'Updated terms & conditions',
-                'amount'               => null,
+                'amount'               => 100000,
                 'description'          => null,
                 'notes'                => [
                     'new_key'          => 'new_value'

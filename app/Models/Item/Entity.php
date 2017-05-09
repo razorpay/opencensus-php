@@ -149,6 +149,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getUnit()
+    {
+        return $this->getAttribute(self::UNIT);
+    }
+
     public function isTaxInclusive()
     {
         return $this->getAttribute(self::TAX_INCLUSIVE);

@@ -11,12 +11,12 @@ class NotifyStatus
     const DELIVERED     = 'delivered';
     const FAILED        = 'failed';
 
-    public static function isStatusValid($status)
+    public static function isStatusValid(string $status): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($status)));
     }
 
-    public static function checkStatus($status)
+    public static function checkStatus(string $status)
     {
         if (self::isStatusValid($status) === false)
         {

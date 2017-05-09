@@ -15,6 +15,8 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::AMOUNT              => 'required_without:item_id|integer|min:100',
         Entity::CURRENCY            => 'required_without:item_id|size:3|in:INR',
+        Entity::UNIT                => 'sometimes|string|max:512',
+        Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
     ];
 
     protected static $createManyRules = [
@@ -29,6 +31,8 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::CURRENCY            => 'sometimes|size:3|in:INR',
+        Entity::UNIT                => 'sometimes|string|max:512',
+        Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
     ];
 
     protected static $removeManyRules = [

@@ -71,7 +71,7 @@ class Notifier extends Base\Core
     // Methods to notify (via sms|email) events (issued|expired) of invoice.
     //
 
-    public function notifyInvoiceIssuedToCustomer()
+    public function notifyInvoiceIssuedToCustomer(): bool
     {
         if ($this->canNotifyInvoiceIssuedToCustomer() === false)
         {
@@ -93,7 +93,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function notifyInvoiceExpiredToCustomer()
+    public function notifyInvoiceExpiredToCustomer(): bool
     {
         if ($this->invoice->isExpired() === false)
         {
@@ -105,7 +105,7 @@ class Notifier extends Base\Core
 
     //  -------------------------------------------------------------------
 
-    public function canNotifyInvoiceIssuedToCustomer()
+    public function canNotifyInvoiceIssuedToCustomer(): bool
     {
         if ($this->invoice->isIssued() === false)
         {
@@ -132,7 +132,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function emailInvoiceIssuedToCustomer()
+    public function emailInvoiceIssuedToCustomer(): bool
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
@@ -170,7 +170,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function emailInvoiceExpiredToCustomer()
+    public function emailInvoiceExpiredToCustomer(): bool
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
@@ -193,7 +193,7 @@ class Notifier extends Base\Core
         return true;
     }
 
-    public function smsInvoiceIssuedToCustomer()
+    public function smsInvoiceIssuedToCustomer(): bool
     {
         $contact = $this->invoice->getCustomerContact();
 
@@ -232,7 +232,7 @@ class Notifier extends Base\Core
         return false;
     }
 
-    protected function emailInvoiceExpiringToCustomer()
+    protected function emailInvoiceExpiringToCustomer(): bool
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
@@ -279,22 +279,22 @@ class Notifier extends Base\Core
         });
     }
 
-    protected function getInvoiceIssuedMailPayload()
+    protected function getInvoiceIssuedMailPayload(): array
     {
         return $this->getInvoiceMailPayload(__FUNCTION__);
     }
 
-    protected function getInvoiceExpiredMailPayload()
+    protected function getInvoiceExpiredMailPayload(): array
     {
         return $this->getInvoiceMailPayload(__FUNCTION__);
     }
 
-    protected function getInvoiceExpiringMailPayload()
+    protected function getInvoiceExpiringMailPayload(): array
     {
         return $this->getInvoiceMailPayload(__FUNCTION__);
     }
 
-    public function getInvoicePaidMailPayload()
+    public function getInvoicePaidMailPayload(): array
     {
         return $this->getInvoiceMailPayload();
     }
@@ -306,7 +306,7 @@ class Notifier extends Base\Core
      *
      * @return array
      */
-    protected function getInvoiceMailPayload(string $callee = null)
+    protected function getInvoiceMailPayload(string $callee = null): array
     {
         $id = $this->invoice->getPublicId();
 
@@ -341,7 +341,9 @@ class Notifier extends Base\Core
         return $viewPayload;
     }
 
-    protected function getInvoiceMailSubject(string $callee, string $merchantName)
+    protected function getInvoiceMailSubject(
+        string $callee,
+        string $merchantName): string
     {
         if (in_array($callee, array_keys($this->mailSubjectTemplates), true) === false)
         {
@@ -353,12 +355,12 @@ class Notifier extends Base\Core
         return sprintf($this->mailSubjectTemplates[$callee][$type], $merchantName);
     }
 
-    protected function getLabel($type)
+    protected function getLabel(string $type): string
     {
         return self::MAIL_TAG_MAP[$type] ?? MailTags::INVOICE;
     }
 
-    public function sendNotificationsInBulk()
+    public function sendNotificationsInBulk(): array
     {
         $smsIssuedInvoices   = $this->repo
                                     ->invoice
@@ -396,7 +398,7 @@ class Notifier extends Base\Core
         return $results;
     }
 
-    protected function smsInvoiceIssuedToCustomerInBulk(array $invoices)
+    protected function smsInvoiceIssuedToCustomerInBulk(array $invoices): int
     {
         $totalSent = 0;
 
@@ -417,7 +419,7 @@ class Notifier extends Base\Core
         return $totalSent;
     }
 
-    protected function emailInvoiceIssuedToCustomerInBulk(array $invoices)
+    protected function emailInvoiceIssuedToCustomerInBulk(array $invoices): int
     {
         $totalSent = 0;
 
@@ -438,7 +440,7 @@ class Notifier extends Base\Core
         return $totalSent;
     }
 
-    protected function emailInvoiceExpiringToCustomerInBulk(array $invoices)
+    protected function emailInvoiceExpiringToCustomerInBulk(array $invoices): int
     {
         $totalSent = 0;
 
@@ -457,7 +459,7 @@ class Notifier extends Base\Core
         return $totalSent;
     }
 
-    protected function getRavenSendInvoiceRequestInput($contact)
+    protected function getRavenSendInvoiceRequestInput(string $contact): array
     {
         $merchant = $this->invoice->merchant;
 
@@ -468,6 +470,7 @@ class Notifier extends Base\Core
             'params' => [
                 'merchant_name' => $merchant->getBillingLabelElseName(),
                 'invoice_link'  => $this->invoice->getShortUrl(),
+                // @todo: Correct this - Should be using net amount now.
                 'amount'        => $this->invoice->getAmount() / 100,
             ]
         ];

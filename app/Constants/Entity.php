@@ -60,6 +60,7 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const SCHEDULE_TASK         = 'schedule_task';
+    const LINE_ITEM_TAX         = 'line_item_tax';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
@@ -233,6 +234,7 @@ class Entity
         self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
+        self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
     ];
 
     protected static $repository = [

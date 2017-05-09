@@ -293,7 +293,8 @@ class Entity extends Base\PublicEntity
 
     public function setDateAttribute($date)
     {
-        // To convert '' (empty strings coming from url encoded form data) to null
+        // To convert '' (empty strings coming from url encoded form data)
+        // to null
         if (empty($date))
         {
             $date = null;
@@ -349,16 +350,6 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getFormattedAmount()
-    {
-        return number_format($this->getAmount() / 100, 2);
-    }
-
-    public function getFormattedAmountWithCurrency()
-    {
-        return $this->getCurrency() . ' ' . number_format($this->getAmount() / 100, 2);
     }
 
     public function getCurrency()
@@ -573,7 +564,8 @@ class Entity extends Base\PublicEntity
 
     public function setCustomerBillingAddrId($customerBillingAddressId)
     {
-        $this->setAttribute(self::CUSTOMER_BILLING_ADDR_ID, $customerBillingAddressId);
+        $this->setAttribute(
+            self::CUSTOMER_BILLING_ADDR_ID, $customerBillingAddressId);
     }
 
     public function setCustomerEmail($customerEmail)
@@ -647,6 +639,23 @@ class Entity extends Base\PublicEntity
     public function setBillingEnd($billingEnd)
     {
         $this->setAttribute(self::BILLING_END, $billingEnd);
+    }
+
+    public function setTaxAmount($amount)
+    {
+        $this->setAttribute(self::TAX_AMOUNT, $amount);
+    }
+
+    public function setNetAmount($amount)
+    {
+        $this->setAttribute(self::NET_AMOUNT, $amount);
+    }
+
+    public function setAmountsToNull()
+    {
+        $this->setAttribute(self::AMOUNT, null);
+        $this->setAttribute(self::TAX_AMOUNT, null);
+        $this->setAttribute(self::NET_AMOUNT, null);
     }
 
     /**
@@ -910,7 +919,8 @@ class Entity extends Base\PublicEntity
 
     public function customerBillingAddress()
     {
-        return $this->belongsTo('RZP\Models\Address\Entity', 'customer_billing_addr_id');
+        return $this->belongsTo(
+            'RZP\Models\Address\Entity', 'customer_billing_addr_id');
     }
 
     public function payments()

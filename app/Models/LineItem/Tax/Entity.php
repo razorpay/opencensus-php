@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
 
     protected static $sign        = 'lit';
 
-    protected $entity             = 'line_item_taxe';
+    protected $entity             = 'line_item_tax';
 
     protected $generateIdOnCreate = true;
 
@@ -70,12 +70,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::TAX_AMOUNT => 'int',
-    ];
-
-    protected $publicSetters = [
-        self::ID,
-        self::ENTITY,
-        self::ITEM_ID,
     ];
 
     // Relations

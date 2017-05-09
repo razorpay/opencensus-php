@@ -56,12 +56,12 @@ class Status
         self::HALTED,
     ];
 
-    public static function isStatusValid($status) : bool
+    public static function isStatusValid(string $status): bool
     {
         return in_array($status, self::$invoiceStatuses, true);
     }
 
-    public static function checkStatus($status)
+    public static function checkStatus(string $status)
     {
         if (self::isStatusValid($status) === false)
         {

@@ -138,8 +138,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::UNIT,
         self::TAX_INCLUSIVE,
-        self::TAX_ID,
-        self::TAX_GROUP_ID,
+        // self::TAX_ID,
+        // self::TAX_GROUP_ID,
     ];
 
     // -------------------------- Getters ----------------------------
@@ -147,6 +147,21 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getTotalAmount()
+    {
+        return $this->getAttribute(self::TOTAL_AMOUNT);
+    }
+
+    public function getTaxAmount()
+    {
+        return $this->getAttribute(self::TAX_AMOUNT);
+    }
+
+    public function getNetAmount()
+    {
+        return $this->getAttribute(self::NET_AMOUNT);
     }
 
     public function getCurrency()
@@ -160,6 +175,23 @@ class Entity extends Base\PublicEntity
     }
 
     // -------------------------- Getters Ends -----------------------
+
+    // Setters
+
+    public function setTotalAmount($totalAmount)
+    {
+        $this->setAttribute(self::TOTAL_AMOUNT, $totalAmount);
+    }
+
+    public function setTaxAmount($taxAmount)
+    {
+        $this->setAttribute(self::TAX_AMOUNT, $taxAmount);
+    }
+
+    public function setNetAmount($netAmount)
+    {
+        $this->setAttribute(self::NET_AMOUNT, $netAmount);
+    }
 
     // -------------------------- Public Setters ---------------------
 
