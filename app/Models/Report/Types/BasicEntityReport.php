@@ -43,6 +43,17 @@ class BasicEntityReport extends BaseReport
         E::REVERSAL     => [],
     ];
 
+    // Entities for which report-generation is allowed
+    protected $allowed = [
+        E::ORDER,
+        E::REFUND,
+        E::PAYMENT,
+        E::SETTLEMENT,
+        E::TRANSACTION,
+        E::MERCHANT,
+        E::TRANSFER,
+        E::REVERSAL,
+    ];
 
     public function __construct(string $entity)
     {
@@ -429,8 +440,30 @@ class BasicEntityReport extends BaseReport
     {
         (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
+        $this->checkAllowedEntity();
+
         $this->increaseAllowedSystemLimits();
 
         date_default_timezone_set('Asia/Kolkata');
+    }
+
+    /**
+     * Checks if the entity is allowed to be made a report of
+     * Thows exception
+     */
+    protected function checkAllowedEntity()
+    {
+        if (in_array($this->entity, $this->allowed, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Cannot get report for the given entity');
+        }
+
+        if (($this->entity === E::MERCHANT) and
+            ($this->merchant->isMarketplace() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Exporting this data is not allowed for the merchant');
+        }
     }
 }
