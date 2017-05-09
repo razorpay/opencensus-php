@@ -54,8 +54,8 @@ class Validator extends Base\Validator
                 'Cannot get report for the given entity');
         }
 
-        if (($this->entity === E::MERCHANT) and
-            ($this->merchant->isMarketplace() === false))
+        if (($entity === E::MERCHANT) and
+            ($this->entity->merchant->isMarketplace() === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Exporting this data is not allowed for the merchant');
