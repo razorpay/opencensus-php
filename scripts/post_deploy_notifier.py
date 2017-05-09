@@ -7,6 +7,8 @@ from datetime import datetime
 import re
 
 
+WERCKER_USERNAME="wercker"
+
 class KeyStore:
     @staticmethod
     def get_key(key):
@@ -37,17 +39,29 @@ class KeyStore:
     def get_slack_token():
         return KeyStore.get_key('SLACK_TOKEN')
 
+    @staticmethod
+    def get_slack_deploy_channel_id():
+        return KeyStore.get_key('SLACK_DEPLOY_CHANNEL_ID')
+
+    @staticmethod
+    def get_wercker_icon_url():
+        return KeyStore.get_key('WERCKER_ICON_URL')
+
+    @staticmethod
+    def get_slack_base_url():
+        return KeyStore.get_key('SLACK_BASE_URL')
+
 
 class SlackNotifier:
     def __init__(self):
+        global WERCKER_USERNAME
         # currently hardcoding this. We need to arrive at this value later
-        self.channel = "C52PN72AK"  # tech_deploys
-        # self.channel = "C0KHQBRJN"  # dev-test-2
-        self.icon_url = 'https://s3-us-west-2.amazonaws.com/slack-files2/bot_icons/2015-06-25/6837962368_48.png'
-        self.base_slack_url = 'https://razorpay.slack.com'
+        self.channel = KeyStore.get_slack_deploy_channel_id()
+        self.icon_url = KeyStore.get_wercker_icon_url()
+        self.base_slack_url = KeyStore.get_slack_base_url()
         self.url = '%s/services/hooks/incoming-webhook?token=%s' % (
             self.base_slack_url, KeyStore.get_slack_token())
-        self.username = 'wercker'
+        self.username = WERCKER_USERNAME
 
     def formatSlackMessage(self, message):
         attachments = {}
