@@ -105,7 +105,12 @@ trait Capture
             // We are not re-throwing $e because we don't want the
             // customer to know that it was a capture error.
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'payment_status' => $payment->getStatus(),
+                ]);
         }
     }
 
@@ -473,8 +478,6 @@ trait Capture
 
             $this->updatePaidOrderStatus($payment);
 
-            $this->updateSubscriptionStatus($payment);
-
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
@@ -646,37 +649,5 @@ trait Capture
         $invoice->setStatus(Invoice\Status::PAID);
 
         $this->repo->saveOrFail($invoice);
-    }
-
-    /**
-     * THIS IS RELEVANT ONLY FOR THE RETRY FLOW. NOT IN THE NORMAL FLOW.
-     *
-     * TODO: Fix this after discussing how to handle capture failures.
-     *
-     * @param Payment\Entity $payment
-     */
-    protected function updateSubscriptionStatus(Payment\Entity $payment)
-    {
-        if ($payment->hasSubscription() === false)
-        {
-            return;
-        }
-
-        $subscription = $payment->subscription;
-
-        $updateSubscription = (new Subscription\Core)->shouldUpdateSubscriptionOnCapture($subscription, $payment);
-
-        if ($updateSubscription === true)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_CAPTURE_SUBSCRIPTION_UPDATE,
-                [
-                    'payment_id'        => $payment->getId(),
-                    'subscription_id'   => $subscription->getId(),
-                ]);
-
-            // TODO: Fix this flow. Invoice is required here.
-            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment);
-        }
     }
 }

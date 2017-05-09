@@ -45,6 +45,7 @@ class Charge extends Base\Core
      *
      * @param $data
      *
+     * @return bool
      * @throws LogicException
      */
     public function fireCharge(array $data)
@@ -74,6 +75,14 @@ class Charge extends Base\Core
 
         $this->processor = new Payment\Processor\Processor($subscription->merchant);
 
+        //
+        // We should not go through the failure flow if the request was
+        // done manually from the dashboard or something.
+        // The failure flow should be done only if the system retries are
+        // going on. Otherwise, it'll create an inconsistency around
+        // error_codes, auth_attempts, etc.., since anyone can retry any number
+        // of times manually from multiple places.
+        //
         $manual = $data['manual'];
 
         if ($manual === false)
@@ -85,11 +94,11 @@ class Charge extends Base\Core
             $subscription->incrementAuthAttempts();
         }
 
-        $authorizedPayment = null;
+        $payment = null;
 
         try
         {
-            $authorizedPayment = $this->authorizePayment($recurringPayload);
+            $payment = $this->authorizePayment($recurringPayload);
         }
         catch (\Exception $ex)
         {
@@ -97,18 +106,21 @@ class Charge extends Base\Core
 
             if ($manual === false)
             {
-                $this->handleAuthorizationFailure($subscription);
+                $this->handleAuthorizationOrCaptureFailure($subscription);
             }
 
-            return;
+            return false;
         }
 
-        //
-        // This is being done outside the try-catch-finally block because we
-        // do not want to invoke the function handleAuthorizationFailure
-        // if an exception gets thrown in handleAuthorizationSuccess.
-        //
-        $this->handleAuthorizationSuccess($authorizedPayment, $subscription);
+        if (($payment->isCaptured() === false) and
+            ($manual === false))
+        {
+            $this->handleAuthorizationOrCaptureFailure($subscription, true);
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function validateInvoiceStatusBeforeCharging(Invoice\Entity $invoice, Entity $subscription)
@@ -162,30 +174,18 @@ class Charge extends Base\Core
         return $authorizedPayment;
     }
 
-    protected function handleAuthorizationSuccess(Payment\Entity $payment, Entity $subscription)
+    protected function handleChargeSuccess(Payment\Entity $payment, Entity $subscription)
     {
-        $this->resetErrorFields($subscription);
-
         //
         // If it's already captured, `handleCaptureSuccess` would have been
         // called in the auto capture flow itself.
         // Hence, we don't have to handle for captured successfully flow, here.
         //
+
         if ($payment->isCaptured() === false)
         {
-            $this->trace->critical(
-                TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED,
-                [
-                    'subscription_id'   => $subscription->getId(),
-                ]);
-
-            // TODO: Decide on what status to keep here. How to handle?
-            // TODO: Also decide how to handle in case of manual retry.
-            $subscription->setStatus(Status::ON_HOLD);
-            $subscription->setErrorStatus(Status::CAPTURE_FAILURE);
+            $this->handleAuthorizationOrCaptureFailure($subscription, true);
         }
-
-        $this->repo->saveOrFail($subscription);
     }
 
     protected function resetErrorFields(Entity $subscription)
@@ -195,15 +195,22 @@ class Charge extends Base\Core
         $subscription->resetAuthAttempts();
     }
 
-    protected function handleAuthorizationFailure(Entity $subscription)
+    protected function handleAuthorizationOrCaptureFailure(Entity $subscription, bool $captureFailure = false)
     {
-        $this->trace->critical(
-            TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED,
-            [
-                'subscription_id'   => $subscription->getId(),
-            ]);
+        $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED;
+        $errorStatus = Status::AUTH_FAILURE;
 
-        $subscription->setErrorStatus(Status::AUTH_FAILURE);
+        if ($captureFailure === false)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED;
+            $errorStatus = Status::CAPTURE_FAILURE;
+        }
+
+        $this->trace->critical(
+            $traceCode,
+            ['subscription_id'   => $subscription->getId()]);
+
+        $subscription->setErrorStatus($errorStatus);
 
         $authAttempts = $subscription->getAuthAttempts();
 
@@ -251,20 +258,10 @@ class Charge extends Base\Core
         $subscription->setChargeAt($nextChargeAt);
     }
 
-    protected function capturePayment(Payment\Entity $authorizedPayment)
-    {
-        $paymentId = $authorizedPayment->getId();
-
-        $capturePayload = [
-            Payment\Entity::AMOUNT => $authorizedPayment->getAmount(),
-        ];
-
-        $capturedPayment = $this->processor->capture($paymentId, $capturePayload);
-
-        return $capturedPayment;
-    }
-
-    public function handleCaptureSuccess(Entity $subscription, Payment\Entity $capturedPayment, Invoice\Entity $invoice)
+    public function handleCaptureSuccess(
+        Entity $subscription,
+        Payment\Entity $capturedPayment,
+        Invoice\Entity $invoice)
     {
         $task = $subscription->task;
 
@@ -296,7 +293,7 @@ class Charge extends Base\Core
         //
         $subscription->setStatus(Status::ACTIVE);
 
-        $this->resetErrorStatusForSuccessfulCapture($subscription, $capturedPayment);
+        $this->resetErrorFields($subscription);
 
         //
         // Even though we are updating it in the invoice now,
@@ -379,37 +376,6 @@ class Charge extends Base\Core
         $billingPeriod['end'] = $currentEnd->timestamp;
 
         return $billingPeriod;
-    }
-
-    protected function resetErrorStatusForSuccessfulCapture(Entity $subscription, Payment\Entity $capturedPayment)
-    {
-        $errorStatus = $subscription->getErrorStatus();
-
-        //
-        // At this point of the flow, if there is an error, it should be capture failure only.
-        // If it was auth_failure, capture shouldn't have been called at all for the payment.
-        //
-        // The auth_failure error status is reset as soon as successful authorization is done.
-        //
-        // We check for null also here so that we can trace everything which is unexpected.
-        // null is expected when there is no error.
-        //
-
-        if (($errorStatus === null) or
-            ($errorStatus === Status::CAPTURE_FAILURE))
-        {
-            $subscription->setErrorStatus(null);
-        }
-        else
-        {
-            $this->trace->critical(
-                TraceCode::SUBSCRIPTION_ERROR_STATUS_UNEXPECTED,
-                [
-                    'payment_id'        => $capturedPayment->getId(),
-                    'subscription_id'   => $subscription->getId(),
-                    'error_status'      => $errorStatus,
-                ]);
-        }
     }
 
     /**

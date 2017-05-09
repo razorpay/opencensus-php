@@ -4,11 +4,13 @@ namespace RZP\Models\Plan\Subscription;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Plan;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Invoice;
+use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
@@ -147,7 +149,7 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function retryAuthSubscription()
+    public function retrySubscriptions()
     {
         $subscriptionsToRetry = $this->repo->subscription->getSubscriptionsToRetry();
 
@@ -156,9 +158,11 @@ class Service extends Base\Service
 
         foreach ($subscriptionsToRetry as $subscription)
         {
+            $errorStatus = $subscription->getErrorStatus();
+
             try
             {
-                $this->core->retry($subscription);
+                $this->core->retry($subscription, $errorStatus);
 
                 $queued++;
             }
@@ -232,6 +236,56 @@ class Service extends Base\Service
                 ]);
         }
 
-        (new Core)->charge($subscription, $invoice, true);
+        $capture = $this->shouldCaptureInvoice($invoice, $subscription);
+
+        if ($capture === false)
+        {
+            $this->core->charge($subscription, $invoice, true);
+        }
+        else
+        {
+            $this->core->retryCapture($subscription, $invoice);
+        }
+    }
+
+    /**
+     * @param Invoice\Entity $invoice
+     * @param Entity         $subscription
+     *
+     * @return bool
+     * @throws LogicException
+     */
+    protected function shouldCaptureInvoice(Invoice\Entity $invoice, Entity $subscription)
+    {
+        $payments = $invoice->payments;
+
+        if ($payments->count() === 0)
+        {
+            return false;
+        }
+
+        $authorizedPayments = $payments->where(Payment\Entity::STATUS, Payment\Status::AUTHORIZED, true);
+
+        $authorizedPaymentsCount = $authorizedPayments->count();
+
+        if ($authorizedPaymentsCount === 0)
+        {
+            return false;
+        }
+        else if ($authorizedPaymentsCount === 1)
+        {
+            return true;
+        }
+        else
+        {
+            throw new LogicException(
+                'Invoice cannot have more than one authorized payment.',
+                null,
+                [
+                    'invoice_id'            => $invoice->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'auth_payments_count'   => $authorizedPaymentsCount
+                ]);
+        }
     }
 }

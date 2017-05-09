@@ -82,9 +82,9 @@ class SubscriptionController extends Controller
         return ApiResponse::json($summary);
     }
 
-    public function postRetryAuthSubscriptions()
+    public function postRetrySubscriptions()
     {
-        $summary = $this->subscriptionService->retryAuthSubscription();
+        $summary = $this->subscriptionService->retrySubscriptions();
 
         return ApiResponse::json($summary);
     }

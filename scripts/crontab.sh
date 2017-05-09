@@ -102,7 +102,7 @@ add_cron "*/10 * * * *"     "invoice_expire_bulk_live"       POST "$BASE_URL/inv
 
 # Subscription
 add_cron "0 */2 * * *"      "subscriptions_charge"           POST "$BASE_URL/subscriptions/invoices/charge"              ""                              $LIVE_AUTH
-add_cron "0 * * * *"        "subscriptions_auth_retry"       POST "$BASE_URL/subscriptions/retry/auth"                   ""                              $LIVE_AUTH
+add_cron "0 * * * *"        "subscriptions_auth_retry"       POST "$BASE_URL/subscriptions/retry"                        ""                              $LIVE_AUTH
 add_cron "*/10 * * *"       "subscriptions_expire"           POST "$BASE_URL/subscriptions/expire"                       ""                              $LIVE_AUTH
 
 

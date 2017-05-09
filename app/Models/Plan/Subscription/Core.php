@@ -33,11 +33,28 @@ class Core extends Base\Core
         return (new Creator)->create($input, $plan, $customer);
     }
 
-    public function retry(Entity $subscription)
+    public function retry(Entity $subscription, $errorStatus)
     {
         $invoice = $this->repo->invoice->fetchIssuedAndNotOnHoldInvoiceForSubscription($subscription);
 
-        $this->charge($subscription, $invoice);
+        if ($errorStatus === Status::AUTH_FAILURE)
+        {
+            $this->charge($subscription, $invoice);
+        }
+        else if ($errorStatus === Status::CAPTURE_FAILURE)
+        {
+            $this->retryCapture($subscription, $invoice);
+        }
+        else
+        {
+            throw new LogicException(
+                'Invalid status sent to retry subscription',
+                null,
+                [
+                    'subscription_id' => $subscription->getId(),
+                    'invoice_id' => $invoice->getId(),
+                ]);
+        }
     }
 
     public function fillScheduleDetailsForNewSubscription(Entity $subscription)
@@ -220,11 +237,11 @@ class Core extends Base\Core
         $this->app['events']->fire('api.' . $event, array($subscription));
     }
 
-    public function charge(Entity $subscription, Invoice\Entity $invoice, $manual = false)
+    public function charge(Entity $subscription, Invoice\Entity $invoice, bool $manual = false)
     {
-        $this->mutex->acquireAndRelease(
+        return $this->mutex->acquireAndRelease(
             $subscription->getId(),
-            function() use($subscription, $invoice, $manual)
+            function() use ($subscription, $invoice, $manual)
             {
                 $recurringPayload = $this->constructRecurringPayload($subscription, $invoice);
 
@@ -261,9 +278,66 @@ class Core extends Base\Core
                         ]);
                 }
 
-                $this->dispatch((new ChargeSubscription($queuePayload)));
-            }
-        );
+                if ($manual === false)
+                {
+                    $this->dispatch((new ChargeSubscription($queuePayload)));
+
+                    return true;
+                }
+                else
+                {
+                    return (new Charge)->fireCharge($queuePayload);
+                }
+            });
+    }
+
+    public function retryCapture(Entity $subscription, Invoice\Entity $invoice)
+    {
+        $payments = $invoice->payments;
+
+        $authorizedPayments = $payments->where(Payment\Entity::STATUS, Payment\Status::AUTHORIZED, true);
+
+        $authorizedPaymentsCount = $authorizedPayments->count();
+
+        if ($authorizedPaymentsCount === 1)
+        {
+            $authorizedPayment = $authorizedPayments->first();
+        }
+        else if ($authorizedPaymentsCount === 0)
+        {
+            return;
+        }
+        else
+        {
+            //
+            // If a capture has failed, there would be always only one authorized payment.
+            // There's no concept of late authorization payments when authorization is being
+            // done in S2S flow.
+            // The only late auth that CAN happen is when the customer does a retry via 2FA.
+            // But, in this, it's not associated to any invoice.
+            //
+
+            throw new LogicException(
+                'There should not have been more than one authorized payment for the invoice',
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'invoice_id'        => $invoice->getId(),
+                ]);
+        }
+
+        $paymentId = $authorizedPayment->getPublicId();
+
+        $capturePayload = [
+            Payment\Entity::AMOUNT => $authorizedPayment->getAmount(),
+        ];
+
+        $processor = (new Payment\Processor\Processor($subscription->merchant));
+
+        // Might want to move this to a queue later.
+        $capturedPayment = $processor->capture($paymentId, $capturePayload);
+
+        (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
     }
 
     protected function getAuthTransactionAmountForNewSubscription(Entity $subscription) : int

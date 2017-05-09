@@ -26,7 +26,7 @@ class Repository extends Base\Repository
     {
         return $this->getBaseSubscriptionsQuery()
                     ->where(Entity::STATUS, '=', Status::OVERDUE)
-                    ->where(Entity::ERROR_STATUS, Status::AUTH_FAILURE)
+                    ->whereNotNull(Entity::ERROR_STATUS)
                     ->where(Entity::AUTH_ATTEMPTS, '>', 0)
                     ->where(Entity::AUTH_ATTEMPTS, '<', Charge::MAX_AUTH_ATTEMPTS)
                     ->limit(100)
