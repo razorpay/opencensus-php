@@ -67,16 +67,15 @@ gulp.task('css', () => {
 
 gulp.task('cssnew', () => {
   gulp
-    .src('public/react/merchant/styles/app.styl')
+    .src('public/react/styles/merchant.styl')
     .pipe(plumber({ errorHandler: handleError }))
     .pipe(
       stylus({
         include: 'node_modules',
         'include css': true,
-        use: [bootstrap()],
       })
     )
-    .pipe(gulp.dest('public/css/generated/new'));
+    .pipe(gulp.dest('public/react/dist'));
 });
 
 gulp.task('css:prod', () => {
@@ -277,7 +276,7 @@ gulp.task('dev:webpack', ['dev:setENV'], cb => {
 
 gulp.task('watch:full', ['dev:webpack'], () => {
   gulp.watch('public/css/*.styl', ['css']);
-  gulp.watch('public/react/styles/*.styl', ['cssnew']);
+  gulp.watch('public/react/styles/**/*.styl', ['cssnew']);
   gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
   gulp.watch(
     [

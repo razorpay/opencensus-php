@@ -10,7 +10,6 @@ import App from './containers/App';
 window.React = React;
 window.ReactDOM = ReactDOM;
 
-debugger;
 render(
   <Provider store={store}>
     <App />
