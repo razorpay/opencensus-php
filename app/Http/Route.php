@@ -150,6 +150,7 @@ final class Route
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
         'merchant_update_features'                => ['post',     'merchants/{id}/features',                        'MerchantController@updateMerchantFeatures'                         ],
         'merchants_update_hold_funds'             => ['put',      'merchants/hold_funds/bulk',                      'MerchantController@updateHoldFundsForMultipleMerchants'            ],
+        'merchants_update_bank_account'           => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                      'KeyController@getKey'                                              ],
@@ -447,6 +448,7 @@ final class Route
         'action_comment_fetch'                    => ['get',      'w-actions/{id}/comments',                        'WorkflowController@getActionComments'                              ],
         'workflow_get_actions_for_checker'        => ['get',      'w-manager/get-actions-for-checker',              'WorkflowController@getActionsForChecker'                           ],
         'workflow_get_actions_by_maker'           => ['get',      'w-manager/get-actions-by-maker',                 'WorkflowController@getActionsByMaker'                              ],
+        'workflow_get_actions_checked'            => ['get',      'w-manager/get-actions-checked',                  'WorkflowController@getActionsChecked'                              ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -833,7 +835,7 @@ final class Route
         'merchant_actions',
         'refund_retry_failed',
         'refund_verify_failed',
-        'merchants_update_hold_funds',
+        'merchants_update_bank_account',
     );
 
     public static $proxy = array(
@@ -969,6 +971,8 @@ final class Route
         'workflow_action_get_multiple',
         'workflow_get_actions_for_checker',
         'workflow_get_actions_by_maker',
+        'workflow_get_actions_checked',
+        'merchants_update_hold_funds',
     ];
 
     public static $routePermission = [
@@ -1040,6 +1044,7 @@ final class Route
         'workflow_action_states'           => ['*'],
         'workflow_action_details'          => ['*'],
         'workflow_action_get_multiple'     => ['*'],
+        'workflow_get_actions_checked'     => ['*'],
         'credits_fetch_multiple'           => [Permission::VIEW_MERCHANT_CREDITS_LOG],
         'credits_create'                   => [Permission::ADD_MERCHANT_CREDITS],
         'credits_delete'                   => [Permission::DELETE_MERCHANT_CREDITS],
@@ -1050,6 +1055,13 @@ final class Route
         'merchant_live_enable'             => [Permission::EDIT_MERCHANT_ENABLE_LIVE],
         'merchant_live_disable'            => [Permission::EDIT_MERCHANT_DISABLE_LIVE],
         'admin_fetch_entity_by_id'         => ['*'],
+        // Permission handled in code
+        'merchant_activation_update'       => ['*'],
+        'merchant_assign_pricing'          => [Permission::EDIT_MERCHANT_PRICING],
+        'merchant_get_banks'               => [Permission::VIEW_MERCHANT_BANKS],
+        'merchant_set_banks'               => [Permission::EDIT_MERCHANT_BANKS],
+        'merchant_fetch_bank_account'      => [Permission::VIEW_MERCHANT_BANK_ACCOUNTS],
+        'merchants_update_hold_funds'      => [Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS],
     ];
 
     public static $direct = array(

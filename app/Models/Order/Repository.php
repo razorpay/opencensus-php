@@ -54,11 +54,11 @@ class Repository extends Base\Repository
         // group by `orders`.`id`
         // having count(*) > 1
 
-        $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
-        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
-        $orderId = $this->getAttributeWithTableName(Entity::ID);
+        $paymentOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
+        $paymentStatus = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+        $orderId = $this->dbColumn(Entity::ID);
         $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
-        $pTable = $this->manager->payment->getTableName();
+        $pTable = $this->repo->payment->getTableName();
 
         $results = $this->newQuery()
             ->join(
