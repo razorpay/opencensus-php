@@ -13,16 +13,30 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const ACTIVE                = 'active';
-    const NAME                  = 'name';
     const MERCHANT_ID           = 'merchant_id';
+    const NAME                  = 'name';
     const DESCRIPTION           = 'description';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
     const TYPE                  = 'type';
+
+    /**
+     * Unit of item, e.g. KG, PCS etc.
+     */
     const UNIT                  = 'unit';
+
+    /**
+     * Is true if AMOUNT is tax inclusive else false.
+     */
     const TAX_INCLUSIVE         = 'tax_inclusive';
+
+    /**
+     * One item can have associated either one individual tax
+     * or a group of tax via tax_group_id.
+     */
     const TAX_ID                = 'tax_id';
     const TAX_GROUP_ID          = 'tax_group_id';
+
     const DELETED_AT            = 'deleted_at';
 
     /**

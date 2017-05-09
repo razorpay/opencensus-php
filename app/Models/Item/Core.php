@@ -107,7 +107,7 @@ class Core extends Base\Core
 
         $taxId = $input[Entity::TAX_ID] ?? null;
 
-        if (empty($taxId))
+        if (empty($taxId) === true)
         {
             $item->tax()->dissociate();
         }
@@ -123,7 +123,7 @@ class Core extends Base\Core
 
         $taxGroupId = $input[Entity::TAX_GROUP_ID] ?? null;
 
-        if (empty($taxGroupId))
+        if (empty($taxGroupId) === true)
         {
             $item->taxGroup()->dissociate();
         }
