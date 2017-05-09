@@ -173,9 +173,21 @@ class SubscriptionChargeTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('authenticated', $subscription['status']);
-        $expectedPaidCount = 0;
         // Subscription has only been authenticated, never paid
-        $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+        $this->assertEquals(0, $subscription['paid_count']);
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        // Invoice got created
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $payment = $this->getLastEntity('payment', true);
+        // First charge
+        $this->assertEquals('captured', $payment['status']);
+
+        // Subscription marked as active
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('active', $subscription['status']);
+        $this->assertEquals(1, $subscription['paid_count']);
 
         $this->failCharge();
 
@@ -191,14 +203,22 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('overdue', $subscription['status']);
 
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        // Subscription is in overdue state, so won't be picked up by charge cron
+        $this->assertEquals(0, $result['invoices_created']);
+
         $this->passCharge();
 
         $result = $this->makeSubscriptionRetryCronRequest();
+        // Subscription was queued
         $this->assertEquals(1, $result['queued']);
 
         // Retry succeeded, subscription marked as active
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('captured', $payment['status']);
 
         // Reset time
         Carbon::setTestNow();
