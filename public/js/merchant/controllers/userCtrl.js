@@ -199,6 +199,10 @@ app
               }
             });
           }
+
+          if (window.ga) {
+            ga('set', 'userId', data.id);
+          }
         });
       };
       $scope.refreshUser();
