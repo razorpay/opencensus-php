@@ -134,7 +134,7 @@ class BasicEntityReport extends BaseReport
 
         $s3File = $this->createFileAndSave($fullpath, $fileName);
 
-        $signedUrl = $s3File->getSignedUrl();
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($s3File);
 
         // set file/UFH
         $report->file()->associate($s3File);
