@@ -9,7 +9,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Collection;
 use RZP\Models\Merchant\Account;
-use RZP\Constants\Entity as E;
 
 class Accessor extends Base\Core
 {
@@ -26,15 +25,6 @@ class Accessor extends Base\Core
     protected $merchantId;
 
     protected $auth;
-
-    /**
-     * Entities for which file_store entity exists
-     * Used to validate input from 'file_get_signed_url'
-     *
-     */
-    protected $allowed = [
-        E::REPORT,
-    ];
 
     public function __construct()
     {
@@ -260,43 +250,6 @@ class Accessor extends Base\Core
         if ($this->merchantId === null)
         {
             $this->merchantId(Account::SHARED_ACCOUNT);
-        }
-    }
-
-    /**
-     * Fetches signed url for file assosciated with any entity
-     *
-     * @param $entity       string
-     * @param $entityId     string
-     * @return $signedUrl   string
-     */
-    public function signedUrlForEntityFile(string $entity, string $entityId)
-    {
-        $this->validateRequestEntity($entity);
-
-        $entityObj = $this->repo->$entity->findByIdAndMerchantId($entityId, $merchantId);
-
-        $file = $entityObj->file();
-
-        $signedUrl = $this->getSignedUrlOfFile($file);
-
-        return $signedUrl;
-    }
-
-    /**
-     * Throws Exception if entity is not allowed
-     *
-     * @param string $entity
-     *
-     * @return void
-     * @throws Exception\BadRequestValidationFailureException
-     */
-    protected function validateRequestEntity(string $entity)
-    {
-        if (in_array($entity, $this->allowed, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Cannot get file for the given entity type');
         }
     }
 }

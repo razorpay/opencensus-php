@@ -37,7 +37,7 @@ class ReportsJob extends BaseJob
         {
             $this->init();
 
-            $reportType = new EntityReport($this->entity);
+            $reportType = new BasicEntityReport($this->entity);
 
             $reportType->generateReport($this->input);
         }
