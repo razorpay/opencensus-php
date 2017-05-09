@@ -18,9 +18,13 @@ import Configuration from 'merchant/containers/Configuration';
 export default () => {
   return (
     <main class="main-content">
+
+      {/* Transaction routes */}
       <Route path="/payments" component={Transactions} />
       <Route path="/refunds" component={Transactions} />
       <Route path="/orders" component={Transactions} />
+      <Route path="/batch-refunds" component={Transactions} />
+
       <Route path="/settlements" component={Settlements} />
       <Route path="/invoices" component={Invoices} />
       <Route path="/reports" component={Reports} />

@@ -67,38 +67,28 @@ export default class PaymentsListContainer extends ListContainer {
 
     return (
       <div class="react-root">
-        <Header title="Payments" />
-
         <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              Payments List
-            </div>
+          <PaymentsListFilter
+            form="paymentListFilter"
+            count={this.state.count}
+            onSubmit={this.search}
+          />
 
-            <div class="panel-body">
-              <PaymentsListFilter
-                form="paymentListFilter"
-                count={this.state.count}
-                onSubmit={this.search}
-              />
-            </div>
+          {error && <Alert type="error" message={error} />}
 
-            {error && <Alert type="error" message={error} />}
+          <PaymentsList
+            payments={payments}
+            isLoading={loading}
+            hasOrders={this.state.hasOrders}
+            orders={this.state.orders}
+          />
 
-            <PaymentsList
-              payments={payments}
-              isLoading={loading}
-              hasOrders={this.state.hasOrders}
-              orders={this.state.orders}
-            />
-
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={payments.length}
-              onClick={this.paginate}
-            />
-          </div>
+          <Pager
+            count={this.state.count}
+            skip={this.state.skip}
+            length={payments.length}
+            onClick={this.paginate}
+          />
         </div>
       </div>
     );

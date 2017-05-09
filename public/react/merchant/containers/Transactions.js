@@ -18,12 +18,15 @@ export default class TransactionsContainer extends Component {
     let content =
       transactionsRoutes[this.props.location.pathname] || <Payments />;
     return (
-      <div>
-        <NavLink to="/payments">Payments</NavLink>
-        <NavLink to="/refunds">Refunds</NavLink>
-        <NavLink to="/orders">Orders</NavLink>
+      <tabbed-container>
+        <header>
+          <NavLink to="/payments">Payments</NavLink>
+          <NavLink to="/refunds">Refunds</NavLink>
+          <NavLink to="/orders">Orders</NavLink>
+          <NavLink to="/batch-refunds">Batch Refunds</NavLink>
+        </header>
         {content}
-      </div>
+      </tabbed-container>
     );
   }
 }

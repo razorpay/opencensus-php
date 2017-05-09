@@ -13,13 +13,13 @@ export default class Sidebar extends Component {
   render() {
     let { user, location } = this.props;
 
-    let { transactions } = this.routes;
+    let { routes } = this;
 
     let isMerchant = !!user.current;
     let { pathname } = location;
 
-    if (/^\/(payments|refunds|orders)/.test(pathname)) {
-      transactions = pathname;
+    if (/^\/(payments|refunds|orders|batch-refunds)/.test(pathname)) {
+      routes.transactions = pathname;
     }
 
     return (

@@ -50,7 +50,6 @@ body {
       color: #b4b6bd;
       display: block;
       line-height: 40px;
-      text-decoration: none;
       padding: 0 20px;
 
       &:hover, &:focus {
@@ -88,7 +87,8 @@ body {
 
   .main-content {
     margin-left: 200px;
-    margin-top: 51px;
+    margin-top: 50px;
+    padding-top: 1px;
   }
 
   .dropdown--active > .dropdown__content > .dropdown-menu {
@@ -444,14 +444,17 @@ tr:hover .row-action > .btn-group {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
-  margin: 15px -5px;
+  margin: 15px 0;
 }
 
 .list-filter-item {
   flex: 1;
   flex-basis: 185px;
   flex-grow: 0;
-  margin-left: 25px;
+
+  &+.list-filter-item {
+    margin-left: 25px;
+  }
 
   &.count {
     flex-basis: 70px;
