@@ -226,7 +226,7 @@ export default class Profile extends Component {
                     : null}
                   {invitationList}
 
-                  {this.state.hasMerchant
+                  {!this.state.hasMerchant
                     ? <UpgradeMerchantForm
                         upgradeAccount={this.upgradeAccount}
                       />

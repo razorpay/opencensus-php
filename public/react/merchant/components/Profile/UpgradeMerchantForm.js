@@ -65,7 +65,7 @@ export default class UpgradeMerchantForm extends PureComponent {
           </div>
           <AsyncButton
             type="submit"
-            class="btn btn-info btn-rounded"
+            class="btn btn-info"
             text="Upgrade"
             pendingText="Upgrading..."
             disabled={invalid}
