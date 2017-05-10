@@ -1,4 +1,5 @@
 import ajax from 'merchant/utils/ajax';
+import { set, merge } from 'rzp/utils/immutable';
 
 const BANK_ACCOUNT_AND_INVITATIONS_FETCH = 'BANK_ACCOUNT_AND_INVITATIONS_FETCH';
 const INVITATIONS_FETCH = 'INVITATIONS_FETCH';
@@ -49,7 +50,7 @@ export const upgradeAccount = data => {
       url: '/merchants/register',
       method: 'post',
       data: data,
-      appendModeInQueryParam: true,
+      appendModeInURL: false,
     });
   };
 };
@@ -72,10 +73,10 @@ let initialState = {
 export default function(state = initialState, action) {
   switch (action.type) {
     case `${BANK_ACCOUNT_AND_INVITATIONS_FETCH}::PENDING`:
-      return state.set('loading', true);
+      return set(state, 'loading', true);
 
     case `${BANK_ACCOUNT_AND_INVITATIONS_FETCH}::SUCCESS`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         invitations: action.payload[0].data.data,
         bankAccount: action.payload[1].data.data,
@@ -83,21 +84,21 @@ export default function(state = initialState, action) {
       });
 
     case `${BANK_ACCOUNT_AND_INVITATIONS_FETCH}::ERROR`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         bankAccount: false,
         error: action.error,
       });
 
     case `${INVITATIONS_FETCH}::SUCCESS`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         invitations: action.payload.data.data,
         error: null,
       });
 
     case `${INVITATIONS_FETCH}::ERROR`:
-      return state.merge({
+      return merge(state, {
         loading: false,
         error: action.error,
       });

@@ -39,7 +39,10 @@ export default class Profile extends Component {
     // Does the user have an associated merchant account
     for (let i in user.user.merchants) {
       var merchant = user.user.merchants[i];
-      if (merchant.email.toLowerCase() === user.user.email.toLowerCase()) {
+      if (
+        merchant &&
+        merchant.email.toLowerCase() === user.user.email.toLowerCase()
+      ) {
         hasMerchant = true;
       }
     }
@@ -103,10 +106,7 @@ export default class Profile extends Component {
       });
   }
 
-  upgradeAccount = form => {
-    const data = {
-      business_name: form.business_name,
-    };
+  upgradeAccount = data => {
     return this.props
       .upgradeAccount(data)
       .then(() => {
@@ -226,7 +226,7 @@ export default class Profile extends Component {
                     : null}
                   {invitationList}
 
-                  {!this.state.hasMerchant
+                  {this.state.hasMerchant
                     ? <UpgradeMerchantForm
                         upgradeAccount={this.upgradeAccount}
                       />

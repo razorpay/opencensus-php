@@ -11,7 +11,7 @@ export default class UpgradeMerchantForm extends PureComponent {
     confirm: PropTypes.func,
   };
 
-  confirmUpgrade = () => {
+  confirmUpgrade = formData => {
     const { handleSubmit, upgradeAccount } = this.props;
     this.context
       .confirm({
@@ -25,8 +25,7 @@ export default class UpgradeMerchantForm extends PureComponent {
         ),
         affirmativeLabel: 'OK',
         abortLabel: 'Cancel',
-        action: handleSubmit(upgradeAccount),
-        onAbort: handleSubmit(() => new Promise()),
+        action: upgradeAccount.bind(formData),
       })
       .catch(() => {}); // dummy catch to avoid redux-form error
   };
