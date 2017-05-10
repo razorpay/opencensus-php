@@ -32,10 +32,10 @@ class Status
     const OVERDUE           = 'overdue';
 
     /**
-     * When a charge fails and all retries have been exhausted, it's moved to on_hold state.
+     * When a charge fails and all retries have been exhausted, it's moved to halted state.
      * From this, it can be moved to active, cancelled or expired states.
      */
-    const ON_HOLD           = 'on_hold';
+    const HALTED            = 'halted';
 
     /**
      * The merchant can cancel a subscription or ask to cancel the subscription after all
@@ -79,14 +79,14 @@ class Status
     public static $webhookStatuses = [
         self::ACTIVE    => Event::SUBSCRIPTION_ACTIVATED,
         self::OVERDUE   => Event::SUBSCRIPTION_OVERDUE,
-        self::ON_HOLD   => Event::SUBSCRIPTION_ON_HOLD,
+        self::HALTED    => Event::SUBSCRIPTION_HALTED,
         // self::EXPIRED   => Event::SUBSCRIPTION_EXPIRED,
     ];
 
     public static $changeCardStatuses = [
         self::ACTIVE,
         self::OVERDUE,
-        self::ON_HOLD,
+        self::HALTED,
     ];
 
     public static function isStatusValid($status) : bool

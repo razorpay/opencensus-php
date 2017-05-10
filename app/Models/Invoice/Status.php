@@ -24,7 +24,7 @@ class Status
 
     // ----------- Invoice Sub Statuses -----------
 
-    const ON_HOLD   = 'on_hold';
+    const HALTED    = 'halted';
 
     // ----------- End Invoice Sub Statuses -----------
 
@@ -47,11 +47,11 @@ class Status
     public static $subscriptionStatuses = [
         //
         // All the invoices created when the subscription
-        // was on_hold, are not charged by our system.
+        // was halted, are not charged by our system.
         // Invoices created before and after the
-        // subscription was on_hold are charged.
+        // subscription was halted are charged.
         //
-        self::ON_HOLD,
+        self::HALTED,
     ];
 
     public static function isStatusValid($status) : bool

@@ -454,10 +454,10 @@ class SubscriptionChargeTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $this->assertEquals('on_hold', $subscription['status']);
+        $this->assertEquals('halted', $subscription['status']);
 
         $invoice = $this->getLastEntity('invoice', true);
-        $this->assertEquals('on_hold', $invoice['subscription_status']);
+        $this->assertEquals('halted', $invoice['subscription_status']);
 
         $this->passCharge();
 
@@ -521,10 +521,10 @@ class SubscriptionChargeTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $this->assertEquals('on_hold', $subscription['status']);
+        $this->assertEquals('halted', $subscription['status']);
 
         $invoice = $this->getLastEntity('invoice', true);
-        $this->assertEquals('on_hold', $invoice['subscription_status']);
+        $this->assertEquals('halted', $invoice['subscription_status']);
 
         $this->failCharge();
 
@@ -537,7 +537,7 @@ class SubscriptionChargeTest extends TestCase
         // 3 failures, 1 success, 1 auth txn
         $this->assertEquals(5, $payments['count']);
 
-        $this->assertEquals('on_hold', $subscription['status']);
+        $this->assertEquals('halted', $subscription['status']);
         $this->assertEquals('auth_failure', $subscription['error_status']);
         $expectedChargeAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
                                   ->addMonths(2)
@@ -556,7 +556,7 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testSubscriptionOnHoldAuthFailure()
+    public function testSubscriptionHaltedAuthFailure()
     {
         $this->doAuthTxnForSubscriptionWithAddOn();
         $subscription = $this->getLastEntity('subscription', true);
@@ -600,8 +600,8 @@ class SubscriptionChargeTest extends TestCase
             $subscription = $this->getLastEntity('subscription', true);
         }
 
-        // Retries exhausted, subscription marked as on_hold
-        $this->assertEquals('on_hold', $subscription['status']);
+        // Retries exhausted, subscription marked as halted
+        $this->assertEquals('halted', $subscription['status']);
 
         $this->passCharge();
 
@@ -615,10 +615,10 @@ class SubscriptionChargeTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
         $this->assertEquals('issued', $invoice['status']);
-        $this->assertEquals('on_hold', $invoice['subscription_status']);
+        $this->assertEquals('halted', $invoice['subscription_status']);
 
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('on_hold', $subscription['status']);
+        $this->assertEquals('halted', $subscription['status']);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
@@ -631,7 +631,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('auth_failure', $subscription['error_status']);
 
         $invoice = $this->getLastEntity('invoice', true);
-        $this->assertEquals('on_hold', $invoice['subscription_status']);
+        $this->assertEquals('halted', $invoice['subscription_status']);
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals(2000, $invoice['amount']);
 
@@ -639,7 +639,7 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testSubscriptionOnHoldCaptureFailure()
+    public function testSubscriptionHaltedCaptureFailure()
     {
         $this->doAuthTxnForSubscriptionWithAddOn();
         $subscription = $this->getLastEntity('subscription', true);
@@ -686,8 +686,8 @@ class SubscriptionChargeTest extends TestCase
             $subscription = $this->getLastEntity('subscription', true);
         }
 
-        // Retries exhausted, subscription marked as on_hold
-        $this->assertEquals('on_hold', $subscription['status']);
+        // Retries exhausted, subscription marked as halted
+        $this->assertEquals('halted', $subscription['status']);
 
         $task = $this->getLastEntity('schedule_task', true);
         Carbon::setTestNow(Carbon::createFromTimestamp($task['next_run_at'] + 1));
@@ -699,10 +699,10 @@ class SubscriptionChargeTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
         $this->assertEquals('issued', $invoice['status']);
-        $this->assertEquals('on_hold', $invoice['subscription_status']);
+        $this->assertEquals('halted', $invoice['subscription_status']);
 
         $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('on_hold', $subscription['status']);
+        $this->assertEquals('halted', $subscription['status']);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
@@ -715,7 +715,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('capture_failure', $subscription['error_status']);
 
         $invoice = $this->getLastEntity('invoice', true);
-        $this->assertEquals('on_hold', $invoice['subscription_status']);
+        $this->assertEquals('halted', $invoice['subscription_status']);
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals(2000, $invoice['amount']);
 
@@ -753,8 +753,7 @@ class SubscriptionChargeTest extends TestCase
                 'events' => [
                     'subscription.activated' => '1',
                     'subscription.overdue'   => '1',
-                    // TODO: Re-add when status name is updated
-                    // 'subscription.on_hold'   => '1',
+                    'subscription.halted'   => '1',
                 ]
             ]);
 
@@ -791,9 +790,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('overdue', $subscription['status']);
         $this->assertEquals(2, $subscription['auth_attempts']);
 
-        // subscription.on_hold event fired after final failed charge
-        // TODO: Uncomment after unhold is renamed
-        // $this->mockAndTestWebhookData('subscription.on_hold');
+        // subscription.halted event fired after final failed charge
+        $this->mockAndTestWebhookData('subscription.halted');
 
         // $task = $this->getLastEntity('schedule_task', true);
 
@@ -803,12 +801,12 @@ class SubscriptionChargeTest extends TestCase
         // Third failure
         $this->makeSubscriptionRetryCronRequest();
         $subscription = $this->getLastEntity('subscription', true);
-        // Retries exhausted, subscription marked as on_hold
-        $this->assertEquals('on_hold', $subscription['status']);
+        // Retries exhausted, subscription marked as halted
+        $this->assertEquals('halted', $subscription['status']);
         $this->assertEquals(3, $subscription['auth_attempts']);
 
         $this->passCharge();
-        // subscription.on_hold event fired after successful re-auth
+        // subscription.halted event fired after successful re-auth
         $this->mockAndTestWebhookData('subscription.activated');
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $recurringPayment = $this->doAuthPayment($paymentRequest);

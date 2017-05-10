@@ -251,9 +251,9 @@ class Charge extends Base\Core
         else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
         {
             // TODO: Make this merchant configurable. It can either
-            // go into on_hold or cancelled state.
-            $subscription->setStatus(Status::ON_HOLD);
-            $invoice->setSubscriptionStatus(Invoice\Status::ON_HOLD);
+            // go into halted or cancelled state.
+            $subscription->setStatus(Status::HALTED);
+            $invoice->setSubscriptionStatus(Invoice\Status::HALTED);
             $this->updateScheduleTask($subscription->task);
             $subscription->setChargeAt($subscription->task->getNextRunAt());
         }
@@ -300,13 +300,13 @@ class Charge extends Base\Core
         //
         // When a different cron picked up the invoice for a charge
         // and got queued, the status could have gone into
-        // on_hold. If this happened, we should not attempt
+        // halted. If this happened, we should not attempt
         // to charge the subscription now.
         //
-        else if (($invoice->getSubscriptionStatus() === Invoice\Status::ON_HOLD) and
+        else if (($invoice->getSubscriptionStatus() === Invoice\Status::HALTED) and
                  ($manual === false))
         {
-            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ON_HOLD;
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_HALTED;
 
             $valid = false;
         }

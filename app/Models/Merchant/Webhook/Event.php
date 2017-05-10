@@ -24,7 +24,7 @@ class Event
     const P2P_TRANSFERRED           = 'p2p.transferred';
     const SUBSCRIPTION_ACTIVATED    = 'subscription.activated';
     const SUBSCRIPTION_OVERDUE      = 'subscription.overdue';
-    const SUBSCRIPTION_ON_HOLD      = 'subscription.on_hold';
+    const SUBSCRIPTION_HALTED       = 'subscription.halted';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
 
     protected static $events = array(
@@ -39,7 +39,7 @@ class Event
         self::P2P_TRANSFERRED,
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_OVERDUE,
-        self::SUBSCRIPTION_ON_HOLD,
+        self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
     );
 
@@ -54,7 +54,7 @@ class Event
         self::P2P_REJECTED              => 0x8,
         self::SUBSCRIPTION_ACTIVATED    => 0x9,
         self::SUBSCRIPTION_OVERDUE      => 0x10,
-        self::SUBSCRIPTION_ON_HOLD      => 0x11,
+        self::SUBSCRIPTION_HALTED       => 0x11,
         // self::SUBSCRIPTION_EXPIRED      => 0x12,
     );
 
@@ -74,7 +74,7 @@ class Event
         self::P2P_TRANSFERRED,
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_OVERDUE,
-        self::SUBSCRIPTION_ON_HOLD,
+        self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
     );
 
@@ -90,7 +90,7 @@ class Event
         self::P2P_TRANSFERRED           => 9,
         self::SUBSCRIPTION_ACTIVATED    => 10,
         self::SUBSCRIPTION_OVERDUE      => 11,
-        self::SUBSCRIPTION_ON_HOLD      => 12,
+        self::SUBSCRIPTION_HALTED       => 12,
         // self::SUBSCRIPTION_EXPIRED      => 13,
     );
 
@@ -110,7 +110,7 @@ class Event
         self::P2P_TRANSFERRED,
         self::SUBSCRIPTION_ACTIVATED,
         self::SUBSCRIPTION_OVERDUE,
-        self::SUBSCRIPTION_ON_HOLD,
+        self::SUBSCRIPTION_HALTED,
         // self::SUBSCRIPTION_EXPIRED,
     );
 
@@ -128,7 +128,7 @@ class Event
         self::ORDER_PAID                => Entity::ORDER,
         self::SUBSCRIPTION_ACTIVATED    => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_OVERDUE      => Entity::SUBSCRIPTION,
-        self::SUBSCRIPTION_ON_HOLD      => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_HALTED       => Entity::SUBSCRIPTION,
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
     ];
 

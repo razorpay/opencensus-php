@@ -116,7 +116,7 @@ class Repository extends Base\Repository
                     ->where(Entity::EXPIRE_BY, '<', $currentTime)
                     ->get();
     }
-  
+
     public function fetchIssuedInvoicesOfSubscription(Subscription\Entity $subscription)
     {
         return $this->newQuery()
@@ -125,14 +125,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchIssuedAndNotOnHoldInvoiceForSubscription(Subscription\Entity $subscription)
+    public function fetchIssuedAndNotHaltedInvoiceForSubscription(Subscription\Entity $subscription)
     {
         $invoices = $this->newQuery()
                          ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                          ->where(Entity::STATUS, '=', Status::ISSUED)
                          ->where(function($query)
                            {
-                                $query->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::ON_HOLD)
+                                $query->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::HALTED)
                                       ->orWhereNull(Entity::SUBSCRIPTION_STATUS);
                            })
                          ->get();

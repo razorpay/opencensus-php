@@ -204,7 +204,6 @@ class TraceCode
     const SUBSCRIPTION_PAYMENT_CAPTURE_FAILED           = 'SUBSCRIPTION_PAYMENT_CAPTURE_FAILED';
     const SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED         = 'SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED';
     const PAYMENT_CAPTURE_SUBSCRIPTION_UPDATE           = 'PAYMENT_CAPTURE_SUBSCRIPTION_UPDATE';
-    const PAYMENT_CAPTURE_SUBSCRIPTION_NOT_ON_HOLD      = 'PAYMENT_CAPTURE_SUBSCRIPTION_NOT_ON_HOLD';
     const SUBSCRIPTION_STATE_UNEXPECTED                 = 'SUBSCRIPTION_STATE_UNEXPECTED';
     const SUBSCRIPTION_TOKEN_ASSOCIATE                  = 'SUBSCRIPTION_TOKEN_ASSOCIATE';
     const SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED         = 'SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED';
@@ -222,7 +221,7 @@ class TraceCode
     const SUBSCRIPTION_EXPIRE_FAILED                    = 'SUBSCRIPTION_EXPIRE_FAILED';
     const SUBSCRIPTIONS_EXPIRE_SUMMARY                  = 'SUBSCRIPTIONS_EXPIRE_SUMMARY';
     const SUBSCRIPTION_INVOICE_ALREADY_PAID             = 'SUBSCRIPTION_INVOICE_ALREADY_PAID';
-    const SUBSCRIPTION_INVOICE_ON_HOLD                  = 'SUBSCRIPTION_INVOICE_ON_HOLD';
+    const SUBSCRIPTION_INVOICE_HALTED                   = 'SUBSCRIPTION_INVOICE_HALTED';
     const SUBSCRIPTION_STATUS_ACTIVE                    = 'SUBSCRIPTION_STATUS_ACTIVE';
     const SUBSCRIPTION_BEFORE_CAPTURE_UPDATE            = 'SUBSCRIPTION_BEFORE_CAPTURE_UPDATE';
     const SUBSCRIPTION_AFTER_CAPTURE_UPDATE             = 'SUBSCRIPTION_AFTER_CAPTURE_UPDATE';
@@ -827,7 +826,7 @@ class TraceCode
         self::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED       => 'Unable to capture subscription payment',
         self::SUBSCRIPTION_ERROR_STATUS_UNEXPECTED      => 'Unexpected error status of subscription',
         self::SUBSCRIPTION_INVOICE_ALREADY_PAID         => 'Subscription invoice has already been paid for',
-        self::SUBSCRIPTION_INVOICE_ON_HOLD              => 'Subscription invoice is now in on_hold state',
+        self::SUBSCRIPTION_INVOICE_HALTED               => 'Subscription invoice is now in halted state',
         self::SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED => 'Payment request data received via queue via subscription',
         self::SUBSCRIPTION_PAYMENT_FAILED               => 'Subscription payment failed with an exception',
 

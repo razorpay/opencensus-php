@@ -268,9 +268,9 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::OVERDUE);
     }
 
-    public function isOnHold()
+    public function isHalted()
     {
-        return ($this->getAttribute(self::STATUS) === Status::ON_HOLD);
+        return ($this->getAttribute(self::STATUS) === Status::HALTED);
     }
 
     public function isExpired()

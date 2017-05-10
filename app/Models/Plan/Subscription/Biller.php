@@ -33,14 +33,14 @@ class Biller extends Base\Core
         $invoice = $data['invoice'];
 
         //
-        // We should not charge any invoice which is in on_hold status,
-        // since, the subscription would also be in on_hold status here.
-        // We do not charge on_hold subscriptions, we only create an invoice.
+        // We should not charge any invoice which is in halted status,
+        // since, the subscription would also be in halted status here.
+        // We do not charge halted subscriptions, we only create an invoice.
         //
-        if ($invoice->getSubscriptionStatus() === Invoice\Status::ON_HOLD)
+        if ($invoice->getSubscriptionStatus() === Invoice\Status::HALTED)
         {
             $this->trace->info(
-                TraceCode::SUBSCRIPTION_INVOICE_ON_HOLD,
+                TraceCode::SUBSCRIPTION_INVOICE_HALTED,
                 [
                     'invoice_id'        => $invoice->getId(),
                     'subscription_id'   => $subscription->getId(),

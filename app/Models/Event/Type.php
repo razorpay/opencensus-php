@@ -23,6 +23,6 @@ class Type
     const P2P_TRANSFERRED           = 'p2p.transferred';
     const SUBSCRIPTION_ACTIVATED    = 'subscription.activated';
     const SUBSCRIPTION_OVERDUE      = 'subscription.overdue';
-    const SUBSCRIPTION_ON_HOLD      = 'subscription.on_hold';
+    const SUBSCRIPTION_HALTED       = 'subscription.halted';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
 }

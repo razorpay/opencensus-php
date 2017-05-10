@@ -156,7 +156,7 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function onSubscriptionOnHold($subscription)
+    protected function onSubscriptionHalted($subscription)
     {
         $payload = $this->getSubscriptionPayload($subscription);
 

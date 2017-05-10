@@ -35,7 +35,7 @@ class Core extends Base\Core
 
     public function retry(Entity $subscription, string $errorStatus)
     {
-        $invoice = $this->repo->invoice->fetchIssuedAndNotOnHoldInvoiceForSubscription($subscription);
+        $invoice = $this->repo->invoice->fetchIssuedAndNotHaltedInvoiceForSubscription($subscription);
 
         if ($errorStatus === Status::AUTH_FAILURE)
         {
@@ -117,7 +117,7 @@ class Core extends Base\Core
      * Subscription need not be updated if it's in created or activated state.
      * That flow would be taken care by the normal subscription capture flow.
      *
-     * Only if it's in on_hold state with capture_failure as error, we need to
+     * Only if it's in halted state with capture_failure as error, we need to
      * explicitly update the subscription. This is because, this capture would
      * have been an explicit call and not via normal subscription flow.
      *
@@ -130,7 +130,7 @@ class Core extends Base\Core
         $status = $subscription->getStatus();
         $errorStatus = $subscription->getErrorStatus();
 
-        if ($status !== Status::ON_HOLD)
+        if ($status !== Status::HALTED)
         {
             return false;
         }
@@ -196,7 +196,7 @@ class Core extends Base\Core
         // Currently, we allow a 2FA txn to be done only if
         // it's a new subscription or if the card needs to be
         // changed because subscription is in overdue or in
-        // on_hold state.
+        // halted state.
         // Going forward, we can change this to allow change
         // of card even if there's no issue with the current
         // card and the subscription is in active state.

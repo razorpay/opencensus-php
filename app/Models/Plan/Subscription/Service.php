@@ -221,10 +221,10 @@ class Service extends Base\Service
             ]);
 
         if (($subscription->isActive() === false) and
-            ($subscription->isOnHold() === false))
+            ($subscription->isHalted() === false))
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_ON_HOLD_STATE,
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE,
                 'status',
                 [
                     'subscription_id'       => $subscription->getId(),
@@ -234,7 +234,7 @@ class Service extends Base\Service
         }
 
         if (($invoice->isIssued() === false) or
-            ($invoice->getSubscriptionStatus() !== Invoice\Status::ON_HOLD))
+            ($invoice->getSubscriptionStatus() !== Invoice\Status::HALTED))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED,

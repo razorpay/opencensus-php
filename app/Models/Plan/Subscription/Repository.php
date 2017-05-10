@@ -15,7 +15,7 @@ class Repository extends Base\Repository
     public function getSubscriptionsToCharge()
     {
         $subscriptions = $this->getBaseSubscriptionsQuery()
-                              ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED, Status::ON_HOLD])
+                              ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED, Status::HALTED])
                               ->whereNull(Entity::ENDED_AT)
                               ->where(function($query)
                               {
@@ -23,7 +23,7 @@ class Repository extends Base\Repository
                                       ->orWhere(function($query)
                                       {
                                           $query->where(Entity::AUTH_ATTEMPTS, '=', Charge::MAX_AUTH_ATTEMPTS)
-                                                ->where(Entity::STATUS, '=', Status::ON_HOLD);
+                                                ->where(Entity::STATUS, '=', Status::HALTED);
                                       });
                               })
                               ->limit(100)

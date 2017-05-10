@@ -126,9 +126,9 @@ class Generator extends Base\Core
         {
             $this->invoice->subscription()->associate($this->subscription);
 
-            if ($this->subscription->getStatus() === Subscription\Status::ON_HOLD)
+            if ($this->subscription->getStatus() === Subscription\Status::HALTED)
             {
-                $this->invoice->setSubscriptionStatus(Status::ON_HOLD);
+                $this->invoice->setSubscriptionStatus(Status::HALTED);
             }
         }
 

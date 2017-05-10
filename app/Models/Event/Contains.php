@@ -18,7 +18,7 @@ class Contains
         Type::P2P_TRANSFERRED           => [Constants\Entity::P2P, 'sink', 'source'],
         Type::SUBSCRIPTION_ACTIVATED    => [Constants\Entity::SUBSCRIPTION],
         Type::SUBSCRIPTION_OVERDUE      => [Constants\Entity::SUBSCRIPTION],
-        Type::SUBSCRIPTION_ON_HOLD      => [Constants\Entity::SUBSCRIPTION],
+        Type::SUBSCRIPTION_HALTED       => [Constants\Entity::SUBSCRIPTION],
         // Type::SUBSCRIPTION_EXPIRED      => [Constants\Entity::SUBSCRIPTION],
     );
 
