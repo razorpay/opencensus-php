@@ -3,18 +3,18 @@ import AsyncButton from 'react-async-button';
 import { reduxForm, Field } from 'redux-form';
 
 @reduxForm({
-  form: 'password',
+  form: 'updatePasswordChangeForm',
 })
 export default class PasswordForm extends PureComponent {
   render() {
     const { handleSubmit, changePassword } = this.props;
     return (
       <form onSubmit={handleSubmit(changePassword)}>
-        <div className="modal-header">
-          <h3 className="modal-title">Change Password</h3>
+        <div class="modal-header">
+          <h3 class="modal-title">Change Password</h3>
         </div>
-        <div className="modal-body change-pwd-modal">
-          <div className="form-group">
+        <div class="modal-body change-pwd-modal">
+          <div class="form-group">
             <Field
               component="input"
               type="password"
@@ -23,7 +23,7 @@ export default class PasswordForm extends PureComponent {
               class="form-control"
             />
           </div>
-          <div className="form-group">
+          <div class="form-group">
             <Field
               component="input"
               type="password"
@@ -32,7 +32,7 @@ export default class PasswordForm extends PureComponent {
               class="form-control"
             />
           </div>
-          <div className="form-group">
+          <div class="form-group">
             <Field
               component="input"
               type="password"
@@ -42,7 +42,7 @@ export default class PasswordForm extends PureComponent {
             />
           </div>
         </div>
-        <div className="modal-footer">
+        <div class="modal-footer">
           <button
             type="button"
             class="btn btn-default"

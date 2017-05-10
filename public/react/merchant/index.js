@@ -140,7 +140,7 @@ createNgDirective('settlementsList', SettlementsListContainer);
 createNgDirective('settlementDetails', SettlementDetailsContainer, ['id']);
 
 createNgDirective('webhooksList', WebhooksContainer);
-createNgDirective('profileNew', ProfileContainer);
+createNgDirective('profile', ProfileContainer);
 
 createNgDirective('keysList', KeysListContainer);
 createNgDirective('addFunds', AddFundsContainer);

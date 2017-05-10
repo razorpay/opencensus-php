@@ -1,17 +1,22 @@
 import ajax from 'merchant/utils/ajax';
 
 const BANK_ACCOUNT_AND_INVITATIONS_FETCH = 'BANK_ACCOUNT_AND_INVITATIONS_FETCH';
-const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
+const INVITATIONS_FETCH = 'INVITATIONS_FETCH';
 
 export const fetchAjax = url => {
   return ajax({
     url,
-    data: {
-      // not required. used only to avoid 'test' appending in url
-      route_name: url,
-    },
-    appendModeInQueryParam: true,
+    appendModeInURL: false,
   });
+};
+
+export const fetchPendingInvitations = () => {
+  return dispatch => {
+    return dispatch({
+      type: INVITATIONS_FETCH,
+      payload: fetchAjax('/settings/invitations'),
+    });
+  };
 };
 
 /* Fetch bank account info and pending invitations */
@@ -33,11 +38,7 @@ export const updateInvitation = (type, inviteId) => {
     return ajax({
       url: `settings/invitations/${inviteId}/${type}`,
       method: 'post',
-      data: {
-        // not required. used only to avoid 'test' appending in url
-        type,
-      },
-      appendModeInQueryParam: true,
+      appendModeInURL: false,
     });
   };
 };
@@ -85,6 +86,19 @@ export default function(state = initialState, action) {
       return state.merge({
         loading: false,
         bankAccount: false,
+        error: action.error,
+      });
+
+    case `${INVITATIONS_FETCH}::SUCCESS`:
+      return state.merge({
+        loading: false,
+        invitations: action.payload.data.data,
+        error: null,
+      });
+
+    case `${INVITATIONS_FETCH}::ERROR`:
+      return state.merge({
+        loading: false,
         error: action.error,
       });
 

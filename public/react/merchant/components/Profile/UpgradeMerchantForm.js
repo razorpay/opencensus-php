@@ -4,9 +4,9 @@ import { reduxForm, Field } from 'redux-form';
 import { required } from 'rzp/utils/validators';
 
 @reduxForm({
-  form: 'merchant',
+  form: 'merchantUpgradeForm',
 })
-export default class MerchantForm extends PureComponent {
+export default class UpgradeMerchantForm extends PureComponent {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -28,25 +28,28 @@ export default class MerchantForm extends PureComponent {
         action: handleSubmit(upgradeAccount),
         onAbort: handleSubmit(() => new Promise()),
       })
-      .catch(); // dummy catch
+      .catch(() => {}); // dummy catch to avoid redux-form error
   };
 
   render() {
     const { handleSubmit, invalid } = this.props;
 
     return (
-      <div className="text-center m-b">
+      <div class="row wrapper">
+        <div class="panel-heading m-t m-b">
+          Upgrade Merchant
+        </div>
         <div>
           You can upgrade your account to a Merchant Account by giving us your business name
         </div>
         <form
-          className="form-inline"
+          class="form-inline"
           onSubmit={handleSubmit(this.confirmUpgrade)}
-          style={{ marginTop: 25 + 'px' }}
+          style={{ marginTop: '25px' }}
         >
-          <div className="form-group">
+          <div class="form-group">
             <label
-              style={{ fontWeight: 600, marginRight: 10 + 'px' }}
+              style={{ fontWeight: 600, marginRight: '10px' }}
               for="business_name"
             >
               Business Name:

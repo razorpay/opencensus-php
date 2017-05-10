@@ -139,7 +139,7 @@ var app = angular
         // React
         .state('app.profile', {
           url: '/profile',
-          templateProvider: reactTemplateProvider('<profile-new />'),
+          templateProvider: reactTemplateProvider('<profile/>'),
         })
         .state('app.invoices', {
           url: '/invoices',

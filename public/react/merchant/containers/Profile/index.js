@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { reduxForm, Field } from 'redux-form';
-import AsyncButton from 'react-async-button';
 import Header from 'rzp/ui/Header';
-import Time from 'rzp/ui/Time';
-import ModalDialog from 'rzp/ui/ModalDialog';
 import PasswordForm from 'merchant/components/Profile/PasswordForm';
-import MerchantForm from 'merchant/components/Profile/MerchantForm';
+import UpgradeMerchantForm
+  from 'merchant/components/Profile/UpgradeMerchantForm';
+import MerchantDetails from 'merchant/components/Profile/MerchantDetails';
+import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
 
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
@@ -36,8 +35,6 @@ export default class Profile extends Component {
     const { user } = this.props;
     let hasMerchant = false;
 
-    console.log(this.props);
-    console.log(user.user.merchants);
     // Does the user have an associated merchant account
     for (let i in user.user.merchants) {
       var merchant = user.user.merchants[i];
@@ -61,7 +58,6 @@ export default class Profile extends Component {
     }
   }
 
-  // Check how to show error
   getPendingInvitations() {
     this.props.fetchPendingInvitations().catch(err => {
       this.props.showNotification({
@@ -92,7 +88,11 @@ export default class Profile extends Component {
           type: 'success',
           message,
         });
-        location.reload();
+        if (type === 'reject') {
+          this.getPendingInvitations();
+        } else {
+          location.reload(); //TODO: Check behavior, why it's needed
+        }
       })
       .catch(err => {
         this.props.showNotification({
@@ -113,7 +113,7 @@ export default class Profile extends Component {
           type: 'success',
           message: 'Merchant Account Created.',
         });
-        // $state.reload();
+        // $state.reload(); //TODO: angular, Check the purpose
       })
       .catch(err => {
         this.props.showNotification({
@@ -121,6 +121,18 @@ export default class Profile extends Component {
           message: err.errors,
         });
       });
+  };
+
+  askPwdConfirmation = () => {
+    this.props.openModal({
+      size: 'medium',
+      component: (
+        <PasswordForm
+          changePassword={this.changePassword}
+          closeModal={this.props.closeModal}
+        />
+      ),
+    });
   };
 
   changePassword = values => {
@@ -142,121 +154,10 @@ export default class Profile extends Component {
 
   render() {
     const { user, bankAccount, invitations } = this.props;
-    let merchantDetails = null;
-    let bankAccountDetails = null;
-    let loggedInUserDetails = null;
     let invitationList = null;
 
     if (!user) {
       return <div>Loading..</div>;
-    }
-
-    if (user && user.current) {
-      let customClass = '';
-      merchantDetails = (
-        <div className="row wrapper">
-          <div className="list-group">
-            <a className="list-group-item">
-              <span
-                className="pull-right"
-                style={{ textTransform: 'capitalize' }}
-              >
-                {user.name}
-              </span>
-              Merchant Name
-            </a>
-            <a href="mailto:{{user.email}}" className="list-group-item">
-              <span className="pull-right">{user.email}</span>
-              Merchant Email
-            </a>
-            <a className="list-group-item">
-              <span className="pull-right">
-                {/*tooltip="{{user.activated == 1 ? 'Activated' : 'Not Activated'}}"*/}
-                <i
-                  className={`fa ${user.activated == 1 ? 'fa-check text-success' : 'fa-times text-danger'}`}
-                />
-              </span>
-              Activation Status
-            </a>
-            <a className="list-group-item">
-              <span className="pull-right">
-                <Time
-                  value={user.created_at}
-                  format="MMM DD YYYY, hh:mm:ss a"
-                />
-              </span>
-              Registration Date
-            </a>
-            <a className="list-group-item">
-              <span className="pull-right">{user.activation_progress}%</span>
-              Activation Form Progress
-            </a>
-
-          </div>
-        </div>
-      );
-    }
-
-    if (bankAccount) {
-      bankAccountDetails = (
-        <div className="row wrapper">
-          <div className="panel-heading m-t m-b">
-            Bank Account
-          </div>
-          <div className="panel panel-default">
-            <div className="list-group">
-              <a className="list-group-item">
-                <span className="pull-right">{bankAccount.ifsc_code}</span>
-                IFSC Code
-              </a>
-              <a className="list-group-item">
-                <span className="pull-right">{bankAccount.account_number}</span>
-                Account Number
-              </a>
-              <a className="list-group-item">
-                <span className="pull-right">
-                  {bankAccount.beneficiary_name}
-                </span>
-                Beneficiary
-              </a>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (
-      this.state.merchantCount > 1 ||
-      this.state.loggedInUser.email != user.email
-    ) {
-      loggedInUserDetails = (
-        <div className="row wrapper">
-          <div className="panel panel-default">
-            <div className="list-group">
-              <a className="list-group-item">
-                <span
-                  className="pull-right"
-                  style={{ textTransform: 'capitalize' }}
-                >
-                  {this.state.loggedInUser.name}
-                </span>
-                User Name
-              </a>
-              <a
-                href={`mailto:${this.state.loggedInUser.email}`}
-                className="list-group-item"
-              >
-                <span className="pull-right">{loggedInUser.email}</span>
-                Login Email
-              </a>
-              <a className="list-group-item">
-                <span className="pull-right">{role}</span> {/*roletoname*/}
-                Role
-              </a>
-            </div>
-          </div>
-        </div>
-      );
     }
 
     if (invitations) {
@@ -264,18 +165,18 @@ export default class Profile extends Component {
 
       invitations.forEach((invite, index) => {
         invites.push(
-          <a className="list-group-item" key={index}>
-            <span className="pull-right">
+          <a class="list-group-item" key={index}>
+            <span class="pull-right">
               <button
-                className="btn btn-xs btn-default"
+                class="btn btn-xs btn-default"
                 onClick={() => this.updateInvitation('accept', invite)}
               >
                 Accept
               </button>
             </span>
-            <span className="pull-right">
+            <span class="pull-right">
               <button
-                className="btn btn-xs btn-danger"
+                class="btn btn-xs btn-danger"
                 onClick={() => this.updateInvitation('reject', invite)}
               >
                 Reject
@@ -287,51 +188,53 @@ export default class Profile extends Component {
       });
 
       invitationList = (
-        <div className="row wrapper">
+        <div class="row wrapper">
           {invites}
         </div>
       );
     }
 
     return (
-      <div className="react-root">
+      <div class="react-root">
         <Header title="User Profile" showMode={false} />
-        <div className="content-wrapper">
-          <div className="row">
-            <div className=" col-sm-6 col-sm-offset-3">
-              <div className="panel panel-default">
-                <div className="panel-heading">
+        <div class="content-wrapper">
+          <div class="row">
+            <div class=" col-sm-6 col-sm-offset-3">
+              <div class="panel panel-default">
+                <div class="panel-heading">
                   Merchant Id: <strong>{1000000000}</strong>
                 </div>
 
-                <div className="panel-body">
-                  {merchantDetails}
-                  {bankAccountDetails}
-                  {loggedInUserDetails}
+                <div class="panel-body">
+                  {user && user.current
+                    ? <MerchantDetails user={user} />
+                    : null}
+                  {bankAccount
+                    ? <BankAccountDetails bankAccount={bankAccount} />
+                    : null}
+                  {this.state.merchantCount > 1 ||
+                    this.state.loggedInUser.email != user.email
+                    ? <LoggedInUserDetails
+                        loggedInUser={this.state.loggedInUser}
+                      />
+                    : null}
                   {invitations
-                    ? <div className="panel-heading m-t m-b">
+                    ? <div class="panel-heading m-t m-b">
                         Pending Invitations
                       </div>
                     : null}
                   {invitationList}
+
                   {!this.state.hasMerchant
-                    ? <MerchantForm upgradeAccount={this.upgradeAccount} />
+                    ? <UpgradeMerchantForm
+                        upgradeAccount={this.upgradeAccount}
+                      />
                     : null}
 
-                  <div className="text-center m-b">
+                  <div class="text-center m-b">
                     <button
-                      className="btn btn-primary btn-rounded btn-change-pwd"
-                      onClick={() => {
-                        this.props.openModal({
-                          size: 'medium',
-                          component: (
-                            <PasswordForm
-                              changePassword={this.changePassword}
-                              closeModal={this.props.closeModal}
-                            />
-                          ),
-                        });
-                      }}
+                      class="btn btn-primary btn-rounded btn-change-pwd"
+                      onClick={this.askPwdConfirmation}
                     >
                       Change Password
                     </button>
