@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Header from 'rzp/ui/Header';
+import DetailRow from '../../components/DetailRow';
 import PasswordForm from './PasswordForm';
 import UpgradeMerchantForm from './UpgradeMerchantForm';
 import MerchantDetails from 'merchant/components/Profile/MerchantDetails';
 import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
+import LoggedInUserDetails
+  from 'merchant/components/Profile/LoggedInUserDetails';
 
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
@@ -39,7 +42,7 @@ export default class Profile extends Component {
     for (let i in user.user.merchants) {
       var merchant = user.user.merchants[i];
       if (
-        merchant &&
+        merchant.email &&
         merchant.email.toLowerCase() === user.user.email.toLowerCase()
       ) {
         hasMerchant = true;
@@ -162,33 +165,36 @@ export default class Profile extends Component {
 
     if (invitations) {
       let invites = [];
-
       invitations.forEach((invite, index) => {
         invites.push(
-          <a class="list-group-item" key={index}>
-            <span class="pull-right">
-              <button
-                class="btn btn-xs btn-default"
-                onClick={() => this.updateInvitation('accept', invite)}
-              >
-                Accept
-              </button>
-            </span>
-            <span class="pull-right">
-              <button
-                class="btn btn-xs btn-danger"
-                onClick={() => this.updateInvitation('reject', invite)}
-              >
-                Reject
-              </button>
-            </span>
-            Invitation to join {invite.merchant.name}
-          </a>
+          <DetailRow
+            key={index}
+            label={`Invitation to join ${invite.merchant.name}`}
+            value={() => (
+              <div>
+                <button
+                  class="btn btn-xs btn-default"
+                  onClick={() => this.updateInvitation('accept', invite)}
+                >
+                  Accept
+                </button>
+                <button
+                  class="btn btn-xs btn-danger"
+                  onClick={() => this.updateInvitation('reject', invite)}
+                >
+                  Reject
+                </button>
+              </div>
+            )}
+          />
         );
       });
 
       invitationList = (
-        <div class="row wrapper">
+        <div class="panel-detail-container">
+          <div class="panel-heading">
+            Pending Invitations
+          </div>
           {invites}
         </div>
       );
@@ -218,11 +224,6 @@ export default class Profile extends Component {
                         loggedInUser={this.state.loggedInUser}
                       />
                     : null}
-                  {invitations
-                    ? <div class="panel-heading m-t m-b">
-                        Pending Invitations
-                      </div>
-                    : null}
                   {invitationList}
 
                   {!this.state.hasMerchant
@@ -231,7 +232,7 @@ export default class Profile extends Component {
                       />
                     : null}
 
-                  <div class="text-center m-b">
+                  <div class="text-center" style={{ margin: '25px 0' }}>
                     <button
                       class="btn btn-primary btn-rounded btn-change-pwd"
                       onClick={this.askPwdConfirmation}

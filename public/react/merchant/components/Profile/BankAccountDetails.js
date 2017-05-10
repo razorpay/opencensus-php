@@ -1,25 +1,19 @@
+import DetailRow from '../DetailRow';
+
 export default ({ bankAccount }) => {
   return (
-    <div class="row wrapper">
-      <div class="panel-heading m-t m-b">
+    <div class="panel-detail-container">
+      <div class="panel-heading">
         Bank Account
       </div>
       <div class="panel panel-default">
         <div class="list-group">
-          <a class="list-group-item">
-            <span class="pull-right">{bankAccount.ifsc_code}</span>
-            IFSC Code
-          </a>
-          <a class="list-group-item">
-            <span class="pull-right">{bankAccount.account_number}</span>
-            Account Number
-          </a>
-          <a class="list-group-item">
-            <span class="pull-right">
-              {bankAccount.beneficiary_name}
-            </span>
-            Beneficiary
-          </a>
+          <DetailRow label="IFSC Code" value={bankAccount.ifsc_code} />
+          <DetailRow
+            label="Account Number"
+            value={bankAccount.account_number}
+          />
+          <DetailRow label="Beneficiary" value={bankAccount.beneficiary_name} />
         </div>
       </div>
     </div>
