@@ -2020,15 +2020,24 @@ ALTER TABLE payments
     ADD COLUMN reference1 VARCHAR NULL AFTER approval_code,
     ADD COLUMN reference2 VARCHAR NULL AFTER reference1;
 
-# Pre deployment of item_level_changes_wrt_taxes
+# Pre deployment of #3125
 
-ALTER TABLE items ADD COLUMN unit varchar(512) DEFAULT NULL;
-ALTER TABLE items ADD COLUMN tax_inclusive tinyint(4) NOT NULL DEFAULT 0;
-ALTER TABLE items ADD COLUMN tax_id char(14) DEFAULT NULL;
-ALTER TABLE items ADD COLUMN tax_group_id char(14) DEFAULT NULL;
+ALTER TABLE invoices ADD COLUMN tax_amount BIGINT DEFAULT NULL AFTER amount;
+ALTER TABLE invoices ADD COLUMN net_amount BIGINT DEFAULT NULL AFTER tax_amount;
+ALTER TABLE invoices ADD COLUMN show_taxes_grouped TINYINT(1) DEFAULT 0 AFTER user_id;
 
-ALTER TABLE items ADD CONSTRAINT items_tax_group_id_foreign FOREIGN KEY (tax_group_id) REFERENCES tax_groups(id) ON DELETE SET NULL;
+ALTER TABLE items ADD COLUMN unit varchar(512) DEFAULT NULL AFTER currency;
+ALTER TABLE items ADD COLUMN tax_inclusive tinyint(4) NOT NULL DEFAULT 0 AFTER unit;
+ALTER TABLE items ADD COLUMN tax_id char(14) DEFAULT NULL AFTER tax_inclusive;
+ALTER TABLE items ADD COLUMN tax_group_id char(14) DEFAULT NULL AFTER tax_id;
+
 ALTER TABLE items ADD CONSTRAINT items_tax_id_foreign FOREIGN KEY (tax_id) REFERENCES taxes(id) ON DELETE SET NULL;
-
+ALTER TABLE items ADD CONSTRAINT items_tax_group_id_foreign FOREIGN KEY (tax_group_id) REFERENCES tax_groups(id) ON DELETE SET NULL;
 ALTER TABLE items ADD INDEX items_tax_group_id_foreign (tax_group_id);
 ALTER TABLE items ADD INDEX items_tax_id_foreign (tax_id);
+
+ALTER TABLE line_items ADD COLUMN tax_inclusive tinyint(4) NOT NULL DEFAULT 0 AFTER currency;
+ALTER TABLE line_items ADD COLUMN unit varchar(512) DEFAULT NULL AFTER tax_inclusive;
+ALTER TABLE line_items ADD COLUMN total_amount BIGINT DEFAULT NULL AFTER amount;
+ALTER TABLE line_items ADD COLUMN tax_amount BIGINT DEFAULT NULL AFTER total_amount;
+ALTER TABLE line_items ADD COLUMN net_amount BIGINT DEFAULT NULL AFTER tax_amount;

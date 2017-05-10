@@ -376,3 +376,16 @@ daily_settlements.processed_amount = stats.processed_amount;
 
 #Adds Auth code to a payment
 UPDATE cybersource set authorizationCode='T38678' where id=28984;
+
+# Post deployment of #3125
+
+# Sets tax_amount to 0 for all old entries.
+UPDATE invoices SET tax_amount = 0 WHERE tax_amount IS NULL AND amount IS NOT NULL;
+# Sets net_amount equals to amount of invoice for all old entries.
+UPDATE invoices SET net_amount = amount WHERE net_amount IS NULL AND amount IS NOT NULL;
+
+# Sets total amount for old entries.
+UPDATE line_items SET total_amount = amount * quantity WHERE total_amount IS NULL;
+# Sets tax_amount and net_amount as above for old entries.
+UPDATE line_items SET tax_amount = 0 WHERE tax_amount IS NULL;
+UPDATE line_items SET net_amount = total_amount WHERE net_amount IS NULL;

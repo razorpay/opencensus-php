@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\LineItem\Tax\Entity;
+use RZP\Models\Tax as TaxModel;
 
 class CreateLineItemTaxes extends Migration
 {
@@ -49,9 +50,17 @@ class CreateLineItemTaxes extends Migration
             $table->index(Entity::CREATED_AT);
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::DELETED_AT);
-        });
 
-        // TODO: Add references on tax_id and tax_group_id
+            $table->foreign(Entity::TAX_ID)
+                  ->references(TaxModel\Entity::ID)
+                  ->on(Table::TAX)
+                  ->on_delete('restrict');
+
+            $table->foreign(Entity::GROUP_ID)
+                  ->references(TaxModel\Group\Entity::ID)
+                  ->on(Table::TAX_GROUP)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -61,6 +70,19 @@ class CreateLineItemTaxes extends Migration
      */
     public function down()
     {
+        Schema::table(Table::LINE_ITEM_TAX, function($table)
+        {
+            $table->dropForeign
+            (
+                Table::LINE_ITEM_TAX . '_' . Entity::TAX_ID . '_foreign'
+            );
+
+            $table->dropForeign
+            (
+                Table::LINE_ITEM_TAX . '_' . Entity::GROUP_ID . '_foreign'
+            );
+        });
+
         Schema::drop(Table::LINE_ITEM_TAX);
     }
 }
