@@ -55,53 +55,21 @@ class Core extends Base\Core
         return $downtime;
     }
 
-    // TODO: Need to relook at the format of the data sent to checkout
     public function getFormattedGatewayDowntimeCheckoutData(Merchant\Entity $merchant)
     {
         // set the from time to current time. For all practical
         // purposes, this is usually not set by input.
         $input = [
             Entity::BEGIN => time(),
-            Entity::PUBLIC => true
         ];
 
-        $downtimes = $this->repo->gateway_downtime->fetch($input);
+        // Currently we are fetching only downtimes with null terminal id
+        // as only a particular gateway terminal having a systemic downtime hasn't
+        // been encountered yet. Will need to modify this later when we deal with
+        // such downtimes
+        $downtimes = $this->repo->gateway_downtime->fetchDowntimesWithoutTerminal($input);
 
-        $formatted = [];
-
-        foreach ($downtimes as $downtime)
-        {
-            $method = $downtime->getMethod();
-
-            $data = $this->getFormattedCheckoutDataRecord($merchant, $downtime);
-
-            if ($data !== null)
-            {
-                $formatted[$method][] = $data;
-            }
-        }
-
-        return $formatted;
-    }
-
-    protected function getFormattedCheckoutDataRecord(Merchant\Entity $merchant, Entity $downtime)
-    {
-        // in case we have a terminal id, we need to ensure the corresponding merchant
-        // alone receives this data. Else, nothing to send here
-        $terminalId = $downtime->getTerminalId();
-
-        if ($terminalId !== null)
-        {
-            // Should we eager load this?
-            $terminal = $downtime->terminal;
-
-            if ($terminal->getMerchantId() !== $merchant->getId())
-            {
-                return null;
-            }
-        }
-
-        return $downtime->toArrayCheckout();
+        return $downtimes->toArrayExternal();
     }
 
     public function fetchMostRecentActive(array $input)

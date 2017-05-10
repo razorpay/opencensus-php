@@ -54,6 +54,8 @@ class Checkout
 
         $this->checkAndFillOfferDetails($merchant, $input, $data);
 
+        $this->checkAndFillGatewayDowntime($merchant, $data);
+
         $this->tracePreferencesResponse($merchant, $data);
 
         return $data;
@@ -411,6 +413,26 @@ class Checkout
                 $data['methods'][$method] = true;
 
                 break;
+        }
+    }
+
+    public function checkAndFillGatewayDowntime(Merchant\Entity $merchant, array & $data)
+    {
+        try
+        {
+            if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
+            {
+                $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+
+                if (empty($downtimeData) === false)
+                {
+                    $data['downtime'] = $downtimeData;
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
         }
     }
 }
