@@ -1944,7 +1944,17 @@ trait Authorize
             'razorpay_payment_id' => $payment->getPublicId()
         ];
 
-        if ($payment->getApiOrderId() !== null)
+        //
+        // If being run via cron (recurring), we don't care
+        // about the signature at all.
+        // Also, when run via cron, we cannot create a signature
+        // for the payment since the merchant key is not set in scope.
+        // The cron key is set in scope.
+        // A hacky way to do this would be to override the cron auth
+        // with merchant auth. This might cause other issues though.
+        //
+        if (($payment->getApiOrderId() !== null) and
+            ($this->app['basicauth']->isCron() === false))
         {
             $this->fillReturnDataWithOrder($payment, $returnData);
         }

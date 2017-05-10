@@ -24,7 +24,7 @@ class Cycle
         self::YEARLY,
         self::MONTHLY,
         self::WEEKLY,
-        self::DAILY,
+        // self::DAILY,
     ];
 
     protected static $allowedMaxInterval = [
