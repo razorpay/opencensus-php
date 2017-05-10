@@ -16,6 +16,8 @@ class NodalAccount extends Base\Core
     // used in icici AES encrypter tool
     const ENCRYPTION_KEY = "1836204826394167";
 
+    const SIGNED_URL_DURATION = '1440';
+
     const HEADINGS = [
         "Payment Mode",
         "Beneficiary Name",
@@ -57,9 +59,9 @@ class NodalAccount extends Base\Core
 
         $encryptedText = $this->getEncryptedText($plainText);
 
-        $filePath = $this->createFile($encryptedText);
+        $fileData = $this->createFile($encryptedText);
 
-        $this->sendIciciTransferMail($filePath);
+        $this->sendIciciTransferMail($fileData);
 
         return ['file' => $filePath];
     }
@@ -116,10 +118,20 @@ class NodalAccount extends Base\Core
                         ->type(FileStore\Type::FUND_TRANSFER_H2H)
                         ->id($this->id)
                         ->metadata($metadata)
-                        ->save()
-                        ->get();
+                        ->save();
 
-        return $file['local_file_path'];
+        $fileInstance = $file->get();
+        sd($fileInstance);
+
+        $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
+        $fileData = [
+            'file_path'  => $fileInstance['local_file_path'],
+            'file_name'  => basename($fileInstance['local_file_path']),
+            'signed_url' => $signedFileUrl,
+        ];
+
+        return $fileData['file_path'];
     }
 
     protected function getH2HMetadata()
@@ -132,12 +144,11 @@ class NodalAccount extends Base\Core
         ];
     }
 
-    protected function sendIciciTransferMail(string $fullPath)
+    protected function sendIciciTransferMail(array $fileData)
     {
-        $data['file'] = $fullPath;
         $data['body'] = json_encode($this->data, JSON_PRETTY_PRINT);
 
-        $this->mail->queue('emails.message', $data, function ($message) use ($fullPath)
+        $this->mail->queue('emails.message', $data, function ($message) use ($fileData)
         {
             $emails = ['settlements@razorpay.com'];
 
@@ -149,7 +160,7 @@ class NodalAccount extends Base\Core
 
             $message->to($emails);
 
-            $message->attach($fullPath);
+            $message->attach($fileData['signed_url'], ['as' => $fileData['file_name']]);
 
             $headers = $message->getHeaders();
 
