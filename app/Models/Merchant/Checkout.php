@@ -403,11 +403,18 @@ class Checkout
     {
         if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
         {
-            $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
-
-            if (empty($downtimeData) === false)
+            try
             {
-                $data['downtime'] = $downtimeData;
+                $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+
+                if (empty($downtimeData) === false)
+                {
+                    $data['downtime'] = $downtimeData;
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
             }
         }
     }
