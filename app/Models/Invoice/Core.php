@@ -430,9 +430,6 @@ class Core extends Base\Core
 
         $customer = $invoice->customer;
 
-        // @todo: Update all views wrt taxes changes. Use new amounts fields
-        // of invoice and line_items. No calculation anywhere, it's all stored now.
-
         $data['invoice'] = [
             'order_id'  => Order\Entity::getSignedId($orderId),
             'url'       => $invoice->getShortUrl(),
@@ -611,6 +608,11 @@ class Core extends Base\Core
     {
         $lineItems = $invoice->lineItems()->get();
 
+        // If there are no line items associated with invoice object,
+        // and it's of type invoice, make all amounts field 'null' (ie. unset).
+        //
+        // In any case, with no line items associated, just return.
+
         if ($lineItems->count() === 0)
         {
             if ($invoice->isTypeInvoice() === true)
@@ -620,6 +622,11 @@ class Core extends Base\Core
 
             return;
         }
+
+        // Invoice's:
+        // Amount = ∑(line_items.total_amount)
+        // Tax amount = ∑(line_items.tax_amount)
+        // Net amount = ∑(line_items.net_amount)
 
         $amount = $taxAmount = $netAmount = 0;
 

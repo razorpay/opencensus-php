@@ -323,15 +323,35 @@ class Core extends Base\Core
      */
     protected function calculateAndSetAmountsOfLineItem(Entity $lineItem)
     {
+        // Total amount = Quantity * Unit amount
+
         $totalAmount = $lineItem->getAmount() * $lineItem->getQuantity();
 
         $lineItem->setTotalAmount($totalAmount);
 
+        // Tax amount = ∑(lineItem.taxes.tax_amount)
 
-        // @todo: Ref to forumallae to set tax amount and net amount
+        $taxAmount = $lineItem->taxes()
+                              ->get()
+                              ->sum(function ($lineItemTax)
+                                {
+                                    return $lineItemTax->getTaxAmount();
+                                });
 
+        $lineItem->setTaxAmount($taxAmount);
 
-        $lineItem->setTaxAmount(0);
-        $lineItem->setNetAmount(0);
+        // Net amount = Total amount, if tax inclusive
+        //            = Total amount + Tax amount, if not tax inclusive
+
+        if ($lineItem->isTaxInclusive() === true)
+        {
+            $netAmount = $lineItem->getTotalAmount();
+        }
+        else
+        {
+            $netAmount = $lineItem->getTotalAmount() + $lineItem->getTaxAmount();
+        }
+
+        $lineItem->setNetAmount($netAmount);
     }
 }

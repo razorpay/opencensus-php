@@ -80,6 +80,13 @@ class Entity extends Base\PublicEntity
         self::GROUP_ID,
     ];
 
+    // Getters
+
+    public function getTaxAmount()
+    {
+        return $this->getAttribute(self::TAX_AMOUNT);
+    }
+
     // Public setters
 
 

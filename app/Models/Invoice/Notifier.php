@@ -470,7 +470,6 @@ class Notifier extends Base\Core
             'params' => [
                 'merchant_name' => $merchant->getBillingLabelElseName(),
                 'invoice_link'  => $this->invoice->getShortUrl(),
-                // @todo: Correct this - Should be using net amount now.
                 'amount'        => $this->invoice->getAmount() / 100,
             ]
         ];

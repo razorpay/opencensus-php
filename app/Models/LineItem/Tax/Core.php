@@ -130,31 +130,31 @@ class Core extends Base\Core
         Tax\Entity $tax,
         Tax\Group\Entity $taxGroup = null)
     {
-        $entity = new Entity;
+        $taxAmount = (new Calculator($lineItem, $tax))->getTaxAmount();
 
-        $input = [];
+        $input = [
+            Entity::NAME       => $tax->getName(),
+            Entity::RATE       => $tax->getRate(),
+            Entity::RATE_TYPE  => $tax->getRateType(),
+            Entity::TAX_AMOUNT => $taxAmount,
+        ];
 
         if ($taxGroup !== null)
         {
-            // @todo: This f**king association is not working, visit again!
-            $entity->taxGroup()->associate($taxGroup);
+            $input[Entity::GROUP_NAME] = $taxGroup->getName();
+        }
 
-            $input = [
-                Entity::GROUP_NAME => $taxGroup->getName(),
-            ];
+        $entity = (new Entity)->build($input);
+
+        // Associate the relation objects.
+
+        if ($taxGroup !== null)
+        {
+            $entity->taxGroup()->associate($taxGroup);
         }
 
         $entity->tax()->associate($tax);
         $entity->lineItem()->associate($lineItem);
-
-        $input += [
-            Entity::NAME       => $tax->getName(),
-            Entity::RATE       => $tax->getRate(),
-            Entity::RATE_TYPE  => $tax->getRateType(),
-            Entity::TAX_AMOUNT => 0,
-        ];
-
-        $entity->build($input);
 
         $this->repo->saveOrFail($entity);
     }
