@@ -18,7 +18,6 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Permission;
 use ApiResponse;
 use Config;
-use Workflow;
 
 class Core extends Base\Core
 {
@@ -277,10 +276,11 @@ class Core extends Base\Core
 
         $routePermission = Permission\Name::$actionMap[$action];
 
-        Workflow::setPermission($routePermission)->handle($merchant, function ($merchant) use ($action)
-        {
-            $merchant->$action();
-        });
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $merchant, function ($merchant) use ($action)
+            {
+                $merchant->$action();
+            });
 
         $this->repo->saveOrFail($merchant);
 

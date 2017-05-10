@@ -50,7 +50,7 @@ class Service
         return $this;
     }
 
-    public function trigger()
+    protected function trigger()
     {
         // Since we need to calculate the diffs, we'll need
         // the main entity being acted upon by the route
@@ -145,17 +145,17 @@ class Service
         return $this->permission;
     }
 
-    public function setDiff($diff)
+    protected function setDiff($diff)
     {
         $this->diff = $diff;
     }
 
-    public function getDiff()
+    protected function getDiff()
     {
         return $this->diff;
     }
 
-    public function permissionHasWorkflow()
+    protected function permissionHasWorkflow()
     {
         $permission = $this->getPermission();
 
@@ -198,7 +198,7 @@ class Service
         // 2. If this is an execute call, then return as well
         //
         if (($this->permissionHasWorkflow() === false) or
-            ($this->config->get('heimdall.workflows.mock') === true)
+            ($this->config->get('heimdall.workflows.mock') === true) or
             ($this->isExecuteCall() === true))
         {
             // Run the callback though, as it might have business

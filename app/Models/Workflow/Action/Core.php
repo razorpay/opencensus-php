@@ -31,10 +31,10 @@ class Core extends Base\Core
         $routePermission = $input[Differ\Entity::PERMISSION];
 
         // Implicit check for permission existance in the organisation.
-        $permissionIds = $this->repo
-                              ->permission
-                              ->retrieveIdsByNamesAndOrg($routePermission, $orgId)
-                              ->toArray()[0];
+        $permissionId = $this->repo
+                             ->permission
+                             ->retrieveIdsByNamesAndOrg($routePermission, $orgId)
+                             ->toArray()[0];
 
         // We don't need to check the following 2 things:
         //
