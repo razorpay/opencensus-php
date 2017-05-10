@@ -36,6 +36,8 @@ class RefundFile extends Base\RefundFile
             $fileName,
             FileStore\Type::KOTAK_NETBANKING_REFUND);
 
+        $file = $creator->get();
+
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
         $data = [
