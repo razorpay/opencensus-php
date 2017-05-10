@@ -14,12 +14,22 @@ class Repository extends Base\Repository
 
     public function getSubscriptionsToCharge()
     {
-        return $this->getBaseSubscriptionsQuery()
-                    ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED, Status::ON_HOLD])
-                    ->whereNull(Entity::ENDED_AT)
-                    ->where(Entity::AUTH_ATTEMPTS, '=', 0)
-                    ->limit(100)
-                    ->get();
+        $subscriptions = $this->getBaseSubscriptionsQuery()
+                              ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED, Status::ON_HOLD])
+                              ->whereNull(Entity::ENDED_AT)
+                              ->where(function($query)
+                              {
+                                  $query->where(Entity::AUTH_ATTEMPTS, '=', 0)
+                                      ->orWhere(function($query)
+                                      {
+                                          $query->where(Entity::AUTH_ATTEMPTS, '=', Charge::MAX_AUTH_ATTEMPTS)
+                                                ->where(Entity::STATUS, '=', Status::ON_HOLD);
+                                      });
+                              })
+                              ->limit(100)
+                              ->get();
+
+        return $subscriptions;
     }
 
     public function getSubscriptionsToRetry()

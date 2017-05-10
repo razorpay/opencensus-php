@@ -250,7 +250,7 @@ class Service extends Base\Service
 
         if ($capture === true)
         {
-            $this->core->retryCapture($subscription, $invoice);
+            $this->core->retryCapture($subscription, $invoice, true);
         }
         else
         {

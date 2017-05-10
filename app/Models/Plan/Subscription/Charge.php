@@ -128,139 +128,6 @@ class Charge extends Base\Core
         return true;
     }
 
-    protected function validateInvoiceStatusBeforeCharging(
-        Invoice\Entity $invoice,
-        Entity $subscription,
-        bool $manual)
-    {
-        $valid = true;
-
-        //
-        // This happens when two crons picked up the same invoice
-        // and queued the charge on them.
-        // If one of the queue picks it up first, it would have marked the
-        // invoice as paid and now this queue gets executed.
-        //
-        if ($invoice->isPaid() === true)
-        {
-            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ALREADY_PAID;
-
-            $valid = false;
-        }
-        //
-        // When a different cron picked up the invoice for a charge
-        // and got queued, the status could have gone into
-        // on_hold. If this happened, we should not attempt
-        // to charge the subscription now.
-        //
-        else if (($invoice->getSubscriptionStatus() === Invoice\Status::ON_HOLD) and
-                 ($manual === false))
-        {
-            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ON_HOLD;
-
-            $valid = false;
-        }
-
-        if ($valid === false)
-        {
-            $this->trace->critical(
-                $traceCode,
-                [
-                    'invoice_id'        => $invoice->getId(),
-                    'subscription_id'   => $subscription->getId(),
-                ]);
-        }
-
-        return $valid;
-    }
-
-    protected function authorizePayment(array $recurringPayload)
-    {
-        $recurringPayment = $this->processor->process($recurringPayload);
-
-        $authorizedPayment = $this->repo->payment->findByPublicId($recurringPayment['razorpay_payment_id']);
-
-        return $authorizedPayment;
-    }
-
-    protected function resetErrorFields(Entity $subscription)
-    {
-        $subscription->setFailedAt(null);
-        $subscription->setErrorStatus(null);
-        $subscription->resetAuthAttempts();
-    }
-
-    protected function handleAuthorizationOrCaptureFailure(
-        Entity $subscription,
-        Invoice\Entity $invoice,
-        bool $captureFailure = false)
-    {
-        $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED;
-        $errorStatus = Status::AUTH_FAILURE;
-
-        if ($captureFailure === true)
-        {
-            $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED;
-            $errorStatus = Status::CAPTURE_FAILURE;
-        }
-
-        $this->trace->critical(
-            $traceCode,
-            ['subscription_id'   => $subscription->getId()]);
-
-        $subscription->setErrorStatus($errorStatus);
-
-        $authAttempts = $subscription->getAuthAttempts();
-
-        if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
-        {
-            $subscription->setStatus(Status::OVERDUE);
-            $this->incrementChargeAtByOneDay($subscription);
-            $this->updateScheduleTask($subscription->task, true);
-        }
-        else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
-        {
-            // TODO: Make this merchant configurable. It can either
-            // go into on_hold or cancelled state.
-            $subscription->setStatus(Status::ON_HOLD);
-            $invoice->setSubscriptionStatus(Invoice\Status::ON_HOLD);
-        }
-        else
-        {
-            throw new LogicException(
-                'Should not have reached here. Auth Attempts cannot be greater than 3.',
-                null,
-                [
-                    'subscription_id'   => $subscription->getId(),
-                    'auth_attempts'     => $authAttempts,
-                ]);
-        }
-
-        $this->repo->transaction(function() use ($invoice, $subscription)
-            {
-                $this->repo->saveOrFail($invoice);
-                $this->repo->saveOrFail($subscription);
-            });
-
-        (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus());
-    }
-
-    /**
-     * This function is only called during an auth_failure.
-     *
-     * @param Entity $subscription
-     */
-    protected function incrementChargeAtByOneDay(Entity $subscription)
-    {
-        $currentChargeAt = $subscription->getChargeAt();
-
-        $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);
-
-        $nextChargeAt = $currentChargeAt->addDay()->timestamp;
-
-        $subscription->setChargeAt($nextChargeAt);
-    }
-
     public function handleCaptureSuccess(
         Entity $subscription,
         Payment\Entity $capturedPayment,
@@ -351,6 +218,142 @@ class Charge extends Base\Core
         // to charge the subscription.
         //
         // $this->sendInvoiceEmail($invoice);
+    }
+
+    public function handleAuthorizationOrCaptureFailure(
+        Entity $subscription,
+        Invoice\Entity $invoice,
+        bool $captureFailure = false)
+    {
+        $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_AUTHORIZE_FAILED;
+        $errorStatus = Status::AUTH_FAILURE;
+
+        if ($captureFailure === true)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED;
+            $errorStatus = Status::CAPTURE_FAILURE;
+        }
+
+        $this->trace->critical(
+            $traceCode,
+            ['subscription_id'   => $subscription->getId()]);
+
+        $subscription->setErrorStatus($errorStatus);
+
+        $authAttempts = $subscription->getAuthAttempts();
+
+        if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
+        {
+            $subscription->setStatus(Status::OVERDUE);
+            $this->incrementChargeAtByOneDay($subscription);
+            $this->updateScheduleTask($subscription->task, true);
+        }
+        else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
+        {
+            // TODO: Make this merchant configurable. It can either
+            // go into on_hold or cancelled state.
+            $subscription->setStatus(Status::ON_HOLD);
+            $invoice->setSubscriptionStatus(Invoice\Status::ON_HOLD);
+            $this->updateScheduleTask($subscription->task);
+            $subscription->setChargeAt($subscription->task->getNextRunAt());
+        }
+        else
+        {
+            throw new LogicException(
+                'Should not have reached here. Auth Attempts cannot be greater than 3.',
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'auth_attempts'     => $authAttempts,
+                ]);
+        }
+
+        $this->repo->transaction(function() use ($invoice, $subscription)
+        {
+            $this->repo->saveOrFail($invoice);
+            $this->repo->saveOrFail($subscription);
+            $this->repo->saveOrFail($subscription->task);
+        });
+
+        (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus());
+    }
+
+    protected function validateInvoiceStatusBeforeCharging(
+        Invoice\Entity $invoice,
+        Entity $subscription,
+        bool $manual)
+    {
+        $valid = true;
+
+        //
+        // This happens when two crons picked up the same invoice
+        // and queued the charge on them.
+        // If one of the queue picks it up first, it would have marked the
+        // invoice as paid and now this queue gets executed.
+        //
+        if ($invoice->isPaid() === true)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ALREADY_PAID;
+
+            $valid = false;
+        }
+        //
+        // When a different cron picked up the invoice for a charge
+        // and got queued, the status could have gone into
+        // on_hold. If this happened, we should not attempt
+        // to charge the subscription now.
+        //
+        else if (($invoice->getSubscriptionStatus() === Invoice\Status::ON_HOLD) and
+                 ($manual === false))
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ON_HOLD;
+
+            $valid = false;
+        }
+
+        if ($valid === false)
+        {
+            $this->trace->critical(
+                $traceCode,
+                [
+                    'invoice_id'        => $invoice->getId(),
+                    'subscription_id'   => $subscription->getId(),
+                ]);
+        }
+
+        return $valid;
+    }
+
+    protected function authorizePayment(array $recurringPayload)
+    {
+        $recurringPayment = $this->processor->process($recurringPayload);
+
+        $authorizedPayment = $this->repo->payment->findByPublicId($recurringPayment['razorpay_payment_id']);
+
+        return $authorizedPayment;
+    }
+
+    protected function resetErrorFields(Entity $subscription)
+    {
+        $subscription->setFailedAt(null);
+        $subscription->setErrorStatus(null);
+        $subscription->resetAuthAttempts();
+    }
+
+    /**
+     * This function is only called during an auth_failure.
+     *
+     * @param Entity $subscription
+     */
+    protected function incrementChargeAtByOneDay(Entity $subscription)
+    {
+        $currentChargeAt = $subscription->getChargeAt();
+
+        $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);
+
+        $nextChargeAt = $currentChargeAt->addDay()->timestamp;
+
+        $subscription->setChargeAt($nextChargeAt);
     }
 
     protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)

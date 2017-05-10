@@ -297,7 +297,7 @@ class Core extends Base\Core
             });
     }
 
-    public function retryCapture(Entity $subscription, Invoice\Entity $invoice)
+    public function retryCapture(Entity $subscription, Invoice\Entity $invoice, bool $manual = false)
     {
         $payments = $invoice->payments;
 
@@ -340,8 +340,29 @@ class Core extends Base\Core
 
         $processor = (new Payment\Processor\Processor($subscription->merchant));
 
-        // Might want to move this to a queue later.
-        $capturedPayment = $processor->capture($paymentId, $capturePayload);
+        $capturedPayment = null;
+
+        try
+        {
+            if ($manual === false)
+            {
+                $subscription->incrementAuthAttempts();
+            }
+
+            // Might want to move this to a queue later.
+            $capturedPayment = $processor->capture($paymentId, $capturePayload);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+
+            if ($manual === false)
+            {
+                (new Charge)->handleAuthorizationOrCaptureFailure($subscription, $invoice, true);
+            }
+
+            return;
+        }
 
         (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
     }
