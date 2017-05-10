@@ -35,8 +35,11 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $fileData = [
-            'file_path' => $file['local_file_path'],
+            'file_path' => $signedFileUrl,
+            'name'      => basename($file['local_file_path'])
         ];
 
         $this->sendRefundEmail($fileData);
@@ -48,6 +51,7 @@ class RefundFile extends Base\RefundFile
     {
         $data = [
             'file' => $fileData['file_path'],
+            'name' => $fileData['name'],
             'body' => 'Please find attached refunds information for AirtelMoney'
         ];
 
@@ -63,7 +67,7 @@ class RefundFile extends Base\RefundFile
 
             $message->to($emails);
 
-            $message->attach($data['file']);
+            $message->attach($data['file'], ['as' => $data['name']]);
 
             $headers = $message->getHeaders();
 
