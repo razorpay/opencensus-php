@@ -651,6 +651,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::NET_AMOUNT, $amount);
     }
 
+    /**
+     * Sets all amounts field to null.
+     * Used when all line items of draft invoice are removed.
+     *
+     * 'null' represents 'not set', 0 can be at some later time a valid value.
+     * We use the same during validations also.
+     */
     public function setAmountsToNull()
     {
         $this->setAttribute(self::AMOUNT, null);

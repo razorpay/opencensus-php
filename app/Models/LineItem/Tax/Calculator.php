@@ -6,10 +6,11 @@ use RZP\Models\LineItem;
 use RZP\Models\Tax as TaxModel;
 use RZP\Exception;
 
+/**
+ * Calculator for tax amounts of a line item against a particular tax.
+ */
 class Calculator
 {
-    const PERCENTAGE_MULT = 0.01;
-
     protected $lineItem;
     protected $tax;
 
@@ -21,7 +22,13 @@ class Calculator
         $this->tax      = $tax;
     }
 
-    public function getTaxAmount()
+    /**
+     * Calculates and returns tax amount for a line item against
+     * given tax.
+     *
+     * @return int
+     */
+    public function getTaxAmount(): int
     {
         switch ($this->tax->getRateType())
         {
@@ -45,11 +52,22 @@ class Calculator
         return $taxAmount;
     }
 
-    protected function getTaxAmountForPercentageTypeTax()
+    /**
+     * Gets tax amount when tax rate is of type percentage.
+     *
+     * @return int
+     */
+    protected function getTaxAmountForPercentageTypeTax(): int
     {
         $totalAmount = $this->lineItem->getAmount() * $this->lineItem->getQuantity();
 
-        $rate = $this->tax->getRate() * self::PERCENTAGE_MULT;
+        // Because we store percentage tax rate multiplied by 100 in our tables.
+        $rate = $this->tax->getRate() * 0.01;
+
+        // If line item's amount is not tax inclusive, then tax amount
+        // is simply rate %.
+        // But if it's tax inclusive, we just calculate back the taxed amount
+        // and store it. The item's total amount is still tax inclusive.
 
         if ($this->lineItem->isTaxInclusive() === false)
         {
