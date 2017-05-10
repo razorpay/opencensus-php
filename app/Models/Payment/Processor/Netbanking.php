@@ -390,8 +390,6 @@ class Netbanking
 
     public static function getExclusiveIssuersForGateway(string $gateway)
     {
-        $gatewaySupportedBanks = self::$$gateway;
-
         $otherGatewaySupportedBanks = self::$self;
 
         $gatewayExclusiveBanks = self::$$gateway;
@@ -400,7 +398,7 @@ class Netbanking
         {
             if ($gateway !== $netbankingGateway)
             {
-                $gatewayExclusiveBanks = array_values(array_diff($gatewayExclusiveBanks, self::$$netbankingGateway));
+                $gatewayExclusiveBanks = array_diff($gatewayExclusiveBanks, self::$$netbankingGateway);
             }
         }
 

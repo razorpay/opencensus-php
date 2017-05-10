@@ -401,9 +401,9 @@ class Checkout
 
     public function checkAndFillGatewayDowntime(Merchant\Entity $merchant, array & $data)
     {
-        if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
+        try
         {
-            try
+            if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
             {
                 $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
 
@@ -412,10 +412,10 @@ class Checkout
                     $data['downtime'] = $downtimeData;
                 }
             }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex);
-            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
         }
     }
 }

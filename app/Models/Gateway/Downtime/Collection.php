@@ -168,9 +168,9 @@ class Collection extends Base\PublicCollection
         if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
         {
             $data[Entity::ISSUER] = (array) Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
-        }
 
-        return $data;
+            return $data;
+        }
     }
 
     protected function isUnknownOrNA(string $value)

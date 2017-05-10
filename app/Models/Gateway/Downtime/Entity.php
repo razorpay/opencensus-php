@@ -155,7 +155,7 @@ class Entity extends Base\PublicEntity
             {
                 case Payment\Method::NETBANKING:
                 case Payment\Method::WALLET:
-                case Payment\MEthod::UPI:
+                case Payment\Method::UPI:
                     $input[Entity::NETWORK] = Entity::NA;
                     break;
 
@@ -176,7 +176,7 @@ class Entity extends Base\PublicEntity
             {
                 case Payment\Method::NETBANKING:
                 case Payment\Method::WALLET:
-                case Payment\MEthod::UPI:
+                case Payment\Method::UPI:
                     $input[Entity::CARD_TYPE] = Entity::NA;
                     break;
 
@@ -374,7 +374,7 @@ class Entity extends Base\PublicEntity
     public function toArrayExternal()
     {
         $data = [
-            Entity::ISSUER      => [$this->getIssuer()],
+            Entity::ISSUER      => (array) $this->getIssuer(),
             Entity::REASON_CODE => $this->getReasonCode(),
             Entity::PARTIAL     => $this->isPartial(),
             Entity::SCHEDULED   => $this->isScheduled(),

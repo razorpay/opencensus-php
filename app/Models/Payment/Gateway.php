@@ -638,15 +638,15 @@ class Gateway
             {
                 $networks = self::$cardNetworkMap[$cardGateway];
 
-                $exclusiveNetworks = array_values(array_diff($exclusiveNetworks, $networks));
+                $exclusiveNetworks = array_diff($exclusiveNetworks, $networks);
             }
         }
 
         // Filter out the UNKNOWN network if present
         $exclusiveNetworks = array_filter($exclusiveNetworks, function ($network)
         {
-            return $network !== Network::UNKNOWN;
-        });
+            return ($network !== Network::UNKNOWN);
+        }, ARRAY_FILTER_USE_BOTH);
 
         $exclusiveNetworks = array_values($exclusiveNetworks);
 
