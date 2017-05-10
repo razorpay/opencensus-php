@@ -33,21 +33,19 @@ export default class TransactionsContainer extends Component {
           <NavLink to="/batch-refunds">Batch Refunds</NavLink>
         </header>
         {component[0]}
-        {entityId &&
-          <Modal
-            onRequestClose={goBack}
-            isOpen={true}
-            contentLabel="💩"
-            className="side-pane"
-            overlayClassName="main-content side-overlay"
-          >
-            {component[1](entityId)}
-          </Modal>}
+        <Modal
+          onRequestClose={() => {
+            location.hash = `#/app/${urlFragments[1]}`;
+          }}
+          isOpen={!!entityId}
+          closeTimeoutMS={300}
+          contentLabel="💩"
+          className="side-pane"
+          overlayClassName="main-content side-overlay"
+        >
+          {entityId && component[1](entityId)}
+        </Modal>
       </tabbed-container>
     );
   }
-}
-
-function goBack() {
-  location.hash = location.hash.replace(/\/\w+$/, '');
 }

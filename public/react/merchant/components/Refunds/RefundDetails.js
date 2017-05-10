@@ -32,34 +32,32 @@ export default ({ refund, isLoading, statusMsg }) => {
         : <div class="panel-detail-container">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                Refund ID: <b>{refund.id}</b>
-              </div>
+            <div class="panel-heading">
+              Refund ID: <b>{refund.id}</b>
+            </div>
 
-              <div class="panel-body">
-                <div class="list-group">
-                  <DetailRow label="Payment" value={refund.payment_id} />
+            <div class="panel-body">
+              <div class="list-group">
+                <DetailRow label="Payment" value={refund.payment_id} />
 
-                  <DetailRow
-                    label="Amount"
-                    value={() => <Amount value={refund.amount} />}
-                  />
+                <DetailRow
+                  label="Amount"
+                  value={() => <Amount value={refund.amount} />}
+                />
 
-                  <DetailRow label="Currency" value={refund.currency} />
+                <DetailRow label="Currency" value={refund.currency} />
 
-                  <DetailRow
-                    label="Created At"
-                    value={() => (
-                      <Time
-                        value={refund.created_at}
-                        format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
-                  />
+                <DetailRow
+                  label="Created At"
+                  value={() => (
+                    <Time
+                      value={refund.created_at}
+                      format="DD MMM YYYY, hh:mm:ss a"
+                    />
+                  )}
+                />
 
-                  {refundNotes}
-                </div>
+                {refundNotes}
               </div>
             </div>
           </div>}

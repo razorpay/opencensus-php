@@ -171,6 +171,11 @@ body.ReactModal__Body--open {
   overflow-x: hidden;
   z-index: 9999;
   background: rgba(0, 0, 0, .4);
+
+  // prevent double click on overlay
+  &--before-close {
+    pointer-events: none;
+  }
 }
 
 .side-pane {
@@ -179,7 +184,8 @@ body.ReactModal__Body--open {
   width: 100%;
   max-width: 600px;
   min-height: 100%;
-  transform: translateX(20%);
+  transform: translateX(60%);
+  transition: .3s;
   opacity: 0;
   
   .spinner {
@@ -192,11 +198,6 @@ body.ReactModal__Body--open {
     opacity: 1;
   }
 
-  .list-group-item {
-    span:last-child {
-      float: right;
-    }
-  }
 }
 
 .ReactModalPortal > * {
@@ -413,8 +414,6 @@ tr:hover .row-action > .btn-group {
 }
 
 .panel-detail-container {
-  max-width: 700px;
-  margin: auto;
 
   .text-warning {
     color: #d8b617;

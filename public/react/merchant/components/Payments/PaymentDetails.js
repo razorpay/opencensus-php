@@ -11,6 +11,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import TableBody from 'merchant/components/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
+import { NavLink } from 'react-router-dom';
 
 const ListItem = ({ item, value }) => {
   return (
@@ -29,9 +30,9 @@ const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <a target="_blank" href={`#/app/refunds/${refund.id}`}>
+        <NavLink to={`/app/refunds/${refund.id}`}>
           {refund.id}
-        </a>
+        </NavLink>
       </td>
       <td>
         <Amount value={refund.amount} />
@@ -98,8 +99,10 @@ export default props => {
   return (
     <div>
       {isLoading
-        ? <Spinner />
-        : <div>
+        ? <div class="page-spinner-container">
+            <Spinner />
+          </div>
+        : <div class="panel-detail-container">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
             <div class="panel-heading">

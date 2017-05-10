@@ -41,37 +41,16 @@ export default class WebhooksContainer extends ListContainer {
     let { loading, webhooks, error, highlightRowId } = webhooksState;
 
     return (
-      <div class="react-root">
-        <Header title="Webhooks" />
+      <div class="content-wrapper">
+        {error && <Alert type="error" message={error} />}
 
-        <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              {modeFormatted} Webhooks
-            </div>
-
-            {error && <Alert type="error" message={error} />}
-
-            <WebhooksList
-              webhooks={webhooks}
-              isLoading={loading}
-              highlightRow={webhook => webhook.id === highlightRowId}
-              onSetupWebhookClick={this.showWebhookModal}
-              modeFormatted={modeFormatted}
-            />
-
-            <div class="panel-footer text-center">
-              You can find your webhook documentation
-              {' '}
-              <a
-                href="https://docs.razorpay.com/v1/page/webhooks"
-                target="_blank"
-              >
-                here
-              </a>
-            </div>
-          </div>
-        </div>
+        <WebhooksList
+          webhooks={webhooks}
+          isLoading={loading}
+          highlightRow={webhook => webhook.id === highlightRowId}
+          onSetupWebhookClick={this.showWebhookModal}
+          modeFormatted={modeFormatted}
+        />
       </div>
     );
   }
