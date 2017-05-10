@@ -36,9 +36,16 @@ class RefundFile extends Base\RefundFile
             $fileName,
             FileStore\Type::KOTAK_NETBANKING_REFUND);
 
-        $file = $creator->get();
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
-        return [$totalAmount, $file['local_file_path']];
+        $data = [
+            'total_amount'    => $totalAmount,
+            'signed_url'      => $signedFileUrl,
+            'local_file_path' => $file['local_file_path'],
+            'name'            => basename($file['local_file_path'])
+        ];
+
+        return $data;
     }
 
     protected function setFileToWriteName($input)

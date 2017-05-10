@@ -35,22 +35,25 @@ class DailyFiles extends Base\DailyFiles
 
     public function generateMail($from, $to, $tpvEnabled = false, $email = null)
     {
-        list($refundAmount, $refundsFile) = $this->getRefundsDataForTpv($from, $to, $tpvEnabled);
+        $claimsFileData = $this->getClaimsDataForTpv($from, $to, $tpvEnabled);
 
-        list($claimAmount, $claimsFile) = $this->getClaimsDataForTpv($from, $to, $tpvEnabled);
+        $refundFileData = $this->getRefundsDataForTpv($from, $to, $tpvEnabled);
 
         $amount = [];
-        $amount['claims'] = $claimAmount;
-        $amount['refunds'] = $refundAmount;
-        $amount['total'] = $claimAmount - $refundAmount;
+        $amount['claims'] = $claimsFileData['total_amount'];
+        $amount['refunds'] = $refundFileData['total_amount'];
+        $amount['total'] = $claimsFileData['total_amount'] - $refundFileData['total_amount'];
 
         // Send the mail only when there is at least 1 claim or refund
         if ($amount['claims'] + $amount['refunds'] > 0)
         {
-            $this->sendMail($amount, $claimsFile, $refundsFile, $email);
+            $this->sendMail($amount, $claimsFileData, $refundFileData, $email);
         }
 
-        return ['refunds' => $refundsFile, 'claims' => $claimsFile];
+        return [
+                    'claims' => $claimsFileData['local_file_path'],
+                    'refunds' => $refundFileData['local_file_path']
+                ];
     }
 
     public function getRefundsDataForTpv($from, $to, $tpvEnabled = false)
