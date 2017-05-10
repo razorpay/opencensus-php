@@ -238,7 +238,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
         Route::get('admin/schedule/list', 'AdminController@getScheduleList');
-        Route::post('admin/merchant/{id}/schedules', 'AdminController@postMerchantSchedule');
 
         Route::group(['middleware'  =>  ['admin', 'superadmin', 'admin_access']], function()
         {

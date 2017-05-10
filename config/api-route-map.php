@@ -84,6 +84,7 @@ return [
         // Admin Actions
         // Create Schedule
         'schedule_create'                   => 'schedules',
+        'schedule_assign'                   => 'merchants/{id}/schedules',
     ],
 
     // auth

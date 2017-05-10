@@ -461,13 +461,18 @@ app
           });
       };
       $scope.assignSchedule = function(data) {
+        var data = {
+          route_name: 'schedule_assign',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/schedules',
-          transformRequest: transformRequestAsFormPost,
+          url: '/admin/generic',
           data: data,
         });
-
         request
           .success(function(data) {
             if (data.success) {

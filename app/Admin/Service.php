@@ -2066,32 +2066,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    /**
-    * Assigns schedule to a merchant
-    * Uses admin auth on the API
-    *
-    * @param $merchantId integer
-    * @param $input input array
-    * @return $data array
-    */
-    public function assignMerchantSchedule($merchantId, $input)
-    {
-        $error = $data = null;
-
-        $this->setAdminCredentials();
-
-        try
-        {
-            $data = $this->api->merchant->setSchedule($merchantId, $input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
     public function uploadOrgLogo($orgId, $input)
     {
         // This is pretty useless in our case
