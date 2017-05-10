@@ -1954,7 +1954,7 @@ trait Authorize
         // with merchant auth. This might cause other issues though.
         //
         if (($payment->getApiOrderId() !== null) and
-            ($this->app['basicauth']->isCron() === false))
+            ($this->app['basicauth']->isPrivilegeAuth() === false))
         {
             $this->fillReturnDataWithOrder($payment, $returnData);
         }
