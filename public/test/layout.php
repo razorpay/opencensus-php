@@ -78,7 +78,11 @@ var Razorpay = {
 }
 ?>
 </script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<?php if ($_SERVER['HTTP_HOST'] === "https://api.razorpay.com"): ?>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<?php else: ?>
+  <script src="https://beta-checkout.razorpay.com/v1/checkout.js"></script>
+<?php endif; ?>
 <button style="font-size: 16px; font-family: inherit; padding: .5em 1em; color: #444;
   border: 1px solid #999; background-color: #E6E6E6; text-decoration: none;
   display: block; margin: 20px auto; border-radius: 2px;"
