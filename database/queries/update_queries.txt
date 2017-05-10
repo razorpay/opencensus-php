@@ -344,14 +344,12 @@ UPDATE billdesk SET RefundId = 'ISBM52921114461' WHERE id = 1234573;
 
 # See https://github.com/razorpay/api/pull/2719#pullrequestreview-34234085
 # Currently set to CENT which was acquired by HDFC in 2008
-
-UPDATE iins SET issuer="HDFC" WHERE iin IN (421335,421394,422677,434673,472803,472810,489782,530151)
-
+UPDATE iins SET issuer="HDFC" WHERE iin IN (421335,421394,422677,434673,472803,472810,489782,530151);
 
 #settlements data correction
 update settlements set attempts=1 where id = '7O0p1u35YddfsU';
 
-#update batch id for settlements created via attempt flow
+# Update batch id for settlements created via attempt flow
 Update settlements
 JOIN
   (SELECT source_id,
@@ -361,3 +359,14 @@ JOIN
    GROUP BY source_id) AS t ON t.source_id = settlements.id
 SET settlements.batch_fund_transfer_id = t.batch_id
 WHERE settlements.batch_fund_transfer_id IS NULL;
+
+update daily_settlements join
+(
+    select batch_fund_transfer_id, count(*) as processed_count, sum(amount) as processed_amount
+    from settlements
+    where status = 'processed'
+    group by batch_fund_transfer_id
+) as stats
+on daily_settlements.id =  stats.`batch_fund_transfer_id`
+set daily_settlements.processed_count = stats.processed_count,
+daily_settlements.processed_amount = stats.processed_amount;
