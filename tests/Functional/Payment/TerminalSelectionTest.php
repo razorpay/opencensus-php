@@ -323,8 +323,6 @@ class TerminalSelectionTest extends TestCase
     {
         Options::setTestChance($chance);
 
-        Options::setLoadSortingFallbackForTest(true);
-
         $this->payment = $this->getDefaultPaymentArray();
 
         $content = $this->doAuthAndCapturePayment($this->payment);
