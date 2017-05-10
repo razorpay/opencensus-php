@@ -1042,6 +1042,7 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'razorpay@hdfcbank',
             'gateway_terminal_password' => 'razorpay_password',
             'shared'                    => 1,
+            'upi'                       => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
