@@ -37,9 +37,13 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $fileData = [
-            'file_path' => $file['local_file_path'],
-            'body' => self::EMAIL_BODY,
+            'file_name'  => basename($file['local_file_path']),
+            'file_path'  => $file['local_file_path'],
+            'signed_url' => $signedFileUrl,
+            'body'       => self::EMAIL_BODY,
         ];
 
         $this->sendRefundEmail($fileData);
@@ -63,7 +67,7 @@ class RefundFile extends Base\RefundFile
 
             $message->to($emails);
 
-            $message->attach($fileData['file_path']);
+            $message->attach($fileData['signed_url'], ['as' => $fileData['file_name']]);
 
             $headers = $message->getHeaders();
 
