@@ -85,7 +85,7 @@ class RefundFile extends Base\RefundFile
 
             $message->to($emails);
 
-            $message->attach($data['file_url'], ['as' => $data['signed_url']]);
+            $message->attach($data['file_url'], ['as' => $data['file_name']]);
 
             $headers = $message->getHeaders();
 
