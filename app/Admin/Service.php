@@ -739,11 +739,6 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function postSetMerchantInternational($id, array $input)
-    {
-        return $this->postEditMerchant($id, $input);
-    }
-
     protected function dropFields(array &$array, array $fields)
     {
         foreach ($fields as $key)

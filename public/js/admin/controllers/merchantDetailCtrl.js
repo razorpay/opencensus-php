@@ -87,8 +87,20 @@ app
       };
 
       $scope.setInternational = function(value) {
-        var url = '/admin/merchants/' + $scope.merchant.id + '/international';
-        var request = $http.post(url, { international: value });
+        var data = {
+          route_name: 'merchant_edit',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            international: value,
+          },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
