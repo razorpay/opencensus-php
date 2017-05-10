@@ -1897,6 +1897,8 @@ ALTER TABLE settlements
 ALTER TABLE payment_analytics
     ADD CONSTRAINT payment_analytics_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments(id);
 
+ALTER TABLE gateway_downtimes DROP COLUMN public;
+
 ALTER TABLE upi
     ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,
     ADD INDEX upi_refund_id_index (refund_id);

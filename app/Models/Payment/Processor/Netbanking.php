@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Constants\Mode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Bank\Name;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal\Category;
 
@@ -385,5 +386,31 @@ class Netbanking
     public static function getAccountNumberLengths()
     {
         return self::ACCOUNT_NUMBER_LENGTHS;
+    }
+
+    public static function getExclusiveIssuersForGateway(string $gateway)
+    {
+        $otherGatewaySupportedBanks = self::$self;
+
+        $gatewayExclusiveBanks = self::$$gateway;
+
+        foreach (Gateway::SHARED_NETBANKING_GATEWAYS_LIVE as $netbankingGateway)
+        {
+            if ($gateway !== $netbankingGateway)
+            {
+                $gatewayExclusiveBanks = array_diff($gatewayExclusiveBanks, self::$$netbankingGateway);
+            }
+        }
+
+        $gatewayExclusiveBanks = array_values(array_diff($gatewayExclusiveBanks, self::$self));
+
+        return $gatewayExclusiveBanks;
+    }
+
+    public static function isIssuerExclusiveToGateway(string $issuer, string $gateway)
+    {
+        $gatewayExclusiveBanks = self::getExclusiveIssuersForGateway($gateway);
+
+        return in_array($issuer, $gatewayExclusiveBanks, true);
     }
 }
