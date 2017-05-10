@@ -85,8 +85,6 @@ class Selector
 
     public function select(Options $options = null, $verbose = false)
     {
-        $verbose = true;
-
         $terminals = $this->getTerminals();
 
         $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);
