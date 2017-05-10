@@ -83,7 +83,7 @@ class Handler extends ExceptionHandler
                 $response = ApiResponse::httpMethodNotAllowed();
                 break;
 
-            case $e instanceof EarlyWorkflowResponse;
+            case $e instanceof EarlyWorkflowResponse:
                 $response = ApiResponse::json(json_decode($e->getMessage(), true));
                 break;
         }
