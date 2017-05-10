@@ -1956,7 +1956,7 @@ ALTER TABLE terminals
     ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
 
 ALTER TABLE workflow_actions
-    ADD COLUMN permission_id char(14) NOT NULL AFTER `workflow_id`;
+    ADD COLUMN permission_id char(14) DEFAULT NULL AFTER `workflow_id`;
 
 ALTER TABLE workflow_actions
     ADD CONSTRAINT workflow_actions_permission_id_foreign
