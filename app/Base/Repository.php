@@ -245,6 +245,11 @@ class Repository extends \Razorpay\Spine\Repository
         return ($this->db->transactionLevel() > 0);
     }
 
+    public function assertTransactionActive()
+    {
+        assert ($this->isTransactionActive());
+    }
+
     public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [])
     {
         $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);

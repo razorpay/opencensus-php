@@ -66,7 +66,7 @@ class DailyFiles
 
         $count = $refunds->count();
 
-        if ($count == 0)
+        if ($count === 0)
         {
             return [
                 'total_amount'   => 0,

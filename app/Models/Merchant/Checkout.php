@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Emi;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -23,6 +24,8 @@ class Checkout
 {
     const CHECKOUT_LOGO_SIZE = 'medium';
     const CHECKOUT_DEFAULT_THEME_COLOR = '#3594E2';
+
+    const SUBSCRIPTION_ID    = 'subscription_id';
 
     public function __construct()
     {
@@ -46,6 +49,8 @@ class Checkout
         $this->checkAndAddOrderForTpv($merchant, $input, $data);
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
+
+        $this->checkAndAddDetailsForSubscription($input, $merchant, $data);
 
         $this->checkAndFillOfferDetails($merchant, $input, $data);
 
@@ -84,6 +89,18 @@ class Checkout
                 $data['customer'] = $invoiceData['customer'];
             }
         }
+    }
+
+    protected function checkAndAddDetailsForSubscription(array $input, Merchant\Entity $merchant, array & $data)
+    {
+        if (empty($input[self::SUBSCRIPTION_ID]) === true)
+        {
+            return;
+        }
+
+        $subscriptionId = $input[self::SUBSCRIPTION_ID];
+
+        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($merchant, $subscriptionId);
     }
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)

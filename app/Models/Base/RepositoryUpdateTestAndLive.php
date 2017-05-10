@@ -11,7 +11,10 @@ trait RepositoryUpdateTestAndLive
     /**
      * Save the model to the database.
      *
-     * @param  array  $options
+     * @param  PublicEntity  $entity
+     * @param  array         $options
+     *
+     * @throws Exception\LogicException
      */
     public function saveOrFail($entity, array $options = array())
     {
