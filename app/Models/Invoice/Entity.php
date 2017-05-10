@@ -352,6 +352,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getNetAmount()
+    {
+        return $this->getAttribute(self::NET_AMOUNT);
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
@@ -716,6 +721,36 @@ class Entity extends Base\PublicEntity
                                        ->toArrayPublicEmbedded();
 
         return $lineItems;
+    }
+
+    // TODO:
+    // Following two mutators method are here for backward compatibility.
+    // This can be removed post update queries(after code depl) have been run.
+
+    public function getTaxAmountAttribute($taxAmount)
+    {
+        if (($taxAmount === null) and
+            ($this->getAmount() !== null))
+        {
+            return 0;
+        }
+        else
+        {
+            return $taxAmount;
+        }
+    }
+
+    public function getNetAmountAttribute($netAmount)
+    {
+        if (($netAmount === null) and
+            ($this->getAmount() !== null))
+        {
+            return $this->getAmount();
+        }
+        else
+        {
+            return $netAmount;
+        }
     }
 
     protected function getPaymentIdAttribute()

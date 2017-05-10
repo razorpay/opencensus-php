@@ -313,7 +313,7 @@ class Generator extends Base\Core
 
     protected function createAndAssociateOrderForInvoice()
     {
-        $orderAmount = $this->invoice->getAmount();
+        $orderAmount = $this->invoice->getNetAmount();
 
         $orderCurrency = $this->invoice->getCurrency();
 

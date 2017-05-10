@@ -221,6 +221,48 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Public Setters Ends ----------------
 
+    // Mutators
+
+    // TODO:
+    // Following three mutators method are here for backward compatibility.
+    // This can be removed post update queries(after code depl) have been run.
+
+    public function getTotalAmountAttribute($totalAmount)
+    {
+        if ($totalAmount === null)
+        {
+            return $this->getAmount() * $this->getQuantity();
+        }
+        else
+        {
+            return $totalAmount;
+        }
+    }
+
+    public function getTaxAmountAttribute($taxAmount)
+    {
+        if ($taxAmount === null)
+        {
+            return 0;
+        }
+        else
+        {
+            return $taxAmount;
+        }
+    }
+
+    public function getNetAmountAttribute($netAmount)
+    {
+        if ($netAmount === null)
+        {
+            return $this->getTotalAmount();
+        }
+        else
+        {
+            return $netAmount;
+        }
+    }
+
     // -------------------- Relations --------------------------------
 
     public function entity()
