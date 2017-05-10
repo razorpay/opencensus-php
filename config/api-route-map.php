@@ -268,6 +268,9 @@ return [
             'url'       => 'balance',
             'routeName' => 'balance_get'
         ],
+
+        // Add Adjustment
+        'adj_add'                           => 'adjustments',
     ],
 
     // auth

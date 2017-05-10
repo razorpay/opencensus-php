@@ -563,10 +563,18 @@ app
           });
       };
       $scope.addAdjustment = function(adjustment) {
+        var mode = adjustment.mode;
+        delete adjustment.mode;
+
+        var data = {
+          route_name: 'adj_add',
+          body: adjustment,
+          mode: mode,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/addadjustment',
-          data: angular.toJson(adjustment),
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {

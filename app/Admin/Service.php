@@ -807,30 +807,6 @@ class Service extends Base\Service
         return [$error, $comment];
     }
 
-    public function postAddAdjustment($id, $input)
-    {
-        $data = [];
-        $error = [];
-        $logData = $input;
-
-        $mode = $input['mode'];
-        unset($input['mode']);
-
-        $this->setApiCredentials($id, $mode);
-
-        try
-        {
-            $data = $this->api->adjustment->create($input)->toArray();
-            $this->logActionToSlack($id, Actions::ADJUSTMENT_ADDED, $logData);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
     public function refundAuthorizedPayment($mode, $merchantId, $id)
     {
         $data = [];
