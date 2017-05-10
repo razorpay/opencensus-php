@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Header from 'rzp/ui/Header';
-import PasswordForm from 'merchant/components/Profile/PasswordForm';
-import UpgradeMerchantForm
-  from 'merchant/components/Profile/UpgradeMerchantForm';
+import PasswordForm from './PasswordForm';
+import UpgradeMerchantForm from './UpgradeMerchantForm';
 import MerchantDetails from 'merchant/components/Profile/MerchantDetails';
 import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
 
