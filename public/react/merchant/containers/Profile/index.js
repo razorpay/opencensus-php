@@ -15,6 +15,7 @@ import * as ProfileActions from 'merchant/modules/profile';
   state => {
     return {
       user: state.session.user,
+      profile: state.profile,
     };
   },
   { ...ProfileActions, ...NotificationActions, ...ModalActions }
