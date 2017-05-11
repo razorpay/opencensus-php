@@ -78,10 +78,10 @@ class TerminalLoadSorter extends Terminal\Sorter
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException($e);
 
+            return $this->fallbackLoadSorter($terminals, $input, $options);
         }
-
-        return $this->fallbackLoadSorter($terminals, $input, $options);
     }
 
     protected function fallbackLoadSorter($terminals, array $input, $options)
@@ -108,23 +108,21 @@ class TerminalLoadSorter extends Terminal\Sorter
                             array $terminals,
                             Base\PublicCollection $rules,
                             int $chancePercent,
-                            bool $verbose = false): array
+                            bool $verbose = false)
     {
        $totalLoad = 0;
-
-       $boostedTerminals = [];
 
        foreach ($rules as $rule)
        {
             $totalLoad += $rule->getLoad();
 
-            $matchingTerminals = [];
+            $boostedTerminals = [];
 
             foreach ($terminals as $terminal)
             {
                 if ($rule->matches($terminal) === true)
                 {
-                    $matchingTerminals[] = $terminal;
+                    $boostedTerminals[] = $terminal;
                 }
             }
 
@@ -138,18 +136,16 @@ class TerminalLoadSorter extends Terminal\Sorter
             // rules will be selected
             if ($totalLoad >= $chancePercent)
             {
-                if (empty($matchingTerminals) === false)
+                if (empty($boostedTerminals) === false)
                 {
-                    $this->traceBoostedTerminals($terminals, $chancePercent, $verbose);
-
-                    $boostedTerminals = $matchingTerminals;
-
-                    break;
+                    $this->traceBoostedTerminals($boostedTerminals, $chancePercent, $verbose);
                 }
+
+                return $boostedTerminals;
             }
        }
 
-       return $boostedTerminals;
+       return null;
     }
 
     protected function traceBoostedTerminals(array $terminals, int $chancePercent, bool $verbose = false)

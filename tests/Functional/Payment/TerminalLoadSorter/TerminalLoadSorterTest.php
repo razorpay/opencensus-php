@@ -266,6 +266,46 @@ class TerminalLoadSorterTest extends TestCase
         $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
     }
 
+    public function testTerminalSelectionWithMultipleRulesPresentButNoTerminalMatchingSelectedRule()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures('new_load_sorting');
+        $this->mockTokenex();
+
+        $this->fixtures->create('gateway_rule:card', [
+            'gateway' => 'hdfc',
+            'method'  => 'card',
+            'network' => 'VISA',
+            'load'    => 3000
+        ]);
+
+        $this->fixtures->create('gateway_rule:card', [
+            'gateway' => 'axis_migs',
+            'method'  => 'card',
+            'network' => 'VISA',
+            'load'    => 6000
+        ]);
+
+        $this->fixtures->create('gateway_rule:card', [
+            'gateway' => 'cybersource',
+            'method'  => 'card',
+            'network' => 'VISA',
+            'load'    => 1000
+        ]);
+
+        Options::setTestChance(5000);
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+    }
+
     /**
      * Tests the case where there are no merchant specific rules present, but a
      * shared rule is present. In this case we operate on the shared rule

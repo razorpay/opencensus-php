@@ -13,15 +13,15 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const GATEWAY          = 'gateway';
     const MERCHANT_ID      = 'merchant_id';
+    const GATEWAY          = 'gateway';
+    const LOAD             = 'load';
     const GATEWAY_ACQUIRER = 'gateway_acquirer';
     const INTERNATIONAL    = 'international';
     const METHOD           = 'method';
     const METHOD_TYPE      = 'method_type';
     const NETWORK          = 'network';
     const ISSUER           = 'issuer';
-    const LOAD             = 'load';
     const DELETED_AT       = 'deleted_at';
 
     const MAX_LOAD = 10000;
@@ -56,28 +56,28 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
-        self::GATEWAY,
         self::MERCHANT_ID,
+        self::GATEWAY,
+        self::LOAD,
         self::METHOD,
         self::METHOD_TYPE,
         self::NETWORK,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
         self::ISSUER,
-        self::LOAD,
     ];
 
     protected $visible = [
         self::ID,
-        self::GATEWAY,
         self::MERCHANT_ID,
+        self::GATEWAY,
+        self::LOAD,
         self::METHOD,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
-        self::LOAD,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT
