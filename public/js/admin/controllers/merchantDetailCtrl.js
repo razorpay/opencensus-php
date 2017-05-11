@@ -718,11 +718,19 @@ app
           });
       };
       $scope.editComment = function(new_comment) {
-        var data = { comment: new_comment };
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            comment: new_comment,
+          },
+        };
         var request = $http({
-          method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/comment/edit',
-          data: angular.toJson(data),
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {

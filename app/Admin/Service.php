@@ -796,17 +796,6 @@ class Service extends Base\Service
         return [$error, $merchantDetails];
     }
 
-    public function postEditMerchantComment($id, $comment)
-    {
-        $error = $merchantDetails = [];
-
-        $params = ['comment' => $comment];
-
-        list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
-
-        return [$error, $comment];
-    }
-
     public function refundAuthorizedPayment($mode, $merchantId, $id)
     {
         $data = [];
