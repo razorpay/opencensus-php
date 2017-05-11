@@ -64,10 +64,8 @@ class CombinedReconciliate extends Base\CombinedReconciliate
         {
             return BaseReconciliate::PAYMENT;
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     /**

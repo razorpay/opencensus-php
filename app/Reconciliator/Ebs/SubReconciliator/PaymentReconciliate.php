@@ -28,7 +28,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         foreach (self::COLUMN_PAYMENT_ID as $cpi)
         {
-            if (isset($row[$cpi]) === true)
+            if (empty($row[$cpi]) === false)
             {
                 $paymentId = $row[$cpi];
 
@@ -54,7 +54,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         foreach (self::COLUMN_PAYMENT_AMOUNT as $cpa)
         {
-            if (isset($row[$cpa]) === true)
+            if (empty($row[$cpa]) === false)
             {
                 $columnPaymentAmount = $cpa;
                 break;
