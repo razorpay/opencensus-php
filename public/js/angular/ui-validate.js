@@ -37,7 +37,8 @@ angular.module('ui.validate', []).directive('uiValidate', function() {
         validateFn = function(valueToValidate) {
           var expression = scope.$eval(exprssn, { $value: valueToValidate });
           if (
-            angular.isObject(expression) && angular.isFunction(expression.then)
+            angular.isObject(expression) &&
+            angular.isFunction(expression.then)
           ) {
             // expression is a promise
             expression.then(
