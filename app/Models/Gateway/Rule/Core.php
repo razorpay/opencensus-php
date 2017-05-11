@@ -66,7 +66,7 @@ class Core extends Base\Core
                                 ->gateway_rule
                                 ->fetchApplicableRulesForPayment($ruleFetchParams);
 
-        // CHecks if merchant specific rules are present. If present we only use them
+        // Checks if merchant specific rules are present. If present we only use them
         // and discard other rules
         $merchantSpecificRules = $this->getMerchantSpecificRules(
                                             $applicableRules,
@@ -89,6 +89,7 @@ class Core extends Base\Core
 
     /**
      * Selects rules for the merchant from the set of all rules
+     *
      * @param  Base\PublicCollection $rules    Set of all applicable rules
      * @param  Merchant\Entity       $merchant Merchant making the payment
      * @return Base\PublicCollection merchant specific rules
@@ -134,8 +135,8 @@ class Core extends Base\Core
      * Checks if the total load across all existing rules matching the criteria
      * defined by current rule is less than the max load value of 100. This is
      * required so that we don't end up having rules during terminal sorting whose
-     * total load does not exceed the distribution space of 100 as we are treating
-     * load values as percentages
+     * total load exceeds the distribution space of 100 as we are treating load
+     * values as percentages
      *
      * @param  Entity $rule  New rule
      * @param  array  $input Request data
@@ -153,10 +154,6 @@ class Core extends Base\Core
             $data = [
                 'total_load' => $totalLoad,
             ];
-
-            $this->trace->info(
-                TraceCode::GATEWAY_RULE_CONFLICT,
-                $data);
 
             throw new Exception\BadRequestValidationFailureException(
                 'Load across all gateway rules must be less than 100 percent',

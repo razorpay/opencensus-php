@@ -689,7 +689,6 @@ class TraceCode
 
 // Trace codes for gateway load rules
     const GATEWAY_RULE_CREATE_REQUEST            = 'GATEWAY_RULE_CREATE_REQUEST';
-    const GATEWAY_RULE_CONFLICT                  = 'GATEWAY_RULE_CONFLICT';
     const GATEWAY_RULE_DELETE_REQUEST            = 'GATEWAY_RULE_DELETE_REQUEST';
     const GATEWAY_RULE_UPDATE_REQUEST            = 'GATEWAY_RULE_UPDATE_REQUEST';
     const GATEWAY_RULES_POST_FILTER              = 'GATEWAY_RULES_POST_FILTER';

@@ -70,6 +70,8 @@ class TerminalLoadSorter extends Terminal\Sorter
             return $terminals;
         }
 
+        // Puts any terminals which are not in boostedTerminals and puts them behind
+        // the boosted terminals
         $nonBoostedTerminals = array_diff($terminals, $boostedTerminals);
 
         $terminals = array_merge($boostedTerminals, $nonBoostedTerminals);
@@ -112,14 +114,14 @@ class TerminalLoadSorter extends Terminal\Sorter
                 }
             }
 
-            // We iterate through the rules and keep adding the rule load
-            // to the cumulative total load value. If the total load is greater
-            // than chance percentage, that rule is selected.
-            // For e.g if we haverules R1 - load 30, and R2 load 50. If chance
-            // percentage is 40 in the second iteration totalLoad becomes 80 > 40
-            // and we select R2. However if say the chance percentage was 90,
-            // then even after all iterations totalLoad will be 80 which is less
-            // than 90 and so no rules will be selected
+            // We iterate through the rules and keep adding the rule load to the
+            // cumulative total load  value.  If the total  load is greater than
+            // chance  percentage, that rule  is selected.  For  e.g  if we have
+            // rules R1 - load 30, and R2 load 50. If chance percentage is 40 in
+            // the second iteration totalLoad becomes 80  > 40 and we select R2.
+            // However if say the chance percentage was 90, then even  after all
+            // iterations  totalLoad will  be 80 which is less than 90 and so no
+            // rules will be selected
             if ($totalLoad >= $chancePercent)
             {
                 if (empty($matchingTerminals) === false)
