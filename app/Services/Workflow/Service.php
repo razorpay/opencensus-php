@@ -79,10 +79,10 @@ class Service
         // Necessary data to pass to WorkflowController
         $params = $this->createDifferEntity($this->request, $entity, $entityId);
 
-        // Replace Input for the current request
-        $this->request->replace($params);
+        // returns Workflow\Action\Entity->toArrayPublic()
+        $data = (new Action\Service)->create($params);
 
-        return App::make(self::WORKFLOW_CONTROLLER)->postWorkflowAction();
+        return $data;
     }
 
     /*
@@ -230,11 +230,13 @@ class Service
         // Trigger the entite maker/checker (workflow) flow
         $workflowAction = $this->trigger();
 
+        $workflowAction = json_encode($workflowAction);
+
         // When there's a workflow action throw an exception
         // to abort further flow of code (services, controllers, etc.)
         throw new EarlyWorkflowResponse(
             200,
-            json_encode($workflowAction->getData()),
+            $workflowAction,
             null,
             ['Content-Type' => 'application/json']
         );
