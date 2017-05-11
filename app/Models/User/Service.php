@@ -44,9 +44,9 @@ class Service extends Base\Service
     /**
      * This function is used to add new relationship between user and merchant
      * This uses laravel attach which will create a new mapping.
-     * @param  Entity $user  [description]
-     * @param  array  $input [description]
-     * @return [type]        [description]
+     * @param  Entity $user
+     * @param  array  $input
+     * @return array
      */
     public function attach(Entity $user, array $input): array
     {
@@ -68,9 +68,9 @@ class Service extends Base\Service
     /**
      * This function is used to remove relationship between user and merchant
      * This uses laravel detach which will remove the existing mapping
-     * @param  Entity $user  [description]
-     * @param  array  $input [description]
-     * @return [type]        [description]
+     * @param  Entity $user
+     * @param  array  $input
+     * @return array
      */
     public function detach(Entity $user, array $input): array
     {
@@ -84,9 +84,9 @@ class Service extends Base\Service
      * This uses laravel sync which will update the mapping only if detaching is false.
      * If detaching is passed as true (default value), then all the old mapping would be deleted.
      * and the new only will be inserted.
-     * @param  Entity $user  [description]
-     * @param  array  $input [description]
-     * @return [type]        [description]
+     * @param  Entity $user
+     * @param  array  $input
+     * @return array
      */
     public function update(Entity $user, array $input): array
     {
