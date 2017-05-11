@@ -5,8 +5,10 @@ namespace RZP\Models\LineItem;
 use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Item;
+use RZP\Models\Plan\Subscription\Addon;
 
 class Entity extends Base\PublicEntity
 {
@@ -16,6 +18,8 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE      = 'entity_type';
     const MERCHANT_ID      = 'merchant_id';
     const ITEM_ID          = 'item_id';
+    const REF_ID           = 'ref_id';
+    const REF_TYPE         = 'ref_type';
     const NAME             = 'name';
     const DESCRIPTION      = 'description';
     const AMOUNT           = 'amount';
@@ -29,6 +33,9 @@ class Entity extends Base\PublicEntity
 
     const LINE_ITEMS       = 'line_items';
     const IDS              = 'ids';
+    // This is used to send the whole ref object
+    // as part of the line item itself.
+    const REF              = 'ref';
 
     protected static $sign = 'li';
 
@@ -39,6 +46,8 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::QUANTITY    => 1,
         self::DESCRIPTION => null,
+        self::REF_ID      => null,
+        self::REF_TYPE    => null,
     ];
 
     protected $visible = [
@@ -48,6 +57,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::QUANTITY,
         self::ITEM_ID,
+        self::REF_ID,
+        self::REF_TYPE,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -61,6 +72,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         // Uncomment later when required
         // self::ITEM_ID,
+        // self::REF_ID,
+        // self::REF_TYPE,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
@@ -85,6 +98,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ITEM_ID,
+        self::REF_ID,
     ];
 
     //
@@ -121,7 +135,21 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicItemIdAttribute(array & $array)
     {
-        $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
+        $array[self::ITEM_ID] = Item\Entity::getSignedIdOrNull($this->getAttribute(self::ITEM_ID));
+    }
+
+    public function setPublicRefIdAttribute(array & $array)
+    {
+        $refType = $array[self::REF_TYPE];
+
+        if ($refType === null)
+        {
+            return;
+        }
+
+        $entity = Constants\Entity::getEntityClass($refType);
+
+        $array[self::REF_ID] = $entity::getSignedId($array[self::REF_ID]);
     }
 
     // -------------------------- Public Setters Ends --------------------------
@@ -133,9 +161,19 @@ class Entity extends Base\PublicEntity
         return $this->morphTo();
     }
 
+    public function ref()
+    {
+        return $this->morphTo();
+    }
+
     public function item()
     {
         return $this->belongsTo('RZP\Models\Item\Entity');
+    }
+
+    public function addon()
+    {
+        return $this->belongsTo('RZP\Models\Plan\Subscription\Addon\Entity');
     }
 
     public function merchant()

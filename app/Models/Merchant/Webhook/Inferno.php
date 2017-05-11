@@ -256,7 +256,7 @@ class Inferno
      * @param array  $request Options in array format for making request
      * @param Entity $webhook Webhook Entity
      *
-     * @return boolen Success/Failure
+     * @return boolean Success/Failure
      */
     public function sendRequest(array $request, Entity $webhook)
     {
@@ -269,7 +269,8 @@ class Inferno
             [
                 'webhook_id'  => $webhook->getId(),
                 'merchant_id' => $webhook->merchant->getId(),
-                'request'     => $request
+                'request'     => $request,
+                'attempt'     => $this->job->attempts(),
             ]);
 
         try

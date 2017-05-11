@@ -22,19 +22,16 @@ return [
         ],
         'schedule' => [
             'name'        => 'Basic T3',
-            'type'        => 'settlement',
             'period'      => 'daily',
             'interval'    => 1,
             'anchor'      => null,
             'delay'       => 3,
-            'next_run'    => 1451586600,
         ],
     ],
 
     'testTimedSchedule' => [
         'schedule' => [
             'name'        => 'Basic T3 with time set',
-            'type'        => 'settlement',
             'period'      => 'daily',
             'interval'    => 1,
             'anchor'      => null,
@@ -66,12 +63,10 @@ return [
         ],
         'schedule' => [
             'name'        => 'Every 2 hours',
-            'type'        => 'settlement',
             'period'      => 'hourly',
             'interval'    => 2,
             'anchor'      => null,
             'delay'       => 0,
-            'next_run'    => 1451586600,
         ],
     ],
 
@@ -100,12 +95,10 @@ return [
         ],
         'schedule' => [
             'name'        => 'Every Tuesday',
-            'type'        => 'settlement',
             'period'      => 'weekly',
             'interval'    => 1,
             'anchor'      => 2,
             'delay'       => 1,
-            'next_run'    => 1451932200,
         ],
     ],
 
@@ -127,12 +120,10 @@ return [
         ],
         'schedule' => [
             'name'        => 'End of Month',
-            'type'        => 'settlement',
             'period'      => 'monthly-date',
             'interval'    => null,
             'anchor'      => -1,
             'delay'       => 2,
-            'next_run'    => 1454178600,
         ],
     ],
 
@@ -147,12 +138,10 @@ return [
         ],
         'schedule' => [
             'name'        => '10th of Month',
-            'type'        => 'settlement',
             'period'      => 'monthly-date',
             'interval'    => null,
             'anchor'      => 10,
             'delay'       => 2,
-            'next_run'    => 1452364200,
         ],
     ],
 
@@ -167,12 +156,10 @@ return [
         ],
         'schedule' => [
             'name'        => 'Second week of Month',
-            'type'        => 'settlement',
             'period'      => 'monthly-week',
             'interval'    => null,
             'anchor'      => 2,
             'delay'       => 2,
-            'next_run'    => 1452364200,
         ],
     ],
 
@@ -188,12 +175,10 @@ return [
         ],
         'schedule' => [
             'name'        => 'Last week of Month',
-            'type'        => 'settlement',
             'period'      => 'monthly-week',
             'interval'    => null,
             'anchor'      => -1,
             'delay'       => 2,
-            'next_run'    => 1454170000,
         ],
     ],
 ];
