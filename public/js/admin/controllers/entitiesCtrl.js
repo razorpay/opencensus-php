@@ -66,6 +66,7 @@ app.controller('EntitiesCtrl', [
       'all',
       'amex',
       'atom',
+      'aeps_icici',
       'axis_genius',
       'axis_migs',
       'billdesk',
@@ -433,7 +434,7 @@ app.controller('EntitiesCtrl', [
         gateway_merchant_id: ['Gateway Merchant Id'],
         gateway_terminal_id: ['Gateway Terminal Id'],
         network_category: ['Network Category'],
-        gateway_acquirer: ['all', 'axis', 'hdfc'],
+        gateway_acquirer: ['all', 'axis', 'hdfc', 'icic'],
         emi: booleanList,
       },
       transaction: {

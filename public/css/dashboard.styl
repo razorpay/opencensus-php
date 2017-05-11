@@ -531,9 +531,6 @@ a.highlight:hover, a.highlight:focus {
   .faded-text {
     color: #ccc;
   }
-  .timestamp {
-    cursor: help;
-  }
   .right-label {
     text-transform: uppercase;
     font-weight: bold;
@@ -544,6 +541,18 @@ a.highlight:hover, a.highlight:focus {
   }
   .desc-edit-icon > i {
     opacity: 0;
+  }
+  .desc-remove-icon {
+    position: absolute;
+    font-size: 14px;
+    z-index: 100;
+    cursor: pointer;
+    color: #e8e8e8;
+    top: 17px;
+
+    &:hover {
+      color: #c2c2c2;
+    }
   }
   .title-text {
     position: absolute;

@@ -107,8 +107,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function joinMerchantByIdWithRole($merchantId, $role)
     {
         $this->merchants()->attach([$merchantId], ['role' => $role]);
-
-        $this->currentMerchant();
     }
 
     /**

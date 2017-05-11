@@ -12,7 +12,6 @@ app
     'user',
     'organization',
     'transformRequestAsFormPost',
-    '$analytics',
     '$window',
     '$cookies',
     function(
@@ -26,7 +25,6 @@ app
       user,
       organization,
       transformRequestAsFormPost,
-      $analytics,
       $window
     ) {
       $scope.toArray = function(obj) {
@@ -215,7 +213,9 @@ app
         showSpinner();
         request.success(function(data) {
           if (data.success) {
-            $scope.signup.account_type = $scope.signup.data.invitation ? 'team_member' : 'merchant';
+            $scope.signup.account_type = $scope.signup.data.invitation
+              ? 'team_member'
+              : 'merchant';
             trackDrip('account_created');
             pushToDrip();
             $scope.isLoggedIn = true;
@@ -338,13 +338,13 @@ app
         }
       }
 
-      var trackDrip = function (action) {
+      var trackDrip = function(action) {
         if (!action) return;
         if (location.host !== 'dashboard.razorpay.com') return;
         try {
-          _dcq.push(["track", action])
-        } catch (e){}
-      }
+          _dcq.push(['track', action]);
+        } catch (e) {}
+      };
 
       var pushToDrip = (function() {
         var dataSent = {};
@@ -371,7 +371,8 @@ app
                 : $scope.signup.merchantData[key];
             }
           });
-          if ($scope.signup.account_type) data.account_type = $scope.signup.account_type
+          if ($scope.signup.account_type)
+            data.account_type = $scope.signup.account_type;
           data.source = $location.search().utm_source || document.referrer;
 
           for (var key in data) {
@@ -385,7 +386,7 @@ app
             return;
           }
           if (tag) {
-            payload.tags = [tag]
+            payload.tags = [tag];
           }
           try {
             /* global _dcq */

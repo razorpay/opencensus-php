@@ -967,5 +967,16 @@ angular
 
         return result;
       },
+
+      isWorkflow: function(data) {
+        if (
+          data.id.indexOf('w_action') === 0 &&
+          typeof data.workflow_id !== 'undefined'
+        ) {
+          return true;
+        }
+
+        return false;
+      },
     };
   });

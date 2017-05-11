@@ -53,7 +53,7 @@ export default class RefundsListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={refunds.length}
-              onClick={this.fetchAll}
+              onClick={this.paginate}
             />
           </div>
         </div>
