@@ -35,7 +35,7 @@ export default class DocumentsUploadForm extends Component {
                     <FileUploadInputButton
                       accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                       uploadedFileName={files.business_proof}
-                      maxSize="20000000"
+                      maxSize="8000000"
                       onChange={event => {
                         return saveFile(event, 'business_proof');
                       }}
@@ -54,7 +54,7 @@ export default class DocumentsUploadForm extends Component {
                     <FileUploadInputButton
                       accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                       uploadedFileName={files.business_pan_proof}
-                      maxSize="20000000"
+                      maxSize="8000000"
                       onChange={event => {
                         return saveFile(event, 'business_pan_proof');
                       }}
@@ -80,7 +80,7 @@ export default class DocumentsUploadForm extends Component {
               <FileUploadInputButton
                 accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                 uploadedFileName={files.address_proof}
-                maxSize="20000000"
+                maxSize="8000000"
                 onChange={event => {
                   return saveFile(event, 'address_proof');
                 }}
@@ -100,7 +100,7 @@ export default class DocumentsUploadForm extends Component {
                   <FileUploadInputButton
                     accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                     uploadedFileName={files.promoter_pan_proof}
-                    maxSize="20000000"
+                    maxSize="8000000"
                     onChange={event => {
                       return saveFile(event, 'promoter_pan_proof');
                     }}
@@ -119,7 +119,7 @@ export default class DocumentsUploadForm extends Component {
                   <FileUploadInputButton
                     accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                     uploadedFileName={files.promoter_address_proof}
-                    maxSize="20000000"
+                    maxSize="8000000"
                     onChange={event => {
                       return saveFile(event, 'promoter_address_proof');
                     }}
