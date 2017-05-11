@@ -107,6 +107,7 @@ class Gateway
      * */
     const REFUND_RETRY_GATEWAYS = [
         Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::BILLDESK,
     ];
 
     public static $channels = [

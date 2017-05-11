@@ -51,6 +51,8 @@ class Repository extends Base\Repository
             JOIN
                 workflow_steps ws ON wa.workflow_id = ws.workflow_id
                 AND wa.current_level = ws.level
+            JOIN
+                permissions p ON p.id = wa.permission_id
             WHERE
                 wa.state = 'open'
                 AND ws.role_id IN ($adminIds);
@@ -58,11 +60,19 @@ class Repository extends Base\Repository
 
         $wStep = Table::WORKFLOW_STEP;
 
+        $permission = Table::PERMISSION;
+
         return $this->newQuery()
-                    ->select(Table::WORKFLOW_ACTION . '.*')
+                    ->select(
+                        Table::WORKFLOW_ACTION . '.*',
+                        'permissions.name AS permission_name',
+                        'permissions.description AS permission_description')
                     ->join($wStep, function ($join) {
                         $join->on('workflow_actions.workflow_id', '=', 'workflow_steps.workflow_id')
                              ->on('workflow_actions.current_level', '=', 'workflow_steps.level');
+                    })
+                    ->join($permission, function ($join) {
+                        $join->on('permissions.id', '=', 'workflow_actions.permission_id');
                     })
                     ->where('workflow_actions.state', '=', State\Entity::OPEN)
                     ->whereIn('workflow_steps.role_id', $roleIds)

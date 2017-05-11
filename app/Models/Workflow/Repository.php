@@ -20,13 +20,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchWorkflowsByPermissionsAndOrgId(array $permissionIds, string $orgId, array $relations = [])
+    public function fetchWorkflowsByPermissionsAndOrgId(string $permissionId, string $orgId, array $relations = [])
     {
         return $this->newQuery()
                     ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
                     ->with($relations)
                     ->where(Entity::ORG_ID, '=', $orgId)
-                    ->whereIn('workflow_permissions.permission_id', $permissionIds)
+                    ->where('workflow_permissions.permission_id', $permissionId)
                     ->get();
     }
 
