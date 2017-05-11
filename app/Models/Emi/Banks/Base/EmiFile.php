@@ -79,7 +79,11 @@ class EmiFile extends Base\Core
         if (empty($authCode) === true)
         {
             throw new Exception\LogicException(
-                'Authorization Code cannot be empty.', null, ['auth_code' => $authCode]);
+                'Authorization Code cannot be empty.', null,
+                [
+                    'payment_id' => $payment->getPublicId(),
+                    'auth_code'  => $authCode
+                ]);
         }
 
         return $authCode;
