@@ -60,7 +60,8 @@ class CombinedReconciliate extends Base\CombinedReconciliate
         {
             return BaseReconciliate::REFUND;
         }
-        else if ($row[self::CAPTURE_TXN_CLM] !== 0.0)
+
+        if ($row[self::CAPTURE_TXN_CLM] !== 0.0)
         {
             return BaseReconciliate::PAYMENT;
         }
