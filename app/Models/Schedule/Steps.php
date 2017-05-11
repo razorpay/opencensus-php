@@ -6,6 +6,7 @@ class Steps
 {
     const STEP_LIST = [
         Period::WEEKLY       => 'Day',
+        Period::MONTHLY      => 'Day',
         Period::MONTHLY_DATE => 'Day',
         Period::MONTHLY_WEEK => 'Day',
         Period::HOURLY       => 'Hour',

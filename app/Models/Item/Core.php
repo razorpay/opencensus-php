@@ -10,6 +10,12 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
     public function create(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
@@ -53,5 +59,28 @@ class Core extends Base\Core
             ]);
 
         return $this->repo->item->deleteOrFail($item);
+    }
+
+    public function getOrCreateItemForType(
+        array $input,
+        Merchant\Entity $merchant,
+        string $type): Entity
+    {
+        if (empty($input[Entity::ITEM_ID]) === false)
+        {
+            $item = $this->repo->item->findByPublicIdAndMerchantForType(
+                                                        $input[Entity::ITEM_ID],
+                                                        $merchant,
+                                                        $type);
+        }
+        else
+        {
+            $itemInput = $input[Entity::ITEM];
+            $itemInput[Entity::TYPE] = $type;
+
+            $item = $this->create($itemInput, $merchant);
+        }
+
+        return $item;
     }
 }

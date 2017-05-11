@@ -12,6 +12,9 @@ class ItemTest extends TestCase
 {
     use PaymentTrait;
 
+    // TODO: Test case for items created for 1 entity should
+    // not be editable by other entities.
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/ItemTestData.php';

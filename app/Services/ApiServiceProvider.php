@@ -18,6 +18,8 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
+use RZP\Models\Plan\Subscription\Addon;
+use RZP\Models\Plan\Subscription;
 use RZP;
 use Swift_Mailer;
 
@@ -251,6 +253,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
             // line items
             'invoice'         => Invoice\Entity::class,
+            'addon'           => Addon\Entity::class,
 
             // transfers
             'transfer'        => Transfer\Entity::class,
@@ -269,6 +272,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'payout'          => Payout\Entity::class,
 
             'bank_account'    => BankAccount\Entity::class,
+
+            'subscription'    => Subscription\Entity::class,
         ]);
     }
 

@@ -344,10 +344,11 @@ class Service extends Base\Service
 
             $input = [
                 ScheduleTask\Entity::METHOD      => null,
-                ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
                 ScheduleTask\Entity::SCHEDULE_ID => $scheduleId
             ];
         }
+
+        $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
@@ -695,7 +696,7 @@ class Service extends Base\Service
             $today = Carbon::today('Asia/Kolkata');
         }
 
-        if (Holidays::isWorkingDay($today) == false)
+        if (Holidays::isWorkingDay($today) === false)
         {
             return ['message' => 'Today is a holiday! Happy holidays :)'];
         }
