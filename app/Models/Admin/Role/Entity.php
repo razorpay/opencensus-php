@@ -122,4 +122,11 @@ class Entity extends Base\Entity
 
         return false;
     }
+
+    public function getRelationsForDiffer() : array
+    {
+        return [
+            self::PERMISSIONS,
+        ];
+    }
 }

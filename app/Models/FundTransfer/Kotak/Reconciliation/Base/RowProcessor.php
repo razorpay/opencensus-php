@@ -52,9 +52,16 @@ class RowProcessor extends BaseCore
 
     protected function parseRow()
     {
+        $utr = trim($this->row[Headings::UTR_NUMBER]);
+
+        if (empty($utr) === true)
+        {
+            $utr = null;
+        }
+
         $this->parsedData = [
             'payment_ref_no'    => trim($this->row[Headings::PAYMENT_REF_NO] ?? null),
-            'utr'               => trim($this->row[Headings::UTR_NUMBER] ?? null),
+            'utr'               => $utr,
             'bank_status_code'  => trim($this->row[Headings::STATUS_OF_TRANSACTION] ?? null),
             'remarks'           => trim($this->row[Headings::REMARKS] ?? null),
             'payment_date'      => trim($this->row[Headings::PAYMENT_DATE] ?? null),

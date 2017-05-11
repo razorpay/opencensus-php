@@ -19,10 +19,10 @@ class InvoiceAction extends BaseJob
     // Following are the events handled
     //
 
-    const ISSUED     = 'issued';
-    const UPDATED    = 'updated';
-    const EXPIRED    = 'expired';
-    const AUTHORIZED = 'authorized';
+    const ISSUED                = 'issued';
+    const UPDATED               = 'updated';
+    const EXPIRED               = 'expired';
+    const AUTHORIZED            = 'authorized';
 
     protected $mode;
     protected $event;

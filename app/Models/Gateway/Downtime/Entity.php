@@ -21,7 +21,6 @@ class Entity extends Base\PublicEntity
     const COMMENT       = 'comment';
     const PARTIAL       = 'partial';
     const SCHEDULED     = 'scheduled';
-    const PUBLIC        = 'public';
     const CREATED_AT    = 'created_at';
     const UPDATED_AT    = 'updated_at';
 
@@ -42,7 +41,6 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::SCHEDULED,
         self::PARTIAL,
-        self::PUBLIC,
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
@@ -65,7 +63,6 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::PARTIAL,
         self::SCHEDULED,
-        self::PUBLIC,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -93,7 +90,6 @@ class Entity extends Base\PublicEntity
         self::END       => 'int',
         self::SCHEDULED => 'bool',
         self::PARTIAL   => 'bool',
-        self::PUBLIC    => 'bool',
     ];
 
     protected $defaults = [
@@ -105,7 +101,6 @@ class Entity extends Base\PublicEntity
         self::END           => null,
         self::COMMENT       => null,
         self::SCHEDULED     => false,
-        self::PUBLIC        => true,
         self::PARTIAL       => false,
     ];
 
@@ -119,7 +114,6 @@ class Entity extends Base\PublicEntity
         Entity::METHOD,
         Entity::GATEWAY,
         Entity::ISSUER,
-        Entity::PUBLIC,
         Entity::SCHEDULED
     ];
 
@@ -145,6 +139,11 @@ class Entity extends Base\PublicEntity
         return parent::edit($input, $operation);
     }
 
+    public function newCollection(array $models = array())
+    {
+        return new Collection($models);
+    }
+
     // --------------------- Modifiers ------------------------
     protected function modifyNetwork(&$input)
     {
@@ -156,6 +155,7 @@ class Entity extends Base\PublicEntity
             {
                 case Payment\Method::NETBANKING:
                 case Payment\Method::WALLET:
+                case Payment\Method::UPI:
                     $input[Entity::NETWORK] = Entity::NA;
                     break;
 
@@ -176,6 +176,7 @@ class Entity extends Base\PublicEntity
             {
                 case Payment\Method::NETBANKING:
                 case Payment\Method::WALLET:
+                case Payment\Method::UPI:
                     $input[Entity::CARD_TYPE] = Entity::NA;
                     break;
 
@@ -188,15 +189,25 @@ class Entity extends Base\PublicEntity
 
     protected function modifyIssuer(&$input)
     {
+        $method = $input[Entity::METHOD] ?? null;
+
         if (empty($input[Entity::ISSUER]) === true)
         {
-            $method = $input[Entity::METHOD] ?? null;
-
             switch ($method)
             {
                 case Payment\Method::NETBANKING:
-                    // for all netbankings, the issuer is the gateway itself
-                    $input[Entity::ISSUER] = strtolower($input[Entity::GATEWAY]);
+
+                    $gateway = $input[Entity::GATEWAY];
+
+                    // For shared netbanking gateways if issuer is null then set it to ALL
+                    $input[Entity::ISSUER] = Entity::ALL;
+
+                    // If gateway is a direct netbanking gateway we set the issuer
+                    if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
+                    {
+                        $input[Entity::ISSUER] = Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
+                    }
+
                     break;
 
                 case Payment\Method::WALLET:
@@ -204,6 +215,7 @@ class Entity extends Base\PublicEntity
                     $gateway = strtolower($input[Entity::GATEWAY]);
 
                     $input[Entity::ISSUER] = Payment\Gateway::getWalletForGateway($gateway);
+
                     break;
 
                 case Payment\Method::CARD:
@@ -212,6 +224,13 @@ class Entity extends Base\PublicEntity
                     // we could also assume all. But we are playing
                     // safe here
                     $input[Entity::ISSUER] = Entity::UNKNOWN;
+
+                    break;
+
+                case Payment\Method::UPI:
+
+                    $input[Entity::ISSUER] = Entity::UNKNOWN;
+
                     break;
             }
         }
@@ -233,7 +252,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        $this->attributes[Entity::NETWORK] = $network;
+        $this->attributes[Entity::NETWORK] = strtoupper($network);
     }
 
     protected function setCardTypeAttribute($cardType)
@@ -268,12 +287,17 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        $this->attributes[Entity::ISSUER] = strtoupper($issuer);
+        $this->attributes[Entity::ISSUER] = $issuer;
     }
 
     protected function isUnknownAllOrNull($value)
     {
         return in_array($value, [Entity::UNKNOWN, Entity::ALL, null], true);
+    }
+
+    public function hasTerminal()
+    {
+        return $this->isAttributeNotNull(self::TERMINAL_ID);
     }
 
     public function getTerminalId()
@@ -316,11 +340,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SCHEDULED);
     }
 
-    public function isPublic()
-    {
-        return $this->getAttribute(self::PUBLIC);
-    }
-
     public function getBegin()
     {
         return $this->getAttribute(self::BEGIN);
@@ -346,21 +365,29 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::END, time());
     }
 
-    public function scopePublic($query)
-    {
-        return $query->where(self::PUBLIC, '=', 0);
-    }
-
-    public function toArrayCheckout()
+    /**
+     * Formats the downtime entity with relevant data to display on public
+     * facing routes like checkout, merchant dashboard etc
+     *
+     * @return array Formatted downtime data
+     */
+    public function toArrayExternal()
     {
         $data = [
-            Entity::ISSUER      => $this->getIssuer(),
-            Entity::CARD_TYPE   => $this->getCardType(),
-            Entity::NETWORK     => $this->getNetwork(),
+            Entity::ISSUER      => (array) $this->getIssuer(),
             Entity::REASON_CODE => $this->getReasonCode(),
             Entity::PARTIAL     => $this->isPartial(),
             Entity::SCHEDULED   => $this->isScheduled(),
+            Entity::BEGIN       => $this->getBegin(),
+            Entity::END         => $this->getEnd(),
         ];
+
+        if ($this->getMethod() === Payment\Method::CARD)
+        {
+            $data[Entity::CARD_TYPE] = $this->getCardType();
+
+            $data[Entity::NETWORK] = (array) $this->getNetwork();
+        }
 
         return array_filter($data);
     }

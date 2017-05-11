@@ -4,7 +4,7 @@ namespace RZP\Models\Invoice;
 
 class Status
 {
-    // -------- Invoice Statuses -----------
+    // ----------- Invoice Statuses -----------
 
     // Almost all attributes can be edited for invoice in draft status.
     const DRAFT         = 'draft';
@@ -20,6 +20,14 @@ class Status
     // set for invoice.
     const EXPIRED       = 'expired';
 
+    // ----------- End Invoice Statuses -----------
+
+    // ----------- Invoice Sub Statuses -----------
+
+    const HALTED    = 'halted';
+
+    // ----------- End Invoice Sub Statuses -----------
+
     // These statuses have corresponding timestamps column in invoice
     public static $timestampedStatuses = [
         self::ISSUED,
@@ -28,9 +36,27 @@ class Status
         self::EXPIRED,
     ];
 
-    public static function isStatusValid($status)
+    public static $invoiceStatuses = [
+        self::DRAFT,
+        self::ISSUED,
+        self::PAID,
+        self::CANCELLED,
+        self::EXPIRED,
+    ];
+
+    public static $subscriptionStatuses = [
+        //
+        // All the invoices created when the subscription
+        // was halted, are not charged by our system.
+        // Invoices created before and after the
+        // subscription was halted are charged.
+        //
+        self::HALTED,
+    ];
+
+    public static function isStatusValid($status) : bool
     {
-        return (defined(__CLASS__ . '::' . strtoupper($status)));
+        return in_array($status, self::$invoiceStatuses, true);
     }
 
     public static function checkStatus($status)
@@ -38,6 +64,19 @@ class Status
         if (self::isStatusValid($status) === false)
         {
             throw new \InvalidArgumentException('Not a valid status: ' . $status);
+        }
+    }
+
+    public static function isSubscriptionStatusValid($subscriptionStatus) : bool
+    {
+        return in_array($subscriptionStatus, self::$subscriptionStatuses, true);
+    }
+
+    public static function checkSubscriptionStatus($subscriptionStatus)
+    {
+        if (self::isSubscriptionStatusValid($subscriptionStatus) === false)
+        {
+            throw new \InvalidArgumentException("Not a valid subscription status: " . $subscriptionStatus);
         }
     }
 }

@@ -16,7 +16,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Permission;
-
+use ApiResponse;
 use Config;
 
 class Core extends Base\Core
@@ -274,7 +274,13 @@ class Core extends Base\Core
         // Check for admin permissions
         $admin->hasMerchantActionPermissionOrFail($action);
 
-        $merchant->$action();
+        $routePermission = Permission\Name::$actionMap[$action];
+
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $merchant, function ($merchant) use ($action)
+            {
+                $merchant->$action();
+            });
 
         $this->repo->saveOrFail($merchant);
 

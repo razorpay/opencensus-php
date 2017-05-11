@@ -16,7 +16,7 @@ class Validator extends Base\Validator
     //
     // We have rules on create and update for the two status: DRAFT, ISSUED.
     // Eg. In ISSUED state, you cannot update amount of the invoice. There are
-    //     rules to accomodate such requirements. This way it's good to manage and
+    //     rules to accommodate such requirements. This way it's good to manage and
     //     is easy to understand.
     //
     // - Create invoice in DRAFT status
@@ -62,6 +62,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::BILLING_START       => 'sometimes|epoch',
+        Entity::BILLING_END         => 'sometimes|epoch',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch',
@@ -97,6 +99,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::BILLING_START       => 'sometimes|epoch',
+        Entity::BILLING_END         => 'sometimes|epoch',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch',
@@ -119,6 +123,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::BILLING_START       => 'sometimes|epoch',
+        Entity::BILLING_END         => 'sometimes|epoch',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
         Entity::EXPIRE_BY           => 'sometimes|epoch',
@@ -137,6 +143,8 @@ class Validator extends Base\Validator
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
+        Entity::BILLING_START       => 'sometimes|epoch',
+        Entity::BILLING_END         => 'sometimes|epoch',
         Entity::EXPIRE_BY           => 'sometimes|epoch',
         Entity::DRAFT               => 'sometimes|boolean',
     ];
@@ -381,7 +389,9 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        $this->validateOperation('sendNotification');
+        $op = $invoice->isOfSubscription() ? 'sendSubscriptionNotification' : 'sendNotification';
+
+        $this->validateOperation($op);
 
         if (NotifyMedium::isMediumValid($medium) === false)
         {
@@ -433,6 +443,12 @@ class Validator extends Base\Validator
                 $allowedStatuses = [
                     Status::ISSUED,
                 ];
+
+                break;
+
+            case 'sendSubscriptionNotification':
+                // Right now, we don't send anything at all
+                $allowedStatuses = [];
 
                 break;
 
