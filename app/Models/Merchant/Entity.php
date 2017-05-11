@@ -3,14 +3,13 @@
 namespace RZP\Models\Merchant;
 
 use Config;
-
-use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\User;
+use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
