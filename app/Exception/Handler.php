@@ -84,7 +84,10 @@ class Handler extends ExceptionHandler
                 break;
 
             case $e instanceof EarlyWorkflowResponse:
-                $response = ApiResponse::json(json_decode($e->getMessage(), true));
+                $workflowActionData = json_decode($e->getMessage(), true);
+
+                $response = ApiResponse::json($workflowActionData);
+
                 break;
         }
 
