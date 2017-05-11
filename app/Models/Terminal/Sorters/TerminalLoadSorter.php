@@ -36,45 +36,59 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         if ($merchant->isFeatureEnabled(Feature\Constants::NEW_LOAD_SORTING) === false)
         {
-            $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_FALLBACK);
-
-            $terminals = (new OldTerminalLoadSorter)->sort($terminals, $input, false, $options);
-
-            return $terminals;
+            return $this->fallbackLoadSorter($terminals, $input, $options);
         }
 
-        // @note: Temporarily setting verbose to true here for logging of terminal
-        // sorting using rules
-        $verbose = true;
-
-        $ruleCore = new Rule\Core;
-
-        $applicableRules = $ruleCore->fetchApplicableRulesForPayment($terminals, $input, $verbose);
-
-        // If no rules are present for load sorting we return the terminals list as is
-        if ($applicableRules->isEmpty() === true)
+        try
         {
+            // @note: Temporarily setting verbose to true here for logging of terminal
+            // sorting using rules
+            $verbose = true;
+
+            $ruleCore = new Rule\Core;
+
+            $applicableRules = $ruleCore->fetchApplicableRulesForPayment($terminals, $input, $verbose);
+
+            // If no rules are present for load sorting we return the terminals list as is
+            if ($applicableRules->isEmpty() === true)
+            {
+                return $terminals;
+            }
+
+            $chancePercent = $options->getChance();
+
+            $boostedTerminals = $this->getBoostedTerminals(
+                                            $terminals,
+                                            $applicableRules,
+                                            $chancePercent,
+                                            $verbose);
+
+            if (empty($boostedTerminals) === true)
+            {
+                return $terminals;
+            }
+
+            // Puts any terminals which are not in boostedTerminals and puts them behind
+            // the boosted terminals
+            $nonBoostedTerminals = array_diff($terminals, $boostedTerminals);
+
+            $terminals = array_merge($boostedTerminals, $nonBoostedTerminals);
+
             return $terminals;
         }
-
-        $chancePercent = $options->getChance();
-
-        $boostedTerminals = $this->getBoostedTerminals(
-                                        $terminals,
-                                        $applicableRules,
-                                        $chancePercent,
-                                        $verbose);
-
-        if (empty($boostedTerminals) === true)
+        catch (\Throwable $e)
         {
-            return $terminals;
+
         }
 
-        // Puts any terminals which are not in boostedTerminals and puts them behind
-        // the boosted terminals
-        $nonBoostedTerminals = array_diff($terminals, $boostedTerminals);
+        return $this->fallbackLoadSorter($terminals, $input, $options);
+    }
 
-        $terminals = array_merge($boostedTerminals, $nonBoostedTerminals);
+    protected function fallbackLoadSorter($terminals, array $input, $options)
+    {
+        $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_FALLBACK);
+
+        $terminals = (new OldTerminalLoadSorter)->sort($terminals, $input, false, $options);
 
         return $terminals;
     }

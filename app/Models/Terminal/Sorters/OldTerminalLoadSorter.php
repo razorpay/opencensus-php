@@ -1,4 +1,5 @@
 <?php
+
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Payment\Gateway;
@@ -14,6 +15,7 @@ class OldTerminalLoadSorter extends Terminal\Sorter
     protected $properties = [
         'gateway',
     ];
+
     /**
      * Rules for selecting a terminal with some probability
      * Attributes must be one of the terminal entity attribute which is matched
@@ -53,10 +55,12 @@ class OldTerminalLoadSorter extends Terminal\Sorter
             ]
         ],
     ];
+
     public function getRules()
     {
         return self::$rules;
     }
+
     /**
      * Select terminals to be given preference
      * and give them a boost according to the
@@ -69,14 +73,17 @@ class OldTerminalLoadSorter extends Terminal\Sorter
     public function gatewaySorter($terminals, array $input, $options)
     {
         $sortedTerminals = $terminals;
+
         if (is_null($options) === false)
         {
             $chancePercent = $options->getChance();
             $boostedTerminalIds = $this->getBoostedTerminalIds($terminals, $chancePercent);
+
             if (is_null($boostedTerminalIds) === false)
             {
                 $boostedTerminals = [];
                 $nonBoostedTerminals = [];
+
                 // As the terminals are from the priority list
                 // append to the terminal
                 foreach ($terminals as $terminal)
@@ -90,26 +97,32 @@ class OldTerminalLoadSorter extends Terminal\Sorter
                         $nonBoostedTerminals[] = $terminal;
                     }
                 }
+
                 $sortedTerminals = array_merge($boostedTerminals, $nonBoostedTerminals);
             }
         }
+
         return $sortedTerminals;
     }
+
     protected function getBoostedTerminalIds(array $terminals, $chancePercent)
     {
         // Not all rules will apply, a terminal may already have
         // been rejected in the previous sorting/filtering steps.
         $applicableRules = $this->getApplicableRules($terminals);
         $cumulativeProbabity = 0;
+
         foreach ($applicableRules as $rule)
         {
             $cumulativeProbabity += $rule['load'];
             $valid = $this->validateRules($cumulativeProbabity, $applicableRules);
+
             if ($valid === false)
             {
                 // Rules are invalid. Don't boost any terminal.
                 return null;
             }
+
             // Checking > 100-p, rather than simply <p
             // because in test cases we're always setting
             // p to zero, to avoid unexpected behaviour.
@@ -118,12 +131,15 @@ class OldTerminalLoadSorter extends Terminal\Sorter
                 return $rule['ids'];
             }
         }
+
         return null;
     }
+
     protected function getApplicableRules($terminals)
     {
         $allRules = $this->getRules();
         $applicableRules = [];
+
         foreach ($allRules as $rule)
         {
             // If the rule has any matching terminal then only merge
@@ -139,21 +155,26 @@ class OldTerminalLoadSorter extends Terminal\Sorter
                     $merge = true;
                 }
             }
+
             if ($merge === true)
             {
                 $applicableRules[] = $rule;
             }
         }
+
         return $applicableRules;
     }
+
     protected function validateAttributes($attributes, $terminal)
     {
         // Get all terminal attributes
         $termAttributes = $terminal->getAttributes();
+
         // Gets diff of the two. If there is any diff,
         // then attributes are not perfectly matching.
         return (count(array_diff_assoc($attributes, $termAttributes)) === 0);
     }
+
     protected function validateRules($cumulativeProbability, $applicableRules)
     {
         // Cumulative probability for all applicable rules
@@ -168,8 +189,10 @@ class OldTerminalLoadSorter extends Terminal\Sorter
                     'applicable_rules'     => $applicableRules,
                 ]
             );
+
             return false;
         }
+
         return true;
     }
 }

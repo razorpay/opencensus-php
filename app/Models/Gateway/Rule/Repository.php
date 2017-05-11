@@ -115,9 +115,9 @@ class Repository extends Base\Repository
     {
         $value = $params[$key];
 
-        $query->where(function ($query) use ($key, $value)
+        if ($value !== null)
         {
-            if ($value !== null)
+            $query->where(function ($query) use ($key, $value)
             {
                 $query->where($key, '=', $value);
 
@@ -127,7 +127,7 @@ class Repository extends Base\Repository
                 {
                     $query->orWhereNull($key);
                 }
-            }
-        });
+            });
+        }
     }
 }
