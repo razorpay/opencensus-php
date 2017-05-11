@@ -347,6 +347,9 @@ UPDATE billdesk SET RefundId = 'ISBM52921114461' WHERE id = 1234573;
 UPDATE iins SET issuer="HDFC" WHERE iin IN (421335,421394,422677,434673,472803,472810,489782,530151);
 
 #settlements data correction
+
+ALTER TABLE merchant_users ADD CONSTRAINT merchant_users_merchant_id_user_id_role_unique UNIQUE (merchant_id, user_id, role);
+
 update settlements set attempts=1 where id = '7O0p1u35YddfsU';
 
 # Update batch id for settlements created via attempt flow

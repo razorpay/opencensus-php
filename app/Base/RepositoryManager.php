@@ -47,11 +47,11 @@ class RepositoryManager extends \Illuminate\Support\Manager
         return $repo->save($entity, $options);
     }
 
-    public function sync($entity, $relation, $ids = [])
+    public function sync($entity, $relation, $ids = [], bool $detaching = true)
     {
         $repo = $this->getRepositoryClassFromObject($entity);
 
-        return $repo->sync($entity, $relation, $ids);
+        return $repo->sync($entity, $relation, $ids, $detaching);
     }
 
     public function detach($entity, $relation, $ids = [])
