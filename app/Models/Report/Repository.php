@@ -10,7 +10,6 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
-        Entity::TYPE            => 'sometimes|string'
     ];
 
     protected $proxyFetchParamRules = [

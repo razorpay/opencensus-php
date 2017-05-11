@@ -87,7 +87,9 @@ class BasicEntityReport extends BaseReport
      */
     public function getReport(array $input)
     {
-        $this->preReportProcessing($input);
+        $this->validateInput($input);
+
+        $this->setDefaults();
 
         list($from, $to, $count, $skip) = $this->getParamsForReport($input);
 
@@ -108,6 +110,8 @@ class BasicEntityReport extends BaseReport
      */
     public function getReportUrl(array $input)
     {
+        $this->validateInput($input);
+
         $this->generateReport($input);
 
         $file = $this->report->file;
@@ -118,8 +122,7 @@ class BasicEntityReport extends BaseReport
     }
 
     /**
-     * 1. Pre report processing - increasing memory limit,
-     *    checking if entity is allowed, etc
+     * 1. Pre report processing - increasing memory limit
      *
      * 2. Set report entity with params
      *
@@ -135,7 +138,7 @@ class BasicEntityReport extends BaseReport
      */
     public function generateReport(array $input)
     {
-        $this->preReportProcessing($input);
+        $this->setDefaults();
 
         $this->createReportEntity($input);
 
@@ -367,7 +370,7 @@ class BasicEntityReport extends BaseReport
             'entity'    => $this->entity,
         ];
 
-        $params = $input + $params;
+        $params = array_merge($input, $params);
 
         $report = (new Report\Core)->buildEntity($params, $this->merchant);
 
@@ -428,23 +431,17 @@ class BasicEntityReport extends BaseReport
     // ------ Processes before starting report-generation ------
 
     /**
-     * 1. Checks if entity is allowed for report
-     * 2. Increases system limits
-     * 3. Validates input
-     * 4. Sets timezone
+     * 1. Validates Input
+     * 2. Checks if entity is allowed for report
      *
      * @param $input array
      *        expected : 'day', 'month', 'year'
      */
-    protected function preReportProcessing(array $input)
+    protected function validateInput(array $input)
     {
         (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
         $this->checkAllowedEntity();
-
-        $this->increaseAllowedSystemLimits();
-
-        date_default_timezone_set('Asia/Kolkata');
     }
 
     /**

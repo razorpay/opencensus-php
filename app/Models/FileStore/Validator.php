@@ -8,6 +8,11 @@ use RZP\Constants\Entity as E;
 
 class Validator extends Base\Validator
 {
+    protected static $entityFetchRules = [
+        'entity_id'     => 'required|alpha_num|max:14',
+        'entity'        => 'required|string'
+    ];
+
     /**
      * Entities for which file_store entity exists
      * Used to validate input from 'file_get_signed_url'
