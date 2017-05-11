@@ -16,6 +16,7 @@ return [
                 'description' => 'Item 1 description :) ..',
                 'amount'      => 100,
                 'currency'    => 'INR',
+                'type'        => 'invoice',
             ],
         ],
         'response' => [

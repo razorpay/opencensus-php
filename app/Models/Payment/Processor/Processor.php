@@ -6,6 +6,7 @@ use App;
 use BasicAuth;
 use Carbon\Carbon;
 
+use RZP\Http;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Models\Base\PublicCollection;
@@ -101,7 +102,7 @@ class Processor
     /**
      * Api Route instance
      *
-     * @var RZP\Http\Route
+     * @var Http\Route
      */
     protected $route;
 
@@ -148,14 +149,6 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
-        //
-        // Creates a payment entity in DB with the input values given.
-        // Also takes care of fee-bearer customer flow.
-        //
-        // This is in a transaction because we perform
-        // lockForUpdate on invoice in this flow.
-        //
-
         $this->repo->transaction(function() use ($input)
         {
             $this->createPaymentEntity($input);
@@ -166,7 +159,6 @@ class Processor
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
 
-        // The first step in talking to the respective gateway.
         return $this->authorize($payment, $input);
     }
 
@@ -414,6 +406,7 @@ class Processor
     /**
      * Returns the proper async response for the status checks
      * made by Checkout
+     *
      * @param  string $id payment id
      * @return array
      * @throws Exception\BadRequestException
@@ -671,6 +664,8 @@ class Processor
             $this->verifyProvidedFee($payment, $input);
         }
 
+        $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
+
         $this->setOrderDetails($payment, $input);
 
         $this->setInvoiceDetails($payment);
@@ -691,6 +686,80 @@ class Processor
         $this->payment = $payment;
 
         return $payment;
+    }
+
+    /**
+     * This is required when the first charge is done via auth transaction.
+     * We need to use the invoice which was created during subscription
+     * creation.
+     * For the subsequent charges, this is handled since we send order_id as
+     * part of the payment create request itself. Since, the payment is created internally.
+     * The first charge (payment) is created by the merchant and hence not feasible to ask
+     * them to send an order_id along with the subscription_id.
+     *
+     * @param array          $input
+     * @param Payment\Entity $payment
+     *
+     * @throws Exception\LogicException
+     */
+    protected function addOrderIdToInputForSubscriptionIfApplicable(array & $input, Payment\Entity $payment)
+    {
+        if (isset ($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            return;
+        }
+
+        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+
+        //
+        // In case the subscription is in active or halted state,
+        // we don't want to add the order_id to the input.
+        // 1. It would already be present if it's automated charge.
+        // 2. Change card flow is being done. Hence, no invoice and stuff.
+        //
+        if ($subscription->isCreated() === false)
+        {
+            return;
+        }
+
+        //
+        // Invoice would have been created if:
+        // - First charge needs to be done as part of authentication with or without addons
+        // - Only addons need to be added, and no first charge needs to be done as part of authentication.
+        //
+        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+
+        if ($subscriptionInvoices->count() === 0)
+        {
+            //
+            // Since the subscription is in created state at this point,
+            // the only addons that will be present will be of `upfront_amount`.
+            //
+            $addons = $this->repo->addon->getAllAddonsOfSubscription($subscription);
+
+            if ($addons->count() === 0)
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'There should have been one invoice created for a newly created subscription',
+                    ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
+                    [
+                        'invoices_count'    => $subscriptionInvoices->count(),
+                        'subscription_id'   => $subscriptionId,
+                        'payment_id'        => $payment->getId(),
+                        'addons_count'      => $addons->count(),
+                    ]);
+            }
+        }
+
+        $subscriptionInvoice = $subscriptionInvoices->first();
+
+        $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
 
     protected function createDummyPaymentEntity(array $input): Payment\Entity
@@ -978,15 +1047,19 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
+        //
         // We do an auto capture only if payment is associated with an order.
+        //
         if ($payment->hasOrder() === false)
         {
             return false;
         }
 
+        //
         // The payment should always be in authorized if it has reached this point.
         // Ideally, this should throw an exception. But, we do not want to fail
         // the payment because of an internal issue.
+        //
         if ($payment->isAuthorized() === false)
         {
             $this->trace->error(
@@ -999,6 +1072,112 @@ class Processor
             return false;
         }
 
+        //
+        // The flow would reach till here because subscription creates
+        // an invoice, which in turn creates an order.
+        //
+        // Auto capturing a subscription payment is handled in a different
+        // flow, because of some pre-processing and post-processing
+        // that requires to be done.
+        //
+        if ($payment->hasSubscription() === true)
+        {
+            return false;
+        }
+
+        return $this->shouldAutoCaptureOrder($payment);
+    }
+
+    protected function shouldAutoCaptureAlreadyAuthenticatedSubscription(Payment\Entity $payment)
+    {
+        $subscription = $payment->subscription;
+
+        //
+        // Late authorizations are not going to happen here because
+        // everything is S2S. On the off chance that it happens,
+        // we log it and see what to do about it.
+        //
+        if ($payment->isLateAuthorized() === true)
+        {
+            $this->trace->critical(
+                TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'subscription_id' => $subscription->getId(),
+                    'late_authorized' => $payment->isLateAuthorized(),
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldAutoCaptureNewSubscription(Payment\Entity $payment)
+    {
+        $subscription = $payment->subscription;
+
+        //
+        // This is commented out because all the attributes set
+        // for the subscription and not saved will get overridden
+        // with the values present in the DB.
+        // TODO: Handle this because race conditions.
+        //
+        // $this->repo->reload($subscription);
+
+        //
+        // This function can be used here since this flow is processed
+        // only for a new subscription.
+        //
+        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+
+        //
+        // We auto capture a subscription only if start_at is absent,
+        // which means that the first transaction is being used as the
+        // first charge also.
+        // OR we auto capture if upfront_amount (addon) is present.
+        //
+        // We create an invoice if any of the above two conditions are satisfied.
+        //
+        if ($subscriptionInvoices->count() === 0)
+        {
+            return false;
+        }
+
+        if ($subscriptionInvoices->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'There should have been only one invoice created for a newly created subscription',
+                ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
+                [
+                    'invoices_count'    => $subscriptionInvoices->count(),
+                    'subscription_id'   => $subscription->getId(),
+                    'payment_id'        => $payment->getId(),
+                ]);
+        }
+
+        //
+        // Ideally, the flow shouldn't reach till here since this function
+        // is not called at all in case of a late auth payment.
+        //
+        if ($payment->isLateAuthorized() === true)
+        {
+            $this->trace->critical(
+                TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
+                [
+                    'payment_id'      => $payment->getId(),
+                    'subscription_id' => $subscription->getId(),
+                    'late_authorized' => $payment->isLateAuthorized(),
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldAutoCaptureOrder(Payment\Entity $payment)
+    {
         $order = $payment->order;
 
         //
@@ -1018,7 +1197,7 @@ class Processor
             return false;
         }
 
-        if ($payment->isLateAuthorized())
+        if ($payment->isLateAuthorized() === true)
         {
             return $this->shouldAutoCaptureLateAuthorized($payment);
         }

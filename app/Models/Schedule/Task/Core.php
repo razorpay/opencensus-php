@@ -39,7 +39,8 @@ class Core extends Base\Core
      * @param Base\Entity     $entity
      * @param                 $input
      *
-     * @return Entity
+     * @return $this
+     * @throws \Exception
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
@@ -62,27 +63,6 @@ class Core extends Base\Core
         $this->traceAndNotifyScheduleAssignment($scheduleTask);
 
         return $scheduleTask;
-    }
-
-    protected function createOrUpdateInMode($scheduleTask, $mode)
-    {
-        $entity = clone $scheduleTask;
-
-        $entity->setConnection($mode);
-
-        $currentSchedule = $this->repo
-                                ->schedule_task
-                                ->connection($mode)
-                                ->fetchExistingScheduleTask($entity);
-
-        if ($currentSchedule !== null)
-        {
-            $entity->setNextRunAt($currentSchedule->getNextRunAt());
-
-            $this->repo->deleteOrFail($currentSchedule);
-        }
-
-        $this->repo->saveOrFail($entity);
     }
 
     /**
@@ -119,7 +99,7 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      * @param                 $method
      *
-     * @return Entity
+     * @return null|Entity
      */
     public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
     {
@@ -132,6 +112,27 @@ class Core extends Base\Core
                                     $method);
 
         return $scheduleTask;
+    }
+
+    protected function createOrUpdateInMode(Entity $scheduleTask, string $mode)
+    {
+        $entity = clone $scheduleTask;
+
+        $entity->setConnection($mode);
+
+        $currentScheduleTask = $this->repo
+                                    ->schedule_task
+                                    ->connection($mode)
+                                    ->fetchExistingScheduleTask($entity);
+
+        if ($currentScheduleTask !== null)
+        {
+            $entity->setNextRunAt($currentScheduleTask->getNextRunAt());
+
+            $this->repo->deleteOrFail($currentScheduleTask);
+        }
+
+        $this->repo->saveOrFail($entity);
     }
 
     /**
@@ -175,7 +176,7 @@ class Core extends Base\Core
      * @param $scheduleTasks
      * @param $method
      *
-     * @return Entity
+     * @return null|Entity
      */
     protected function filterAndGetScheduleByMethodOrDefault(
         $scheduleTasks,
@@ -220,7 +221,6 @@ class Core extends Base\Core
                     'channel'  => Config::get('slack.channels.operations_log'),
                     'username' => 'Jordan Belfort',
                     'icon'     => ':boom:',
-                ]
-            );
+                ]);
     }
 }

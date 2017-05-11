@@ -366,6 +366,10 @@ class PublicEntity extends UniqueIdEntity
     /**
      * Returns id with the sign prefix attached.
      * However, if the value is null, then simply return null.
+     *
+     * @param $id
+     *
+     * @return null|string
      */
     public static function getSignedIdOrNull($id)
     {
