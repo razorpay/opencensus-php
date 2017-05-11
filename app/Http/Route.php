@@ -1309,6 +1309,8 @@ final class Route
         'merchant_copy_terminal',
     );
 
+    const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1536,6 +1538,18 @@ final class Route
     public static function getApiRoute($name)
     {
         return self::$apiRoutes[$name];
+    }
+
+    public function isWorkflowExecuteCall()
+    {
+        $routeName = $this->router->currentRouteName();
+
+        if ($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

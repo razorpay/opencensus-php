@@ -508,6 +508,13 @@ class Entity extends Base\Entity
 
     public function hasPermission($permission)
     {
+        $app = App::getFacadeRoot();
+
+        if ($app['api.route']->isWorkflowExecuteCall() === true)
+        {
+            return true;
+        }
+
         $adminPermissions = $this->getPermissionsList();
 
         return (in_array($permission, $adminPermissions, true) === true);
