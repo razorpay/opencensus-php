@@ -158,6 +158,13 @@ app
             // Action details
             $scope.action_details = data.data;
 
+            // Set action permission name to show as title
+            $scope.action_permission_name =
+              $scope.action_details.permission.description +
+              ' (' +
+              $scope.action_details.permission.name +
+              ')';
+
             // Action comments
 
             var comments = data.data.comments;

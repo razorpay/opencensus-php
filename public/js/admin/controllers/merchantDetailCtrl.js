@@ -13,6 +13,8 @@ app
     '$upload',
     'organization',
     'displayValue',
+    'utils',
+    '$state',
     function(
       $scope,
       $http,
@@ -24,7 +26,9 @@ app
       admin,
       $upload,
       organization,
-      displayValue
+      displayValue,
+      utils,
+      $state
     ) {
       admin.identity().then(function(data) {
         $scope.admin = data;
@@ -773,7 +777,14 @@ app
                 'Merchant archived successfully',
                 true
               );
-              $scope.merchant.details.archived_at = Date.now() / 1000;
+
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.merchant.details.archived_at = Date.now() / 1000;
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {

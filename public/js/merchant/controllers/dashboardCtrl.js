@@ -20,7 +20,8 @@ app
       request.success(function(result) {
         if (result.data) {
           if (
-            result.data.payment && parseInt(result.data.payment.txn_count) !== 0
+            result.data.payment &&
+            parseInt(result.data.payment.txn_count) !== 0
           )
             $scope.aggregations.data.updated_at =
               result.data.payment.updated_at;
