@@ -23,6 +23,8 @@ class Validator extends Base\Validator
         Entity::ROUTE        => 'required|string',
         Entity::ACTION_ID    => 'required|string|max:14',
         Entity::STATE        => 'required|string|max:25',
+        Entity::PERMISSION   => 'required|string|max:50',
+        Entity::DIFF         => 'sometimes|array',
     ];
 
     protected function validateType($attribute, $type)

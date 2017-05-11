@@ -161,9 +161,15 @@ class Repository extends \Razorpay\Spine\Repository
         $this->syncToEs($entity, EsRepository::DELETE);
     }
 
-    public function sync($entity, $relation, $ids = [])
+    /**
+     * If detaching is true then all the previous relations for this entity would be removed,
+     * and fresh new relations will be created.
+     * If detaching is false, then it will not remove the previous relations
+     * and will update the given relation.
+     */
+    public function sync($entity, $relation, $ids = [], bool $detaching = true)
     {
-        $entity->$relation()->sync($ids);
+        $entity->$relation()->sync($ids, $detaching);
 
         return $this;
     }
@@ -243,6 +249,11 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return ($this->db->transactionLevel() > 0);
+    }
+
+    public function assertTransactionActive()
+    {
+        assert ($this->isTransactionActive());
     }
 
     public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [])

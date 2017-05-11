@@ -611,6 +611,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * check if api or gateway should do currency conversion for merchant
+     *
      * @return bool
      */
     public function convertOnApi()

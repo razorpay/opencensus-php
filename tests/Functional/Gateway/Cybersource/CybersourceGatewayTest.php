@@ -105,6 +105,26 @@ class CybersourceGatewayTest extends TestCase
         });
     }
 
+    public function testParesFixPayment()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $messyPaRes = "eNpV\r\nUttygjAQfc9XM\r\nP0AkiAw";
+            $fixedPaRes = "eNpVUttygjAQfc9XMP0AkiAw";
+
+            if ($action === 'callback')
+            {
+                $content['PaRes'] = $messyPaRes;
+            }
+            else if ($action === 'verify_pares')
+            {
+                $this->assertEquals($fixedPaRes, $content['payerAuthValidateService']['signedPARes']);
+            }
+        });
+
+        $this->doAuthAndCapturePayment();
+    }
+
     public function testGatewayProcessorTimeout()
     {
         $this->mockServerContentFunction(function(&$content)

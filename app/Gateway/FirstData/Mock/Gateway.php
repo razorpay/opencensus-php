@@ -14,4 +14,33 @@ class Gateway extends FirstData\Gateway
     {
         return $this->authorizeMock($input);
     }
+
+    public function capture(array $input)
+    {
+        parent::capture($input);
+
+        $subscriptionId = $input['payment']['subscription_id'];
+
+        //
+        // For subscriptions, we want to test by failing some captures
+        // on the gateway end.
+        //
+
+        if ($subscriptionId === null)
+        {
+            return;
+        }
+
+        $subscription = $this->app['repo']->subscription->findOrFail($subscriptionId);
+
+        $notes = $subscription->getNotes()->toArray();
+
+        if (($this->env === 'testing') and
+            (isset($notes['fail']) === true) and
+            ($notes['fail'] === 'capture'))
+        {
+            throw new Exception\LogicException(
+                'Generic failure message');
+        }
+    }
 }
