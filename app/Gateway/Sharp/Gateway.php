@@ -226,7 +226,7 @@ class Gateway extends Base\Gateway
         return Crypt::decrypt($encryptedCard);
     }
 
-    protected function isRecurringPaymentRequest($input)
+    protected function isSecondRecurringPaymentRequest($input)
     {
         if (($input['payment']['recurring'] === true) and
             ($input['token'] !== null) and

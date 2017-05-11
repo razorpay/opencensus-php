@@ -35,7 +35,7 @@ class Gateway extends Base\Gateway
         $content['vpc_SecureHash'] = $this->generateHash($content);
         $content['vpc_SecureHashType'] = strtoupper(HashAlgo::SHA256);
 
-        if ($this->isRecurringPaymentRequest($input) === true)
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
         {
             return $this->authorizeRecurring($content, $input);
         }

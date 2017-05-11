@@ -338,7 +338,7 @@ class Gateway
         }
     }
 
-    protected function isRecurringPaymentRequest($input)
+    protected function isSecondRecurringPaymentRequest($input)
     {
         if (($input['payment']['recurring'] === true) and
             ($input['terminal']->isNon3DSRecurring() === true))
