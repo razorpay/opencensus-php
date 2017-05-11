@@ -183,8 +183,8 @@ return [
         'action'                => 'authorize',
         'received'              => true,
         'genius'                => false,
-        'amex'                  => 0,
-        'vpc_Amount'            => 50000,
+        'amex'                  => '0',
+        'vpc_Amount'            => '50000',
         'vpc_AcqResponseCode'   => '00',
         'vpc_AuthorisedAmount'  => null,
         'vpc_CapturedAmount'    => null,
@@ -208,7 +208,6 @@ return [
         'vpc_AcqCSCRespCode'    => 'Unsupported',
         'refund_id'             => null,
         'terminal_id'           => 'MiGSRcgTmlN3DS',
-        'vpc_amount'            => 50000,
         'entity'                => 'axis_migs',
     ],
 

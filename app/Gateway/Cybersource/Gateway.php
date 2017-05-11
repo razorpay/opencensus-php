@@ -1537,7 +1537,10 @@ class Gateway extends Base\Gateway
 
     // Logging
 
-    protected function traceGatewayPaymentRequest($request, $input, $traceCode)
+    protected function traceGatewayPaymentRequest(
+        $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         unset($request['content']['card']);
         unset($request['card']);
