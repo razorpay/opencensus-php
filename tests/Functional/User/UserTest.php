@@ -67,7 +67,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'email' => $user['email'],
+            'email'    => $user['email'],
             'password' => 'hello1234'
         ];
 
