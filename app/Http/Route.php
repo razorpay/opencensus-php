@@ -150,6 +150,7 @@ final class Route
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
         'merchant_update_features'                => ['post',     'merchants/{id}/features',                        'MerchantController@updateMerchantFeatures'                         ],
         'merchants_update_hold_funds'             => ['put',      'merchants/hold_funds/bulk',                      'MerchantController@updateHoldFundsForMultipleMerchants'            ],
+        'merchants_update_bank_account'           => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                      'KeyController@getKey'                                              ],
@@ -348,6 +349,16 @@ final class Route
         'gateway_downtime_source_webhook'         => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
+        'plan_create'                             => ['post',     'plans',                                          'SubscriptionController@postCreatePlan'                             ],
+        'plan_fetch'                              => ['get',      'plans/{id}',                                     'SubscriptionController@getPlan'                                    ],
+        'plan_fetch_multiple'                     => ['get',      'plans',                                          'SubscriptionController@getPlans'                                   ],
+        'subscription_create'                     => ['post',     'subscriptions',                                  'SubscriptionController@postCreateSubscription'                     ],
+        'subscription_fetch'                      => ['get',      'subscriptions/{id}',                             'SubscriptionController@getSubscription'                            ],
+        'subscription_fetch_multiple'             => ['get',      'subscriptions',                                  'SubscriptionController@getSubscriptions'                           ],
+        'subscriptions_charge_invoices'           => ['post',     'subscriptions/charge/invoices',                  'SubscriptionController@postCreateAndChargeSubscriptionInvoices'    ],
+        'subscriptions_retry'                     => ['post',     'subscriptions/retry',                            'SubscriptionController@postRetrySubscriptions'                     ],
+        'subscriptions_expire'                    => ['post',     'subscriptions/expire',                           'SubscriptionController@postExpireSubscriptions'                    ],
+        'subscription_manual_retry'               => ['post',     'invoices/{invoice_id}/charge',                   'SubscriptionController@postChargeSubscriptionInvoiceManually'      ],
         'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
@@ -447,6 +458,7 @@ final class Route
         'action_comment_fetch'                    => ['get',      'w-actions/{id}/comments',                        'WorkflowController@getActionComments'                              ],
         'workflow_get_actions_for_checker'        => ['get',      'w-manager/get-actions-for-checker',              'WorkflowController@getActionsForChecker'                           ],
         'workflow_get_actions_by_maker'           => ['get',      'w-manager/get-actions-by-maker',                 'WorkflowController@getActionsByMaker'                              ],
+        'workflow_get_actions_checked'            => ['get',      'w-manager/get-actions-checked',                  'WorkflowController@getActionsChecked'                              ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -618,6 +630,8 @@ final class Route
         'order_fetch_by_id',
         'order_payments',
         'feature_dummy',
+        'setl_fetch_by_id',
+        'setl_fetch_multiple',
         'setl_combined_report',
         'customer_create',
         'customer_update',
@@ -637,6 +651,12 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
+        'plan_create',
+        'plan_fetch',
+        'plan_fetch_multiple',
+        'subscription_create',
+        'subscription_fetch',
+        'subscription_fetch_multiple',
         'p2p_fetch_private',
         'vpa_fetch_private',
         'customer_collect_request_fetch_private',
@@ -787,6 +807,9 @@ final class Route
         'refund_create_gateway_record',
         'gateway_validate_unknown_refund',
         'scorecard',
+        'subscriptions_charge_invoices',
+        'subscriptions_retry',
+        'subscriptions_expire',
         'billdesk_reconcile_cancelled',
         'feature_get_multiple',
         'feature_add',
@@ -833,7 +856,7 @@ final class Route
         'merchant_actions',
         'refund_retry_failed',
         'refund_verify_failed',
-        'merchants_update_hold_funds',
+        'merchants_update_bank_account',
     );
 
     public static $proxy = array(
@@ -842,8 +865,6 @@ final class Route
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
-        'setl_fetch_by_id',
-        'setl_fetch_multiple',
         'setl_fetch_transactions',
         'setl_get_details',
         'adj_fetch_by_id',
@@ -889,6 +910,7 @@ final class Route
         'item_fetch_multiple',
         'item_update',
         'item_delete',
+        'subscription_manual_retry',
         'merchant_get_features',
         'merchant_update_features',
         'merchant_activation_details',
@@ -969,6 +991,8 @@ final class Route
         'workflow_action_get_multiple',
         'workflow_get_actions_for_checker',
         'workflow_get_actions_by_maker',
+        'workflow_get_actions_checked',
+        'merchants_update_hold_funds',
     ];
 
     public static $routePermission = [
@@ -1040,6 +1064,7 @@ final class Route
         'workflow_action_states'           => ['*'],
         'workflow_action_details'          => ['*'],
         'workflow_action_get_multiple'     => ['*'],
+        'workflow_get_actions_checked'     => ['*'],
         'credits_fetch_multiple'           => [Permission::VIEW_MERCHANT_CREDITS_LOG],
         'credits_create'                   => [Permission::ADD_MERCHANT_CREDITS],
         'credits_delete'                   => [Permission::DELETE_MERCHANT_CREDITS],
@@ -1050,6 +1075,13 @@ final class Route
         'merchant_live_enable'             => [Permission::EDIT_MERCHANT_ENABLE_LIVE],
         'merchant_live_disable'            => [Permission::EDIT_MERCHANT_DISABLE_LIVE],
         'admin_fetch_entity_by_id'         => ['*'],
+        // Permission handled in code
+        'merchant_activation_update'       => ['*'],
+        'merchant_assign_pricing'          => [Permission::EDIT_MERCHANT_PRICING],
+        'merchant_get_banks'               => [Permission::VIEW_MERCHANT_BANKS],
+        'merchant_set_banks'               => [Permission::EDIT_MERCHANT_BANKS],
+        'merchant_fetch_bank_account'      => [Permission::VIEW_MERCHANT_BANK_ACCOUNTS],
+        'merchants_update_hold_funds'      => [Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS],
     ];
 
     public static $direct = array(
@@ -1116,6 +1148,9 @@ final class Route
             'invoice_expire_bulk',
             'batch_process_file',
             'order_refund_multiple_authorized',
+            'subscriptions_charge_invoices',
+            'subscriptions_retry',
+            'subscriptions_expire',
             'refund_create_gateway_record',
             'gateway_validate_unknown_refund',
             'merchant_migrate_features',
@@ -1197,6 +1232,13 @@ final class Route
         'transfer_fetch_multiple'           => [Feature::MARKETPLACE, Feature::OPENWALLET],
         'transfer_fetch'                    => [Feature::MARKETPLACE, Feature::OPENWALLET],
         'transfer_create_reversal'          => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'plan_create'                       => [Feature::SUBSCRIPTIONS],
+        'plan_fetch'                        => [Feature::SUBSCRIPTIONS],
+        'plan_fetch_multiple'               => [Feature::SUBSCRIPTIONS],
+        'subscription_create'               => [Feature::SUBSCRIPTIONS],
+        'subscription_fetch'                => [Feature::SUBSCRIPTIONS],
+        'subscription_fetch_multiple'       => [Feature::SUBSCRIPTIONS],
+        'subscription_manual_retry'         => [Feature::SUBSCRIPTIONS],
     ];
 
     /*

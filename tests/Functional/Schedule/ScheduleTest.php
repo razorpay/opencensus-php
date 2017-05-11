@@ -66,21 +66,10 @@ class ScheduleTest extends TestCase
         });
     }
 
-    public function testScheduleInvalidWeeklyAnchor()
-    {
-        $input = $this->getDefaultScheduleArray();
-
-        $input['anchor'] = Carbon::SATURDAY;
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($input) {
-            $this->createSchedule($input);
-        });
-    }
-
     public function testScheduleInvalidType()
     {
+        $this->markTestSkipped('No type in schedules now');
+
         $input = $this->getDefaultScheduleArray();
 
         $input['type'] = 'not_settlement';

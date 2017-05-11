@@ -133,13 +133,13 @@ class Repository extends Base\Repository
 
     public function fetchGatewayRefundedRefundsWithoutTxns()
     {
-        $refundAttrs = $this->getAttributeWithTableName('*');
-        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
-        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
-        $refundGatewayRefundedAttr = $this->getAttributeWithTableName(Entity::GATEWAY_REFUNDED);
+        $refundAttrs = $this->dbColumn('*');
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+        $refundTransactionIdAttr = $this->dbColumn(Entity::TRANSACTION_ID);
+        $refundGatewayRefundedAttr = $this->dbColumn(Entity::GATEWAY_REFUNDED);
 
-        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
-        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentTransactionIdAttr = $this->repo->payment->dbColumn(Payment\Entity::TRANSACTION_ID);
 
         return $this->newQuery()
                     ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
@@ -153,21 +153,21 @@ class Repository extends Base\Repository
 
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
-        $attrs = $this->getAttributeWithTableName('*');
+        $attrs = $this->dbColumn('*');
 
         $query = $this->newQuery();
 
         $refunds = $query->select($attrs)->join(
-            $this->manager->payment->getTableName(),
+            $this->repo->payment->getTableName(),
             function ($join) use ($from, $to, $type, $gatewayCode, $gateway)
             {
-                $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
-                $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
+                $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 
-                $pRepo = $this->manager->payment;
-                $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
-                $pType = $pRepo->getAttributeWithTableName($type);
-                $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+                $pRepo = $this->repo->payment;
+                $pId = $pRepo->dbColumn(Payment\Entity::ID);
+                $pType = $pRepo->dbColumn($type);
+                $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
 
                 $join->on($rPaymentId, '=', $pId)
                      ->where($rCreatedAt, '>=', $from)
@@ -193,24 +193,24 @@ class Repository extends Base\Repository
         //   AND `payments`.`gateway` = $gateway
         //   AND `terminals`.`tpv` = $tpvEnabled
 
-        $attrs = $this->getAttributeWithTableName('*');
+        $attrs = $this->dbColumn('*');
 
-        $pRepo = $this->manager->payment;
+        $pRepo = $this->repo->payment;
         $pTableName = $pRepo->getTableName();
 
-        $tRepo = $this->manager->terminal;
+        $tRepo = $this->repo->terminal;
         $tTableName = $tRepo->getTableName();
 
-        $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
-        $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
+        $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+        $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 
-        $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
-        $pType = $pRepo->getAttributeWithTableName($type);
-        $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
-        $pTerminalId = $pRepo->getAttributeWithTableName(Payment\Entity::TERMINAL_ID);
+        $pId = $pRepo->dbColumn(Payment\Entity::ID);
+        $pType = $pRepo->dbColumn($type);
+        $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
+        $pTerminalId = $pRepo->dbColumn(Payment\Entity::TERMINAL_ID);
 
-        $tId = $tRepo->getAttributeWithTableName(Terminal\Entity::ID);
-        $tTpv = $tRepo->getAttributeWithTableName(Terminal\Entity::TPV);
+        $tId = $tRepo->dbColumn(Terminal\Entity::ID);
+        $tTpv = $tRepo->dbColumn(Terminal\Entity::TPV);
 
         return $this->newQuery()
                     ->select($attrs)
@@ -252,19 +252,19 @@ class Repository extends Base\Repository
         $refundTable = Table::REFUND;
         $gatewayTable = Table::getTableNameForEntity($gateway);
 
-        $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
-        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
-        $refundCreatedAtAttr = $this->getAttributeWithTableName(Entity::CREATED_AT);
-        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+        $refundIdAttr = $this->dbColumn(Entity::ID);
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+        $refundCreatedAtAttr = $this->dbColumn(Entity::CREATED_AT);
+        $refundTransactionIdAttr = $this->dbColumn(Entity::TRANSACTION_ID);
 
-        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
-        $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
-        $paymentRefundStatusAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::REFUND_STATUS);
-        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentGatewayAttr = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+        $paymentRefundStatusAttr = $this->repo->payment->dbColumn(Payment\Entity::REFUND_STATUS);
+        $paymentTransactionIdAttr = $this->repo->payment->dbColumn(Payment\Entity::TRANSACTION_ID);
 
         $gatewayRefundIdAttr = 'refund_id';
 
-        $refundAttributes = $this->getAttributeWithTableName('*');
+        $refundAttributes = $this->dbColumn('*');
 
         $response = $this->newQuery()
                          ->select($refundAttributes)
@@ -302,22 +302,22 @@ class Repository extends Base\Repository
         $gatewayTable = Table::getTableNameForEntity($gateway);
         $paymentTable = Table::PAYMENT;
 
-        $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
-        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
-        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+        $refundIdAttr = $this->dbColumn(Entity::ID);
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+        $refundTransactionIdAttr = $this->dbColumn(Entity::TRANSACTION_ID);
 
-        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
-        $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentGatewayAttr = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
 
-        $gatewayStatusCodeAttr = $this->manager
+        $gatewayStatusCodeAttr = $this->repo
                                       ->wallet
-                                      ->getAttributeWithTableName(WalletEntity::STATUS_CODE);
+                                      ->dbColumn(WalletEntity::STATUS_CODE);
 
-        $gatewayRefundIdAttr = $this->manager
+        $gatewayRefundIdAttr = $this->repo
                                     ->wallet
-                                    ->getAttributeWithTableName(WalletEntity::REFUND_ID);
+                                    ->dbColumn(WalletEntity::REFUND_ID);
 
-        $refundAttributes = $this->getAttributeWithTableName('*');
+        $refundAttributes = $this->dbColumn('*');
 
         $response = $this->newQuery()
                          ->select($refundAttributes)
@@ -350,18 +350,18 @@ class Repository extends Base\Repository
         // order by rand() limit 50
         //
 
-        $attrs = $this->getAttributeWithTableName('*');
+        $attrs = $this->dbColumn('*');
 
-        $pRepo = $this->manager->payment;
+        $pRepo = $this->repo->payment;
         $pTableName = $pRepo->getTableName();
 
-        $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
-        $rAttempts = $this->getAttributeWithTableName(Refund\Entity::ATTEMPTS);
-        $rStatus = $this->getAttributeWithTableName(Refund\Entity::STATUS);
-        $rLastAttemptedAt = $this->getAttributeWithTableName(Refund\Entity::LAST_ATTEMPTED_AT);
+        $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+        $rAttempts = $this->dbColumn(Refund\Entity::ATTEMPTS);
+        $rStatus = $this->dbColumn(Refund\Entity::STATUS);
+        $rLastAttemptedAt = $this->dbColumn(Refund\Entity::LAST_ATTEMPTED_AT);
 
-        $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
-        $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $pId = $pRepo->dbColumn(Payment\Entity::ID);
+        $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
 
         $timeLimit = Carbon::now('Asia/Kolkata')->subMinutes(30)->timestamp;
 

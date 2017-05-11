@@ -44,6 +44,7 @@ class Validator extends Base\Validator
         'callback_url'            => 'sometimes|url',
         'order_id'                => 'sometimes|filled',
         'customer_id'             => 'required_if:wallet,openwallet|public_id|filled',
+        'subscription_id'         => 'sometimes|public_id',
         'app_token'               => 'sometimes',
         'token'                   => 'sometimes',
         'save'                    => 'sometimes|in:0,1',

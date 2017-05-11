@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Customer;
 use RZP\Models\Order;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Address;
 use RZP\Models\FileStore;
 
@@ -26,12 +27,14 @@ class Entity extends Base\PublicEntity
     const ORDER_ID                 = 'order_id';
     const RECEIPT                  = 'receipt';
     const MERCHANT_ID              = 'merchant_id';
+    const SUBSCRIPTION_ID          = 'subscription_id';
     const CUSTOMER_ID              = 'customer_id';
     const CUSTOMER_NAME            = 'customer_name';
     const CUSTOMER_EMAIL           = 'customer_email';
     const CUSTOMER_BILLING_ADDR_ID = 'customer_billing_addr_id';
     const CUSTOMER_CONTACT         = 'customer_contact';
     const STATUS                   = 'status';
+    const SUBSCRIPTION_STATUS      = 'subscription_status';
     const DATE                     = 'date';
     const DUE_BY                   = 'due_by';
     const SCHEDULED_AT             = 'scheduled_at';
@@ -52,6 +55,8 @@ class Entity extends Base\PublicEntity
     const CURRENCY                 = 'currency';
     const USER_ID                  = 'user_id';
     const SOURCE                   = 'source';
+    const BILLING_START            = 'billing_start';
+    const BILLING_END              = 'billing_end';
     const TYPE                     = 'type';
     const DELETED_AT               = 'deleted_at';
 
@@ -100,6 +105,7 @@ class Entity extends Base\PublicEntity
         'cancelInvoice',
         'expireInvoice',
         'sendNotification',
+        'sendSubscriptionNotification',
         'addLineItems',
         'addManyLineItems',
         'updateLineItem',
@@ -114,8 +120,10 @@ class Entity extends Base\PublicEntity
         // For a draft state, it has to be sent explicitly in the request.
         // It's created in the issued state otherwise.
         self::STATUS                   => Status::ISSUED,
-        // self::ADJUSTMENT        => 0,
-        // self::SHIPPING          => 0,
+        self::SUBSCRIPTION_STATUS      => null,
+        // self::ADJUSTMENT            => 0,
+        // self::SHIPPING              => 0,
+        self::SUBSCRIPTION_ID          => null,
         self::DATE                     => null,
         self::ISSUED_AT                => null,
         self::PAID_AT                  => null,
@@ -131,6 +139,8 @@ class Entity extends Base\PublicEntity
         self::USER_ID                  => null,
         self::AMOUNT                   => null,
         self::CURRENCY                 => 'INR',
+        self::BILLING_START            => null,
+        self::BILLING_END              => null,
         self::CUSTOMER_NAME            => null,
         self::CUSTOMER_EMAIL           => null,
         self::CUSTOMER_CONTACT         => null,
@@ -167,6 +177,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SOURCE,
         self::TYPE,
+        self::BILLING_START,
+        self::BILLING_END,
         self::USER_ID,
         self::EXPIRE_BY,
         // self::ADJUSTMENT,
@@ -180,9 +192,11 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::RECEIPT,
         self::STATUS,
+        self::SUBSCRIPTION_STATUS,
         self::CUSTOMER_ID,
         self::CUSTOMER,
         self::MERCHANT_ID,
+        self::SUBSCRIPTION_ID,
         self::ORDER_ID,
         self::PAYMENT_ID,
         self::DUE_BY,
@@ -208,6 +222,8 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::TYPE,
         self::AMOUNT,
+        self::BILLING_START,
+        self::BILLING_END,
         self::USER_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -223,6 +239,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER,
         self::CUSTOMER_DETAILS,
         self::ORDER_ID,
+        self::SUBSCRIPTION_ID,
         self::LINE_ITEMS,
         self::PAYMENT_ID,
         self::STATUS,
@@ -244,6 +261,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
+        self::BILLING_START,
+        self::BILLING_END,
         self::TYPE,
         self::USER_ID,
         // self::TOTAL_AMOUNT,
@@ -267,6 +286,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::CUSTOMER,
         self::ORDER_ID,
+        self::SUBSCRIPTION_ID,
     ];
 
     protected $casts = [
@@ -369,9 +389,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VIEW_LESS);
     }
 
+    public function getSubscriptionStatus()
+    {
+        return $this->getAttribute(self::SUBSCRIPTION_STATUS);
+    }
+
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function getSubscriptionId()
+    {
+        return $this->getAttribute(self::SUBSCRIPTION_ID);
+    }
+
+    public function isOfSubscription()
+    {
+        return ($this->getAttribute(self::SUBSCRIPTION_ID) !== null);
     }
 
     public function getReceipt()
@@ -592,6 +627,13 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setSubscriptionStatus($subscriptionStatus)
+    {
+        Status::checkSubscriptionStatus($subscriptionStatus);
+
+        $this->setAttribute(self::SUBSCRIPTION_STATUS, $subscriptionStatus);
+    }
+
     public function setShortUrl($shortUrl)
     {
         $this->setAttribute(self::SHORT_URL, $shortUrl);
@@ -602,12 +644,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    public function setBillingStart($billingStart)
+    {
+        $this->setAttribute(self::BILLING_START, $billingStart);
+    }
+
+    public function setBillingEnd($billingEnd)
+    {
+        $this->setAttribute(self::BILLING_END, $billingEnd);
+    }
+
     /**
      * @deprecated
      *
      * Sets expire_by's default value at the time of issue of invoices.
      * Gets called from Generator->issueInvoice() method.
-     *
      */
     public function setDefaultExpireByIfNotAlreadySet()
     {
@@ -711,6 +762,20 @@ class Entity extends Base\PublicEntity
         $orderId = $this->getAttribute(self::ORDER_ID);
 
         $array[self::ORDER_ID] = Order\Entity::getSignedIdOrNull($orderId);
+    }
+
+    protected function setPublicSubscriptionIdAttribute(array & $array)
+    {
+        $subscriptionId = $this->getAttribute(self::SUBSCRIPTION_ID);
+
+        if ($subscriptionId !== null)
+        {
+            $array[self::SUBSCRIPTION_ID] = Subscription\Entity::getSignedIdOrNull($subscriptionId);
+        }
+        else
+        {
+            unset($array[Entity::SUBSCRIPTION_ID]);
+        }
     }
 
     protected function setPublicUserIdAttribute(array & $array)
@@ -869,6 +934,11 @@ class Entity extends Base\PublicEntity
     public function lineItems()
     {
         return $this->morphMany('RZP\Models\LineItem\Entity', 'entity');
+    }
+
+    public function subscription()
+    {
+        return $this->belongsTo('RZP\Models\Plan\Subscription\Entity');
     }
 
     public function merchant()

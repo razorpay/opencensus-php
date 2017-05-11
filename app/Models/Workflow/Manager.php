@@ -106,4 +106,14 @@ class Manager
                 $data);
         }
     }
+
+    public function getActionsCheckedByAdmin()
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $actions = $this->repo->workflow_action
+                              ->getActionsCheckedByAdmin($admin->getId());
+
+        return $actions->toArrayPublic();
+    }
 }

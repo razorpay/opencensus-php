@@ -75,8 +75,8 @@ class Repository extends Base\Repository
 
         $pmMap = Table::PERMISSION_MAP;
 
-        $rId = $this->getAttributeWithTableName(Entity::ID);
-        $rOrgId = $this->getAttributeWithTableName(Entity::ORG_ID);
+        $rId = $this->dbColumn(Entity::ID);
+        $rOrgId = $this->dbColumn(Entity::ORG_ID);
 
         return $this->newQuery()
                     ->join($pmMap, $rId, '=', $pmMap . '.entity_id')

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal;
@@ -52,13 +53,25 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($input, $requestData);
 
+        $this->traceRequest($requestData);
+
         $requestXmlData = $this->getRequestXml($requestData);
 
         try
         {
             $response = $this->sendRequest($requestXmlData);
 
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+                'gateway' => $this->gateway,
+                'response' => $response
+            ]);
+
             $parsedResponse = $this->parseResponse($response);
+
+            $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+                'gateway' => $this->gateway,
+                'response' => $parsedResponse
+            ]);
 
             $paymentStatus = $this->updateGatewayPaymentAndGetStatus($gatewayPayment, $parsedResponse);
 
@@ -223,6 +236,8 @@ class Gateway extends Base\Gateway
             $gatewayPayment->setReceived(0);
         }
 
+        $this->repo->saveOrFail($gatewayPayment);
+
         return $paymentStatus;
     }
 
@@ -286,6 +301,18 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    protected function traceRequest($data)
+    {
+        unset($data[RequestConstants::PID_BLOCK]);
+
+        unset($data[RequestConstants::EXTRA_BLOCK]);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, [
+                'gateway' => $this->gateway,
+                'request' => $data
+            ]);
+    }
+
     protected function getReversalData($data)
     {
         $data['0'] = RequestConstants::REVERSAL_MSG_TYPE;
@@ -298,7 +325,7 @@ class Gateway extends Base\Gateway
             return $this->config[self::TERMINAL_ID];
         }
 
-        return $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
+        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
 
     protected function getCounter()
@@ -314,13 +341,15 @@ class Gateway extends Base\Gateway
     {
         $xmlString = '';
 
-        $xmlStringPrefix = '<isomsg direction="incoming"><header>00000000</header>';
+        $xmlStringPrefix = "\n<isomsg direction=\"incoming\">\n<!-- org.jpos.iso.packager.GenericPackager[cfg/iso87binary-sarvatra.xml] -->\n<header>00000000</header>\n";
 
-        $xmlStringPostfix = '</isomsg>';
+        $xmlStringPostfix = "</isomsg>\n";
+
+        $xmlString .= $xmlStringPrefix;
 
         foreach ($data as $key => $value)
         {
-             $xmlString .= '<field id="' . $key . '" value="' . $value . '"/>';
+            $xmlString .= '<field id="' . $key . '" value="' . $value . '"/>' . "\n";
         }
 
         $xmlString .= $xmlStringPostfix;

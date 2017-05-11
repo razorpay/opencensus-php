@@ -17,7 +17,16 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION           = 'description';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
+    const TYPE                  = 'type';
     const DELETED_AT            = 'deleted_at';
+
+    /**
+     * These are used when other entities need
+     * to create an item and item_id/item is passed
+     * in the request input.
+     */
+    const ITEM_ID               = 'item_id';
+    const ITEM                  = 'item';
 
     protected static $sign      = 'item';
 
@@ -26,8 +35,9 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::ACTIVE            => 1,
-        self::DESCRIPTION       => null,
+        self::ACTIVE        => 1,
+        self::DESCRIPTION   => null,
+        self::TYPE          => Type::INVOICE,
     ];
 
     protected $visible = [
@@ -39,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -51,6 +62,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::TYPE,
     ];
 
     protected $fillable = [
@@ -59,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::TYPE,
     ];
 
     protected $casts = [
@@ -88,6 +101,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     public function isActive()
     {
         return ($this->getAttribute(self::ACTIVE) === true);
@@ -110,6 +128,11 @@ class Entity extends Base\PublicEntity
     public function lineItems()
     {
         return $this->hasMany('RZP\Models\LineItem\Entity');
+    }
+
+    public function addons()
+    {
+        return $this->hasMany('RZP\Models\Plan\Subscription\Addon\Entity');
     }
 
     // -------------------- End Relations -----------------------

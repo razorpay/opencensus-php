@@ -145,6 +145,8 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackGatewayFields($input);
 
+        $this->fixParesIfRequired($input);
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
@@ -1678,6 +1680,11 @@ class Gateway extends Base\Gateway
         return str_limit($label, 19);
     }
 
+    protected function fixParesIfRequired(&$input)
+    {
+        $input['gateway']['PaRes'] = str_replace(["\n", "\r"], "", $input['gateway']['PaRes']);
+    }
+
     /**
      * @codeCoverageIgnore
      * @incomplete Optimize callback response verification
@@ -1692,13 +1699,13 @@ class Gateway extends Base\Gateway
         $PaResObject = simplexml_load_string($PaRes);
         $PaRes = json_decode(json_encode($PaResObject), true);
 
-        if ((isset($PaRes['Message']['PARes']['TX']['status']) === true) and
-            ($PaRes['Message']['PARes']['TX']['status'] === 'Y'))
+        if ((isset($PaRes['Message']['PaRes']['TX']['status']) === true) and
+            ($PaRes['Message']['PaRes']['TX']['status'] === 'Y'))
         {
             $this->trace->info(TraceCode::GATEWAY_CALLBACK_PARES,
                 [
                     'gateway' => 'cybersource',
-                    'PaResStatus' => $PaRes['Message']['PARes']['TX']['status']
+                    'PaResStatus' => $PaRes['Message']['PaRes']['TX']['status']
                 ]);
         }
     }

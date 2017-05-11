@@ -8,8 +8,10 @@ use DB;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -20,6 +22,8 @@ class MerchantTest extends TestCase
     use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
+    use EntityActionTrait;
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -692,6 +696,129 @@ class MerchantTest extends TestCase
 
         $count = count($content['methods']['netbanking']);
         $this->assertEquals(0, $count);
+    }
+
+    public function testGetCheckoutPreferencesWithAllCardGeatewayDowntime()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'first_data',
+            'issuer'  => 'UNKNOWN',
+            'network' => 'UNKNOWN']);
+
+        $content = $this->startTest();
+
+        $this->assertArrayNotHasKey('downtime', $content);
+    }
+
+    public function testGetCheckoutPreferencesWithCardDowntimeWithSpecificGatewayDown()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'hdfc',
+            'issuer'  => 'ALL',
+            'network' => 'ALL']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCardDowntimeWithGatewayExclusiveNetworkDown()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'hdfc',
+            'issuer'  => 'ALL',
+            'network' => 'DICL']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingDowntimeWithAllGateway()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'ALL',
+            'issuer'  => 'HDFC',]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingDowntimeWithSharedNetbankingGateway()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'billdesk',
+            'issuer'  => 'ALL',]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingWithIssuerExclusiveTogateway()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+         $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'billdesk',
+            'issuer'  => 'ALLA',]);
+
+         $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithDirectNetbankingDowntime()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway'     => 'netbanking_hdfc',
+            'issuer'      => 'ALL',]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithWalletDowntime()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:wallet', [
+            'gateway' => 'wallet_olamoney',
+            'issuer'  => 'olamoney']);
+
+        $this->startTest();
     }
 
     public function testGetCheckoutPreferencesWithNonOrderRelatedOffer()

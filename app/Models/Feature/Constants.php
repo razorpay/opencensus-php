@@ -29,9 +29,11 @@ class Constants
     const MARKETPLACE         = 'marketplace';
     const EMAIL_OPTIONAL      = 'email_optional';
     const CONTACT_OPTIONAL    = 'contact_optional';
+    const SUBSCRIPTIONS       = 'subscriptions';
     const ZOHO                = 'zoho';
+    const EXPOSE_DOWNTIMES    = 'expose_downtimes';
 
-    // TODO: Use this instead of alFeatures once in final code change pr
+    // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
         self::DUMMY               => true,
         self::WEBHOOKS            => true,
@@ -55,7 +57,9 @@ class Constants
         self::MARKETPLACE         => true,
         self::EMAIL_OPTIONAL      => true,
         self::CONTACT_OPTIONAL    => true,
+        self::SUBSCRIPTIONS       => true,
         self::ZOHO                => true,
+        self::EXPOSE_DOWNTIMES    => true,
     ];
 
     public static $visibleFeaturesMap = [
