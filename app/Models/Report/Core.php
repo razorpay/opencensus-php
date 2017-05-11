@@ -62,11 +62,7 @@ class Core extends Base\Core
     {
         try
         {
-            $validator = new Validator;
-
-            $validator->validateQueueInput($input);
-
-            $validator->validateAllowedEntity($entity);
+            (new Validator)->validateInput('report_queue', array_merge($input, [Entity::TYPE => $entity]));
 
             $this->dispatch(new ReportsJob($input, $entity));
         }
