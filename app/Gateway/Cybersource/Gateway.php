@@ -91,7 +91,7 @@ class Gateway extends Base\Gateway
         {
             $response = $this->postRequest($request);
 
-            $this->traceGatewayResponse(TraceCode::GATEWAY_CAPTURE_RESPONSE, $response, $input);
+            $this->traceGatewayResponse($response, $input, TraceCode::GATEWAY_CAPTURE_RESPONSE);
 
             if ($response[F::REASON_CODE] !== Result::SUCCESS)
             {
@@ -176,7 +176,7 @@ class Gateway extends Base\Gateway
         {
             $response = $this->postRequest($request);
 
-            $this->traceGatewayResponse(TraceCode::GATEWAY_REFUND_RESPONSE, $response, $input);
+            $this->traceGatewayResponse($response, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
 
             $gatewayAttributes = $this->getAttributeFromRefundResponse($input, $response);
 
@@ -209,7 +209,7 @@ class Gateway extends Base\Gateway
             $response = $this->postRequest($request);
 
             $this->traceGatewayResponse(
-                TraceCode::GATEWAY_REVERSE_RESPONSE, $response, $input);
+                $response, $input, TraceCode::GATEWAY_REVERSE_RESPONSE);
 
             $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
 
@@ -322,9 +322,9 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayResponse(
-            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
             $response->body,
-            $input);
+            $input,
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE);
 
         $this->response = $response;
 
@@ -367,9 +367,9 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $this->traceGatewayResponse(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $response->body,
-            $input);
+            $input,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
 
         $this->response = $response;
 
@@ -606,7 +606,7 @@ class Gateway extends Base\Gateway
         {
             $response = $this->postRequest($enrollRequest);
 
-            $this->traceGatewayResponse(TraceCode::GATEWAY_ENROLL_RESPONSE, $response, $input);
+            $this->traceGatewayResponse($response, $input, TraceCode::GATEWAY_ENROLL_RESPONSE);
 
             if (($response[F::DECISION] === Decision::ERROR) or
                 (($response[F::REASON_CODE] !== Result::NOT_ENROLLED) and
