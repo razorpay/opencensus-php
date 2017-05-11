@@ -338,6 +338,7 @@ return [
         'merchant_set_banks'                => 'merchants/{id}/banks',
 
         'merchant_fetch_bank_account'       => 'merchants/{id}/bank_account',
+        'merchant_add_bank_account'         => 'merchants/{id}/bank_account',
 
         'merchant_edit'                     => 'merchants/{id}',
 
