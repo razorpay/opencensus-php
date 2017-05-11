@@ -747,55 +747,6 @@ class Service extends Base\Service
         }
     }
 
-    public function postEditBankDetails($id, $input)
-    {
-        $error = array();
-
-        $this->dropFields($input, [
-            "beneficiary_address4",
-            "beneficiary_code",
-            "beneficiary_country",
-            "created_at",
-            "entity_id",
-            "type",
-            'id',
-            'merchant_id',
-            'mpin_set',
-        ]);
-
-        $this->setApiCredentials();
-
-        $error = $merchantDetail = [];
-
-        try
-        {
-            $this->api->merchant->fetch($id)->setBankAccount($input);
-
-            $merchantDetailsData = array(
-                'bank_branch_ifsc'           => $input['ifsc_code'],
-                'bank_account_name'          => $input['beneficiary_name'],
-                'bank_account_number'        => $input['account_number'],
-                'bank_beneficiary_address1'  => $input['beneficiary_address1'],
-                'bank_beneficiary_address2'  => $input['beneficiary_address2'],
-                'bank_beneficiary_address3'  => $input['beneficiary_address3'],
-                'bank_beneficiary_pin'       => $input['beneficiary_pin'],
-                'bank_beneficiary_city'      => $input['beneficiary_city'],
-                'bank_beneficiary_state'     => $input['beneficiary_state']
-            );
-
-            list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($merchantDetailsData, $id);
-
-            $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
-        }
-
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $merchantDetails];
-    }
-
     public function refundAuthorizedPayment($mode, $merchantId, $id)
     {
         $data = [];

@@ -351,15 +351,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function putEditBankDetails($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postEditBankDetails($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getPaymentRefunds($mode, $paymentId)
     {
         list($error, $data) = (new Admin\Service)->getPaymentRefunds($mode, $paymentId);
