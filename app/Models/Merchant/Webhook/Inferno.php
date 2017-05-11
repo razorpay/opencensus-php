@@ -269,7 +269,8 @@ class Inferno
             [
                 'webhook_id'  => $webhook->getId(),
                 'merchant_id' => $webhook->merchant->getId(),
-                'request'     => $request
+                'request'     => $request,
+                'attempt'     => $this->job->attempts(),
             ]);
 
         try
