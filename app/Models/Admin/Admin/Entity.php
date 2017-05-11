@@ -497,7 +497,6 @@ class Entity extends Base\Entity
 
     /**
      * Get all relations to the array
-     *
      */
     public function getRelationsForDiffer() : array
     {

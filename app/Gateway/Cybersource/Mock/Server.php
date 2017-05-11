@@ -132,6 +132,8 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'auth_validate');
 
+        $this->content($input, 'verify_pares');
+
         $response = [];
 
         $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];

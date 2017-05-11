@@ -11,7 +11,10 @@ trait RepositoryUpdateTestAndLive
     /**
      * Save the model to the database.
      *
-     * @param  array  $options
+     * @param  PublicEntity  $entity
+     * @param  array         $options
+     *
+     * @throws Exception\LogicException
      */
     public function saveOrFail($entity, array $options = array())
     {
@@ -54,10 +57,10 @@ trait RepositoryUpdateTestAndLive
         $entity->exists = true;
     }
 
-    public function sync($entity, $relation, $ids = array())
+    public function sync($entity, $relation, $ids = array(), bool $detaching = true)
     {
         return $this->repo->transactionOnLiveAndTest(
-            function () use ($entity, $relation, $ids)
+            function () use ($entity, $relation, $ids, $detaching)
             {
                 $changes = [];
 
@@ -75,10 +78,10 @@ trait RepositoryUpdateTestAndLive
                 // We'll use the parent connection once we update to
                 // L5.4
                 Config::set('database.default', Mode::LIVE);
-                $changes = $liveEntity->$relation()->sync($ids);
+                $changes = $liveEntity->$relation()->sync($ids, $detaching);
 
                 Config::set('database.default', Mode::TEST);
-                $testEntity->$relation()->sync($ids);
+                $testEntity->$relation()->sync($ids, $detaching);
 
                 return $changes;
             });

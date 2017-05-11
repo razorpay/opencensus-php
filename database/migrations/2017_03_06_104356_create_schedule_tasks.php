@@ -38,9 +38,17 @@ class CreateScheduleTasks extends Migration
 
             $table->integer(ScheduleTask::NEXT_RUN_AT);
 
+            $table->integer(ScheduleTask::LAST_RUN_AT)
+                  ->nullable();
+
             $table->integer(ScheduleTask::CREATED_AT);
 
             $table->integer(ScheduleTask::UPDATED_AT);
+
+            $table->index(ScheduleTask::ENTITY_ID);
+            $table->index(ScheduleTask::NEXT_RUN_AT);
+            $table->index(ScheduleTask::LAST_RUN_AT);
+            $table->index(ScheduleTask::CREATED_AT);
 
             $table->foreign(ScheduleTask::MERCHANT_ID)
                   ->references(Merchant::ID)
@@ -64,10 +72,10 @@ class CreateScheduleTasks extends Migration
         Schema::table(Table::SCHEDULE_TASK, function($table)
         {
             $table->dropForeign(
-                Table::SCHEDULE_TASK.'_'.ScheduleTask::MERCHANT_ID.'_foreign');
+                Table::SCHEDULE_TASK . '_' . ScheduleTask::MERCHANT_ID . '_foreign');
 
             $table->dropForeign(
-                Table::SCHEDULE_TASK.'_'.ScheduleTask::SCHEDULE_ID.'_foreign');
+                Table::SCHEDULE_TASK . '_' . ScheduleTask::SCHEDULE_ID . '_foreign');
         });
 
         Schema::drop(Table::SCHEDULE_TASK);

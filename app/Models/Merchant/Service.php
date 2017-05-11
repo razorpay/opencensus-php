@@ -344,10 +344,11 @@ class Service extends Base\Service
 
             $input = [
                 ScheduleTask\Entity::METHOD      => null,
-                ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
                 ScheduleTask\Entity::SCHEDULE_ID => $scheduleId
             ];
         }
+
+        $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
@@ -695,7 +696,7 @@ class Service extends Base\Service
             $today = Carbon::today('Asia/Kolkata');
         }
 
-        if (Holidays::isWorkingDay($today) == false)
+        if (Holidays::isWorkingDay($today) === false)
         {
             return ['message' => 'Today is a holiday! Happy holidays :)'];
         }
@@ -847,6 +848,56 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
+    public function updateBankAccountForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('updateBankAccount', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $bankAccount = $input['bank_account'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->addBankAccount($merchantId, $bankAccount);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_RESPONSE,
             $response
         );
 
