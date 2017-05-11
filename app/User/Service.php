@@ -830,6 +830,7 @@ class Service extends Base\Service
             $token_data = explode(',', $token_data); //Decide on data to send and structure
             $data['user_id'] = $token_data[0];
             $data['merchant_id'] = $token_data[1];
+            $data['user'] = ['id' => '20000000000000', 'name' => 'test', 'email' => 'test@razorpay.com'];
         }
         else
         {

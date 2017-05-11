@@ -347,7 +347,7 @@ var app = angular
         })
         // auth routes
         .state('access.signin', {
-          url: '/signin',
+          url: '/signin?next',
           templateUrl: 'tpl/auth/index.html',
         })
         .state('access.pre_signup', {
