@@ -18,7 +18,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ($this->isRecurringPaymentRequest($input))
+        if ($this->isSecondRecurringPaymentRequest($input))
         {
             return;
         }
