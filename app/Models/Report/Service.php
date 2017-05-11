@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Report;
 
+
+use RZP\Trace\Trace;
 use RZP\Models\Base;
 
 class Service extends Base\Service
