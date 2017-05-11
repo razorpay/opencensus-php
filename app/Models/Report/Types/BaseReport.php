@@ -56,6 +56,20 @@ class BaseReport extends Base\Core
         return [$from, $to];
     }
 
+    /**
+     * 1. increase system limits
+     * 2. Sets timezone
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     */
+    protected function setDefaults()
+    {
+        $this->increaseAllowedSystemLimits();
+
+        date_default_timezone_set('Asia/Kolkata');
+    }
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');

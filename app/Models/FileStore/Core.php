@@ -15,11 +15,11 @@ class Core extends Base\Core
      */
     public function signedUrlForEntityFile(string $entity, string $entityId)
     {
+        (new Validator)->validateInput('entity_fetch', ['entity' => $entity, 'entity_id' => $entityId]);
+
         $entityObj = $this->repo->$entity->findByIdAndMerchantId($entityId, $merchantId);
 
         $file = $entityObj->file;
-
-        $file->getValidator()->validateRequestEntity($entity);
 
         $signedUrl = (new Accessor)->getSignedUrlOfFile($file);
 
