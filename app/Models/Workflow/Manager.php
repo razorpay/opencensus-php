@@ -102,7 +102,18 @@ class Manager
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED,
+                null,
                 $data);
         }
+    }
+
+    public function getActionsCheckedByAdmin()
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $actions = $this->repo->workflow_action
+                              ->getActionsCheckedByAdmin($admin->getId());
+
+        return $actions->toArrayPublic();
     }
 }

@@ -63,6 +63,9 @@ class TransactionFilter extends Terminal\Filter
             case Method::UPI:
                 return $terminal->isUpiEnabled();
 
+            case Method::AEPS:
+                return $terminal->isAepsEnabled();
+
             default:
                 throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
         }
@@ -201,10 +204,13 @@ class TransactionFilter extends Terminal\Filter
                 }
             }
 
+            $ba = app('basicauth');
+
             // Check if this is the second recurring payment
             if (($payment->getTokenId() !== null) and
                 ($payment->localToken->isRecurring() === true) and
-                (app('basicauth')->isPrivateAuth() === true))
+                (($ba->isPrivateAuth() === true) or
+                 ($ba->isPrivilegeAuth() === true)))
             {
                 // For second recurring payment, ensure that we select a terminal
                 // of the same gateway as for the first recurring payment.

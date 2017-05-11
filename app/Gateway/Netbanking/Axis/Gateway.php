@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
     protected $map = [
         RequestFields::AMOUNT             => 'amount',
         RequestFields::MERCHANT_REFERENCE => 'payment_id',
-        RequestFields::ITEM_CODE          => 'caps_payment_id'
+        RequestFields::ITEM_CODE          => 'reference1'
     ];
 
     public function authorize(array $input)
@@ -163,13 +163,47 @@ class Gateway extends Base\Gateway
 
         $data = [
             RequestFields::VERIFY_PAYEE_ID => $this->getMerchantId(),
-            RequestFields::VERIFY_ITC      => $this->getMerchantId(),
+            RequestFields::VERIFY_ITC      => $this->getVerifyItc($verify),
             RequestFields::VERIFY_PRN      => $input['payment']['id'],
             RequestFields::VERIFY_DATE     => $date,
             RequestFields::VERIFY_AMT      => $input['payment']['amount'] / 100,
         ];
 
         return $data;
+    }
+
+    /**
+     * For payments before April 20th at 2pm, we need to send the
+     * caps_payment_id as the ITC. But after this date, we send the
+     * gateway_merchant_id due to a change in the auth request
+     *
+     * @param Verify $verify
+     * @return string $itc
+     */
+    protected function getVerifyItc(Verify $verify)
+    {
+        $input = $verify->input;
+        $gatewayPayment = $verify->payment;
+
+        $timestamp = $input['payment']['created_at'];
+
+        //
+        // 04/20/2017 @ 2:00pm IST
+        //
+        if ($timestamp < 1492677000)
+        {
+            $itc = $gatewayPayment->getCapsPaymentId();
+        }
+        else if (empty($gatewayPayment->getReference1()) === false)
+        {
+            $itc = $gatewayPayment->getReference1();
+        }
+        else
+        {
+            $itc = $this->getMerchantId();
+        }
+
+        return $itc;
     }
 
     protected function getPaymentRequestData(array $input)

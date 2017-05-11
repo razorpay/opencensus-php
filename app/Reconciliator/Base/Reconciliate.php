@@ -142,6 +142,17 @@ class Reconciliate
     }
 
     /**
+     * This should be implemented in the child class if the gateway
+     * sends CSV files which has a delimiter other than `,`
+     *
+     * @return string
+     */
+    public function getDelimiter()
+    {
+        return ',';
+    }
+
+    /**
      * Gets the reconciliation type by either the sheet name in case of excel files
      * or by the file name in case of csv files.
      *

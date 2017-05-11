@@ -17,19 +17,6 @@ use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
-    /*
-        Not exposed publicly. Called by Workflow middleware.
-    */
-    public function postWorkflowAction()
-    {
-        $input = Request::all();
-
-        // returns Workflow\Action\Entity
-        $data = (new Action\Service)->create($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function closeWorkflowAction(string $id)
     {
         $data = (new Action\Service)->closeAction($id);
@@ -267,6 +254,13 @@ class WorkflowController extends Controller
         $input = Request::all();
 
         $data = (new Workflow\Service)->getActionsByMakerAndType($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getActionsChecked()
+    {
+        $data = (new Workflow\Manager)->getActionsCheckedByAdmin();
 
         return ApiResponse::json($data);
     }

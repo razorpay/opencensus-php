@@ -37,7 +37,7 @@ class Validator extends Base\Validator
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_PERMISSION_EXISTS,
-                $data);
+                null, $data);
         }
     }
 
@@ -57,7 +57,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW,
-                        $diffPerms);
+                        null, $diffPerms);
         }
     }
 }

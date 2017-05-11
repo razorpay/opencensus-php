@@ -706,9 +706,8 @@ class Orchestrator extends Base\Core
      */
     protected function getFileContentInArrayAndSet($fileDetails)
     {
-        // All file types are segregated into either CSV or Excel.
         $fileType = self::getKeyFromSubArrayMatch(
-            $fileDetails[FileProcessor::EXTENSION], FileProcessor::FILE_TYPES_MAPPINGS);
+            $fileDetails[FileProcessor::MIME_TYPE], FileProcessor::FILE_TYPES_MAPPINGS);
 
         $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
 
@@ -833,7 +832,9 @@ class Orchestrator extends Base\Core
 
         $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $this->gateway);
+        $delimiter = $this->gatewayReconciliator->getDelimiter();
+
+        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter);
 
         $this->setExtraDetails($csvArray, $fileDetails);
         $this->allFilesContents[] = $csvArray;

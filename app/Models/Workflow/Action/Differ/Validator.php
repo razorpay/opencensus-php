@@ -23,13 +23,16 @@ class Validator extends Base\Validator
         Entity::ROUTE        => 'required|string',
         Entity::ACTION_ID    => 'required|string|max:14',
         Entity::STATE        => 'required|string|max:25',
+        Entity::PERMISSION   => 'required|string|max:50',
+        Entity::DIFF         => 'sometimes|array',
     ];
 
     protected function validateType($attribute, $type)
     {
         if (Type::exists($type) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_INVALID_TYPE);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_INVALID_TYPE);
         }
     }
 
@@ -37,7 +40,8 @@ class Validator extends Base\Validator
     {
         if (Method::exists($method) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_INVALID_METHOD);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACTION_INVALID_METHOD);
         }
     }
 }

@@ -7,12 +7,10 @@ use RZP\Error\PublicErrorDescription;
 return [
     'testCreateSchedule' => [
         'name'       => 'Every Wednesday',
-        'type'       => 'settlement',
         'period'     => 'weekly',
         'interval'   => 1,
         'anchor'     => 3,
         'delay'      => 1,
-        'next_run'   => 1452105000
     ],
 
     'testAssignSchedule' => [
@@ -24,23 +22,19 @@ return [
     'testAssignScheduleById' => [
         'method'  => 'POST',
         'url'     => '/merchants/10000000000000/schedules',
-        'content' => [
-            'schedule_id' => null,
-            'type' => 'settlement',
-        ],
+        'content' => [],
     ],
 
     'testEditSchedule' => [
         'method'  => 'PUT',
         'url'     => '/schedules/',
         'content' => [
-            "next_run" => 1451586600,
+            'anchor' => 3,
         ],
     ],
 
     'timedScheduleBody' => [
         'name'       => 'Timed Schedule',
-        'type'       => 'settlement',
         'period'     => 'daily',
         'interval'   => 5,
         'hour'       => 12,

@@ -129,7 +129,7 @@ class Gateway extends Base\Gateway
         $response['CurrencyType'] = 'INR';
         $response['received'] = 1;
 
-        $refund = $this->createGatewayPaymentEntity($response);
+        $this->createGatewayPaymentEntity($response);
 
         if ($response['ProcessStatus'] !== 'Y')
         {
@@ -383,6 +383,13 @@ class Gateway extends Base\Gateway
 
     protected function checkIfAlreadyRefunded(array $response, array $input)
     {
+        // Billdesk returns ERR_REF013 when a duplicate reference id
+        // is used to do any refund. This way we can identify if a
+        // refund has already been processed or not
+        if ($response['ErrorCode'] === Billdesk\ErrorCode::ERR_REF013)
+        {
+            return true;
+        }
         //
         // NOTE: Billdesk is NOT going to throw this error if the
         // attempted refund is less than [transaction_amount - {refunds so far}]
@@ -390,12 +397,12 @@ class Gateway extends Base\Gateway
         // This error is thrown only when the total refund
         // equals/exceeds the total payment.
         //
-        if ($response['ErrorCode'] === 'ERR_REF010')
+        if ($response['ErrorCode'] === Billdesk\ErrorCode::ERR_REF010)
         {
             return $this->validateAlreadyRefundedByApi($input);
         }
 
-        if ($response['ErrorCode'] === 'ERR_REF009')
+        if ($response['ErrorCode'] === Billdesk\ErrorCode::ERR_REF009)
         {
             return $this->validateAutoRefundedByBilldesk($response, $input);
         }
@@ -1092,6 +1099,6 @@ class Gateway extends Base\Gateway
      */
     public function verifyRefund(array $input)
     {
-        ;
+        return false;
     }
 }

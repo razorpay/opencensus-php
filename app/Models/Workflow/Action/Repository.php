@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Action\State;
+use RZP\Models\Workflow\Action\Checker;
 use RZP\Constants\Table;
 
 class Repository extends Base\Repository
@@ -50,6 +51,8 @@ class Repository extends Base\Repository
             JOIN
                 workflow_steps ws ON wa.workflow_id = ws.workflow_id
                 AND wa.current_level = ws.level
+            JOIN
+                permissions p ON p.id = wa.permission_id
             WHERE
                 wa.state = 'open'
                 AND ws.role_id IN ($adminIds);
@@ -57,11 +60,19 @@ class Repository extends Base\Repository
 
         $wStep = Table::WORKFLOW_STEP;
 
+        $permission = Table::PERMISSION;
+
         return $this->newQuery()
-                    ->select(Table::WORKFLOW_ACTION . '.*')
+                    ->select(
+                        Table::WORKFLOW_ACTION . '.*',
+                        'permissions.name AS permission_name',
+                        'permissions.description AS permission_description')
                     ->join($wStep, function ($join) {
                         $join->on('workflow_actions.workflow_id', '=', 'workflow_steps.workflow_id')
                              ->on('workflow_actions.current_level', '=', 'workflow_steps.level');
+                    })
+                    ->join($permission, function ($join) {
+                        $join->on('permissions.id', '=', 'workflow_actions.permission_id');
                     })
                     ->where('workflow_actions.state', '=', State\Entity::OPEN)
                     ->whereIn('workflow_steps.role_id', $roleIds)
@@ -78,18 +89,18 @@ class Repository extends Base\Repository
          *
          */
 
-        $acsDao = $this->manager->action_state;
+        $acsDao = $this->repo->action_state;
 
         $acsTable = $acsDao->getTableName();
 
-        $attrs = $this->getAttributeWithTableName('*');
-        $aId = $this->getAttributeWithTableName(Entity::ID);
-        $acsActionId = $acsDao->getAttributeWithTableName(State\Entity::ACTION_ID);
+        $attrs = $this->dbColumn('*');
+        $aId = $this->dbColumn(Entity::ID);
+        $acsActionId = $acsDao->dbColumn(State\Entity::ACTION_ID);
 
-        $acsState = $acsDao->getAttributeWithTableName(State\Entity::NAME);
+        $acsState = $acsDao->dbColumn(State\Entity::NAME);
 
         // CLOSED is the absolute last state, We can expect unique entries.
-        $acsAdminId = $acsDao->getAttributeWithTableName(State\Entity::ADMIN_ID);
+        $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
 
 
         return $this->newQuery()
@@ -119,6 +130,26 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->whereIn(Entity::STATE, $openStates)
+                    ->get();
+    }
+
+    public function getActionsCheckedByAdmin(string $adminId)
+    {
+        $checkerRepo = $this->repo->action_checker;
+
+        $attributes = $this->dbColumn('*');
+        $aId = $this->repo->workflow_action->dbColumn(Entity::ID);
+
+        $cActionId = $checkerRepo->dbColumn(Checker\Entity::ACTION_ID);
+
+        $cAdminId = $checkerRepo->dbColumn(Checker\Entity::ADMIN_ID);
+
+        $checkerTable = Table::ACTION_CHECKER;
+
+        return $this->newQuery()
+                    ->select($attributes)
+                    ->join($checkerTable, $aId, '=', $cActionId)
+                    ->where($cAdminId, '=', $adminId)
                     ->get();
     }
 }

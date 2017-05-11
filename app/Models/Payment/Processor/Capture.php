@@ -7,6 +7,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -104,7 +105,12 @@ trait Capture
             // We are not re-throwing $e because we don't want the
             // customer to know that it was a capture error.
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                [
+                    'payment_id'     => $payment->getId(),
+                    'payment_status' => $payment->getStatus(),
+                ]);
         }
     }
 
@@ -574,7 +580,7 @@ trait Capture
         $this->saveFeeDetails($txn, $feesSplit);
     }
 
-    protected function verifyOrderUnpaid($payment)
+    protected function verifyOrderUnpaid(Payment\Entity $payment)
     {
         if ($payment->hasOrder())
         {

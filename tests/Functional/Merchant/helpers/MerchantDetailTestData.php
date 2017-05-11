@@ -23,10 +23,10 @@ return [
         ],
     ],
 
-    'testUpdateIFSCCode' => [
+    'testUpdateIfscCode' => [
         'request' => [
-            'content' =>[
-                "bank_branch_ifsc"=>"ICIC0000002"
+            'content' => [
+                "bank_branch_ifsc" => "ICIC0000002"
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -45,8 +45,8 @@ return [
 
     'testSubmit' => [
         'request' => [
-            'content' =>[
-                "submit"=> true
+            'content' => [
+                "submit" => true
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -64,8 +64,8 @@ return [
 
     'testSubmitWithInvalidFields' => [
         'request' => [
-            'content' =>[
-                "submit"=> true
+            'content' => [
+                "submit" => true
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -81,10 +81,10 @@ return [
         ],
     ],
 
-    'testUpdateIFSCCodeWithFailure' => [
+    'testUpdateIfscCodeWithFailure' => [
         'request' => [
-            'content' =>[
-                "bank_branch_ifsc"=>"ICIC000000"
+            'content' => [
+                "bank_branch_ifsc" => "ICIC000000"
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -106,15 +106,15 @@ return [
 
     'testUpdateEmail' => [
         'request' => [
-            'content' =>[
-                "transaction_report_email"=>"a.b@c.com,a.c@d.com"
+            'content' => [
+                "transaction_report_email" => "a.b@c.com,a.c@d.com"
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                "transaction_report_email"=>"a.b@c.com,a.c@d.com",
+                "transaction_report_email" => "a.b@c.com,a.c@d.com",
                 "verification" => [
                     "status" => "disabled",
                     "disabled_reason" => "required_fields",
@@ -126,8 +126,8 @@ return [
 
     'testUpdateEmails' => [
         'request' => [
-            'content' =>[
-                "transaction_report_email"=>"a.b@c.com,a.c"
+            'content' => [
+                "transaction_report_email" => "a.b@c.com,a.c"
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -149,8 +149,8 @@ return [
 
     'testUpdateEmailWithFailure' => [
         'request' => [
-            'content' =>[
-                "transaction_report_email" =>"a.b"
+            'content' => [
+                "transaction_report_email" => "a.b"
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -172,8 +172,8 @@ return [
 
     'testUpdateDetailForLockedMerchant' => [
         'request' => [
-            'content' =>[
-                "bank_branch_ifsc"=>"ICIC0000001"
+            'content' => [
+                "bank_branch_ifsc" => "ICIC0000001"
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -195,7 +195,7 @@ return [
 
     'testLockMerchant' => [
         'request' => [
-            'content' =>[
+            'content' => [
                 "locked" => true
             ],
             'url' => '/merchant/activation/lock',
@@ -215,7 +215,7 @@ return [
 
     'testCommentMerchant' => [
         'request' => [
-            'content' =>[
+            'content' => [
                 "comment" => "true"
             ],
             'url' => '/merchant/activation/lock',
@@ -234,7 +234,7 @@ return [
 
     'testCommentForLockedMerchant' => [
         'request' => [
-            'content' =>[
+            'content' => [
                 "comment" => "true"
             ],
             'url' => '/merchant/activation/lock',
@@ -253,7 +253,7 @@ return [
 
     'testCommentMerchantWithNoMerchantDetail' => [
         'request' => [
-            'content' =>[
+            'content' => [
                 "comment" => "true"
             ],
             'url' => '/merchant/activation/lock',
@@ -272,7 +272,7 @@ return [
 
     'testUnlockMerchant' => [
         'request' => [
-            'content' =>[
+            'content' => [
                 "locked" => 0
             ],
             'url' => '/merchant/activation/lock',
@@ -292,7 +292,7 @@ return [
 
     'testUnlockMerchant2' => [
         'request' => [
-            'content' =>[
+            'content' => [
                 "locked" => 0
             ],
             'url' => '/merchant/activation/lock',
@@ -312,8 +312,8 @@ return [
 
     'testCreateMerchantDetailIfNotExist' => [
         'request' => [
-            'content' =>[
-                "bank_branch_ifsc"=>"ICIC0000002",
+            'content' => [
+                "bank_branch_ifsc" => "ICIC0000002",
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'

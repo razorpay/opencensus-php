@@ -12,12 +12,10 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         Entity::NAME     => 'sometimes|string|max:50',
         Entity::PERIOD   => 'required|string',
-        Entity::TYPE     => 'required|string|in:settlement',
         Entity::INTERVAL => 'sometimes|integer|max:24',
-        Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
+        Entity::ANCHOR   => 'sometimes|integer|min:-1|max:31',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
-        Entity::DELAY    => 'required|integer|min:0|max:30',
-        Entity::NEXT_RUN => 'sometimes|integer',
+        Entity::DELAY    => 'sometimes|integer|min:0|max:30',
     );
 
     protected static $editRules = array(
@@ -26,7 +24,6 @@ class Validator extends Base\Validator
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'sometimes|integer|min:0|max:30',
-        Entity::NEXT_RUN => 'sometimes|integer',
     );
 
     protected static $createValidators = array(
@@ -44,10 +41,14 @@ class Validator extends Base\Validator
     {
         $period = $input[Entity::PERIOD];
 
-        if (in_array($period, Period::PERIOD_LIST, true) === false)
+        if (Period::isPeriodValid($period) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_PERIOD);
+                ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_PERIOD,
+                'period',
+                [
+                    'period' => $period,
+                ]);
         }
     }
 
@@ -71,7 +72,7 @@ class Validator extends Base\Validator
         {
             if ($input[Entity::PERIOD] === Period::WEEKLY)
             {
-                $this->validateWeeklyAnchor($input);
+                // $this->validateWeeklyAnchor($input);
             }
             else if (($input[Entity::PERIOD] === Period::DAILY) or
                     ($input[Entity::PERIOD] === Period::HOURLY))

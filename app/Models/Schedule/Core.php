@@ -3,18 +3,35 @@
 namespace RZP\Models\Schedule;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function createSchedule($input)
+    /**
+     * @param array           $input
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
+    public function createSchedule(array $input, $merchant = null)
     {
+        $this->trace->info(
+            TraceCode::SCHEDULE_CREATE_REQUEST,
+            $input
+        );
+
         $schedule = (new Entity)->build($input);
 
         $schedule->generateId();
 
-        $schedule->setMerchantId(Account::SHARED_ACCOUNT);
+        if ($merchant === null)
+        {
+            $merchant = $this->repo->merchant->getSharedAccount();
+        }
+
+        $schedule->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($schedule);
 
@@ -38,7 +55,6 @@ class Core extends Base\Core
         {
             $input = [
                 Entity::NAME     => "Basic T$delay",
-                Entity::TYPE     => Type::SETTLEMENT,
                 Entity::PERIOD   => Period::DAILY,
                 Entity::INTERVAL => 1,
                 Entity::DELAY    => $delay,

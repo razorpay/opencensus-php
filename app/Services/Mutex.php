@@ -232,7 +232,10 @@ class Mutex
 
             if ($acquired === false)
             {
-                throw new Exception\BadRequestException($errorCode);
+                $data = ['resource' => $resource];
+
+                throw new Exception\BadRequestException(
+                    $errorCode, null, $data);
             }
 
             $ret = call_user_func($callback);

@@ -15,7 +15,8 @@ use RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Action;
-
+use RZP\Models\Admin\Permission;
+use ApiResponse;
 use Config;
 
 class Core extends Base\Core
@@ -268,21 +269,22 @@ class Core extends Base\Core
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        $function = $input['action'];
+        $action = $input['action'];
 
-        $hasPermission = $admin->hasPermission($function);
+        // Check for admin permissions
+        $admin->hasMerchantActionPermissionOrFail($action);
 
-        if ($hasPermission === false)
-        {
-            throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ACCESS_DENIED);
-        }
+        $routePermission = Permission\Name::$actionMap[$action];
 
-        $merchant->$function();
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $merchant, function ($merchant) use ($action)
+            {
+                $merchant->$action();
+            });
 
         $this->repo->saveOrFail($merchant);
 
-        $this->logActionToSlack($merchant, $function);
+        $this->logActionToSlack($merchant, $action);
 
         return $merchant;
     }
