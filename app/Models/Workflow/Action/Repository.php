@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Action\State;
+use RZP\Models\Workflow\Action\Checker;
 use RZP\Constants\Table;
 
 class Repository extends Base\Repository
@@ -78,18 +79,18 @@ class Repository extends Base\Repository
          *
          */
 
-        $acsDao = $this->manager->action_state;
+        $acsDao = $this->repo->action_state;
 
         $acsTable = $acsDao->getTableName();
 
-        $attrs = $this->getAttributeWithTableName('*');
-        $aId = $this->getAttributeWithTableName(Entity::ID);
-        $acsActionId = $acsDao->getAttributeWithTableName(State\Entity::ACTION_ID);
+        $attrs = $this->dbColumn('*');
+        $aId = $this->dbColumn(Entity::ID);
+        $acsActionId = $acsDao->dbColumn(State\Entity::ACTION_ID);
 
-        $acsState = $acsDao->getAttributeWithTableName(State\Entity::NAME);
+        $acsState = $acsDao->dbColumn(State\Entity::NAME);
 
         // CLOSED is the absolute last state, We can expect unique entries.
-        $acsAdminId = $acsDao->getAttributeWithTableName(State\Entity::ADMIN_ID);
+        $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
 
 
         return $this->newQuery()
@@ -119,6 +120,26 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->whereIn(Entity::STATE, $openStates)
+                    ->get();
+    }
+
+    public function getActionsCheckedByAdmin(string $adminId)
+    {
+        $checkerRepo = $this->repo->action_checker;
+
+        $attributes = $this->dbColumn('*');
+        $aId = $this->repo->workflow_action->dbColumn(Entity::ID);
+
+        $cActionId = $checkerRepo->dbColumn(Checker\Entity::ACTION_ID);
+
+        $cAdminId = $checkerRepo->dbColumn(Checker\Entity::ADMIN_ID);
+
+        $checkerTable = Table::ACTION_CHECKER;
+
+        return $this->newQuery()
+                    ->select($attributes)
+                    ->join($checkerTable, $aId, '=', $cActionId)
+                    ->where($cAdminId, '=', $adminId)
                     ->get();
     }
 }

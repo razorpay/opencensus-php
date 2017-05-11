@@ -237,12 +237,12 @@ class UserTest extends TestCase
 
         $merchant = $this->fixtures->create('merchant');
 
-        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner');
+        $this->createUserMerchantMapping($user['id'], $merchant['id'], 'owner1');
 
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'role'        => 'owner',
+            'role'        => 'owner1',
             'merchant_id' => $merchant['id']
         ];
 
@@ -254,24 +254,15 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        $testData = & $this->testData['testGet'];
+        $merchants = DB::table('merchant_users')
+                        ->where('user_id', '=', $user['id'])
+                        ->pluck('merchant_id', 'role');
 
-        $testData['request']['url'] = '/users/' . $user['id'];
-
-        $this->ba->appAuth();
-
-        $updatedUser = $this->makeRequestAndGetContent($testData['request']);
-
-        $updatedUserMerchants = $updatedUser['merchants'];
-
-        $this->assertEquals(count($updatedUserMerchants), 1);
+        $this->assertEquals(count($merchants), 1);
     }
 
     public function testUpdateMerchant()
     {
-        // Remove this when user merchant map pr get merged.
-        $this->markTestSkipped();
-
         $user = $this->fixtures->create('user');
 
         $merchant = $this->fixtures->create('merchant');
@@ -293,26 +284,13 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        $testData = & $this->testData['testGet'];
+        $merchants = DB::table('merchant_users')
+                   ->where('user_id', '=', $user['id'])
+                   ->pluck('merchant_id', 'role');
 
-        $testData['request']['url'] = '/users/' . $user['id'];
+        $this->assertEquals(count($merchants), 2);
 
-        $this->ba->appAuth();
-
-        $updatedUser = $this->makeRequestAndGetContent($testData['request']);
-
-        $updatedUserMerchants = $updatedUser['merchants'];
-
-        $this->assertEquals(count($updatedUserMerchants), 2);
-
-        $addedMerchant = array_filter($updatedUserMerchants, function($userMerchant) use($merchant)
-        {
-            return ($merchant['id'] === $userMerchant['id']);
-        });
-
-        $this->assertEquals(count($addedMerchant), 1);
-
-        $this->assertEquals($addedMerchant[0]['role'], 'owner1');
+        $this->assertEquals($merchants['owner1'], $merchant['id']);
     }
 
     protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)

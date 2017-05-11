@@ -67,12 +67,10 @@ trait ScheduleTrait
     {
         return [
             'name'       => 'Every Wednesday',
-            'type'       => 'settlement',
             'period'     => 'weekly',
             'interval'   => 1,
             'anchor'     => 3,
             'delay'      => 1,
-            'next_run'   => 1452105000,
         ];
     }
 }

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Config;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\User;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
@@ -608,6 +609,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * check if api or gateway should do currency conversion for merchant
+     *
      * @return bool
      */
     public function convertOnApi()
@@ -618,6 +620,12 @@ class Entity extends Base\PublicEntity
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
+    }
+
+    public function getBrandColorElseDefault()
+    {
+        return $this->getAttribute(self::BRAND_COLOR) ??
+            Merchant\Checkout::CHECKOUT_DEFAULT_THEME_COLOR;
     }
 
     protected function getBrandColorAttribute()

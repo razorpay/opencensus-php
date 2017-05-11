@@ -323,7 +323,7 @@ class Error extends Support\Fluent
 
         $class = substr($code, 0, $pos);
 
-        if ($class == 'BAD')
+        if ($class === 'BAD')
         {
             $class = ErrorClass::BAD_REQUEST;
         }

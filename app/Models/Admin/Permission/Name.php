@@ -75,6 +75,7 @@ class Name
     const EDIT_MERCHANT_RELEASE_FUNDS     = 'edit_merchant_release_funds';
     const EDIT_MERCHANT_ENABLE_RECEIPT    = 'edit_merchant_enable_receipt';
     const EDIT_MERCHANT_DISABLE_RECEIPT   = 'edit_merchant_disable_receipt';
+    const EDIT_BULK_MERCHANT_HOLD_FUNDS   = 'edit_bulk_merchant_hold_funds';
     const ASSIGN_MERCHANT_TERMINAL        = 'assign_merchant_terminal';
     const ASSIGN_MERCHANT_BANKS           = 'assign_merchant_banks';
     const ADD_MERCHANT_ADJUSTMENT         = 'add_merchant_adjustment';
@@ -138,9 +139,11 @@ class Name
     const DELETE_WORKFLOW                 = 'delete_workflow';
 
     public static $actionMap = [
-        Merchant\Action::ARCHIVE => self::EDIT_MERCHANT_ARCHIVE,
-        Merchant\Action::UNARCHIVE => self::EDIT_MERCHANT_UNARCHIVE,
-        Merchant\Action::SUSPEND => self::EDIT_MERCHANT_SUSPEND,
-        Merchant\Action::UNSUSPEND => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::ARCHIVE    => self::EDIT_MERCHANT_ARCHIVE,
+        Merchant\Action::UNARCHIVE  => self::EDIT_MERCHANT_UNARCHIVE,
+        Merchant\Action::SUSPEND    => self::EDIT_MERCHANT_SUSPEND,
+        Merchant\Action::UNSUSPEND  => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::LOCK       => self::EDIT_MERCHANT_LOCK_ACTIVATION,
+        Merchant\Action::UNLOCK     => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
     ];
 }

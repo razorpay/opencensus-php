@@ -119,6 +119,13 @@ class Core extends Base\Core
         return $userArray;
     }
 
+    /**
+     * This function is used to add new relationship between user and merchant
+     * This uses laravel attach which will create a new mapping.
+     * @param  Entity $user
+     * @param  array  $input
+     * @return array
+     */
     protected function attach(Entity $user, array $input)
     {
         $currentTimestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
@@ -132,24 +139,47 @@ class Core extends Base\Core
         $merchantId = $input[Entity::MERCHANT_ID];
 
         $this->repo->attach($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
+
+        return $user->toArrayPublic();
     }
 
+     /**
+     * This function is used to remove relationship between user and merchant
+     * This uses laravel detach which will remove the existing mapping
+     * @param  Entity $user
+     * @param  array  $input
+     * @return array
+     */
     protected function detach(Entity $user, array $input)
     {
         $this->repo->detach($user, Entity::MERCHANTS, $input[Entity::MERCHANT_ID]);
+
+        return $user->toArrayPublic();
     }
 
+     /**
+     * This function is used to update the exiting relationship between user and merchant
+     * This uses laravel sync which will update the mapping only if detaching is false.
+     * If detaching is passed as true (default value), then all the old mapping would be deleted.
+     * and the new only will be inserted.
+     * @param  Entity $user
+     * @param  array  $input
+     * @return array
+     */
     protected function update(Entity $user, array $input)
     {
         $currentTimestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
 
         $mappingParams = [
             'role'       => $input[Entity::ROLE],
+            'created_at' => $currentTimestamp,
             'updated_at' => $currentTimestamp
         ];
 
         $merchantId = $input[Entity::MERCHANT_ID];
 
-        $this->repo->sync($user, Entity::MERCHANTS, [$merchantId => $mappingParams]);
+        $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
+
+        return $user->toArrayPublic();
     }
 }

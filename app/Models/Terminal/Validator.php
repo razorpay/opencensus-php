@@ -314,6 +314,13 @@ class Validator extends Base\Validator
             return;
         }
 
+        // Gateway acquirer is required
+        if (empty($input[Entity::GATEWAY_ACQUIRER]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway acquirer is required for ' . $gateway);
+        }
+
         $gatewayAcquirer = $input[Entity::GATEWAY_ACQUIRER];
 
         $validGatewayAcquirers = Payment\Gateway::GATEWAY_ACQUIRERS[$gateway];

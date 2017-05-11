@@ -29,6 +29,8 @@ class Entity extends Base\Entity
     const ADMIN            = 'admin';
     const CROSS_ORG_ACCESS = 'cross_org_access';
 
+    const WORKFLOW_PERMISSIONS = 'workflow_permissions';
+
     /**
      * Holds all the permissions as relation key.
      */
@@ -76,6 +78,7 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
         self::CUSTOM_CODE,
         self::PERMISSIONS,
+        self::WORKFLOW_PERMISSIONS,
     ];
 
     protected $public = [
@@ -93,6 +96,7 @@ class Entity extends Base\Entity
         self::CREATED_AT,
         self::CUSTOM_CODE,
         self::PERMISSIONS,
+        self::WORKFLOW_PERMISSIONS,
     ];
 
     protected $guarded = [
@@ -106,6 +110,10 @@ class Entity extends Base\Entity
 
     protected $defaults = [
         self::CROSS_ORG_ACCESS => false,
+    ];
+
+    protected $publicSetters = [
+        self::ID
     ];
 
     protected static function boot()
@@ -159,6 +167,11 @@ class Entity extends Base\Entity
     public function permissions()
     {
         return $this->morphToMany('RZP\Models\Admin\Permission\Entity', 'entity', Table::PERMISSION_MAP);
+    }
+
+    public function workflow_permissions()
+    {
+        return $this->permissions()->where('enable_workflow', '=', 1);
     }
 
     public function getAllowSignUp()

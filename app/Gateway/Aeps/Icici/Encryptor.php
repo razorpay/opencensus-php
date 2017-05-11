@@ -18,7 +18,7 @@ class Encryptor
     {
         $date = Carbon::now('Asia/Kolkata')->format('Y-m-d\TH:i:s');
 
-        $pidBlock = '<Pid ts=' . $date . ' ver="1.0"><Bios><Bio type="FMR" posh="UNKNOWN">' . $fpData . '</Bio></Bios></Pid>';
+        $pidBlock = '<Pid ts="' . $date . '" ver="1.0"><Bios><Bio type="FMR" posh="UNKNOWN">' . $fpData . '</Bio></Bios></Pid>';
 
         return $pidBlock;
     }

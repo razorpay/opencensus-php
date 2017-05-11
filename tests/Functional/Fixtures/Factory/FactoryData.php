@@ -309,6 +309,7 @@ final class FactoryData
             'merchant_id' => '10000000000000',
             'name' => 'Some item name',
             'description' => 'Some item description',
+            'type' => 'invoice',
             'amount' => 100000,
             'currency' => 'INR',
         ]);
@@ -528,6 +529,32 @@ final class FactoryData
             'terms'     => 'Terms and Condition'
         ]);
 
+        $factory(\RZP\Models\Plan\Entity::class, [
+            'id'                => '1000000000plan',
+            'merchant_id'       => '10000000000000',
+            'period'            => 'monthly',
+            'interval'          => 2,
+            'item_id'           => '1000000000item',
+            // 'schedule_id'       => null,
+            'notes'             => null,
+        ]);
+
+        $factory(\RZP\Models\Plan\Subscription\Entity::class, [
+            'merchant_id'   => '10000000000000',
+            'customer_id'   => '100000customer',
+            'status'        => 'created',
+            'quantity'      => 1,
+            'total_count'   => 4,
+            'notes'         => null,
+        ]);
+
+        $factory(\RZP\Models\Plan\Subscription\Addon\Entity::class, [
+            'merchant_id'       => '10000000000000',
+            'item_id'           => '1000000000item',
+            'invoice_id'        => '1000000invoice',
+            'subscription_id'   => '10subscription,'
+        ]);
+
         $factory(\RZP\Models\Device\Entity::class, [
             'id'                 => $faker->uniqueid,
             'merchant_id'        => '10000000000000',
@@ -611,12 +638,10 @@ final class FactoryData
             'id'                => $faker->uniqueid,
             'merchant_id'       => '100000Razorpay',
             'name'              => 'Basic T3',
-            'type'              => 'settlement',
             'period'            => 'daily',
             'interval'          => 1,
             'delay'             => 3,
             'hour'              => 5,
-            'next_run'          => 1451586600,
         ]);
 
         $factory(\RZP\Models\Schedule\Task\Entity::class, [
@@ -628,6 +653,12 @@ final class FactoryData
             'method'            => null,
             'schedule_id'       => 'factory:RZP\Models\Schedule\Entity',
             'next_run_at'       => 1451604600,
+        ]);
+
+        $factory(\RZP\Models\Gateway\Downtime\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
         ]);
     }
 }

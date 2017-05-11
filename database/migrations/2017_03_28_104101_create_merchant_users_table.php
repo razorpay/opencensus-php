@@ -37,6 +37,8 @@ class CreateMerchantUsersTable extends Migration
                   ->references(User::ID)
                   ->on(Table::USER)
                   ->on_delete('restrict');
+
+            $table->unique([Merchant::MERCHANT_ID, User::USER_ID, 'role']);
         });
     }
 
@@ -52,6 +54,8 @@ class CreateMerchantUsersTable extends Migration
             $table->dropForeign(Table::MERCHANT_USERS .'_' .User::MERCHANT_ID .'_foreign');
 
             $table->dropForeign(Table::MERCHANT_USERS .'_' .User::USER_ID .'_foreign');
+
+            $table->dropUnique('merchant_users_merchant_id_user_id_role_unique');
         });
 
         Schema::drop(Merchant::MERCHANT_USERS);
