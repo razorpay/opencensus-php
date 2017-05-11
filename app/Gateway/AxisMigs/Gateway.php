@@ -47,16 +47,19 @@ class Gateway extends Base\Gateway
 
     protected function authorizeRecurring(array $content, array $input)
     {
+        unset($content['vpc_CardSecurityCode'], $content['vpc_Card']);
+        unset($content['vpc_ReturnURL'], $content['vpc_gateway']);
+
         $response = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
         $this->traceGatewayResponse(
-            TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE, $response);
+            TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE, $response, $input);
 
         $response['received'] = '1';
 
         $this->gatewayEntity->fill($response);
 
-        $this->repo->saveOrFail($gatewayEntity);
+        $this->repo->saveOrFail($this->gatewayEntity);
 
         $this->verifyAmaTransactionResponse($response, $input);
     }
@@ -617,7 +620,7 @@ class Gateway extends Base\Gateway
             'vpc_MerchTxnRef' => $input['payment']['id'],
         ];
 
-        $this->createGatewayPaymentEntity($attributes, $input);
+        $this->gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
 
         $network = $input['card']['network'];
 
@@ -642,17 +645,6 @@ class Gateway extends Base\Gateway
         }
 
         $this->addMerchantIdAndAccessCode($content, $input['terminal']);
-
-        if ($this->isRecurringPaymentRequest($input) === true)
-        {
-            $content['vpc_TxSourceSubType'] = 'RECURRING';
-            $content['vpc_ReturnAuthResponseData'] = 'Y';
-            unset($content['vpc_CardSecurityCode']);
-            unset($content['vpc_Card']);
-            unset($content['vpc_ReturnURL']);
-            unset($content['vpc_Version']);
-            unset($content['vpc_gateway']);
-        }
 
         return $content;
     }

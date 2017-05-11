@@ -906,4 +906,14 @@ class Gateway
                     ['json' => $json]);
         }
     }
+
+    protected function traceGatewayResponse($traceCode, $response, $input)
+    {
+        $this->trace->info($traceCode,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+    }
 }

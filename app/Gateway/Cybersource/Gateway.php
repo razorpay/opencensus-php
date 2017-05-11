@@ -1564,16 +1564,6 @@ class Gateway extends Base\Gateway
             ]);
     }
 
-    protected function traceGatewayResponse($traceCode, $response, $input)
-    {
-        $this->trace->info($traceCode,
-            [
-                'response'   => $response,
-                'gateway'    => 'cybersource',
-                'payment_id' => $input['payment']['id'],
-            ]);
-    }
-
     protected function xmlToArray($data)
     {
         $xml_values = simplexml_load_string($data);
