@@ -132,6 +132,10 @@ var app = angular
           url: '/activationold',
           templateUrl: 'tpl/app_activation.html',
         })
+        .state('app.profileold', {
+          url: '/profileold',
+          templateUrl: 'tpl/app_profile.html',
+        })
         .state('app.accountsold', {
           url: '/accountsold',
           templateUrl: 'tpl/app_accounts.html',
