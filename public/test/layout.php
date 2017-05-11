@@ -67,7 +67,7 @@ textarea.onkeydown = function(e){
 }
 
 <?php
-if ($_SERVER['HTTP_HOST'] !== "https://api.razorpay.com") {
+if ($_SERVER['HTTP_HOST'] !== "api.razorpay.com") {
 ?>
 var Razorpay = {
   config: {
@@ -78,7 +78,7 @@ var Razorpay = {
 }
 ?>
 </script>
-<?php if ($_SERVER['HTTP_HOST'] === "https://api.razorpay.com"): ?>
+<?php if ($_SERVER['HTTP_HOST'] === "api.razorpay.com"): ?>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <?php else: ?>
   <script src="https://beta-checkout.razorpay.com/v1/checkout.js"></script>
