@@ -424,7 +424,7 @@ trait Authorize
                 null,
                 [
                     'payment_id'        => $payment->getId(),
-                    'subscription_id'   => $payment->subscription->getId(),
+                    'subscription_id'   => $payment->getSubscriptionId(),
                 ]);
         }
 
