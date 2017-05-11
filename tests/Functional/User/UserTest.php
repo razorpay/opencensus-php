@@ -197,7 +197,7 @@ class UserTest extends TestCase
         $testData = & $this->testData[__FUNCTION__];
 
         $content = [
-            'role'        => 'owner',
+            'role'        => 'owner1',
             'merchant_id' => $merchant['id']
         ];
 
@@ -209,26 +209,13 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        $testData = & $this->testData['testGet'];
+        $merchants = DB::table('merchant_users')
+                       ->where('user_id', '=', $user['id'])
+                       ->pluck('merchant_id', 'role');
 
-        $testData['request']['url'] = '/users/' . $user['id'];
+        $this->assertEquals(count($merchants), 2);
 
-        $this->ba->appAuth();
-
-        $updatedUser = $this->makeRequestAndGetContent($testData['request']);
-
-        $updatedUserMerchants = $updatedUser['merchants'];
-
-        $this->assertEquals(count($updatedUserMerchants), 2);
-
-        $addedMerchant = array_filter($updatedUserMerchants, function($userMerchant) use($merchant)
-        {
-            return ($merchant['id'] === $userMerchant['id']);
-        });
-
-        $this->assertEquals(count($addedMerchant), 1);
-
-        $this->assertEquals(array_values($addedMerchant)[0]['role'], 'owner');
+        $this->assertEquals($merchants['owner1'], $merchant['id']);
     }
 
     public function testDetachMerchant()
@@ -285,8 +272,8 @@ class UserTest extends TestCase
         $this->startTest();
 
         $merchants = DB::table('merchant_users')
-                   ->where('user_id', '=', $user['id'])
-                   ->pluck('merchant_id', 'role');
+                        ->where('user_id', '=', $user['id'])
+                        ->pluck('merchant_id', 'role');
 
         $this->assertEquals(count($merchants), 2);
 
