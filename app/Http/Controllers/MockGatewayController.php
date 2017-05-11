@@ -113,7 +113,7 @@ class MockGatewayController extends Controller
 
         $server = $this->gateway->server('axis_migs');
 
-        $url = $server->authorize($input);
+        $url = $server->acs($input);
 
         return Redirect::to($url);
     }

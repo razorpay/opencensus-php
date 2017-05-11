@@ -1342,19 +1342,6 @@ class Gateway extends Base\Gateway
         return $billingInfo;
     }
 
-
-    // Check for recurring payment
-    protected function isRecurringPaymentRequest($input)
-    {
-        if (($input['payment']['recurring'] === true) and
-            ($input['terminal']->isNon3DSRecurring() === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     protected function createGatewayPaymentEntity($attributes, $input)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();

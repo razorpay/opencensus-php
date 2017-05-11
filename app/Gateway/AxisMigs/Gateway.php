@@ -52,8 +52,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
-        $this->traceGatewayResponse(
-            TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE, $response, $input);
+        $this->traceGatewayPaymentResponse(
+            $response, $input, TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE);
 
         $response['received'] = '1';
 
@@ -652,18 +652,6 @@ class Gateway extends Base\Gateway
     protected function addSubMerchantDetails(array & $content, array $input)
     {
         ;
-    }
-
-    // Check for recurring payment
-    protected function isRecurringPaymentRequest($input)
-    {
-        if (($input['payment']['recurring'] === true) and
-            ($input['terminal']->isNon3DSRecurring() === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function getPaymentCaptureRequestContent($input, $payment)

@@ -338,6 +338,17 @@ class Gateway
         }
     }
 
+    protected function isRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['terminal']->isNon3DSRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function generateRefunds($input)
     {
         $paymentIds = array_map(function($row)
@@ -905,15 +916,5 @@ class Gateway
                     'Failed to convert json to array',
                     ['json' => $json]);
         }
-    }
-
-    protected function traceGatewayResponse($traceCode, $response, $input)
-    {
-        $this->trace->info($traceCode,
-            [
-                'response'   => $response,
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]);
     }
 }
