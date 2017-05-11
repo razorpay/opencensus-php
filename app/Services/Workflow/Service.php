@@ -50,7 +50,7 @@ class Service
         return $this;
     }
 
-    protected function trigger()
+    public function trigger()
     {
         // Since we need to calculate the diffs, we'll need
         // the main entity being acted upon by the route
@@ -145,12 +145,12 @@ class Service
         return $this->permission;
     }
 
-    protected function setDiff($diff)
+    public function setDiff($diff)
     {
         $this->diff = $diff;
     }
 
-    protected function getDiff()
+    public function getDiff()
     {
         return $this->diff;
     }

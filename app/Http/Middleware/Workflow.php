@@ -83,9 +83,11 @@ class Workflow
 
         $entity = Route::$workflowRoutes[$routeName] ?? null;
 
-        WorkflowFacade::setEntity($entity)->setPermission($permission);
+        $this->app['workflow']
+             ->setEntity($entity)
+             ->setPermission($permission);
 
-        return WorkflowFacade::trigger();
+        return $this->app['workflow']->trigger();
     }
 
     private function getRoutePermission($routeName)

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Workflow\Action\Differ;
 
+use RZP\Models\Admin;
+
 class EntityValidator
 {
     // Mapping specifying the validation rule name
@@ -16,7 +18,8 @@ class EntityValidator
     // each route in which relations has to be checked for
     // to include in differ.
     const RELATIONS = [
-        'admin_edit'          => \RZP\Models\Admin\Admin::class,
+        'admin_edit'          => Admin\Admin\Entity::class,
+        'role_edit'           => Admin\Role\Entity::class,
     ];
 
     public static function getValidator($route)
@@ -38,8 +41,10 @@ class EntityValidator
             return [];
         }
 
-        $entityClass = self::RELATIONS[$route] . '\Entity';
+        $entityClass = self::RELATIONS[$route];
 
-        return (new $entityClass)->getRelationsForDiffer();
+        $relations = (new $entityClass)->getRelationsForDiffer();
+
+        return $relations;
     }
 }
