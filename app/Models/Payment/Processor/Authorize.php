@@ -412,7 +412,7 @@ trait Authorize
         //
         // Subscription association to payment happens in pre-process
         //
-        if ($payment->subscription === null)
+        if ($payment->getSubscriptionId() === null)
         {
             return;
         }
