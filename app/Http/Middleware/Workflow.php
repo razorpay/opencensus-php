@@ -13,7 +13,7 @@ use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Service as WorkflowService;
 use Illuminate\Foundation\Application;
-use Workflow as WorkflowFacade;
+use RZP\Models\Workflow\Action\Differ\EntityValidator;
 
 class Workflow
 {
@@ -81,7 +81,7 @@ class Workflow
             }
         }
 
-        $entity = Route::$workflowRoutes[$routeName] ?? null;
+        $entity = EntityValidator::getEntityName($routeName);
 
         $this->app['workflow']
              ->setEntity($entity)
