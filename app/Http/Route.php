@@ -15,7 +15,7 @@ final class Route
      | make sure to run the full test suite
      */
 
-    protected static $apiRoutes = array(
+    protected static $apiRoutes = [
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
@@ -521,9 +521,9 @@ final class Route
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
-    );
+    ];
 
-    public static $public = array(
+    public static $public = [
         'checkout',
         'payment_create',
         'payment_create_checkout',
@@ -576,9 +576,9 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
-    );
+    ];
 
-    public static $device = array(
+    public static $device = [
         'set_mpin',
         'reset_mpin',
         'vpa_create',
@@ -601,14 +601,14 @@ final class Route
         'p2p_reject',
         'customer_collect_request_fetch',
         'device_customer_fetch',
-    );
+    ];
 
-    public static $publicCallback = array(
+    public static $publicCallback = [
         'payment_callback_with_key_post',
         'payment_callback_with_key_get',
-    );
+    ];
 
-    public static $private = array(
+    public static $private = [
         'payment_create_private',
         'payment_create_private_old',
         'payment_create_recurring',
@@ -675,9 +675,9 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
-    );
+    ];
 
-    public static $internal = array(
+    public static $internal = [
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
@@ -865,9 +865,9 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
-    );
+    ];
 
-    public static $proxy = array(
+    public static $proxy = [
         'payment_fetch_card_details',
         'payment_authorize_refund',
         'transaction_monthly_report',
@@ -930,7 +930,7 @@ final class Route
         'offer_fetch_by_id',
         'reports_fetch_multiple',
         'file_get_signed_url',
-    );
+    ];
 
     public static $admin = [
         'org_get',
@@ -1091,7 +1091,7 @@ final class Route
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
     ];
 
-    public static $direct = array(
+    public static $direct = [
         'device_verify',
         'upi_get_bank_list',
         'upi_read_async',
@@ -1118,18 +1118,18 @@ final class Route
         'checkout_onyx',
         'checkout_hosted',
         'mock_event_tracker',
-    );
+    ];
 
-    public static $internalApps = array(
-        'dashboard' => array('*'),
+    public static $internalApps = [
+        'dashboard' => ['*'],
 
-        'mock_gateways' => array(
+        'mock_gateways' => [
             'mock_hdfc_enroll',
             'mock_hdfc_auth_enrolled',
             'mock_hdfc_payment',
-        ),
+        ],
 
-        'cron' => array(
+        'cron' => [
             'setl_initiate',
             'payout_initiate',
             'setl_reconcile_generate',
@@ -1170,33 +1170,34 @@ final class Route
             'merchant_patch_beneficiary_code',
             'payment_update_on_hold',
             'refund_retry_failed',
-        ),
+        ],
 
-        'kotak' => array(
+        'kotak' => [
             'ecollect_validate',
             'ecollect_pay',
-        ),
+        ],
 
-        'yesbank' => array(
+        'yesbank' => [
             'ecollect_validate',
             'ecollect_pay',
-        ),
+        ],
 
-        'mailgun' => array(
+        'mailgun' => [
             'reconciliate'
-        ),
+        ],
 
-        'raven' => array(
-        ),
+        'raven' => [
 
-        'hosted' => array(
+        ],
+
+        'hosted' => [
             'merchant_secret',
-        ),
+        ],
 
-        'h2h' => array(
+        'h2h' => [
             'setl_reconcile_h2h',
-        ),
-    );
+        ],
+    ];
 
     public static $slaveRoutes = [
         // TODO: Uncomment this when slave variables issue is fixed.
@@ -1204,13 +1205,13 @@ final class Route
         'payment_fetch_transaction',
     ];
 
-    protected static $jsonpRoutes = array(
+    protected static $jsonpRoutes = [
         'checkout',
         'payment_create_jsonp',
         'payment_get_status',
         'merchant_public_get_banks',
         'merchant_methods',
-    );
+    ];
 
     /**
      * A route can belong to multiple features, mapped here
@@ -1263,26 +1264,15 @@ final class Route
         'admin_dummy_account_test',
     ];
 
-    /**
-     * Routes for all maker & checker actions.
-     * Its the map of the entity vs route name
-     *
-     * Also update EntityValidator!
-     */
-    public static $workflowRoutes = [
-       'merchant_edit_email'                        => 'merchant',
-       'admin_edit'                                 => 'admin', // will change
-       'role_edit'                                  => 'role',
-    ];
-
-    const RAZORPAYJS_ROUTES = array(
+    const RAZORPAYJS_ROUTES = [
         'payment_cancel',
         'payment_create_ajax',
         'payment_otp_submit',
         'payment_otp_resend',
-        'payment_topup_ajax');
+        'payment_topup_ajax'
+    ];
 
-    const CRITICAL_ROUTES = array(
+    const CRITICAL_ROUTES = [
         'payment_create',
         'payment_create_private',
         'payment_create_recurring',
@@ -1304,16 +1294,16 @@ final class Route
         'payment_topup_ajax',
         'payment_topup_post',
         'payment_redirect_callback',
-    );
+    ];
 
     /**
      * Sometimes we need to disable routes without deleting them temporarily.
      * It could be that the route is deleted later on and is here during
      * the transition period only.
      */
-    const DISABLED_ROUTES = array(
+    const DISABLED_ROUTES = [
         'merchant_copy_terminal',
-    );
+    ];
 
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
 
@@ -1469,7 +1459,7 @@ final class Route
     // @codingStandardsIgnoreStart
     public function getDoNotLogURLs()
     {
-        $doNotLogUrls = array(
+        $doNotLogUrls = [
             'v1/payments/create/jsonp',
             'payments/create/jsonp',
             self::$apiRoutes['payment_create_jsonp'][1],
@@ -1483,7 +1473,7 @@ final class Route
             'v1/payments/create/fees',
             'v1/payments/create/wallet',
             'v1/payments/create/upi'
-        );
+        ];
 
         return $doNotLogUrls;
     }
@@ -1515,7 +1505,7 @@ final class Route
         $uri = $info[1];
         $action = $info[2];
 
-        $this->router->$method($uri, array('as' => $name, 'uses' => $action));
+        $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
     }
 
     public function defineAllExtraRoutes()
