@@ -158,6 +158,19 @@ app
             // Action details
             $scope.action_details = data.data;
 
+            switch ($scope.action_details.state) {
+              case 'approved':
+              case 'executed':
+                $scope.stateClass = 'approved-bg-color';
+                break;
+              case 'closed':
+                $scope.stateClass = 'rejected-bg-color';
+                break;
+              case 'open':
+              default:
+                $scope.stateClass = 'pending-bg-color';
+            }
+            
             // Set action permission name to show as title
             $scope.action_permission_name =
               $scope.action_details.permission.description +
