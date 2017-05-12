@@ -212,7 +212,7 @@ class Gateway extends Base\Gateway
             RequestFields::BANK_REFERENCE_ID  => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
         ];
 
-        $queryString = $this->createQueryString($data);
+        $queryString = http_build_query($data);
 
         return $this->encryptString($queryString);
     }
@@ -383,13 +383,13 @@ class Gateway extends Base\Gateway
         return strtoupper(bin2hex($aes->encryptString($queryString)));
     }
 
-    public function decryptString(string $queryString)
+    public function decryptString(string $encryptedString)
     {
         $masterKey = $this->getSecret();
 
         $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
-        return $crypto->decryptString(hex2bin($encryptedString));
+        return $aes->decryptString(hex2bin($encryptedString));
     }
 }
 
