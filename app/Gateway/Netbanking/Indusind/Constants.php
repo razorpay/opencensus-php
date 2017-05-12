@@ -10,7 +10,6 @@ class Constants
     const CORPORATE_USER    = '2';
     const YES               = 'Y';
     const NO                = 'N';
-    const MODE_EBC          = 1;
     const HOT_PAYMENT       = 'H';
     const SCHEDULED_PAYMENT = 'S';
 }

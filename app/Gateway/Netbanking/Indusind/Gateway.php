@@ -35,9 +35,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getAuthorizeRequestData($input);
 
-        $entity = $this->getAuthGatewayPaymentAttributes($input);
+        $attrs = $this->getAuthGatewayPaymentAttributes($input);
 
-        $this->createGatewayPaymentEntity($entity);
+        $this->createGatewayPaymentEntity($attrs);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -58,7 +58,7 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        $content = $this->getDataFromResponse($input['gateway']);
+        $content = $this->getDataFromCallbackResponse($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
@@ -205,20 +205,16 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
-            RequestFields::AMOUNT             => ($input['payment']['amount'] / 100),
+            RequestFields::AMOUNT             => $this->formatAmount($input['payment']['amount']),
             RequestFields::CURRENCY_CODE      => Currency::INR,
             RequestFields::CONFIRMATION       => Constants::YES,
-            RequestFields::RETURN_URL         => "dummy",
+            RequestFields::RETURN_URL         => "na",
             RequestFields::BANK_REFERENCE_ID  => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
         ];
 
         $queryString = $this->createQueryString($data);
 
-        $masterKey = $this->getSecret();
-
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
-
-        return strtoupper(bin2hex($aes->encryptString($queryString)));
+        return $this->encryptString($queryString);
     }
 
     protected function getAuthorizeEncryptedString($input)
@@ -226,48 +222,28 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
-            RequestFields::AMOUNT             => ($input['payment']['amount'] / 100),
+            RequestFields::AMOUNT             => $this->formatAmount($input['payment']['amount']),
             RequestFields::CURRENCY_CODE      => Currency::INR,
             RequestFields::CONFIRMATION       => Constants::YES,
             RequestFields::RETURN_URL         => $input['callbackUrl'],
         ];
 
-        $queryString = $this->createQueryString($data);
+        $queryString = http_build_query($data);
 
-        $masterKey = $this->getSecret();
-
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
-
-        return strtoupper(bin2hex($aes->encryptString($queryString)));
+        return $this->encryptString($queryString);
     }
 
-    /*
-     * @param Eg. $data = ['PRN' => "6vTX585l2WP6Bq", 'MD' => "P"]
-     * @return Eg. string "PRN=6vTX585l2WP6Bq&MD=P"
-     */
-    protected function createQueryString(array $data)
-    {
-        $queryArray = [];
-
-        foreach ($data as $key => $value)
-        {
-            $queryArray[] = $key . '=' . $value;
-        }
-
-        $queryString = implode('&', $queryArray);
-
-        return $queryString;
-    }
-
-    protected function getDataFromResponse(array $encryptedResponse)
+    protected function getDataFromCallbackResponse(array $encryptedResponse)
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
-        $masterKey = $this->getsecret();
+        $masterKey = $this->getSecret();
 
         $crypto = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
         $decryptedString = $crypto->decryptString(hex2bin($encryptedString));
+
+        $response = [];
 
         parse_str($decryptedString, $response);
 
@@ -388,6 +364,25 @@ class Gateway extends Base\Gateway
         $secret = parent::getSecret();
 
         return pack('H*', $secret);
+    }
+
+    /**
+     * Formats amount to 2 decimal places
+     * @param  int $amount amount in paise (100)
+     * @return string amount formatted to 2 decimal places in INR (1.00)
+     */
+    protected function formatAmount(int $amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function encryptString(string $queryString)
+    {
+        $masterKey = $this->getSecret();
+
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+
+        return strtoupper(bin2hex($aes->encryptString($queryString)));
     }
 }
 

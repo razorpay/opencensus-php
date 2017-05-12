@@ -22,7 +22,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($decryptedData, 'auth_decrypted');
 
-        $postData = $this->createPostData(array_merge($input,$decryptedData));
+        $postData = $this->createPostData(array_merge($input, $decryptedData));
 
         $this->content($postData);
 
@@ -84,16 +84,13 @@ class Server extends Base\Mock\Server
 
         $decryptedString = $aes->decryptString(hex2bin($input[RequestFields::ENCRYPTED_STRING]));
 
-        if ($decryptedString === false)
+        if (empty($decryptedString) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Encrypted string not decryptable');
         }
 
-        // Removing the %22 tags in the return URL
-        $string = str_replace('%22', '', $decryptedString);
-
-        parse_str($string, $decryptedData);
+        parse_str($decryptedString, $decryptedData);
 
         return $decryptedData;
     }
