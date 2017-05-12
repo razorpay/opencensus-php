@@ -144,8 +144,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReferenceNumber($row)
     {
-        $referenceNumber = $row[self::COLUMN_BANK_REFERENCE_NO];
+        if (isset($row[self::COLUMN_BANK_REFERENCE_NO]) === true)
+        {
+            $referenceNumber = $row[self::COLUMN_BANK_REFERENCE_NO];
 
-        return $referenceNumber;
+            return $referenceNumber;
+        }
     }
 }
