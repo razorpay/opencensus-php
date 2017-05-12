@@ -973,7 +973,7 @@ trait Authorize
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
 
         // if gateway is doing conversion, use lower conversion rate
-        if ($payment->convertOnApi() === false)
+        if ($payment->getConvertCurrency() === false)
         {
             $baseAmount = (int) ceil($baseAmount * 0.98);
         }
