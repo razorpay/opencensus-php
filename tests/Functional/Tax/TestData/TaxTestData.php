@@ -149,7 +149,10 @@ return [
             'content' => [],
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'id'      => 'tax_00000000000001',
+                'deleted' => true,
+            ],
         ],
     ],
 ];

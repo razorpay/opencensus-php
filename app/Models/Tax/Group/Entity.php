@@ -52,17 +52,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
     ];
 
-    // TODO:
-    // - Post https://github.com/razorpay/api/pull/2994 is reviewed and moved
-    //   following($expands) will work.
-    //
-    // - Remove $appends and getTaxesAttribute().
-    // - Remove TAXES from visible.
-
-    protected $expands = [
-        self::TAXES,
-    ];
-
     protected $appends = [
         self::PUBLIC_ID,
         self::ENTITY,

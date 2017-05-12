@@ -206,7 +206,10 @@ return [
             'content' => [],
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'id'      => 'taxg_00000000000001',
+                'deleted' => true,
+            ],
         ],
     ],
 ];

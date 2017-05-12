@@ -50,13 +50,8 @@ trait ServiceHasCrudMethods
     {
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $entity = $this->core->delete($entity);
+        $this->core->delete($entity);
 
-        if ($entity === null)
-        {
-            return [];
-        }
-
-        return $entity->toArrayPublic();
+        return $entity->toArrayDeleted();
     }
 }
