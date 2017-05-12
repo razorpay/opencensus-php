@@ -432,10 +432,13 @@ app
     '$http',
     'action_data',
     'utils',
-    function($scope, $modalInstance, $http, action_data, utils) {
+    'displayValue',
+    function($scope, $modalInstance, $http, action_data, utils, displayValue) {
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
       };
+
+      $scope.displayValue = displayValue;
 
       $scope.data = action_data;
       $scope.isArray = utils.isArray;
