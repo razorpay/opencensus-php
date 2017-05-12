@@ -61,7 +61,7 @@ class RefundFile extends Base\RefundFile
                 RefundFileFields::TRANSACTION_ID     => $row['payment']['id'],
                 RefundFileFields::REFUND             => RefundFileFields::REFUND_MODE,
                 RefundFileFields::BANK               => RefundFileFields::BANK_NAME,
-                RefundFileFields::REFUND_AMOUNT      => $row['refund']['amount'] / 100,
+                RefundFileFields::REFUND_AMOUNT      => number_format($row['refund']['amount'] / 100, 2, '.', ''),
                 RefundFileFields::BANK_REFERENCE_ID  => $row['gateway']['bank_payment_id']
             ];
         }

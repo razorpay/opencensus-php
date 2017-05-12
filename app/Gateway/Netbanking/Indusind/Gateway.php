@@ -81,7 +81,7 @@ class Gateway extends Base\Gateway
 
     protected function getAuthGatewayPaymentAttributes($input)
     {
-        return [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
+        return [RequestFields::AMOUNT => $this->formatAmount($input['payment'][Payment\Entity::AMOUNT])];
     }
 
     public function sendPaymentVerifyRequest(Verify $verify)
@@ -237,11 +237,9 @@ class Gateway extends Base\Gateway
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
-        $masterKey = $this->getSecret();
+        $this->decryptString($encryptedString);
 
-        $crypto = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
-
-        $decryptedString = $crypto->decryptString(hex2bin($encryptedString));
+        $decryptedString = $this->decryptString($encryptedString);
 
         $response = [];
 
@@ -327,7 +325,7 @@ class Gateway extends Base\Gateway
     {
         return [
             'received'          => true,
-            'status'            => $content['VERIFICATION'],
+            'status'            => $content[ResponseFields::VERIFICATION],
         ];
     }
 
@@ -371,18 +369,27 @@ class Gateway extends Base\Gateway
      * @param  int $amount amount in paise (100)
      * @return string amount formatted to 2 decimal places in INR (1.00)
      */
-    protected function formatAmount(int $amount): string
+    public function formatAmount(int $amount): string
     {
         return number_format($amount / 100, 2, '.', '');
     }
 
-    protected function encryptString(string $queryString)
+    public function encryptString(string $queryString)
     {
         $masterKey = $this->getSecret();
 
         $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
         return strtoupper(bin2hex($aes->encryptString($queryString)));
+    }
+
+    public function decryptString(string $queryString)
+    {
+        $masterKey = $this->getSecret();
+
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+
+        return $crypto->decryptString(hex2bin($encryptedString));
     }
 }
 
