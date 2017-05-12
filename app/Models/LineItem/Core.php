@@ -42,6 +42,8 @@ class Core extends Base\Core
 
         $lineItem->build($input);
 
+        $this->setRefAssociationIfApplicable($input, $lineItem);
+
         $lineItem->getValidator()->validateCurrency($morphEntity->getCurrency());
 
         $lineItem->merchant()->associate($merchant);
@@ -249,6 +251,27 @@ class Core extends Base\Core
                     $this->delete($existingLineItem, $morphEntity);
                 }
             });
+    }
+
+    protected function setRefAssociationIfApplicable(
+        array $input,
+        Entity $lineItem)
+    {
+        //
+        // We are passing the ref object in line_item input
+        // rather than passing the entity to the function because
+        // one invoice can have multiple line_items and addons
+        // are associated with the line_item and not an invoice.
+        // Hence, while creating an invoice, associating the addons
+        // with line_items becomes difficult otherwise.
+        //
+
+        if (empty($input[Entity::REF]) === true)
+        {
+            return;
+        }
+
+        $lineItem->ref()->associate($input[Entity::REF]);
     }
 
     /**

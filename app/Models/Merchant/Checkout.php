@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Emi;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -23,6 +24,8 @@ class Checkout
 {
     const CHECKOUT_LOGO_SIZE = 'medium';
     const CHECKOUT_DEFAULT_THEME_COLOR = '#3594E2';
+
+    const SUBSCRIPTION_ID    = 'subscription_id';
 
     public function __construct()
     {
@@ -47,7 +50,11 @@ class Checkout
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
+        $this->checkAndAddDetailsForSubscription($input, $merchant, $data);
+
         $this->checkAndFillOfferDetails($merchant, $input, $data);
+
+        $this->checkAndFillGatewayDowntime($merchant, $data);
 
         $this->tracePreferencesResponse($merchant, $data);
 
@@ -82,6 +89,18 @@ class Checkout
                 $data['customer'] = $invoiceData['customer'];
             }
         }
+    }
+
+    protected function checkAndAddDetailsForSubscription(array $input, Merchant\Entity $merchant, array & $data)
+    {
+        if (empty($input[self::SUBSCRIPTION_ID]) === true)
+        {
+            return;
+        }
+
+        $subscriptionId = $input[self::SUBSCRIPTION_ID];
+
+        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($merchant, $subscriptionId);
     }
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
@@ -394,6 +413,26 @@ class Checkout
                 $data['methods'][$method] = true;
 
                 break;
+        }
+    }
+
+    public function checkAndFillGatewayDowntime(Merchant\Entity $merchant, array & $data)
+    {
+        try
+        {
+            if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
+            {
+                $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+
+                if (empty($downtimeData) === false)
+                {
+                    $data['downtime'] = $downtimeData;
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
         }
     }
 }

@@ -9,66 +9,35 @@ use RZP\Trace\TraceCode;
 class Core extends Base\Core
 {
     /**
-     * @param   $input
-     *          Expected params in $input are : start_time, end_time, entity
-     * @return  Entity
+     * builds the report entity, given params
+     *
+     * @param   $input    array
+     *          Expected params in $input are :
+     *          start_time, end_time, entity, day, month, year
+     * @param   $merchant Merchant\Entity
+     *
+     * @return  $report Entity
      */
-    public function create(array $input, Merchant\Entity $merchant)
+    public function buildEntity(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
             TraceCode::REPORT_CREATE_REQUEST,
             $input
         );
 
-        $report = (new Entity)->build($input);
+        $params = [
+            Entity::DAY             => $input['day'] ?? null,
+            Entity::MONTH           => $input['month'],
+            Entity::YEAR            => $input['year'],
+            Entity::START_TIME      => $input['from'],
+            Entity::END_TIME        => $input['to'],
+            Entity::TYPE            => $input['entity'],
+            Entity::GENERATED_BY    => $this->getInternalUsernameOrEmail(),
+        ];
+
+        $report = (new Entity)->build($params);
 
         $report->merchant()->associate($merchant);
-
-        $this->repo->saveOrFail($report);
-
-        return $report;
-    }
-
-    /**
-     * Checks if a report entity exists for give parameters
-     *
-     * @param $from integer
-     * @param $to   integer
-     * @param $entity string
-     * @param $input array containing day, month, year
-     * @return $report Report\Entity
-     */
-    public function getReportEntity($from, $to, $entity, array $input)
-    {
-        $this->trace->info(
-            TraceCode::REPORT_ENTITY_FETCH_REQUEST,
-            [
-                'method'        => __METHOD__,
-                'entity'        => $entity,
-                'from'          => $from,
-                'to'            => $to,
-                'input'         => $input,
-            ]);
-
-        $merchant = $this->merchant;
-
-        $report = $this->repo->report->fetchReportEntity(
-                                        $from, $to, $entity, $merchant->getId());
-
-        if ($report === null)
-        {
-            $params = [
-                Entity::DAY             => $input['day'] ?? null,
-                Entity::MONTH           => $input['month'],
-                Entity::YEAR            => $input['year'],
-                Entity::START_TIME      => $from,
-                Entity::END_TIME        => $to,
-                Entity::TYPE            => $entity,
-                Entity::GENERATED_BY    => $this->getInternalUsernameOrEmail(),
-            ];
-
-            $report = $this->create($params, $merchant);
-        }
 
         return $report;
     }

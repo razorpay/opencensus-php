@@ -409,13 +409,26 @@ class Terminal extends Base
     public function createSharedFirstDataRecurringTerminals()
     {
         $attributes = [
-            'id'                        => 'FrstDtRcrgTrml',
+            'id'                        => 'FDRcrgTrmnl3DS',
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
             'shared'                    => 1,
-            'recurring'                 => 6,
+            'recurring'                 => 3,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $attributes = [
+            'id'                        => 'FDRcrgTrmlN3DS',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
+            'card'                      => 1,
+            'shared'                    => 1,
+            'recurring'                 => 4,
             'gateway_merchant_id'       => 'random',
         ];
 

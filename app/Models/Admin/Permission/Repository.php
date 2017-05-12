@@ -61,7 +61,7 @@ class Repository extends Base\Repository
         if ((empty($type) === false) and
             ($type === 'workflow'))
         {
-            $query->where(Entity::ENABLE_WORKFLOW, '=', 1);
+            $query->where($pmTable . '.enable_workflow', '=', 1);
         }
 
         return $query->get();
@@ -81,7 +81,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function retrieveIdsByNamesAndOrg(array $permissionNames, string $orgId)
+    public function retrieveIdsByNamesAndOrg(string $permissionName, string $orgId)
     {
         $pid = $this->dbColumn(Permission\Entity::ID);
 
@@ -91,8 +91,8 @@ class Repository extends Base\Repository
                     ->join($pmTable, $pid, '=', $pmTable . '.permission_id')
                     ->where($pmTable . '.entity_id', '=', $orgId)
                     ->where($pmTable . '.entity_type', '=', 'org')
-                    ->whereIn(Entity::NAME, $permissionNames)
-                    ->get(['id']);
+                    ->where(Entity::NAME, $permissionName)
+                    ->pluck('id');
     }
 
     /**
@@ -109,6 +109,16 @@ class Repository extends Base\Repository
                 ->where('permission_id', '=', $permissionId)
                 ->where('entity_type', '=', 'org')
                 ->whereIn('entity_id', $orgIds)
+                ->update(['enable_workflow' => $enabled]);
+    }
+
+    public function toggleWorkflowOnOrgForPermissions(
+        string $orgId, array $permissionIds, bool $enabled)
+    {
+        DB::table(Table::PERMISSION_MAP)
+                ->where('entity_id', '=', $orgId)
+                ->where('entity_type', '=', 'org')
+                ->whereIn('permission_id', $permissionIds)
                 ->update(['enable_workflow' => $enabled]);
     }
 

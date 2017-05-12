@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Report;
+namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
 
@@ -8,7 +8,7 @@ use RZP\Base\JitValidator;
 use RZP\Models\Transaction;
 use RZP\Models\Pricing\Feature;
 
-class InvoiceReport extends Base
+class InvoiceReport extends BaseReport
 {
     // Corresponds to 15th November 2015 00:00
     const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
@@ -32,13 +32,13 @@ class InvoiceReport extends Base
      * manually
      */
     const SB_COMPLEX_CASE = [
-        'month'  =>  '11',
-        'year'   =>  '2015'
+        'month'  => '11',
+        'year'   => '2015'
     ];
 
     const KK_COMPLEX_CASE = [
-        'month'  =>  '6',
-        'year'   =>  '2016'
+        'month'  => '6',
+        'year'   => '2016'
     ];
 
     protected $SBCessMonth;
@@ -168,7 +168,7 @@ class InvoiceReport extends Base
             self::RAZORPAY_FEE => $beforeSBCCutoff[self::RAZORPAY_FEE] + $afterSBCCutoff[self::RAZORPAY_FEE],
             self::TAX => $beforeSBCCutoff[self::TAX] + $afterSBCCutoff[self::TAX],
             self::TAXES => [
-                self::SERVICE_TAX   =>  $beforeSBCCutoff[self::TAXES][self::SERVICE_TAX] +
+                self::SERVICE_TAX   => $beforeSBCCutoff[self::TAXES][self::SERVICE_TAX] +
                     $afterSBCCutoff[self::TAXES][self::SERVICE_TAX],
                 // The first half doesn't have the swach bharat cess
                 self::SWACH_BHARAT_CESS => $afterSBCCutoff[self::TAXES][self::SWACH_BHARAT_CESS]

@@ -1,0 +1,834 @@
+<?php
+
+namespace RZP\Tests\Functional\Subscription;
+
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
+return [
+    'testCreatePlanWithItemId' => [
+        'request' => [
+            'url' => '/plans',
+            'method' => 'post',
+            'content' => [
+                'period'    => 'monthly',
+                'interval'  => 2,
+                'item_id'   => 'item_1000000000item',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'plan',
+                'interval' => 2,
+                'period'   => 'monthly',
+                'notes'    => [],
+                'item'     => [
+                    'active'      => true,
+                    'name'        => 'Some item name',
+                    'description' => 'Some item description',
+                    'amount'      => 100000,
+                    'currency'    => 'INR',
+                    'type'        => 'plan',
+                ]
+            ],
+        ],
+    ],
+
+    'testCreatePlanWithItemIdButWrongItemType' => [
+        'request' => [
+            'url' => '/plans',
+            'method' => 'post',
+            'content' => [
+                'period'            => 'monthly',
+                'interval'          => 2,
+                'item_id'           => 'item_1000000000item',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Can only reuse an item of the same item type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE,
+        ],
+    ],
+
+    'testCreatePlanWithoutItemId' => [
+        'request' => [
+            'url'     => '/plans',
+            'method'  => 'post',
+            'content' => [
+                'period'    => 'monthly',
+                'interval'  => 2,
+                'item'      => [
+                    'name'     => 'test plan',
+                    'amount'   => 20000,
+                    'currency' => 'INR',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'plan',
+                'interval' => 2,
+                'period'   => 'monthly',
+                'notes'    => [],
+                'item'     => [
+                    'active'   => true,
+                    'name'     => 'test plan',
+                    'amount'   => 20000,
+                    'currency' => 'INR',
+                    'type'     => 'plan',
+                ]
+            ],
+        ],
+    ],
+
+    'testCreatePlanWithoutAnyItem' => [
+        'request' => [
+            'url' => '/plans',
+            'method' => 'post',
+            'content' => [
+                'period'    => 'monthly',
+                'interval'  => 2,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The item id field is required when item is not present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePlanWithBadMonthlyIntervalPeriod' => [
+        'request' => [
+            'url'     => '/plans',
+            'method'  => 'post',
+            'content' => [
+                'period'    => 'monthly',
+                'interval'  => 14,
+                'item_id'   => 'item_1000000000item',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Exceeds the maximum interval allowed for the given interval',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePlanWithBadYearlyIntervalPeriod' => [
+        'request' => [
+            'url'     => '/plans',
+            'method'  => 'post',
+            'content' => [
+                'period'    => 'yearly',
+                'interval'  => 2,
+                'item_id'   => 'item_1000000000item',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Exceeds the maximum interval allowed for the given interval',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchPlan' => [
+        'request' => [
+            'url'     => '/plans/plan_1000000000plan',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'       => 'plan_1000000000plan',
+                'entity'   => 'plan',
+                'interval' => 2,
+                'period'   => 'monthly',
+                'notes'    => [],
+                'item'     => [
+                    'active'   => true,
+                    'name'     => 'test plan',
+                    'amount'   => 2000,
+                    'currency' => 'INR',
+                    'type'     => 'plan',
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultiplePlan' => [
+        'request' => [
+            'url'     => '/plans',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'       => 'plan_1000000001plan',
+                        'entity'   => 'plan',
+                        'interval' => 2,
+                        'period'   => 'monthly',
+                        'notes'    => [],
+                        'item'     => [
+                            'active'   => true,
+                            'name'     => 'Plan #2',
+                            'amount'   => 2000,
+                            'currency' => 'INR',
+                            'type'     => 'plan',
+                        ],
+                    ],
+                    [
+                        'id'       => 'plan_1000000000plan',
+                        'entity'   => 'plan',
+                        'interval' => 2,
+                        'period'   => 'monthly',
+                        'notes'    => [],
+                        'item'     => [
+                            'active'   => true,
+                            'name'     => 'test plan',
+                            'amount'   => 2000,
+                            'currency' => 'INR',
+                            'type'     => 'plan',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'createSubscriptionForAuthTxn' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'plan_id' => 'plan_1000000000plan',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => null,
+                'start_at' => null,
+                'end_at' => null,
+                'total_count' => 6,
+                'paid_count' => 0,
+                'auth_attempts' => 0,
+                'customer_notify' => false,
+            ],
+        ],
+    ],
+
+    'createSubscriptionForAuthTxnWithStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'quantity'      => 1,
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id'     => 'cust_100000customer',
+                'plan_id'         => 'plan_1000000000plan',
+                'status'          => 'created',
+                'current_start'   => null,
+                'current_end'     => null,
+                'ended_at'        => null,
+                'quantity'        => 1,
+                'token_id'        => null,
+                'notes'           => [],
+                'charge_at'       => 1516386600, // 1-20-2018, 12:00:00 AM
+                'start_at'        => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at'          => 1542652200, // 12-20-2018, 12:00:00 AM
+                'total_count'     => 6,
+                'paid_count'      => 0,
+                'auth_attempts'   => 0,
+                'customer_notify' => false,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithoutCustomerId' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'total_count'   => 6, // Every two months
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'customer_id should be sent in the request to create a subscription.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubscriptionWithoutPlanId' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'quantity'      => 1,
+                'total_count'   => 6, // Every two months
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'plan_id should be sent in the request to create a subscription.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubscriptionWithNoStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'plan_id' => 'plan_1000000000plan',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => null,
+                'start_at' => null,
+                'end_at' => null,
+                'total_count' => 6,
+                'paid_count' => 0,
+                'auth_attempts' => 0,
+                'customer_notify' => false,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'quantity'      => 1,
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'plan_id' => 'plan_1000000000plan',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at' => 1542652200, // 12-20-2018, 12:00:00 AM
+                'total_count' => 6,
+                'paid_count' => 0,
+                'auth_attempts' => 0,
+                'customer_notify' => false,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWeeklyIntervalWithStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'quantity'      => 1,
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'plan_id' => 'plan_1000000000plan',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at' => 1522434600, // 3-31-2018, 12:00:00 AM
+                'total_count' => 6,
+                'paid_count' => 0,
+                'auth_attempts' => 0,
+                'customer_notify' => false,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithNoStartAtAndWithAddon' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'     => 'cust_100000customer',
+                'plan_id'         => 'plan_1000000000plan',
+                'quantity'        => 1,
+                'total_count'     => 6, // Every two months
+                'customer_notify' => 0,
+                'addons'        => [
+                    [
+                        'item' => [
+                            'amount' => 300,
+                            'currency' => 'INR',
+                            'name' => 'Sample Upfront Amount'
+                        ]
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => null,
+                'start_at' => null,
+                'end_at' => null,
+                // 'upfront_amount' => 300,
+                'total_count' => 6,
+                'paid_count' => 0,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithStartAtAndAddon' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'     => 'cust_100000customer',
+                'plan_id'         => 'plan_1000000000plan',
+                'quantity'        => 1,
+                'total_count'     => 6, // Every two months
+                'start_at'        => 1516386600,
+                'customer_notify' => 0,
+                'addons'        => [
+                    [
+                        'item' => [
+                            'amount' => 300,
+                            'currency' => 'INR',
+                            'name' => 'Sample Upfront Amount'
+                        ]
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'plan_id' => 'plan_1000000000plan',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at' => 1542652200, // 12-20-2018, 12:00:00 AM
+                'total_count' => 6,
+                'paid_count' => 0,
+                'auth_attempts' => 0,
+                'customer_notify' => false,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithOneYearLateStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'start_at'      => 1800383400, // 1-20-2027, 12:00:00 AM
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'start_at must be less than one year from now.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubscriptionWithPastTime' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'start_at'      => 1484850600, // 1-20-2017, 12:00:00 AM
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'start_at cannot be lesser than the current time.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubscriptionWithTotalCount' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'total_count'   => 6, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'status'        => 'created',
+                'current_start' => null,
+                'current_end'   => null,
+                'ended_at'      => null,
+                'quantity'      => 1,
+                'token_id'      => null,
+                'notes'         => [],
+                'charge_at'     => 1516386600, // 1-20-2018, 12:00:00 AM
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at'        => 1542652200, // 11-20-2018, 12:00:00 AM
+                'total_count'   => 6,
+                'paid_count'    => 0
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithEndAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at'        => 1542652200, // Every two months
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'status'        => 'created',
+                'current_start' => null,
+                'current_end'   => null,
+                'ended_at'      => null,
+                'quantity'      => 1,
+                'token_id'      => null,
+                'notes'         => [],
+                'charge_at'     => 1516386600, // 1-20-2018, 12:00:00 AM
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at'        => 1542652200, // 12-20-2018, 12:00:00 AM
+                'total_count'   => 6,
+                'paid_count'    => 0
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithBothTotalCountAndEndAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at'        => 1545244200, // Every two months
+                'total_count'   => 6,
+                'customer_notify' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Either end_at or total_count should be sent and not both.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT,
+        ],
+    ],
+
+    'testCreateSubscriptionWithEndAtLesserThanStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'   => 'cust_100000customer',
+                'plan_id'       => 'plan_1000000000plan',
+                'quantity'      => 1,
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at'        => 1505244200, // Every two months
+                'customer_notify' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'end_at cannot be lesser than start_at.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubscriptionWithVeryFarEndAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'plan_id'       => 'plan_1000000000plan',
+                'customer_id'   => 'cust_100000customer',
+                'quantity'      => 1,
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at'        => 1579458600, // 1-20-2020, 12:00:00 AM
+                'customer_notify' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'end_at should be within 1 year/s of start_at.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubscriptionWithoutTotalCountAndEndAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'plan_id'       => 'plan_1000000000plan',
+                'customer_id'   => 'cust_100000customer',
+                'quantity'      => 1,
+                'start_at'      => 1516386600, // 1-20-2018, 12:00:00 AM
+                'customer_notify' => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The total count field is required when end at is not present.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchSubscription' => [
+        'request' => [
+            // 'url'     => '/subscriptions/{id}',
+            'method'  => 'get',
+            'content' => [
+                'customer_id'     => 'cust_100000customer',
+                'plan_id'         => 'plan_1000000000plan',
+                'quantity'        => 1,
+                'total_count'     => 6,
+                'customer_notify' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'id'               => 'sub_7oKmlxFlg8HlDN',
+                'plan_id'          => 'plan_1000000000plan',
+                'customer_id'      => 'cust_100000customer',
+                'token_id'         => null,
+                'status'           => 'created',
+                'quantity'         => 1,
+                'total_count'      => 6,
+                'paid_count'       => 0,
+                'auth_attempts'    => 0,
+                'customer_notify'  => false,
+                'notes'            => [],
+                'current_start'    => null,
+                'current_end'      => null,
+                'start_at'         => null,
+                'end_at'           => null,
+                'charge_at'        => null,
+                'ended_at'         => null,
+            ],
+        ],
+    ],
+
+    'testSubscriptionCharge' => [
+        'request' => [
+            'url' => '/subscriptions/charge',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'subscriptionWebhookData' => [
+        'mode'  => 'test',
+        'event' => [
+            'entity'   => 'event',
+            'contains' => [
+                'subscription',
+            ],
+            'payload'  => [
+                'subscription' => [
+                ],
+            ],
+        ],
+    ]
+];

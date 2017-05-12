@@ -26,7 +26,7 @@ class Messenger
         $this->traceReconAlert($data);
     }
 
-    public function traceReconAlert($data)
+    protected function traceReconAlert($data)
     {
         // Default trace code if no trace code is present in data.
         $traceCode = TraceCode::RECON_CRITICAL_ALERT;
@@ -41,7 +41,7 @@ class Messenger
         $this->app['trace']->error($traceCode, $data);
     }
 
-    public function notifySlack($data)
+    protected function notifySlack($data)
     {
         if (empty($data) === true)
         {
@@ -55,7 +55,7 @@ class Messenger
         $this->app['slack']->queue($headline, $data, $settings);
     }
 
-    public function getSlackSettings()
+    protected function getSlackSettings()
     {
         $settings['channel'] = $this->app['config']->get('slack.channels.reconciliation');
         $settings['color'] = 'danger';

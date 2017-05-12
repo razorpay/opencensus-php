@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Report;
+namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
 

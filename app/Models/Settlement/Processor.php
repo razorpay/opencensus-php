@@ -44,7 +44,7 @@ class Processor extends Base\Core
             TraceCode::SETTLEMENT_RETRY_REQUEST,
             $input
         );
-        
+
         $this->preSettlementProcessing($input);
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements();
@@ -87,9 +87,6 @@ class Processor extends Base\Core
         }
 
         $this->updateSettlementScheduleTaskNextRun();
-
-        // this is needed temp until we move to pivot
-        // $this->updateSettlementScheduleNextRun();
 
         return $data;
     }
@@ -176,7 +173,7 @@ class Processor extends Base\Core
             $totalTxns += $setlTxnsCount;
         }
 
-        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel, false);
+        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
 
         return $response;
     }
@@ -312,9 +309,10 @@ class Processor extends Base\Core
     /**
      *  NEFT can be processed between 8am and 6 pm only, while batch file can be
      *  uploaded anytime.
-     * @return [boolean] [returns if settlement can be proessed now]
+     *
+     * @return bool returns if settlement can be processed now
      */
-    protected function isInvalidSettlementTime()
+    protected function isInvalidSettlementTime(): bool
     {
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;
@@ -333,22 +331,11 @@ class Processor extends Base\Core
     protected function updateSettlementScheduleTaskNextRun()
     {
         $scheduleTasks = $this->repo->schedule_task->fetchDueScheduleTasks(
-                        ScheduleTask\Type::SETTLEMENT,
-                        $this->setlTime);
+                                                        ScheduleTask\Type::SETTLEMENT,
+                                                        $this->setlTime);
 
-        $scheduleTasks->callOnEveryItem('updateNextRun');
+        $scheduleTasks->callOnEveryItem('updateNextRunAndLastRun');
 
         $this->repo->saveOrFailCollection($scheduleTasks);
-    }
-
-    protected function updateSettlementScheduleNextRun()
-    {
-        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
-
-        $schedules->callOnEveryItem('updateNextRun');
-
-        $this->repo->saveOrFailCollection($schedules);
-
-        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
     }
 }

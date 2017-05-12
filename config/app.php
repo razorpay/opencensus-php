@@ -250,6 +250,7 @@ return array(
         'Excel'         => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'           => Aws\Laravel\AwsFacade::class,
         'Slack'         => Razorpay\Slack\Laravel\Facade::class,
+        'Workflow'      => RZP\Services\Workflow\Facade::class,
     ),
 
     'context' => env('CONTEXT'),

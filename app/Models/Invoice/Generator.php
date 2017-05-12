@@ -16,6 +16,7 @@ use RZP\Models\LineItem;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Plan\Subscription;
 use RZP\Trace\TraceCode;
 use RZP\Services\Elfin\Service as Elfin;
 
@@ -47,6 +48,13 @@ class Generator extends Base\Core
      */
     protected $baseInvoiceUrl;
 
+    /**
+     * The subscription associated for the invoice.
+     *
+     * @var Subscription\Entity
+     */
+    protected $subscription;
+
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -64,6 +72,18 @@ class Generator extends Base\Core
         $this->elfin = $this->app['elfin'];
 
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
+    }
+
+    /**
+     * @param null|Subscription\Entity $subscription
+     *
+     * @return $this
+     */
+    public function setSubscription($subscription)
+    {
+        $this->subscription = $subscription;
+
+        return $this;
     }
 
     public function generate(array $input)
@@ -93,9 +113,24 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
+    /**
+     * @param array                     $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
     protected function preProcessGeneration(array $input)
     {
         $this->associateCustomerWithInvoice($input);
+
+        if ($this->subscription !== null)
+        {
+            $this->invoice->subscription()->associate($this->subscription);
+
+            if ($this->subscription->getStatus() === Subscription\Status::HALTED)
+            {
+                $this->invoice->setSubscriptionStatus(Status::HALTED);
+            }
+        }
 
         $this->createLineItemsFromInputAndSetInvoiceAmount($input);
     }
@@ -204,7 +239,6 @@ class Generator extends Base\Core
         // without saving the invoice. Also, to generate a shortUrl,
         // we need the invoice ID.
         //
-
         $invoice->generateId();
 
         $this->invoice = $invoice;
@@ -247,6 +281,17 @@ class Generator extends Base\Core
                 'long_url'       => $longUrl,
             ]);
 
+        //
+        // TODO: Currently, since we are not exposing the invoice
+        // to the customer at all, should we NOT generate
+        // a short_url at all? We can start exposing it when
+        // we start exposing the invoices to the customer.
+        // This might create issues because the merchant, when
+        // he sees a short_url, he might send the link to the
+        // customer and the customer might try paying it.
+        // We will have to make changes in the invoice
+        // template to remove the pay link.
+        //
         $this->invoice->setShortUrl($shortenedUrl);
     }
 

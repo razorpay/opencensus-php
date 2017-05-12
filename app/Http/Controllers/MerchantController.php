@@ -450,7 +450,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $report = new Report\BasicEntityReport($entity);
+        $report = new Report\Types\BasicEntityReport($entity);
 
         return $report->getReport($input);
     }
@@ -459,7 +459,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $report = new Report\BasicEntityReport($entity);
+        $report = new Report\Types\BasicEntityReport($entity);
 
         $data = $report->getReportUrl($input);
 
@@ -470,7 +470,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $report = new Report\BrokerTransactionReport(E::TRANSACTION);
+        $report = new Report\Types\BrokerTransactionReport(E::TRANSACTION);
 
         return $report->getReport($input);
     }
@@ -479,14 +479,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        return (new Report\InvoiceReport)->getInvoice($input);
+        return (new Report\Types\InvoiceReport)->getInvoice($input);
     }
 
     public function getInvoiceReportV2()
     {
         $input = Request::all();
 
-        return (new Report\InvoiceReport)->getInvoiceV2($input);
+        return (new Report\Types\InvoiceReport)->getInvoiceV2($input);
     }
 
     /**
@@ -532,6 +532,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $data = (new Merchant\Service)->updateHoldFundsForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateBankAccountForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->updateBankAccountForMultipleMerchants($input);
 
         return ApiResponse::json($data);
     }

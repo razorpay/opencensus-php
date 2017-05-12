@@ -13,6 +13,8 @@ class ScheduleLibraryTest extends TestCase
         $this->testDataFilePath = __DIR__.'/ScheduleLibraryTestData.php';
 
         parent::setUp();
+
+        $this->markTestSkipped('Not using next run of schedule now');
     }
 
     public function testBasicT3Schedule()

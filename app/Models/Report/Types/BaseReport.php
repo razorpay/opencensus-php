@@ -1,19 +1,20 @@
 <?php
 
-namespace RZP\Models\Report;
+namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
 
-use RZP\Models\Base\Core;
+use RZP\Models\Base;
+use RZP\Base\RuntimeManager;
 
-class Base extends Core
+class BaseReport extends Base\Core
 {
     protected static $rules = [
-        'year'  =>  'required|digits:4',
-        'month' =>  'required|digits_between:1,2',
-        'day'   =>  'sometimes|digits_between:1,2',
-        'count' =>  'sometimes|integer|min:1',
-        'skip'  =>  'sometimes|integer|min:0',
+        'year'  => 'required|digits:4',
+        'month' => 'required|digits_between:1,2',
+        'day'   => 'sometimes|digits_between:1,2',
+        'count' => 'sometimes|integer|min:1',
+        'skip'  => 'sometimes|integer|min:0',
     ];
 
     protected function getTimestamps($input): array
@@ -53,5 +54,25 @@ class Base extends Core
         }
 
         return [$from, $to];
+    }
+
+    /**
+     * 1. increase system limits
+     * 2. Sets timezone
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     */
+    protected function setDefaults()
+    {
+        $this->increaseAllowedSystemLimits();
+
+        date_default_timezone_set('Asia/Kolkata');
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+        RuntimeManager::setTimeLimit(501);
     }
 }
