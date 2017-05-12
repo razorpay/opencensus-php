@@ -435,6 +435,107 @@ class TerminalLoadSorterTest extends TestCase
         $this->fixtures->merchant->disableMobikwik();
     }
 
+    /**
+     * Tests the case where rule has international null, and domestic payment is made
+     * with terminals which support both international and domestic payments
+     */
+    public function testDomesticPaymentndInternationalSupportedTerminal()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['international' => true]);
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', ['international' => true]);
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures('new_load_sorting');
+        $this->mockTokenex();
+
+        $this->fixtures->create('gateway_rule:card', [
+            'gateway' => 'hdfc',
+            'method'  => 'card',
+            'network' => 'VISA',
+            'load'    => 7000
+        ]);
+
+        Options::setTestChance(5000);
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+    }
+
+    /**
+     * Tests the case where rule has international null, and international payment is made
+     * and terminals support international
+     */
+    public function testInternationalPaymentWithRuleAndInternationalSupportedTerminal()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['international' => true]);
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', ['international' => true]);
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures('new_load_sorting');
+        $this->mockTokenex();
+
+        $this->fixtures->create('gateway_rule:card', [
+            'gateway' => 'hdfc',
+            'method'  => 'card',
+            'network' => 'VISA',
+            'load'    => 7000
+        ]);
+
+        Options::setTestChance(5000);
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card']['number'] = '4012010000000007';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableInternational();
+    }
+
+    /**
+     * Tests the case where rule has international is set to true, and international
+     * payment is made and terminals support international
+     */
+    public function testInternationalPaymentWithAndInternationalSupportedTerminal()
+    {
+        $this->fixtures->create('terminal:shared_hdfc_terminal', ['international' => true]);
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal', ['international' => true]);
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures('new_load_sorting');
+        $this->mockTokenex();
+
+        $this->fixtures->create('gateway_rule:card', [
+            'gateway'       => 'hdfc',
+            'method'        => 'card',
+            'network'       => 'VISA',
+            'international' => true,
+            'load'          => 7000
+        ]);
+
+        Options::setTestChance(5000);
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $this->payment['card']['number'] = '4012010000000007';
+
+        $content = $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+
+        $this->fixtures->merchant->disableInternational();
+    }
+
     protected function setUpTerminals()
     {
         $this->fixtures->create('terminal:all_shared_terminals');

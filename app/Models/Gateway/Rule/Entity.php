@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::ISSUER,
         self::GATEWAY_ACQUIRER,
+        self::INTERNATIONAL,
     ];
 
     protected $entity = 'gateway_rule';
