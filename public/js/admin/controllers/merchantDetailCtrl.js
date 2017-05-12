@@ -572,6 +572,7 @@ app
 
         var data = {
           route_name: 'adj_add',
+          merchant_id: $scope.merchant.id,
           body: adjustment,
           mode: mode,
         };
