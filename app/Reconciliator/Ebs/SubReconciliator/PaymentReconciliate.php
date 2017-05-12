@@ -9,12 +9,12 @@ use RZP\Exception\ReconciliationException;
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     // ----- Row header names -----
-    const COLUMN_FEE                = 'tdr';
     const COLUMN_KK_CESS            = 'krishi_kalyan_cess';
     const COLUMN_SB_CESS            = 'swachh_bharat_cess';
     const COLUMN_SERVICE_TAX        = 'service_tax';
     const COLUMN_BANK_REFERENCE_NO  = 'bank_reference';
 
+    const COLUMN_FEE                = ['tdr', 'tdr_amt'];
     const COLUMN_PAYMENT_AMOUNT     = ['captured', 'credit'];
     const COLUMN_PAYMENT_ID         = ['merchant_ref_no', 'merchant_refno'];
 
@@ -120,8 +120,19 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayFee($row)
     {
+        $fee = null;
+
+        foreach (self::COLUMN_FEE as $cf)
+        {
+            if (empty($row[$cf]) === false)
+            {
+                $paymentId = $row[$cf];
+                break;
+            }
+        }
+
         // Convert fee into basic unit of currency (ex: paise)
-        $fee = abs(floatval($row[self::COLUMN_FEE])) * 100;
+        $fee = abs(floatval($fee)) * 100;
 
         // Already in basic unit of currency. Hence, no conversion needed
         $serviceTax = $this->getGatewayServiceTax($row);
