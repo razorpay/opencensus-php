@@ -9,7 +9,7 @@ class Gateway extends Indusind\Gateway
 {
     use Base\Mock\GatewayTrait;
 
-    public function authorize(array $input)
+    public function authorize(array $input): array
     {
         $request = parent::authorize($input);
 
