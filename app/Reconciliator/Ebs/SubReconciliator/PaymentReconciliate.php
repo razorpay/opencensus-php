@@ -126,7 +126,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             if (empty($row[$cf]) === false)
             {
-                $paymentId = $row[$cf];
+                $fee = $row[$cf];
                 break;
             }
         }
