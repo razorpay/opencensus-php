@@ -1,7 +1,7 @@
 <div class="workflow-feed-page" ng-controller="WorkflowFeedCtrl">
   <div class="bg-light lter b-b wrapper-md">
     <h3 class="m-n font-thin">
-      Action {{action_id}}
+      {{action_permission_name}}
       <spinner class="inline"></spinner>
 
       <a class='btn btn-info pull-right' href="javascript:void(0);" ng-click="showActionChanges()">
@@ -207,7 +207,7 @@
           </div>
         </div>
 
-        <div ng-if="rejectorList && rejectorList .length">
+        <div ng-if="rejectorList && rejectorList.length">
           <div class="right-label m-b m-t">Rejected by</div>
           <div class="assignee-list m-b">
             <div>
@@ -248,13 +248,17 @@
           <ul ng-if="isArray(data.data.old[type])" class="comparison-list">
             <li ng-repeat="obj in data.data.old[type]" ng-if="obj.name">{{obj.name}}</li>
           </ul>
-          <span ng-if="!isArray(data.data.old[type])">{{data.data.old[type]}}</span>
+          <span ng-if="!isArray(data.data.old[type])">
+            {{ displayValue(type, data.data.old[type]) }}
+          </span>
         </td>
         <td ng-if="data">
           <ul ng-if="isArray(data.data.new[type])" class="comparison-list">
             <li ng-repeat="obj in data.data.new[type]"  ng-if="obj.name">{{obj.name}}</li>
           </ul>
-          <span ng-if="!isArray(data.data.new[type])">{{data.data.new[type]}}</span>
+          <span ng-if="!isArray(data.data.new[type])">
+            {{ displayValue(type, data.data.new[type]) }}
+          </span>
         </td>
       </tr>
       </tbody>

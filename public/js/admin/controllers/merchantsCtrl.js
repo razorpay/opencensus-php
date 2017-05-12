@@ -10,7 +10,9 @@ app.controller('MerchantsCtrl', [
     $scope.count = 0;
 
     $scope.regenerate = function() {
-      $scope.merchant_type_request = $scope.merchant_type_request ? $scope.merchant_type_request : 'activated';
+      $scope.merchant_type_request = $scope.merchant_type_request
+        ? $scope.merchant_type_request
+        : 'activated';
       $scope.sub_accounts = {
         all: false,
         id: '',
@@ -69,7 +71,7 @@ app.controller('MerchantsCtrl', [
 
     $scope.regenerate();
 
-    $scope.changeMerchantTypeUrl = function () {
+    $scope.changeMerchantTypeUrl = function() {
       $state.go('app.merchants.list', { type: $scope.merchant_type_request });
     };
 

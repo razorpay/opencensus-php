@@ -158,6 +158,13 @@ app
             // Action details
             $scope.action_details = data.data;
 
+            // Set action permission name to show as title
+            $scope.action_permission_name =
+              $scope.action_details.permission.description +
+              ' (' +
+              $scope.action_details.permission.name +
+              ')';
+
             // Action comments
 
             var comments = data.data.comments;
@@ -184,12 +191,20 @@ app
 
             $scope.cards = $scope.cards.concat(checkers);
 
-            $scope.approverList = $scope.cards.filter(function(card) {
-              return card.approved;
+            // Sort the cards by timestamp
+
+            $scope.cards.sort(function(a, b) {
+              return a.created_at - b.created_at;
             });
 
-            $scope.rejectorList = $scope.cards.filter(function(card) {
-              return !card.approved;
+            // Prepare the list of approvers
+            $scope.approverList = checkers.filter(function(checker) {
+              return checker.approved;
+            });
+
+            // Prepare the list of rejectors
+            $scope.rejectorList = checkers.filter(function(checker) {
+              return !checker.approved;
             });
 
             $scope.levels = {};
@@ -215,6 +230,8 @@ app
 
       // Cards data
 
+      // This is purely for display purposes, don't work on it
+      // to do any sort of computation/calculation.
       $scope.cards = [];
 
       $scope.actionStateChange = function(state) {
@@ -415,10 +432,13 @@ app
     '$http',
     'action_data',
     'utils',
-    function($scope, $modalInstance, $http, action_data, utils) {
+    'displayValue',
+    function($scope, $modalInstance, $http, action_data, utils, displayValue) {
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
       };
+
+      $scope.displayValue = displayValue;
 
       $scope.data = action_data;
       $scope.isArray = utils.isArray;
