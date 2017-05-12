@@ -72,9 +72,11 @@ class ReturnTransactionsGenerator
 
         $txt = $this->generateText($data);
 
-        $filename = $this->writeToTextFile($txt);
+        $filename = $this->getFileToWriteName();
 
-        return $filename;
+        $filepath = $this->writeToTextFile($filename, $txt);
+
+        return $filepath;
     }
 
     public static function getHeadings()
