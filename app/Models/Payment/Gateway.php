@@ -513,6 +513,18 @@ class Gateway
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
     }
 
+    public static function isValidGatewayAcquirer(string $gatewayAcquirer)
+    {
+        return array_key_exists($gatewayAcquirer, self::GATEWAY_ACQUIRERS);
+    }
+
+    public static function isValidAcquirerForGateway(string $gatewayAcquirer, string $gateway): bool
+    {
+        $validAcquirersForGateway = self::GATEWAY_ACQUIRERS[$gateway];
+
+        return in_array($gatewayAcquirer, $validAcquirersForGateway, true);
+    }
+
     public static function getGatewayForWallet($wallet)
     {
         return self::$walletToGatewayMap[$wallet];

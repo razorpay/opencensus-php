@@ -167,18 +167,6 @@ class Service
         return $permissionHasWorkflow;
     }
 
-    protected function isExecuteCall()
-    {
-        $routeName = $this->router->currentRouteName();
-
-        if ($routeName === self::EXECUTE_ROUTE_NAME)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     /*
         Can be used like this:
 
@@ -199,7 +187,7 @@ class Service
         //
         if (($this->permissionHasWorkflow() === false) or
             ($this->config->get('heimdall.workflows.mock') === true) or
-            ($this->isExecuteCall() === true))
+            ($this->app['api.route']->isWorkflowExecuteCall() === true))
         {
             // Run the callback though, as it might have business
             // specific logic actually required for execution.
