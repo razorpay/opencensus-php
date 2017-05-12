@@ -25,6 +25,14 @@ use DrewM\MailChimp\MailChimp;
 use App\Session as SessionTable;
 use Illuminate\Hashing\BcryptHasher;
 
+
+use App\User\Helper;
+use App\Providers\GenericUser;
+use App\Merchant\GenericMerchant;
+use App\RZP\PublicCollection;
+
+
+
 class Service extends Base\Service
 {
     const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
@@ -835,22 +843,24 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
-        list($error, $userDetails) = $this->getUserFromApi($user->id);
+        list($error, $genericUser) = $this->getUserFromApi($user->id);
 
         if (empty($error) === false)
         {
             return [$error, $data];
         }
 
+        $userDetails = $genericUser->toArray();
+
         $this->getTags($userDetails);
 
         $merchants = $userDetails['merchants'];
 
-        $currentMerchant = $this->getCurrentMerchant($userDetails);
+        $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
 
-        $data = $data + $currentMerchant;
+        $data = $data + $currentMerchant->toArray();
 
-        if ($currentMerchant['role'] === 'owner')
+        if ($currentMerchant->role === 'owner')
         {
             $data['primaryOwner'] = true;
         }
@@ -859,7 +869,7 @@ class Service extends Base\Service
             $data['primaryOwner'] = false;
         }
 
-        $currentMerchantId = $currentMerchant['id'];
+        $currentMerchantId = $currentMerchant->id;
 
         // If the user is logged in as someone
         if ($currentMerchantId)
@@ -973,37 +983,61 @@ class Service extends Base\Service
 
     public function loginOnApi(array $input)
     {
-        $error = $response = [];
+        $error = [];
+
+        $genericUser = null;
 
         $this->setApiCredentials();
 
         try
         {
             $response = $this->api->user->login($input)->toArray();
+
+            $genericUser = $this->createdGenericUser($response);
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
         }
 
-        return [$error, $response];
+        return [$error, $genericUser];
     }
 
     public function getUserFromApi($userId, array $input = [])
     {
-        $error = $response = [];
+        $error = [];
+
+        $genericUser = null;
 
         $this->setApiCredentials();
 
         try
         {
             $response = $this->api->user->get($userId, $input)->toArray();
+
+            $genericUser = $this->createdGenericUser($response);
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
         }
 
-        return [$error, $response];
+        return [$error, $genericUser];
+    }
+
+    protected function createdGenericUser(array $user)
+    {
+        $merchants = new PublicCollection;
+
+        foreach ($user['merchants'] as $merchant)
+        {
+            $merchants->push(new GenericMerchant($merchant));
+        }
+
+        $genericUser = new GenericUser($user);
+
+        $genericUser->merchants = $merchants;
+
+        return $genericUser;
     }
 }

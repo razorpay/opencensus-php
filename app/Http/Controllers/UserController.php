@@ -139,12 +139,12 @@ class UserController extends Controller
     }
 
     /**
-     * This method will not be used.
+     * @deprecated
      * Please use `getUserDetailsV2`
      * This is the one true method for all information
      * @return [type] [description]
      */
-    public function getUserDetails()
+    public function getUserDetailsV1()
     {
         $data = [
             // Current merchant

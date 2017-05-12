@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\User;
+use App\Merchant\GenericMerchant;
+use Illuminate\Support\Collection;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 
@@ -25,9 +27,9 @@ class DashboardUserProvider implements UserProvider
      */
     public function retrieveById($identifier)
     {
-        $userDetails = $this->app['session']->get('dashboard_user_payload');
+        $genericUser = $this->app['session']->get('dashboard_user_payload');
 
-        return $this->getGenericUser($userDetails);
+        return $genericUser;
     }
 
     /**
@@ -62,23 +64,14 @@ class DashboardUserProvider implements UserProvider
      */
     public function retrieveByCredentials(array $credentials)
     {
-        try
+        list($error, $genericUser) = (new User\Service)->loginOnApi($credentials);
+
+        if (empty($error) === true)
         {
-            list($error, $user) = (new User\Service)->loginOnApi($credentials);
-
-            if (empty($error) === true)
-            {
-                $this->app['session']->put('dashboard_user_payload', $user);
-
-                return $this->getGenericUser($user);
-            }
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-
+            $this->app['session']->put('dashboard_user_payload', $genericUser);
         }
 
-        return null;
+        return $genericUser;
     }
 
     /**
