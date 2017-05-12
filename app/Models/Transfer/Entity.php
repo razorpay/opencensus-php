@@ -280,6 +280,8 @@ class Entity extends Base\PublicEntity
 
         $data[self::ON_HOLD] = $this->getOnHold() ? "true" : "false";
 
+        $data[self::ON_HOLD_UNTIL] = $this->getDateInFormatDMYHMS(self::ON_HOLD_UNTIL);
+
         return $data;
     }
 }
