@@ -350,7 +350,9 @@
         prev = this.placeEl.prev(opt.itemNodeName);
         // increase horizontal level if previous sibling exists and is not collapsed
         if (
-          mouse.distX > 0 && prev.length && !prev.hasClass(opt.collapsedClass)
+          mouse.distX > 0 &&
+          prev.length &&
+          !prev.hasClass(opt.collapsedClass)
         ) {
           // cannot increase level when item above is collapsed
           list = prev.find(opt.listNodeName).last();
@@ -405,7 +407,8 @@
       if (this.pointEl.hasClass(opt.emptyClass)) {
         isEmpty = true;
       } else if (
-        !this.pointEl.length || !this.pointEl.hasClass(opt.itemClass)
+        !this.pointEl.length ||
+        !this.pointEl.hasClass(opt.itemClass)
       ) {
         return;
       }
@@ -471,7 +474,8 @@
         $(this).data('nestable-id', new Date().getTime());
       } else {
         if (
-          typeof params === 'string' && typeof plugin[params] === 'function'
+          typeof params === 'string' &&
+          typeof plugin[params] === 'function'
         ) {
           retval = plugin[params]();
         }
