@@ -18,7 +18,7 @@ class USDPaymentTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function testUsdPaymentOnApiWithOrder()
+    public function testUsdPaymentDomesticCardOnApiWithOrder()
     {
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
 
@@ -32,6 +32,75 @@ class USDPaymentTest extends TestCase
         $payment['currency'] = $order['currency'];
 
         $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], true);
+    }
+
+    public function testUsdPaymentDomesticCardOnGatewayWithOrder()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 0]);
+
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], true);
+    }
+
+
+    public function testUsdPaymentInternationalCardOnApiWithOrder()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+        $this->fixtures->terminal->edit('1n25f6uN5S1Z5a', ['international' => 1]);
+
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+        $payment['card']['number'] = '4012 0111 1111 1113';
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], true);
+    }
+
+    public function testUsdPaymentInternationalCardOnGatewayWithOrder()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 0]);
+        $this->fixtures->terminal->edit('1n25f6uN5S1Z5a', ['international' => 1, 'currency' => 'USD']);
+
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+        $payment['card']['number'] = '4012 0111 1111 1113';
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], false);
     }
 
     public function testUsdPaymentMerchantUsdDisabled()
