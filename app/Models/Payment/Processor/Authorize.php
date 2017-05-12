@@ -52,11 +52,13 @@ trait Authorize
 
         $gatewayInput = [];
 
-        $this->processCurrencyConversions($payment);
-
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+
+        // this needs to be done after we have card entity as we need to know if
+        // cards used in payment is international
+        $this->processCurrencyConversions($payment);
 
         $this->runPaymentInputValidations($payment, $input);
 
@@ -952,23 +954,31 @@ trait Authorize
                     ]);
 
             }
+
+            // gateway should do currency conversion only on international cards
+            // else api should do currency conersion and use INR terminals
+            $convertCurrency = $merchant->convertOnApi();
+
+            if ($payment->isInternational() === false)
+            {
+                $convertCurrency = true;
+            }
+
+            $payment->setConvertCurrency($convertCurrency);
+
         }
 
         $amount = $payment->getAmount();
 
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
 
-        if ($merchant->convertOnApi() === false)
+        // if gateway is doing conversion, use lower conversion rate
+        if ($payment->convertOnApi() === false)
         {
             $baseAmount = (int) ceil($baseAmount * 0.98);
         }
 
         $payment->setBaseAmount($baseAmount);
-
-        if ($payment->isCard() === true)
-        {
-            $payment->setConvertCurrency($merchant->convertOnApi());
-        }
     }
 
     /**

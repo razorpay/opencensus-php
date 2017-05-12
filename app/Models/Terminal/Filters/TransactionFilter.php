@@ -90,10 +90,7 @@ class TransactionFilter extends Terminal\Filter
 
         $paymentCurrency = $payment->getCurrency();
 
-        // if api is doing currency conversion or for domestic cards
-        // pick INR terminals
-        if (($payment->getConvertCurrency() === true) or
-            ($payment->isInternational() === false))
+        if ($payment->getConvertCurrency() === true)
         {
             $paymentCurrency = Currency::INR;
         }
