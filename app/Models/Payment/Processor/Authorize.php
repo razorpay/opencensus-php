@@ -958,6 +958,11 @@ trait Authorize
 
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
 
+        if ($merchant->convertOnApi() === false)
+        {
+            $baseAmount = (int) ceil($baseAmount * 0.98);
+        }
+
         $payment->setBaseAmount($baseAmount);
 
         if ($payment->isCard() === true)
