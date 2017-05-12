@@ -57,26 +57,6 @@ class Merchant extends Entity
         return $this->request('POST', $relativeUrl);
     }
 
-    /**
-     * Enables live transactions for merchant
-     */
-    public function enable()
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/live/enable';
-
-        return $this->request('POST', $relativeUrl);
-    }
-
-    /**
-     * disable live transactions for merchant
-     */
-    public function disable()
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/live/disable';
-
-        return $this->request('POST', $relativeUrl);
-    }
-
     public function edit($params)
     {
         // For empty arrays (groups [heimdall] in this case)
@@ -104,13 +84,6 @@ class Merchant extends Entity
         return $this->request('GET', $relativeUrl);
     }
 
-    public function setPricing($params)
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/pricing';
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
     public function fetchTerminals()
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/terminals';
@@ -121,20 +94,6 @@ class Merchant extends Entity
     public function setTerminal($params)
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/terminals';
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
-    public function fetchBanks()
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/banks';
-
-        return $this->request('GET', $relativeUrl);
-    }
-
-    public function setBanks($params)
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/banks';
 
         return $this->request('POST', $relativeUrl, $params);
     }
@@ -200,23 +159,5 @@ class Merchant extends Entity
         $res = $this->request('POST', $relativeUrl, $params);
 
         return $res;
-    }
-
-    public function actions($merchantId, $params)
-    {
-        $error = $response = null;
-
-        try
-        {
-            $relativeUrl = "merchants/$merchantId/action";
-
-            $response = $this->request('PUT', $relativeUrl, $params)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [ $e->getMessage() ];
-        }
-
-        return [ $error, $response ];
     }
 }

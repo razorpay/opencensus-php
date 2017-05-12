@@ -861,7 +861,8 @@ angular
           // includes base_amount and base_amount_refunded
           return 'amount_inr';
         } else if (
-          key.substr(-6) === 'amount' || key.substr(0, 7) === 'amount_'
+          key.substr(-6) === 'amount' ||
+          key.substr(0, 7) === 'amount_'
         ) {
           return 'amount';
         } else if (isId(key)) {
@@ -965,6 +966,17 @@ angular
         }
 
         return result;
+      },
+
+      isWorkflow: function(data) {
+        if (
+          data.id.indexOf('w_action') === 0 &&
+          typeof data.workflow_id !== 'undefined'
+        ) {
+          return true;
+        }
+
+        return false;
       },
     };
   });

@@ -12,12 +12,16 @@ app.controller('EmailLogsCtrl', [
     $scope.emailLogs = [];
 
     $scope.fetchEmailLogs = function() {
-      var query = { ascending: 'no', event: 'NOT accepted' };
+      var query = {
+        ascending: 'no',
+        event: 'NOT accepted',
+        recipient: 'NOT https://api.razorpay.com/v1/mailgun/callback/failure',
+      };
       if ($scope.event && $scope.event.length !== 0) {
         query.event = $scope.event;
       }
       if ($scope.recipient) {
-        query.recipient = $scope.recipient;
+        query.recipient += ' AND ' + $scope.recipient;
       }
       if ($scope.tags) {
         query.tags = $scope.tags;

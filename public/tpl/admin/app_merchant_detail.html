@@ -115,11 +115,11 @@
         >
           Archive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" dynamic-tooltip="edit_merchant_unarchive" ng-show="merchant.details.suspended_at != null && admin.permissions.indexOf('edit_merchant_unarchive') !== -1" ng-click="unsuspendMerchant()"
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_unsuspend" ng-show="merchant.details.suspended_at != null && admin.permissions.indexOf('edit_merchant_unsuspend') !== -1" ng-click="unsuspendMerchant()"
         >
           Unsuspend Merchant <i class="pull-right fa fa-archive"></i>
         </a>
-        <a href class="list-group-item" dynamic-tooltip="edit_merchant_archive" ng-show="merchant.details.suspended_at === null && admin.permissions.indexOf('edit_merchant_archive') !== -1" ng-click="suspendMerchant()" ng-confirm-click="Are you sure you want to suspend merchant? (Make sure you have attempted all ways of convincing him before doing this)"
+        <a href class="list-group-item" dynamic-tooltip="edit_merchant_suspend" ng-show="merchant.details.suspended_at === null && admin.permissions.indexOf('edit_merchant_suspend') !== -1" ng-click="suspendMerchant()" ng-confirm-click="Are you sure you want to suspend merchant? (Make sure you have attempted all ways of convincing him before doing this)"
         >
           Suspend Merchant <i class="pull-right fa fa-archive"></i>
         </a>
@@ -542,6 +542,7 @@
                     <th>Network Category</th>
                     <th>Merchant Id</th>
                     <th>Merchant Id 2</th>
+                    <th>Acquirer</th>
                     <th>Terminal Id</th>
                     <th>Card Allowed</th>
                     <th>Netbanking</th>
@@ -549,6 +550,7 @@
                     <th>Emi Duration (Months)</th>
                     <th>Shared</th>
                     <th>Tpv</th>
+                    <th>Currency</th>
                     <th>Created At</th>
                   </thead>
                   <tbody ng-repeat="filteredKey in ['undeleted_enabled', 'undeleted_disabled', 'deleted']">
@@ -566,6 +568,7 @@
                     <td>{{terminal.network_category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
                     <td>{{terminal.gateway_merchant_id2}}</td>
+                    <td>{{terminal.gateway_acquirer}}</td>
                     <td>{{terminal.gateway_terminal_id}}</td>
                     <td>{{terminal.card}}</td>
                     <td>{{terminal.netbanking}}</td>
@@ -573,6 +576,7 @@
                     <td>{{terminal.emi_duration}}</td>
                     <td>{{terminal.shared}}</td>
                     <td>{{terminal.tpv}}</td>
+                    <td>{{terminal.currency}}</td>
                     <td>{{terminal.created_at*1000 | date:'short'}}</td>
                   </tr>
                   <tr>
@@ -788,6 +792,7 @@
           <select class="form-control m-b" ng-model="terminal.gateway_acquirer">
              <option value="hdfc" selected>HDFC</option>
              <option value="axis">Axis</option>
+             <option value="icic">ICICI</option>
           </select>
         </div>
       </div>
@@ -882,6 +887,15 @@
           <select class="form-control m-b" name="tpv" ng-model="terminal.tpv">
              <option value="1">Yes</option>
              <option value="0" selected>No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="currency" class="col-lg-3 control-label">Currency</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" name="currency" ng-model="terminal.currency">
+             <option value="INR" selected>INR</option>
+             <option value="USD">USD</option>
           </select>
         </div>
       </div>

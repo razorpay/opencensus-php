@@ -80,7 +80,8 @@ app
       };
       $scope.changeOperationalAddress = function(input) {
         if (
-          addressCopyToggle && input.substr(0, 19) === 'business_registered'
+          addressCopyToggle &&
+          input.substr(0, 19) === 'business_registered'
         ) {
           $scope.data[input.replace('registered', 'operation')] =
             $scope.data[input];
