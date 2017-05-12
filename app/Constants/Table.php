@@ -39,6 +39,7 @@ class Table
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
+    const PROMOTION             = 'promotions';
     const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';
     const FILE_STORE            = 'files';

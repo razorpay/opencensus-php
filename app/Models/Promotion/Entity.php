@@ -10,11 +10,10 @@ class Entity extends Base\PublicEntity
 {
     const NAME                = 'name';
     const AMOUNT              = 'amount';
-    const TYPE                = 'type';
     const CREDIT_TYPE         = 'credit_type';
     const SCHEDULE_ID         = 'schedule_id';
     const ITERATIONS          = 'iterations';
-    const CREDITS_EXPIRE_AT   = 'credits_expire_at';
+    const VALIDITY            = 'validity';
 
     //Attribute lengths
     const NAME_LENGTH               = 50;
@@ -28,24 +27,22 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::NAME,
         self::AMOUNT,
-        self::TYPE,
         self::CREDIT_TYPE,
         self::SCHEDULE_ID,
         self::ITERATIONS,
-        self::CREDITS_EXPIRE_AT,
+        self::VALIDITY,
     ];
 
     protected $public = [
         self::ID,
         self::NAME,
         self::AMOUNT,
-        self::CREDITS_EXPIRE_AT,
+        self::VALIDITY,
     ];
 
     protected $visible = [
         self::NAME,
         self::AMOUNT,
-        self::TYPE,
         self::CREDIT_TYPE,
         self::SCHEDULE_ID,
         self::ITERATIONS,
@@ -55,7 +52,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::TYPE             => Type::ONE_TIME,
         self::CREDIT_TYPE      => CreditType::FEE,
         self::ITERATIONS       => 1,
     ];
@@ -86,11 +82,6 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getType()
-    {
-        return $this->getAttribute(self::TYPE);
     }
 
     public function getCreditType()
