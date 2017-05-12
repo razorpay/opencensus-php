@@ -158,6 +158,26 @@ app
             // Action details
             $scope.action_details = data.data;
 
+            switch ($scope.action_details.state) {
+              case 'approved':
+              case 'executed':
+                $scope.stateClass = 'approved-bg-color';
+                break;
+              case 'closed':
+                $scope.stateClass = 'rejected-bg-color';
+                break;
+              case 'open':
+              default:
+                $scope.stateClass = 'pending-bg-color';
+            }
+            
+            // Set action permission name to show as title
+            $scope.action_permission_name =
+              $scope.action_details.permission.description +
+              ' (' +
+              $scope.action_details.permission.name +
+              ')';
+
             // Action comments
 
             var comments = data.data.comments;
@@ -425,10 +445,13 @@ app
     '$http',
     'action_data',
     'utils',
-    function($scope, $modalInstance, $http, action_data, utils) {
+    'displayValue',
+    function($scope, $modalInstance, $http, action_data, utils, displayValue) {
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
       };
+
+      $scope.displayValue = displayValue;
 
       $scope.data = action_data;
       $scope.isArray = utils.isArray;
