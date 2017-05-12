@@ -109,6 +109,7 @@ class Table
 
     const TERMINAL_ACTION       = 'terminal_action_logs';
     const GATEWAY_DOWNTIME      = 'gateway_downtimes';
+    const GATEWAY_RULE          = 'gateway_rules';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';

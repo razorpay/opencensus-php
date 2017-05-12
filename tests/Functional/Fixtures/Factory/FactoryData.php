@@ -651,5 +651,11 @@ final class FactoryData
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Gateway\Rule\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp
+        ]);
     }
 }
