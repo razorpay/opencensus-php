@@ -2,19 +2,64 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
-use RZP\Models\Base;
-use RZP\Models\Feature;
-use RZP\Models\Gateway\Rule;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 
+/**
+ * Contains fallback loadsorting logic based on hardcoded data.
+ * To be removed once rules for new load sorting logic are live
+ */
 class TerminalLoadSorter extends Terminal\Sorter
 {
     protected $properties = [
         'gateway',
     ];
+
+    /**
+     * Rules for selecting a terminal with some probability
+     * Attributes must be one of the terminal entity attribute which is matched
+     * with terminal property
+     */
+    protected static $rules = [
+        [
+            'load'          => 500,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY           => Gateway::FIRST_DATA
+            ]
+        ],
+        [
+            'load'          => 4500,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY            => Gateway::AXIS_MIGS
+            ]
+        ],
+        [
+            'load'      => 0,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY            => Gateway::CYBERSOURCE,
+                Terminal\Entity::GATEWAY_ACQUIRER   => Gateway::ACQUIRER_HDFC,
+            ]
+        ],
+        [
+            'load'      => 500,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY            => Gateway::CYBERSOURCE,
+                Terminal\Entity::GATEWAY_ACQUIRER   => Gateway::ACQUIRER_AXIS,
+            ]
+        ],
+        [
+            'load'          => 500,
+            'attributes'    => [
+                Terminal\Entity::GATEWAY           => Gateway::EBS
+            ]
+        ],
+    ];
+
+    public function getRules()
+    {
+        return self::$rules;
+    }
 
     /**
      * Select terminals to be given preference
@@ -27,140 +72,127 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     public function gatewaySorter($terminals, array $input, $options)
     {
-        if ($options === null)
+        $sortedTerminals = $terminals;
+
+        if (is_null($options) === false)
         {
-            return $terminals;
-        }
-
-        $merchant = $input['merchant'];
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::NEW_LOAD_SORTING) === false)
-        {
-            return $this->fallbackLoadSorter($terminals, $input, $options);
-        }
-
-        try
-        {
-            // @note: Temporarily setting verbose to true here for logging of terminal
-            // sorting using rules
-            $verbose = true;
-
-            $ruleCore = new Rule\Core;
-
-            $applicableRules = $ruleCore->fetchApplicableRulesForPayment($terminals, $input, $verbose);
-
-            // If no rules are present for load sorting we return the terminals list as is
-            if ($applicableRules->isEmpty() === true)
-            {
-                return $terminals;
-            }
-
             $chancePercent = $options->getChance();
+            $boostedTerminalIds = $this->getBoostedTerminalIds($terminals, $chancePercent);
 
-            $boostedTerminals = $this->getBoostedTerminals(
-                                            $terminals,
-                                            $applicableRules,
-                                            $chancePercent,
-                                            $verbose);
-
-            if (empty($boostedTerminals) === true)
+            if (is_null($boostedTerminalIds) === false)
             {
-                return $terminals;
+                $boostedTerminals = [];
+                $nonBoostedTerminals = [];
+
+                // As the terminals are from the priority list
+                // append to the terminal
+                foreach ($terminals as $terminal)
+                {
+                    if (in_array($terminal->getId(), $boostedTerminalIds, true))
+                    {
+                        $boostedTerminals[] = $terminal;
+                    }
+                    else
+                    {
+                        $nonBoostedTerminals[] = $terminal;
+                    }
+                }
+
+                $sortedTerminals = array_merge($boostedTerminals, $nonBoostedTerminals);
+            }
+        }
+
+        return $sortedTerminals;
+    }
+
+    protected function getBoostedTerminalIds(array $terminals, $chancePercent)
+    {
+        // Not all rules will apply, a terminal may already have
+        // been rejected in the previous sorting/filtering steps.
+        $applicableRules = $this->getApplicableRules($terminals);
+        $cumulativeProbabity = 0;
+
+        foreach ($applicableRules as $rule)
+        {
+            $cumulativeProbabity += $rule['load'];
+            $valid = $this->validateRules($cumulativeProbabity, $applicableRules);
+
+            if ($valid === false)
+            {
+                // Rules are invalid. Don't boost any terminal.
+                return null;
             }
 
-            // Puts any terminals which are not in boostedTerminals and puts them behind
-            // the boosted terminals
-            $nonBoostedTerminals = array_diff($terminals, $boostedTerminals);
-
-            $terminals = array_merge($boostedTerminals, $nonBoostedTerminals);
-
-            return $terminals;
+            // Checking > 100-p, rather than simply <p
+            // because in test cases we're always setting
+            // p to zero, to avoid unexpected behaviour.
+            if ($chancePercent > (10000 - $cumulativeProbabity))
+            {
+                return $rule['ids'];
+            }
         }
-        catch (\Throwable $e)
+
+        return null;
+    }
+
+    protected function getApplicableRules($terminals)
+    {
+        $allRules = $this->getRules();
+        $applicableRules = [];
+
+        foreach ($allRules as $rule)
         {
-            $this->trace->traceException($e);
-
-            return $this->fallbackLoadSorter($terminals, $input, $options);
-        }
-    }
-
-    protected function fallbackLoadSorter($terminals, array $input, $options)
-    {
-        $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_FALLBACK);
-
-        $terminals = (new OldTerminalLoadSorter)->sort($terminals, $input, false, $options);
-
-        return $terminals;
-    }
-
-    /**
-     * Matches terminals to rules based on comparison of rule attributes and terminal attributes
-     * If the rule load is selected as per the random chance percent value, the matching
-     * terminals to that rule (if any) are boosted over other terminals
-     *
-     * @param  Base\PublicCollection $terminals     collection of available terminals
-     * @param  Base\PublicCollection $rules         collection of applicable rules
-     * @param  int                   $chancePercent randomly selected chance value
-     *                                              (between 0 - 10000)
-     * @return array                            map of rule_id => terminals
-     */
-    protected function getBoostedTerminals(
-                            array $terminals,
-                            Base\PublicCollection $rules,
-                            int $chancePercent,
-                            bool $verbose = false)
-    {
-       $totalLoad = 0;
-
-       foreach ($rules as $rule)
-       {
-            $totalLoad += $rule->getLoad();
-
-            $boostedTerminals = [];
-
+            // If the rule has any matching terminal then only merge
+            // it to the applicableRules array
+            $merge = false;
+            // Rules only apply to terminals that have made it
+            // this far in the selection process
             foreach ($terminals as $terminal)
             {
-                if ($rule->matches($terminal) === true)
+                if ($this->validateAttributes($rule['attributes'], $terminal))
                 {
-                    $boostedTerminals[] = $terminal;
+                    $rule['ids'][] = $terminal->getId();
+                    $merge = true;
                 }
             }
 
-            // We iterate through the rules and keep adding the rule load to the
-            // cumulative total load  value.  If the total  load is greater than
-            // chance  percentage, that rule  is selected.  For  e.g  if we have
-            // rules R1 - load 30, and R2 load 50. If chance percentage is 40 in
-            // the second iteration totalLoad becomes 80  > 40 and we select R2.
-            // However if say the chance percentage was 90, then even  after all
-            // iterations  totalLoad will  be 80 which is less than 90 and so no
-            // rules will be selected
-            if ($totalLoad >= $chancePercent)
+            if ($merge === true)
             {
-                if (empty($boostedTerminals) === false)
-                {
-                    $this->traceBoostedTerminals($boostedTerminals, $chancePercent, $verbose);
-                }
-
-                return $boostedTerminals;
+                $applicableRules[] = $rule;
             }
-       }
+        }
 
-       return null;
+        return $applicableRules;
     }
 
-    protected function traceBoostedTerminals(array $terminals, int $chancePercent, bool $verbose = false)
+    protected function validateAttributes($attributes, $terminal)
     {
-        if ($verbose === true)
+        // Get all terminal attributes
+        $termAttributes = $terminal->getAttributes();
+
+        // Gets diff of the two. If there is any diff,
+        // then attributes are not perfectly matching.
+        return (count(array_diff_assoc($attributes, $termAttributes)) === 0);
+    }
+
+    protected function validateRules($cumulativeProbability, $applicableRules)
+    {
+        // Cumulative probability for all applicable rules
+        // can't possibly be above 100. In this case, don't
+        // boost any terminal.
+        if ($cumulativeProbability > 10000)
         {
-            $traceData = [];
+            $this->trace->error(
+                TraceCode::TERMINAL_BOOST_INVALID,
+                [
+                    'cumulative_probabity' => $cumulativeProbability,
+                    'applicable_rules'     => $applicableRules,
+                ]
+            );
 
-            $traceData['chance_percent'] = $chancePercent;
-
-            $terminalIds = array_pluck($terminals, 'id');
-
-            $traceData['boosted_terminals'] = $terminalIds;
-
-            $this->trace->info(TraceCode::GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS, $traceData);
+            return false;
         }
+
+        return true;
     }
 }
