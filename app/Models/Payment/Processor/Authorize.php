@@ -796,9 +796,9 @@ trait Authorize
     {
         $gatewayInput = [];
 
-        $this->processCurrencyConversions($payment);
-
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+
+        $this->processCurrencyConversions($payment);
     }
 
     protected function parseContact(string $contact): PhoneBook
