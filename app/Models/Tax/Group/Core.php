@@ -57,8 +57,6 @@ class Core extends Base\Core
         return $this->repo->tax_group->deleteOrFail($group);
     }
 
-    // Private methods
-
     /**
      * Process tax_ids array provided as part of input.
      *

@@ -5,6 +5,7 @@ namespace RZP\Models\Tax\Group;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -81,14 +82,7 @@ class Entity extends Base\PublicEntity
 
     public function taxes()
     {
-        // Please note that this pivot table doesn't have soft delete. Laravel
-        // does not support(https://github.com/laravel/framework/issues/2733)
-        // this for some reason.
-        //
-        // We can do work around(more code) to have that, but I think we can live
-        // without it for pivot tables.
-
-        return $this->belongsToMany('RZP\Models\Tax\Entity', 'tax_group_tax_map')
+        return $this->belongsToMany('RZP\Models\Tax\Entity', Table::TAX_GROUP_TAX_MAP)
                     ->withTimestamps();
     }
 }

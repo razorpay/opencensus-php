@@ -48,24 +48,13 @@ class Validator extends Base\Validator
 
         $rate = $input[Entity::RATE] ?? $this->entity->getRate();
 
-        switch ($rateType)
+        if ($rateType === RateType::PERCENTAGE)
         {
-            case RateType::PERCENTAGE:
-
-                $this->validatePercentageRate($rate);
-
-                break;
-
-            case RateType::FLAT:
-
-                $this->validateFlatRate($rate);
-
-                break;
-
-            default:
-
-                throw new LogicException('rate_type is invalid');
+            $this->validatePercentageRate($rate);
         }
+
+        // Other rate type: flat has no validations as of now. It can be any
+        // integer value.
     }
 
     // Private methods
@@ -76,13 +65,7 @@ class Validator extends Base\Validator
         {
             $message = 'rate should be between 0 to 10000 if rate_type is percentage';
 
-            throw new BadRequestValidationFailureException($message);
+            throw new BadRequestValidationFailureException($message, Entity::RATE);
         }
-    }
-
-    private function validateFlatRate(int $rate)
-    {
-        // TODO:
-        // - Limits?
     }
 }
