@@ -280,13 +280,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::VIEW_LESS  => 'bool',
-        self::AMOUNT     => 'int',
-        self::TAX_AMOUNT => 'int',
-        self::NET_AMOUNT => 'int',
-        self::DATE       => 'int',
-        self::EXPIRE_BY  => 'int',
-        self::EXPIRED_AT => 'int',
+        self::VIEW_LESS          => 'bool',
+        self::AMOUNT             => 'int',
+        self::TAX_AMOUNT         => 'int',
+        self::NET_AMOUNT         => 'int',
+        self::DATE               => 'int',
+        self::EXPIRE_BY          => 'int',
+        self::EXPIRED_AT         => 'int',
+        self::SHOW_TAXES_GROUPED => 'bool',
     ];
 
     // -------------------------------------- Mutators ---------------

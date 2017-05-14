@@ -1553,36 +1553,6 @@ class InvoiceTest extends TestCase
         return $order;
     }
 
-    /**
-     * Helper method to make payment for given invoice and do the necessary
-     * assertions.
-     */
-    protected function makePaymentForInvoiceAndAssert(array $invoice)
-    {
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['order_id'] = $invoice['order_id'];
-        $payment['amount']   = $invoice['amount'];
-
-        $payment = $this->doAuthAndGetPayment(
-            $payment,
-            [
-                'status'   => 'captured',
-                'order_id' => $invoice['order_id'],
-            ]
-        );
-
-        $order   = $this->getLastEntity('order', true);
-        $invoice = $this->getLastEntity('invoice', true);
-
-        $this->assertEquals($payment['id'], $invoice['payment_id']);
-        $this->assertEquals($order['status'], 'paid');
-        $this->assertEquals($invoice['status'], 'paid');
-        $this->assertEquals($invoice['id'], $payment['invoice_id']);
-
-        return $payment;
-    }
-
     protected function createFewLineItems()
     {
         $this->fixtures->create('item');
@@ -1623,16 +1593,6 @@ class InvoiceTest extends TestCase
                 'terms' => 'Random terms and conditions',
             ]);
 
-        // $this->createDraftInvoice(
-        //     [
-        //         'id' => '1000002invoice',
-        //     ]);
-
-        // $this->createDraftInvoice(
-        //     [
-        //         'id' => '1000003invoice',
-        //     ]);
-
         $merchant = $this->fixtures->create('merchant');
 
         $this->createDraftInvoice(
@@ -1640,11 +1600,6 @@ class InvoiceTest extends TestCase
                 'id'          => '1000004invoice',
                 'merchant_id' => $merchant->getId(),
             ]);
-
-        // $this->createDraftInvoice(
-        //     [
-        //         'id' => '1000005invoice',
-        //     ]);
 
         $order = $this->createOrder();
 
