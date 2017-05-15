@@ -322,6 +322,7 @@ angular
         restrict: 'A',
         link: function(scope, element, attrs) {
           var permTxt = attrs.dynamicTooltip; // text in attribute dynamic-tooltip is used as content
+          var direction = attrs.dynamicTooltipPos || 'right'; // Position of tooltip (default is 'right')
 
           element.on({
             mouseout: function(evt) {
@@ -337,17 +338,41 @@ angular
 
                 tooltip.appendChild(permissionTxt); // Set content in tooltip
                 tooltip.className = 'dynamic-tooltip'; // Adding class for pre-defined style
+                if (direction) {
+                  tooltip.className += ' ' + direction;
+                }
 
-                // Setting positon wrt body (to display on right side of element)
-                tooltip.style.top =
-                  document.body.scrollTop +
-                  evt.target.getBoundingClientRect().top +
-                  'px';
-                tooltip.style.left =
-                  evt.target.offsetWidth +
-                  evt.target.getBoundingClientRect().left -
-                  tooltip.offsetWidth / 2 +
-                  'px';
+                switch (direction) {
+                  case 'top': {
+                    // Setting positon wrt body (to display on top side of element)
+                    tooltip.style.top =
+                      document.body.scrollTop +
+                      evt.target.getBoundingClientRect().top -
+                      evt.target.offsetHeight / 2 +
+                      tooltip.offsetHeight / 2 +
+                      'px';
+                    tooltip.style.left =
+                      evt.target.offsetWidth / 2 +
+                      evt.target.getBoundingClientRect().left -
+                      tooltip.offsetWidth / 2 +
+                      'px';
+
+                    break;
+                  }
+                  case 'right':
+                  default: {
+                    // Setting positon wrt body (to display on right side of element)
+                    tooltip.style.top =
+                      document.body.scrollTop +
+                      evt.target.getBoundingClientRect().top +
+                      'px';
+                    tooltip.style.left =
+                      evt.target.offsetWidth +
+                      evt.target.getBoundingClientRect().left -
+                      tooltip.offsetWidth / 2 +
+                      'px';
+                  }
+                }
 
                 document.body.appendChild(tooltip); // Adding tooltip in body
               }
