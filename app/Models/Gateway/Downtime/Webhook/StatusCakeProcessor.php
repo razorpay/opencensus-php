@@ -167,16 +167,10 @@ class StatusCakeProcessor implements ProcessorInterface
         $options = [
             Entity::METHOD    => $tags[Entity::METHOD] ?? null,
             Entity::GATEWAY   => $tags[Entity::GATEWAY] ?? Entity::ALL,
-            Entity::ISSUER    => $tags[Entity::ISSUER] ?? Entity::UNKNOWN,
-            Entity::NETWORK   => $tags[Entity::NETWORK] ?? Entity::UNKNOWN,
-            Entity::CARD_TYPE => $tags[Entity::CARD_TYPE] ?? Entity::UNKNOWN,
+            Entity::ISSUER    => $tags[Entity::ISSUER] ?? null,
+            Entity::NETWORK   => $tags[Entity::NETWORK] ?? null,
+            Entity::CARD_TYPE => $tags[Entity::CARD_TYPE] ?? null,
         ];
-
-        // Lower case all the values of option
-        foreach ($options as $key => $value)
-        {
-            $options[$key] = strtolower($value);
-        }
 
         // this check has to happen here since
         // GATEWAY=> ALL needs to be in upper case
@@ -185,74 +179,10 @@ class StatusCakeProcessor implements ProcessorInterface
             $options[Entity::GATEWAY] = Entity::ALL;
         }
 
-        switch ($options[Entity::METHOD])
+        if (empty($options['issuer']) === false)
         {
-            case Method::NETBANKING:
-                if ($options['issuer'] === null)
-                {
-                    $this->trace->warning(
-                        TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_NBDATA,
-                        ['data' => $tags]
-                    );
-
-                    throw new Exception\BadRequestValidationFailureException(
-                        'StatusCake invalid Netbanking data',
-                        'tags',
-                        $tags);
-                }
-
-                break;
-
-            case Method::CARD:
-
-                if ($options['gateway'] === null)
-                {
-                    $this->trace->warning(
-                        TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_CDATA,
-                        ['data' => $tags]
-                    );
-
-                    throw new Exception\BadRequestValidationFailureException(
-                        'StatusCake invalid Card data',
-                        'tags',
-                        $tags);
-                }
-
-                break;
-
-            case Method::WALLET:
-                // wallets begin he gateway name with WALLET_. So, check if the gateway name actually
-                // contains WALLET_. Else, append it here so validation can succeed.
-
-                if (isset($options['gateway']) === false)
-                {
-                    $this->trace->warning(
-                        TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_WDATA,
-                        ['data' => $tags]
-                    );
-
-                    throw new Exception\BadRequestValidationFailureException(
-                        'StatusCake invalid wallet data',
-                        'tags',
-                        $tags);
-                }
-
-                break;
-
-            default:
-                $this->trace->warning(
-                    TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_DATA,
-                    ['data' => $input]
-                );
-
-                throw new Exception\BadRequestValidationFailureException(
-                    'StatusCake invalid data',
-                    'method',
-                    $options['method']
-                );
+            $options['issuer'] = strtoupper($options['issuer']);
         }
-
-        $options['issuer'] = strtoupper($options['issuer']);
 
         $formatted = array_merge($formatted, $options);
     }

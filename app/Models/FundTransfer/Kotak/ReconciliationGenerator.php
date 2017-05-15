@@ -42,11 +42,9 @@ class ReconciliationGenerator
         }
     }
 
-    public function reconcileSettlementsInTestMode($input)
+    public function reconcileSettlementsInTestMode(array $input)
     {
-        $startTimestamp = Carbon::today("Asia/Kolkata")->timestamp;
-
-        $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->timestamp - 1;
+        list($startTimestamp, $endTimestamp) = $this->getTimestamps($input);
 
         $nonReconciledAttempts = $this->repo
                                       ->fund_transfer_attempt
@@ -65,7 +63,6 @@ class ReconciliationGenerator
         // for above batch ids, get the txt file ids
         $setlFileIds = $nonReconciledBatches->pluck(FundTransfer\Batch\Entity::TXT_FILE_ID)
                                             ->toArray();
-
         // read one txt file from s3 at a time and generate recon file
         $response = [];
 
@@ -123,7 +120,9 @@ class ReconciliationGenerator
 
         $txt = $this->generateText($modifiedData);
 
-        $file = $this->writeToTextFile($txt);
+        $filename = $this->getFileToWriteName();
+
+        $file = $this->createTxtFile($filename, $txt);
 
         $this->trace->info(TraceCode::SETTLEMENT_KOTAK_RECONCILE_FILE_GENERATED);
 
@@ -175,5 +174,25 @@ class ReconciliationGenerator
         }
 
         return $data;
+    }
+
+    protected function getTimestamps(array $input): array
+    {
+        if (isset($input['on']) === true)
+        {
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata')->setTime(0,0,0);
+
+            $startTimestamp = $from->timestamp;
+
+            $endTimestamp = $from->addDay()->timestamp - 1;
+        }
+        else
+        {
+            $startTimestamp = Carbon::today("Asia/Kolkata")->timestamp;
+
+            $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->timestamp - 1;
+        }
+
+        return [$startTimestamp, $endTimestamp];
     }
 }

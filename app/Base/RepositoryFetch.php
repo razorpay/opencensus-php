@@ -238,7 +238,7 @@ trait RepositoryFetch
     {
         foreach ($params as $key => $value)
         {
-            $func = 'addQueryParam'.studly_case($key);
+            $func = 'addQueryParam' . studly_case($key);
 
             if (method_exists($this, $func))
             {

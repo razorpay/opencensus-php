@@ -367,6 +367,17 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function verifyRefund(array $input)
+    {
+        if ($input['refund']['amount'] !== $input['payment']['amount'])
+        {
+            throw new Exception\LogicException(
+                'Verify refund is only supported for full refunds');
+        }
+
+        return false;
+    }
+
     /**
      * HDFC gateway does not provide void
      */

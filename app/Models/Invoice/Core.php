@@ -48,14 +48,14 @@ class Core extends Base\Core
         $this->pdfGenerator = new PdfGenerator($invoice);
     }
 
-    public function create(array $input, Merchant\Entity $merchant)
+    public function create(array $input, Merchant\Entity $merchant, $subscription = null)
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,
             $input
         );
 
-        $invoice = (new Generator($merchant))->generate($input);
+        $invoice = (new Generator($merchant))->setSubscription($subscription)->generate($input);
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,
@@ -262,7 +262,7 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function sendNotification(Entity $invoice, $medium)
+    public function sendNotification(Entity $invoice, string $medium)
     {
         $this->trace->info(
             TraceCode::INVOICE_SEND_NOTIFICATION,
@@ -559,7 +559,7 @@ class Core extends Base\Core
      *
      * @param string $mode   - Taking mode as argument just if this method gets
      *                         invoked from another async queue job.
-     *                         ENHANCEMENT: Long term/Permanent solution is to have all such
+     *                         TODO: ENHANCEMENT: Long term/Permanent solution is to have all such
      *                         app variables to be initialized in abstract way.
      *                         And then we will not have to do such things everywhere.
      * @param string $action

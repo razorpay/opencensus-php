@@ -36,7 +36,7 @@ class Selector
         Sorters\NetbankingSorter::class,
 
         // Boost a gateway terminals based on load distribution of probabilities
-        Sorters\TerminalLoadSorter::class,
+        Sorters\NewTerminalLoadSorter::class,
 
         // Boosts direct terminals over shared terminals
         Sorters\ExclusivitySorter::class,

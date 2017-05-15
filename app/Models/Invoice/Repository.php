@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -71,6 +72,15 @@ class Repository extends Base\Repository
         return $invoice;
     }
 
+    public function findByPublicIdAndSubscription(string $invoiceId, Subscription\Entity $subscription)
+    {
+        Entity::verifyIdAndStripSign($invoiceId);
+
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                    ->findOrFailPublic($invoiceId);
+    }
+
     public function getInvoicesForIssuedNotificationToCustomer($medium)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
@@ -105,6 +115,42 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::EXPIRE_BY, '<', $currentTime)
                     ->get();
+    }
+
+    public function fetchIssuedInvoicesOfSubscription(Subscription\Entity $subscription)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                    ->where(Entity::STATUS, '=', Status::ISSUED)
+                    ->get();
+    }
+
+    public function fetchIssuedAndNotHaltedInvoiceForSubscription(Subscription\Entity $subscription)
+    {
+        $invoices = $this->newQuery()
+                         ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                         ->where(Entity::STATUS, '=', Status::ISSUED)
+                         ->where(function($query)
+                           {
+                                $query->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::HALTED)
+                                      ->orWhereNull(Entity::SUBSCRIPTION_STATUS);
+                           })
+                         ->get();
+
+        if ($invoices->count() !== 1)
+        {
+            throw new Exception\LogicException(
+                'There should have been exactly one invoice for this',
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'auth_attempts'     => $subscription->getAuthAttempts(),
+                    'error_status'      => $subscription->getErrorStatus(),
+                    'status'            => $subscription->getStatus(),
+                ]);
+        }
+
+        return $invoices->first();
     }
 
     /**

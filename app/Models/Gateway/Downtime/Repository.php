@@ -16,7 +16,6 @@ class Repository extends Base\Repository
         Entity::END         => 'sometimes|integer',
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30',
-        Entity::PUBLIC      => 'sometimes|bool',
     );
 
     // These are admin allowed params to search on.
@@ -28,7 +27,6 @@ class Repository extends Base\Repository
         Entity::END         => 'sometimes|integer',
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30',
-        Entity::PUBLIC      => 'sometimes|bool',
     );
 
     const KEY_OPERATOR_MAP = [
@@ -92,6 +90,16 @@ class Repository extends Base\Repository
                      ->where(Entity::SCHEDULED, '=', false)
                      ->latest()
                      ->first();
+    }
+
+    public function fetchDowntimesWithoutTerminal(array $input)
+    {
+        $query = $this->newQuery();
+
+        $this->buildFetchQuery($query, $input);
+
+        return $query->whereNull(Entity::TERMINAL_ID)
+                     ->get();
     }
 
     protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)

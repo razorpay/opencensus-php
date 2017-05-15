@@ -397,6 +397,17 @@ class Creator extends Base\Core
     }
 
     /**
+     * Returns instance of FileStore Entity
+     * TODO : think of a better way
+     *
+     * @return $this->file
+     */
+    public function getFileInstance()
+    {
+        return $this->file;
+    }
+
+    /**
      * Validates the Content before saving
      *
      * @throws Exception\LogicException

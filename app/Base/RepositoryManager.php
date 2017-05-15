@@ -47,11 +47,11 @@ class RepositoryManager extends \Illuminate\Support\Manager
         return $repo->save($entity, $options);
     }
 
-    public function sync($entity, $relation, $ids = [])
+    public function sync($entity, $relation, $ids = [], bool $detaching = true)
     {
         $repo = $this->getRepositoryClassFromObject($entity);
 
-        return $repo->sync($entity, $relation, $ids);
+        return $repo->sync($entity, $relation, $ids, $detaching);
     }
 
     public function detach($entity, $relation, $ids = [])
@@ -157,11 +157,14 @@ class RepositoryManager extends \Illuminate\Support\Manager
 
     /**
      * Execute a callable within a transaction.
+     * $callback is not type-hinted as callable to support arrays.
      *
      * @param callable $callback
+     * @param array    $params
+     *
      * @return mixed
      */
-    public function transaction(callable $callback)
+    public function transaction($callback, ...$params)
     {
         if ((is_object($callback) === false) or
             ($callback instanceof Closure === false))
@@ -170,9 +173,9 @@ class RepositoryManager extends \Illuminate\Support\Manager
             // It's a callable not closure. Wrap it in closure because
             // transaction function in db only accepts closures.
             //
-            $result = $this->db->transaction(function() use ($callback)
+            $result = $this->db->transaction(function() use ($callback, $params)
             {
-                return call_user_func($callback);
+                return call_user_func($callback, ...$params);
             });
         }
         else
@@ -234,5 +237,22 @@ class RepositoryManager extends \Illuminate\Support\Manager
     protected function setDefaultDbConn($conn)
     {
         $this->app['config']->set('database.default', $conn);
+    }
+
+    public function isTransactionActive()
+    {
+        $env = $this->app->environment();
+
+        if ($env === 'testing')
+        {
+            return ($this->db->transactionLevel() > 1);
+        }
+
+        return ($this->db->transactionLevel() > 0);
+    }
+
+    public function assertTransactionActive()
+    {
+        assert ($this->isTransactionActive());
     }
 }
