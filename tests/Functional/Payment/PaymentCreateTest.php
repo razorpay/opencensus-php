@@ -132,19 +132,24 @@ class PaymentCreateTest extends TestCase
 
     public function testCreatePaymentInEs()
     {
-        $mockEs = $this->mockEsClient();
+        $esMock = $this->createEsMock(['bulkUpdate']);
 
-        $testData = $this->testData[__FUNCTION__];
+        $expected = $this->testData[__FUNCTION__];
+        // $expected = $testData['body'];
 
-        $mockEs->shouldReceive('update')
-               ->once()
+        $esMock->expects($this->once())
+               ->method('bulkUpdate')
                ->with(
-                   Mockery::on(function ($data) use ($testData)
-                   {
-                       $this->assertArraySelectiveEquals($testData, json_decode(json_encode($data), true));
-                       return true;
-                   })
-               );
+                    $this->callback(
+                        function ($actual) use ($expected)
+                        {
+                            $this->assertArraySelectiveEquals($expected, $actual);
+
+                            $this->assertNotEmpty($actual['body'][0]['index']['_id']);
+                            $this->assertNotEmpty($actual['body'][1]['id']);
+
+                            return true;
+                        }));
 
         $this->doAuthPaymentViaCheckoutRoute($this->payment);
     }
@@ -250,15 +255,5 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('acquirer_data', $payment);
 
         $this->assertArrayHasKey('bank_transaction_id', $payment['acquirer_data']);
-    }
-
-    protected function mockEsClient()
-    {
-        $clientBuilder = Mockery::mock('RZP\Services\EsClient', [$this->app])
-                                ->makePartial();
-
-        $this->app->instance('es', $clientBuilder);
-
-        return $clientBuilder;
     }
 }

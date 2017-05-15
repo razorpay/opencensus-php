@@ -533,7 +533,7 @@ class Repository extends \Razorpay\Spine\Repository
         $this->setEsRepoIfExist();
 
         if (($this->esRepo === null) or
-            ($this->isEsSyncNeeded($action, $dirty) === false))
+            ($this->esRepo->isEsSyncNeeded($action, $dirty) === false))
         {
             return;
         }
