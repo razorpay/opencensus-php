@@ -70,6 +70,7 @@ return [
             Permission::EDIT_MERCHANT_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL => '',
             Permission::EDIT_MERCHANT_PRICING => '',
+            Permission::EDIT_MERCHANT_COMMENTS => '',
             Permission::VIEW_MERCHANT_COMPANY_INFO => '',
             Permission::VIEW_MERCHANT_CREDITS_LOG => '',
             Permission::ADD_MERCHANT_CREDITS => '',

@@ -1089,7 +1089,7 @@ final class Route
         'merchant_get_banks'               => Permission::VIEW_MERCHANT_BANKS,
         'merchant_set_banks'               => Permission::ASSIGN_MERCHANT_BANKS,
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
-        'merchant_edit'                    => Permission::EDIT_MERCHANT_INTERNATIONAL,
+        'merchant_edit'                    => '*', // permission handled in code
         'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
     ];

@@ -139,12 +139,13 @@ class Name
     const DELETE_WORKFLOW                 = 'delete_workflow';
 
     public static $actionMap = [
-        Merchant\Action::ARCHIVE        => self::EDIT_MERCHANT_ARCHIVE,
-        Merchant\Action::UNARCHIVE      => self::EDIT_MERCHANT_UNARCHIVE,
-        Merchant\Action::SUSPEND        => self::EDIT_MERCHANT_SUSPEND,
-        Merchant\Action::UNSUSPEND      => self::EDIT_MERCHANT_UNSUSPEND,
-        Merchant\Action::LOCK           => self::EDIT_MERCHANT_LOCK_ACTIVATION,
-        Merchant\Action::UNLOCK         => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
-        Merchant\Action::EDIT_COMMENT   => self::EDIT_MERCHANT_COMMENTS,
+        Merchant\Action::ARCHIVE            => self::EDIT_MERCHANT_ARCHIVE,
+        Merchant\Action::UNARCHIVE          => self::EDIT_MERCHANT_UNARCHIVE,
+        Merchant\Action::SUSPEND            => self::EDIT_MERCHANT_SUSPEND,
+        Merchant\Action::UNSUSPEND          => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::LOCK               => self::EDIT_MERCHANT_LOCK_ACTIVATION,
+        Merchant\Action::UNLOCK             => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
+        Merchant\Action::EDIT_COMMENT       => self::EDIT_MERCHANT_COMMENTS,
+        Merchant\Action::EDIT_INTERNATIONAL => self::EDIT_MERCHANT_INTERNATIONAL,
     ];
 }

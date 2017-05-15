@@ -114,6 +114,15 @@ class Core extends Base\Core
      */
     public function edit($merchant, $input)
     {
+        if (isset($input['international']) === true)
+        {
+            $action = Merchant\Action::EDIT_INTERNATIONAL;
+
+            $admin = $this->app['basicauth']->getAdmin();
+
+            $admin->hasMerchantActionPermissionOrFail($action);
+        }
+
         $merchant->setAuditAction(Action::EDIT_MERCHANT);
 
         $merchant->edit($input);
