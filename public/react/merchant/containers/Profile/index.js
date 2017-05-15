@@ -1,17 +1,19 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Header from 'rzp/ui/Header';
-import DetailRow from '../../components/DetailRow';
-import PasswordForm from './PasswordForm';
-import UpgradeMerchantForm from './UpgradeMerchantForm';
+import Spinner from 'rzp/ui/Spinner';
+import * as ModalActions from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
+import * as ProfileActions from 'merchant/modules/profile';
+
 import MerchantDetails from 'merchant/components/Profile/MerchantDetails';
 import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
 import LoggedInUserDetails
   from 'merchant/components/Profile/LoggedInUserDetails';
-
-import * as ModalActions from 'rzp/modules/modals';
-import * as NotificationActions from 'rzp/modules/notifications';
-import * as ProfileActions from 'merchant/modules/profile';
+import Invitations from 'merchant/components/Profile/Invitations';
+import { fetchUser } from 'merchant/modules/session';
+import PasswordForm from './PasswordForm';
+import UpgradeMerchantForm from './UpgradeMerchantForm';
 
 @connect(
   state => {
@@ -20,22 +22,25 @@ import * as ProfileActions from 'merchant/modules/profile';
       profile: state.profile,
     };
   },
-  { ...ProfileActions, ...NotificationActions, ...ModalActions }
+  { ...ProfileActions, ...ModalActions, showNotification, fetchUser }
 )
 export default class Profile extends Component {
-  componentWillMount() {
-    this.props.fetchBankInfoAndInvitations().catch(err => {
-      this.props.showNotification({
-        type: 'error',
-        message: err.errors,
-      });
-    });
+  state = {
+    loggedInUser: {},
+  };
 
-    this.refreshUser(); // Analyze user object in props
+  componentWillMount() {
+    this.props.fetchUser();
+    this.props.fetchBankAccount();
+    this.props.fetchPendingInvitations();
+    this.refreshUser(this.props.user);
   }
 
-  refreshUser() {
-    const { user } = this.props;
+  componentWillReceiveProps(nextProps) {
+    this.refreshUser(nextProps.user);
+  }
+
+  refreshUser(user) {
     let hasMerchant = false;
 
     // Does the user have an associated merchant account
@@ -52,6 +57,7 @@ export default class Profile extends Component {
     this.setState({
       merchantCount: Object.keys(user.merchants).length,
       loggedInUser: user.user,
+      loggedInUserRole: user.merchants[user.id].pivot.role,
       hasMerchant,
     });
 
@@ -64,30 +70,12 @@ export default class Profile extends Component {
     }
   }
 
-  getPendingInvitations() {
-    this.props.fetchPendingInvitations().catch(err => {
-      this.props.showNotification({
-        type: 'error',
-        message: err.errors,
-      });
-    });
-  }
+  updateInvitation = (type, invite) => {
+    let message = type === 'accept'
+      ? 'You have accepted the invite.'
+      : 'You have rejected the invite.';
 
-  updateInvitation(type, invite) {
-    let message;
-
-    switch (type) {
-      case 'accept':
-        message = 'You have accepted the invite.';
-        break;
-      case 'reject':
-        message = 'You have rejected the invite.';
-        break;
-      default:
-        return;
-    }
-
-    this.props
+    return this.props
       .updateInvitation(type, invite.id)
       .then(() => {
         this.props.showNotification({
@@ -95,7 +83,7 @@ export default class Profile extends Component {
           message,
         });
         if (type === 'reject') {
-          this.getPendingInvitations();
+          this.props.fetchPendingInvitations();
         } else {
           location.reload(); //TODO: Check behavior, why it's needed
         }
@@ -106,140 +94,67 @@ export default class Profile extends Component {
           message: err.errors,
         });
       });
-  }
-
-  upgradeAccount = data => {
-    return this.props
-      .upgradeAccount(data)
-      .then(() => {
-        this.props.showNotification({
-          type: 'success',
-          message: 'Merchant Account Created.',
-        });
-        // $state.reload(); //TODO: angular, Check the purpose
-      })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      });
   };
 
-  askPwdConfirmation = () => {
+  openChangePasswordModal = () => {
     this.props.openModal({
-      size: 'medium',
-      component: (
-        <PasswordForm
-          changePassword={this.changePassword}
-          closeModal={this.props.closeModal}
-        />
-      ),
+      size: 'small',
+      component: <PasswordForm />,
     });
   };
 
-  changePassword = values => {
-    return this.props
-      .updatePassword(values)
-      .then(() => {
-        this.props.showNotification({
-          type: 'success',
-          message: 'Password changed successfully.',
-        });
-      })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      });
-  };
-
   render() {
-    const { user, bankAccount, invitations } = this.props;
-    let invitationList = null;
+    const { user, profile } = this.props;
+    const { bankAccount, invitations } = profile;
 
     if (!user) {
-      return <div>Loading..</div>;
-    }
-
-    if (invitations) {
-      let invites = [];
-      invitations.forEach((invite, index) => {
-        invites.push(
-          <DetailRow
-            key={index}
-            label={`Invitation to join ${invite.merchant.name}`}
-            value={() => (
-              <div>
-                <button
-                  class="btn btn-xs btn-default"
-                  onClick={() => this.updateInvitation('accept', invite)}
-                >
-                  Accept
-                </button>
-                <button
-                  class="btn btn-xs btn-danger"
-                  onClick={() => this.updateInvitation('reject', invite)}
-                >
-                  Reject
-                </button>
-              </div>
-            )}
-          />
-        );
-      });
-
-      invitationList = (
-        <div class="panel-detail-container">
-          <div class="panel-heading">
-            Pending Invitations
-          </div>
-          {invites}
-        </div>
-      );
+      return <div class="page-spinner-container"><Spinner /></div>;
     }
 
     return (
       <div class="react-root">
         <Header title="User Profile" showMode={false} />
         <div class="content-wrapper">
-          <div class="row">
-            <div class=" col-sm-6 col-sm-offset-3">
-              <div class="panel panel-default">
-                <div class="panel-heading">
-                  Merchant Id: <strong>{1000000000}</strong>
-                </div>
+          <div class="panel-detail-container">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                Merchant Id: <strong>{user.id}</strong>
+              </div>
 
-                <div class="panel-body">
-                  {user && user.current
-                    ? <MerchantDetails user={user} />
-                    : null}
-                  {bankAccount
-                    ? <BankAccountDetails bankAccount={bankAccount} />
-                    : null}
-                  {this.state.merchantCount > 1 ||
-                    this.state.loggedInUser.email != user.email
-                    ? <LoggedInUserDetails
-                        loggedInUser={this.state.loggedInUser}
-                      />
-                    : null}
-                  {invitationList}
+              <div class="panel-body">
+                {user && user.current ? <MerchantDetails user={user} /> : null}
 
-                  {!this.state.hasMerchant
-                    ? <UpgradeMerchantForm
-                        upgradeAccount={this.upgradeAccount}
-                      />
-                    : null}
+                {bankAccount
+                  ? <BankAccountDetails bankAccount={bankAccount} />
+                  : null}
 
-                  <div class="text-center" style={{ margin: '25px 0' }}>
-                    <button
-                      class="btn btn-primary btn-rounded btn-change-pwd"
-                      onClick={this.askPwdConfirmation}
-                    >
-                      Change Password
-                    </button>
-                  </div>
+                {this.state.merchantCount > 1 ||
+                  this.state.loggedInUser.email !== user.email
+                  ? <LoggedInUserDetails
+                      loggedInUser={this.state.loggedInUser}
+                      loggedInUserRole={this.state.loggedInUserRole}
+                    />
+                  : null}
+
+                {invitations.length
+                  ? <Invitations
+                      invitations={invitations}
+                      onAcceptClick={this.updateInvitation}
+                      onRejectClick={this.updateInvitation}
+                    />
+                  : null}
+
+                {!this.state.hasMerchant
+                  ? <UpgradeMerchantForm upgradeAccount={this.upgradeAccount} />
+                  : null}
+
+                <div class="text-center">
+                  <button
+                    class="btn btn-primary"
+                    onClick={this.openChangePasswordModal}
+                  >
+                    Change Password
+                  </button>
                 </div>
               </div>
             </div>

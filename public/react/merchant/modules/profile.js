@@ -1,8 +1,8 @@
 import ajax from 'merchant/utils/ajax';
-import { set, merge } from 'rzp/utils/immutable';
+import { set } from 'rzp/utils/immutable';
 
-const BANK_ACCOUNT_AND_INVITATIONS_FETCH = 'BANK_ACCOUNT_AND_INVITATIONS_FETCH';
 const INVITATIONS_FETCH = 'INVITATIONS_FETCH';
+const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 
 export const fetchAjax = url => {
   return ajax({
@@ -20,15 +20,11 @@ export const fetchPendingInvitations = () => {
   };
 };
 
-/* Fetch bank account info and pending invitations */
-export const fetchBankInfoAndInvitations = currentUserId => {
+export const fetchBankAccount = () => {
   return dispatch => {
     return dispatch({
-      type: BANK_ACCOUNT_AND_INVITATIONS_FETCH,
-      payload: Promise.all([
-        fetchAjax('/settings/invitations'),
-        fetchAjax('bank_account'),
-      ]),
+      type: BANK_ACCOUNT_FETCH,
+      payload: fetchAjax('/bank_account'),
     });
   };
 };
@@ -37,7 +33,7 @@ export const fetchBankInfoAndInvitations = currentUserId => {
 export const updateInvitation = (type, inviteId) => {
   return dispatch => {
     return ajax({
-      url: `settings/invitations/${inviteId}/${type}`,
+      url: `/settings/invitations/${inviteId}/${type}`,
       method: 'post',
       appendModeInURL: false,
     });
@@ -58,7 +54,7 @@ export const upgradeAccount = data => {
 export const updatePassword = data => {
   return dispatch => {
     return ajax({
-      url: 'password',
+      url: '/password',
       method: 'post',
       data: data,
       appendModeInQueryParam: true,
@@ -67,41 +63,16 @@ export const updatePassword = data => {
 };
 
 let initialState = {
-  loading: true,
+  invitations: [],
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
-    case `${BANK_ACCOUNT_AND_INVITATIONS_FETCH}::PENDING`:
-      return set(state, 'loading', true);
-
-    case `${BANK_ACCOUNT_AND_INVITATIONS_FETCH}::SUCCESS`:
-      return merge(state, {
-        loading: false,
-        invitations: action.payload[0].data.data,
-        bankAccount: action.payload[1].data.data,
-        error: null,
-      });
-
-    case `${BANK_ACCOUNT_AND_INVITATIONS_FETCH}::ERROR`:
-      return merge(state, {
-        loading: false,
-        bankAccount: false,
-        error: action.error,
-      });
+    case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
+      return set(state, 'bankAccount', action.payload.data);
 
     case `${INVITATIONS_FETCH}::SUCCESS`:
-      return merge(state, {
-        loading: false,
-        invitations: action.payload.data.data,
-        error: null,
-      });
-
-    case `${INVITATIONS_FETCH}::ERROR`:
-      return merge(state, {
-        loading: false,
-        error: action.error,
-      });
+      return set(state, 'invitations', action.payload.data);
 
     default:
       return state;

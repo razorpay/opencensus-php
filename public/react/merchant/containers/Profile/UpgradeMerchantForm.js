@@ -1,8 +1,12 @@
 import React, { PropTypes, PureComponent } from 'react';
+import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import { reduxForm, Field } from 'redux-form';
 import { required } from 'rzp/utils/validators';
+import { showNotification } from 'rzp/modules/notifications';
+import { upgradeAccount } from 'merchant/modules/profile';
 
+@connect(null, { showNotification, upgradeAccount })
 @reduxForm({
   form: 'merchantUpgradeForm',
 })
@@ -11,8 +15,7 @@ export default class UpgradeMerchantForm extends PureComponent {
     confirm: PropTypes.func,
   };
 
-  confirmUpgrade = formData => {
-    const { handleSubmit, upgradeAccount } = this.props;
+  confirmUpgrade = props => {
     this.context
       .confirm({
         header: 'Alert',
@@ -23,37 +26,53 @@ export default class UpgradeMerchantForm extends PureComponent {
             </p>
           </div>
         ),
-        affirmativeLabel: 'OK',
+        affirmativeLabel: 'Upgrade',
+        affirmativePendingLabel: 'Upgrading...',
         abortLabel: 'Cancel',
-        action: upgradeAccount.bind(formData),
+        action: () => {
+          debugger;
+          return this.props
+            .upgradeAccount(props)
+            .then(() => {
+              this.props.showNotification({
+                type: 'success',
+                message: 'Merchant Account Created.',
+              });
+              setTimeout(() => {
+                location.reload;
+              }, 400); //TODO: Check behavior, why it's needed
+            })
+            .catch(err => {
+              this.props.showNotification({
+                type: 'error',
+                message: err.errors,
+              });
+            });
+        },
       })
-      .catch(() => {}); // dummy catch to avoid redux-form error
+      .catch(() => {}); // dummy catch to handle confirm abort rejection
   };
 
   render() {
     const { handleSubmit, invalid } = this.props;
 
     return (
-      <div class="row wrapper">
+      <div class="panel panel-default">
         <div class="panel-heading">
           Upgrade Merchant
         </div>
-        <div class="panel-body">
+        <div class="panel-body text-center">
           <div>
             You can upgrade your account to a Merchant Account by giving us your business name
           </div>
+
           <form
             class="form-inline"
             onSubmit={handleSubmit(this.confirmUpgrade)}
             style={{ marginTop: '25px' }}
           >
             <div class="form-group">
-              <label
-                style={{ fontWeight: 600, marginRight: '10px' }}
-                for="business_name"
-              >
-                Business Name:
-              </label>
+              <label><strong>Business Name: </strong></label> {' '}
               <Field
                 component="input"
                 type="text"
@@ -64,6 +83,7 @@ export default class UpgradeMerchantForm extends PureComponent {
                 validate={[required()]}
               />
             </div>
+            {' '}
             <AsyncButton
               type="submit"
               class="btn btn-info"
@@ -74,7 +94,6 @@ export default class UpgradeMerchantForm extends PureComponent {
             />
           </form>
         </div>
-        <hr style={{ margin: '20px 0 10px' }} />
       </div>
     );
   }
