@@ -126,9 +126,10 @@ export default class Profile extends Component {
               showDismiss={false}
             />
             <div class="panel panel-default">
-              <div class="panel-heading">
-                Merchant Id: <strong>{user.id}</strong>
-              </div>
+              {user.current &&
+                <div class="panel-heading">
+                  Merchant Id: <strong>{user.id}</strong>
+                </div>}
 
               <div class="panel-body">
                 {user && user.current ? <MerchantDetails user={user} /> : null}
