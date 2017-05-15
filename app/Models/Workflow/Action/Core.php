@@ -64,13 +64,14 @@ class Core extends Base\Core
         // $params will also have ENTITY_ID and
         // ENTITY_NAME which will get saved in
         // workflow_actions table.
-        $params[Entity::ENTITY_ID] = $input[Differ\Entity::ENTITY_ID];
+        $params[Entity::ENTITY_ID] = $input[Differ\Entity::ENTITY_ID] ?: null;
 
         // We can verify ID using one of the static functions in
         // PublicEntity by instantiation the Entity class of
         // $input[Differ\Entity::ENTITY_NAME] but we'll keep it
         // simple and fast for now.
 
+        // explode('_', null) === [""]
         $params[Entity::ENTITY_ID] = last(explode('_', $params[Entity::ENTITY_ID])) ?: null;
 
         $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME] ?: null;
