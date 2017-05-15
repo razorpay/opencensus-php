@@ -228,27 +228,60 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $data = ['role' => $role, 'merchant_id' => $merchantId];
+        $error = $response = [];
 
-        $response = $this->api->user->attach($userId, $data);
+        try
+        {
+            $data = ['role' => $role, 'merchant_id' => $merchantId];
+
+            $response = $this->api->user->attach($userId, $data);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 
     public function updateMerchantUserMappingOnApi($userId, $merchantId, $role)
     {
         $this->setApiCredentials();
 
-        $data = ['role' => $role, 'merchant_id' => $merchantId];
+        $error = $response = [];
 
-        $response = $this->api->user->updateMapping($userId, $data);
+        try
+        {
+            $data = ['role' => $role, 'merchant_id' => $merchantId];
+
+            $response = $this->api->user->updateMapping($userId, $data);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 
     public function detachMerchantUserOnApi($userId, $merchantId)
     {
         $this->setApiCredentials();
 
-        $data = ['merchant_id' => $merchantId];
+        $error = $response = [];
 
-        $response = $this->api->user->detach($userId, $data);
+        try
+        {
+            $data = ['merchant_id' => $merchantId];
+
+            $response = $this->api->user->detach($userId, $data);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 
     public function getUserApiData(Entity $user)
@@ -362,6 +395,7 @@ class Service extends Base\Service
     public function confirm($token)
     {
         $confirm_data = ['confirm_token' => $token];
+
         list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
 
         if (empty($error) === false)
@@ -717,20 +751,20 @@ class Service extends Base\Service
      */
     public function switchCurrentMerchantForUser($merchantId, Providers\GenericUser $user)
     {
-        list($error, $userDetails) = $this->getUserFromApi($user->id);
+        list($error, $genericUser) = $this->getUserFromApi($user->id);
 
-        $merchants = $userDetails['merchants'];
-
-        $currentMerchants = array_filter($merchants, function($merchant) use ($merchantId)
+        if (empty($error) === false)
         {
-            return ($merchant['id'] === $merchantId);
-        });
+            $currentMerchant = $genericUser->merchants
+                                           ->where('id', $merchantId)
+                                           ->first();
 
-        if (empty($currentMerchants) === false)
-        {
-            Session::put('current_merchant_id', array_values($currentMerchants)[0]['id']);
+            if ($currentMerchant !== null)
+            {
+                Session::put('current_merchant_id', $currentMerchant->id);
 
-            return [];
+                return [];
+            }
         }
 
         return ["Couldn't find the merchant you are looking for."];
@@ -895,61 +929,61 @@ class Service extends Base\Service
         return [[], $data];
     }
 
-    public function getCurrentMerchant(array $userDetails)
-    {
-        $merchants = $userDetails['merchants'];
+    // public function getCurrentMerchant(array $userDetails)
+    // {
+    //     $merchants = $userDetails['merchants'];
 
-        $sessionMerchantId = Session::get('current_merchant_id');
+    //     $sessionMerchantId = Session::get('current_merchant_id');
 
-        if ($sessionMerchantId !== null)
-        {
-            $currentMerchants = array_filter($merchants, function($merchant) use ($sessionMerchantId)
-            {
-                return ($merchant['id'] === $sessionMerchantId);
-            });
+    //     if ($sessionMerchantId !== null)
+    //     {
+    //         $currentMerchants = array_filter($merchants, function($merchant) use ($sessionMerchantId)
+    //         {
+    //             return ($merchant['id'] === $sessionMerchantId);
+    //         });
 
-            if (empty($currentMerchants) === true)
-            {
-                $currentMerchant = $merchants[0];
+    //         if (empty($currentMerchants) === true)
+    //         {
+    //             $currentMerchant = $merchants[0];
 
-                Session::put('current_merchant_id', $currentMerchant['id']);
-            }
-            else
-            {
-                $currentMerchant = array_values($currentMerchants)[0];
-            }
-        }
-        else
-        {
-            $currentMerchant = $merchants[0];
+    //             Session::put('current_merchant_id', $currentMerchant['id']);
+    //         }
+    //         else
+    //         {
+    //             $currentMerchant = array_values($currentMerchants)[0];
+    //         }
+    //     }
+    //     else
+    //     {
+    //         $currentMerchant = $merchants[0];
 
-            Session::put('current_merchant_id', $currentMerchant['id']);
-        }
+    //         Session::put('current_merchant_id', $currentMerchant['id']);
+    //     }
 
-        return $currentMerchant;
-    }
+    //     return $currentMerchant;
+    // }
 
-    public function getOwnerMerchant(array $userDetails)
-    {
-        $merchants = $userDetails['merchants'];
+    // public function getOwnerMerchant(array $userDetails)
+    // {
+    //     $merchants = $userDetails['merchants'];
 
-        $currentMerchant = $this->getCurrentMerchant($userDetails);
+    //     $currentMerchant = $this->getCurrentMerchant($userDetails);
 
-        $ownerMerchants = array_filter($merchants, function($merchant) use ($currentMerchant)
-        {
-            return (($merchant['id'] === $currentMerchant['id']) and
-                ($merchant['role'] === 'owner'));
-        });
+    //     $ownerMerchants = array_filter($merchants, function($merchant) use ($currentMerchant)
+    //     {
+    //         return (($merchant['id'] === $currentMerchant['id']) and
+    //             ($merchant['role'] === 'owner'));
+    //     });
 
-        $ownerMerchant = null;
+    //     $ownerMerchant = null;
 
-        if (empty($ownerMerchants) === false)
-        {
-            $ownerMerchant = $ownerMerchants[0];
-        }
+    //     if (empty($ownerMerchants) === false)
+    //     {
+    //         $ownerMerchant = $ownerMerchants[0];
+    //     }
 
-        return $ownerMerchant;
-    }
+    //     return $ownerMerchant;
+    // }
 
     protected function getTags(array & $userDetails)
     {
@@ -993,7 +1027,7 @@ class Service extends Base\Service
         {
             $response = $this->api->user->login($input)->toArray();
 
-            $genericUser = $this->createdGenericUser($response);
+            $genericUser = (new Helper)->createdGenericUser($response);
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
@@ -1015,7 +1049,7 @@ class Service extends Base\Service
         {
             $response = $this->api->user->get($userId, $input)->toArray();
 
-            $genericUser = $this->createdGenericUser($response);
+            $genericUser = (new Helper)->createdGenericUser($response);
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
@@ -1023,21 +1057,5 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUser];
-    }
-
-    protected function createdGenericUser(array $user)
-    {
-        $merchants = new PublicCollection;
-
-        foreach ($user['merchants'] as $merchant)
-        {
-            $merchants->push(new GenericMerchant($merchant));
-        }
-
-        $genericUser = new GenericUser($user);
-
-        $genericUser->merchants = $merchants;
-
-        return $genericUser;
     }
 }

@@ -18,14 +18,14 @@ class GenericUser extends AuthGenericUser
 
     public function currentMerchant()
     {
-        $currentMerchant = (new User\Helper)->getCurrentMerchant($this);
+        $currentMerchant = (new Helper)->getCurrentMerchant($this);
 
         return $currentMerchant;
     }
 
     public function ownerMerchant()
     {
-        $ownerMerchant = (new User\Helper)->getCurrentMerchant($this);
+        $ownerMerchant = (new Helper)->getCurrentMerchant($this);
 
         return $ownerMerchant;
     }

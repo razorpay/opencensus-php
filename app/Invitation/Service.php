@@ -43,7 +43,8 @@ class Service extends Base\Service
 
         // We need to change this to currentLoggedInMerchant later
         $merchant = $this->loggedInUser->ownerMerchant();
-        $merchant = Merchant\Entity::findorfail($merchant->id);
+
+        $merchant = Merchant\Entity::findOrSoftFail($merchant->id);
 
         if ($merchant === false)
         {
@@ -263,8 +264,6 @@ class Service extends Base\Service
 
     public function getInvitationById(string $inviteId)
     {
-        return Entity::select(['*'])
-                        ->where('id', $inviteId)
-                        ->get();
+        return Entity::find($invalId);
     }
 }

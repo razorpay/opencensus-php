@@ -34,6 +34,9 @@ use Illuminate\Support\Facades\App as App;
 use App\Transaction\Service as TransactionService;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 
+use App\RZP\PublicCollection;
+use App\User\Helper;
+
 class Service extends Base\Service
 {
     // 15 minutes
@@ -242,12 +245,12 @@ class Service extends Base\Service
 
         $users = $this->api->merchant->getUsers($merchantId)->toArray();
 
-        $primaryOwner = array_filter($users, function($user)
-        {
-            return ($user['role'] === 'owner');
-        });
+        $genericUsers = (new Helper)->createGenericUsers($users);
 
-        if (empty($primaryOwner) === true)
+        $primaryOwner = $genericUsers->where('role', 'owner')
+                                     ->first();
+
+        if ($primaryOwner === null)
         {
             $error[] = self::PRIMARY_LOGIN_ERROR;
 
@@ -256,18 +259,18 @@ class Service extends Base\Service
 
         try
         {
-            list($error, $user) = (new User\Service)->getUserFromApi(array_values($primaryOwner)[0]['id']);
+            list($error, $user) = (new User\Service)->getUserFromApi($primaryOwner->id);
 
-            if (empty($error) === true)
+            if (empty($error) === false)
             {
-                $this->app['session']->put('dashboard_user_payload', $user);
-
-                $userEntity = new Providers\GenericUser($user);
-
-                Auth::login($userEntity, false);
-
-                (new User\Service)->switchCurrentMerchantForUser($merchantId, $userEntity);
+                return $error;
             }
+
+            $this->app['session']->put('dashboard_user_payload', $user);
+
+            Auth::login($user, false);
+
+            (new User\Service)->switchCurrentMerchantForUser($merchantId, $user);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -588,11 +591,11 @@ class Service extends Base\Service
             {
                 $users = $this->api->merchant->getUsers($id)->toArray();
 
-                $confirmedPrimaryOwner = array_filter($users, function($user)
-                {
-                    return (($user['role'] === 'owner') and
-                            ($user['confirmed'] === true));
-                });
+                $genericUsers = $this->createGenericUsers($users);
+
+                $confirmedPrimaryOwner = $genericUsers->where('role', 'owner')
+                                                      ->where('confirmed', 'true')
+                                                      ->first();
 
                 $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
             }
@@ -618,7 +621,9 @@ class Service extends Base\Service
                 'activated_dashboard' => $merchant['activated']
             ] + $merchant;
         }
-        catch (BadRequestError $e){}
+        catch (BadRequestError $e){
+
+        }
 
         return $response;
     }

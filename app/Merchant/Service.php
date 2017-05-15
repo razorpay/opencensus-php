@@ -11,12 +11,15 @@ use App\User;
 use App\Admin;
 use App\Merchant;
 use App\Invitation;
+use App\User\Helper;
 use App\MerchantDetails;
 use App\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 use App\Exceptions\EntityNotFoundException;
 
+
+use App\RZP\PublicCollection;
 
 class Service extends Base\Service
 {
@@ -83,34 +86,33 @@ class Service extends Base\Service
     {
         $currentMerchant = $this->currentUser->currentMerchant();
 
-        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
-
         $isLinkedAccount = (bool) (\Input::get('account') ?? false);
 
-        $tags = Merchant\Entity::select(['merchants.id'])
-                                ->with('tagged')
-                                ->where('merchants.id', $currentMerchant->id)
-                                ->get()
-                                ->toArray();
+        $currentMerchant = Merchant\Entity::select(['*'])
+                                            ->with('tagged')
+                                            ->where('merchants.id', $currentMerchant->id)
+                                            ->get()
+                                            ->toArray();
 
         $tagNames = $tags[0]['tags'];
 
         if ($isLinkedAccount === true)
         {
-            if (in_array('Marketplace', $tagNames) === false)
+            if (in_array('Marketplace', $tagNames, true) === false)
             {
                 return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
             }
         }
         else
         {
-            if (in_array('Aggregator', $tagNames) === false)
+            if (in_array('Aggregator', $tagNames, true) === false)
             {
                 return [[self::SUBMERCHANT_NOT_ALLOWED], null];
             }
         }
 
-        $error = (new Merchant\Validator)->validateInput('create_submerchant', $input)->messages();
+        $error = (new Merchant\Validator)->validateInput('create_submerchant', $input)
+                                         ->messages();
 
         if (empty($error))
         {
@@ -165,62 +167,60 @@ class Service extends Base\Service
 
         $error = (new Merchant\Validator)->validateInput('create_submerchant_user', $input)->messages();
 
-        if (empty($error))
+        if (empty($error) === false)
         {
-            if ($email === $currentMerchant->email)
-            {
-                return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
-            }
-
-            list($error, $users) = $this->getUsersOfMerchantFromApi($currentMerchant->id);
-
-            $primaryOwners = array_filter($users, function($user)
-            {
-                return ($user['role'] === 'owner');
-            });
-
-            list($error, $primaryOwnerDetails) = (new User\Service)->getUserFromApi(array_values($primaryOwners)[0]['id']);
-
-            $ownerMerchants = array_filter($primaryOwnerDetails['merchants'], function($merchant) use ($subMerchant)
-            {
-                return (($merchant['id'] === $subMerchant['id']) and
-                        ($merchant['role'] === 'owner'));
-            });
-
-            // checks if the main merchant's owner user is the primary
-            // owner of the submerchant account
-            if (empty($ownerMerchants) === true)
-            {
-                return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
-            }
-
-            $input['name'] = $subMerchant['name'];
-            $input['captcha_disable'] = User\Validator::DISABLE_CAPTCHA_SECRET;
-
-            try
-            {
-                $user = (new User\Service)->createUserForSubmerchant($input);
-                $user->save();
-
-                $userApiData = (new User\Service)->getUserApiData($user);
-                (new User\Service)->createUserOnApi($userApiData);
-
-                // Finally attach the new user to the sub merchant
-                $user->joinMerchantByIdWithRole($input['id'], 'owner');
-
-                (new User\Service)->attachMerchantUserOnApi($user->id, $input['id'], 'owner');
-
-                return [null, $user->toArray()];
-            }
-            catch(User\RecoverableException $e)
-            {
-                $error = [$e->getMessage()];
-
-                return [$error, null];
-            }
+            return [$error, null];
         }
-        else
+
+        if ($email === $currentMerchant->email)
         {
+            return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
+        }
+
+        list($error, $genericUsers) = $this->getUsersOfMerchantFromApi($currentMerchant->id);
+
+        $primaryOwner = $genericUsers->where('role', 'owner')
+                                     ->first();
+
+        list($error, $primaryOwnerDetails) = (new User\Service)->getUserFromApi($primaryOwner->id);
+
+        $ownerMerchant = $primaryOwnerDetails->merchants
+                                             ->where('role', 'owner')
+                                             ->where('id', $submerchant['id'])
+                                             ->first();
+
+        // checks if the main merchant's owner user is the primary
+        // owner of the submerchant account
+        if ($ownerMerchant === null)
+        {
+            return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
+        }
+
+        $input['name'] = $subMerchant['name'];
+        $input['captcha_disable'] = User\Validator::DISABLE_CAPTCHA_SECRET;
+
+        try
+        {
+            $user = (new User\Service)->createUserForSubmerchant($input);
+            $user->save();
+
+            $userApiData = (new User\Service)->getUserApiData($user);
+            (new User\Service)->createUserOnApi($userApiData);
+
+            // Finally attach the new user to the sub merchant
+            list($error, $response) = (new User\Service)->attachMerchantUserOnApi($user->id, $input['id'], 'owner');
+
+            if (empty($error) === true)
+            {
+                $user->joinMerchantByIdWithRole($input['id'], 'owner');
+            }
+
+            return [null, $user->toArray()];
+        }
+        catch(User\RecoverableException $e)
+        {
+            $error = [$e->getMessage()];
+
             return [$error, null];
         }
     }
@@ -486,7 +486,7 @@ class Service extends Base\Service
         {
             $response = $this->api
                              ->merchant
-                             ->fetch($merchantId)
+                             ->set($merchantId)
                              ->keys()
                              ->all()
                              ->toArray();
@@ -509,7 +509,7 @@ class Service extends Base\Service
         {
             $data = $this->api
                          ->merchant
-                         ->fetch($merchantId)
+                         ->set($merchantId)
                          ->keys()
                          ->create()
                          ->toArray();
@@ -887,19 +887,23 @@ class Service extends Base\Service
 
     public function getUsersOfMerchantFromApi($merchantId)
     {
-        $error = $response = [];
+        $error = [];
+
+        $genericUsers = new PublicCollection;
 
         $this->setApiCredentials();
 
         try
         {
             $response = $this->api->merchant->getUsers($merchantId)->toArray();
+
+            $genericUsers = (new Helper)->createGenericUsers($response);
         }
         catch(\Razorpay\Api\Errors\Error $e)
         {
             $error[] = $e->getMessage();
         }
 
-        return [$error, $response];
+        return [$error, $genericUsers];
     }
 }
