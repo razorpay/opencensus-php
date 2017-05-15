@@ -657,5 +657,25 @@ final class FactoryData
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp
         ]);
+
+        $factory(\RZP\Models\Tax\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'name'        => 'Sample tax',
+            'rate_type'   => 'percentage',
+            'rate'        => 1000,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'deleted_at'  => null,
+        ]);
+
+        $factory(\RZP\Models\Tax\Group\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'name'        => 'Sample tax group',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'deleted_at'  => null,
+        ]);
     }
 }

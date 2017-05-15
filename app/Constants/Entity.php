@@ -129,6 +129,11 @@ class Entity
     const WALLET_OPENWALLET     = 'wallet_openwallet';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
 
+    // Tax and Tax Groups
+
+    const TAX                   = 'tax';
+    const TAX_GROUP             = 'tax_group';
+
 
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
@@ -226,6 +231,8 @@ class Entity
         self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
         self::ACTION_STATE          => \RZP\Models\Workflow\Action\State::class,
         self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
+
+        self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
     ];
 
     protected static $repository = [

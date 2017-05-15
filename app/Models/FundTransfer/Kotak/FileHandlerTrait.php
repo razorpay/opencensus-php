@@ -20,11 +20,9 @@ trait FileHandlerTrait
 
     private $_zipCommand = "zip --junk-paths --move";
 
-    public function writeToTextFile($txt)
+    public function writeToTextFile($name, $txt)
     {
-        $name = $this->getFileToWriteName();
-
-        $fullpath = $this->saveLocally($name, $txt);
+        $fullpath = $this->createTxtFile($name, $txt);
 
         $url = $this->saveToAws($name, $fullpath, 'text/plain');
 
@@ -36,7 +34,7 @@ trait FileHandlerTrait
     {
         try
         {
-            $fullpath = $this->saveLocally($name, $txt);
+            $fullpath = $this->createTxtFile($name, $txt);
 
             $bucket = 'h2h_bucket';
 
@@ -430,7 +428,7 @@ trait FileHandlerTrait
         return $presignedUrl;
     }
 
-    protected function saveLocally($name, $txt)
+    public function createTxtFile($name, $txt)
     {
         $fullpath = $this->getFullFilePath($name);
 
