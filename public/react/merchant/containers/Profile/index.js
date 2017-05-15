@@ -89,7 +89,9 @@ export default class Profile extends Component {
         if (type === 'reject') {
           this.props.fetchPendingInvitations();
         } else {
-          location.reload(); //TODO: Check behavior, why it's needed
+          setTimeout(() => {
+            location.reload();
+          }, 400);
         }
       })
       .catch(err => {
@@ -154,9 +156,7 @@ export default class Profile extends Component {
                     />
                   : null}
 
-                {!this.state.hasMerchant
-                  ? <UpgradeMerchantForm upgradeAccount={this.upgradeAccount} />
-                  : null}
+                {!this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
 
                 <div class="text-center">
                   <button

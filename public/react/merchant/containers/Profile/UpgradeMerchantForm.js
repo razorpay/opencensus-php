@@ -39,7 +39,7 @@ export default class UpgradeMerchantForm extends PureComponent {
               });
               setTimeout(() => {
                 location.reload();
-              }, 400); //TODO: Check behavior, why it's needed
+              }, 400);
             })
             .catch(err => {
               this.props.showNotification({
@@ -89,7 +89,6 @@ export default class UpgradeMerchantForm extends PureComponent {
               text="Upgrade"
               pendingText="Upgrading..."
               disabled={invalid}
-              style={{ float: 'right' }}
               onClick={handleSubmit(this.confirmUpgrade)}
             />
           </form>
