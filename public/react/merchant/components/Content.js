@@ -12,12 +12,11 @@ import Settings from 'merchant/containers/Settings';
 export default () => {
   return (
     <main class="main-content">
-
       {/* Transaction routes */}
       <Route path="/app/payments" component={Transactions} />
       <Route path="/app/refunds" component={Transactions} />
       <Route path="/app/orders" component={Transactions} />
-      <Route path="/batch-refunds" component={Transactions} />
+      <Route path="/app/batch-refunds" component={Transactions} />
 
       <Route path="/app/settlements" component={Settlements} />
       <Route path="/app/invoices" component={Invoices} />

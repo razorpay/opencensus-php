@@ -12,25 +12,31 @@ export default class Sidebar extends Component {
     settings: '/app/config',
   };
 
-  render() {
-    let { user, location } = this.props;
+  componentWillMount() {
+    this.initializeRoutes(this.props.location);
+  }
 
-    let { routes } = this;
+  componentWillReceiveProps(nextProps) {
+    this.initializeRoutes(nextProps.location);
+  }
 
-    let isMerchant = !!user.current;
-    let { pathname } = location;
+  initializeRoutes(location) {
+    let pathname = location.pathname;
+    let routes = this.routes;
 
     if (/^\/app\/(payments|refunds|orders|batch-refunds)/.test(pathname)) {
       routes.transactions = pathname;
-    }
-
-    if (/^\/app\/(profile|activation|credits|addfunds)/.test(pathname)) {
+    } else if (/^\/app\/(profile|activation|credits|addfunds)/.test(pathname)) {
       routes.account = pathname;
-    }
-
-    if (/^\/app\/(config|webhooks|keys)/.test(pathname)) {
+    } else if (/^\/app\/(config|webhooks|keys)/.test(pathname)) {
       routes.settings = pathname;
     }
+  }
+
+  render() {
+    let { user } = this.props;
+    let routes = this.routes;
+    let isMerchant = !!user.current;
 
     return (
       <div class="sidebar">

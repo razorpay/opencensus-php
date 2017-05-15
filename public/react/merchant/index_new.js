@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
+import { Tabs } from 'react-tabs';
 
 import 'rzp/utils/polyfills';
 import store from './store';
@@ -9,6 +10,8 @@ import App from './containers/App';
 
 window.React = React;
 window.ReactDOM = ReactDOM;
+
+Tabs.setUseDefaultStyles(false);
 
 render(
   <Provider store={store}>

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
+import { Route, NavLink, withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
-
-import { NavLink, withRouter } from 'react-router-dom';
 
 import PaymentsList from 'merchant/containers/Payments/List';
 import PaymentDetails from 'merchant/containers/Payments/Details';
@@ -10,20 +9,9 @@ import RefundDetails from 'merchant/containers/Refunds/Details';
 import OrdersList from 'merchant/containers/Orders/List';
 import OrderDetails from 'merchant/containers/Orders/Details';
 
-const components = {
-  refunds: [<RefundsList />, id => <RefundDetails id={id} />],
-  orders: [<OrdersList />, id => <OrderDetails id={id} />],
-  payments: [<PaymentsList />, id => <PaymentDetails id={id} />],
-};
-
 @withRouter
 export default class TransactionsContainer extends Component {
   render() {
-    let urlFragments = this.props.location.pathname.match(
-      /\/app\/(\w+)\/?(\w*)/
-    );
-    let component = components[urlFragments[1]];
-    let entityId = urlFragments[2];
     return (
       <tabbed-container>
         <header>
@@ -32,19 +20,10 @@ export default class TransactionsContainer extends Component {
           <NavLink to="/app/orders">Orders</NavLink>
           <NavLink to="/batch-refunds">Batch Refunds</NavLink>
         </header>
-        {component[0]}
-        <Modal
-          onRequestClose={() => {
-            location.hash = `#/app/${urlFragments[1]}`;
-          }}
-          isOpen={!!entityId}
-          closeTimeoutMS={300}
-          contentLabel="💩"
-          className="side-pane"
-          overlayClassName="main-content side-overlay"
-        >
-          {entityId && component[1](entityId)}
-        </Modal>
+
+        <Route path="/app/payments" component={PaymentsList} />
+        <Route path="/app/refunds" component={RefundsList} />
+        <Route path="/app/orders" component={OrdersList} />
       </tabbed-container>
     );
   }
