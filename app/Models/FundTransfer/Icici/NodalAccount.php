@@ -63,7 +63,7 @@ class NodalAccount extends Base\Core
 
         $this->sendIciciTransferMail($fileData);
 
-        return ['file' => $filePath];
+        return ['file' => $fileData['file_path']];
     }
 
     protected function getPlainText($amount)
@@ -121,7 +121,6 @@ class NodalAccount extends Base\Core
                         ->save();
 
         $fileInstance = $file->get();
-        sd($fileInstance);
 
         $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
@@ -131,7 +130,7 @@ class NodalAccount extends Base\Core
             'signed_url' => $signedFileUrl,
         ];
 
-        return $fileData['file_path'];
+        return $fileData;
     }
 
     protected function getH2HMetadata()
