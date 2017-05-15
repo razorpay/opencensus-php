@@ -42,9 +42,10 @@ class Alert extends Component {
         )}
         style={{ borderRadius: 0 }}
       >
-        <button type="button" class="close" onClick={this.close}>
-          <span>×</span>
-        </button>
+        {props.showDismiss &&
+          <button type="button" class="close" onClick={this.close}>
+            <span>×</span>
+          </button>}
 
         <ul
           class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
@@ -65,6 +66,7 @@ Alert.displayName = 'FormAlert';
 
 Alert.propTypes = {
   type: PropTypes.string,
+  showDismiss: true,
 };
 
 export default Alert;

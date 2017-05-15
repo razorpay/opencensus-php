@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header';
 import Spinner from 'rzp/ui/Spinner';
 import * as ModalActions from 'rzp/modules/modals';
@@ -30,7 +31,14 @@ export default class Profile extends Component {
   };
 
   componentWillMount() {
-    this.props.fetchUser();
+    this.props.fetchUser().then(reponse => {
+      let user = reponse.data;
+      if (!user.current) {
+        this.setState({
+          errors: 'Your user account is not associated at present with any active merchant account.',
+        });
+      }
+    });
     this.props.fetchBankAccount();
     this.props.fetchPendingInvitations();
     this.refreshUser(this.props.user);
@@ -41,8 +49,12 @@ export default class Profile extends Component {
   }
 
   refreshUser(user) {
-    let hasMerchant = false;
+    if (!user.current) {
+      return;
+    }
 
+    // Show notification if user not assiciated with active merchant account
+    let hasMerchant = false;
     // Does the user have an associated merchant account
     for (let i in user.user.merchants) {
       var merchant = user.user.merchants[i];
@@ -60,14 +72,6 @@ export default class Profile extends Component {
       loggedInUserRole: user.merchants[user.id].pivot.role,
       hasMerchant,
     });
-
-    // Show notification if user not assiciated with active merchant account
-    if (!user.current) {
-      this.props.showNotification({
-        type: 'error',
-        message: 'Your user account is not associated at present with any active merchant account.',
-      });
-    }
   }
 
   updateInvitation = (type, invite) => {
@@ -116,6 +120,11 @@ export default class Profile extends Component {
         <Header title="User Profile" showMode={false} />
         <div class="content-wrapper">
           <div class="panel-detail-container">
+            <Alert
+              type="error"
+              message={this.state.errors}
+              showDismiss={false}
+            />
             <div class="panel panel-default">
               <div class="panel-heading">
                 Merchant Id: <strong>{user.id}</strong>

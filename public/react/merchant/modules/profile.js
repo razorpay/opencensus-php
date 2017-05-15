@@ -34,7 +34,7 @@ export const updateInvitation = (type, inviteId) => {
   return dispatch => {
     return ajax({
       url: `/settings/invitations/${inviteId}/${type}`,
-      method: 'post',
+      method: type === 'reject' ? 'delete' : 'post',
       appendModeInURL: false,
     });
   };
