@@ -54,13 +54,29 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
   &::after {
     content: '';
     position: absolute;
-    left: -8px;
     width: 0;
     height: 0;
-    transform: translate(0, 50%);
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-right: 10px solid #000;
+  }
+
+  &.right {
+    &::after {
+      left: -8px;
+      transform: translate(0, 50%);
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-right: 10px solid #000;
+    }
+  }
+
+  &.top {
+    &::after {
+      left: 50%;
+      bottom: 0;
+      transform: translate(-50%, 100%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid #000;
+    }
   }
 }
 @keyframes fadeIn {
