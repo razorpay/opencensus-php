@@ -50,6 +50,10 @@ class Entity extends Base\Entity
         self::WORKFLOW_ORGS,
     ];
 
+    protected $diff = [
+        self::NAME
+    ];
+
     protected $visible = [
         self::ID,
         self::NAME,
