@@ -5,10 +5,11 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 import { reduxForm, Field } from 'redux-form';
 import { required } from 'rzp/utils/validators';
 import InputField from 'rzp/ui/Forms/InputField';
-import { changePassword } from 'merchant/modules/profile';
+import { updatePassword } from 'merchant/modules/profile';
 import { closeModal } from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
 
-@connect(null, { changePassword, closeModal })
+@connect(null, { updatePassword, closeModal, showNotification })
 @reduxForm({
   form: 'updatePasswordChangeForm',
 })
@@ -21,6 +22,7 @@ export default class PasswordForm extends PureComponent {
           type: 'success',
           message: 'Password changed successfully.',
         });
+        this.props.closeModal();
       })
       .catch(err => {
         this.props.showNotification({
