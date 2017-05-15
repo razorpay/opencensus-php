@@ -1059,9 +1059,12 @@ final class Route
         'merchant_activation_update'       => ['*'],
         'merchant_assign_pricing'          => [Permission::EDIT_MERCHANT_PRICING],
         'merchant_get_banks'               => [Permission::VIEW_MERCHANT_BANKS],
-        'merchant_set_banks'               => [Permission::EDIT_MERCHANT_BANKS],
+        'merchant_set_banks'               => [Permission::ASSIGN_MERCHANT_BANKS],
         'merchant_fetch_bank_account'      => [Permission::VIEW_MERCHANT_BANK_ACCOUNTS],
         'merchants_update_hold_funds'      => [Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS],
+        'merchant_edit'                    => [Permission::EDIT_MERCHANT_INTERNATIONAL],
+        'adj_add'                          => [Permission::ADD_MERCHANT_ADJUSTMENT],
+        'merchant_add_bank_account'        => [Permission::EDIT_MERCHANT_BANKS],
     ];
 
     public static $direct = array(

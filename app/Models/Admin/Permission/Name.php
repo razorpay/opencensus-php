@@ -34,7 +34,7 @@ class Name
     const EDIT_MERCHANT_TAGS              = 'edit_merchant_tags';
     const EDIT_MERCHANT_FEATURES          = 'edit_merchant_features';
     const EDIT_MERCHANT_COMMENTS          = 'edit_merchant_comments';
-    const EDIT_MERCHANT_BANKS             = 'edit_merchant_banks';
+    const EDIT_MERCHANT_BANK_DETAIL       = 'edit_merchant_bank_detail';
     const EDIT_IIN_RULE                   = 'edit_iin_rule';
     const CREATE_MERCHANT_ADJUSTMENTS     = 'create_merchant_adjustments';
     const EDIT_ACTIVATE_MERCHANT          = 'edit_activate_merchant';
@@ -139,11 +139,12 @@ class Name
     const DELETE_WORKFLOW                 = 'delete_workflow';
 
     public static $actionMap = [
-        Merchant\Action::ARCHIVE    => self::EDIT_MERCHANT_ARCHIVE,
-        Merchant\Action::UNARCHIVE  => self::EDIT_MERCHANT_UNARCHIVE,
-        Merchant\Action::SUSPEND    => self::EDIT_MERCHANT_SUSPEND,
-        Merchant\Action::UNSUSPEND  => self::EDIT_MERCHANT_UNSUSPEND,
-        Merchant\Action::LOCK       => self::EDIT_MERCHANT_LOCK_ACTIVATION,
-        Merchant\Action::UNLOCK     => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
+        Merchant\Action::ARCHIVE        => self::EDIT_MERCHANT_ARCHIVE,
+        Merchant\Action::UNARCHIVE      => self::EDIT_MERCHANT_UNARCHIVE,
+        Merchant\Action::SUSPEND        => self::EDIT_MERCHANT_SUSPEND,
+        Merchant\Action::UNSUSPEND      => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::LOCK           => self::EDIT_MERCHANT_LOCK_ACTIVATION,
+        Merchant\Action::UNLOCK         => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
+        Merchant\Action::EDIT_COMMENT   => self::EDIT_MERCHANT_COMMENTS,
     ];
 }

@@ -4,14 +4,15 @@ namespace RZP\Models\Merchant;
 
 class Action
 {
-    const ARCHIVE   = 'archive';
-    const UNARCHIVE = 'unarchive';
-    const SUSPEND   = 'suspend';
-    const UNSUSPEND = 'unsuspend';
-    const CREATED   = 'created';
-    const ACTIVATED = 'activated';
-    const LOCK      = 'lock';
-    const UNLOCK    = 'unlock';
+    const ARCHIVE       = 'archive';
+    const UNARCHIVE     = 'unarchive';
+    const SUSPEND       = 'suspend';
+    const UNSUSPEND     = 'unsuspend';
+    const CREATED       = 'created';
+    const ACTIVATED     = 'activated';
+    const LOCK          = 'lock';
+    const UNLOCK        = 'unlock';
+    const EDIT_COMMENT  = 'edit_comment';
 
     public static function exists($action)
     {

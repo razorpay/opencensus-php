@@ -56,7 +56,7 @@ return [
             Permission::EDIT_MERCHANT_TAGS => '',
             Permission::EDIT_MERCHANT_FEATURES => '',
             Permission::EDIT_MERCHANT_FEATURES => '',
-            Permission::EDIT_MERCHANT_BANKS => '',
+            Permission::EDIT_MERCHANT_BANK_DETAIL => '',
             Permission::EDIT_IIN_RULE => '',
             Permission::CREATE_MERCHANT_ADJUSTMENTS => '',
             Permission::EDIT_ACTIVATE_MERCHANT => '',
