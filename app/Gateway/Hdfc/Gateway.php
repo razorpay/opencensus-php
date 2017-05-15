@@ -367,6 +367,11 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function verifyRefund(array $input)
+    {
+        return false;
+    }
+
     /**
      * HDFC gateway does not provide void
      */
