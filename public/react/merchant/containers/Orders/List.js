@@ -18,25 +18,23 @@ export default class OrdersListContainer extends ListContainer {
     let { loading, orders, error } = this.props;
 
     return (
-      <div class="react-root">
-        <div class="content-wrapper">
-          <OrdersListFilter
-            form="orderListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-          />
+      <div class="content-wrapper">
+        <OrdersListFilter
+          form="orderListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-          {error && <Alert type="error" message={error} />}
+        {error && <Alert type="error" message={error} />}
 
-          <OrdersList orders={orders} isLoading={loading} />
+        <OrdersList orders={orders} isLoading={loading} />
 
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={orders.length}
-            onClick={this.paginate}
-          />
-        </div>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={orders.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }

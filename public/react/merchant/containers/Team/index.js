@@ -33,60 +33,58 @@ export default class TeamContainer extends Component {
     );
 
     return (
-      <div class="react-root">
-        <tabbed-container>
-          <header>
-            <NavLink to="/app/team">Manage Team</NavLink>
+      <tabbed-container>
+        <header>
+          <NavLink to="/app/team">Manage Team</NavLink>
 
-            <a
-              class="pull-right"
-              href="https://docs.razorpay.com/v1/page/team-support"
-              target="_blank"
-            >
-              Team & Roles Documentation &nbsp;
-              <i class="fa fa-external-link" />
-            </a>
-          </header>
+          <a
+            class="pull-right"
+            href="https://docs.razorpay.com/v1/page/team-support"
+            target="_blank"
+          >
+            Team & Roles Documentation &nbsp;
+            <i class="fa fa-external-link" />
+          </a>
+        </header>
 
-          <div class="content-wrapper content-sm">
-            <NewInvitation />
+        <div class="content-wrapper content-sm">
+          <NewInvitation />
 
-            {otherUsers.length
-              ? <div>
-                  <div class="panel-heading">Team Members</div>
-                  <table class="table table-noborder">
-                    <tbody>
-                      {otherUsers.map(user => (
-                        <User
-                          key={user.id}
-                          user={user}
-                          form={`editUser_${user.id}`}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              : null}
+          {otherUsers.length
+            ? <div>
+                <div class="panel-heading">Team Members</div>
+                <table class="table table-noborder">
+                  <tbody>
+                    {otherUsers.map(user => (
+                      <User
+                        key={user.id}
+                        user={user}
+                        form={`editUser_${user.id}`}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            : null}
 
-            {invitations.length
-              ? <div>
-                  <div class="panel-heading">Pending Invitations</div>
-                  <table class="table table-noborder">
-                    <tbody>
-                      {invitations.map(invite => (
-                        <Invitation
-                          key={invite.id}
-                          invite={invite}
-                          form={`editInvitation_${invite.id}`}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              : null}
-          </div>
-        </tabbed-container>
-      </div>
+          {invitations.length
+            ? <div>
+                <div class="panel-heading">Pending Invitations</div>
+                <table class="table table-noborder">
+                  <tbody>
+                    {invitations.map(invite => (
+                      <Invitation
+                        key={invite.id}
+                        invite={invite}
+                        form={`editInvitation_${invite.id}`}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            : null}
+        </div>
+      </tabbed-container>
     );
   }
 }

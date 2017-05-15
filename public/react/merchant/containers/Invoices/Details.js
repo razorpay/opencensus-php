@@ -117,16 +117,14 @@ export default class InvoiceDetailContainer extends Component {
     let statusMsg = this.state.statusMsg;
 
     return (
-      <div class="react-root">
-        <div class="content-wrapper">
-          <InvoiceDetail
-            invoice={invoice}
-            isLoading={loading}
-            statusMsg={statusMsg}
-            onIssue={this.showIssueConfirmModal}
-            onCancel={this.cancelInvoice}
-          />
-        </div>
+      <div class="content-wrapper">
+        <InvoiceDetail
+          invoice={invoice}
+          isLoading={loading}
+          statusMsg={statusMsg}
+          onIssue={this.showIssueConfirmModal}
+          onCancel={this.cancelInvoice}
+        />
       </div>
     );
   }

@@ -66,30 +66,28 @@ export default class PaymentsListContainer extends ListContainer {
     let { loading, payments = [], error } = this.props;
 
     return (
-      <div class="react-root">
-        <div class="content-wrapper">
-          <PaymentsListFilter
-            form="paymentListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-          />
+      <div class="content-wrapper">
+        <PaymentsListFilter
+          form="paymentListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-          {error && <Alert type="error" message={error} />}
+        {error && <Alert type="error" message={error} />}
 
-          <PaymentsList
-            payments={payments}
-            isLoading={loading}
-            hasOrders={this.state.hasOrders}
-            orders={this.state.orders}
-          />
+        <PaymentsList
+          payments={payments}
+          isLoading={loading}
+          hasOrders={this.state.hasOrders}
+          orders={this.state.orders}
+        />
 
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={payments.length}
-            onClick={this.paginate}
-          />
-        </div>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={payments.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }

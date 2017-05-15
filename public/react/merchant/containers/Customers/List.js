@@ -70,7 +70,7 @@ export default class CustomersListContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <div class="react-root">
+      <div class="content-wrapper">
         <ShowWhen notMyRole="support">
           <div class="btn-toolbar">
             <button
@@ -82,25 +82,22 @@ export default class CustomersListContainer extends ListContainer {
             </button>
           </div>
         </ShowWhen>
+        <Alert type={status.type} message={status.message} />
 
-        <div class="content-wrapper">
-          <Alert type={status.type} message={status.message} />
+        <CustomersList
+          customers={customers}
+          isLoading={loading}
+          highlightRow={customer => customer.id === highlightRowId}
+          onEdit={this.showCustomerModal}
+          onDelete={this.deleteCustomer}
+        />
 
-          <CustomersList
-            customers={customers}
-            isLoading={loading}
-            highlightRow={customer => customer.id === highlightRowId}
-            onEdit={this.showCustomerModal}
-            onDelete={this.deleteCustomer}
-          />
-
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={customers.length}
-            onClick={this.paginate}
-          />
-        </div>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={customers.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }

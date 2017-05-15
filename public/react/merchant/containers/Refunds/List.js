@@ -19,25 +19,23 @@ export default class RefundsListContainer extends ListContainer {
     let { loading, refunds, error } = this.props;
 
     return (
-      <div class="react-root">
-        <div class="content-wrapper">
-          <RefundsListFilter
-            form="refundListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-          />
+      <div class="content-wrapper">
+        <RefundsListFilter
+          form="refundListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-          {error && <Alert type="error" message={error} />}
+        {error && <Alert type="error" message={error} />}
 
-          <RefundsList refunds={refunds} isLoading={loading} />
+        <RefundsList refunds={refunds} isLoading={loading} />
 
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={refunds.length}
-            onClick={this.paginate}
-          />
-        </div>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={refunds.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }

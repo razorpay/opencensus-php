@@ -69,7 +69,7 @@ export default class ItemsListContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <div class="react-root">
+      <div class="content-wrapper">
         <ShowWhen notMyRole="support">
           <div class="btn-toolbar">
             <button
@@ -81,25 +81,22 @@ export default class ItemsListContainer extends ListContainer {
             </button>
           </div>
         </ShowWhen>
+        <Alert type={status.type} message={status.message} />
 
-        <div class="content-wrapper">
-          <Alert type={status.type} message={status.message} />
+        <ItemsList
+          items={items}
+          isLoading={loading}
+          highlightRow={item => item.id === highlightRowId}
+          onEdit={this.showItemModal}
+          onDelete={this.deleteItem}
+        />
 
-          <ItemsList
-            items={items}
-            isLoading={loading}
-            highlightRow={item => item.id === highlightRowId}
-            onEdit={this.showItemModal}
-            onDelete={this.deleteItem}
-          />
-
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={items.length}
-            onClick={this.paginate}
-          />
-        </div>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={items.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }

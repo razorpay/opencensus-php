@@ -45,7 +45,7 @@ export default class InvoicesListContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <div class="react-root">
+      <div class="content-wrapper">
         <ShowWhen notMyRole="support">
           <div class="btn-toolbar pull-right">
             <button
@@ -65,30 +65,27 @@ export default class InvoicesListContainer extends ListContainer {
           </div>
         </ShowWhen>
 
-        <div class="content-wrapper">
-          <InvoiceListFilter
-            form="InvoiceListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-          />
+        <InvoiceListFilter
+          form="InvoiceListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-          <Alert type={status.type} message={status.message} />
+        <Alert type={status.type} message={status.message} />
 
-          <InvoicesList
-            invoices={invoices}
-            isLoading={loading}
-            highlightRow={invoice =>
-              invoice.id === this.props.highLightInvoiceId}
-            onEdit={this.editInvoice}
-          />
+        <InvoicesList
+          invoices={invoices}
+          isLoading={loading}
+          highlightRow={invoice => invoice.id === this.props.highLightInvoiceId}
+          onEdit={this.editInvoice}
+        />
 
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={invoices.length}
-            onClick={this.paginate}
-          />
-        </div>
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={invoices.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }

@@ -19,7 +19,7 @@ Tabs.setUseDefaultStyles(false);
 
 render(
   <Provider store={store}>
-    <div id="react_root">
+    <div id="react_root" class="react-root">
       <App />
       <ModalDialog />
       <Notifications />
