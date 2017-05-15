@@ -53,10 +53,11 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::QUANTITY    => 1,
-        self::DESCRIPTION => null,
-        self::REF_ID      => null,
-        self::REF_TYPE    => null,
+        self::QUANTITY      => 1,
+        self::DESCRIPTION   => null,
+        self::REF_ID        => null,
+        self::REF_TYPE      => null,
+        self::TAX_INCLUSIVE => false,
     ];
 
     protected $visible = [

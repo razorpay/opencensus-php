@@ -2,6 +2,7 @@
 
 namespace RZP\Models\LineItem\Tax;
 
+use RZP\Models\Base;
 use RZP\Models\LineItem;
 use RZP\Models\Tax as TaxModel;
 use RZP\Exception;
@@ -11,71 +12,70 @@ use RZP\Exception;
  */
 class Calculator
 {
-    protected $lineItem;
-    protected $tax;
-
-    public function __construct(
-        LineItem\Entity $lineItem,
-        TaxModel\Entity $tax)
-    {
-        $this->lineItem = $lineItem;
-        $this->tax      = $tax;
-    }
-
     /**
-     * Calculates and returns tax amount for a line item against
-     * given tax.
+     * Give a line item and set of taxes to be applied on it, it returns
+     * the taxable amount of line item.
+     * It also handles whether line item amount is tax inclusive or exclusive.
+     *
+     * @param  LineItem\Entity       $lineItem
+     * @param  Base\PublicCollection $taxes
      *
      * @return int
      */
-    public function getTaxAmount(): int
+    public static function getTaxableAmountOfLineItem(
+        LineItem\Entity $lineItem,
+        Base\PublicCollection $taxes): int
     {
-        switch ($this->tax->getRateType())
+        $totalAmount = $lineItem->getAmount() * $lineItem->getQuantity();
+
+        // If line item is tax exclusive, just return the total amount.
+        if ($lineItem->isTaxInclusive() === false)
         {
-            case TaxModel\RateType::FLAT:
-
-                $taxAmount = $this->tax->getRate();
-
-                break;
-
-            case TaxModel\RateType::PERCENTAGE:
-
-                $taxAmount = $this->getTaxAmountForPercentageTypeTax();
-
-                break;
-
-            default:
-
-                throw new LogicException('Invalid tax rate type!');
+            return $totalAmount;
         }
 
-        return $taxAmount;
+        // If line item is tax inclusive, calculate the taxable amount (the amount)
+        // on which all the tax was applied.
+        // Formula:
+        // 
+        // Taxable Amount = (Total Amount - Accumulative flat taxes)/(1 + Accumulative percent taxes)
+
+        $flatTaxAmount = $percetangeTaxAmounts = 0;
+
+        foreach ($taxes as $tax)
+        {
+            if ($tax->getRateType() === TaxModel\RateType::PERCENTAGE)
+            {
+                $percetangeTaxAmounts += $tax->getRatePercentValue();
+            }
+            else
+            {
+                $flatTaxAmount += $tax->getRate();
+            }
+        }
+
+        return round(($totalAmount - $flatTaxAmount) / ($percetangeTaxAmounts + 1));
     }
 
     /**
-     * Gets tax amount when tax rate is of type percentage.
+     * Get tax amount against a given tax and amount.
+     *
+     * @param  int             $taxableAmount
+     * @param  TaxModel\Entity $tax
      *
      * @return int
      */
-    protected function getTaxAmountForPercentageTypeTax(): int
+    public static function getTaxAmount(
+        int $taxableAmount,
+        TaxModel\Entity $tax): int
     {
-        $totalAmount = $this->lineItem->getAmount() * $this->lineItem->getQuantity();
-
-        // Because we store percentage tax rate multiplied by 100 in our tables.
-        $rate = $this->tax->getRate() * 0.01;
-
-        // If line item's amount is not tax inclusive, then tax amount
-        // is simply rate %.
-        // But if it's tax inclusive, we just calculate back the taxed amount
-        // and store it. The item's total amount is still tax inclusive.
-
-        if ($this->lineItem->isTaxInclusive() === false)
+        if ($tax->getRateType() === TaxModel\RateType::PERCENTAGE)
         {
-            return round($totalAmount * $rate * 0.01);
+            return round($taxableAmount * $tax->getRatePercentValue());
         }
         else
         {
-            return round(($totalAmount * $rate)/(100 + $rate));
+            return $tax->getRate();
         }
     }
 }

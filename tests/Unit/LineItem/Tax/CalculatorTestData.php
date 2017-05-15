@@ -11,81 +11,155 @@ namespace RZP\Tests\Unit\LineItem\Tax;
 return [
     [
         'line_item' => [
-            'name'          => 'Line item #1',
-            'amount'        => 10000,
-            'currency'      => 'INR',
-            'quantity'      => 1,
-            'tax_inclusive' => false,
+            'attributes' => [
+                'name'          => 'Line item #1',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'quantity'      => 1,
+                'tax_inclusive' => false,
+            ],
+            'taxable_amount'    => 10000,
         ],
-        'tax' => [
-            'name'      => 'Tax #1',
-            'rate_type' => 'percentage',
-            'rate'      => 1000,
+        'taxes' => [
+            [
+                'attributes' => [
+                    'name'      => 'Tax #1',
+                    'rate_type' => 'percentage',
+                    'rate'      => 1000,
+                ],
+                'tax_amount'    => 1000,
+            ],
         ],
-        'expected_tax_amount' => 1000,
     ],
 
     [
         'line_item' => [
-            'name'          => 'Line item #1',
-            'amount'        => 10000,
-            'currency'      => 'INR',
-            'quantity'      => 5,
-            'tax_inclusive' => false,
+            'attributes' => [
+                'name'          => 'Line item #1',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'quantity'      => 5,
+                'tax_inclusive' => false,
+            ],
+            'taxable_amount'    => 50000,
         ],
-        'tax' => [
-            'name'      => 'Tax #1',
-            'rate_type' => 'percentage',
-            'rate'      => 1000,
+        'taxes' => [
+            [
+                'attributes' => [
+                    'name'      => 'Tax #1',
+                    'rate_type' => 'percentage',
+                    'rate'      => 1000,
+                ],
+                'tax_amount'    => 5000,
+            ],
         ],
-        'expected_tax_amount' => 5000,
     ],
 
     [
         'line_item' => [
-            'name'          => 'Line item #1',
-            'amount'        => 10000,
-            'currency'      => 'INR',
-            'quantity'      => 5,
-            'tax_inclusive' => false,
+            'attributes' => [
+                'name'          => 'Line item #1',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'quantity'      => 5,
+                'tax_inclusive' => false,
+            ],
+            'taxable_amount'    => 50000,
         ],
-        'tax' => [
-            'name'      => 'Tax #1',
-            'rate'      => 10,
-            'rate_type' => 'flat',
+        'taxes' => [
+            [
+                'attributes' => [
+                    'name'      => 'Tax #1',
+                    'rate'      => 10,
+                    'rate_type' => 'flat',
+                ],
+                'tax_amount'    => 10,
+            ],
         ],
-        'expected_tax_amount' => 10,
     ],
 
     [
         'line_item' => [
-            'name'          => 'Line item #1',
-            'amount'        => 10000,
-            'currency'      => 'INR',
-            'quantity'      => 1,
-            'tax_inclusive' => true,
+            'attributes' => [
+                'name'          => 'Line item #1',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'quantity'      => 1,
+                'tax_inclusive' => true,
+            ],
+            'taxable_amount'    => 9091,
         ],
-        'tax' => [
-            'name'      => 'Tax #1',
-            'rate_type' => 'percentage',
-            'rate'      => 1000,
+        'taxes' => [
+            [
+                'attributes' => [
+                    'name'      => 'Tax #1',
+                    'rate_type' => 'percentage',
+                    'rate'      => 1000,
+                ],
+                'tax_amount'    => 909,
+            ],
         ],
-        'expected_tax_amount' => 909,
     ],
 
     [
         'line_item' => [
-            'name'          => 'Line item #1',
-            'amount'        => 10000,
-            'currency'      => 'INR',
-            'quantity'      => 5,
-            'tax_inclusive' => true,
+            'attributes' => [
+                'name'          => 'Line item #1',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'quantity'      => 5,
+                'tax_inclusive' => true,
+            ],
+            'taxable_amount'    => 49990,
         ],
-        'tax' => [
-            'name'      => 'Tax #1',
-            'rate'      => 10,
-            'rate_type' => 'flat',
+        'taxes' => [
+            [
+                'attributes' => [
+                    'name'      => 'Tax #1',
+                    'rate'      => 10,
+                    'rate_type' => 'flat',
+                ],
+                'tax_amount'    => 10,
+            ],
         ],
-        'expected_tax_amount' => 10,
+    ],
+
+    [
+        'line_item' => [
+            'attributes' => [
+                'name'          => 'Line item #1',
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'quantity'      => 5,
+                'tax_inclusive' => true,
+            ],
+            'taxable_amount'    => 36704,
+        ],
+        'taxes' => [
+            [
+                'attributes' => [
+                    'name'      => 'Tax #2',
+                    'rate'      => 1500,
+                    'rate_type' => 'percentage',
+                ],
+                'tax_amount'    => 5506,
+            ],
+            [
+                'attributes' => [
+                    'name'      => 'Tax #2',
+                    'rate'      => 2000,
+                    'rate_type' => 'percentage',
+                ],
+                'tax_amount'    => 7341,
+            ],
+            [
+                'attributes' => [
+                    'name'      => 'Tax #3',
+                    'rate'      => 450,
+                    'rate_type' => 'flat',
+                ],
+                'tax_amount'    => 450,
+            ],
+        ],
     ],
 ];

@@ -78,6 +78,32 @@ class InvoiceTaxesTest extends TestCase
     }
 
     /**
+     * Test invoice creation with another sample data, usage tax_inclusive
+     * line item amounts.
+     *
+     */
+    public function testCreateInvoiceWithTaxes3()
+    {
+        $response = $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    /**
+     * Tests creation with line items which are mixed of tax inclusive and exclusive
+     * amounts.
+     * In general this won't be there practically, but still API supports it
+     * so dropping a test around it.
+     *
+     */
+    public function testCreateInvoiceWithTaxes4()
+    {
+        $response = $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    /**
      * Tests invoice update, includes removal/addition/updates
      * of line items and taxes.
      *

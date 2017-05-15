@@ -29,9 +29,11 @@ class Core extends Base\Core
             return;
         }
 
+        $taxableAmount = Calculator::getTaxableAmountOfLineItem($lineItem, $taxes);
+
         foreach ($taxes as $tax)
         {
-            $this->createLineItemTax($lineItem, $tax, $taxGroup);
+            $this->createLineItemTax($lineItem, $taxableAmount, $tax, $taxGroup);
         }
     }
 
@@ -121,16 +123,18 @@ class Core extends Base\Core
      * Creates line item tax with given tax and tax group entity.
      *
      * @param LineItem\Entity       $lineItem
+     * @param int                   $taxableAmount
      * @param Tax\Entity            $tax
      * @param Tax\Group\Entity|null $taxGroup
      *
      */
     protected function createLineItemTax(
         LineItem\Entity $lineItem,
+        int $taxableAmount,
         Tax\Entity $tax,
         Tax\Group\Entity $taxGroup = null)
     {
-        $taxAmount = (new Calculator($lineItem, $tax))->getTaxAmount();
+        $taxAmount = Calculator::getTaxAmount($taxableAmount, $tax);
 
         $input = [
             Entity::NAME       => $tax->getName(),
