@@ -369,10 +369,15 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        if ($input['refund']['amount'] !== $input['payment']['amount'])
+        // FSS returns an error when refund amount exceeds the remaining amount
+        // on FSS's end. We take advantage of this error and initiate refunds
+        // for all the pending refunds whose amount is either equal to payment, i.e,
+        // they are full refund or twice of refund amount is less than payment amount
+        if (($input['refund']['amount'] !== $input['payment']['amount']) or
+            ((2 * $input['refund']['amount']) <= $input['payment']['amount']))
         {
             throw new Exception\LogicException(
-                'Verify refund is only supported for full refunds');
+                'Verify refund is only supported for full refundsa and specific partial refunds');
         }
 
         return false;
