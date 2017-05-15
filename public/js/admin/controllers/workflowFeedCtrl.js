@@ -49,24 +49,31 @@ app
         request.success(function(data) {
           if (data.success) {
             $scope.action_diff_data = data;
+
+            // Show modal diff after success
+            $modal.open({
+              templateUrl: 'actionChanges.html',
+              controller: 'actionChangeCtrl',
+              resolve: {
+                action_data: function() {
+                  return $scope.action_diff_data;
+                },
+              },
+            });
+          } else {
+            $scope.alerts.addAlert(
+              'danger',
+              'Error: Changes cannot be fetched!',
+              true
+            );
           }
         });
       };
 
-      $scope.fetchDiff();
-
       // Audit log breakup details
 
       $scope.showActionChanges = function() {
-        $modal.open({
-          templateUrl: 'actionChanges.html',
-          controller: 'actionChangeCtrl',
-          resolve: {
-            action_data: function() {
-              return $scope.action_diff_data;
-            },
-          },
-        });
+        $scope.fetchDiff();
       };
 
       $scope.saveComment = function() {
