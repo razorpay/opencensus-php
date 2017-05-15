@@ -219,7 +219,7 @@ class AuthPolicyTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $passwordChangedAt = Carbon::now()->subDays(40)->timestamp;
+        $passwordChangedAt = Carbon::now()->subDays(130)->timestamp;
 
         $admin = $this->fixtures->create('admin', [
             'email'               => 'randomemail2@rzp.com',
