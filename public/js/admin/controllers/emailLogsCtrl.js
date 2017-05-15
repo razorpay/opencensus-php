@@ -21,7 +21,7 @@ app.controller('EmailLogsCtrl', [
         query.event = $scope.event;
       }
       if ($scope.recipient) {
-        query.recipient += ' AND ' + $scope.recipient;
+        query.recipient = $scope.recipient;
       }
       if ($scope.tags) {
         query.tags = $scope.tags;
