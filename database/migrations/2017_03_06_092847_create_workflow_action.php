@@ -27,6 +27,12 @@ class CreateWorkflowAction extends Migration
             $table->char(Action::ID, Action::ID_LENGTH)
                   ->primary();
 
+            $table->char(Action::ENTITY_ID, Action::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Action::ENTITY_NAME, 255)
+                  ->nullable();
+
             $table->string(Action::TITLE, 255)
                   ->nullable();
 

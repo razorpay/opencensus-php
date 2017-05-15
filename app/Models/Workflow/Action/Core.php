@@ -60,6 +60,13 @@ class Core extends Base\Core
 
         $params[Entity::DIFFER] = $input;
 
+        // $params will also have ENTITY_ID and
+        // ENTITY_NAME which will get saved in
+        // workflow_actions table.
+        $params[Entity::ENTITY_ID] = $input[Differ\Entity::ENTITY_ID];
+
+        $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME];
+
         $action->build($params);
 
         $this->repo->transactionOnLiveAndTest(function() use($action, $params)
