@@ -105,6 +105,20 @@ class Core extends Base\Core
         ];
     }
 
+    public function fetchResponse(string $actionId)
+    {
+        $esResponse = $this->esDao->searchByIndexTypeAndActionId(
+            strtolower($this->baseIndex), self::ES_TYPE, $actionId);
+
+        if ($esResponse === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+        return $esResponse[0]['_source'];
+    }
+
     public function saveToES(array $differ)
     {
         try
