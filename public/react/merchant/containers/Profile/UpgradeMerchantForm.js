@@ -89,6 +89,7 @@ export default class UpgradeMerchantForm extends PureComponent {
               text="Upgrade"
               pendingText="Upgrading..."
               disabled={invalid}
+              style={{ float: 'right' }}
               onClick={handleSubmit(this.confirmUpgrade)}
             />
           </form>
