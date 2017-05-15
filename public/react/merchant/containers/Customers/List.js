@@ -86,22 +86,20 @@ export default class CustomersListContainer extends ListContainer {
         <div class="content-wrapper">
           <Alert type={status.type} message={status.message} />
 
-          <div class="panel panel-default">
-            <CustomersList
-              customers={customers}
-              isLoading={loading}
-              highlightRow={customer => customer.id === highlightRowId}
-              onEdit={this.showCustomerModal}
-              onDelete={this.deleteCustomer}
-            />
+          <CustomersList
+            customers={customers}
+            isLoading={loading}
+            highlightRow={customer => customer.id === highlightRowId}
+            onEdit={this.showCustomerModal}
+            onDelete={this.deleteCustomer}
+          />
 
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={customers.length}
-              onClick={this.paginate}
-            />
-          </div>
+          <Pager
+            count={this.state.count}
+            skip={this.state.skip}
+            length={customers.length}
+            onClick={this.paginate}
+          />
         </div>
       </div>
     );

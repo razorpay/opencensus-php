@@ -85,22 +85,20 @@ export default class ItemsListContainer extends ListContainer {
         <div class="content-wrapper">
           <Alert type={status.type} message={status.message} />
 
-          <div class="panel panel-default">
-            <ItemsList
-              items={items}
-              isLoading={loading}
-              highlightRow={item => item.id === highlightRowId}
-              onEdit={this.showItemModal}
-              onDelete={this.deleteItem}
-            />
+          <ItemsList
+            items={items}
+            isLoading={loading}
+            highlightRow={item => item.id === highlightRowId}
+            onEdit={this.showItemModal}
+            onDelete={this.deleteItem}
+          />
 
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={items.length}
-              onClick={this.paginate}
-            />
-          </div>
+          <Pager
+            count={this.state.count}
+            skip={this.state.skip}
+            length={items.length}
+            onClick={this.paginate}
+          />
         </div>
       </div>
     );

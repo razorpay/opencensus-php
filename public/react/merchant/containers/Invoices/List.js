@@ -47,7 +47,7 @@ export default class InvoicesListContainer extends ListContainer {
     return (
       <div class="react-root">
         <ShowWhen notMyRole="support">
-          <div class="btn-toolbar">
+          <div class="btn-toolbar pull-right">
             <button
               class="btn btn-primary btn-rounded"
               onClick={() => this.showPaymentLinkModal()}
@@ -66,36 +66,28 @@ export default class InvoicesListContainer extends ListContainer {
         </ShowWhen>
 
         <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              Invoices List
-            </div>
+          <InvoiceListFilter
+            form="InvoiceListFilter"
+            count={this.state.count}
+            onSubmit={this.search}
+          />
 
-            <div class="panel-body">
-              <InvoiceListFilter
-                form="InvoiceListFilter"
-                count={this.state.count}
-                onSubmit={this.search}
-              />
-            </div>
+          <Alert type={status.type} message={status.message} />
 
-            <Alert type={status.type} message={status.message} />
+          <InvoicesList
+            invoices={invoices}
+            isLoading={loading}
+            highlightRow={invoice =>
+              invoice.id === this.props.highLightInvoiceId}
+            onEdit={this.editInvoice}
+          />
 
-            <InvoicesList
-              invoices={invoices}
-              isLoading={loading}
-              highlightRow={invoice =>
-                invoice.id === this.props.highLightInvoiceId}
-              onEdit={this.editInvoice}
-            />
-
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={invoices.length}
-              onClick={this.paginate}
-            />
-          </div>
+          <Pager
+            count={this.state.count}
+            skip={this.state.skip}
+            length={invoices.length}
+            onClick={this.paginate}
+          />
         </div>
       </div>
     );

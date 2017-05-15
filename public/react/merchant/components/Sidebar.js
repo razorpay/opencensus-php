@@ -10,6 +10,7 @@ export default class Sidebar extends Component {
     transactions: '/app/payments',
     account: '/app/activation',
     settings: '/app/config',
+    invoices: '/app/invoices',
   };
 
   componentWillMount() {
@@ -30,6 +31,8 @@ export default class Sidebar extends Component {
       routes.account = pathname;
     } else if (/^\/app\/(config|webhooks|keys)/.test(pathname)) {
       routes.settings = pathname;
+    } else if (/^\/app\/(invoices|customers|items)/.test(pathname)) {
+      routes.invoices = pathname;
     }
   }
 
@@ -61,7 +64,7 @@ export default class Sidebar extends Component {
                   <NavLink to="/app/settlements">Settlements</NavLink>
                 </ShowWhen>
 
-                <NavLink to="/app/invoices">Invoices</NavLink>
+                <NavLink to={routes.invoices}>Invoices</NavLink>
 
                 <ShowWhen notMyRole="sellerapp">
                   <NavLink to="/app/reports">Reports</NavLink>

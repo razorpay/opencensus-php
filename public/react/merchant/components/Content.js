@@ -2,7 +2,7 @@ import { Route } from 'react-router-dom';
 
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
-import Invoices from 'merchant/containers/Invoices/List';
+import InvoicingContainer from 'merchant/containers/Invoicing';
 import Reports from 'merchant/containers/Reports';
 import TeamManagement from 'merchant/containers/Team';
 
@@ -19,7 +19,11 @@ export default () => {
       <Route path="/app/batch-refunds" component={Transactions} />
 
       <Route path="/app/settlements" component={Settlements} />
-      <Route path="/app/invoices" component={Invoices} />
+
+      <Route path="/app/invoices" component={InvoicingContainer} />
+      <Route path="/app/customers" component={InvoicingContainer} />
+      <Route path="/app/items" component={InvoicingContainer} />
+
       <Route path="/app/reports" component={Reports} />
       <Route path="/app/team" component={TeamManagement} />
 
