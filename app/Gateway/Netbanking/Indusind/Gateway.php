@@ -379,18 +379,18 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
-        return strtoupper(bin2hex($aes->encryptString($queryString)));
+        return $aes->encryptString($queryString);
     }
 
     public function decryptString(string $encryptedString): string
     {
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
-        return $aes->decryptString(hex2bin($encryptedString));
+        return $aes->decryptString($encryptedString);
     }
 }
 
