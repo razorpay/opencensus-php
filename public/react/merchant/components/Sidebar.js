@@ -8,7 +8,7 @@ export default class Sidebar extends Component {
   // populated with initial values
   routes = {
     transactions: '/app/payments',
-    account: '/app/profile',
+    account: '/app/activation',
     settings: '/app/config',
   };
 
