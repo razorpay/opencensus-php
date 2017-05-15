@@ -187,6 +187,10 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
+        $gateway = $payment->getGateway();
+
+        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
+
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
         $verifyRefundResult = $this->callGatewayForVerifyRefund($data);
