@@ -22,6 +22,7 @@ class Terminal extends Base
         $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
+        $this->createSharedNetbankingRblTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -830,6 +831,34 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_FEDERAL_TPV_TERMINAL,
+            'network_category' => 'securities'
+        ];
+
+        return $this->createSharedNetbankingFederalTerminal($attributes);
+    }
+
+    public function createSharedNetbankingRblTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_RBL_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_rbl',
+            'gateway_merchant_id'       => 'netbanking_rbl_merchant_id',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingRblTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::NETBANKING_RBL_TPV_TERMINAL,
             'network_category' => 'securities'
         ];
 

@@ -103,6 +103,7 @@ class Selector
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
+
         $this->traceTerminals($filteredTerminals, 'Terminals after filtration', true);
 
         //

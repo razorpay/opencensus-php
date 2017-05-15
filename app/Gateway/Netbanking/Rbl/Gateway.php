@@ -21,15 +21,9 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'rbl';
 
-    const VERIFY_TO_CALLBACK_STATUS = [
-        Status::SUCCESS => Status::YES,
-        Status::NO      => Status::NO
-    ];
-
     protected $map = [
-        RequestFields::AMOUNT     => Base\Entity::AMOUNT,
-        RequestFields::PAYMENT_ID => Base\Entity::PAYMENT_ID,
-        RequestFields::ITEM_CODE  => Base\Entity::CAPS_PAYMENT_ID
+        RequestFields::AMOUNT             => Base\Entity::AMOUNT,
+        RequestFields::MERCHANT_REFERENCE => Base\Entity::PAYMENT_ID
     ];
 
     public function authorize(array $input)
@@ -269,7 +263,11 @@ class Gateway extends Base\Gateway
 
     protected function getEncryptedString(string $stringToEncrypt)
     {
+        $masterKey = $this->getSecret();
 
+        $aes = new Base\AESCrypto($masterKey);
+
+        return base64_encode($aes->encryptString($stringToEncrypt));
     }
 
     protected function getEntityAttributes(array $input)
