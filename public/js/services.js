@@ -916,67 +916,88 @@ angular
       };
     },
   ])
-  .factory('utils', function() {
-    return {
-      humanize: function(str) {
-        var frags = str.split('_');
+  .factory('utils', [
+    '$state',
+    function($state) {
+      return {
+        humanize: function(str) {
+          var frags = str.split('_');
 
-        for (var i = 0; i < frags.length; i++) {
-          frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
-        }
+          for (var i = 0; i < frags.length; i++) {
+            frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
+          }
 
-        return frags.join(' ');
-      },
-      mergeUnique: function(arr, isCaseSensitive) {
-        isCaseSensitive = isCaseSensitive || false;
-        var auxArr = arr.concat();
+          return frags.join(' ');
+        },
+        mergeUnique: function(arr, isCaseSensitive) {
+          isCaseSensitive = isCaseSensitive || false;
+          var auxArr = arr.concat();
 
-        for (var i = 0; i < auxArr.length; i++) {
-          for (var j = i + 1; j < auxArr.length; j++) {
-            if (
-              (isCaseSensitive &&
-                auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
-              auxArr[i] === auxArr[j]
-            ) {
-              auxArr.splice(j--, 1);
+          for (var i = 0; i < auxArr.length; i++) {
+            for (var j = i + 1; j < auxArr.length; j++) {
+              if (
+                (isCaseSensitive &&
+                  auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
+                auxArr[i] === auxArr[j]
+              ) {
+                auxArr.splice(j--, 1);
+              }
             }
           }
-        }
 
-        return auxArr;
-      },
-      isArray: function(val) {
-        if (!val) {
+          return auxArr;
+        },
+        isArray: function(val) {
+          if (!val) {
+            return false;
+          }
+
+          return val instanceof Array;
+        },
+
+        // rightmost obj gets preference for same keys
+        concatObj: function() {
+          var result = {};
+          var len = arguments.length;
+          for (var i = 0; i < len; i++) {
+            for (var p in arguments[i]) {
+              if (arguments[i].hasOwnProperty(p)) {
+                result[p] = arguments[i][p];
+              }
+            }
+          }
+
+          return result;
+        },
+
+        isWorkflow: function(data) {
+          if (
+            data.id.indexOf('w_action') === 0 &&
+            typeof data.workflow_id !== 'undefined'
+          ) {
+            return true;
+          }
+
           return false;
-        }
+        },
 
-        return val instanceof Array;
-      },
+        resolveEntityLinkAndGo: function(entityId, entityName) {
+          var entityMap = {
+            merchant: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+            },
+          };
 
-      // rightmost obj gets preference for same keys
-      concatObj: function() {
-        var result = {};
-        var len = arguments.length;
-        for (var i = 0; i < len; i++) {
-          for (var p in arguments[i]) {
-            if (arguments[i].hasOwnProperty(p)) {
-              result[p] = arguments[i][p];
-            }
+          if (typeof entityMap[entityName] !== 'undefined') {
+            var entityDetails = entityMap[entityName];
+
+            var params = {};
+            params[entityDetails.idParam] = entityId;
+
+            $state.go(entityDetails.route, params);
           }
-        }
-
-        return result;
-      },
-
-      isWorkflow: function(data) {
-        if (
-          data.id.indexOf('w_action') === 0 &&
-          typeof data.workflow_id !== 'undefined'
-        ) {
-          return true;
-        }
-
-        return false;
-      },
-    };
-  });
+        },
+      };
+    },
+  ]);
