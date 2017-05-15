@@ -38,7 +38,16 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        return [$totalAmount, $file['local_file_path']];
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
+        $data = [
+            'total_amount'    => $totalAmount,
+            'signed_url'      => $signedFileUrl,
+            'local_file_path' => $file['local_file_path'],
+            'name'            => basename($file['local_file_path'])
+        ];
+
+        return $data;
     }
 
     protected function setFileToWriteName($input)
