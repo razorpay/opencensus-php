@@ -7,6 +7,11 @@ use RZP\Exception;
 class Entity extends \RZP\Base\EloquentEx
 {
     /**
+     * Soft deletable models will have this attribute.
+     */
+    const DELETED_AT = 'deleted_at';
+
+    /**
      * Keeps the current action value here to be set by the entity updater
      */
     protected $auditAction = [];
