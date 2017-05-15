@@ -44,7 +44,7 @@ export default ({ payments, isLoading, hasOrders, orders }) => {
         </thead>
         <TableBody
           isLoading={isLoading}
-          colSpan={7}
+          colSpan={hasOrders ? 8 : 7}
           rows={payments}
           emptyTableMsg="No Payments found!"
         >

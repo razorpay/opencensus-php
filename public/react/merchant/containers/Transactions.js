@@ -18,7 +18,7 @@ export default class TransactionsContainer extends Component {
           <NavLink to="/app/payments">Payments</NavLink>
           <NavLink to="/app/refunds">Refunds</NavLink>
           <NavLink to="/app/orders">Orders</NavLink>
-          <NavLink to="/batch-refunds">Batch Refunds</NavLink>
+          <NavLink to="/app/batch-refunds">Batch Refunds</NavLink>
         </header>
 
         <Route path="/app/payments" component={PaymentsList} />

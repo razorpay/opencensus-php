@@ -32,7 +32,7 @@ const SwitchMerchantDropdown = ({ user, onSwitchMerchant }) => {
           {Object.keys(merchants).map(merchantId => {
             let merchant = merchants[merchantId];
             return (
-              <li>
+              <li key={merchantId}>
                 <a onClick={() => onSwitchMerchant(merchant)}>
                   {merchant.id === user.current
                     ? <i class="fa fa-check text-success" />
@@ -96,10 +96,12 @@ export default ({
               />
             </li>
             {Object.keys(user.merchants).length > 1
-              ? <SwitchMerchantDropdown
-                  user={user}
-                  onSwitchMerchant={onSwitchMerchant}
-                />
+              ? <li>
+                  <SwitchMerchantDropdown
+                    user={user}
+                    onSwitchMerchant={onSwitchMerchant}
+                  />
+                </li>
               : null}
             <li>
               <a target="_blank" href="https://docs.razorpay.com">
