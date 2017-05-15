@@ -215,11 +215,11 @@ class NetbankingIndusindGatewayTest extends TestCase
 
         $refundsFileContents = file($filePath);
 
-        $refundAmounts = ['500', '100', '400'];
+        $refundAmounts = ['500.00', '100.00', '400.00'];
 
         foreach ($refundsFileContents as $row)
         {
-            $refundsFileRow = explode('||', $row);
+            $refundsFileRow = explode('|', $row);
 
             // Asserting that the file contains 5 columns
             assert(count($refundsFileRow) === 6);
