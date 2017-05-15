@@ -656,9 +656,14 @@ class Service extends Base\Service
             return [static::SELF_REMOVE_FORBIDDEN];
         }
 
-        $this->currentUser->currentMerchant()->users()->detach($userId);
+        $currentMerchant = $this->currentUser->currentMerchant();
 
-        (new User\Service)->detachMerchantUserOnApi($userId, $this->currentUser->currentMerchant()->id);
+        list($error, $response) = (new User\Service)->detachMerchantUserOnApi($userId, $this->currentUser->currentMerchant()->id);
+
+        if (empty($error) === true)
+        {
+            Merchant\Entity::find($currentMerchant->id)->users()->detach($userId);
+        }
 
         return $error;
     }
@@ -692,12 +697,10 @@ class Service extends Base\Service
 
         list($error, $users) = $this->getUsersOfMerchantFromApi($this->currentUser->currentMerchant()->id);
 
-        $updatedUser = array_filter($users, function($user) use ($userId)
-        {
-            return ($users['id'] === $userId);
-        });
+        $updatedUser = $users->where('id', $userId)
+                             ->first();
 
-        if (empty($updatedUser) === true)
+        if ($updatedUser === null)
         {
             $error[] = "The team member you are looking for doesn't exist";
 
@@ -706,15 +709,19 @@ class Service extends Base\Service
 
         $newRole = $input['role'];
 
-        $userToUpdate->merchants()->updateExistingPivot(
-            $this->currentUser->currentMerchant()->id, [
-                'role' => $newRole
-            ]
-        );
+        list($error, $response) = (new User\Service)->updateMerchantUserMappingOnApi(
+                                                        $userId,
+                                                        $this->currentUser->currentMerchant()->id,
+                                                        $newRole);
+        if (empty($error) === true)
+        {
+            $userToUpdate->merchants()
+                         ->updateExistingPivot(
+                                $this->currentUser->currentMerchant()->id,
+                                ['role' => $newRole]);
+        }
 
-        (new User\Service)->updateMerchantUserMappingOnApi($userId, $this->currentUser->currentMerchant()->id, $input['role']);
-
-        $merchant = $this->currentUser->getOwnerMerchant();
+        $merchant = $this->currentUser->ownerMerchant();
 
         if ($merchant === null)
         {
