@@ -81,10 +81,12 @@ class CreateInvoices extends Migration
             $table->bigInteger(Entity::AMOUNT)
                   ->nullable();
 
-            $table->bigInteger(Entity::TAX_AMOUNT)
+            $table->integer(Entity::TAX_AMOUNT)
+                  ->unsigned()
                   ->nullable();
 
-            $table->bigInteger(Entity::NET_AMOUNT)
+            $table->integer(Entity::NET_AMOUNT)
+                  ->unsigned()
                   ->nullable();
 
             $table->string(Entity::CURRENCY, 3);

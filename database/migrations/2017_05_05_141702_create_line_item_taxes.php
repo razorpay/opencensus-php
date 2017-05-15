@@ -40,7 +40,8 @@ class CreateLineItemTaxes extends Migration
             $table->string(Entity::GROUP_NAME, 512)
                   ->nullable();
 
-            $table->bigInteger(Entity::TAX_AMOUNT);
+            $table->integer(Entity::TAX_AMOUNT)
+                  ->unsigned();
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
