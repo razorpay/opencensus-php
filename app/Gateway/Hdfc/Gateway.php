@@ -373,7 +373,7 @@ class Gateway extends Base\Gateway
         // on FSS's end. We take advantage of this error and initiate refunds
         // for all the pending refunds whose amount is either equal to payment, i.e,
         // they are full refund or twice of refund amount is less than payment amount
-        if (($input['refund']['amount'] !== $input['payment']['amount']) or
+        if (($input['refund']['amount'] !== $input['payment']['amount']) and
             ((2 * $input['refund']['amount']) <= $input['payment']['amount']))
         {
             throw new Exception\LogicException(
