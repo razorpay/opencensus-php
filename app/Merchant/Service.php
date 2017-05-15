@@ -14,12 +14,10 @@ use App\Invitation;
 use App\User\Helper;
 use App\MerchantDetails;
 use App\Mailers\UserMailer;
+use App\RZP\PublicCollection;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 use App\Exceptions\EntityNotFoundException;
-
-
-use App\RZP\PublicCollection;
 
 class Service extends Base\Service
 {
@@ -716,7 +714,7 @@ class Service extends Base\Service
                                 ['role' => $newRole]);
         }
 
-        $merchant = $this->currentUser->ownerMerchant();
+        $merchant = $this->currentUser->ownerMerchant()->toArray();
 
         if ($merchant === null)
         {

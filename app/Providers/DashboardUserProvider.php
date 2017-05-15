@@ -82,7 +82,8 @@ class DashboardUserProvider implements UserProvider
      */
     public function getGenericUser($user)
     {
-        if ($user !== null) {
+        if ($user !== null)
+        {
             return new GenericUser((array) $user);
         }
     }

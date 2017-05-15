@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Response;
 class PasswordController extends Controller
 {
     const EXPIRY_DATE = 1577836800; // 1st Jan 2020
+    const SHA256 = 'sha256';
 
     /**
      * Handle a POST request to remind a user of their password.
@@ -38,18 +39,17 @@ class PasswordController extends Controller
 
         $user = User\Entity::select(['users.id'])
                                 ->where('users.email', $credentials['email'])
-                                ->get()
-                                ->toArray();
+                                ->first();
 
-        if (empty($user) === true)
+        if ($user === null)
         {
             return Response::json([
-                            'success' => false,
-                            'errors'  => ['We can\'t find a user with that e-mail address.']
+                            'success' => true,
+                            'errors'  => ['We\'ve sent a forgot password email']
                         ]);
         }
 
-        $resetToken = hash_hmac('sha256', $user[0]['id'] . '_' . self::EXPIRY_DATE, env('APP_KEY'));
+        $resetToken = $this->generateToken($user['id']);
 
         $mailer = new MiscMailer();
 
@@ -81,14 +81,14 @@ class PasswordController extends Controller
         if ($user === null)
         {
             return Response::json([
-                            'success' => false,
-                            'errors'  => ['We can\'t find a user with that e-mail address.']
+                            'success' => true,
+                            'errors'  => ['We\'ve sent a forgot password email']
                         ]);
         }
 
-        $resetToken = hash_hmac('sha256', $user->id . '_' . self::EXPIRY_DATE, env('APP_KEY'));
+        $resetToken = $this->generateToken($user['id']);
 
-        if ($credentials['token'] !== $resetToken)
+        if (secure_compare($credentials['token'], $resetToken) === false)
         {
             return Response::json([
                             'success' => false,
@@ -122,4 +122,8 @@ class PasswordController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    protected function generateToken($userId)
+    {
+        return hash_hmac(self::SHA256, 'password.reset' . '_' . $userId . '_' . self::EXPIRY_DATE, env('APP_KEY'));
+    }
 }

@@ -20,6 +20,7 @@ use App\Merchant;
 use App\Schedules;
 use App\Providers;
 use Carbon\Carbon;
+use App\User\Helper;
 use App\Transaction;
 use UAParser\Parser;
 use App\MerchantDetails;
@@ -33,9 +34,6 @@ use Razorpay\Api\Errors\Error as ApiError;
 use Illuminate\Support\Facades\App as App;
 use App\Transaction\Service as TransactionService;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
-
-use App\RZP\PublicCollection;
-use App\User\Helper;
 
 class Service extends Base\Service
 {

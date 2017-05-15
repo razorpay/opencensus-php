@@ -17,21 +17,14 @@ use App\Generic;
 use App\Merchant;
 use App\AdminLead;
 use Carbon\Carbon;
-use App\Providers;
 use App\Invitation;
+use App\User\Helper;
 use App\MerchantDetails;
 use App\Mailers\UserMailer;
+use App\Providers\GenericUser;
 use DrewM\MailChimp\MailChimp;
 use App\Session as SessionTable;
 use Illuminate\Hashing\BcryptHasher;
-
-
-use App\User\Helper;
-use App\Providers\GenericUser;
-use App\Merchant\GenericMerchant;
-use App\RZP\PublicCollection;
-
-
 
 class Service extends Base\Service
 {
@@ -700,7 +693,7 @@ class Service extends Base\Service
             return [['Email or password is invalid.'], null];
         }
 
-        $userEntity = new Providers\GenericUser($userArray);
+        $userEntity = new GenericUser($userArray);
 
         Auth::login($userEntity, false);
 
@@ -749,7 +742,7 @@ class Service extends Base\Service
      * @param  string  $merchantId
      * @return \Illuminate\Http\Response
      */
-    public function switchCurrentMerchantForUser($merchantId, Providers\GenericUser $user)
+    public function switchCurrentMerchantForUser($merchantId, GenericUser $user)
     {
         list($error, $genericUser) = $this->getUserFromApi($user->id);
 
