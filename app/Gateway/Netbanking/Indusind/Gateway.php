@@ -63,7 +63,7 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
 
-        $this->saveCallbackResponse($content, $input['payment']['id']);
+        $this->saveCallbackResponse($content);
 
         $this->checkCallbackStatus($content);
 
@@ -239,8 +239,6 @@ class Gateway extends Base\Gateway
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
-        $this->decryptString($encryptedString);
-
         $decryptedString = $this->decryptString($encryptedString);
 
         $response = [];
@@ -297,10 +295,10 @@ class Gateway extends Base\Gateway
         return $pId;
     }
 
-    protected function saveCallbackResponse(array $content, string $paymentId)
+    protected function saveCallbackResponse(array $content)
     {
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
-            $paymentId, Action::AUTHORIZE);
+            $content[RequestFields::MERCHANT_REFERENCE], Action::AUTHORIZE);
 
         $attrs = [
             Base\Entity::RECEIVED        => true,

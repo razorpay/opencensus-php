@@ -73,7 +73,7 @@ class RefundFile extends Base\RefundFile
     {
         $ignoreLastNewline = true;
 
-        $txt = $this->generateText($data, '||', $ignoreLastNewline);
+        $txt = $this->generateText($data, '|', $ignoreLastNewline);
 
         $txt = $prependLine . $txt;
 
@@ -105,7 +105,7 @@ class RefundFile extends Base\RefundFile
      */
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('Ymd');
+        $time = Carbon::now('Asia/Kolkata')->format('dmY');
 
         if ($this->mode === Mode::TEST)
         {
