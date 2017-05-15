@@ -13,7 +13,7 @@ class Entity extends Base\PublicEntity
     const CREDIT_TYPE         = 'credit_type';
     const SCHEDULE_ID         = 'schedule_id';
     const ITERATIONS          = 'iterations';
-    const VALIDITY            = 'validity';
+    const CREDITS_EXPIRE      = 'credits_expire';
 
     //Attribute lengths
     const NAME_LENGTH               = 50;
@@ -30,14 +30,14 @@ class Entity extends Base\PublicEntity
         self::CREDIT_TYPE,
         self::SCHEDULE_ID,
         self::ITERATIONS,
-        self::VALIDITY,
+        self::CREDITS_EXPIRE,
     ];
 
     protected $public = [
         self::ID,
         self::NAME,
         self::AMOUNT,
-        self::VALIDITY,
+        self::CREDITS_EXPIRE,
     ];
 
     protected $visible = [
@@ -46,7 +46,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT_TYPE,
         self::SCHEDULE_ID,
         self::ITERATIONS,
-        self::CREDITS_EXPIRE_AT,
+        self::CREDITS_EXPIRE,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -57,9 +57,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT            => 'int',
-        self::ITERATIONS        => 'int',
-        self::CREDITS_EXPIRE_AT => 'int',
+        self::AMOUNT         => 'int',
+        self::ITERATIONS     => 'int',
+        self::CREDITS_EXPIRE => 'bool',
     ];
 
     public function schedule()
@@ -94,9 +94,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ITERATIONS);
     }
 
-    public function getCreditsExpireAt()
+    public function doCreditsExpire()
     {
-        return $this->getAttribute(self::CREDITS_EXPIRE_AT);
+        return $this->getAttribute(self::CREDITS_EXPIRE);
     }
 
 

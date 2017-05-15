@@ -9,7 +9,11 @@ class Entity extends Base\PublicEntity
     const ENTITY_ID   = 'entity_id';
     const ENTITY_TYPE = 'entity_type';
     const CODE        = 'code';
-    const EXPIRES_AT  = 'expires_at';
+    const START_DATE  = 'start_date';
+    const END_DATE    = 'end_date';
+
+    //maxinmum use count
+    const USAGE       = 'usage';
 
     protected $entity = 'coupon';
 
@@ -20,15 +24,30 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::MERCHANT_ID,
         self::CODE,
-        self::EXPIRES_AT
+        self::START_DATE,
+        self::END_DATE,
+        self::USAGE,
     ];
 
     protected $visible = [
         self::ID,
         self::CODE,
-        self::EXPIRES_AT,
+        self::START_DATE,
+        self::END_DATE,
         self::CREATED_AT,
         self::UPDATED_AT
+    ];
+
+    protected $defaults = [
+        self::USAGE      => 1,
+        self::START_DATE => null,
+        self::END_DATE   => null,
+    ];
+
+    protected $casts = [
+        self::USAGE      => 'int',
+        self::START_DATE => 'int',
+        self::END_DATE   => 'int',
     ];
 
     /**
