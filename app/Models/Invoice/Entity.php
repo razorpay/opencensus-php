@@ -737,7 +737,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            return $taxAmount;
+            return (int) $taxAmount;
         }
     }
 
@@ -746,11 +746,11 @@ class Entity extends Base\PublicEntity
         if (($netAmount === null) and
             ($this->getAmount() !== null))
         {
-            return $this->getAmount();
+            return (int) $this->getAmount();
         }
         else
         {
-            return $netAmount;
+            return (int) $netAmount;
         }
     }
 

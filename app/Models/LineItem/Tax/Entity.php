@@ -67,6 +67,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
+        self::RATE       => 'int',
         self::TAX_AMOUNT => 'int',
     ];
 

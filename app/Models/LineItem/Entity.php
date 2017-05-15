@@ -231,11 +231,11 @@ class Entity extends Base\PublicEntity
     {
         if ($totalAmount === null)
         {
-            return $this->getAmount() * $this->getQuantity();
+            return (int) ($this->getAmount() * $this->getQuantity());
         }
         else
         {
-            return $totalAmount;
+            return (int) $totalAmount;
         }
     }
 
@@ -247,7 +247,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            return $taxAmount;
+            return (int) $taxAmount;
         }
     }
 
@@ -255,11 +255,11 @@ class Entity extends Base\PublicEntity
     {
         if ($netAmount === null)
         {
-            return $this->getTotalAmount();
+            return (int) $this->getTotalAmount();
         }
         else
         {
-            return $netAmount;
+            return (int) $netAmount;
         }
     }
 
