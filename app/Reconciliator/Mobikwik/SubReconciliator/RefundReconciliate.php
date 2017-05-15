@@ -1,0 +1,46 @@
+<?php
+
+namespace RZP\Reconciliator\Mobikwik;
+
+use RZP\Reconciliator\Base;
+
+class RefundReconciliate extends Base\RefundReconciliate
+{
+    // ----- Row header names -----
+    const COLUMN_REFUND_ID          = 'OrderID';
+
+    const COLUMN_REFUND_AMOUNT      = 'RefundAmount';
+
+    /**
+     * Gets refund Id from row data
+     *
+     * @param $row array
+     * @return $refundId string
+     */
+    protected function getRefundId($row)
+    {
+        $refundId = $row[self::COLUMN_REFUND_ID];
+
+        return $refundId;
+    }
+
+    protected function getPaymentId($row)
+    {
+        $paymentId = $this->getRefundId($row);
+
+        return $paymentId;
+    }
+
+    /**
+     * Gets amount refunded.
+     *
+     * @param $row array
+     * @return $refundAmount integer
+     */
+    protected function getRefundAmount($row)
+    {
+        $refundAmount = floatval($row[self::COLUMN_REFUND_AMOUNT]) * 100;
+
+        return intval(number_format($refundAmount, 2, '.', ''));
+    }
+}
