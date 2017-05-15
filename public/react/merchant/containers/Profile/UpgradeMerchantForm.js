@@ -30,7 +30,6 @@ export default class UpgradeMerchantForm extends PureComponent {
         affirmativePendingLabel: 'Upgrading...',
         abortLabel: 'Cancel',
         action: () => {
-          debugger;
           return this.props
             .upgradeAccount(props)
             .then(() => {
@@ -39,7 +38,7 @@ export default class UpgradeMerchantForm extends PureComponent {
                 message: 'Merchant Account Created.',
               });
               setTimeout(() => {
-                location.reload;
+                location.reload();
               }, 400); //TODO: Check behavior, why it's needed
             })
             .catch(err => {
