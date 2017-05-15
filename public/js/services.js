@@ -986,6 +986,13 @@ angular
             merchant: {
               route: 'app.merchants.detail',
               idParam: 'id',
+              sign: '',
+            },
+
+            role: {
+              route: 'app.roles.edit',
+              idParam: 'id',
+              sign: 'role_',
             },
           };
 
@@ -993,7 +1000,7 @@ angular
             var entityDetails = entityMap[entityName];
 
             var params = {};
-            params[entityDetails.idParam] = entityId;
+            params[entityDetails.idParam] = entityDetails.sign + entityId;
 
             $state.go(entityDetails.route, params);
           }
