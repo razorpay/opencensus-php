@@ -177,17 +177,12 @@ class Service extends Base\Service
             return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
         }
 
-        list($error, $genericUsers) = $this->getUsersOfMerchantFromApi($currentMerchant->id);
+        list($error, $genericUser) = (new User\Service)->getUserFromApi($this->currentUser->id);
 
-        $primaryOwner = $genericUsers->where('role', 'owner')
+        $ownerMerchant = $genericUser->merchants
+                                     ->where('role', 'owner')
+                                     ->where('id', $submerchant['id'])
                                      ->first();
-
-        list($error, $primaryOwnerDetails) = (new User\Service)->getUserFromApi($primaryOwner->id);
-
-        $ownerMerchant = $primaryOwnerDetails->merchants
-                                             ->where('role', 'owner')
-                                             ->where('id', $submerchant['id'])
-                                             ->first();
 
         // checks if the main merchant's owner user is the primary
         // owner of the submerchant account
