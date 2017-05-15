@@ -1,22 +1,30 @@
 tabbed-container {
   margin: 20px;
-  background: #fff;
   display: block;
-  border: 1px solid #E2E8EA;
+
   header {
     line-height: 46px;
-    border-bottom: 1px solid #E2E8EA;
-    padding-left: 16px
+    border: 1px solid #E2E8EA;
+    padding-left: 16px;
+    background-color: #fff;
     a {
       color: #555;
       border-bottom: 2px solid transparent;
       display: inline-block;
       margin: 0 16px;
-      
+
       &.active {
         color: #111;
         border-color: #556AD0;
       }
     }
+  }
+
+  footer {
+    padding: 20px 15px 0;
+  }
+
+  header + .content-sm {
+    border-top: 0;
   }
 }

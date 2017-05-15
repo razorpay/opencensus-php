@@ -73,7 +73,7 @@ export default props => {
         </thead>
         <TableBody
           isLoading={isLoading}
-          colSpan={8}
+          colSpan={9}
           rows={invoices}
           emptyTableMsg="No Invoices found!"
         >

@@ -16,8 +16,6 @@ export default class ActivationContainer extends Component {
 
     return (
       <div class="react-root">
-        <Header title="Activation Form" showMode={false} />
-
         <div class="content-wrapper">
           {loading
             ? <div class="page-spinner-container">

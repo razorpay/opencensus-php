@@ -57,15 +57,20 @@ export default class CongfigurationContainer extends Component {
 
     return (
       <div class="react-root">
-        {loading
-          ? <div class="page-spinner-container">
-              <Spinner />
-            </div>
-          : <div>
-              <CheckoutTheme form="configForm" onSave={this.saveConfig} />
-              <FlashCheckout />
-              <EmailNotifications form="configForm" onSave={this.saveConfig} />
-            </div>}
+        <div class="content-wrapper content-sm">
+          {loading
+            ? <div class="page-spinner-container">
+                <Spinner />
+              </div>
+            : <div>
+                <CheckoutTheme form="configForm" onSave={this.saveConfig} />
+                <FlashCheckout />
+                <EmailNotifications
+                  form="configForm"
+                  onSave={this.saveConfig}
+                />
+              </div>}
+        </div>
       </div>
     );
   }

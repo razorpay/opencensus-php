@@ -12,15 +12,15 @@ export default props => {
   }
 
   return (
-    <div>
+    <div class="content-wrapper content-sm">
       {loading
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel-body panel-detail-container">
+        : <div>
             <Alert type="error" message={error} />
 
-            <div class="list-group">
+            <div class="list-group details-row">
               {balanceData.credits
                 ? <div class="list-group-item">
                     <span>Amount Credits</span>

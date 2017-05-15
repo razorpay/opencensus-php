@@ -142,6 +142,12 @@ body {
 
 .content-wrapper {
   padding: 30px 20px;
+  background-color: #fff;
+}
+
+.content-sm {
+  max-width: 800px
+  border: 1px solid #e2e8ea;
 }
 
 // React Modal Style Overrides
@@ -187,7 +193,7 @@ body.ReactModal__Body--open {
   transform: translateX(60%);
   transition: .3s;
   opacity: 0;
-  
+
   .spinner {
     display: block;
     margin: 60px auto;
@@ -414,11 +420,12 @@ tr:hover .row-action > .btn-group {
 }
 
 .panel-detail-container {
-
   .text-warning {
     color: #d8b617;
   }
+}
 
+.details-row {
   .list-group-item {
     .table > tbody > tr > td.empty-table {
       padding: 20px;

@@ -120,7 +120,7 @@ export default class AddFundsContainer extends Component {
     let { handleSubmit } = this.props;
 
     return (
-      <div style={{ padding: '30px' }}>
+      <div class="content-wrapper content-sm">
         <Alert type={status.type} message={status.message} />
 
         <p>
