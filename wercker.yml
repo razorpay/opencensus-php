@@ -115,8 +115,10 @@ deploy:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - rafaelverger/newrelic-deployment:
+        api_key: $NEWRELIC_API_KEY
+        app_name: "$APP_ENV-$APP_NAME"
       - script:
          name: post_deploy_notifier
          code: |
             python scripts/post_deploy_notifier.py
-
