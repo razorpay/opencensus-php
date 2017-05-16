@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -114,6 +115,15 @@ class Core extends Base\Core
      */
     public function edit($merchant, $input)
     {
+        if (isset($input['international']) === true)
+        {
+            $action = Merchant\Action::EDIT_INTERNATIONAL;
+
+            $admin = $this->app['basicauth']->getAdmin();
+
+            $admin->hasMerchantActionPermissionOrFail($action);
+        }
+
         $merchant->setAuditAction(Action::EDIT_MERCHANT);
 
         $merchant->edit($input);
@@ -288,7 +298,13 @@ class Core extends Base\Core
         // Check for admin permissions
         $admin->hasMerchantActionPermissionOrFail($action);
 
-        $merchant->$action();
+        $routePermission = Permission\Name::$actionMap[$action];
+
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $merchant, function ($merchant) use ($action)
+            {
+                $merchant->$action();
+            });
 
         $this->repo->saveOrFail($merchant);
 

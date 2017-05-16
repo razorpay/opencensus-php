@@ -64,6 +64,7 @@ class Entity
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
+    const GATEWAY_RULE          = 'gateway_rule';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
@@ -128,6 +129,11 @@ class Entity
     const WALLET_OPENWALLET     = 'wallet_openwallet';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
 
+    // Tax and Tax Groups
+
+    const TAX                   = 'tax';
+    const TAX_GROUP             = 'tax_group';
+
 
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
@@ -167,6 +173,7 @@ class Entity
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
+        self::GATEWAY_RULE          => \RZP\Models\Gateway\Rule::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
@@ -224,6 +231,8 @@ class Entity
         self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
         self::ACTION_STATE          => \RZP\Models\Workflow\Action\State::class,
         self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
+
+        self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
     ];
 
     protected static $repository = [

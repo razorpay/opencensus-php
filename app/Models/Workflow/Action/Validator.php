@@ -11,10 +11,13 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ADMIN_ID    => 'required|string|max:14',
-        Entity::WORKFLOW_ID => 'required|string|max:14',
-        Entity::ORG_ID      => 'required|string|max:14',
-        Entity::DIFFER      => 'required|array',
+        Entity::ENTITY_ID       => 'sometimes|string|max:14',
+        Entity::ENTITY_NAME     => 'sometimes|string|max:255',
+        Entity::ADMIN_ID        => 'required|string|max:14',
+        Entity::WORKFLOW_ID     => 'required|string|max:14',
+        Entity::PERMISSION_ID   => 'required|string|max:14',
+        Entity::ORG_ID          => 'required|string|max:14',
+        Entity::DIFFER          => 'required|array',
     ];
 
     protected static $editRules = [

@@ -504,6 +504,8 @@ class Service extends Base\Service
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
 
+        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
+
         return $ba->toArray();
     }
 

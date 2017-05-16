@@ -90,12 +90,12 @@ return [
             'url' => '/permissions',
             'method' => 'put',
             'content' => [
-                'description' => 'test desc2',
+                'description' => 'test description 2',
             ],
         ],
         'response' => [
             'content' => [
-                'description' => 'test desc2',
+                'description' => 'test description 2',
             ],
             'status_code' => 200,
         ],
@@ -106,7 +106,7 @@ return [
             'url' => '/permissions',
             'method' => 'put',
             'content' => [
-                'description' => 'test desc2',
+                'description' => 'test description 2',
                 'orgs' => [
                     'org_100000razorpay'
                 ]
@@ -114,7 +114,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'description' => 'test desc2',
+                'description' => 'test description 2',
             ],
             'status_code' => 200,
         ],

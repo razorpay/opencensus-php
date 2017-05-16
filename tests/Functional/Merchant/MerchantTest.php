@@ -142,6 +142,10 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $result = $this->startTest();
 
         $this->assertArrayNotHasKey('groups', $result);
@@ -374,6 +378,8 @@ class MerchantTest extends TestCase
     public function setAdminForInternalAuth()
     {
         $this->org = $this->fixtures->create('org');
+
+        $this->addAssignablePermissionsToOrg($this->org);
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
     }

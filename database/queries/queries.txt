@@ -2000,3 +2000,17 @@ ALTER TABLE merchant_banks
 
 ALTER TABLE terminals
     ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE workflow_actions
+    ADD COLUMN permission_id char(14) DEFAULT NULL AFTER `workflow_id`;
+
+ALTER TABLE workflow_actions
+    ADD CONSTRAINT workflow_actions_permission_id_foreign
+    FOREIGN KEY(permission_id) REFERENCES permissions(id) ON DELETE RESTRICT;
+
+# Add FK for file in reports
+ALTER TABLE reports
+    ADD CONSTRAINT report_file_id_foreign FOREIGN KEY (file_id) REFERENCES files(id);
+
+# Makes international attribute of gateway rules nullable
+ALTER TABLE gateway_rules MODIFY COLUMN international TINYINT(1);

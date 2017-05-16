@@ -41,18 +41,18 @@ class Core extends Base\Core
         $this->baseIndex = $this->config->get('database.es_workflow_action')[$mode];
     }
 
-    public function create(Action\Entity $action, array $input)
+    public function create(Action\Entity $action, array $differInput)
     {
         $diff = (new Entity)->generateId();
 
-        $input[Entity::ACTION_ID] = $action->getId();
+        $differInput[Entity::ACTION_ID] = $action->getId();
 
-        $diff->build($input);
+        $diff->build($differInput);
 
         $diff[Entity::CREATED_AT] = Carbon::now('Asia/Kolkata')->timestamp;
 
         // makerAction
-        $function = $input['type'] . 'Action';
+        $function = $differInput['type'] . 'Action';
 
         $diff = $this->$function($diff);
 
@@ -105,7 +105,21 @@ class Core extends Base\Core
         ];
     }
 
-    public function saveToES(array $action)
+    public function fetchResponse(string $actionId)
+    {
+        $esResponse = $this->esDao->searchByIndexTypeAndActionId(
+            strtolower($this->baseIndex), self::ES_TYPE, $actionId);
+
+        if ($esResponse === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+        return $esResponse[0]['_source'];
+    }
+
+    public function saveToES(array $differ)
     {
         try
         {
@@ -114,7 +128,7 @@ class Core extends Base\Core
             if ($mock === false)
             {
                 $this->esDao->storeAdminEvent(
-                    strtolower($this->baseIndex), self::ES_TYPE, $action);
+                    strtolower($this->baseIndex), self::ES_TYPE, $differ);
             }
         }
         catch(\Exception $e)
@@ -133,6 +147,15 @@ class Core extends Base\Core
     */
     protected function makerAction(Entity $differ)
     {
+        // If the diff is already present, no need to run
+        // the validators and compute it again.
+        if (empty($differ->getDiff()) === false)
+        {
+            $this->saveToEs($differ->toArray());
+
+            return $differ;
+        }
+
         $entity = $differ->getEntityName();
 
         $entityId = $differ->getEntityId();
@@ -178,14 +201,13 @@ class Core extends Base\Core
 
         $differ->setDiff($diff);
 
-        // Calls `saveToEs` above
-        event(new DifferEvent($differ->toArray()));
+        $this->saveToEs($differ->toArray());
 
         return $differ;
     }
 
     // TODO: Recursion
-    protected function createDiff(array $oldEntity, array $newEntity)
+    public function createDiff(array $oldEntity, array $newEntity)
     {
         $diff = [];
 

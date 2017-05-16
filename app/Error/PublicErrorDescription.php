@@ -429,4 +429,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                 = 'Workflow action is not in any open state';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
+
+    const BAD_REQUEST_GATEWAY_RULE_EXISTS                                       = 'Gateway rule already exists for the given criteria';
+    const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                               = 'Load across all gateway rules must be less than 100 percent';
 }

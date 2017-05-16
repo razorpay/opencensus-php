@@ -178,11 +178,15 @@ class Entity extends Base\PublicEntity
     {
         $currency = $this->getCurrency();
 
+        $currencySymbol = Currency\Currency::SYMBOL[$currency];
+
         $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
 
-        $amount = number_format($this->getAmount() / $denominationFactor, 2);
+        $amount = $this->getAmount() / $denominationFactor;
 
-        return $currency . ' ' . $amount;
+        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
+
+        return  $currencySymbol . ' ' . $amount;
     }
 
     public function getPaymentId()
@@ -228,6 +232,11 @@ class Entity extends Base\PublicEntity
     public function setStatus($status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setStatusProcessed()
+    {
+        $this->setAttribute(self::STATUS, Status::PROCESSED);
     }
 
     public function setBaseAmount()
@@ -306,11 +315,11 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
-        if (($this->payment->isCard()) and
+        if (($this->payment->isCard() === true) and
             ($this->payment->getConvertCurrency() === true))
         {
-            $data['amount']   = $this->getBaseAmount();
-            $data['currency'] = Currency\Currency::INR;
+            $data[self::AMOUNT]   = $this->getBaseAmount();
+            $data[self::CURRENCY] = Currency\Currency::INR;
         }
 
         return $data;

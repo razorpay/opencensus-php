@@ -132,7 +132,7 @@ class Repository extends Base\Repository
     public function fetchEmiPaymentsBetween($from, $to, $bank)
     {
         return $this->newQuery()
-                    ->whereBetween(Entity::UPDATED_AT, [$from, $to])
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)

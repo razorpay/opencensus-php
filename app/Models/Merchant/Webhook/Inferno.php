@@ -44,10 +44,10 @@ class Inferno
     const WEBHOOK_MAXIMUM_ATTEMPTS = 24;
 
     /**
-     * We keep it internally as 20 seconds
+     * We keep it internally as 10 seconds
      * but publicly we say it's only 5 seconds.
      */
-    const WEBHOOK_TIMEOUT = 20;
+    const WEBHOOK_TIMEOUT = 10;
 
     const WEBHOOK_REDIRECTS = 3;
 
@@ -269,7 +269,8 @@ class Inferno
             [
                 'webhook_id'  => $webhook->getId(),
                 'merchant_id' => $webhook->merchant->getId(),
-                'request'     => $request
+                'request'     => $request,
+                'attempt'     => $this->job->attempts(),
             ]);
 
         try

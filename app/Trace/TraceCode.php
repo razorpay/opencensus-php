@@ -687,6 +687,22 @@ class TraceCode
 // Trace codes for gateway
     const USER_EDIT                                     = 'USER_EDIT';
 
+// Trace codes for gateway load rules
+    const GATEWAY_RULE_CREATE_REQUEST            = 'GATEWAY_RULE_CREATE_REQUEST';
+    const GATEWAY_RULE_DELETE_REQUEST            = 'GATEWAY_RULE_DELETE_REQUEST';
+    const GATEWAY_RULE_UPDATE_REQUEST            = 'GATEWAY_RULE_UPDATE_REQUEST';
+    const GATEWAY_RULES_POST_FILTER              = 'GATEWAY_RULES_POST_FILTER';
+    const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
+    const GATEWAY_LOAD_SORTING_FALLBACK          = 'GATEWAY_LOAD_SORTING_FALLBACK';
+
+    // Trace codes for tax and tax groups crud
+    const TAX_GROUP_CREATE_REQUEST                      = 'TAX_GROUP_CREATE_REQUEST';
+    const TAX_GROUP_UPDATE_REQUEST                      = 'TAX_GROUP_UPDATE_REQUEST';
+    const TAX_GROUP_DELETE_REQUEST                      = 'TAX_GROUP_DELETE_REQUEST';
+    const TAX_CREATE_REQUEST                            = 'TAX_CREATE_REQUEST';
+    const TAX_UPDATE_REQUEST                            = 'TAX_UPDATE_REQUEST';
+    const TAX_DELETE_REQUEST                            = 'TAX_DELETE_REQUEST';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
