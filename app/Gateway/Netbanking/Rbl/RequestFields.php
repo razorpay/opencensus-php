@@ -19,4 +19,21 @@ class RequestFields
 	const MERCHANT_REFERENCE = "ShoppingMallTranFG.PRN";
 	const MERCHANT_NAME      = "ShoppingMallTranFG.ITC";
 	const ACCOUNT_NUMBER     = "ShoppingMallTranFG.ACNT_NUM";
+
+	//Verify Request  fields
+	const LANGUAGE_ID        = "LANGUAGE_ID";
+	const CHANNEL_ID         = "CHANNEL_ID";
+	const V_LOGIN_FLAG       = "LOGIN_FLAG";
+	const SERVICE_ID         = "SRVCID";
+	const STATE_MODE         = "STATEMODE";
+	const RESPONSE_FORMAT    = "OPFMT";
+	const REQUEST_FORMAT     = "IPFMT";
+	const MULTIPLE_RECORDS   = "ISMULTIREC";
+	const USER_PRINCIPAL     = "USER_PRINCIPAL";
+	const CORP_PRINCIPAL     = "CORP_PRINCIPAL";
+	const ACCESS_CODE        = "ACCESS_CODE";
+	const V_PAYEE_ID         = "BNF_ID";
+	const BANK_REFERENCE     = "REFERENCE_ID";
+	const ENTITY_TYPE        = "DESTINATION_ENTITY_TYPE";
+
 }

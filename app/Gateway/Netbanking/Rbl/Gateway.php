@@ -12,6 +12,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use phpseclib\Crypt\AES;
 
 class Gateway extends Base\Gateway
 {
@@ -58,21 +59,12 @@ class Gateway extends Base\Gateway
             ]
         );
 
-        // If the payment requires TPV
-        if (strlen($content[ResponseFields::PAYMENT_ID]) > 14)
-        {
-            $content[ResponseFields::PAYMENT_ID] = explode('.', $content[ResponseFields::PAYMENT_ID])[0];
-        }
-
         $this->assertPaymentId(
             $input['payment']['id'],
-            $content[ResponseFields::PAYMENT_ID]
+            $content[ResponseFields::MERCHANT_REFERENCE]
         );
 
         $this->checkCallbackStatus($content);
-
-        // If callback status was a success, we verify the payment immediately
-        $this->verifyCallback($input);
 
         // Saving callback response only if the above checks pass
         $this->saveCallbackResponse($content);
@@ -87,31 +79,6 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    /**
-     * Verifying the payment after callback response is saved to
-     * prevent user tampering with the data while making a payment.
-     */
-    protected function verifyCallback(array $input)
-    {
-        parent::verify($input);
-
-        $verify = new Verify($this->gateway, $input);
-
-        $this->sendPaymentVerifyRequest($verify);
-
-        $this->checkGatewaySuccess($verify);
-
-        //
-        // If verify returns false, we throw an error as
-        // authorize request / response has been tampered with
-        //
-        if ($verify->gatewaySuccess === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
-        }
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -201,11 +168,24 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData(array $input)
     {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+             $input['payment']['id'], Action::AUTHORIZE);
+
         $data = [
-            RequestFields::PAYEE_ID   => $this->getMerchantId(),
-            RequestFields::PAYMENT_ID => $input['payment']['id'],
-            RequestFields::ITEM_CODE  => strtoupper($input['payment']['id']),
-            RequestFields::AMOUNT     => $input['payment']['amount'] / 100,
+            RequestFields::BANK_ID         => Constants::BANK_ID,
+            RequestFields::LANGUAGE_ID     => Constants::LANGUAGE_ID,
+            RequestFields::CHANNEL_ID      => Constants::CHANNEL_ID,
+            RequestFields::LOGIN_FLAG      => Constants::V_LOGIN_FLAG,
+            RequestFields::SERVICE_ID      => Constants::SERVICE_ID,
+            RequestFields::STATE_MODE      => Constants::STATE_MODE,
+            RequestFields::RESPONSE_FORMAT => FileFormat::XML,
+            RequestFields::REQUEST_FORMAT  => FileFormat::NV,
+            RequestFields::MULTI_RECORDS   => Constants::NO,
+            RequestFields::USER_PRINCIPLE  => Constants::USER_PRINCIPLE,
+            RequestFields::ACCESS_CODE     => Constants::ACCESS_CODE,
+            RequestFields::V_PAYEE_ID      => $this->getMerchantId(),
+            RequestFields::BANK_REFERENCE  => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
+            RequestFields::ENTITY_TYPE     => Constants::PAYMENT_TYPE,
         ];
 
         return $data;
@@ -265,7 +245,7 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto($masterKey);
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
         return base64_encode($aes->encryptString($stringToEncrypt));
     }
@@ -273,9 +253,8 @@ class Gateway extends Base\Gateway
     protected function getEntityAttributes(array $input)
     {
         $entityAttributes = [
-            RequestFields::AMOUNT     => $input['payment']['amount'] / 100,
-            RequestFields::PAYMENT_ID => $input['payment']['id'],
-            RequestFields::ITEM_CODE  => strtoupper($input['payment']['id'])
+            RequestFields::AMOUNT             => $input['payment']['amount'] / 100,
+            RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
         ];
 
         return $entityAttributes;
@@ -285,12 +264,12 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Base\Entity::RECEIVED        => true,
-            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
-            Base\Entity::STATUS          => $content[ResponseFields::PAID],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE],
+            Base\Entity::STATUS          => $content[Status::SUCCESS],
         ];
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                    $content[ResponseFields::PAYMENT_ID],
+                                    $content[ResponseFields::MERCHANT_REFERENCE],
                                     Payment\Action::AUTHORIZE);
 
         $gatewayPayment->fill($attributes);
@@ -300,8 +279,8 @@ class Gateway extends Base\Gateway
 
     protected function checkCallbackStatus(array $content)
     {
-        if ((isset($content[ResponseFields::PAID]) === false) or
-            ($content[ResponseFields::PAID] !== Status::YES))
+        if ((isset($content[ResponseFields::STATUS]) === false) or
+            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
         {
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
