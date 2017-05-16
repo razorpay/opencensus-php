@@ -589,10 +589,10 @@ class Service extends Base\Service
             {
                 $users = $this->api->merchant->getUsers($id)->toArray();
 
-                $genericUsers = $this->createGenericUsers($users);
+                $genericUsers = (new Helper)->createGenericUsers($users);
 
                 $confirmedPrimaryOwner = $genericUsers->where('role', 'owner')
-                                                      ->where('confirmed', 'true')
+                                                      ->where('confirmed', true)
                                                       ->first();
 
                 $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);

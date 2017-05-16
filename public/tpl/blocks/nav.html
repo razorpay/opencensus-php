@@ -107,7 +107,7 @@
         </a>
     </li>
 
-    <li ng-show="merchant && user.tags.indexOf('Referral') != -1" not-my-role="sellerapp support" ui-sref="app.referrals" ui-sref-active="active">
+    <li ng-show="merchant && user.tags && user.tags.indexOf('Referral') != -1" not-my-role="sellerapp support" ui-sref="app.referrals" ui-sref-active="active">
       <a id="referredNav" ui-sref="app.referrals" ui-sref-active="active">
         <i class="fa fa-gift icon text-danger-lter"></i>
         <b class="badge bg-success dk pull-right ng-binding">beta</b>

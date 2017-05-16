@@ -686,23 +686,21 @@ class Service extends Base\Service
             'password'  => $input['password']
         ];
 
-        list($error, $userArray) = $this->loginOnApi($credentials);
+        list($error, $genericUser) = $this->loginOnApi($credentials);
 
         if (empty($error) === false)
         {
             return [['Email or password is invalid.'], null];
         }
 
-        $userEntity = new GenericUser($userArray);
+        Auth::login($genericUser, false);
 
-        Auth::login($userEntity, false);
-
-        $this->app['session']->put('dashboard_user_payload', $userArray);
+        $this->app['session']->put('dashboard_user_payload', $genericUser);
 
         if (empty($error))
         {
             $res = [
-                'id'    =>  $userArray['id'],
+                'id'    =>  $genericUser->id,
             ];
         }
 
@@ -746,7 +744,7 @@ class Service extends Base\Service
     {
         list($error, $genericUser) = $this->getUserFromApi($user->id);
 
-        if (empty($error) === false)
+        if (empty($error) === true)
         {
             $currentMerchant = $genericUser->merchants
                                            ->where('id', $merchantId)
@@ -879,7 +877,9 @@ class Service extends Base\Service
 
         $userDetails = $genericUser->toArray();
 
-        $this->getTags($userDetails);
+        $tags = $this->getTags($userDetails);
+
+        $data['tags'] = $tags;
 
         $merchants = $userDetails['merchants'];
 
@@ -985,6 +985,7 @@ class Service extends Base\Service
             return;
         }
 
+        $tags = [];
         $merchants = $userDetails['merchants'];
 
         $merchantIds = array_column($merchants, 'id');
@@ -1001,11 +1002,15 @@ class Service extends Base\Service
 
             if ($key !== false)
             {
+                $tags = array_merge($tags, $data[$key]['tags']);
+
                 $merchant = array_merge($merchant, $data[$key]);
             }
         }
 
         $userDetails['merchants'] = $merchants;
+
+        return $tags;
     }
 
     public function loginOnApi(array $input)

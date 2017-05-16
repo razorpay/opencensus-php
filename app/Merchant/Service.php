@@ -5,6 +5,7 @@ namespace App\Merchant;
 use Auth;
 use Hash;
 use Queue;
+use Session;
 use Requests;
 use App\Base;
 use App\User;
@@ -86,24 +87,18 @@ class Service extends Base\Service
 
         $isLinkedAccount = (bool) (\Input::get('account') ?? false);
 
-        $currentMerchant = Merchant\Entity::select(['*'])
-                                            ->with('tagged')
-                                            ->where('merchants.id', $currentMerchant->id)
-                                            ->get()
-                                            ->toArray();
-
-        $tagNames = $tags[0]['tags'];
+        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
 
         if ($isLinkedAccount === true)
         {
-            if (in_array('Marketplace', $tagNames, true) === false)
+            if ($currentMerchant->isMarketplace() === false)
             {
                 return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
             }
         }
         else
         {
-            if (in_array('Aggregator', $tagNames, true) === false)
+            if ($currentMerchant->isAggregator() === false)
             {
                 return [[self::SUBMERCHANT_NOT_ALLOWED], null];
             }
@@ -139,9 +134,22 @@ class Service extends Base\Service
             if ($isLinkedAccount === false)
             {
                 // Finally attach the current user to the new user's team
-                User\Entity::find($this->currentUser->id)->merchants()->attach([$merchant->id], ['role' => 'owner']);
+                // And also update the session user merchant list.
+                list($error, $response) = (new User\Service)->attachMerchantUserOnApi($this->currentUser->id, $merchant->id, 'owner');
 
-                (new User\Service)->attachMerchantUserOnApi($this->currentUser->id, $merchant->id, 'owner');
+                if (empty($error) === true)
+                {
+                    User\Entity::find($this->currentUser->id)->merchants()->attach([$merchant->id], ['role' => 'owner']);
+
+                    list($error, $genericUser) = (new User\Service)->getUserFromApi($this->currentUser->id);
+
+                    if (empty($error) === true)
+                    {
+                        Session::put('dashboard_user_payload', $genericUser);
+                    }
+                }
+
+                return [$error, null];
             }
 
             return [null, $merchant->toArray()];
@@ -179,7 +187,7 @@ class Service extends Base\Service
 
         $ownerMerchant = $genericUser->merchants
                                      ->where('role', 'owner')
-                                     ->where('id', $submerchant['id'])
+                                     ->where('id', $subMerchant['id'])
                                      ->first();
 
         // checks if the main merchant's owner user is the primary
@@ -522,9 +530,9 @@ class Service extends Base\Service
                            ->id;
 
         $users = Merchant\Entity::with('users', 'invitations')
-                    ->where('id', $merchantId)
-                    ->first()
-                    ->toArray();
+                                ->where('id', $merchantId)
+                                ->first()
+                                ->toArray();
 
         return $users;
     }
@@ -708,22 +716,14 @@ class Service extends Base\Service
                                                         $newRole);
         if (empty($error) === true)
         {
-            $userToUpdate->merchants()
-                         ->updateExistingPivot(
-                                $this->currentUser->currentMerchant()->id,
-                                ['role' => $newRole]);
+            User\Entity::find($userId)
+                        ->merchants()
+                        ->updateExistingPivot(
+                            $this->currentUser->currentMerchant()->id,
+                            ['role' => $newRole]);
         }
 
-        $merchant = $this->currentUser->ownerMerchant()->toArray();
-
-        if ($merchant === null)
-        {
-            $error = ["We couldn't find the merchant you are looking for."];
-
-            return [$error, null];
-        }
-
-        return [$error, $merchant];
+        return [$error, null];
     }
 
     /**
