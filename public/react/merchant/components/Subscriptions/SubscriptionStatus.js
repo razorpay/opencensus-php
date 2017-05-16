@@ -7,5 +7,5 @@ const subscriptionsStatusMap = {
 };
 
 export default ({ status }) => (
-  <span className={subscriptionsStatusMap[status]}>{titleCase(status)}</span>
+  <span class={subscriptionsStatusMap[status]}>{titleCase(status)}</span>
 );

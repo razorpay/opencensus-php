@@ -34,15 +34,15 @@ export default class SubscriptionsListContainer extends Component {
         <Header title="Subscriptions">
           <a
             href="#/app/subscriptions/new"
-            className="pull-right btn btn-primary btn-rounded"
+            class="pull-right btn btn-primary btn-rounded"
           >
-            <i className="fa fa-plus" />
+            <i class="fa fa-plus" />
             <span>New Subscription</span>
           </a>
         </Header>
 
-        <div className="content-wrapper">
-          <div className="panel panel-default">
+        <div class="content-wrapper">
+          <div class="panel panel-default">
             <SubscriptionsList
               subscriptions={subscriptions}
               plans={plans}

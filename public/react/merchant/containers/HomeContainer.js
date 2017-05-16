@@ -1,16 +1,16 @@
-import React, { Component } from "react";
-import Header from "rzp/ui/Header";
-import { connect } from "react-redux";
-import { fetchAggregrations, fetchAnalytics } from "merchant/modules/home";
-import moment from "moment";
-import DateRangePickerField from "rzp/ui/Forms/DateRangePickerField";
-import { createLineData, makeLineData, timeScale } from "rzp/utils/chart";
-import { Line } from "react-chartjs-2";
-import Amount from "rzp/ui/Amount";
-import Spinner from "rzp/ui/Spinner";
-import InfoCard from "merchant/components/Home/InfoCard";
-import RecentEntityTable from "merchant/components/Home/EntityTable";
-import { titleCase, colors, formatFromNow } from "rzp/utils/rzp-utils";
+import React, { Component } from 'react';
+import Header from 'rzp/ui/Header';
+import { connect } from 'react-redux';
+import { fetchAggregrations, fetchAnalytics } from 'merchant/modules/home';
+import moment from 'moment';
+import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
+import { createLineData, makeLineData, timeScale } from 'rzp/utils/chart';
+import { Line } from 'react-chartjs-2';
+import Amount from 'rzp/ui/Amount';
+import Spinner from 'rzp/ui/Spinner';
+import InfoCard from 'merchant/components/Home/InfoCard';
+import RecentEntityTable from 'merchant/components/Home/EntityTable';
+import { titleCase, colors, formatFromNow } from 'rzp/utils/rzp-utils';
 
 // graph data
 // numbers
@@ -35,8 +35,8 @@ export default class HomeContainer extends Component {
 
   state = {
     /* date/intervel controls */
-    from: moment().endOf("day").subtract(30, "days"),
-    to: moment().endOf("day"),
+    from: moment().endOf('day').subtract(30, 'days'),
+    to: moment().endOf('day'),
 
     /* not in use */
     interval: 0,
@@ -54,14 +54,14 @@ export default class HomeContainer extends Component {
   getContent() {
     let aggregations = this.props.aggregations;
     let graph_data = this.props.analytics;
-    let isLive = this.props.mode === "live";
+    let isLive = this.props.mode === 'live';
 
     return (
       aggregations &&
-      <div className="wrapper-md">
-        <div className="row">
-          <div className="col-md-12 col-lg-6">
-            <div className="row row-sm text-center">
+      <div class="wrapper-md">
+        <div class="row">
+          <div class="col-md-12 col-lg-6">
+            <div class="row row-sm text-center">
               <InfoCard
                 content={
                   aggregations.entity_totals.data.settlement
@@ -75,7 +75,7 @@ export default class HomeContainer extends Component {
                     ? formatFromNow(
                         aggregations.recent_payments.data.items[0].created_at
                       )
-                    : "Never"
+                    : 'Never'
                 }
                 title="Last Transaction"
               />
@@ -105,14 +105,14 @@ export default class HomeContainer extends Component {
               />
             </div>
           </div>
-          <div className="col-md-12 col-lg-6">
-            <div className="panel wrapper">
-              <h4 className="font-thin text-muted">Successful Transactions</h4>
+          <div class="col-md-12 col-lg-6">
+            <div class="panel wrapper">
+              <h4 class="font-thin text-muted">Successful Transactions</h4>
               <div
                 style={{
-                  height: "244px",
-                  textAlign: "center",
-                  lineHeight: "244px",
+                  height: '244px',
+                  textAlign: 'center',
+                  lineHeight: '244px',
                 }}
               >
                 {(graph_data &&
@@ -125,8 +125,8 @@ export default class HomeContainer extends Component {
                         }
                         return d.mode;
                       }),
-                      "count",
-                      "Successful Transactions"
+                      'count',
+                      'Successful Transactions'
                     )}
                   />) ||
                   <Spinner />}
@@ -134,14 +134,14 @@ export default class HomeContainer extends Component {
             </div>
           </div>
         </div>
-        <div className="panel hbox hbox-auto-xs">
-          <div className="col wrapper">
-            <h4 className="font-thin text-muted">Transaction Volume</h4>
+        <div class="panel hbox hbox-auto-xs">
+          <div class="col wrapper">
+            <h4 class="font-thin text-muted">Transaction Volume</h4>
             <div
               style={{
-                height: "300px",
-                textAlign: "center",
-                lineHeight: "300px",
+                height: '300px',
+                textAlign: 'center',
+                lineHeight: '300px',
               }}
             >
               {(graph_data &&
@@ -155,42 +155,40 @@ export default class HomeContainer extends Component {
                       d.amount = d.amount / 100;
                       return d.mode;
                     }),
-                    "amount",
-                    "Transaction Volume"
+                    'amount',
+                    'Transaction Volume'
                   )}
                 />) ||
                 <Spinner />}
             </div>
           </div>
-          <div className="col wrapper-lg w-lg bg-light dk r-r">
-            <h4 className="font-thin">Transaction Types</h4>
+          <div class="col wrapper-lg w-lg bg-light dk r-r">
+            <h4 class="font-thin">Transaction Types</h4>
             {this.methodBreakup().map((methodData, index) => {
               return (
                 <div key={index}>
                   {methodData
                     ? <div>
-                        <div className="text-center-folded">
-                          <span className="pull-right">{methodData.value}</span>
+                        <div class="text-center-folded">
+                          <span class="pull-right">{methodData.value}</span>
                           <span>{titleCase(methodData.title)}</span>
                         </div>
-                        <div className="progress-xs bg-white progress">
+                        <div class="progress-xs bg-white progress">
                           <div
-                            className={
-                              "progress-bar progress-bar-" + methodData.bg
-                            }
+                            class={'progress-bar progress-bar-' + methodData.bg}
                             role="progressbar"
                             style={{ width: methodData.value }}
                           />
                         </div>
                       </div>
-                    : "No Data"}
+                    : 'No Data'}
                 </div>
               );
             })}
           </div>
         </div>
-        <div className="panel wrapper">
-          <div className="row">
+        <div class="panel wrapper">
+          <div class="row">
             <RecentEntityTable
               entity="payment"
               data={aggregations.recent_payments.data}
@@ -217,7 +215,7 @@ export default class HomeContainer extends Component {
     let content = this.getContent();
     let header = (
       <Header title="Dashboard" showMode={false}>
-        <div style={{ float: "right" }}>
+        <div style={{ float: 'right' }}>
           <DateRangePickerField
             startDate={from}
             endDate={to}
@@ -238,10 +236,10 @@ export default class HomeContainer extends Component {
           />
         </div>
         <div>
-          <small className="text-muted">
+          <small class="text-muted">
             Welcome to Razorpay.
           </small>
-          {/*<a className='start-tour-link'>Start Tour</a>*/}
+          {/*<a class='start-tour-link'>Start Tour</a>*/}
         </div>
       </Header>
     );
@@ -256,7 +254,7 @@ export default class HomeContainer extends Component {
 
   methodBreakup() {
     const data = this.props.aggregations.payment_breakup.data;
-    const methods = ["CARD", "EMI", "NETBANKING", "WALLET", "UPI"].filter(
+    const methods = ['CARD', 'EMI', 'NETBANKING', 'WALLET', 'UPI'].filter(
       method => data[method]
     );
 
@@ -269,8 +267,8 @@ export default class HomeContainer extends Component {
         return {
           bg: colors[index],
           title: titleCase(method),
-          value: (100 * data[method] / total).toFixed(1).replace(".0", "") +
-            "%",
+          value: (100 * data[method] / total).toFixed(1).replace('.0', '') +
+            '%',
         };
       });
     }
