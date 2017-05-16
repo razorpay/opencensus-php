@@ -26,9 +26,13 @@ class Service
 
     protected $config;
 
-    protected $permission = [];
+    protected $permission;
 
     protected $diff = [];
+
+    protected $oldEntity;
+
+    protected $newEntity;
 
     public function __construct($app)
     {
@@ -155,9 +159,38 @@ class Service
         return $this->diff;
     }
 
+    public function setOldEntity($entity)
+    {
+        $this->oldEntity = $entity;
+
+        return $this;
+    }
+
+    public function getOldEntity()
+    {
+        return $this->oldEntity;
+    }
+
+    public function setNewEntity($entity)
+    {
+        $this->newEntity = $entity;
+
+        return $this;
+    }
+
+    public function getNewEntity()
+    {
+        return $this->newEntity;
+    }
+
     protected function permissionHasWorkflow()
     {
         $permission = $this->getPermission();
+
+        if (empty($permission) === true)
+        {
+            return false;
+        }
 
         $admin = $this->ba->getAdmin();
 
@@ -180,7 +213,7 @@ class Service
         callback execution which will change the $entity due to
         the business logic code.
     */
-    public function handle($entity, $callback)
+    public function handle($entity = null, $callback = null)
     {
         // 1. If the permission has no workflow then don't do anything
         // 2. If this is an execute call, then return as well
@@ -191,24 +224,40 @@ class Service
         {
             // Run the callback though, as it might have business
             // specific logic actually required for execution.
-            $callback($entity);
+            if (($entity !== null) and ($callback !== null))
+            {
+                $callback($entity);
+            }
 
             return;
         }
 
-        // Set entity
-        $this->setEntity($entity->getEntityName());
-
         // Instantiate code for diff creation
         $differCore = new Differ\Core;
 
-        $oldEntity = clone $entity;
+        $oldEntity = null;
 
-        $callback($entity);
+        $newEntity = null;
 
-        // If the callback modifies the $entity then
-        // we will have $newEntity due to call by reference!
-        $newEntity = $entity;
+        if (($entity === null) and ($callback === null))
+        {
+            $oldEntity = $this->getOldEntity();
+
+            $newEntity = $this->getNewEntity();
+        }
+        else
+        {
+            $oldEntity = clone $entity;
+
+            $callback($entity);
+
+            // If the callback modifies the $entity then
+            // we will have $newEntity due to call by reference!
+            $newEntity = $entity;
+        }
+
+        // Set entity
+        $this->setEntity($newEntity->getEntityName());
 
         $diff = $differCore->createDiff(
             $oldEntity->toArray(), $newEntity->toArray());
