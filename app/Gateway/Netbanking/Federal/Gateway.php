@@ -197,7 +197,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         //
-        // Verify response will contain S or N, but we have already
+        // Verify response will contain S or N or E, but we have already
         // mapped the S status to Y in parseVerifyResponse
         //
         if ($content[ResponseFields::STATUS] === Status::getAuthSuccessStatus())
