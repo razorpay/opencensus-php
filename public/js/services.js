@@ -525,11 +525,11 @@ angular
           if (this.users) {
             return this.users;
           }
-
+          var deferred = $q.defer();
           var users = [];
+
           $http
             .get('/admin/generic', {
-              ignoreErrors: true,
               params: {
                 route_name: 'admin_get_multiple',
               },
@@ -541,13 +541,18 @@ angular
                     users.push(user);
                   });
                 }
+
+                deferred.resolve(users);
               } else {
-                users = {};
+                users = [];
               }
             })
-            .error(function() {});
+            .error(function(data) {
+              return data.errors;
+            });
+
           this.users = users;
-          return this.users;
+          return deferred.promise;
         },
       };
     },
