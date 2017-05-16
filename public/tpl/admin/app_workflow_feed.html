@@ -1,7 +1,8 @@
 <div class="workflow-feed-page" ng-controller="WorkflowFeedCtrl">
   <div class="bg-light lter b-b wrapper-md">
     <h3 class="m-n font-thin">
-      {{action_permission_name}}
+      {{action_details.permission.description}}
+      (<a href="javascript:void(0);" ng-click="entityLinkClick()">{{action_details.entity_id}}</a>)
       <spinner class="inline"></spinner>
 
       <a class='btn btn-info pull-right' href="javascript:void(0);" ng-click="showActionChanges()">
@@ -231,8 +232,9 @@
 
   <div class="modal-body new-key-modal" style="overflow: auto;">
 
+    <h4 ng-if="data.data && !(data.data.old || data.data.new)">No Changes found</h4>
 
-    <h4 ng-if="data.data">Change</h4>
+    <h4 ng-if="data.data && (data.data.old || data.data.new)">Change</h4>
     <table ng-if="data.data" class="table table-striped b-t b-light">
       <thead>
       <tr>
