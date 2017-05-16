@@ -32,7 +32,7 @@ class Validator extends Base\Validator
     protected static $actionRules = [
         Entity::ACTION                => 'required|custom',
         Entity::MERCHANT_ID           => 'required|max:14',
-        Entity::ROLE                  => 'required|string',
+        Entity::ROLE                  => 'sometimes|string',
     ];
 
     protected static $loginRules = [

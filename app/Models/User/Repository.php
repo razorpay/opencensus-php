@@ -32,21 +32,19 @@ class Repository extends Base\Repository
 
     public function getUsersForMerchant(string $merchantId)
     {
-        $query = $this->newQuery()
-                      ->select(Entity::ID,
-                               Entity::NAME,
-                               Entity::EMAIL,
-                               Entity::CONTACT_MOBILE,
-                               Entity::CONFIRM_TOKEN,
-                               'users.created_at',
-                               'merchant_users.role'
+        return $this->newQuery()
+                    ->select(Entity::ID,
+                             Entity::NAME,
+                             Entity::EMAIL,
+                             Entity::CONTACT_MOBILE,
+                             Entity::CONFIRM_TOKEN,
+                             'users.created_at',
+                             'merchant_users.role'
                         )
-                      ->join(Table::MERCHANT_USERS, Entity::ID, '=', 'merchant_users.user_id')
-                      ->where('merchant_users.merchant_id', '=', $merchantId)
-                      ->orderBy(Entity::NAME, 'asc')
-                      ->get();
-
-        return $query;
+                    ->join(Table::MERCHANT_USERS, Entity::ID, '=', 'merchant_users.user_id')
+                    ->where('merchant_users.merchant_id', '=', $merchantId)
+                    ->orderBy(Entity::NAME, 'asc')
+                    ->get();
     }
 
 }
