@@ -568,14 +568,18 @@ app.controller('EntitiesCtrl', [
         return;
       }
       clear('skip');
-      var request = $http.get(
-        '/admin/' +
-          $scope.mode +
-          '/fetchentity/' +
-          $scope.entity_type +
-          '/' +
-          $scope.entity.id
-      );
+
+      var data = {
+        route_name: 'admin_fetch_entity_by_id',
+        url_params: {
+          '{type}': $scope.entity_type,
+          '{id}': $scope.entity.id,
+        },
+        mode: $scope.mode,
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request
         .success(function(data) {
           $scope.alerts.resetAlerts();
