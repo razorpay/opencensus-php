@@ -1,13 +1,13 @@
 @include('partials/head')
 
 <link rel='shortcut icon' href='/img/logo.png'>
-<link rel='stylesheet' href="react/dist/{{asset('merchant.css')}}">
+<link rel='stylesheet' href="/css/generated/{{asset('merchant.css')}}">
 
 @include('partials/common')
 
 <!-- Merchant Js-->
 <script src="/js/jquery/jquery-2.1.4.min.js"></script>
-<script src="/react/dist/{{asset('merchant_new_react.js')}}"></script>
+<script src="/js/generated/{{asset('merchant_react.js')}}"></script>
 <!-- supportkiy code -->
 @if(env('APP_ENV') !== 'testing')
    @include('partials/supportkit')

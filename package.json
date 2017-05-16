@@ -15,6 +15,8 @@
     "case-sensitive-paths-webpack-plugin": "^1.1.4",
     "css-loader": "^0.26.1",
     "dot": "^1.1.1",
+    "extract-text-webpack-plugin": "^2.1.0",
+    "file-loader": "^0.11.1",
     "gulp": "^3.9.1",
     "gulp-concat-multi": "^1.0.1",
     "gulp-plumber": "^1.1.0",
@@ -28,14 +30,13 @@
     "run-sequence": "^1.2.2",
     "style-loader": "^0.13.1",
     "stylus-loader": "^2.5.0",
-    "webpack": "^2.2.1"
+    "through2": "^2.0.3",
+    "webpack": "^2.5.1"
   },
   "dependencies": {
     "autoprefixer-stylus": "^0.13.0",
     "babel-runtime": "^6.23.0",
-    "bootstrap": "3",
     "classnames": "^2.2.5",
-    "dfaqapi": "^0.0.2",
     "moment": "^2.17.1",
     "ngreact": "^0.3.0",
     "react": "^15.4.2",
@@ -54,8 +55,7 @@
     "react-time": "^4.2.0",
     "redux": "^3.6.0",
     "redux-form": "^6.5.0",
-    "redux-thunk": "^2.2.0",
-    "through2": "^2.0.3"
+    "redux-thunk": "^2.2.0"
   },
   "scripts": {
     "precommit": "lint-staged",

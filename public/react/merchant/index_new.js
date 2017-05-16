@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
 import { Tabs } from 'react-tabs';
+import 'styles/merchant';
 
 import 'rzp/utils/polyfills';
 import store from './store';

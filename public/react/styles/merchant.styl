@@ -1,28 +1,102 @@
+// @font-face {
+//   font-family: "Source Sans Pro";
+//   font-style: normal;
+//   font-weight: 300;
+//   src: local("Source Sans Pro Light"), local("SourceSansPro-Light"), url("/css/fonts/sourcesanspro/sourcesanspro-light.woff") format("woff");
+// }
+// @font-face {
+//   font-family: "Source Sans Pro";
+//   font-style: normal;
+//   font-weight: 400;
+//   src: local("Source Sans Pro"), local("SourceSansPro-Regular"), url("/css/fonts/sourcesanspro/sourcesanspro.woff") format("woff");
+// }
+// @font-face {
+//   font-family: "Source Sans Pro";
+//   font-style: normal;
+//   font-weight: 700;
+//   src: local("Source Sans Pro Bold"), local("SourceSansPro-Bold"), url("/css/fonts/sourcesanspro/sourcesanspro-bold.woff") format("woff");
+// }
+
+/* latin-ext */
 @font-face {
-  font-family: 'Source Sans Pro';
-  font-style: normal;
-  font-weight: 300;
-  src: local('Source Sans Pro Light'), local('SourceSansPro-Light'), url('/css/fonts/sourcesanspro/sourcesanspro-light.woff') format('woff');
-}
-@font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Lato";
   font-style: normal;
   font-weight: 400;
-  src: local('Source Sans Pro'), local('SourceSansPro-Regular'), url('/css/fonts/sourcesanspro/sourcesanspro.woff') format('woff');
+  src: local("Lato Regular"), local("Lato-Regular"), url(https://fonts.gstatic.com/s/lato/v11/UyBMtLsHKBKXelqf4x7VRQ.woff2) format("woff2");
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF;
 }
+/* latin */
 @font-face {
-  font-family: 'Source Sans Pro';
+  font-family: "Lato";
   font-style: normal;
-  font-weight: 700;
-  src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url('/css/fonts/sourcesanspro/sourcesanspro-bold.woff') format('woff');
+  font-weight: 400;
+  src: local("Lato Regular"), local("Lato-Regular"), url(https://fonts.gstatic.com/s/lato/v11/1YwB1sO8YE1Lyjf12WNiUA.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
 
-@import 'bootstrap/dist/css/bootstrap.min.css'
-@import './rzp/bootstrap-ext'
-@import './rzp/elements'
-@import 'react-dates/lib/css/_datepicker.css';
-@import 'react-power-select/dist/react-power-select.css';
-@import './rzp/layout'
-@import './merchant/invoice'
-@import './merchant/activation'
+$font-family-base = "Lato", "Helvetica Neue", Helvetica, Arial,sans-serif;
+$text-color = #58666e;
+$line-height-base = 1.42857143;
+
+$btn-primary-bg = #7266ba;
+
+$input-border-radius = 2px;
+$input-border = #cfdadd;
+$input-border-focus = #23b7e5;
+
+$table-border-color = #eaeff0;
+
+// Core variables and mixins
+@import "bootstrap/variables"
+@import "bootstrap/mixins"
+
+// Reset and dependencies
+@import "bootstrap/normalize"
+
+// Core CSS
+@import "bootstrap/scaffolding"
+@import "bootstrap/type"
+@import "bootstrap/code"
+@import "bootstrap/grid"
+@import "bootstrap/tables"
+@import "bootstrap/forms"
+@import "bootstrap/buttons"
+
+// Components
+@import "bootstrap/component-animations"
+@import "bootstrap/dropdowns"
+@import "bootstrap/button-groups"
+@import "bootstrap/input-groups"
+@import "bootstrap/navs"
+@import "bootstrap/navbar"
+@import "bootstrap/breadcrumbs"
+@import "bootstrap/pagination"
+@import "bootstrap/pager"
+@import "bootstrap/labels"
+@import "bootstrap/badges"
+@import "bootstrap/thumbnails"
+@import "bootstrap/alerts"
+@import "bootstrap/media"
+@import "bootstrap/list-group"
+@import "bootstrap/panels"
+@import "bootstrap/responsive-embed"
+@import "bootstrap/close"
+
+// Components w/ JavaScript
+@import "bootstrap/modals"
+@import "bootstrap/tooltip"
+@import "bootstrap/popovers"
+
+// Utility classes
+@import "bootstrap/utilities"
+@import "bootstrap/responsive-utilities"
+
+
+@import "./rzp/bootstrap-ext"
+@import "./rzp/elements"
+@import "~react-dates/lib/css/_datepicker.css";
+@import "~react-power-select/dist/react-power-select.css";
+@import "./rzp/layout"
+@import "./merchant/invoice"
+@import "./merchant/activation"
 

@@ -13,7 +13,7 @@ const TransactionDetails = ({ match }) => {
   return (
     <Modal
       isOpen={true}
-      closeTimeoutMS={3500}
+      closeTimeoutMS={300}
       overlayClassName="ModalSlider__Overlay"
       class="ModalSlider__Content"
     >
