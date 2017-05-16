@@ -373,8 +373,6 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($attributes);
 
         $this->checkActionStatus($responseArray);
-
-        return $this->getCallbackResponseData($input);
     }
 
     protected function getRefundAttributes($response, $input)

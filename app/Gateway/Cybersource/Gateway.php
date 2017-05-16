@@ -1691,7 +1691,7 @@ class Gateway extends Base\Gateway
     {
         return [
             'acquirer' => [
-                'authorization_code' => $gatewayPayment->getAuthCode()
+                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode()
             ]
         ];
     }

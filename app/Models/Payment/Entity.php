@@ -74,10 +74,9 @@ class Entity extends Base\PublicEntity
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
-    const AUTHORIZATION_CODE    = 'authorization_code';
-    const RRN                   = 'reference1';
+    const APPROVAL_CODE         = 'approval_code';
+    const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
-    const REFERENCE3            = 'reference3';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -1095,7 +1094,7 @@ class Entity extends Base\PublicEntity
 
         $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
 
-        return  $currencySymbol . ' ' . $amount;
+        return $currencySymbol . ' ' . $amount;
     }
 
     public function getAmountPaidout()

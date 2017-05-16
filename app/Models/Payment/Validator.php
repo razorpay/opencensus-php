@@ -60,15 +60,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::AUTHORIZATION_CODE => 'sometimes|string|max:6',
-        Entity::RRN                => 'sometimes|string',
-        Entity::REFERENCE2         => 'sometimes|string',
-        Entity::REFERENCE3         => 'sometimes|string',
+        Entity::APPROVAL_CODE     => 'sometimes|string|max:6',
+        Entity::REFERENCE1        => 'sometimes|string',
+        Entity::REFERENCE2        => 'sometimes|string',
     ];
 
     protected static $captureRules = [
-        Entity::AMOUNT             => 'required|integer',
-        Entity::CURRENCY           => 'required|in:INR,USD',
+        Entity::AMOUNT            => 'required|integer',
+        Entity::CURRENCY          => 'required|in:INR,USD',
     ];
 
     protected static $refundRules = [

@@ -881,8 +881,8 @@ class Gateway extends Base\Gateway
     {
         return [
             'acquirer' => [
-                Payment\Entity::AUTHORIZATION_CODE => $gatewayPayment->getAuthCode(),
-                Payment\Entity::RRN                => $gatewayPayment->getReceiptNo()
+                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
+                Payment\Entity::REFERENCE1    => $gatewayPayment->getReceiptNo()
             ]
         ];
     }

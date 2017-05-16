@@ -346,15 +346,15 @@ class Gateway extends Base\Gateway
 
         $acquirerData = $this->getAcquirerData($this->model);
 
-        return $this->getCallbackResponseData($input);
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     protected function getAcquirerData($gatewayPayment)
     {
         return [
             'acquirer' => [
-                PaymentEntity::AUTHORIZATION_CODE => $gatewayPayment->getAuthCode(),
-                PaymentEntity::RRN                => $gatewayPayment->getRef()
+                PaymentEntity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
+                PaymentEntity::REFERENCE1    => $gatewayPayment->getRef()
             ]
         ];
     }

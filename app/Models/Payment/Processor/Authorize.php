@@ -2537,10 +2537,7 @@ trait Authorize
 
             $payment->terminal->incrementUsedCount();
 
-            if (isset($data['acquirer']) === true)
-            {
-                $payment->edit($data['acquirer']);
-            }
+            $this->updateAcquirerData($payment, $data);
 
             // If payment was earlier failed, then that means it's
             // getting authorized late.
@@ -2584,6 +2581,24 @@ trait Authorize
         });
 
         return $updated;
+    }
+
+    protected function updateAcquirerData(Payment\Entity $payment, $data = [])
+    {
+        // We don't want the acquirer update to fail the payment
+        // This can happen if validation check fails.
+        try
+        {
+            if (isset($data['acquirer']) === true)
+            {
+                $payment->edit($data['acquirer']);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
+
     }
 
     protected function updateAssociatedPaymentEntities(Payment\Entity $payment)
