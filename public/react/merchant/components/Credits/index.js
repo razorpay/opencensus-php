@@ -20,7 +20,7 @@ export default props => {
         : <div>
             <Alert type="error" message={error} />
 
-            <div class="list-group details-row">
+            <div class="list-group details-row-container">
               {balanceData.credits
                 ? <div class="list-group-item">
                     <span>Amount Credits</span>

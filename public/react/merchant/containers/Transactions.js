@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Route, NavLink, withRouter } from 'react-router-dom';
+import { Route, NavLink } from 'react-router-dom';
 import Modal from 'react-modal';
 
 import PaymentsList from 'merchant/containers/Payments/List';
@@ -9,7 +9,27 @@ import RefundDetails from 'merchant/containers/Refunds/Details';
 import OrdersList from 'merchant/containers/Orders/List';
 import OrderDetails from 'merchant/containers/Orders/Details';
 
-@withRouter
+const TransactionDetails = ({ match }) => {
+  return (
+    <Modal
+      isOpen={true}
+      closeTimeoutMS={3500}
+      overlayClassName="ModalSlider__Overlay"
+      class="ModalSlider__Content"
+    >
+      <button
+        class="btn btn-sm btn-default pull-right"
+        onClick={() => {
+          location.hash = `/app/payments`;
+        }}
+      >
+        Close
+      </button>
+      <PaymentDetails id={match.params.id} />
+    </Modal>
+  );
+};
+
 export default class TransactionsContainer extends Component {
   render() {
     return (
@@ -24,6 +44,8 @@ export default class TransactionsContainer extends Component {
         <Route path="/app/payments" component={PaymentsList} />
         <Route path="/app/refunds" component={RefundsList} />
         <Route path="/app/orders" component={OrdersList} />
+
+        <Route path="/app/payments/:id" component={TransactionDetails} />
       </tabbed-container>
     );
   }

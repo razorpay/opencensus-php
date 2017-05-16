@@ -9,6 +9,7 @@ export default ({ label, value, entity = {} }) => {
   let type = getType(label, value);
   let currency = entity.currency || 'INR';
   let val = value;
+  let entityName;
 
   switch (type) {
     case 'timestamp':

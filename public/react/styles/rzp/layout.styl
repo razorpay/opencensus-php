@@ -24,12 +24,8 @@ body {
 }
 
 .main-content {
-  position: fixed;
-  height: 100%;
-  left: 200px;
-  right: 0;
-  overflow: auto;
-  padding-top: 50px;
+  margin-left: 200px;
+  margin-top: 51px;
 }
 
 #react-root {
@@ -173,37 +169,30 @@ body.ReactModal__Body--open {
   }
 }
 
-.side-overlay {
-  overflow-x: hidden;
-  z-index: 9999;
-  background: rgba(0, 0, 0, .4);
+.ModalSlider__Overlay.ReactModal__Overlay {
+  width: 600px;
+  position: fixed;
+  top: 51px;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  box-shadow: 3px 11px 22px -1px #3a3f51;
+  transform: translateX(90%);
+  transition: transform 300ms cubic-bezier(0.05, 1.14, 0.76, 1.01);
+  z-index: 9998;
+  background-color: #fff;
+  overflow: auto;
+  padding-bottom: 45px;
 
-  // prevent double click on overlay
-  &--before-close {
-    pointer-events: none;
+  &.ReactModal__Overlay--after-open {
+    transform: none;
   }
 }
 
-.side-pane {
-  background: #fff;
-  float: right;
-  width: 100%;
-  max-width: 600px;
+.ModalSlider__Content {
+  padding: 20px 10px;
   min-height: 100%;
-  transform: translateX(60%);
-  transition: .3s;
-  opacity: 0;
-
-  .spinner {
-    display: block;
-    margin: 60px auto;
-  }
-
-  &.ReactModal__Content--after-open {
-    transform: none;
-    opacity: 1;
-  }
-
+  transform: none;
 }
 
 .ReactModalPortal > * {
@@ -425,7 +414,7 @@ tr:hover .row-action > .btn-group {
   }
 }
 
-.details-row {
+.details-row-container {
   .list-group-item {
     .table > tbody > tr > td.empty-table {
       padding: 20px;

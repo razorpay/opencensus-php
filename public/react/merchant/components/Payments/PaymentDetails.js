@@ -110,7 +110,7 @@ export default props => {
             </div>
 
             <div class="panel-body">
-              <div class="list-group">
+              <div class="list-group details-row-container">
                 <DetailRow
                   label="Amount"
                   value={() => <Amount value={payment.amount} />}

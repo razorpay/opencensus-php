@@ -23,6 +23,12 @@ export default class PaymentDetailsContainer extends Component {
     this.props.fetchPayment(this.props.id);
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (this.props.id !== nextProps.id) {
+      this.props.fetchPayment(nextProps.id);
+    }
+  }
+
   fetchCardDetails = payment => {
     return this.props.fetchCardDetails(payment);
   };
