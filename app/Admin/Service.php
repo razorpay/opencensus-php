@@ -739,101 +739,12 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function postSetMerchantInternational($id, array $input)
-    {
-        return $this->postEditMerchant($id, $input);
-    }
-
     protected function dropFields(array &$array, array $fields)
     {
         foreach ($fields as $key)
         {
             unset($array[$key]);
         }
-    }
-
-    public function postEditBankDetails($id, $input)
-    {
-        $error = array();
-
-        $this->dropFields($input, [
-            "beneficiary_address4",
-            "beneficiary_code",
-            "beneficiary_country",
-            "created_at",
-            "entity_id",
-            "type",
-            'id',
-            'merchant_id',
-            'mpin_set',
-        ]);
-
-        $this->setApiCredentials();
-
-        $error = $merchantDetail = [];
-
-        try
-        {
-            $this->api->merchant->fetch($id)->setBankAccount($input);
-
-            $merchantDetailsData = array(
-                'bank_branch_ifsc'           => $input['ifsc_code'],
-                'bank_account_name'          => $input['beneficiary_name'],
-                'bank_account_number'        => $input['account_number'],
-                'bank_beneficiary_address1'  => $input['beneficiary_address1'],
-                'bank_beneficiary_address2'  => $input['beneficiary_address2'],
-                'bank_beneficiary_address3'  => $input['beneficiary_address3'],
-                'bank_beneficiary_pin'       => $input['beneficiary_pin'],
-                'bank_beneficiary_city'      => $input['beneficiary_city'],
-                'bank_beneficiary_state'     => $input['beneficiary_state']
-            );
-
-            list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($merchantDetailsData, $id);
-
-            $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
-        }
-
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $merchantDetails];
-    }
-
-    public function postEditMerchantComment($id, $comment)
-    {
-        $error = $merchantDetails = [];
-
-        $params = ['comment' => $comment];
-
-        list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
-
-        return [$error, $comment];
-    }
-
-    public function postAddAdjustment($id, $input)
-    {
-        $data = [];
-        $error = [];
-        $logData = $input;
-
-        $mode = $input['mode'];
-        unset($input['mode']);
-
-        $this->setApiCredentials($id, $mode);
-
-        try
-        {
-            $data = $this->api->adjustment->create($input)->toArray();
-            $this->logActionToSlack($id, Actions::ADJUSTMENT_ADDED, $logData);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
     }
 
     public function refundAuthorizedPayment($mode, $merchantId, $id)
@@ -2066,32 +1977,6 @@ class Service extends Base\Service
         catch (\Razorpay\Api\Errors\ServerError $e)
         {
             $error[] = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
-    /**
-    * Assigns schedule to a merchant
-    * Uses admin auth on the API
-    *
-    * @param $merchantId integer
-    * @param $input input array
-    * @return $data array
-    */
-    public function assignMerchantSchedule($merchantId, $input)
-    {
-        $error = $data = null;
-
-        $this->setAdminCredentials();
-
-        try
-        {
-            $data = $this->api->merchant->setSchedule($merchantId, $input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
         }
 
         return [$error, $data];
