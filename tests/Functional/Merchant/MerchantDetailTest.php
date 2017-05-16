@@ -142,6 +142,10 @@ class MerchantDetailTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -159,6 +163,10 @@ class MerchantDetailTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -173,6 +181,10 @@ class MerchantDetailTest extends TestCase
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }

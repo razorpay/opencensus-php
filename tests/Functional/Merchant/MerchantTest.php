@@ -142,6 +142,10 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $result = $this->startTest();
 
         $this->assertArrayNotHasKey('groups', $result);
