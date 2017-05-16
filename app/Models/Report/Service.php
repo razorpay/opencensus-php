@@ -17,9 +17,9 @@ class Service extends Base\Service
      */
     public function fetchMultiple(array $input)
     {
-        $reports = $this->repo->report->fetch($input, $this->merchant->getId())->toArrayPublic();
+        $reports = $this->repo->report->fetch($input, $this->merchant->getId());
 
-        return $reports;
+        return $reports->toArrayPublic();
     }
 
     /**
