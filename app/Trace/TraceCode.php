@@ -671,6 +671,7 @@ class TraceCode
     const OFFER_CARD_TYPE_CHECK                         = 'OFFER_CARD_TYPE_CHECK';
     const OFFER_CARD_NETWORK_CHECK                      = 'OFFER_CARD_NETWORK_CHECK';
     const OFFER_CARD_ISSUER_CHECK                       = 'OFFER_CARD_ISSUER_CHECK';
+    const OFFER_CARD_USAGE_CHECK                        = 'OFFER_CARD_USAGE_CHECK';
 
 // Trace codes for Gateway Priorities
     const ADD_GATEWAY_PRIORITY_REQUEST                  = 'ADD_GATEWAY_PRIORITY_REQUEST';

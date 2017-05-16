@@ -1095,7 +1095,7 @@ trait Authorize
 
             $payment->setRecurring(false);
 
-            $vault = $payment->isEmi();
+            $vault = $payment->shouldSaveCard();
 
             $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant);
         }
