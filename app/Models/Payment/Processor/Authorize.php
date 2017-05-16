@@ -52,11 +52,13 @@ trait Authorize
 
         $gatewayInput = [];
 
-        $this->processCurrencyConversions($payment);
-
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+
+        // this needs to be done after we have card entity as we need to know if
+        // cards used in payment is international
+        $this->processCurrencyConversions($payment);
 
         $this->runPaymentInputValidations($payment, $input);
 
@@ -794,9 +796,9 @@ trait Authorize
     {
         $gatewayInput = [];
 
-        $this->processCurrencyConversions($payment);
-
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
+
+        $this->processCurrencyConversions($payment);
     }
 
     protected function parseContact(string $contact): PhoneBook
@@ -952,18 +954,33 @@ trait Authorize
                     ]);
 
             }
+
+            // gateway should do currency conversion only on international cards
+            // else api should do currency conersion and use INR terminals
+            $convertCurrency = $merchant->convertOnApi();
+
+            if ($payment->isInternational() === false)
+            {
+                $convertCurrency = true;
+            }
+
+            $payment->setConvertCurrency($convertCurrency);
+
         }
 
         $amount = $payment->getAmount();
 
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
 
-        $payment->setBaseAmount($baseAmount);
-
-        if ($payment->isCard() === true)
+        // if gateway is doing currency conversions, actual rate used by gateway
+        // will use lower than current rates hence we also use 2 percentage lower
+        // values
+        if ($payment->getConvertCurrency() === false)
         {
-            $payment->setConvertCurrency($merchant->convertOnApi());
+            $baseAmount = (int) ceil($baseAmount * 0.98);
         }
+
+        $payment->setBaseAmount($baseAmount);
     }
 
     /**
@@ -1482,9 +1499,7 @@ trait Authorize
 
         $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
 
-        $amount = $payment->getAmount() / 100;
-
-        $data['amount'] = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
+        $data['amount'] =  $payment->getFormattedAmount();
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
