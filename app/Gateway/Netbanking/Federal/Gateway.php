@@ -23,7 +23,8 @@ class Gateway extends Base\Gateway
 
     const VERIFY_TO_CALLBACK_STATUS = [
         Status::SUCCESS => Status::YES,
-        Status::NO      => Status::NO
+        Status::NO      => Status::NO,
+        Status::ERROR   => Status::NO,
     ];
 
     protected $map = [
