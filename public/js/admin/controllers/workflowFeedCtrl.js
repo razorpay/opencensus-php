@@ -129,133 +129,116 @@ app
         comment.admin_name = name;
       };
 
-      // $scope.fetchAllComments = function () {
-      //   var request = $http({
-      //     url: '/admin/generic',
-      //     method: 'GET',
-      //     params: {
-      //       route_name: 'action_comment_fetch',
-      //       url_params: {
-      //         '{id}': $stateParams.action_id
-      //       }
-      //     }
-      //   });
-      //
-      //   request.success(function (data) {
-      //     if (data.success) {
-      //       data.data.items.forEach(function (item, k) {
-      //         commentMod(item);
-      //
-      //         data.data.items[k] = item;
-      //       });
-      //
-      //       $scope.cards = $scope.cards.concat(data.data.items);
-      //
-      //       $scope.comment_count = data.data.count;
-      //     }
-      //   });
-      // };
-      //
-      // $scope.fetchAllComments();
+      var updateFeed = function(data) {
+        // Action details
+        $scope.action_details = data;
 
-      $scope.fetchActionDetails = function() {
-        var request = $http({
-          url: '/admin/generic',
-          method: 'GET',
-          params: {
-            route_name: 'workflow_action_details',
-            url_params: {
-              '{id}': $stateParams.action_id,
-            },
-          },
+        switch ($scope.action_details.state) {
+          case 'approved':
+          case 'executed':
+            $scope.stateClass = 'approved-bg-color';
+            break;
+          case 'closed':
+            $scope.stateClass = 'rejected-bg-color';
+            break;
+          case 'open':
+          default:
+            $scope.stateClass = 'pending-bg-color';
+        }
+
+        // Resolve entity link
+
+        $scope.entityLinkClick = function() {
+          utils.resolveEntityLinkAndGo(
+            $scope.action_details.entity_id,
+            $scope.action_details.entity_name
+          );
+        };
+
+        // Action comments
+
+        var comments = data.comments;
+
+        comments.forEach(function(item, k) {
+          commentMod(item, 'comment');
+
+          comments[k] = item;
         });
 
-        request.success(function(data) {
-          if (data.success) {
-            // Action details
-            $scope.action_details = data.data;
+        // Re-init first just incase this function
+        // is being called for the second time
+        $scope.cards = [];
 
-            switch ($scope.action_details.state) {
-              case 'approved':
-              case 'executed':
-                $scope.stateClass = 'approved-bg-color';
-                break;
-              case 'closed':
-                $scope.stateClass = 'rejected-bg-color';
-                break;
-              case 'open':
-              default:
-                $scope.stateClass = 'pending-bg-color';
-            }
+        $scope.cards = $scope.cards.concat(comments);
 
-            // Resolve entity link
+        $scope.comment_count = comments.length;
 
-            $scope.entityLinkClick = function() {
-              utils.resolveEntityLinkAndGo(
-                $scope.action_details.entity_id,
-                $scope.action_details.entity_name
-              );
-            };
+        // Action approvals/rejections
 
-            // Action comments
+        var checkers = data.checkers;
 
-            var comments = data.data.comments;
+        checkers.forEach(function(item, k) {
+          commentMod(item, 'status');
 
-            comments.forEach(function(item, k) {
-              commentMod(item, 'comment');
+          checkers[k] = item;
+        });
 
-              comments[k] = item;
-            });
+        $scope.cards = $scope.cards.concat(checkers);
 
-            $scope.cards = $scope.cards.concat(comments);
+        // Sort the cards by timestamp
 
-            $scope.comment_count = comments.length;
+        $scope.cards.sort(function(a, b) {
+          return a.created_at - b.created_at;
+        });
 
-            // Action approvals/rejections
+        // Prepare the list of approvers
+        $scope.approverList = checkers.filter(function(checker) {
+          return checker.approved;
+        });
 
-            var checkers = data.data.checkers;
+        // Prepare the list of rejectors
+        $scope.rejectorList = checkers.filter(function(checker) {
+          return !checker.approved;
+        });
 
-            checkers.forEach(function(item, k) {
-              commentMod(item, 'status');
+        $scope.levels = {};
+        var steps = $scope.action_details.workflow_steps;
 
-              checkers[k] = item;
-            });
-
-            $scope.cards = $scope.cards.concat(checkers);
-
-            // Sort the cards by timestamp
-
-            $scope.cards.sort(function(a, b) {
-              return a.created_at - b.created_at;
-            });
-
-            // Prepare the list of approvers
-            $scope.approverList = checkers.filter(function(checker) {
-              return checker.approved;
-            });
-
-            // Prepare the list of rejectors
-            $scope.rejectorList = checkers.filter(function(checker) {
-              return !checker.approved;
-            });
-
-            $scope.levels = {};
-            var steps = $scope.action_details.workflow_steps;
-
-            // Level(step) structure having roles names
-            for (var key in steps) {
-              if (!$scope.levels[steps[key].level]) {
-                $scope.levels[steps[key].level] = [];
-              }
-              $scope.levels[steps[key].level].push(steps[key].role.name);
-            }
-
-            // To display vertical lines between steps
-            $scope.totalLevels = Object.keys($scope.levels).length;
+        // Level(step) structure having roles names
+        for (var key in steps) {
+          if (!$scope.levels[steps[key].level]) {
+            $scope.levels[steps[key].level] = [];
           }
+          $scope.levels[steps[key].level].push(steps[key].role.name);
+        }
 
-          updateEditFieldState();
-        });
+        // To display vertical lines between steps
+        $scope.totalLevels = Object.keys($scope.levels).length;
+
+        updateEditFieldState();
+      };
+
+      $scope.fetchActionDetails = function(data) {
+        if (typeof data !== 'undefined') {
+          updateFeed(data);
+        } else {
+          var request = $http({
+            url: '/admin/generic',
+            method: 'GET',
+            params: {
+              route_name: 'workflow_action_details',
+              url_params: {
+                '{id}': $stateParams.action_id,
+              },
+            },
+          });
+
+          request.success(function(data) {
+            if (data.success) {
+              updateFeed(data.data);
+            }
+          });
+        }
       };
 
       $scope.fetchActionDetails();
@@ -322,9 +305,14 @@ app
                   'Action performed successfully!',
                   true
                 );
-                $scope.action_details.state = data.data.state; // Change state of request
 
-                updateEditFieldState();
+                // The action will update 3-4 places in the UI
+                // For now it's better (although very dirty)
+                // to just call fetchActionDetails. This must be
+                // later re-written though for performance and
+                // to avoid network call.
+
+                $scope.fetchActionDetails(data.data);
               } else {
                 angular.forEach(data.errors, function(value, key) {
                   $scope.alerts.addAlert('danger', value);
