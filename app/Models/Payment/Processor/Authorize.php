@@ -1499,9 +1499,7 @@ trait Authorize
 
         $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
 
-        $amount = $payment->getAmount() / 100;
-
-        $data['amount'] = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
+        $data['amount'] =  $payment->getFormattedAmount();
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
