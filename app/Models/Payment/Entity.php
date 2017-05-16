@@ -134,6 +134,9 @@ class Entity extends Base\PublicEntity
         self::SAVE,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
+        self::APPROVAL_CODE,
+        self::REFERENCE1,
+        self::REFERENCE2,
     ];
 
     protected $visible = [
@@ -177,6 +180,9 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
+        self::APPROVAL_CODE,
+        self::REFERENCE1,
+        self::REFERENCE2,
         self::TRANSFER_ID,
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
