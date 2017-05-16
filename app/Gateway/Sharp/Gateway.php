@@ -104,6 +104,8 @@ class Gateway extends Base\Gateway
         }
 
         $this->verifyPaymentCreateResponse($input);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function callbackOtpSubmit(array $input)

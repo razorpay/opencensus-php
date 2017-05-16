@@ -383,7 +383,7 @@ trait Authorize
 
             // The first argument marks the payment as converted from failed
             // to authorized
-            $this->updateAndNotifyPaymentAuthorized(true);
+            $this->updateAndNotifyPaymentAuthorized([], true);
 
             $this->repo->saveOrFail($payment);
         });
@@ -897,7 +897,7 @@ trait Authorize
 
             // The first argument marks the payment as converted from failed
             // to authorized
-            $this->updateAndNotifyPaymentAuthorized(true);
+            $this->updateAndNotifyPaymentAuthorized([], true);
 
             $this->autoCapturePaymentIfApplicable($payment);
 
@@ -1554,10 +1554,10 @@ trait Authorize
         }
     }
 
-    protected function updateAndNotifyPaymentAuthorized(bool $wasFailed = false)
+    protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
-        $updated = $this->updatePaymentAuthorized($wasFailed);
+        $updated = $this->updatePaymentAuthorized($data, $wasFailed);
 
         //
         // If payment has not been updated to authorized, we don't fire the webhook
@@ -2510,11 +2510,11 @@ trait Authorize
         }
     }
 
-    protected function updatePaymentAuthorized(bool $wasFailed = false)
+    protected function updatePaymentAuthorized($data = [], bool $wasFailed = false)
     {
         $payment = $this->payment;
 
-        $updated = $this->repo->transaction(function() use ($payment, $wasFailed)
+        $updated = $this->repo->transaction(function() use ($payment, $data, $wasFailed)
         {
             $this->lockForUpdateAndReload($payment);
 
@@ -2536,6 +2536,11 @@ trait Authorize
             $payment->setAuthorizeTimestamp();
 
             $payment->terminal->incrementUsedCount();
+
+            if (isset($data['acquirer']) === true)
+            {
+                $payment->edit($data['acquirer']);
+            }
 
             // If payment was earlier failed, then that means it's
             // getting authorized late.

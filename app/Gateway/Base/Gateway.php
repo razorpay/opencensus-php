@@ -287,14 +287,16 @@ class Gateway
         }
     }
 
-    protected function getCallbackResponseData(array $input)
+    protected function getCallbackResponseData(array $input, $response = [])
     {
+        $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
+
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
         {
-            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::UNAVAILABLE];
+            $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::UNAVAILABLE;
         }
 
-        return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
+        return $response;
     }
 
     public function setInput(array $input)

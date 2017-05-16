@@ -74,6 +74,10 @@ class Entity extends Base\PublicEntity
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
+    const AUTHORIZATION_CODE    = 'authorization_code';
+    const RRN                   = 'reference1';
+    const REFERENCE2            = 'reference2';
+    const REFERENCE3            = 'reference3';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';

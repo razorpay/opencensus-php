@@ -59,9 +59,16 @@ class Validator extends Base\Validator
         '_'                       => 'sometimes|array',
     ];
 
+    protected static $editRules = [
+        'authorization_code'      => 'sometimes|string|max:6',
+        'reference1'              => 'sometimes|string',
+        'reference2'              => 'sometimes|string',
+        'reference3'              => 'sometimes|string',
+    ];
+
     protected static $captureRules = [
-        'amount'        => 'required|integer',
-        'currency'      => 'required|in:INR,USD',
+        'amount'                  => 'required|integer',
+        'currency'                => 'required|in:INR,USD',
     ];
 
     protected static $refundRules = [

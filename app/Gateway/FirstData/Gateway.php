@@ -124,7 +124,19 @@ class Gateway extends Base\Gateway
 
         $this->checkApprovalCode($gatewayPayment);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::AUTHORIZATION_CODE => $gatewayPayment->getAuthCode(),
+                Payment\Entity::RRN                => $gatewayPayment->getEndpointTransactionId()
+            ]
+        ];
     }
 
     protected function runCallbackVerify(array $input)
