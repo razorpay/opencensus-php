@@ -35,6 +35,19 @@ app
         }
       }
 
+      // Modal to show diff
+      function openDiffModal() {
+        $modal.open({
+          templateUrl: 'actionChanges.html',
+          controller: 'actionChangeCtrl',
+          resolve: {
+            action_data: function() {
+              return $scope.action_diff_data;
+            },
+          },
+        });
+      }
+
       $scope.fetchDiff = function() {
         var request = $http.get('/admin/generic', {
           params: {
@@ -50,16 +63,7 @@ app
           if (data.success) {
             $scope.action_diff_data = data;
 
-            // Show modal diff after success
-            $modal.open({
-              templateUrl: 'actionChanges.html',
-              controller: 'actionChangeCtrl',
-              resolve: {
-                action_data: function() {
-                  return $scope.action_diff_data;
-                },
-              },
-            });
+            openDiffModal(); // Show modal diff after success
           } else {
             $scope.alerts.addAlert(
               'danger',
@@ -73,7 +77,11 @@ app
       // Audit log breakup details
 
       $scope.showActionChanges = function() {
-        $scope.fetchDiff();
+        if (!$scope.action_diff_data) {
+          $scope.fetchDiff();
+        } else {
+          openDiffModal();
+        }
       };
 
       $scope.saveComment = function() {
