@@ -35,6 +35,19 @@ app
         }
       }
 
+      // Modal to show diff
+      function openDiffModal() {
+        $modal.open({
+          templateUrl: 'actionChanges.html',
+          controller: 'actionChangeCtrl',
+          resolve: {
+            action_data: function() {
+              return $scope.action_diff_data;
+            },
+          },
+        });
+      }
+
       $scope.fetchDiff = function() {
         var request = $http.get('/admin/generic', {
           params: {
@@ -49,24 +62,26 @@ app
         request.success(function(data) {
           if (data.success) {
             $scope.action_diff_data = data;
+
+            openDiffModal(); // Show modal diff after success
+          } else {
+            $scope.alerts.addAlert(
+              'danger',
+              'Error: Changes cannot be fetched!',
+              true
+            );
           }
         });
       };
 
-      $scope.fetchDiff();
-
       // Audit log breakup details
 
       $scope.showActionChanges = function() {
-        $modal.open({
-          templateUrl: 'actionChanges.html',
-          controller: 'actionChangeCtrl',
-          resolve: {
-            action_data: function() {
-              return $scope.action_diff_data;
-            },
-          },
-        });
+        if (!$scope.action_diff_data) {
+          $scope.fetchDiff();
+        } else {
+          openDiffModal();
+        }
       };
 
       $scope.saveComment = function() {
