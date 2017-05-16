@@ -230,6 +230,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setStatusProcessed()
+    {
+        $this->setAttribute(self::STATUS, Status::PROCESSED);
+    }
+
     public function setBaseAmount()
     {
         $amount = $this->getAttribute(self::AMOUNT);
