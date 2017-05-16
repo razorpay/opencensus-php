@@ -41,7 +41,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in users"  ng-hide="row.id == admin.id">
+          <tr ng-repeat="row in users">
             <td>{{row.id}}</td>
             <td ng-if="fields.indexOf('name') !== -1">{{row.name}}</td>
             <td ng-if="fields.indexOf('username') !== -1">{{row.username}}</td>
@@ -66,7 +66,7 @@
                   <i class="fa fa-pencil-square"></i>
                   edit
                 </a>
-                <button class="btn btn-default btn-xs btn-admin-delete" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="deleteOrgUser(row.id)">
+                <button ng-hide="row.id == admin.id" class="btn btn-default btn-xs btn-admin-delete" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="deleteOrgUser(row.id)">
                   <i class="fa fa-user-times text-danger"></i>
                   delete
                 </button>

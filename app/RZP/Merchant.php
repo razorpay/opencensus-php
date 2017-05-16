@@ -151,16 +151,6 @@ class Merchant extends Entity
         return $this->request('GET', self::BANK_ACCOUNT_URL);
     }
 
-    public function setSchedule($merchantId, $params)
-    {
-        // merchants/{id}/schedules
-        $relativeUrl = $this->getEntityUrl().$merchantId.'/schedules';
-
-        $res = $this->request('POST', $relativeUrl, $params);
-
-        return $res;
-    }
-
     public function getUsers($merchantId)
     {
         $relativeUrl = $this->getEntityUrl().$merchantId.'/users';

@@ -9,6 +9,7 @@ app
     '$modal',
     '$stateParams',
     'admin',
+    'utils',
     function(
       $scope,
       $http,
@@ -16,7 +17,8 @@ app
       $state,
       $modal,
       $stateParams,
-      admin
+      admin,
+      utils
     ) {
       $scope.alerts = alertsFactory.getHandler();
 
@@ -33,6 +35,19 @@ app
         }
       }
 
+      // Modal to show diff
+      function openDiffModal() {
+        $modal.open({
+          templateUrl: 'actionChanges.html',
+          controller: 'actionChangeCtrl',
+          resolve: {
+            action_data: function() {
+              return $scope.action_diff_data;
+            },
+          },
+        });
+      }
+
       $scope.fetchDiff = function() {
         var request = $http.get('/admin/generic', {
           params: {
@@ -47,24 +62,26 @@ app
         request.success(function(data) {
           if (data.success) {
             $scope.action_diff_data = data;
+
+            openDiffModal(); // Show modal diff after success
+          } else {
+            $scope.alerts.addAlert(
+              'danger',
+              'Error: Changes cannot be fetched!',
+              true
+            );
           }
         });
       };
 
-      $scope.fetchDiff();
-
       // Audit log breakup details
 
       $scope.showActionChanges = function() {
-        $modal.open({
-          templateUrl: 'actionChanges.html',
-          controller: 'actionChangeCtrl',
-          resolve: {
-            action_data: function() {
-              return $scope.action_diff_data;
-            },
-          },
-        });
+        if (!$scope.action_diff_data) {
+          $scope.fetchDiff();
+        } else {
+          openDiffModal();
+        }
       };
 
       $scope.saveComment = function() {
@@ -171,12 +188,14 @@ app
                 $scope.stateClass = 'pending-bg-color';
             }
 
-            // Set action permission name to show as title
-            $scope.action_permission_name =
-              $scope.action_details.permission.description +
-              ' (' +
-              $scope.action_details.permission.name +
-              ')';
+            // Resolve entity link
+
+            $scope.entityLinkClick = function() {
+              utils.resolveEntityLinkAndGo(
+                $scope.action_details.entity_id,
+                $scope.action_details.entity_name
+              );
+            };
 
             // Action comments
 

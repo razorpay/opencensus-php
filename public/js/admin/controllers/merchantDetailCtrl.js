@@ -91,8 +91,20 @@ app
       };
 
       $scope.setInternational = function(value) {
-        var url = '/admin/merchants/' + $scope.merchant.id + '/international';
-        var request = $http.post(url, { international: value });
+        var data = {
+          route_name: 'merchant_edit',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            international: value,
+          },
+        };
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
@@ -453,13 +465,18 @@ app
           });
       };
       $scope.assignSchedule = function(data) {
+        var data = {
+          route_name: 'schedule_assign',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/schedules',
-          transformRequest: transformRequestAsFormPost,
+          url: '/admin/generic',
           data: data,
         });
-
         request
           .success(function(data) {
             if (data.success) {
@@ -550,10 +567,19 @@ app
           });
       };
       $scope.addAdjustment = function(adjustment) {
+        var mode = adjustment.mode;
+        delete adjustment.mode;
+
+        var data = {
+          route_name: 'adj_add',
+          merchant_id: $scope.merchant.id,
+          body: adjustment,
+          mode: mode,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/addadjustment',
-          data: angular.toJson(adjustment),
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {
@@ -670,11 +696,19 @@ app
           });
       };
 
-      $scope.changeBankAccountDetails = function(bankAccount) {
+      var updateMerchantBankDetails = function(data) {
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'put',
-          url: '/admin/merchant/' + $scope.merchant.id + '/bank_account',
-          data: angular.toJson(bankAccount),
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
         });
         request
           .success(function(data) {
@@ -684,6 +718,56 @@ app
                 'Merchant bank details changed successfully',
                 true
               );
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
+      };
+      $scope.changeBankAccountDetails = function(bankAccount) {
+        delete bankAccount.beneficiary_address4;
+        delete bankAccount.beneficiary_code;
+        delete bankAccount.beneficiary_country;
+        delete bankAccount.created_at;
+        delete bankAccount.entity_id;
+        delete bankAccount.type;
+        delete bankAccount.id;
+        delete bankAccount.merchant_id;
+        delete bankAccount.mpin_set;
+
+        var merchantDetailsData = {
+          bank_branch_ifsc: bankAccount.ifsc_code,
+          bank_account_name: bankAccount.beneficiary_name,
+          bank_account_number: bankAccount.account_number,
+          bank_beneficiary_address1: bankAccount.beneficiary_address1,
+          bank_beneficiary_address2: bankAccount.beneficiary_address2,
+          bank_beneficiary_address3: bankAccount.beneficiary_address3,
+          bank_beneficiary_pin: bankAccount.beneficiary_pin,
+          bank_beneficiary_city: bankAccount.beneficiary_city,
+          bank_beneficiary_state: bankAccount.beneficiary_state,
+        };
+        var data = {
+          route_name: 'merchant_add_bank_account',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: bankAccount,
+        };
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          data: data,
+          transformRequest: transformRequestAsFormPost,
+        });
+        request
+          .success(function(data) {
+            if (data.success) {
+              updateMerchantBankDetails(merchantDetailsData);
               $scope.merchant.details.merchant_details = data.data;
             } else {
               $scope.alerts.resetAlerts();
@@ -697,11 +781,19 @@ app
           });
       };
       $scope.editComment = function(new_comment) {
-        var data = { comment: new_comment };
+        var data = {
+          route_name: 'merchant_activation_update',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+          body: {
+            comment: new_comment,
+          },
+        };
         var request = $http({
-          method: 'post',
-          url: '/admin/merchant/' + $scope.merchant.id + '/comment/edit',
-          data: angular.toJson(data),
+          method: 'put',
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {
