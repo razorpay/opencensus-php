@@ -23,12 +23,6 @@ class Validator extends Base\Validator
 
     public function validateAdminId(array $input)
     {
-        // This validator makes sense but now to keep it
-        // simple (for MVP) we'll let the maker check his
-        // own action.
-
-        return;
-
         $action = (new Action\Repository)->findOrFailPublic(
             $input[Entity::ACTION_ID]);
 
