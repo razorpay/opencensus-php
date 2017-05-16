@@ -13,7 +13,6 @@ class GatewayRule extends Base
             'merchant_id'   => Merchant\Account::TEST_ACCOUNT,
             'gateway'       => 'hdfc',
             'network'       => 'VISA',
-            'international' => false,
             'load'          => 5000
         ];
 
@@ -29,7 +28,6 @@ class GatewayRule extends Base
         $ruleAttributes = [
             'method'        => 'netbanking',
             'merchant_id'   => Merchant\Account::TEST_ACCOUNT,
-            'international' => false,
             'load'          => 5000,
         ];
 
@@ -45,7 +43,6 @@ class GatewayRule extends Base
         $ruleAttributes = [
             'method'        => 'wallet',
             'merchant_id'   => Merchant\Account::TEST_ACCOUNT,
-            'international' => false,
             'load'          => 5000,
         ];
 

@@ -230,6 +230,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setStatusProcessed()
+    {
+        $this->setAttribute(self::STATUS, Status::PROCESSED);
+    }
+
     public function setBaseAmount()
     {
         $amount = $this->getAttribute(self::AMOUNT);
@@ -306,11 +311,11 @@ class Entity extends Base\PublicEntity
     {
         $data = $this->toArray();
 
-        if (($this->payment->isCard()) and
+        if (($this->payment->isCard() === true) and
             ($this->payment->getConvertCurrency() === true))
         {
-            $data['amount']   = $this->getBaseAmount();
-            $data['currency'] = Currency\Currency::INR;
+            $data[self::AMOUNT]   = $this->getBaseAmount();
+            $data[self::CURRENCY] = Currency\Currency::INR;
         }
 
         return $data;
