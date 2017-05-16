@@ -347,6 +347,9 @@ final class Route
         'gateway_update_downtime'                 => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
         'gateway_fetch_downtime'                  => ['get',      'gateway/downtimes',                              'GatewayController@getAbsentGateways'                               ],
         'gateway_downtime_source_webhook'         => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
+        'gateway_create_rule'                     => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
+        'gateway_update_rule'                     => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
+        'gateway_delete_rule'                     => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'plan_create'                             => ['post',     'plans',                                          'SubscriptionController@postCreatePlan'                             ],
@@ -856,6 +859,9 @@ final class Route
         'user_merchant_mapping_action',
         'merchant_admin_lead_put',
         'payment_update_on_hold',
+        'gateway_create_rule',
+        'gateway_update_rule',
+        'gateway_delete_rule',
         'merchant_actions',
         'refund_retry_failed',
         'refund_verify_failed',
@@ -1311,6 +1317,8 @@ final class Route
         'merchant_copy_terminal',
     );
 
+    const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1538,6 +1546,18 @@ final class Route
     public static function getApiRoute($name)
     {
         return self::$apiRoutes[$name];
+    }
+
+    public function isWorkflowExecuteCall()
+    {
+        $routeName = $this->router->currentRouteName();
+
+        if ($routeName === self::WORKFLOW_EXECUTE_ROUTE_NAME)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
