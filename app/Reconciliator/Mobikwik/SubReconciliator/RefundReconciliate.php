@@ -7,9 +7,8 @@ use RZP\Reconciliator\Base;
 class RefundReconciliate extends Base\RefundReconciliate
 {
     // ----- Row header names -----
-    const COLUMN_REFUND_ID          = 'OrderID';
-
-    const COLUMN_REFUND_AMOUNT      = 'RefundAmount';
+    const COLUMN_REFUND_ID     = 'OrderID';
+    const COLUMN_REFUND_AMOUNT = 'RefundAmount';
 
     /**
      * Gets refund Id from row data
