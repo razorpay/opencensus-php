@@ -7,13 +7,10 @@ use RZP\Trace\Trace;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\ReportsJob;
-
-use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Jobs\DispatchRouter;
 
 class Core extends Base\Core
 {
-    use DispatchesJobs;
-
     /**
      * builds the report entity, given params
      *
@@ -64,7 +61,9 @@ class Core extends Base\Core
         {
             (new Validator)->validateInput('report_queue', array_merge($input, [Entity::TYPE => $entity]));
 
-            $this->dispatch(new ReportsJob($input, $entity));
+            $reportsJob = new ReportsJob($input, $entity);
+
+            (new DispatchRouter)->dispatchOn($reportsJob, DispatchRouter::REPORTS);
         }
         catch (Exception $e)
         {
