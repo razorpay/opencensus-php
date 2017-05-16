@@ -183,7 +183,7 @@ class Service extends Base\Service
     public function fetch($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
-            $id, ['methods', Entity::GROUPS]);
+            $id, ['methods', Entity::GROUPS, Entity::ADMINS]);
 
         return $merchant->toArrayPublic();
     }
