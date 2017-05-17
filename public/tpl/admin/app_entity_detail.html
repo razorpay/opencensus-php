@@ -146,6 +146,7 @@
           <select class="form-control m-b" ng-model="terminal.gateway_acquirer">
              <option value="hdfc" selected>HDFC</option>
              <option value="axis">Axis</option>
+             <option value="icic">ICICI</option>
           </select>
         </div>
       </div>
@@ -209,6 +210,15 @@
           <select class="form-control m-b" ng-model="terminal.tpv">
              <option value="1" selected>Yes</option>
              <option value="0">No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="currency" class="col-lg-4 control-label">Currency:</label>
+        <div class="col-lg-8" >
+          <select class="form-control m-b" ng-model="terminal.currency">
+             <option value="INR" selected>INR</option>
+             <option value="USD">USD</option>
           </select>
         </div>
       </div>
