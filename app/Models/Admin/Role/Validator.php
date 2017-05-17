@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Role;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Permission;
 
 class Validator extends Base\Validator
 {
@@ -47,6 +48,8 @@ class Validator extends Base\Validator
 
         $org = $role->org;
 
+        Permission\Entity::verifyIdAndSilentlyStripSignMultiple($permissions);
+
         $orgPermissions = $org->permissions()->get(['id']);
 
         $orgPermissionIds = [];
@@ -60,9 +63,16 @@ class Validator extends Base\Validator
 
         if (empty($diffPerms) === false)
         {
+            $data = [
+                'role_id'   => $role->getId(),
+                'org_id'    => $org->getId(),
+                'diffPerms' => $diffPerms,
+                'orgPerms'  => $orgPermissionIds,
+            ];
+
             throw new Exception\BadRequestValidationFailureException(
                 'Few permissions are not allowed for the organization', null,
-                $diffPerms);
+                $data);
         }
     }
 }

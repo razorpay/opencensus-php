@@ -18,6 +18,8 @@ class Entity extends Base\PublicEntity
     const NEXT_RUN_AT       = 'next_run_at';
     const LAST_RUN_AT       = 'last_run_at';
 
+    const SCHEDULE_NAME     = 'schedule_name';
+
     protected $entity = 'schedule_task';
 
     public $incrementing = true;
@@ -36,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::METHOD,
         self::SCHEDULE_ID,
+        self::SCHEDULE_NAME,
         self::NEXT_RUN_AT,
         self::LAST_RUN_AT,
         self::CREATED_AT,
@@ -64,6 +67,10 @@ class Entity extends Base\PublicEntity
     protected static $modifiers = array(
         self::NEXT_RUN_AT,
     );
+
+    protected $appends = [
+        self::SCHEDULE_NAME,
+    ];
 
     protected $casts = [
         self::NEXT_RUN_AT => 'int',
@@ -96,6 +103,16 @@ class Entity extends Base\PublicEntity
 
             $input[self::NEXT_RUN_AT] = $nextRunAt;
         }
+    }
+
+    protected function getScheduleNameAttribute()
+    {
+        if ($this->getScheduleId() === null)
+        {
+            return '';
+        }
+
+        return $this->schedule->getName();
     }
 
     // ---------------------- Getters ------------------------------------------

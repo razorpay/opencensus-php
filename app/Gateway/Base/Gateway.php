@@ -129,6 +129,12 @@ class Gateway
     protected $terminal;
 
     /**
+     * Laravel request class instance
+     * @var Request
+     */
+    protected $request;
+
+    /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
      *
@@ -160,6 +166,8 @@ class Gateway
         $this->repo = $this->getRepository();
 
         $this->route = $this->app['api.route'];
+
+        $this->request = $this->app['request'];
     }
 
     public function authorize(array $input)

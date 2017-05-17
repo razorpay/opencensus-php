@@ -24,9 +24,11 @@ class Validator extends Base\Validator
         Entity::ORG_ID      => 'sometimes|string|size:14',
     ];
 
-    public function validatePermissionHasOneWorkflow(array $perms)
+    public function validatePermissionHasOneWorkflow(
+        string $orgId, array $perms)
     {
-        $workflowIds = (new Repository)->getWorkflowIdsForPermissions($perms);
+        $workflowIds = (new Repository)->getWorkflowIdsForPermissionsAndOrgId(
+            $orgId, $perms);
 
         if (empty($workflowIds->toArray()) === false)
         {
@@ -42,8 +44,7 @@ class Validator extends Base\Validator
     }
 
     public function validatePermissionsForOrg(
-        string $orgId,
-        array $permissions)
+        string $orgId, array $permissions)
     {
         $permsWithWorkflowEnabled = (new Permission\Repository)->getPermissionsWithWorkflowEnabled($orgId);
 

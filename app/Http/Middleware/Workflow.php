@@ -14,12 +14,21 @@ use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Service as WorkflowService;
 use Illuminate\Foundation\Application;
 use RZP\Models\Workflow\Action\Differ\EntityValidator;
+use RZP\Models\Admin\Permission\Name as Permission;
 
 class Workflow
 {
     const WILDCARD_PERMISSION = '*';
 
     const WORKFLOW_CONTROLLER = 'RZP\Http\Controllers\WorkflowController';
+
+    // Mostly because workflow will be trigger
+    // inside the code since the generic handler
+    // is too generic to handle the diffing.
+    const EXCLUDED_PERMISSIONS = [
+        Permission::EDIT_MERCHANT_METHODS,
+        Permission::ASSIGN_MERCHANT_BANKS,
+    ];
 
     protected $app;
 
@@ -54,6 +63,15 @@ class Workflow
         try
         {
             $permission = $this->getRoutePermission($routeName);
+
+            if (in_array($permission, self::EXCLUDED_PERMISSIONS, true) === true)
+            {
+                // Set the default permission in workflow service
+                $this->app['workflow']
+                     ->setPermission($permission);
+
+                return $next($request);
+            }
 
             $admin = $this->ba->getAdmin();
 
