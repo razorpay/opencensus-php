@@ -133,8 +133,8 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\LogicException(
                 'Data tampering found.', null, [
-                    'expected' => $expectedPaymentId,
-                    'actual'   => $actualPaymentId
+                    'callback_result' => $this->approval,
+                    'verify_result'   => $verify->gatewaySuccess,
                 ]);
         }
     }
@@ -563,6 +563,12 @@ class Gateway extends Base\Gateway
                 if ($this->isRelevantVerifyType($type) === true)
                 {
                     $verifyAuthResponse = $transactionValue;
+
+                    // This shouldn't be happening, but sometimes FirstData is returning two separate
+                    // preauth transactions in a single verify response. In these cases, the second
+                    // preauth is usually declined due to the order existing already in an unexpected
+                    // state. So we avoid the second transaction, and break after finding the first.
+                    break;
                 }
             }
 
