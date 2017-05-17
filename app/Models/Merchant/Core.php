@@ -285,11 +285,12 @@ class Core extends Base\Core
 
         $routePermission = Permission\Name::$actionMap[$action];
 
+        $originalMerchant = clone $merchant;
+
+        $merchant->$action();
+
         $this->app['workflow']->setPermission($routePermission)->handle(
-            $merchant, function ($merchant) use ($action)
-            {
-                $merchant->$action();
-            });
+            $originalMerchant, $merchant);
 
         $this->repo->saveOrFail($merchant);
 
