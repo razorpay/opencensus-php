@@ -140,15 +140,6 @@ class BasicEntityReport extends BaseReport
     {
         $this->setDefaults();
 
-        // added for debugging
-        // will remove later
-        $this->trace->info(
-            'REPORT_GENRATE_START',
-            [
-                'method' => __METHOD__,
-                'input' => $input,
-            ]);
-
         $this->createReportEntity($input);
 
         $now = Carbon::now()->timestamp;
@@ -162,16 +153,6 @@ class BasicEntityReport extends BaseReport
         $this->editReportEntityAndSave($now, $s3File);
 
         $this->unlinkFile($fullpath);
-
-        // added for debugging
-        // will remove later
-        $this->trace->info(
-            'REPORT_GENRATE_SUCCESS',
-            [
-                'method' => __METHOD__,
-                'report' => $this->report->getId(),
-                'file'   => $s3File->getId(),
-            ]);
     }
 
     /**
@@ -406,15 +387,6 @@ class BasicEntityReport extends BaseReport
      */
     protected function createFileAndSave($filePath, $fileName)
     {
-        // added for debugging
-        // will remove later
-        $this->trace->info(
-            'FILE_CREATE_START',
-            [
-                'method' => __METHOD__,
-                'filePath' => $filePath,
-            ]);
-
         $creator = new FileStore\Creator;
 
         $s3File = $creator->localFilePath($filePath)
@@ -426,15 +398,6 @@ class BasicEntityReport extends BaseReport
                           ->merchant($this->merchant)
                           ->save()
                           ->getFileInstance();
-
-        // added for debugging
-        // will remove later
-        $this->trace->info(
-            'FILE_CREATE_SUCCESS',
-            [
-                'method' => __METHOD__,
-                'file' => $s3File->getId(),
-            ]);
 
         return $s3File;
     }
@@ -456,15 +419,6 @@ class BasicEntityReport extends BaseReport
     {
         $report = $this->report;
 
-        // added for debugging
-        // will remove later
-        $this->trace->debug(
-            'REPORT_SAVE_START',
-            [
-                'method' => __METHOD__,
-                'report' => $report->getId(),
-            ]);
-
         // set generatedAt value for report
         $report->setGeneratedAt($generatedAt);
 
@@ -472,15 +426,6 @@ class BasicEntityReport extends BaseReport
         $report->file()->associate($file);
 
         $this->repo->saveOrFail($report);
-
-        // added for debugging
-        // will remove later
-        $this->trace->debug(
-            'REPORT_SAVE_SUCCESS',
-            [
-                'method' => __METHOD__,
-                'report' => $report->getId(),
-            ]);
     }
 
     // ------ Processes before starting report-generation ------
