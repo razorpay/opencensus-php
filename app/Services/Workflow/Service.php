@@ -229,11 +229,32 @@ class Service
         }
         else
         {
+            // Check for an empty original array being passed in
+            // If so, use []
+            $originalDataArray = (array) $originalData;
+
+            if (empty($originalDataArray) === true)
+            {
+                // Reset originalDataArray to []
+                $originalDataArray = [];
+
+                // Create an array with same keys as dirty
+                // but with the key values as present.
+                foreach ($dirtyData->toArray() as $key => $value)
+                {
+                    $originalDataArray[$key] = '';
+                }
+            }
+            else
+            {
+                $originalDataArray = $originalData->toArray();
+            }
+
             // Set entity
             $this->setEntity($dirtyData->getEntityName());
 
             $diff = $differCore->createDiff(
-                $originalData->toArray(), $dirtyData->toArray());
+                $originalDataArray, $dirtyData->toArray());
         }
 
         $this->setDiff($diff);
