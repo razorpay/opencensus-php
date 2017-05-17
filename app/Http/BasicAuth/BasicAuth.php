@@ -327,47 +327,6 @@ class BasicAuth
         return $this->invalidApiKey();
     }
 
-    public function adminAuth()
-    {
-        $this->setType(Type::ADMIN_AUTH);
-
-        $res = $this->setCredentials();
-
-        // null is the good value here
-        if ($res !== null)
-        {
-            return $res;
-        }
-
-        if ($this->getKey() === 'admin')
-        {
-            $this->setAdminTrue();
-
-            $token = $this->getSecret();
-
-            $adminToken = $this->fetchAdminToken($token);
-
-            if ($adminToken->getAdminId() !== null)
-            {
-                $this->checkForDashboardMerchantHeader();
-
-                $this->setDashboardHeaders();
-
-                $this->admin = $adminToken->admin;
-
-                $this->adminOrgId = $this->admin->getOrgId();
-
-                return $this->checkAndSetAccountScope();
-            }
-        }
-        else if ($this->isKeyBlank())
-        {
-            return $this->appAuth();
-        }
-
-        return $this->invalidApiKey();
-    }
-
     /**
      * Allows requests with public keys to get through.
      * Also allows private key based requests too
