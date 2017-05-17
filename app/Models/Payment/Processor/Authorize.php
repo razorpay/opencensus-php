@@ -2596,7 +2596,10 @@ trait Authorize
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e);
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::ERROR_EXCEPTION,
+                $data['acquirer']);
         }
 
     }
