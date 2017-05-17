@@ -144,7 +144,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $result = $this->startTest();
 
@@ -397,7 +397,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
 
@@ -410,7 +410,7 @@ class MerchantTest extends TestCase
     {
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
     }
@@ -423,7 +423,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
     }
@@ -436,7 +436,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test',  'org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
 
@@ -453,7 +453,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test',  'org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }
@@ -464,7 +464,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test',  'org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
 
@@ -481,7 +481,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test',  'org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }
@@ -494,7 +494,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test',  'org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
 
@@ -511,7 +511,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test',  'org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }
