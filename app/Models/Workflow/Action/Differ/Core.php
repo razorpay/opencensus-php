@@ -214,7 +214,7 @@ class Core extends Base\Core
         $keys = array_keys($original);
 
         $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
-// s($original, $dirty);
+
         foreach ($diffKeys as $key)
         {
             // Can be scalar or an array
