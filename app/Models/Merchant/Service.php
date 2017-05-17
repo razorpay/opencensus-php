@@ -291,6 +291,17 @@ class Service extends Base\Service
 
         (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
 
+        list($original, $dirty) = [
+            // Current plan
+            ['pricing_plan' => $merchant->pricing->getPlanName()],
+            // New plan
+            ['pricing_plan' => $plan->first()->getPlanName()],
+        ];
+
+        $this->app['workflow']
+             ->setEntity($merchant->getEntity())
+             ->handle($original, $dirty);
+
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);

@@ -37,7 +37,6 @@ return [
             Permission::VIEW_MERCHANT_BANK_ACCOUNTS => '',
             Permission::VIEW_MERCHANT_LOGIN => '',
             Permission::VIEW_ACTIVITY => '',
-            Permission::VIEW_PRICING_LIST => '',
             Permission::VIEW_MERCHANT_PRICING_RULES => '',
             Permission::VIEW_MERCHANT_HDFC_EXCEL => '',
             Permission::VIEW_BENEFICIARY_FILE => '',
@@ -45,9 +44,7 @@ return [
             Permission::VIEW_ALL_MERCHANT_AGGREGATIONS => '',
             Permission::VIEW_MERCHANT_AGGREGATIONS => '',
             Permission::VIEW_MERCHANT_TAGS => '',
-            Permission::CREATE_PRICING_PLAN => '',
             Permission::SET_PRICING_RULES => '',
-            Permission::DELETE_PRICING_PLAN_RULES => '',
             Permission::DELETE_EMI_PLAN => '',
             Permission::CREATE_EMI_PLAN => '',
             Permission::CREATE_MERCHANT_LOCK => '',
@@ -124,6 +121,12 @@ return [
             Permission::VIEW_ACTIONS => '',
             Permission::VIEW_MERCHANT_STATS => '',
             Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
+        ],
+
+        PermissionCategory::PRICING => [
+            Permission::VIEW_PRICING_LIST => 'View Pricing Plans',
+            Permission::CREATE_PRICING_PLAN => 'Create Pricing Plan',
+            Permission::DELETE_PRICING_PLAN_RULES => 'Delete Pricing Plan Rule',
         ],
 
         PermissionCategory::ENTITY => [
@@ -216,9 +219,7 @@ return [
             Permission::VIEW_MERCHANT_SCREENSHOT => '',
             Permission::DELETE_MERCHANT_FEATURES => 'Delete a merchant feature',
 
-            Permission::CREATE_PRICING_PLAN => '',
             Permission::SET_PRICING_RULES => '',
-            Permission::DELETE_PRICING_PLAN_RULES => '',
 
             Permission::CREATE_MERCHANT_LOCK              => '',
             Permission::CREATE_MERCHANT_UNLOCK            => '',
@@ -250,6 +251,11 @@ return [
             Permission::CREATE_MERCHANT_INVITE => '',
             Permission::EDIT_MERCHANT_INVITE   => '',
             Permission::VIEW_MERCHANT_INVITE => '',
+        ],
+
+        PermissionCategory::PRICING => [
+            Permission::CREATE_PRICING_PLAN => 'Create Pricing Plan',
+            Permission::DELETE_PRICING_PLAN_RULES => 'Delete Pricing Plan Rule',
         ],
 
         // UAM
@@ -312,9 +318,7 @@ return [
         PermissionCategory::MERCHANT_DETAIL => [
             Permission::DELETE_MERCHANT_FEATURES        => 'Delete a merchant feature',
 
-            Permission::CREATE_PRICING_PLAN             => '',
             Permission::SET_PRICING_RULES               => '',
-            Permission::DELETE_PRICING_PLAN_RULES       => '',
 
             Permission::CREATE_MERCHANT_LOCK            => '',
             Permission::CREATE_MERCHANT_UNLOCK          => '',
@@ -336,6 +340,11 @@ return [
 
             Permission::CREATE_MERCHANT_INVITE          => '',
             Permission::EDIT_MERCHANT_INVITE            => '',
+        ],
+
+        PermissionCategory::PRICING => [
+            Permission::CREATE_PRICING_PLAN => 'Create Pricing Plan',
+            Permission::DELETE_PRICING_PLAN_RULES => 'Delete Pricing Plan Rule',
         ],
 
         // UAM
