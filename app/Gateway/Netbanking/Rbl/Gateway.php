@@ -87,9 +87,14 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getVerifyRequestData($verify->input);
 
-        $request = $this->getStandardRequestArray($content, 'get');
+        $content = http_build_query($content);
 
-        $request['url'] = $request['url'] . http_build_query($content);
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] =
+        [
+            'IPTYPE' => FileFormat::NV
+        ];
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -164,7 +169,7 @@ class Gateway extends Base\Gateway
         // Verify response will contain S or N, but we have already
         // mapped the S status to Y in parseVerifyResponse
         //
-        if ($content[ResponseFields::STATUS] === Status::getAuthSuccessStatus())
+        if ($content[ResponseFields::ENTRY_STATUS] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }
@@ -190,6 +195,7 @@ class Gateway extends Base\Gateway
             RequestFields::V_PAYEE_ID       => $this->getMerchantId(),
             RequestFields::BANK_REFERENCE   => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
             RequestFields::ENTITY_TYPE      => Constants::TYPE_PAYMENT,
+            RequestFields::TRANS_CURRENCY   => Currency::INR,
         ];
 
         return $data;
@@ -321,26 +327,26 @@ class Gateway extends Base\Gateway
     {
         if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
         {
-            $attributes[Base\Entity::STATUS] = $content[ResponseFields::STATUS];
+            $attributes[Base\Entity::STATUS] = $content[ResponseFields::ENTRY_STATUS];
         }
 
         //
         // Saving BID from Verify response only if BID from authorize hasn't been saved
         //
-        if (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true)
+        if (isset($content[ResponseFields::REFERENCE_ID]) === true)
         {
                 if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
                 {
-                    $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_PAYMENT_ID];
+                    $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::REFERENCE_ID];
                 }
                 else if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === false) and
-                         ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !== $content[ResponseFields::BANK_PAYMENT_ID]))
+                         ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !== $content[ResponseFields::REFERENCE_ID]))
                 {
                     $this->trace->error(
                         TraceCode::GATEWAY_MULTIPLE_BANK_PAYMENT_IDS,
                         [
                             'authorize_bid' => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
-                            'verify_bid'    => $content[ResponseFields::BANK_PAYMENT_ID]
+                            'verify_bid'    => $content[ResponseFields::REFERENCE_ID]
                         ]);
                 }
         }
@@ -355,45 +361,11 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse(string $body)
     {
+        $xml = (array) simplexml_load_string($body);
 
-        $values = explode('|', $body);
+        $transactionStatus = (array) $xml['RetrieveTransactionStatus'];
 
-        //
-        // Manually setting success to failed for verify response "||||"
-        // In the success case, eliminating the \n0000's to clean the data
-        //
-        if (empty($values[0]) === true)
-        {
-            $values[4] = Status::NO;
-        }
-        else
-        {
-            // Cleaning data
-            $values[4] = trim($values[4]);
-        }
-
-        $keys = $this->getVerifyResponseKeys();
-
-        $content = array_combine($keys, $values);
-
-        $status = self::VERIFY_TO_CALLBACK_STATUS[$content[ResponseFields::STATUS]];
-
-        $content[ResponseFields::STATUS] = $status;
-
-        return $content;
-    }
-
-    protected function getVerifyResponseKeys()
-    {
-        $keys = [
-            ResponseFields::PAYMENT_ID,
-            ResponseFields::ITEM_CODE,
-            ResponseFields::BANK_PAYMENT_ID,
-            ResponseFields::AMOUNT,
-            ResponseFields::STATUS
-        ];
-
-        return $keys;
+        return (array)$transactionStatus['RetrieveTransactionStatus_REC'];
     }
 
     protected function getMerchantId()

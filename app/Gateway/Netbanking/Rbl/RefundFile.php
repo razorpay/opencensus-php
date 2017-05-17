@@ -9,44 +9,58 @@ use RZP\Constants\MailTags;
 
 class RefundFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'RBL_REFUND';
+    protected static $fileToWriteName = 'Rbl_Netbanking_Refunds';
 
     const EMAIL_BODY = 'Please forward the RBL Netbanking refunds file to the operations team';
 
     protected static $headers = [
-
+        RefundFields::SERIAL_NO,
+        RefundFields::REFUND_ID,
+        RefundFields::BANK_ID,
+        RefundFields::MERCHANT_NAME,
+        RefundFields::TRANSACTION_DATE,
+        RefundFields::REFUND_DATE,
+        RefundFields::MERCHANT_ID,
+        RefundFields::BANK_REFERENCE,
+        RefundFields::PGI_REFERENCE,
+        RefundFields::TRANSACTION_AMOUNT,
+        RefundFields::REFUND_AMOUNT,
     ];
 
     public function generate($input)
     {
-        list($txt, $totalAmount, $count) = $this->getRefundData($input);
+        $data = $this->getRefundData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
         $creator = $this->createFile(
-            FileStore\Format::TXT,
-            $txt,
+            FileStore\Format::XLSX,
+            $data,
             $fileName,
-            FileStore\Type::FEDERAL_NETBANKING_REFUND
+            FileStore\Type::RBL_NETBANKING_REFUND
         );
 
         $file = $creator->get();
 
-        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+        $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
 
-        return [
-            'total_amount'    => $totalAmount,
-            'count'           => $count,
-            'signed_url'      => $signedFileUrl,
-            'local_file_path' => $file['local_file_path'],
+        $fileData = [
+            'subject'   => 'RBL Netbanking refunds file for ' . $today,
+            'file_path' => $file['local_file_path'],
+            'count'     => count($data),
+            'date'      => $today
         ];
+
+        $this->sendRefundEmail($fileData);
+
+        return $file['local_file_path'];
     }
 
     protected function getRefundData($input)
     {
-        $totalAmount = 0;
+        $data[] = self::$headers;
 
-        $count = 0;
+        $index = 1;
 
         foreach ($input['data'] as $row)
         {
@@ -55,37 +69,48 @@ class RefundFile extends Base\RefundFile
                     'Asia/Kolkata')
                     ->format('Y-d-m');
 
+            $refundDate = Carbon::createFromTimestamp(
+                    $row['refund']['created_at'],
+                    'Asia/Kolkata')
+                    ->format('Y-d-m');
+
             $data[] = [
-                'Payee ID'      => $row['terminal']['gateway_merchant_id'],
-                'Date'          => $date,
-                'PRN'           => $row['payment']['id'],
-                'FREEFIELD'     => Constants::FREEFIELD,
-                'BID'           => $row['gateway']['bank_payment_id'],
-                'TXN Amount'    => $row['payment']['amount'] / 100,
-                'Refund Amount' => $row['refund']['amount'] / 100
+                RefundFields::SERIAL_NO          => $index++,
+                RefundFields::REFUND_ID          => $row['refund']['id'],
+                RefundFields::BANK_ID            => Constants::BANK_ID,
+                RefundFields::MERCHANT_NAME      => Constants::MERCHANT_NAME,
+                RefundFields::TRANSACTION_DATE   => $date,
+                RefundFields::REFUND_DATE        => $refundDate,
+                RefundFields::MERCHANT_ID        => $row['terminal']['gateway_merchant_id'],
+                RefundFields::BANK_REFERENCE     => $row['gateway']['bank_payment_id'],
+                RefundFields::PGI_REFERENCE      => '',
+                RefundFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
+                RefundFields::REFUND_AMOUNT      => $row['refund']['amount'] / 100,
             ];
-
-            $totalAmount += $row['refund']['amount'] / 100;
-
-            $count++;
         }
 
-        $txt = $this->getTextData($data);
-
-        return [$txt, $totalAmount, $count];
+        return $data;
     }
 
-    protected function getTextData($data)
+    protected function sendRefundEmail($fileData = [])
     {
-        $txt = $this->generateText($data, '|', true);
+        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
+        {
+            $emails = ['settlements@razorpay.com'];
 
-        return $txt;
-    }
+            $message->from('refunds@razorpay.com', 'Rbl Netbanking refunds');
 
-    protected function getFileToWriteNameWithoutExt()
-    {
-        $date = $time = Carbon::now('Asia/Kolkata')->format('d_m_Y');
+            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        return self::$fileToWriteName . '_' . $date;
+            $message->subject($fileData['subject']);
+
+            $message->to($emails);
+
+            $message->attach($fileData['file_path']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::RBL_NETBANKING_REFUNDS_MAIL);
+        });
     }
 }

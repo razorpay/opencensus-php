@@ -28,7 +28,7 @@ class RequestFields
 	const LANGUAGE_ID        = "LANGUAGE_ID";
 	const CHANNEL_ID         = "CHANNEL_ID";
 	const V_LOGIN_FLAG       = "LOGIN_FLAG";
-	const SERVICE_ID         = "SRVCID";
+	const SERVICE_ID         = "__SRVCID__";
 	const STATE_MODE         = "STATEMODE";
 	const RESPONSE_FORMAT    = "OPFMT";
 	const REQUEST_FORMAT     = "IPFMT";
@@ -39,5 +39,6 @@ class RequestFields
 	const V_PAYEE_ID         = "BNF_ID";
 	const BANK_REFERENCE     = "REFERENCE_ID";
 	const ENTITY_TYPE        = "DESTINATION_ENTITY_TYPE";
+	const TRANS_CURRENCY     = 'TRANSACTION_CURRENCY';
 
 }
