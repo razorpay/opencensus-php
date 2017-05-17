@@ -803,7 +803,7 @@ app
                 'Merchant comment edited successfully',
                 true
               );
-              $scope.merchant.details.merchant_details.comment = data.data;
+              $scope.merchant.details.merchant_details.comment = new_comment;
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
