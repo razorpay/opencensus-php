@@ -994,6 +994,12 @@ angular
               idParam: 'id',
               sign: 'role_',
             },
+
+            methods: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
           };
 
           if (typeof entityMap[entityName] !== 'undefined') {
