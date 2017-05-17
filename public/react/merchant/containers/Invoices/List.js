@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -34,9 +35,7 @@ export default class InvoicesListContainer extends ListContainer {
     if (invoice.type === 'link') {
       this.showPaymentLinkModal(invoice);
     } else if (invoice.type === 'invoice') {
-      this.context.ngRouter.transitionTo('app.invoices.edit', {
-        id: invoice.id,
-      });
+      location.hash = `#/app/invoices/${invoice.id}`;
     }
   };
 
@@ -46,24 +45,36 @@ export default class InvoicesListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <ShowWhen notMyRole="support">
-          <div class="btn-toolbar pull-right">
-            <button
-              class="btn btn-primary btn-rounded"
-              onClick={() => this.showPaymentLinkModal()}
-            >
-              <i class="fa fa-plus" />
-              <span>Create Payment Link</span>
-            </button>
+        <TetherComponent
+          target="#invoicing-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 20px"
+        >
+          <div />{/* required by react-tether */}
 
-            <ShowWhen notMyRole="sellerapp" featureEnabled="Invoice">
-              <a href="#/app/invoices/new" class="btn btn-primary btn-rounded">
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar pull-right">
+              <button
+                class="btn btn-primary btn-rounded"
+                onClick={() => this.showPaymentLinkModal()}
+              >
                 <i class="fa fa-plus" />
-                <span>Create Invoice</span>
-              </a>
-            </ShowWhen>
-          </div>
-        </ShowWhen>
+                <span>Create Payment Link</span>
+              </button>
+
+              <ShowWhen notMyRole="sellerapp" featureEnabled="Invoice">
+                <a
+                  href="#/app/invoices/new"
+                  class="btn btn-primary btn-rounded"
+                >
+                  <i class="fa fa-plus" />
+                  <span>Create Invoice</span>
+                </a>
+              </ShowWhen>
+            </div>
+          </ShowWhen>
+        </TetherComponent>
 
         <InvoiceListFilter
           form="InvoiceListFilter"

@@ -2,6 +2,11 @@ import React, { Component } from 'react';
 import { NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 
+const TRANSACTIONS_ROUTES_REGEX = /^\/app\/(payments|refunds|orders|batch-refunds)/;
+const ACCOUNTS_ROUTES_REGEX = /^\/app\/(profile|activation|credits|addfunds)/;
+const SETTINGS_ROUTES_REGEX = /^\/app\/(config|webhooks|keys)/;
+const INVOICES_ROUTES_REGEX = /^\/app\/(invoices|customers|items)/;
+
 @withRouter
 export default class Sidebar extends Component {
   // currently active routes in tabbed containers
@@ -25,14 +30,14 @@ export default class Sidebar extends Component {
     let pathname = location.pathname;
     let routes = this.routes;
 
-    if (/^\/app\/(payments|refunds|orders|batch-refunds)/.test(pathname)) {
-      routes.transactions = pathname;
-    } else if (/^\/app\/(profile|activation|credits|addfunds)/.test(pathname)) {
-      routes.account = pathname;
-    } else if (/^\/app\/(config|webhooks|keys)/.test(pathname)) {
-      routes.settings = pathname;
-    } else if (/^\/app\/(invoices|customers|items)/.test(pathname)) {
-      routes.invoices = pathname;
+    if (TRANSACTIONS_ROUTES_REGEX.test(pathname)) {
+      routes.transactions = pathname.match(TRANSACTIONS_ROUTES_REGEX)[0];
+    } else if (ACCOUNTS_ROUTES_REGEX.test(pathname)) {
+      routes.account = pathname.match(ACCOUNTS_ROUTES_REGEX)[0];
+    } else if (SETTINGS_ROUTES_REGEX.test(pathname)) {
+      routes.settings = pathname.match(SETTINGS_ROUTES_REGEX)[0];
+    } else if (INVOICES_ROUTES_REGEX.test(pathname)) {
+      routes.invoices = pathname.match(INVOICES_ROUTES_REGEX)[0];
     }
   }
 

@@ -2,6 +2,7 @@ import { Component, PropTypes } from 'react';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
+import moment from 'moment';
 import Alert from 'rzp/ui/Forms/Alert';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
@@ -103,7 +104,6 @@ const selector = formValueSelector('newInvoice');
 })
 export default class InvoicesNewContainer extends Component {
   static contextTypes = {
-    ngRouter: PropTypes.object,
     confirm: PropTypes.func,
   };
 
@@ -120,9 +120,10 @@ export default class InvoicesNewContainer extends Component {
       this.props.fetchCustomersForAutocomplete(),
       this.props.fetchItemsForAutocomplete(),
     ];
+    let invoiceId = this.props.match.params.id;
 
-    if (this.props.id) {
-      promises.push(this.props.fetchInvoice(this.props.id));
+    if (invoiceId && invoiceId !== 'new') {
+      promises.push(this.props.fetchInvoice(invoiceId));
     } else {
       this.props.initializeInvoice();
     }
@@ -237,9 +238,7 @@ export default class InvoicesNewContainer extends Component {
         type: 'success',
         message: 'Invoice Saved',
       });
-      this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
-        notify: false,
-      });
+      location.hash = `#/app/invoices/${invoice.id}`;
       return invoice;
     });
   };
@@ -254,9 +253,7 @@ export default class InvoicesNewContainer extends Component {
           type: 'success',
           message: 'Invoice Issued',
         });
-        this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
-          notify: false,
-        });
+        location.hash = `#/app/invoices/${invoice.id}`;
         return invoice;
       });
     });
@@ -305,7 +302,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   navigateToList() {
-    return this.context.ngRouter.transitionTo('app.invoices.list');
+    location.hash = '#/app/invoices';
   }
 
   deleteInvoice = () => {
@@ -334,12 +331,11 @@ export default class InvoicesNewContainer extends Component {
           ? this.props
               .deleteInvoice(invoice)
               .then(() => {
-                this.navigateToList().then(() => {
-                  this.props.showNotification({
-                    type: 'success',
-                    message: 'Invoice deleted successfully',
-                  });
+                this.props.showNotification({
+                  type: 'success',
+                  message: 'Invoice deleted successfully',
                 });
+                this.navigateToList();
               })
               .catch(({ errors }) => {
                 this.props.showNotification({

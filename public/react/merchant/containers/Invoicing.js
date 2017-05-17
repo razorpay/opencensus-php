@@ -10,7 +10,7 @@ export default class InvoicingContainer extends Component {
   render() {
     return (
       <tabbed-container>
-        <header>
+        <header id="invoicing-header">
           <NavLink to="/app/invoices">Invoices</NavLink>
           <NavLink to="/app/customers">Customers</NavLink>
           <NavLink to="/app/items">Items</NavLink>

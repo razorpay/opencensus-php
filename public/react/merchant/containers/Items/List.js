@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm } from 'redux-form';
+import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -70,17 +71,27 @@ export default class ItemsListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <ShowWhen notMyRole="support">
-          <div class="btn-toolbar">
-            <button
-              class="pull-right btn btn-primary btn-rounded"
-              onClick={() => this.showItemModal()}
-            >
-              <i class="fa fa-plus" />
-              <span>New Item</span>
-            </button>
-          </div>
-        </ShowWhen>
+        <TetherComponent
+          target="#invoicing-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 20px"
+        >
+          <div />{/* required by react-tether */}
+
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar">
+              <button
+                class="pull-right btn btn-primary btn-rounded"
+                onClick={() => this.showItemModal()}
+              >
+                <i class="fa fa-plus" />
+                <span>New Item</span>
+              </button>
+            </div>
+          </ShowWhen>
+        </TetherComponent>
+
         <Alert type={status.type} message={status.message} />
 
         <ItemsList

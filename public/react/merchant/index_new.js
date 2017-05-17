@@ -8,6 +8,7 @@ import 'styles/merchant';
 import 'rzp/utils/polyfills';
 import store from './store';
 
+import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Notifications from 'rzp/ui/Notifications';
 
@@ -20,11 +21,13 @@ Tabs.setUseDefaultStyles(false);
 
 render(
   <Provider store={store}>
-    <div id="react_root" class="react-root">
-      <App />
-      <ModalDialog />
-      <Notifications />
-    </div>
+    <ConfirmModalProvider>
+      <div id="react_root" class="react-root">
+        <App />
+        <ModalDialog />
+        <Notifications />
+      </div>
+    </ConfirmModalProvider>
   </Provider>,
   document.getElementById('react-root')
 );

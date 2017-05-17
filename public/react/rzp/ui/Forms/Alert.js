@@ -64,9 +64,13 @@ class Alert extends Component {
 
 Alert.displayName = 'FormAlert';
 
+Alert.defaultProps = {
+  showDismiss: true,
+};
+
 Alert.propTypes = {
   type: PropTypes.string,
-  showDismiss: true,
+  showDismiss: PropTypes.bool,
 };
 
 export default Alert;

@@ -21,9 +21,7 @@ const webpackConfig = {
     ],
     extensions: ['.js', '.jsx', '.styl'],
   },
-  module: {
-    noParse: [/moment/],
-  },
+  module: {},
   externals: {
     jquery: 'jQuery',
   },
@@ -106,7 +104,7 @@ webpackConfig.module.rules = [
 // Plugins
 // ------------------------------------
 webpackConfig.plugins = [
-  // new CaseSensitivePathsPlugin(),
+  new CaseSensitivePathsPlugin(),
 
   new webpack.ProvidePlugin({
     React: 'react',
