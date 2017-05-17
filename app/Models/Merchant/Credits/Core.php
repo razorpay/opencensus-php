@@ -35,8 +35,12 @@ class Core extends Base\Core
         $creditsLog->getValidator()->validateBalanceCredits(
             $creditsLog->getValue(), $currentMerchantCredits, $creditsLog->getType());
 
-        $this->app['workflow']->handle($currentMerchantCredits,
-                                       $currentMerchantCredits + $creditsLog->getValue());
+        $this->app['workflow']->setEntity($merchant->getEntity())
+                              ->setOriginal(['total_credits' => $currentMerchantCredits,
+                                        'type' => $creditsLog->getType()])
+                              ->setDirty(['total_credits' => $currentMerchantCredits + $creditsLog->getValue(),
+                                        'type' => $creditsLog->getType()])
+                              ->handle();
 
         return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
