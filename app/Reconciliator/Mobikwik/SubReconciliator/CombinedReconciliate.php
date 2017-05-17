@@ -7,7 +7,9 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class CombinedReconciliate extends Base\CombinedReconciliate
 {
-    // ----- Row header names -----
+    /*******************
+     * Row Header Names
+     *******************/
     const COLUMN_REFUND_AMOUNT    = 'RefundAmount';
 
     /**

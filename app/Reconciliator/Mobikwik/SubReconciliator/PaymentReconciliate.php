@@ -6,7 +6,9 @@ use RZP\Reconciliator\Base;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    // ----- Row header names -----
+    /*******************
+     * Row Header Names
+     *******************/
     const COLUMN_PAYMENT_ID     = 'OrderID';
     const COLUMN_SERVICE_TAX    = 'ServiceTax';
     const COLUMN_FEE            = 'Fee';

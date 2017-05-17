@@ -8,9 +8,10 @@ use RZP\Exception\ReconciliationException;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
-    // ----- Row header names -----
+    /*******************
+     * Row Header Names
+     *******************/
     const COLUMN_REFUND_ID          = ['merchant_ref_no', 'merchant_refno'];
-
     const COLUMN_REFUND_AMOUNT      = ['refunded', 'debit'];
 
     protected function getRefundId($row)

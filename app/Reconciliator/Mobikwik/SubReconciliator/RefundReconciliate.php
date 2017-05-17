@@ -7,7 +7,9 @@ use RZP\Models\Payment;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
-    // ----- Row header names -----
+    /*******************
+     * Row Header Names
+     *******************/
     const COLUMN_REFUND_ID     = 'OrderID';
     const COLUMN_REFUND_AMOUNT = 'RefundAmount';
 
