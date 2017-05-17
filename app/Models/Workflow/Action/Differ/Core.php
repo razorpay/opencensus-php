@@ -207,25 +207,70 @@ class Core extends Base\Core
     }
 
     // TODO: Recursion
-    public function createDiff(array $oldEntity, array $newEntity)
+    public function createDiff(array $original, array $dirty)
     {
         $diff = [];
 
-        $keys = array_keys($oldEntity);
+        $keys = array_keys($original);
 
         $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
-
+// s($original, $dirty);
         foreach ($diffKeys as $key)
         {
-            if ($oldEntity[$key] !== $newEntity[$key])
-            {
-                $diff['old'][$key] = $oldEntity[$key];
+            // Can be scalar or an array
+            $originalData = $original[$key];
 
-                $diff['new'][$key] = $newEntity[$key];
+            // Can be scalar or an array
+            $dirtyData = $dirty[$key];
+
+            $originalDataIsIndexedArray = $dirtyDataIsIndexedArray = false;
+
+            if ((is_array($originalData) === true) and
+                ($this->isAssoc($originalData) === false))
+            {
+                $originalDataIsIndexedArray = true;
+            }
+
+            if ((is_array($dirtyData) === true) and
+                ($this->isAssoc($dirtyData) === false))
+            {
+                $dirtyDataIsIndexedArray = true;
+            }
+
+            if (($originalDataIsIndexedArray === true) or
+                ($dirtyDataIsIndexedArray === true))
+            {
+                $originalData = $originalData ?? [];
+
+                $dirtyData = $dirtyData ?? [];
+
+                // array_values() is used to re-set indexes
+                // [54 => 'YESB'] => [0 => 'YESB']
+
+                $diff['old'][$key] = array_values(array_diff($originalData, $dirtyData));
+
+                $diff['new'][$key] = array_values(array_diff($dirtyData, $originalData));
+            }
+            else
+            {
+                // Compute scalar value differences (first level)
+                if ($originalData !== $dirtyData)
+                {
+                    $diff['old'][$key] = $originalData;
+
+                    $diff['new'][$key] = $dirtyData;
+                }
             }
         }
 
         return $diff;
+    }
+
+    // http://stackoverflow.com/a/173479/2272910
+    protected function isAssoc(array $arr)
+    {
+        if (array() === $arr) return false;
+        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
     public function fetchByEntityAndEntityId(string $entity, string $entityId)

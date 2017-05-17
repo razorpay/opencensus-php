@@ -222,11 +222,19 @@ class Service
             $dirtyData = $this->getDirty();
         }
 
-        // Set entity
-        $this->setEntity($dirtyData->getEntityName());
+        if ((is_array($originalData) === true) and (is_array($dirtyData) === true))
+        {
+            $diff = $differCore->createDiff(
+                $originalData, $dirtyData);
+        }
+        else
+        {
+            // Set entity
+            $this->setEntity($dirtyData->getEntityName());
 
-        $diff = $differCore->createDiff(
-            $originalData->toArray(), $dirtyData->toArray());
+            $diff = $differCore->createDiff(
+                $originalData->toArray(), $dirtyData->toArray());
+        }
 
         $this->setDiff($diff);
 
