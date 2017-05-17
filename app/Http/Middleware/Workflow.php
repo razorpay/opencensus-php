@@ -26,7 +26,8 @@ class Workflow
     // inside the code since the generic handler
     // is too generic to handle the diffing.
     const EXCLUDED_PERMISSIONS = [
-        Permission::EDIT_MERCHANT_METHODS
+        Permission::EDIT_MERCHANT_METHODS,
+        Permission::ASSIGN_MERCHANT_BANKS,
     ];
 
     protected $app;
