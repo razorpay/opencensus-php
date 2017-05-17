@@ -454,6 +454,8 @@ class BasicEntityReport extends BaseReport
      */
     protected function editReportEntityAndSave($generatedAt, FileStore\Entity $file)
     {
+        $report = $this->report;
+
         // added for debugging
         // will remove later
         $this->trace->debug(
@@ -462,8 +464,6 @@ class BasicEntityReport extends BaseReport
                 'method' => __METHOD__,
                 'report' => $report->getId(),
             ]);
-
-        $report = $this->report;
 
         // set generatedAt value for report
         $report->setGeneratedAt($generatedAt);
