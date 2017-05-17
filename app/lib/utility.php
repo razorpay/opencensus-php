@@ -220,6 +220,8 @@ function gen_uuid($format = '%04x%04x%04x%04x%04x%04x%04x%04x')
 
 function is_associative_array(array $input)
 {
+    if ([] === $input) return false;
+
     return array_keys($input) !== range(0, count($input) - 1);
 }
 

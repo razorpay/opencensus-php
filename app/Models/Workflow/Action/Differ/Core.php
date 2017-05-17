@@ -226,13 +226,13 @@ class Core extends Base\Core
             $originalDataIsIndexedArray = $dirtyDataIsIndexedArray = false;
 
             if ((is_array($originalData) === true) and
-                ($this->isAssoc($originalData) === false))
+                (is_associative_array($originalData) === false))
             {
                 $originalDataIsIndexedArray = true;
             }
 
             if ((is_array($dirtyData) === true) and
-                ($this->isAssoc($dirtyData) === false))
+                (is_associative_array($dirtyData) === false))
             {
                 $dirtyDataIsIndexedArray = true;
             }
@@ -264,13 +264,6 @@ class Core extends Base\Core
         }
 
         return $diff;
-    }
-
-    // http://stackoverflow.com/a/173479/2272910
-    protected function isAssoc(array $arr)
-    {
-        if (array() === $arr) return false;
-        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 
     public function fetchByEntityAndEntityId(string $entity, string $entityId)
