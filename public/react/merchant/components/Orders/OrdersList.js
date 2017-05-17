@@ -7,7 +7,7 @@ const OrdersListItem = ({ order }) => {
   return (
     <tr>
       <td>
-        <NavLink to={`/app/orders/${order.id}/details`}>
+        <NavLink to={`/app/orders/${order.id}`}>
           {order.id}
         </NavLink>
       </td>

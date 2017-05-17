@@ -36,7 +36,9 @@ export default props => {
   return (
     <div>
       {isLoading
-        ? <Spinner />
+        ? <div class="page-spinner-container">
+            <Spinner />
+          </div>
         : <div>
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
@@ -45,7 +47,7 @@ export default props => {
             </div>
 
             <div class="panel-body">
-              <div class="list-group">
+              <div class="list-group details-row-container">
                 <DetailRow
                   label="Amount"
                   value={() => <Amount value={order.amount} />}

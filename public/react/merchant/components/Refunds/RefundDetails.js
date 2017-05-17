@@ -37,7 +37,7 @@ export default ({ refund, isLoading, statusMsg }) => {
             </div>
 
             <div class="panel-body">
-              <div class="list-group">
+              <div class="list-group details-row-container">
                 <DetailRow label="Payment" value={refund.payment_id} />
 
                 <DetailRow

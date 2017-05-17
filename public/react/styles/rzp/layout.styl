@@ -163,14 +163,19 @@ body.ReactModal__Body--open {
   left: auto;
   box-shadow: 3px 11px 22px -1px #3a3f51;
   transform: translateX(90%);
-  transition: transform 300ms cubic-bezier(0.05, 1.14, 0.76, 1.01);
+  transition: transform 300ms linear;
   z-index: 9998;
   background-color: #fff;
   overflow: auto;
   padding-bottom: 45px;
 
   &.ReactModal__Overlay--after-open {
-    transform: none;
+    transform: translateX(1%);
+  }
+
+  &.ReactModal__Overlay--before-close {
+    opacity: 1;
+    transform: translateX(90%);
   }
 }
 

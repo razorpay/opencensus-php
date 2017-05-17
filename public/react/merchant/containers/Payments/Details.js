@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
+import { withRouter } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import PaymentDetails from 'merchant/components/Payments/PaymentDetails';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -8,6 +8,7 @@ import * as PaymentActions from 'merchant/modules/payments/details';
 import * as ModalActions from 'rzp/modules/modals';
 import RefundModal from './RefundModal';
 
+@withRouter
 @connect(state => state.payment, {
   ...ModalActions,
   ...PaymentActions,
@@ -20,12 +21,15 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   componentWillMount() {
-    this.props.fetchPayment(this.props.id);
+    let id = this.props.id || this.props.match.params.id;
+    this.props.fetchPayment(id);
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
-      this.props.fetchPayment(nextProps.id);
+    let oldId = this.props.id || this.props.match.params.id;
+    let newId = nextProps.id || nextProps.match.params.id;
+    if (oldId !== newId) {
+      this.props.fetchPayment(newId);
     }
   }
 

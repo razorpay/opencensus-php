@@ -1,13 +1,23 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
+import { withRouter } from 'react-router-dom';
 import OrderDetails from 'merchant/components/Orders/OrderDetails';
 import * as OrderActions from 'merchant/modules/orders/details';
 
+@withRouter
 @connect(state => state.order, OrderActions)
 export default class OrderDetailsContainer extends Component {
   componentWillMount() {
-    this.props.fetchOrder(this.props.id);
+    let id = this.props.id || this.props.match.params.id;
+    this.props.fetchOrder(id);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let oldId = this.props.id || this.props.match.params.id;
+    let newId = nextProps.id || nextProps.match.params.id;
+    if (oldId !== newId) {
+      this.props.fetchOrder(newId);
+    }
   }
 
   fetchOrderPayments = order => {
@@ -26,19 +36,13 @@ export default class OrderDetailsContainer extends Component {
     }
 
     return (
-      <div class="react-root">
-        <Header title="Order Detail" />
-
-        <div class="content-wrapper">
-          <OrderDetails
-            order={order}
-            payments={payments}
-            onTogglePayments={this.fetchOrderPayments}
-            isLoading={loading}
-            statusMsg={statusMsg}
-          />
-        </div>
-      </div>
+      <OrderDetails
+        order={order}
+        payments={payments}
+        onTogglePayments={this.fetchOrderPayments}
+        isLoading={loading}
+        statusMsg={statusMsg}
+      />
     );
   }
 }
