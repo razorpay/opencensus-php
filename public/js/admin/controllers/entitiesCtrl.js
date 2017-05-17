@@ -588,8 +588,8 @@ app.controller('EntitiesCtrl', [
             var stateArray = {
               payment: 'app.payments',
               merchant: 'app.merchants.detail',
-            },
-              state = 'app.entitiesdetail';
+            };
+            var state = 'app.entitiesdetail';
             if (entity in stateArray) {
               state = stateArray[entity];
             }

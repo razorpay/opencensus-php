@@ -261,9 +261,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')
                 ->name('admin_fetch_entity');
-        // This is a very generic route and needs to be defined below
-        Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById')
-                ->name('admin_fetch_entity');
 
         // Upload logos for orgs
         Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
