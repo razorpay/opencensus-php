@@ -1002,7 +1002,7 @@ angular
             },
             credits: {
               route: 'app.merchants.detail',
-              idParam: 'merchant_id',
+              idParam: 'id',
               sign: '',
             },
             role: {
