@@ -3,17 +3,24 @@
 namespace RZP\Jobs;
 
 use App;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Invoice;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Jobs\BaseJob;
 
-class InvoiceAction extends BaseJob
+class InvoiceAction extends Job implements ShouldQueue
 {
+    use InteractsWithQueue;
+
     const MAX_ALLOWED_ATTEMPTS = 10;
+    const RELEASE_WAIT_SECS    = 60;
+
+    const JOB_DELETED          = 'job_deleted';
+    const JOB_RELEASED         = 'job_released';
 
     //
     // Following are the events handled
@@ -75,9 +82,7 @@ class InvoiceAction extends BaseJob
         }
         catch (\Throwable $e)
         {
-            $payload = $this->getTracePayload();
-
-            $this->handleException($e, TraceCode::INVOICE_ACTION_JOB_ERROR, $payload);
+            $this->handleException($e);
         }
     }
 
@@ -89,7 +94,7 @@ class InvoiceAction extends BaseJob
      * @return null
      * @throws LogicException
      */
-    protected function init()
+    private function init()
     {
         $app = App::getFacadeRoot();
 
@@ -175,6 +180,33 @@ class InvoiceAction extends BaseJob
     }
 
     // ------------------------------------------------------------
+
+    private function handleException(\Throwable $e)
+    {
+        //
+        // By default job gets deleted
+        //
+
+        $jobAction = self::JOB_DELETED;
+
+        if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
+        {
+            $this->delete();
+        }
+        else
+        {
+            $this->release(self::RELEASE_WAIT_SECS);
+
+            $jobAction = self::JOB_RELEASED;
+        }
+
+        $this->trace->traceException(
+            $e,
+            Trace::ERROR,
+            TraceCode::INVOICE_ACTION_JOB_ERROR,
+            $this->getTracePayload(['job_action' => $jobAction])
+        );
+    }
 
     private function getTracePayload(array $with = [])
     {
