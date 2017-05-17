@@ -5,19 +5,21 @@ namespace RZP\Gateway\FirstData;
 use Carbon\Carbon;
 use Requests_Hooks;
 use SimpleXMLElement;
-use RZP\Constants;
-use RZP\Constants\HashAlgo;
-use RZP\Constants\Mode;
+
 use RZP\Error;
+use RZP\Constants;
 use RZP\Exception;
-use RZP\Gateway\Base;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Card;
-use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base;
 use RZP\Models\Payment;
-use RZP\Models\Terminal;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Action;
+use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
@@ -93,6 +95,15 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayCallback($input['gateway']);
 
+        if (empty($input['gateway']) === true)
+        {
+            // If the callback body is empty, then it's likely because the customer has accidentally
+            // sent us a GET request from his browser during redirection. In this case we can treat
+            // the payment as failed (effectively a timeout), and let verify handle it like a boss.
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA);
+        }
+
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
@@ -133,8 +144,8 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\LogicException(
                 'Data tampering found.', null, [
-                    'expected' => $expectedPaymentId,
-                    'actual'   => $actualPaymentId
+                    'callback_result' => $this->approval,
+                    'verify_result'   => $verify->gatewaySuccess,
                 ]);
         }
     }
@@ -563,6 +574,12 @@ class Gateway extends Base\Gateway
                 if ($this->isRelevantVerifyType($type) === true)
                 {
                     $verifyAuthResponse = $transactionValue;
+
+                    // This shouldn't be happening, but sometimes FirstData is returning two separate
+                    // preauth transactions in a single verify response. In these cases, the second
+                    // preauth is usually declined due to the order existing already in an unexpected
+                    // state. So we avoid the second transaction, and break after finding the first.
+                    break;
                 }
             }
 
