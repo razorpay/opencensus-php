@@ -336,4 +336,13 @@ class Entity extends Base\PublicEntity
 
         $this->attributes[self::TYPE] = Type::MERCHANT;
     }
+
+    public function getLast4DigitsOfAccountNumber()
+    {
+        $accountNumber = $this->getAccountNumber();
+
+        $last4 = substr($accountNumber, -4);
+
+        return $last4;
+    }
 }

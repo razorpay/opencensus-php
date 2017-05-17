@@ -30,6 +30,8 @@ class RowProcessor extends BaseCore
 
     protected $reconciledAt;
 
+    protected $firstFailure = false;
+
     public function __construct($row)
     {
         parent::__construct();
@@ -47,7 +49,9 @@ class RowProcessor extends BaseCore
 
         $this->getReconciliationStatus();
 
-        return $this->updateEntities();
+        $entity = $this->updateEntities();
+
+        return ['entity' => $entity, 'first_failure' => $this->firstFailure];
     }
 
     protected function parseRow()
@@ -83,6 +87,7 @@ class RowProcessor extends BaseCore
         $failureReason = null;
 
         $class = Entity::getEntityNamespace($this->reconEntity->getEntityName()) . '\\Status';
+
         $status = $class::FAILED;
 
         if ($this->parsedData['bank_status_code'] === Status::PROCESSED)
@@ -121,6 +126,11 @@ class RowProcessor extends BaseCore
                     'Old and new status not matching. ' .
                     'Old status: ' . $oldStatus . ' New status: ' . $status .
                     'Entity Id: ' . $this->reconEntity->getPublicId());
+            }
+
+            if ($status === $class::FAILED)
+            {
+                $this->firstFailure = true;
             }
         }
 

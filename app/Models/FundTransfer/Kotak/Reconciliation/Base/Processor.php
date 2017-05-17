@@ -35,6 +35,21 @@ class Processor extends Base\Core
      */
     protected $reconciledAt;
 
+    /**
+     * Array of all entities fetched for all the rows in the file
+     * It's a key-value pair. Key - entity id, Value - entity
+     */
+    protected $allEntities = [];
+
+    protected $firstFailureEntities = [];
+
+    /**
+     * Array of ids for which entity couldn't be found in database
+     */
+    protected $unprocessedIds = [];
+
+    protected $date;
+
     protected $batchFundTransferStats = [];
 
     public function __construct()
@@ -86,13 +101,13 @@ class Processor extends Base\Core
             $date = Carbon::createFromFormat('d-M-y', $data[0][Kotak\Headings::PAYMENT_DATE]);
 
             // update the format so that recon mail is appended to settlement mail
-            $date = $date->format('d-m-Y');
+            $this->date = $date->format('d-m-Y');
 
             $response = $this->startReconciliation($data);
 
             $this->storeReconciledFile($reconcileFile);
 
-            $this->sendReconciliationMail($date, $response);
+            $this->sendReconciliationEmails($response);
         }
 
         return $response;
@@ -100,7 +115,7 @@ class Processor extends Base\Core
 
     protected function startReconciliation($data): array
     {
-        $allEntities = $unprocessedIds = [];
+        $unprocessedIds = [];
 
         $this->repo->beginTransaction();
 
@@ -108,15 +123,24 @@ class Processor extends Base\Core
         {
             foreach ($data as $row)
             {
-                $entity = $this->reconcileEntity($row);
+                $reconResponse = $this->reconcileEntity($row);
+
+                $entity = $reconResponse['entity'];
+
+                $this->updateBatchFundTransferStats($entity);
+
+                if ($reconResponse['first_failure'] === true)
+                {
+                    $this->firstFailureEntities[$entity->getMerchantId()] = $entity;
+                }
 
                 if ($entity === null)
                 {
-                    $unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
+                    $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
                 }
                 else
                 {
-                    $allEntities[] = $entity;
+                    $this->allEntities[$entity->getId()] = $entity;
                 }
             }
 
@@ -140,7 +164,7 @@ class Processor extends Base\Core
             throw $e;
         }
 
-        $summary = $this->getSummary($unprocessedIds, $allEntities);
+        $summary = $this->getSummary();
 
         (new SlackNotification)->success('setl_reconciliation', $summary);
 
@@ -153,11 +177,9 @@ class Processor extends Base\Core
 
         $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\' . ucwords($version) . '\\RowProcessor';
 
-        $reconciledEntity = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
+        $reconResponse = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
 
-        $this->updateBatchFundTransferStats($reconciledEntity);
-
-        return $reconciledEntity;
+        return $reconResponse;
     }
 
     protected function updateBatchFundTransferStats($reconciledEntity)
@@ -216,14 +238,12 @@ class Processor extends Base\Core
         return $version;
     }
 
-    protected function getSummary(array $unprocessedIds, array $allEntities): array
+    protected function getSummary(): array
     {
         $failureEntityIds = $successEntityIds = $allEntityIds = [];
 
-        foreach ($allEntities as $entity)
+        foreach ($this->allEntities as $entityId => $entity)
         {
-            $entityId = $entity->getId();
-
             $allEntityIds[] = $entityId;
 
             if ($entity->isStatusFailed())
@@ -250,17 +270,59 @@ class Processor extends Base\Core
         // settlement, we do this
         $failureEntityIds = array_diff($failureEntityIds, $successEntityIds);
 
-        $summary = [
+        return [
             'total_count'               => count($allEntityIds),
             'failures_count'            => count($failureEntityIds),
             'failure ids'               => implode(',', $failureEntityIds),
-            'processing failed ids'     => implode(',', $unprocessedIds),
+            'processing failed ids'     => implode(',', $this->unprocessedIds),
         ];
-
-        return $summary;
     }
 
-    protected function sendReconciliationMail($date, $response)
+    protected function sendReconciliationEmails($response)
+    {
+        $this->sendReconciliationSummaryMail($response);
+
+        if (empty($this->firstFailureEntities) !== true)
+        {
+            $this->sendReconciliationFailureEmails();
+        }
+    }
+
+    protected function sendReconciliationFailureEmails()
+    {
+        $data = [];
+
+        foreach ($this->firstFailureEntities as $merchantId => $entity)
+        {
+            $data['remarks'] = $entity->getRemarks();
+            $data['entity_id'] = $entity->getPublicId();
+            $data['merchant_id'] = $merchantId;
+            $data['merchant_email'] = $entity->merchant->getEmail();
+            $data['last_4_ba_number'] = $entity->merchant->bankAccount->getLast4DigitsOfAccountNumber();
+            // $data['subject'] = ;
+            // $data['body'] = ;
+            // s($data);
+
+            // Mail::queue('emails.message', $data, function($message) use ($data)
+            // {
+            //     $emails = $data['merchant_email'];
+
+            //     $message->from('care@razorpay.com', 'Settlement');
+
+            //     $message->cc('support@razorpay.com');
+
+            //     $message->subject($data['subject']);
+
+            //     $message->to($emails);
+
+            //     $headers = $message->getHeaders();
+
+            //     $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
+            // });
+        }
+    }
+
+    protected function sendReconciliationSummaryMail($response)
     {
         $msg = 'UTR File reconciled.' . PHP_EOL;
 
@@ -273,8 +335,8 @@ class Processor extends Base\Core
             $msg .= 'Failed settlement ids: ' . $response['failure ids'];
         }
 
-        $data['subject'] = "Re: Kotak Settlement files for $date";
-        $data['date'] = $date;
+        $data['subject'] = "Re: Kotak Settlement files for $this->date";
+        $data['date'] = $this->date;
         $data['body'] = $msg;
 
         Mail::queue('emails.message', $data, function($message) use ($data)
