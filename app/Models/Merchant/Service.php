@@ -291,9 +291,16 @@ class Service extends Base\Service
 
         (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
 
+        $originalPricingPlan = null;
+
+        if (empty($merchant->pricing) === false)
+        {
+            $originalPricingPlan = $merchant->pricing->getPlanName();
+        }
+
         list($original, $dirty) = [
             // Current plan
-            ['pricing_plan' => $merchant->pricing->getPlanName()],
+            ['pricing_plan' => $originalPricingPlan],
             // New plan
             ['pricing_plan' => $plan->first()->getPlanName()],
         ];
