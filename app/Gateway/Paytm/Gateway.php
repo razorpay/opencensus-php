@@ -51,6 +51,8 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($payment);
 
         $this->verifyPaymentCallbackResponse($input);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)

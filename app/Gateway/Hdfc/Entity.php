@@ -122,6 +122,11 @@ class Entity extends Base\Entity
         return $this->getAttribute('auth');
     }
 
+    public function getRef()
+    {
+        return $this->getAttribute('ref');
+    }
+
     public function getActionAttribute()
     {
         return (int) $this->attributes['action'];
