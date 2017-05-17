@@ -195,7 +195,6 @@ class Gateway extends Base\Gateway
     {
         $data = [
             RequestFields::LOGIN_FLAG   => Constants::LOGIN_FLAG,
-            RequestFields::BANK_ID      => Constants::BANK_ID,
             RequestFields::USER_TYPE    => Constants::USER_TYPE,
             RequestFields::MENU_ID      => Constants::MENU_ID,
             RequestFields::CALL_MODE    => Constants::CALL_MODE,
@@ -245,9 +244,9 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
-        return base64_encode($aes->encryptString($stringToEncrypt));
+        return $aes->encryptString($stringToEncrypt);
     }
 
     protected function getEntityAttributes(array $input)
