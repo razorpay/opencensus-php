@@ -97,7 +97,7 @@
         </a>
         <a tooltip="Only superadmins have access to this" href class="list-group-item"
            ng-click="openChangeBankAccountDetails()"
-           dynamic-tooltip="edit_merchant_banks" ng-show="merchant.details.activated == 1 && admin.permissions.indexOf('edit_merchant_banks') !== -1"
+           dynamic-tooltip="edit_merchant_bank_detail" ng-show="merchant.details.activated == 1 && admin.permissions.indexOf('edit_merchant_bank_detail') !== -1"
         >
           Edit Bank Account Details <i class="pull-right fa fa-university"></i>
         </a>
@@ -1031,6 +1031,7 @@
       <button class="btn btn-primary modal-ok" ng-confirm-click="Adjustment once assigned can not be changed, ensure you have checked all values" ng-click="ok(adjustment)">OK</button>
   </div>
 </script>
+
 <script type="text/ng-template" id="editMerchantModalContent.html">
   <div class="modal-header">
     <h3 class="modal-title">Edit Merchant</h3>
@@ -1149,6 +1150,25 @@
             </table>
           </div>
         </div>
+      <!-- Select Admins -->
+      <div class="form-group">
+        <div class="col-lg-2 text-right">Admins</div>
+        <div class="col-lg-10">
+          <!-- Selected Roles-->
+          <div class="pills-container-users">
+            <span class="pills-label assignee-label" ng-repeat="adminId in selected_admins track by $index">
+              {{adminMap[adminId]}}
+              <i class="delete-btn fa fa-times m-l" ng-click="removeUser(adminId)" />
+            </span>
+          </div>
+          <!-- Dropdown -->
+          <select class="select2 role-select2" multiple="multiple" style="width: 100%" ng-model="roleSelect" role-select="Select users">
+            <option  ng-repeat="admin in admins| filter:filterAdmins" value="{{admin.id}}">
+              {{admin.name}} : <{{admin.email}}>
+            </option>
+          </select>
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
