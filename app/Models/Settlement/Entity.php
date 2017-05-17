@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Settlement;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -24,6 +26,7 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const REMARKS                = 'remarks';
     const RETURN_UTR             = 'return_utr';
+    const PROCESSED_AT           = 'processed_at';
 
     protected static $sign = 'setl';
 
@@ -39,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::CHANNEL,
         self::AMOUNT,
+        self::PROCESSED_AT,
     ];
 
     protected $visible = [
@@ -57,7 +61,8 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::UTR,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::PROCESSED_AT,
     ];
 
     protected $public = [
@@ -68,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::SERVICE_TAX,
         self::UTR,
+        self::PROCESSED_AT,
         self::CREATED_AT
     ];
 
@@ -77,6 +83,10 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::ATTEMPTS => 'int',
+    ];
+
+    protected $dates = [
+        self::PROCESSED_AT,
     ];
 
     protected $amounts = [
@@ -181,6 +191,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ATTEMPTS);
     }
 
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
+    }
+
     // --------------------------------- setters -------------------------------
 
     public function setAmount($amount)
@@ -248,6 +263,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ATTEMPTS, $count);
     }
 
+    public function setProcessedAt($date)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
     // --------------------------------- modifiers -------------------------------
 
     protected function getServiceTaxAttribute()
@@ -270,6 +290,13 @@ class Entity extends Base\PublicEntity
         }
 
         return $fee;
+    }
+
+    protected function getProcessedAtAttribute()
+    {
+        $processedAt = $this->attributes[self::PROCESSED_AT];
+
+        return Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->toDateString();
     }
 
     // ------------------------------- mutators --------------------------------

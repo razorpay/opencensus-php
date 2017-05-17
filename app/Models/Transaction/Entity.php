@@ -654,6 +654,7 @@ class Entity extends Base\PublicEntity
 
             $reportTxn['settlement_utr'] = $settlement->getUtr();
             $reportTxn[self::SETTLED] = null;
+            $reportTxn[self::PROCESSED_AT] = $settlement->getProcessedAt();
         }
         else if ($this->isTypeAdjustment())
         {

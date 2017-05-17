@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const RETURN_UTR             = 'return_utr';
     const REMARKS                = 'remarks';
+    const PROCESSED_AT           = 'processed_at';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -80,6 +81,7 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::FAILURE_REASON,
         self::REMARKS,
+        self::PROCESSED_AT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -97,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::STATUS,
         self::UTR,
+        self::PROCESSED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -124,6 +127,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT      => 'int',
         self::FEES        => 'int',
         self::SERVICE_TAX => 'int',
+    ];
+
+    protected $dates = [
+        self::PROCESSED_AT,
     ];
 
     public function merchant()
@@ -266,6 +273,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REMARKS, $remarks);
     }
 
+    public function setProcessedAt($date)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
     public function setPublicDestinationAttribute(array & $attributes)
     {
         $type = $this->getAttribute(self::DESTINATION_TYPE);
@@ -287,5 +299,12 @@ class Entity extends Base\PublicEntity
     public function getPricingFeatures()
     {
         return [];
+    }
+
+    protected function getProcessedAtAttribute()
+    {
+        $processedAt = $this->attributes[self::PROCESSED_AT];
+
+        return Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->toDateString();
     }
 }

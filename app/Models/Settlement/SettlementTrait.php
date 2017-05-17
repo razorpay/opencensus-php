@@ -228,7 +228,7 @@ trait SettlementTrait
 
         (new SlackNotification)->success('setl_initiate', $data);
 
-        Dashboard::send('settlement', $settlements);
+        // Dashboard::send('settlement', $settlements);
     }
 
     protected function settlementFailure($channel, $e, $traceCode)

@@ -56,7 +56,6 @@ class ReconciliationGenerator
         // get batch id of all above attempts
         $batchIds = $nonReconciledAttempts->pluck(FundTransfer\Attempt\Entity::BATCH_FUND_TRANSFER_ID)
                                           ->toArray();
-
         // non-reconciled batches
         $nonReconciledBatches = $this->repo->batch_fund_transfer->findManyByPublicIds($batchIds);
 

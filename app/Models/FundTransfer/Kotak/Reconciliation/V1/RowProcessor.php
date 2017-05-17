@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V1;
 
+use Carbon\Carbon;
+
 use RZP\Models\FundTransfer\Attempt\Version;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 use RZP\Models\Payout;
@@ -42,7 +44,14 @@ class RowProcessor extends Base\RowProcessor
 
     protected function updateEntities()
     {
-        $this->reconEntity->setUtr($this->parsedData['utr']);
+        $utr = $this->parsedData['utr'];
+
+        if ($utr !== null)
+        {
+            $this->reconEntity->setUtr($utr);
+            $this->reconEntity->setProcessedAt(Carbon::now('Asia/Kolkata')->timestamp);
+        }
+
         $this->reconEntity->setStatus($this->parsedData['status']);
         $this->reconEntity->setFailureReason($this->parsedData['failure_reason']);
         $this->reconEntity->setRemarks($this->parsedData['remarks']);
