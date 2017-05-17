@@ -10,36 +10,44 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID     = 'OrderID';
+    const COLUMN_PAYMENT_ID    = 'OrderID';
     const COLUMN_REFUND_AMOUNT = 'RefundAmount';
 
     /**
      * Gets refund Id from row data
+     *
+     * Since only paymentId is provided, we fetch the refundId
+     * from our database. Corresponding to the given paymentId
      *
      * @param $row array
      * @return $refundId string
      */
     protected function getRefundId($row)
     {
-        $refundId = $row[self::COLUMN_REFUND_ID];
+        $paymentId = $this->getPaymentId($row);
 
-        return $refundId;
-    }
-
-    protected function getPaymentId($row)
-    {
-        $refundId = $this->getRefundId($row);
-
-        $gatewayEntities = $this->repo->wallet_mobikwik->findSuccessfulRefundByRefundId(
-                                                                $refundId,
-                                                                Payment\Processor\Wallet::MOBIKWIK);
-
-        if ($gatewayEntities->count() === 0)
+        if (empty($paymentId) === true)
         {
             return null;
         }
 
-        $paymentId = $gatewayEntities->first()->getPaymentId();
+        $mobikwik = $this->app['repo']->wallet_mobikwik;
+
+        $refundId = $mobikwik->findByGatewayRefundId($paymentId)->getRefundId();
+
+        return $refundId;
+    }
+
+    /**
+     * In mobikwik, we do not get a refund id.
+     * The orderId column provided is a paymentId
+     *
+     * We use that to get the corresponding refund id
+     *
+     */
+    protected function getPaymentId($row)
+    {
+        $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
         return $paymentId;
     }
