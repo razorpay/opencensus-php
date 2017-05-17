@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Mobikwik;
 
 use RZP\Reconciliator\Base;
+use RZP\Models\Payment;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
@@ -25,7 +26,18 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getPaymentId($row)
     {
-        $paymentId = $this->getRefundId($row);
+        $refundId = $this->getRefundId($row);
+
+        $gatewayEntities = $this->repo->wallet_mobikwik->findSuccessfulRefundByRefundId(
+                                                                $refundId,
+                                                                Payment\Processor\Wallet::MOBIKWIK);
+
+        if ($gatewayEntities->count() === 0)
+        {
+            return null;
+        }
+
+        $paymentId = $gatewayEntities->first()->getPaymentId();
 
         return $paymentId;
     }
