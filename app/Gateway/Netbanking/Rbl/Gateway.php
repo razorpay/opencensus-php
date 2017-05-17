@@ -35,9 +35,10 @@ class Gateway extends Base\Gateway
         $content = $this->getAuthorizeRequestData($input);
 
         $entityAttributes = $this->getEntityAttributes($input);
+
         $this->createGatewayPaymentEntity($entityAttributes);
 
-        $request = $this->getStandardRequestArray();
+        $request = $this->getStandardRequestArray($content);
 
         $request['url'] = $request['url'] . urldecode(http_build_query($content));
 
@@ -66,10 +67,9 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::MERCHANT_REFERENCE]
         );
 
-        $this->checkCallbackStatus($content);
-
-        // Saving callback response only if the above checks pass
         $this->saveCallbackResponse($content);
+
+        $this->checkCallbackStatus($content);
 
         return $this->getCallbackResponseData($input);
     }
@@ -203,7 +203,8 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequestData(array $input)
     {
-        $data = [
+        $data =
+        [
             RequestFields::FORM_ID          => Constants::AUTHENTICATION,
             RequestFields::TRANSACTION_FLAG => Constants::YES,
             RequestFields::FG_BUTTON        => Constants::LOAD,
@@ -217,12 +218,13 @@ class Gateway extends Base\Gateway
             RequestFields::RETURN_URL       => $input['callbackUrl'],
         ];
 
-        $dataToEncrypt = [
-            RequestFields::CURRENCY => Currency::INR,
-            RequestFields::AMOUNT   => $input['payment']['amount'] / 100,
-            RequestFields::PAYEE_ID => $this->getMerchantId(),
+        $dataToEncrypt =
+        [
+            RequestFields::CURRENCY           => Currency::INR,
+            RequestFields::AMOUNT             => $input['payment']['amount'] / 100,
+            RequestFields::PAYEE_ID           => $this->getMerchantId(),
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
-            RequestFields::MERCHANT_NAME => Constants::MERCHANT_NAME
+            RequestFields::MERCHANT_NAME      => Constants::MERCHANT_NAME
 
         ];
 
@@ -263,6 +265,15 @@ class Gateway extends Base\Gateway
         $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
         return $aes->encryptString($stringToEncrypt);
+    }
+
+    public function getDecryptedString(string $stringToDencrypt)
+    {
+        $masterKey = $this->getSecret();
+
+        $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
+
+        return $aes->decryptString($stringToDencrypt);
     }
 
     protected function getEntityAttributes(array $input)

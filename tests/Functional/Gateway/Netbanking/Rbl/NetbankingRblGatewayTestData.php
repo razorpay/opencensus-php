@@ -38,7 +38,7 @@ return [
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
                 'method'         => 'netbanking',
-                'bank'           => 'FDRL',
+                'bank'           => 'RATN',
                 'account_number' => '04030403040304',
             ],
             'method'    => 'POST',
@@ -57,56 +57,40 @@ return [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'RATN',
-        'status'          => 'Y',
+        'status'          => 'SUC',
     ],
 
     'testPaymentVerifySuccessEntity' => [
         'bank_payment_id' => '99999999',
         'received'        => true,
         'bank'            => 'RATN',
-        'status'          => 'Y'
+        'status'          => 'SUC'
     ],
 
     'testAuthFailedVerifySuccessEntity' => [
         'bank_payment_id' => '99999999',
-        'received'        => false,
+        'received'        => true,
         'bank'            => 'RATN',
-        'status'          => 'Y'
+        'status'          => 'SUC'
     ],
 
     'testPaymentFailedNetbankingEntity' => [
-        'bank_payment_id' => null,
-        'received'        => false,
+        'bank_payment_id' => '99999999',
+        'received'        =>  true,
         'bank'            => 'RATN',
-        'status'          => null
+        'status'          => 'FAL'
     ],
 
     'testAuthSuccessVerifyFailedNetbankingEntity' => [
         'received'        => true,
         'bank'            => 'RATN',
-        'status'          => 'Y'
+        'status'          => 'SUC'
     ],
 
     'testAuthFailedVerifyFailedEntity' => [
-        'received'        => false,
+        'received'        => true,
         'bank'            => 'RATN',
-        'status'          => 'N'
-    ],
-
-    'testTamperedPayment' => [
-        'response' => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
-                ],
-            ],
-            'status_code' => 502,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
-        ],
+        'status'          => 'FAL'
     ],
 
     'testAuthorizeFailed' => [

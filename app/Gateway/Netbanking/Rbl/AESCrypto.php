@@ -24,7 +24,7 @@ class AESCrypto extends Base\AESCrypto
 
     public function decryptString(string $string)
     {
-        return base64_decode(parent::decryptString($string));
+        return parent::decryptString(base64_decode(urldecode($string)));
     }
 
     protected function getKey($key)

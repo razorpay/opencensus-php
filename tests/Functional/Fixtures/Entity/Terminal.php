@@ -858,11 +858,11 @@ class Terminal extends Base
     public function createSharedNetbankingRblTpvTerminal(array $attributes = [])
     {
         $attributes = [
-            'id'               => Shared::NETBANKING_RBL_TPV_TERMINAL,
+            'id'               =>  Shared::NETBANKING_RBL_TPV_TERMINAL,
             'network_category' => 'securities'
         ];
 
-        return $this->createSharedNetbankingFederalTerminal($attributes);
+        return $this->createSharedNetbankingRblTerminal($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])

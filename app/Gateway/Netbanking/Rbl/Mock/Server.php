@@ -7,6 +7,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Gateway\Netbanking\Rbl\Status;
 use RZP\Gateway\Netbanking\Rbl\RequestFields;
 use RZP\Gateway\Netbanking\Rbl\ResponseFields;
+use RZP\Models\Currency\Currency;
 
 class Server extends Base\Mock\Server
 {
@@ -18,7 +19,12 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $response = $this->getCallbackResponseData($input);
+        $decryptedString = $this->getGatewayInstance()
+                                ->getDecryptedString($input[RequestFields::QUERY_STRING]);
+
+        $decryptedData = $this->getDecryptedData($decryptedString);
+
+        $response = $this->getCallbackResponseData($decryptedData);
 
         $this->content($response, 'authorize');
 
@@ -35,9 +41,11 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->validateActionInput($input);
+        parse_str($input, $attributes);
 
-        $response = $this->getVerifyResponseData($input);
+        $this->validateActionInput($attributes);
+
+        $response = $this->getVerifyResponseData($attributes);
 
         $this->content($response, 'verify');
 
@@ -49,7 +57,7 @@ class Server extends Base\Mock\Server
         $data = [
             ResponseFields::STATUS             => Status::SUCCESS,
             ResponseFields::BANK_REFERENCE     => 99999999,
-            ResponseFields::MERCHANT_REFERENCE => $input[RequestFields::PAYMENT_ID],
+            ResponseFields::MERCHANT_REFERENCE => $input[RequestFields::MERCHANT_REFERENCE],
         ];
 
         return $data;
@@ -57,19 +65,44 @@ class Server extends Base\Mock\Server
 
     protected function getVerifyResponseData(array $input)
     {
-        $content = [
-            $input[RequestFields::PAYMENT_ID],
-            $input[RequestFields::ITEM_CODE],
-            99999999,
-            $input[RequestFields::AMOUNT],
-            'S',
+        $content =
+        [
+            ResponseFields::CURRENCY     => Currency::INR,
+            ResponseFields::ENTRY_STATUS => Status::SUCCESS,
+            ResponseFields::REFERENCE_ID => 99999999,
         ];
 
-        return $this->getStringFromContent($content, '|');
+        $content = array_flip($content);
+
+        $xml =  new \SimpleXMLElement('<xml/>');
+
+        $status = $xml->addChild('RetrieveTransactionStatus');
+
+        $transactionStatus = $status->addChild('RetrieveTransactionStatus_REC');
+
+        array_walk_recursive($content, array($transactionStatus, 'addChild'));
+
+        return $xml->asXml();
     }
 
     protected function getStringFromContent($content, $glue = '')
     {
         return implode($glue, $content);
+    }
+
+    protected function getDecryptedData(string $decryptedString)
+    {
+        $data = explode('|', $decryptedString);
+
+        $decryptedData = [];
+
+        foreach ($data as $dataItem)
+        {
+            $keyValue = explode('~', $dataItem);
+
+            $decryptedData[$keyValue[0]] = $keyValue[1];
+        }
+
+        return $decryptedData;
     }
 }

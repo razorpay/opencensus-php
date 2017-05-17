@@ -77,28 +77,6 @@ class NetbankingRblGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($data['request']['content'], $order);
     }
 
-    /**
-     * Test a payment that was tampered with in the authorize step
-     * This case should throw PaymentVerificationException during verify broken
-     */
-    public function testTamperedPayment()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $this->mockFailedVerifyResponse();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthAndCapturePayment($this->payment);
-            });
-
-        // Assert that we don't save any information into the netbanking entity
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
-    }
 
     public function testAuthorizeFailed()
     {
@@ -203,17 +181,9 @@ class NetbankingRblGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForNb($this->bank);
 
-        $this->checkRefundFileData($data['netbanking_federal']);
-    }
+        $this->assertTrue(file_exists($data['netbanking_rbl']['file']));
 
-    public function testEmptyExcelRefundFileGeneration()
-    {
-        $payments = $this->createPaymentsToClaim();
-
-        $data = $this->generateRefundsExcelForNb($this->bank);
-
-        // Refund file is never generated as count is 0
-        $this->assertEmpty($data['netbanking_rbl']['refunds']);
+        unlink($data['netbanking_rbl']['file']);
     }
 
     protected function createPaymentsToClaim()
@@ -275,69 +245,24 @@ class NetbankingRblGatewayTest extends TestCase
                     Mockery::any(),
                     Mockery::on(function ($data)
                     {
-                        $date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
+                        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
 
                         $today = Carbon::today('Asia/Kolkata')->format('d_m_Y');
 
                         $emails = ['settlements@razorpay.com'];
 
                         $testData = [
-                            'subject'     => 'Federal Netbanking claims and refund files for ' . $date,
-                            'amount'      => [
-                                'claims'  => 1500,
-                                'refunds' => 1000,
-                                'total'   => 500
-                            ],
-                            'count'       => [
-                                'claims'  => 3,
-                                'refunds' => 3
-                            ],
-                            'emails'      => $emails,
+                            'subject'     => 'RBL Netbanking refunds file for ' . $date,
+                            'count'       => 4,
                             'date'        => $date,
                         ];
 
                         $this->assertArraySelectiveEquals($testData, $data);
 
-                        $this->assertEquals('FBK_REFUND_' . $today . '.txt', $data['refundsFile']['name']);
-
                         return true;
                     }),
                     Mockery::any()
                 );
-    }
-
-    protected function checkRefundFileData($data)
-    {
-        // Asserting that the file exists
-        $this->assertTrue(file_exists($data['refunds']));
-
-        $refundsFileContents = file($data['refunds']);
-
-        // 3 refunds + 0 initial line
-        assert(count($refundsFileContents) === 3);
-
-        // Individual refund amounts to be asserted
-        $refundAmounts = ['100', '400', '500'];
-
-        foreach ($refundsFileContents as $row)
-        {
-            $refundsFileRow = explode('|', $row);
-
-            // Asserting that the file contains 7 columns
-            assert(count($refundsFileRow) === 7);
-
-            // Asserting Free Field
-            assert($refundsFileRow[3] === '00000000');
-
-            // Asserting Bank Payment Id
-            assert($refundsFileRow[4] === '99999999');
-
-            // Asserting that the refund amounts are correct
-            $rowRefundAmount = trim($refundsFileRow[6]);
-            assert(in_array($rowRefundAmount, $refundAmounts, true));
-        }
-
-        unlink($data['refunds']);
     }
 
     protected function mockFailedVerifyResponse()
@@ -346,7 +271,11 @@ class NetbankingRblGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content = '||||';
+                $content = simplexml_load_string($content);
+
+                $content->RetrieveTransactionStatus->RetrieveTransactionStatus_REC->ENTRY_STATUS = 'FAL';
+
+                $content = $content->asXml();
             }
         });
     }
@@ -357,7 +286,7 @@ class NetbankingRblGatewayTest extends TestCase
         {
             if ($action === 'authorize')
             {
-                $content['PAID'] = 'N';
+                $content['STATUS'] = 'FAL';
             }
         });
     }
