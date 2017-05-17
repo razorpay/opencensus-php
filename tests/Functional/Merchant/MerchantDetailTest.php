@@ -123,7 +123,7 @@ class MerchantDetailTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->appAuth('test', $this->authToken, 'org_' . $this->org->id);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -140,7 +140,7 @@ class MerchantDetailTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->appAuth('test', $this->authToken, 'org_' . $this->org->id);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -159,7 +159,7 @@ class MerchantDetailTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->appAuth('test', $this->authToken, 'org_' . $this->org->id);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -176,7 +176,7 @@ class MerchantDetailTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->appAuth('test', $this->authToken, 'org_' . $this->org->id);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -195,7 +195,7 @@ class MerchantDetailTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->appAuth('test', $this->authToken, 'org_' . $this->org->id);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
@@ -214,7 +214,7 @@ class MerchantDetailTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->appAuth('test', $this->authToken, 'org_' . $this->org->id);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
     }
