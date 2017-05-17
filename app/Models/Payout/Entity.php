@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payout;
 
+use Carbon\Carbon;
+
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
