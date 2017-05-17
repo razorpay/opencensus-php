@@ -36,11 +36,11 @@ class Core extends Base\Core
                 'current_methods' => $methods->toArrayAdmin(),
             ]);
 
-        $w = $this->app['workflow']->setOldEntity(clone $methods);
+        $w = $this->app['workflow']->setOriginal(clone $methods);
 
         $methods->setMethods($input);
 
-        $w->setNewEntity($methods)->handle();
+        $w->setDirty($methods)->handle();
 
         $this->checkPricing($merchant, $methods);
 

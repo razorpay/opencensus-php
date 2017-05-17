@@ -30,9 +30,9 @@ class Service
 
     protected $diff = [];
 
-    protected $oldEntity;
+    protected $originalData;
 
-    protected $newEntity;
+    protected $dirtyData;
 
     public function __construct($app)
     {
@@ -159,28 +159,28 @@ class Service
         return $this->diff;
     }
 
-    public function setOldEntity($entity)
+    public function setOriginal($entity)
     {
-        $this->oldEntity = $entity;
+        $this->originalData = $entity;
 
         return $this;
     }
 
-    public function getOldEntity()
+    public function getOriginal()
     {
-        return $this->oldEntity;
+        return $this->originalData;
     }
 
-    public function setNewEntity($entity)
+    public function setDirty($entity)
     {
-        $this->newEntity = $entity;
+        $this->dirtyData = $entity;
 
         return $this;
     }
 
-    public function getNewEntity()
+    public function getDirty()
     {
-        return $this->newEntity;
+        return $this->dirtyData;
     }
 
     protected function permissionHasWorkflow()
@@ -200,67 +200,33 @@ class Service
         return $permissionHasWorkflow;
     }
 
-    /*
-        Can be used like this:
-
-        Workflow::setPermission($permission)
-                ->handle($entity, function ($entity) {
-                    // Execute business logic on the $entity
-                })
-
-        $entity is supposed to be the main entity on which
-        diff will be computed pre callback execution and post
-        callback execution which will change the $entity due to
-        the business logic code.
-    */
-    public function handle($entity = null, $callback = null)
+    public function handle($originalData = null, $dirtyData = null)
     {
         // 1. If the permission has no workflow then don't do anything
         // 2. If this is an execute call, then return as well
-        //
+
         if (($this->permissionHasWorkflow() === false) or
             ($this->config->get('heimdall.workflows.mock') === true) or
             ($this->app['api.route']->isWorkflowExecuteCall() === true))
         {
-            // Run the callback though, as it might have business
-            // specific logic actually required for execution.
-            if (($entity !== null) and ($callback !== null))
-            {
-                $callback($entity);
-            }
-
             return;
         }
 
         // Instantiate code for diff creation
         $differCore = new Differ\Core;
 
-        $oldEntity = null;
-
-        $newEntity = null;
-
-        if (($entity === null) and ($callback === null))
+        if (($originalData === null) and ($dirtyData === null))
         {
-            $oldEntity = $this->getOldEntity();
+            $originalData = $this->getOriginal();
 
-            $newEntity = $this->getNewEntity();
-        }
-        else
-        {
-            $oldEntity = clone $entity;
-
-            $callback($entity);
-
-            // If the callback modifies the $entity then
-            // we will have $newEntity due to call by reference!
-            $newEntity = $entity;
+            $dirtyData = $this->getDirty();
         }
 
         // Set entity
-        $this->setEntity($newEntity->getEntityName());
+        $this->setEntity($dirtyData->getEntityName());
 
         $diff = $differCore->createDiff(
-            $oldEntity->toArray(), $newEntity->toArray());
+            $originalData->toArray(), $dirtyData->toArray());
 
         $this->setDiff($diff);
 
