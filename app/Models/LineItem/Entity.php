@@ -184,17 +184,17 @@ class Entity extends Base\PublicEntity
 
     // Setters
 
-    public function setTotalAmount($totalAmount)
+    public function setTotalAmount(int $totalAmount)
     {
         $this->setAttribute(self::TOTAL_AMOUNT, $totalAmount);
     }
 
-    public function setTaxAmount($taxAmount)
+    public function setTaxAmount(int $taxAmount)
     {
         $this->setAttribute(self::TAX_AMOUNT, $taxAmount);
     }
 
-    public function setNetAmount($netAmount)
+    public function setNetAmount(int $netAmount)
     {
         $this->setAttribute(self::NET_AMOUNT, $netAmount);
     }
@@ -228,7 +228,7 @@ class Entity extends Base\PublicEntity
     // Following three mutators method are here for backward compatibility.
     // This can be removed post update queries(after code depl) have been run.
 
-    public function getTotalAmountAttribute($totalAmount)
+    public function getTotalAmountAttribute($totalAmount): int
     {
         if ($totalAmount === null)
         {
@@ -240,7 +240,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getTaxAmountAttribute($taxAmount)
+    public function getTaxAmountAttribute($taxAmount): int
     {
         if ($taxAmount === null)
         {
@@ -252,7 +252,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getNetAmountAttribute($netAmount)
+    public function getNetAmountAttribute($netAmount): int
     {
         if ($netAmount === null)
         {
@@ -305,7 +305,6 @@ class Entity extends Base\PublicEntity
      *
      * @param \RZP\Base\BuilderEx $query
      * @param Base\PublicEntity   $entity
-     *
      */
     public function scopeEntity(
         \RZP\Base\BuilderEx $query,

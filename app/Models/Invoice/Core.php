@@ -602,7 +602,6 @@ class Core extends Base\Core
      * Calculates and sets derived amounts of invoice.
      *
      * @param Entity $invoice
-     *
      */
     public function calculateAndSetAmountsOfInvoice(Entity $invoice)
     {

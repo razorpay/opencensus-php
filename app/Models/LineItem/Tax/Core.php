@@ -76,7 +76,7 @@ class Core extends Base\Core
 
         foreach ($lineItemTaxes as $lineItemTax)
         {
-            $this->repo->line_item_tax->deleteOrFail($lineItemTax);
+            $this->repo->deleteOrFail($lineItemTax);
         }
     }
 
@@ -108,7 +108,7 @@ class Core extends Base\Core
 
             $taxes = $taxGroup->taxes()->getResults();
         }
-        elseif ($taxId !== null)
+        else if ($taxId !== null)
         {
             $tax = $this->repo->tax
                               ->findByPublicIdAndMerchant($taxId, $merchant);

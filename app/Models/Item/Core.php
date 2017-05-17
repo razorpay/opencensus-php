@@ -94,7 +94,6 @@ class Core extends Base\Core
      * @param Entity          $item
      * @param array           $input
      * @param Merchant\Entity $merchant
-     *
      */
     private function handleTaxInputs(
         Entity $item,

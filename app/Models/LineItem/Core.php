@@ -343,13 +343,11 @@ class Core extends Base\Core
         // Net amount = Total amount, if tax inclusive
         //            = Total amount + Tax amount, if not tax inclusive
 
-        if ($lineItem->isTaxInclusive() === true)
+        $netAmount = $lineItem->getTotalAmount();
+
+        if ($lineItem->isTaxInclusive() === false)
         {
-            $netAmount = $lineItem->getTotalAmount();
-        }
-        else
-        {
-            $netAmount = $lineItem->getTotalAmount() + $lineItem->getTaxAmount();
+            $netAmount += $lineItem->getTaxAmount();
         }
 
         $lineItem->setNetAmount($netAmount);

@@ -5,7 +5,6 @@ namespace RZP\Models\LineItem\Tax;
 use RZP\Models\Base;
 use RZP\Models\LineItem;
 use RZP\Models\Tax as TaxModel;
-use RZP\Exception;
 
 /**
  * Calculator for tax amounts of a line item against a particular tax.
@@ -40,13 +39,13 @@ class Calculator
         // 
         // Taxable Amount = (Total Amount - Accumulative flat taxes)/(1 + Accumulative percent taxes)
 
-        $flatTaxAmount = $percetangeTaxAmounts = 0;
+        $flatTaxAmount = $percentageTaxAmounts = 0;
 
         foreach ($taxes as $tax)
         {
             if ($tax->getRateType() === TaxModel\RateType::PERCENTAGE)
             {
-                $percetangeTaxAmounts += $tax->getRatePercentValue();
+                $percentageTaxAmounts += $tax->getRatePercentValue();
             }
             else
             {
@@ -54,7 +53,9 @@ class Calculator
             }
         }
 
-        return round(($totalAmount - $flatTaxAmount) / ($percetangeTaxAmounts + 1));
+        $taxableAmount = ($totalAmount - $flatTaxAmount) / ($percentageTaxAmounts + 1);
+
+        return (int) round($taxableAmount);
     }
 
     /**
@@ -71,7 +72,7 @@ class Calculator
     {
         if ($tax->getRateType() === TaxModel\RateType::PERCENTAGE)
         {
-            return round($taxableAmount * $tax->getRatePercentValue());
+            return (int) (round($taxableAmount * $tax->getRatePercentValue()));
         }
         else
         {

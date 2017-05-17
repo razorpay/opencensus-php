@@ -132,7 +132,7 @@ class CreateInvoices extends Migration
             $table->char(Entity::USER_ID, Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->tinyInteger(Entity::SHOW_TAXES_GROUPED)
+            $table->tinyInteger(Entity::GROUP_TAXES_DISCOUNTS)
                   ->default(0);
 
             $table->integer(Entity::CREATED_AT);

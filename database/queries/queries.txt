@@ -2024,7 +2024,7 @@ ALTER TABLE payments
 
 ALTER TABLE invoices ADD COLUMN tax_amount INT(10) UNSIGNED DEFAULT NULL AFTER amount;
 ALTER TABLE invoices ADD COLUMN net_amount INT(10) UNSIGNED DEFAULT NULL AFTER tax_amount;
-ALTER TABLE invoices ADD COLUMN show_taxes_grouped TINYINT(1) DEFAULT 0 AFTER user_id;
+ALTER TABLE invoices ADD COLUMN group_taxes_discounts TINYINT(1) DEFAULT 0 AFTER user_id;
 
 ALTER TABLE items ADD COLUMN unit varchar(512) DEFAULT NULL AFTER currency;
 ALTER TABLE items ADD COLUMN tax_inclusive tinyint(4) NOT NULL DEFAULT 0 AFTER unit;

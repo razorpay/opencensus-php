@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\Checkout;
+use RZP\Models\LineItem;
 use RZP\Exception;
 use RZP\Constants\Mode;
 
@@ -83,7 +84,7 @@ class ViewDataSerializer extends Base\Core
         $invoiceData = $this->invoice->toArrayPublic();
 
         $isInvoicePaid = $this->invoice->isPaid();
-        $invoiceAmountFormatted = number_format($invoiceData['net_amount']/100, 2);
+        $invoiceAmountFormatted = number_format($invoiceData[Entity::NET_AMOUNT] / 100, 2);
 
         $invoiceData += [
             'is_paid'          => $isInvoicePaid,
@@ -108,11 +109,11 @@ class ViewDataSerializer extends Base\Core
         }
 
         array_walk(
-            $invoiceData['line_items'],
+            $invoiceData[Entity::LINE_ITEMS],
             function (& $lineItem, $i)
             {
-                $amountFormatted = number_format($lineItem['amount'] / 100, 2);
-                $totalAmountFormatted = number_format($lineItem['total_amount'] / 100, 2);
+                $amountFormatted = number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2);
+                $totalAmountFormatted = number_format($lineItem[LineItem\Entity::TOTAL_AMOUNT] / 100, 2);
 
                 $lineItem += [
                     'amount_formatted'       => $amountFormatted,
