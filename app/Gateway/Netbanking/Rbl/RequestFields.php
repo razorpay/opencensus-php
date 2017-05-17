@@ -5,7 +5,11 @@ namespace RZP\Gateway\Netbanking\Rbl;
 
 class RequestFields
 {
-	const BANK_ID            = "BANK_ID";
+	const FORM_ID            = 'FORMSGROUP_ID__';
+	const TRANSACTION_FLAG   = '__START_TRAN_FLAG__';
+	const FG_BUTTON          = 'FG_BUTTONS__';
+	const ACTION_LOAD        = 'ACTION.LOAD';
+	const BANK_ID            = 'BANK_ID';
 	const LOGIN_FLAG         = "AuthenticationFG.LOGIN_FLAG";
 	const USER_TYPE          = "AuthenticationFG.USER_TYPE";
 	const MENU_ID            = "AuthenticationFG.MENU_ID";

@@ -13,6 +13,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use phpseclib\Crypt\AES;
+use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -34,10 +35,11 @@ class Gateway extends Base\Gateway
         $content = $this->getAuthorizeRequestData($input);
 
         $entityAttributes = $this->getEntityAttributes($input);
-
         $this->createGatewayPaymentEntity($entityAttributes);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray();
+
+        $request['url'] = $request['url'] . urldecode(http_build_query($content));
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -85,7 +87,9 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getVerifyRequestData($verify->input);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'get');
+
+        $request['url'] = $request['url'] . http_build_query($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -172,20 +176,20 @@ class Gateway extends Base\Gateway
              $input['payment']['id'], Action::AUTHORIZE);
 
         $data = [
-            RequestFields::BANK_ID         => Constants::BANK_ID,
-            RequestFields::LANGUAGE_ID     => Constants::LANGUAGE_ID,
-            RequestFields::CHANNEL_ID      => Constants::CHANNEL_ID,
-            RequestFields::LOGIN_FLAG      => Constants::V_LOGIN_FLAG,
-            RequestFields::SERVICE_ID      => Constants::SERVICE_ID,
-            RequestFields::STATE_MODE      => Constants::STATE_MODE,
-            RequestFields::RESPONSE_FORMAT => FileFormat::XML,
-            RequestFields::REQUEST_FORMAT  => FileFormat::NV,
-            RequestFields::MULTI_RECORDS   => Constants::NO,
-            RequestFields::USER_PRINCIPLE  => Constants::USER_PRINCIPLE,
-            RequestFields::ACCESS_CODE     => Constants::ACCESS_CODE,
-            RequestFields::V_PAYEE_ID      => $this->getMerchantId(),
-            RequestFields::BANK_REFERENCE  => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
-            RequestFields::ENTITY_TYPE     => Constants::PAYMENT_TYPE,
+            RequestFields::BANK_ID          => Constants::BANK_ID,
+            RequestFields::LANGUAGE_ID      => Constants::LANGUAGE_ID,
+            RequestFields::CHANNEL_ID       => Constants::CHANNEL_ID,
+            RequestFields::V_LOGIN_FLAG     => Constants::VERIFY_LOGIN_FLAG,
+            RequestFields::SERVICE_ID       => Constants::SERVICE_ID,
+            RequestFields::STATE_MODE       => Constants::STATE_MODE,
+            RequestFields::RESPONSE_FORMAT  => FileFormat::XML,
+            RequestFields::REQUEST_FORMAT   => FileFormat::NV,
+            RequestFields::MULTIPLE_RECORDS => Constants::NO,
+            RequestFields::USER_PRINCIPAL   => Constants::VIRTUAL_USER,
+            RequestFields::ACCESS_CODE      => Constants::ACCESS_CODE,
+            RequestFields::V_PAYEE_ID       => $this->getMerchantId(),
+            RequestFields::BANK_REFERENCE   => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
+            RequestFields::ENTITY_TYPE      => Constants::TYPE_PAYMENT,
         ];
 
         return $data;
@@ -194,11 +198,17 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeRequestData(array $input)
     {
         $data = [
-            RequestFields::LOGIN_FLAG   => Constants::LOGIN_FLAG,
-            RequestFields::USER_TYPE    => Constants::USER_TYPE,
-            RequestFields::MENU_ID      => Constants::MENU_ID,
-            RequestFields::CALL_MODE    => Constants::CALL_MODE,
-            RequestFields::RETURN_URL   => $input['callbackUrl'],
+            RequestFields::FORM_ID          => Constants::AUTHENTICATION,
+            RequestFields::TRANSACTION_FLAG => Constants::YES,
+            RequestFields::FG_BUTTON        => Constants::LOAD,
+            RequestFields::ACTION_LOAD      => Constants::YES,
+            RequestFields::BANK_ID          => Constants::BANK_ID,
+            RequestFields::LOGIN_FLAG       => Constants::LOGIN_FLAG,
+            RequestFields::USER_TYPE        => Constants::USER_TYPE,
+            RequestFields::MENU_ID          => Constants::MENU_ID,
+            RequestFields::CALL_MODE        => Constants::CALL_MODE,
+            RequestFields::CATEGORY_ID      => 'AAA',
+            RequestFields::RETURN_URL       => $input['callbackUrl'],
         ];
 
         $dataToEncrypt = [
@@ -264,7 +274,7 @@ class Gateway extends Base\Gateway
         $attributes = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE],
-            Base\Entity::STATUS          => $content[Status::SUCCESS],
+            Base\Entity::STATUS          => $content[ResponseFields::STATUS],
         ];
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
@@ -345,6 +355,7 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse(string $body)
     {
+
         $values = explode('|', $body);
 
         //
@@ -387,14 +398,14 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        $mode = $this->getLiveMerchantId();
+        $mid = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
         {
-            $mode = $this->getTestMerchantId();
+            $mid = $this->getTestMerchantId();
         }
 
-        return $mode;
+        return $mid;
     }
 
     protected function getLiveMerchantId()
