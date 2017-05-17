@@ -4,6 +4,7 @@
 }
 
 .table > thead > tr > th {
+  background-color: #eaeff0;
   border-bottom: 1px solid #ddd;
 }
 
@@ -11,42 +12,26 @@
   border-top: 1px solid #ddd;
 }
 
-
-
-a, a:hover, a.active {
+a:hover,
+a:focus,
+a.active {
   text-decoration: none;
 }
 
-.container {
-  max-width: 100%;
-}
-
-.panel > .panel-heading, .panel > .panel-footer {
-  padding: 15px 20px;
+.text-danger {
+  color: $textDangerColor;
 }
 
 .modal-header .close {
   margin: 3px;
 }
 
-.table > thead > tr > th {
-  background-color: #eaeff0;
-}
-
 .form-control[type='number'] {
   padding-right: 0;
 }
 
-.label {
-  font-size: 14px;
-}
-
 .label-muted {
   background-color: #999;
-}
-
-.btn-default {
-  background-color: #fafafa;
 }
 
 .checkbox label.i-switch {
@@ -60,7 +45,7 @@ a, a:hover, a.active {
   }
 
   > a.text-danger {
-    color: #f05050;
+    color: $textDangerColor;
   }
 }
 

@@ -34,69 +34,19 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
 
-$font-family-base = "Lato", "Helvetica Neue", Helvetica, Arial,sans-serif;
-$text-color = #58666e;
-$line-height-base = 1.42857143;
-
-$btn-primary-bg = #7266ba;
-
-$input-border-radius = 2px;
-$input-border = #cfdadd;
-$input-border-focus = #23b7e5;
-
-$table-border-color = #eaeff0;
-
-// Core variables and mixins
-@import "bootstrap/variables"
-@import "bootstrap/mixins"
-
-// Reset and dependencies
-@import "bootstrap/normalize"
-
-// Core CSS
-@import "bootstrap/scaffolding"
-@import "bootstrap/type"
-@import "bootstrap/code"
-@import "bootstrap/grid"
-@import "bootstrap/tables"
-@import "bootstrap/forms"
-@import "bootstrap/buttons"
-
-// Components
-@import "bootstrap/component-animations"
-@import "bootstrap/dropdowns"
-@import "bootstrap/button-groups"
-@import "bootstrap/input-groups"
-@import "bootstrap/navs"
-@import "bootstrap/navbar"
-@import "bootstrap/breadcrumbs"
-@import "bootstrap/pagination"
-@import "bootstrap/pager"
-@import "bootstrap/labels"
-@import "bootstrap/badges"
-@import "bootstrap/thumbnails"
-@import "bootstrap/alerts"
-@import "bootstrap/media"
-@import "bootstrap/list-group"
-@import "bootstrap/panels"
-@import "bootstrap/responsive-embed"
-@import "bootstrap/close"
-
-// Components w/ JavaScript
-@import "bootstrap/modals"
-@import "bootstrap/tooltip"
-@import "bootstrap/popovers"
-
-// Utility classes
-@import "bootstrap/utilities"
-@import "bootstrap/responsive-utilities"
-
-
+// Third Parties
+@import "./rzp/vars"
+@import "./rzp/bootstrap-custom"
 @import "./rzp/bootstrap-ext"
-@import "./rzp/elements"
 @import "~react-dates/lib/css/_datepicker.css";
 @import "~react-power-select/dist/react-power-select.css";
+
+// Layout
+@import "./rzp/elements"
+@import "./rzp/components"
 @import "./rzp/layout"
+
+// Pages
 @import "./merchant/invoice"
 @import "./merchant/activation"
 
