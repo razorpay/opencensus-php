@@ -624,7 +624,11 @@ app
      * Sends the final edit merchant ajax call
      * @param  Object merchant
      */
-      $scope.editMerchant = function(merchant, selected_groups) {
+      $scope.editMerchant = function(
+        merchant,
+        selected_groups,
+        selected_admins
+      ) {
         // If the second parameter was not provided
         // we don't try to edit the groups and don't
         // send the field instead.
@@ -640,6 +644,12 @@ app
           selected_groups = {};
         } else {
           merchant.groups = Object.keys(selected_groups);
+        }
+
+        if (typeof selected_admins === 'undefined') {
+          selected_admins = [];
+        } else {
+          merchant.admins = selected_admins;
         }
 
         var dropUnchangedFields = function(merchant) {
@@ -1122,13 +1132,23 @@ app
             groups: function() {
               return jQuery.extend({}, $scope.groups);
             },
+            organization: function() {
+              return jQuery.extend({}, organization);
+            },
             selected_groups: function() {
               return $scope.selected_groups;
+            },
+            selected_admins: function() {
+              return $scope.selected_admins;
             },
           },
         });
         modalInstance.result.then(function(merchant) {
-          $scope.editMerchant(merchant, $scope.selected_groups);
+          $scope.editMerchant(
+            merchant,
+            $scope.selected_groups,
+            $scope.selected_admins
+          );
         }, $.noop);
       };
       $scope.openEditMerchantEmail = function() {
@@ -1380,10 +1400,15 @@ app
               $scope.marketplace = data.data.details.parent_id;
               $scope.merchant.details.international =
                 data.data.details.international;
-              var merchantGroups = data.data.groups || [];
-              merchantGroups.map(function(group) {
-                $scope.selected_groups[group.id] = true;
+
+              var merchantAdmins = data.data.details.admins || [];
+              $scope.selected_admins = [];
+
+              // Re-populated array with selected admin ids
+              merchantAdmins.map(function(admin) {
+                $scope.selected_admins.push(admin.id);
               });
+
               fetchBalance();
               getMerchantFeatures();
 
@@ -1724,18 +1749,72 @@ app
     'current',
     'riskMap',
     'groups',
+    'organization',
     'selected_groups',
+    'selected_admins',
     function(
       $scope,
       $modalInstance,
       current,
       riskMap,
       groups,
-      selected_groups
+      organization,
+      selected_groups,
+      selected_admins
     ) {
       $scope.riskMap = riskMap;
       $scope.groups = groups;
       $scope.selected_groups = selected_groups;
+      $scope.selected_admins = selected_admins;
+
+      $scope.adminMap = {};
+
+      // Fetch list of admins
+      organization.fetchUsers().then(function(users) {
+        $scope.admins = [];
+        users.forEach(function(admin) {
+          var adminObj = {
+            id: admin.id,
+            name: admin.name,
+            email: admin.email,
+          };
+
+          $scope.admins.push(adminObj); // create admin users object
+          $scope.adminMap[admin.id] = admin.name; // create mapping id - name
+        });
+      });
+
+      // Remove role which is already selected
+      $scope.removeUser = function(adminId) {
+        var index = $scope.selected_admins.indexOf(adminId);
+        if (index > -1) {
+          $scope.selected_admins.splice(index, 1);
+        }
+      };
+
+      // Remove user from the list if already added in selected_admins
+      $scope.filterAdmins = function(admin) {
+        if ($scope.selected_admins.indexOf(admin.id) > -1) {
+          return false;
+        }
+        return true;
+      };
+
+      // Attach event listener for selection on custom select tag
+      // Called from directive - roleSelect
+      $scope.initRoleSelector = function(element) {
+        element.on('select2:select', function(e) {
+          var elem = e.params.data.element;
+          var adminId = elem.value;
+
+          // Add user in selected_admins if not already added
+          if ($scope.selected_admins.indexOf(adminId) === -1) {
+            $scope.selected_admins.push(adminId);
+          }
+
+          element.val(null).trigger('change');
+        });
+      };
 
       if (!current.website) {
         current.website = current.merchant_details.business_website;
