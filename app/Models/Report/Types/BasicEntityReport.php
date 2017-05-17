@@ -138,16 +138,16 @@ class BasicEntityReport extends BaseReport
      */
     public function generateReport(array $input)
     {
+        $this->setDefaults();
+
         // added for debugging
         // will remove later
-        $this->trace->debug(
+        $this->trace->info(
             'REPORT_GENRATE_START',
             [
                 'method' => __METHOD__,
                 'input' => $input,
             ]);
-
-        $this->setDefaults();
 
         $this->createReportEntity($input);
 
@@ -165,7 +165,7 @@ class BasicEntityReport extends BaseReport
 
         // added for debugging
         // will remove later
-        $this->trace->debug(
+        $this->trace->info(
             'REPORT_GENRATE_SUCCESS',
             [
                 'method' => __METHOD__,
@@ -408,7 +408,7 @@ class BasicEntityReport extends BaseReport
     {
         // added for debugging
         // will remove later
-        $this->trace->debug(
+        $this->trace->info(
             'FILE_CREATE_START',
             [
                 'method' => __METHOD__,
@@ -429,7 +429,7 @@ class BasicEntityReport extends BaseReport
 
         // added for debugging
         // will remove later
-        $this->trace->debug(
+        $this->trace->info(
             'FILE_CREATE_SUCCESS',
             [
                 'method' => __METHOD__,
