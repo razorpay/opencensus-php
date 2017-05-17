@@ -336,6 +336,9 @@ return [
 
             Permission::CREATE_MERCHANT_INVITE          => '',
             Permission::EDIT_MERCHANT_INVITE            => '',
+
+            // Workflow can be created on add merchant credits
+            Permission::ADD_MERCHANT_CREDITS            => '',
         ],
 
         // UAM

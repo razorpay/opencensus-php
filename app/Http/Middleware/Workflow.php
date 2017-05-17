@@ -28,6 +28,7 @@ class Workflow
     const EXCLUDED_PERMISSIONS = [
         Permission::EDIT_MERCHANT_METHODS,
         Permission::ASSIGN_MERCHANT_BANKS,
+        Permission::ADD_MERCHANT_CREDITS,
     ];
 
     protected $app;

@@ -35,6 +35,8 @@ class Core extends Base\Core
         $creditsLog->getValidator()->validateBalanceCredits(
             $creditsLog->getValue(), $currentMerchantCredits, $creditsLog->getType());
 
+        $this->app['workflow']->handle($currentMerchantCredits, $creditsLog->getValue());
+
         return $this->repo->transaction(function() use ($merchant, $creditsLog)
         {
             $this->repo->saveOrFail($creditsLog);
