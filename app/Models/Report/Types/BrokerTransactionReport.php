@@ -95,7 +95,6 @@ class BrokerTransactionReport extends BasicEntityReport
             $setlDate = null;
             if ($txn->isSettled())
             {
-                // find out
                 $setlDate = $txn->getDateInFormat(Transaction\Entity::SETTLED_AT, 'Y-m-d');
             }
 

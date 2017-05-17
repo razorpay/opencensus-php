@@ -376,4 +376,5 @@ daily_settlements.processed_amount = stats.processed_amount;
 
 update settlements
 set processed_at = updated_at
-where processed_at is null;
+where utr is not null
+and processed_at is null;
