@@ -409,11 +409,17 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert('success', msg, true);
-              $scope.merchant.details.methods = $.extend(
-                $scope.merchant.details.methods,
-                methods
-              );
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert('success', msg, true);
+                $scope.merchant.details.methods = $.extend(
+                  $scope.merchant.details.methods,
+                  methods
+                );
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -813,7 +819,7 @@ app
                 'Merchant comment edited successfully',
                 true
               );
-              $scope.merchant.details.merchant_details.comment = data.data;
+              $scope.merchant.details.merchant_details.comment = new_comment;
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
