@@ -52,11 +52,18 @@ class Activate extends Base\Core
 
         (new Merchant\Validator)->validateBeforeActivate($merchant);
 
-        (new Merchant\Core)->createBalance($merchant, 'live');
+        $oldMerchant = clone $merchant;
 
         $merchant->enableReceiptEmails();
 
         $merchant->activate();
+
+        // Triggering
+        $workflow = $this->app['workflow']
+                         ->setEntity($merchant->getEntity())
+                         ->handle($oldMerchant, $merchant);
+
+        (new Merchant\Core)->createBalance($merchant, 'live');
 
         $this->repo->saveOrFail($merchant);
 
