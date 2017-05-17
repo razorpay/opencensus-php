@@ -955,6 +955,14 @@ angular
           return val instanceof Array;
         },
 
+        isIndexedArray: function(val) {
+          if (this.isArray(val) === false) {
+            return false;
+          }
+
+          return ['object', 'undefined'].indexOf(typeof val[0]) === -1;
+        },
+
         // rightmost obj gets preference for same keys
         concatObj: function() {
           var result = {};
