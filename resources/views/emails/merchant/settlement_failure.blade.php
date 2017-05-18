@@ -16,7 +16,7 @@
       <div class="content" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;">
 Hi,<br><br>
 
-This is to bring to your notice that the settlements are failing to your merchant account: <b>{{$merchant_id}}</b>. The settlements to your bank account is failing with the error: <b>{{$remarks}}</b><br><br>
+This is to bring to your notice that the settlements are failing to your account: <b>{{$merchant_id}}</b>. The settlements to your bank account is failing with the error: <b>{{$remarks}}</b><br><br>
 
 The settlement was initiated to your bank account number ending with: <b>{{$last4}}</b>. We would request you to check if the bank account details mentioned here {{$profile_link}} are accurate and also verify with your bank if the account is active.<br><br>
 
