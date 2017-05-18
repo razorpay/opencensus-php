@@ -984,6 +984,7 @@ angular
         },
         isWorkflow: function(data) {
           if (
+            typeof data.id !== 'undefined' &&
             data.id.indexOf('w_action') === 0 &&
             typeof data.workflow_id !== 'undefined'
           ) {
