@@ -1114,6 +1114,7 @@ final class Route
         'merchant_edit'                    => '*', // permission handled in code
         'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
+        'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
     ];
 
     public static $direct = [
