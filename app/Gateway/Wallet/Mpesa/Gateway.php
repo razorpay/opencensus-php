@@ -623,14 +623,26 @@ class Gateway extends Base\Gateway
 
     protected function getSoapUserId()
     {
-        // TODO: Add live user id
-        return $this->config['test_user_id'];
+        $userId = $this->config['test_user_id'];
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $userId = $this->config['live_user_id'];
+        }
+
+        return $userId;
     }
 
     protected function getSoapPassword()
     {
-        // TODO: Add live password
-        return $this->config['test_password'];
+        $password = $this->config['test_password'];
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $password = $this->config['live_password'];
+        }
+
+        return $password;
     }
 
     protected function getPaymentToVerify($verify)
