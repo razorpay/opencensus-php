@@ -2026,5 +2026,5 @@ ALTER TABLE terminals
 
 # Adding from_email and signature_email in orgs
 ALTER TABLE orgs
-    ADD COLUMN from_email VARCHAR(255) after custom_code,
-    ADD COLUMN signature_email VARCHAR(255) after from_email;
+    ADD COLUMN from_email VARCHAR(255) DEFAULT NULL after custom_code,
+    ADD COLUMN signature_email VARCHAR(255) DEFAULT NULL after from_email;
