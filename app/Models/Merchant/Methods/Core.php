@@ -36,9 +36,15 @@ class Core extends Base\Core
                 'current_methods' => $methods->toArrayAdmin(),
             ]);
 
+        // Setup workflow
+        $workflow = $this->app['workflow']->setOriginal(clone $methods);
+
         $methods->setMethods($input);
 
         $this->checkPricing($merchant, $methods);
+
+        // Trigger workflow
+        $workflow->setDirty($methods)->handle();
 
         $this->saveAndNotifyOnSlack($merchant, $methods);
 
@@ -217,7 +223,16 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('addBanks', $input);
 
+        // Setup workflow
+        $workflow = $this->app['workflow']
+                         ->setEntity($methods->getEntity())
+                         ->setOriginal(['banks' => $methods->getBanks()]);
+
         $methods->setBanks($input['banks']);
+
+        // Trigger workflow
+        $workflow->setDirty(['banks' => $methods->getBanks()])->handle();
+
         $this->repo->saveOrFail($methods);
 
         return $this->getEnabledDisabledBanks($methods);

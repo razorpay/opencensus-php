@@ -8,6 +8,8 @@ use RZP\Models\Workflow\Action\State;
 class Entity extends Base\Entity
 {
     const ID             = 'id';
+    const ENTITY_ID      = 'entity_id';
+    const ENTITY_NAME    = 'entity_name';
     const TITLE          = 'title';
     const DESCRIPTION    = 'description';
     const WORKFLOW_ID    = 'workflow_id';
@@ -35,6 +37,8 @@ class Entity extends Base\Entity
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
+        self::ENTITY_ID,
+        self::ENTITY_NAME,
         self::TITLE,
         self::DESCRIPTION,
         self::APPROVED,
@@ -47,6 +51,8 @@ class Entity extends Base\Entity
 
     protected $visible = [
         self::ID,
+        self::ENTITY_ID,
+        self::ENTITY_NAME,
         self::TITLE,
         self::DESCRIPTION,
         self::WORKFLOW_ID,
@@ -75,6 +81,8 @@ class Entity extends Base\Entity
 
     protected $public = [
         self::ID,
+        self::ENTITY_ID,
+        self::ENTITY_NAME,
         self::TITLE,
         self::DESCRIPTION,
         self::WORKFLOW_ID,

@@ -32,6 +32,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action as BaseAction;
@@ -343,7 +344,19 @@ class Gateway extends Base\Gateway
 
         $this->postAuthEnrolledRequest($input);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($this->model);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                PaymentEntity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
+                PaymentEntity::REFERENCE1    => $gatewayPayment->getRef()
+            ]
+        ];
     }
 
     public function verify(array $input)
@@ -365,6 +378,22 @@ class Gateway extends Base\Gateway
         $verify = new Base\Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        // FSS returns an error when refund amount exceeds the remaining amount
+        // on FSS's end. We take advantage of this error and initiate refunds
+        // for all the pending refunds whose amount is either equal to payment, i.e,
+        // they are full refund or twice of refund amount is less than payment amount
+        if (($input['refund']['amount'] !== $input['payment']['amount']) and
+            ((2 * $input['refund']['amount']) <= $input['payment']['amount']))
+        {
+            throw new Exception\LogicException(
+                'Verify refund is only supported for full refundsa and specific partial refunds');
+        }
+
+        return false;
     }
 
     /**

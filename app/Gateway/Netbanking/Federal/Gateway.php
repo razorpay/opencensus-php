@@ -23,7 +23,8 @@ class Gateway extends Base\Gateway
 
     const VERIFY_TO_CALLBACK_STATUS = [
         Status::SUCCESS => Status::YES,
-        Status::NO      => Status::NO
+        Status::NO      => Status::NO,
+        Status::ERROR   => Status::NO,
     ];
 
     protected $map = [
@@ -196,7 +197,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         //
-        // Verify response will contain S or N, but we have already
+        // Verify response will contain S or N or E, but we have already
         // mapped the S status to Y in parseVerifyResponse
         //
         if ($content[ResponseFields::STATUS] === Status::getAuthSuccessStatus())

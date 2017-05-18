@@ -140,7 +140,7 @@ class DailyFiles
         return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
-    protected function sendMail($amount, $claimsFile, $refundsFile, $email = null)
+    protected function sendMail($amount, $claimsFileData, $refundsFileData, $email = null)
     {
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
@@ -149,8 +149,8 @@ class DailyFiles
         $data = [
             'subject'     => $bankName . ' Netbanking claims and refund files for ' . $today,
             'amount'      => $amount,
-            'claimsFile'  => $claimsFile,
-            'refundsFile' => $refundsFile
+            'claimsFileData'  => $claimsFileData,
+            'refundsFileData' => $refundsFileData
         ];
 
         $view = 'emails.admin.' . lcfirst($bankName) . '_refunds';
@@ -165,14 +165,14 @@ class DailyFiles
 
             $message->to($emails);
 
-            if (empty($data['claimsFile']) === false)
+            if (empty($data['claimsFileData']) === false)
             {
-                $message->attach($data['claimsFile']);
+                $message->attach($data['claimsFileData']['signed_url'], ['as' => $data['claimsFileData']['name']]);
             }
 
-            if (empty($data['refundsFile']) === false)
+            if (empty($data['refundsFileData']) === false)
             {
-                $message->attach($data['refundsFile']);
+                $message->attach($data['refundsFileData']['signed_url'], ['as' => $data['refundsFileData']['name']]);
             }
 
             $headers = $message->getHeaders();

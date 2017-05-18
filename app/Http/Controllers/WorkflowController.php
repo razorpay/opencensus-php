@@ -119,7 +119,7 @@ class WorkflowController extends Controller
 
         $data = (new Checker\Service)->create($id, $input);
 
-        return ApiResponse::json($data);
+        return $this->getActionDetails($id);
     }
 
     public function getActionCheckerMultiple(string $id)

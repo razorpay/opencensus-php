@@ -521,6 +521,18 @@ final class Route
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
+
+        // Tax groups and taxes
+        'tax_get'                                => ['get',      'taxes/{id}',                                      'TaxController@get'                                                 ],
+        'tax_list'                               => ['get',      'taxes',                                           'TaxController@list'                                                ],
+        'tax_create'                             => ['post',     'taxes',                                           'TaxController@create'                                              ],
+        'tax_update'                             => ['patch',    'taxes/{id}',                                      'TaxController@update'                                              ],
+        'tax_delete'                             => ['delete',   'taxes/{id}',                                      'TaxController@delete'                                              ],
+        'tax_group_get'                          => ['get',      'tax_groups/{id}',                                 'TaxGroupController@get'                                            ],
+        'tax_group_list'                         => ['get',      'tax_groups',                                      'TaxGroupController@list'                                           ],
+        'tax_group_create'                       => ['post',     'tax_groups',                                      'TaxGroupController@create'                                         ],
+        'tax_group_update'                       => ['patch',    'tax_groups/{id}',                                 'TaxGroupController@update'                                         ],
+        'tax_group_delete'                       => ['delete',   'tax_groups/{id}',                                 'TaxGroupController@delete'                                         ],
     ];
 
     public static $public = [
@@ -930,6 +942,16 @@ final class Route
         'offer_fetch_by_id',
         'reports_fetch_multiple',
         'file_get_signed_url',
+        'tax_get',
+        'tax_list',
+        'tax_create',
+        'tax_update',
+        'tax_delete',
+        'tax_group_get',
+        'tax_group_list',
+        'tax_group_create',
+        'tax_group_update',
+        'tax_group_delete',
     ];
 
     public static $admin = [
@@ -1087,8 +1109,12 @@ final class Route
         'merchant_activation_update'       => '*', // permission handled in code
         'merchant_assign_pricing'          => Permission::EDIT_MERCHANT_PRICING,
         'merchant_get_banks'               => Permission::VIEW_MERCHANT_BANKS,
-        'merchant_set_banks'               => Permission::EDIT_MERCHANT_BANKS,
+        'merchant_set_banks'               => Permission::ASSIGN_MERCHANT_BANKS,
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
+        'merchant_edit'                    => '*', // permission handled in code
+        'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
+        'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
+        'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
     ];
 
     public static $direct = [

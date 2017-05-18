@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Terminal\Type;
 use RZP\Models\Base\UniqueIdEntity;
 
 class Terminal extends Base
@@ -429,6 +430,7 @@ class Terminal extends Base
             'card'                      => 1,
             'shared'                    => 1,
             'recurring'                 => 4,
+            'type'                      => Type::PURCHASE,
             'gateway_merchant_id'       => 'random',
         ];
 
