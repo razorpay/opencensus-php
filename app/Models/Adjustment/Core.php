@@ -21,27 +21,6 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_REQUEST, $traceData);
 
-        $adj = (new Adjustment\Entity)->build($input);
-
-        // Workflow
-        $this->app['workflow']
-             ->setEntityAndId($adj->getEntity(), $merchant->getId())
-             ->handle((new \stdClass), $adj);
-
-        return $this->repo->transaction(function() use ($input, $adj, $merchant)
-            {
-                $adj = $this->createAdjInTransaction($input, $adj, $merchant);
-
-                $this->trace->info(
-                    TraceCode::ADJUSTMENT_CREATE_SUCCESS,
-                    $adj->toArrayPublic());
-
-                return $adj;
-            });
-    }
-
-    protected function createAdjInTransaction($input, $adj, $merchant)
-    {
         $updateEscrow = true;
 
         if (isset($input['update_escrow']))
@@ -52,11 +31,32 @@ class Core extends Base\Core
                 $updateEscrow = false;
             else
                 throw new BadRequestValidationFailureException(
-                    'update_escrow field shoudl be boolean', 'update_escrow');
+                    'update_escrow field should be boolean', 'update_escrow');
 
             unset($input['update_escrow']);
         }
 
+        $adj = (new Adjustment\Entity)->build($input);
+
+        // Workflow
+        $this->app['workflow']
+             ->setEntityAndId($adj->getEntity(), $merchant->getId())
+             ->handle((new \stdClass), $adj);
+
+        return $this->repo->transaction(function() use ($adj, $merchant, $updateEscrow)
+            {
+                $adj = $this->createAdjInTransaction($adj, $merchant, $updateEscrow);
+
+                $this->trace->info(
+                    TraceCode::ADJUSTMENT_CREATE_SUCCESS,
+                    $adj->toArrayPublic());
+
+                return $adj;
+            });
+    }
+
+    protected function createAdjInTransaction($adj, $merchant, $updateEscrow)
+    {
         $adj->setChannel(Settlement\Channel::KOTAK);
 
         $adj->merchant()->associate($merchant);
