@@ -185,19 +185,19 @@ class Gateway extends Base\Gateway
         {
             $data[RequestFields::MODE] = Constants::PAY;
 
-            $data[RequestFields::ENCRYPTED_STRING] = $this->getAuthorizeEncryptedString($input);
+            $data[RequestFields::ENCRYPTED_STRING] = $this->getEncryptedString($input);
         }
         else
         {
             $data[RequestFields::MODE] = Constants::VERIFY;
 
-            $data[RequestFields::ENCRYPTED_STRING] =  $this->getVerifyEncryptedString($input, $payment);
+            $data[RequestFields::ENCRYPTED_STRING] =  $this->getEncryptedString($input, $payment);
         }
 
         return $data;
     }
 
-    protected function getVerifyEncryptedString(array $input, $payment): string
+    protected function getEncryptedString(array $input, $payment = []): string
     {
         $data = [
             RequestFields::ITEM_CODE          => $input['payment']['id'],
@@ -205,25 +205,18 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT             => $this->formatAmount($input['payment']['amount']),
             RequestFields::CURRENCY_CODE      => Currency::INR,
             RequestFields::CONFIRMATION       => Constants::YES,
-            RequestFields::RETURN_URL         => 'na',
-            RequestFields::BANK_REFERENCE_ID  => $payment[Base\Entity::BANK_PAYMENT_ID],
         ];
 
-        $queryString = http_build_query($data);
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $data[RequestFields::RETURN_URL] = $input['callbackUrl'];
+        }
+        else
+        {
+            $data[RequestFields::RETURN_URL] = 'na';
 
-        return $this->encryptString($queryString);
-    }
-
-    protected function getAuthorizeEncryptedString(array $input): string
-    {
-        $data = [
-            RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
-            RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
-            RequestFields::AMOUNT             => $this->formatAmount($input['payment']['amount']),
-            RequestFields::CURRENCY_CODE      => Currency::INR,
-            RequestFields::CONFIRMATION       => Constants::YES,
-            RequestFields::RETURN_URL         => $input['callbackUrl'],
-        ];
+            $data[RequestFields::BANK_REFERENCE_ID] = $payment[Base\Entity::BANK_PAYMENT_ID];
+        }
 
         $queryString = http_build_query($data);
 
