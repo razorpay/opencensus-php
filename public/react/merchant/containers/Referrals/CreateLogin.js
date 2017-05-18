@@ -116,6 +116,7 @@ export default class CreateLogin extends Component {
                   component={InputField}
                   class="form-control"
                   type="password"
+                  autoFocus={true}
                 />
               </div>
             </div>

@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header/Header';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -43,6 +44,7 @@ export default class ReferralsListContainer extends ListContainer {
 
   showCreateMerchantModal = () => {
     this.props.openModal({
+      size: 'small',
       component: (
         <CreateMerchant
           onSave={params => {
@@ -59,43 +61,26 @@ export default class ReferralsListContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <div class="react-root">
-        <Header title="Referrals" />
+      <tabbed-container>
+        <header id="customers-header">
+          <NavLink to="/app/referrals">Referrals</NavLink>
+        </header>
+
         <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              Referrals
-            </div>
+          <Alert type={status.type} message={status.message} />
 
-            <Alert type={status.type} message={status.message} />
-
-            <ReferralsList
-              referrals={referrals}
-              isLoading={loading}
-              user={user}
-              highlightRow={referral => referral.id === highlightReferralId}
-              showCreateLoginModal={this.showCreateLoginModal}
-              highlightReferralId={highlightReferralId}
-              switchMerchant={this.switchMerchant}
-            />
-
-            {!loading && user.tags.indexOf('Aggregator') !== -1
-              ? <div class="panel-footer">
-                  <div class="row">
-                    <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
-                      <button
-                        class="btn btn-primary"
-                        onClick={this.showCreateMerchantModal}
-                      >
-                        Create New Merchant
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              : null}
-          </div>
+          <ReferralsList
+            referrals={referrals}
+            isLoading={loading}
+            user={user}
+            highlightRow={referral => referral.id === highlightReferralId}
+            showCreateLoginModal={this.showCreateLoginModal}
+            showCreateMerchantModal={this.showCreateMerchantModal}
+            highlightReferralId={highlightReferralId}
+            switchMerchant={this.switchMerchant}
+          />
         </div>
-      </div>
+      </tabbed-container>
     );
   }
 }

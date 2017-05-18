@@ -6,6 +6,7 @@ import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
 import Customers from 'merchant/containers/Customers/List';
 import Reports from 'merchant/containers/Reports';
+import Referrals from 'merchant/containers/Referrals/List';
 import TeamManagement from 'merchant/containers/Team';
 
 import MyAccount from 'merchant/containers/MyAccount';
@@ -28,6 +29,7 @@ export default () => {
       <Route path="/app/items" component={InvoicingContainer} />
 
       <Route path="/app/reports" component={Reports} />
+      <Route path="/app/referrals" component={Referrals} />
       <Route path="/app/team" component={TeamManagement} />
 
       <Route path="/app/profile" component={MyAccount} />

@@ -62,7 +62,7 @@ export default class Sidebar extends Component {
                   icon="icon-chart"
                   to="/"
                   exact
-                  notMyRole="sellerapp"
+                  notMyRole="sellerapp support"
                 />
                 <MainNavLink
                   label="Transactions"
@@ -74,7 +74,7 @@ export default class Sidebar extends Component {
                   label="Settlements"
                   icon="icon-done-all"
                   to="/app/settlements"
-                  notMyRole="sellerapp"
+                  notMyRole="sellerapp support"
                 />
 
                 <div class="divider" />
@@ -97,12 +97,12 @@ export default class Sidebar extends Component {
                   label="Reports"
                   icon="icon-reports"
                   to="/app/reports"
-                  notMyRole="sellerapp"
+                  notMyRole="sellerapp support"
                 />
                 <MainNavLink
                   label="Referrals"
                   icon="icon-reports"
-                  to="/app/reports"
+                  to="/app/referrals"
                   notMyRole="sellerapp support"
                   featureEnabled="Referral"
                 />
@@ -121,7 +121,7 @@ export default class Sidebar extends Component {
                   label="Settings"
                   icon="icon-settings"
                   to={routes.settings}
-                  myRole="owner manager admin"
+                  myRole="owner admin"
                 />
               </div>}
         </nav>
