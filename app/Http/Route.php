@@ -414,6 +414,7 @@ final class Route
         'permission_get_multiple'                 => ['get',      'orgs/{orgId}/permissions',                       'OrganizationController@getMultiplePermissions'                     ],
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
+        'permission_get_roles'                    => ['get',      'permissions/{id}/roles',                         'OrganizationController@getRolesForPermission'                      ],
         'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
 
@@ -502,6 +503,12 @@ final class Route
         'client_post'                             => ['post',     'clients',                                        'ClientController@postCreateClient'                                 ],
         'client_put'                              => ['put',      'clients/{client_id}',                            'ClientController@editClient'                                       ],
         'client_delete'                           => ['delete',   'clients/{client_id}',                            'ClientController@deleteClient'                                     ],
+
+        // OAuth routes
+        'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getTokens'                                    ],
+        'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@getToken'                                     ],
+        'oauth_token_edit'                        => ['patch',    'oauth/tokens/{id}',                              'OAuthTokenController@updateToken'                                  ],
+        'oauth_token_revoke'                      => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revokeToken'                                  ],
     );
 
     public static $public = array(
@@ -895,6 +902,10 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'oauth_token_fetch_multiple',
+        'oauth_token_fetch',
+        'oauth_token_edit',
+        'oauth_token_revoke',
     );
 
     public static $admin = [
@@ -933,6 +944,7 @@ final class Route
         'permission_get_multiple',
         'permission_get_by_type',
         'permission_get',
+        'permission_get_roles',
         'permission_create',
         'permission_edit',
         'permission_delete',
@@ -967,7 +979,7 @@ final class Route
         'workflow_get_actions_by_maker',
     ];
 
-    public static $adminPermission = [
+    public static $routePermission = [
         'group_create'                     => [Permission::CREATE_GROUP],
         'admin_create'                     => [Permission::CREATE_ADMIN],
         'group_get'                        => [Permission::VIEW_GROUP],
@@ -1000,6 +1012,7 @@ final class Route
         'permission_get'                   => [Permission::GET_PERMISSION],
         'permission_get_multiple'          => [Permission::VIEW_ALL_PERMISSION],
         'permission_get_by_type'           => [Permission::EDIT_ORG],
+        'permission_get_roles'             => [Permission::VIEW_ROLE],
         'permission_delete'                => [Permission::DELETE_PERMISSION],
         'auditlog_search'                  => [Permission::VIEW_AUDITLOG],
         'admin_logout'                     => ['*'],
@@ -1142,7 +1155,7 @@ final class Route
     public static $slaveRoutes = [
         // TODO: Uncomment this when slave variables issue is fixed.
         //'es_migrate_entity',
-        'reports_public_entity_file',
+        'payment_fetch_transaction',
     ];
 
     protected static $jsonpRoutes = array(

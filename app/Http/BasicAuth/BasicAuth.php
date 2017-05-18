@@ -8,6 +8,7 @@ use Crypt;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Http\Scopes;
 use RZP\Trace\TraceCode;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -178,6 +179,8 @@ class BasicAuth
      */
     protected $dashboardHeaders = array();
 
+    protected $scopes = [];
+
     /**
      * Contains valid lengths of key.
      * rzp_mode            = 3 + 1 + 4
@@ -339,28 +342,30 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->getKey() !== 'admin')
+        if ($this->getKey() === 'admin')
         {
-            return $this->invalidApiKey();
+            $this->setAdminTrue();
+
+            $token = $this->getSecret();
+
+            $adminToken = $this->fetchAdminToken($token);
+
+            if ($adminToken->getAdminId() !== null)
+            {
+                $this->checkForDashboardMerchantHeader();
+
+                $this->setDashboardHeaders();
+
+                $this->admin = $adminToken->admin;
+
+                $this->adminOrgId = $this->admin->getOrgId();
+
+                return $this->checkAndSetAccountScope();
+            }
         }
-
-        $this->setAdminTrue();
-
-        $token = $this->getSecret();
-
-        $adminToken = $this->fetchAdminToken($token);
-
-        if ($adminToken->getAdminId() !== null)
+        else if ($this->isKeyBlank())
         {
-            $this->checkForDashboardMerchantHeader();
-
-            $this->setDashboardHeaders();
-
-            $this->admin = $adminToken->admin;
-
-            $this->adminOrgId = $this->admin->getOrgId();
-
-            return $this->checkAndSetAccountScope();
+            return $this->appAuth();
         }
 
         return $this->invalidApiKey();
@@ -442,6 +447,12 @@ class BasicAuth
             // from merchant dashboard and not admin dashboard
             // which can potentially cause a security issue and
             // hence needs to be actively checked against.
+            $response = $this->setAdminAuthIfApplicable();
+
+            if ($response !== null)
+            {
+                return $response;
+            }
 
             $this->checkForDashboardMerchantHeader();
 
@@ -472,12 +483,62 @@ class BasicAuth
         // and allowed to do ops on merchant's behalf
         if ($this->verifyInternalAppAsProxy() === true)
         {
+            $response = $this->setAdminAuthIfApplicable();
+
+            if ($response !== null)
+            {
+                return $response;
+            }
+
             $this->setDashboardHeaders();
 
-            return;
+            return $this->checkAndSetAccountScope();
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    /**
+     * The return values will be those of:
+     *
+     * @return \Response|null
+     */
+    protected function setAdminAuthIfApplicable()
+    {
+        $adminToken = $this->request->header('X-Admin-Token');
+
+        if ($adminToken !== null)
+        {
+            // Remove the token so that subsequent code has no
+            // access to it (prevents logging, etc.)
+            $this->request->headers->remove('X-Admin-Token');
+
+            $token = $this->fetchAdminToken($adminToken);
+
+            if ($token->getAdminId() !== null)
+            {
+                $this->setAdminTrue();
+                $this->setType(Type::ADMIN_AUTH);
+
+                $this->admin = $token->admin;
+
+                $this->adminOrgId = $this->admin->getOrgId();
+
+                return;
+            }
+
+            return $this->invalidApiKey();
+        }
+
+        // `Route::$admin` contains routes that should strictly
+        // be on admin auth and cannot be accessed over others
+        // (proxy, internal, etc.)
+        $currentRoute = $this->router->currentRouteName();
+
+        if (in_array($currentRoute, Route::$admin, true) === true)
+        {
+            return $this->invalidApiKey();
+        }
     }
 
     public function deviceAuth()
@@ -1034,6 +1095,13 @@ class BasicAuth
         $this->app['rzp.mode'] = $mode;
     }
 
+    public function setMerchant(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->merchant = $merchant;
+    }
+
     protected function setType($type)
     {
         $this->type = $type;
@@ -1096,6 +1164,41 @@ class BasicAuth
     public function isProxyOrPrivilegeAuth()
     {
         return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));
+    }
+
+    /**
+     * Set the scopes available on the current authenticated
+     * request
+     *
+     * @param array $scopes
+     *
+     * @return BasicAuth
+     */
+    public function withScopes(array $scopes) : BasicAuth
+    {
+        $this->scopes = $scopes;
+
+        return $this;
+    }
+
+    /**
+     * Check if the request has a particular
+     * scope defined
+     *
+     * @param string $scope
+     * @return bool
+     */
+    public function hasScope(string $scope) : bool
+    {
+        if (($scope === '*') or
+            ($scope === '*.*'))
+        {
+            return true;
+        }
+
+        $allScopes = $this->scopes ?? [];
+
+        return (in_array($scope, $allScopes, true) === true);
     }
 
     protected function setKeyFromQueryParams()

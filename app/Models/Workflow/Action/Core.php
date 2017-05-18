@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Exception;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Base;
+use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
@@ -103,6 +104,9 @@ class Core extends Base\Core
         return $workflows;
     }
 
+    /**
+     * This function has to run in a transaction
+     */
     public function checkAndMarkActionApproved(Entity $action)
     {
         if ($action->getApproved() === true)
@@ -114,26 +118,18 @@ class Core extends Base\Core
 
         $workflowId = $action->getWorkflowId();
 
-        // 1. Get total checker approvals
+        $lastLevel = $this->repo->workflow_step
+                                ->getLastLevelOfWorkflow($workflowId);
 
-        $checkerApprovalCount = $this->repo
-                                     ->action_checker
-                                     ->fetchApprovedCountByActionId($actionId);
-
-        // 2. Get total checker approvals required
-
-        $requiredCheckersCount = $this->repo
-                                      ->workflow_step
-                                      ->getNumCheckers($workflowId);
-
-        // If current checker approvals count doesn't match
-        // the required checker approvals then don't do anything
-        if ($checkerApprovalCount !== $requiredCheckersCount)
+        if ($lastLevel !== $action->getCurrentLevel())
         {
             return false;
         }
 
-        $action = $this->approveAction($action);
+        if ($this->isCurrentLevelApproved($action) === true)
+        {
+            $this->approveAction($action);
+        }
 
         return true;
     }
@@ -168,12 +164,8 @@ class Core extends Base\Core
         return $action;
     }
 
-    public function updateCurrentLevelIfNeeded(Entity $action)
+    protected function isCurrentLevelApproved(Entity $action)
     {
-        // 1. Get the total reviewer_count required across all
-        // the roles (all the workflow_step entries)
-        // for the current level of the action
-
         $level = $action->getCurrentLevel();
 
         $workflowId = $action->getWorkflowId();
@@ -182,51 +174,104 @@ class Core extends Base\Core
                       ->workflow_step
                       ->findByLevelAndWorkflowId($level, $workflowId);
 
-        $totalReviewerCount = 0;
+        $opType = $steps[0]->getOpType();
 
         $stepIds = [];
 
+        $stepReviewCountMap = [];
+
         foreach ($steps as $step)
         {
-            $totalReviewerCount += $step->getReviewerCount();
+            $stepId = $step->getId();
 
-            $stepIds[] = $step->getId();
+            $stepReviewCountMap[$stepId] = $step->getReviewerCount();
+
+            $stepIds[] = $stepId;
         }
 
-        // 2. Get total number of people who have approved (checked) this action
-
+        // Get total number of people who have approved (checked) this action
         $totalCheckerApprovals = $this->repo
                                       ->action_checker
                                       ->fetchApprovedCountByActionIdAndStepIds(
                                           $action->getId(), $stepIds);
+        $stepCheckerMap = [];
 
-        // 3. Check if there is any level (or step basically)
+        foreach ($totalCheckerApprovals as $approval)
+        {
+            $stepId = $approval[Checker\Entity::STEP_ID];
+
+            $stepCheckerMap[$stepId] = $approval['total'];
+        }
+
+        $stepApprovedMap = [];
+
+        foreach ($stepReviewCountMap as $stepId => $reviewCount)
+        {
+            $approvalCount = $stepCheckerMap[$stepId] ?? 0;
+
+            $stepApprovedMap[$stepId] = ($approvalCount === $reviewCount);
+        }
+
+        // If the reviewers in a single step approved
+        // Based on the op type, we do an AND or OR operation on approvals per
+        // step basis.
+        // If step1 or step2. one of the steps's approvals should match
+        // reviewer count without a single rejection by either side.
+        //
+
+        $levelApproved = false;
+
+        if ($opType === Step\Entity::OP_TYPE_AND)
+        {
+            // if any of the check fails, level is not approved.
+            $levelApproved = (in_array(false, $stepApprovedMap, true) === false);
+        }
+        else if ($opType === Step\Entity::OP_TYPE_OR)
+        {
+            // if any of the check passed, level is approved.
+            $levelApproved = in_array(true, $stepApprovedMap, true);
+        }
+
+        return $levelApproved;
+    }
+
+    /**
+     * This function has to run in a transaction
+     */
+    public function updateCurrentLevelIfNeeded(Entity $action)
+    {
+        // Get the total reviewer_count required across all
+        // the roles (all the workflow_step entries)
+        // for the current level of the action
+
+        // Only open actions are supported
+        if ($action->getState() !== State\Entity::OPEN)
+        {
+            return;
+        }
+
+        $level = $action->getCurrentLevel();
+        $workflowId = $action->getWorkflowId();
+
+        $levelApproved = $this->isCurrentLevelApproved($action);
+
+        // Check if there is any level (or step basically)
         // after workflow_actions.current_level
-
         $nextLevelStep = $this->repo
-                          ->workflow_step
-                          ->getNextLevelOfWorkflowId($level, $workflowId);
+                              ->workflow_step
+                              ->getNextLevelOfWorkflowId($level, $workflowId);
 
-        // 4. Finally if there's a next level AND
+        // Finally if there's a next level AND
         // total approvals received is more than
         // total reviewer count (approvals) required then
         // update the level of the action.
-
         if ((empty($nextLevelStep) === false) and
-            ($totalCheckerApprovals >= $totalReviewerCount))
+            ($levelApproved === true))
         {
-            $this->repo->transactionOnLiveAndTest(function () use ($action, $nextLevelStep) {
+            $action->setCurrentLevel($nextLevelStep->getLevel());
 
-                $action->setCurrentLevel( $nextLevelStep->getLevel());
-
-                $this->repo->saveOrFail($action);
-            });
+            $this->repo->saveOrFail($action);
         }
-    }
-
-    public function fetchOpenWorkflows(string $workflowId)
-    {
-        return $this->repo->workflow_action->findOpenWorkflows($workflowId);
     }
 
     public function get(string $id)

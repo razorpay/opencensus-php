@@ -34,12 +34,42 @@
                 "></td>
             </tr>
 
-            @if ($invoice['description'])
+            @if ($is_test_mode)
             <tr>
                 <td class="first" style="
                     background-color: {{ $merchant['brand_color'] }};
                     color: {{ $merchant['brand_text_color'] }};
                 "></td>
+                <td colspan="2" class="content" style="
+                    width: 92%;
+                    border-top: 1px solid #f2f2f2;
+                    background-color: #fcf8e3;
+                    border-color: #faebcc;
+                    color: #8a6d3b;
+                    padding-top: 12px;
+                    padding-bottom: 12px;
+                    font-size: 12px;
+                ">
+                    This {{$invoice['type_label']}} is created in <b style="color: #8a6d3b;">Test Mode</b>. Only test payments can be made for this invoice.
+                </td>
+                <td class="last" style="
+                    background-color: {{ $merchant['brand_color'] }};
+                    color: {{ $merchant['brand_text_color'] }};
+                "></td>
+            </tr>
+            @endif
+
+
+            @if ($invoice['description'])
+            <tr>
+                @if ($is_test_mode)
+                    <td class="first"></td>
+                @else
+                    <td class="first" style="
+                        background-color: {{ $merchant['brand_color'] }};
+                        color: {{ $merchant['brand_text_color'] }};
+                    "></td>
+                @endif
                 <td colspan="2" class="content" style="
                     width: 92%;
                     border-top: 1px solid #f2f2f2;
@@ -49,15 +79,20 @@
                         <div>{{$invoice['description']}}</div>
                     </div>
                 </td>
-                <td class="last" style="
-                    background-color: {{ $merchant['brand_color'] }};
-                    color: {{ $merchant['brand_text_color'] }};
-                "></td>
+
+                @if ($is_test_mode)
+                    <td class="last"></td>
+                @else
+                    <td class="last" style="
+                        background-color: {{ $merchant['brand_color'] }};
+                        color: {{ $merchant['brand_text_color'] }};
+                    "></td>
+                @endif
             </tr>
             @endif
 
             <tr>
-                @if ($invoice['description'])
+                @if ($invoice['description'] || $is_test_mode)
                     <td class="first"></td>
                 @else
                     <td class="first" style="
@@ -82,7 +117,7 @@
                         </div>
                     </div>
                 </td>
-                @if ($invoice['description'])
+                @if ($invoice['description'] || $is_test_mode)
                     <td class="last"></td>
                 @else
                     <td class="last" style="
