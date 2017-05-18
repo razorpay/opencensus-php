@@ -278,6 +278,11 @@ class MpesaGatewayTest extends TestCase
                     $content['statuscode'] = '106';
                     break;
 
+                case SoapAction::OTP_SUBMIT_API:
+                    $content['statusCode'] = '104';
+                    $content['mcomPgTransID'] = "";
+                    break;
+
                 default:
                     $content['statusCode'] = '104';
                     break;

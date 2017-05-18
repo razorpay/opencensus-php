@@ -660,7 +660,7 @@ class Gateway
 
     public static function isAuthAndPowerWallet(string $wallet)
     {
-        return (in_array($wallet, self::AUTH_AND_POWER_WALLETS));
+        return (in_array($wallet, self::AUTH_AND_POWER_WALLETS, true));
     }
 
     public static function canGatewayTopup($gateway)

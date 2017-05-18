@@ -54,7 +54,7 @@ class Validator extends Base\Validator
     protected static $queryPaymentTransactionRules = [
         RequestFields::MERCHANT_CODE             => 'required|string',
         RequestFields::QUERY_TRANSACTION_DATE    => 'required|string|date_format:dmY',
-        RequestFields::COM_TRANSACTION_ID        => 'required|string|size:11',
+        RequestFields::COM_TRANSACTION_ID        => 'sometimes|string|size:11',
         RequestFields::QUERY_TRANSACTION_REF     => 'required|string|size:14',
         RequestFields::PMT_TRANSACTION_REFERENCE => 'required|string|size:14',
         RequestFields::AMOUNT                    => 'required|numeric',

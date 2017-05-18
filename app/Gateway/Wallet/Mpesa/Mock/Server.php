@@ -114,7 +114,10 @@ class Server extends Base\Mock\Server
 
         $mobileNumber = mt_rand(7000000000, 9999999999);
 
+        $transId = mt_rand(11111111111, 99999999999);
+
         $response = [
+            ResponseFields::S2S_TRANS_ID    => $transId,
             ResponseFields::S2S_REF_NUMBER  => $request[RequestFields::QUERY_TRANSACTION_REF],
             ResponseFields::S2S_STATUS_CODE => StatusCode::SUCCESS,
             ResponseFields::REASON          => 'SUCCESS',
