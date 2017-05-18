@@ -43,7 +43,7 @@ class RefundFile extends Base\RefundFile
         $fileData = [
             'file_path'  => $file['local_file_path'],
             'signed_url' => $signedFileUrl,
-            'name'       => basename($file['local_file_path'])
+            'file_name'  => basename($file['local_file_path'])
         ];
 
         $this->sendRefundEmail($fileData);

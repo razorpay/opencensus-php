@@ -45,11 +45,12 @@ class Create extends Base
 
     protected function addMailData()
     {
+        $password = $this->input['password'] ?? null;
         $data = [
             'user' => [
                 'email'    => $this->admin['email'],
                 // todo: Hack for now. Remove it
-                'password' => $this->input['password'],
+                'password' => $password,
                 'org'      => $this->org['display_name'],
                 'url'      => Config::get('applications.dashboard.url'),
             ]

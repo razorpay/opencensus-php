@@ -8,33 +8,20 @@ use Request;
 
 class SubscriptionController extends Controller
 {
-    protected $planService;
-    protected $subscriptionService;
-
-    public function __construct(
-        Plan\Service $planService,
-        Plan\Subscription\Service $subscriptionService)
-    {
-        parent::__construct();
-
-        $this->planService = $planService;
-        $this->subscriptionService = $subscriptionService;
-    }
-
     // -------------------- Plan endpoints start --------------------
 
     public function postCreatePlan()
     {
         $input = Request::all();
 
-        $plan = $this->planService->create($input);
+        $plan = $this->service('plan')->create($input);
 
         return ApiResponse::json($plan);
     }
 
     public function getPlan(string $id)
     {
-        $plan = $this->planService->fetch($id);
+        $plan = $this->service('plan')->fetch($id);
 
         return ApiResponse::json($plan);
     }
@@ -43,7 +30,7 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $plans = $this->planService->fetchMultiple($input);
+        $plans = $this->service('plan')->fetchMultiple($input);
 
         return ApiResponse::json($plans);
     }
@@ -54,14 +41,14 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $subscription = $this->subscriptionService->create($input);
+        $subscription = $this->service('subscription')->create($input);
 
         return ApiResponse::json($subscription);
     }
 
     public function getSubscription(string $id)
     {
-        $subscription = $this->subscriptionService->fetch($id);
+        $subscription = $this->service('subscription')->fetch($id);
 
         return ApiResponse::json($subscription);
     }
@@ -70,35 +57,35 @@ class SubscriptionController extends Controller
     {
         $input = Request::input();
 
-        $subscriptions = $this->subscriptionService->fetchMultiple($input);
+        $subscriptions = $this->service('subscription')->fetchMultiple($input);
 
         return ApiResponse::json($subscriptions);
     }
 
     public function postCreateAndChargeSubscriptionInvoices()
     {
-        $summary = $this->subscriptionService->createAndChargeInvoices();
+        $summary = $this->service('subscription')->createAndChargeInvoices();
 
         return ApiResponse::json($summary);
     }
 
     public function postRetrySubscriptions()
     {
-        $summary = $this->subscriptionService->retrySubscriptions();
+        $summary = $this->service('subscription')->retrySubscriptions();
 
         return ApiResponse::json($summary);
     }
 
     public function postChargeSubscriptionInvoiceManually($invoiceId)
     {
-        $subscription = $this->subscriptionService->chargeSubscriptionInvoiceManually($invoiceId);
+        $subscription = $this->service('subscription')->chargeSubscriptionInvoiceManually($invoiceId);
 
         return ApiResponse::json($subscription);
     }
 
     public function postExpireSubscriptions()
     {
-        $summary = $this->subscriptionService->expireSubscriptions();
+        $summary = $this->service('subscription')->expireSubscriptions();
 
         return ApiResponse::json($summary);
     }
