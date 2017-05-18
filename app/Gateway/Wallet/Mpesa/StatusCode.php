@@ -24,12 +24,7 @@ class StatusCode
         self::TIMEOUT           => 'CBS Timeout',
     ];
 
-    public static function checkIfSuccessStatus($status)
-    {
-        return ($status === self::SUCCESS);
-    }
-
-    public static function getErrorMessage($code)
+    public static function getErrorMessage(string $code)
     {
         if (isset(self::$errorCodeMessageMap[$code]) === true)
         {

@@ -169,7 +169,7 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getVerifyRequestData();
 
-        $verify->response = $this->sendSoapRequest($data,
+        $verify->verifyResponse = $this->sendSoapRequest($data,
                                                    SoapAction::QUERY_API,
                                                    SoapMethod::QUERY_PAYMENT_TRANSACTION);
 
@@ -177,11 +177,11 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'gateway'    => $this->gateway,
-                'response'   => $verify->response,
+                'response'   => $verify->verifyResponse,
                 'payment_id' => $verify->input['payment']['id'],
             ]);
 
-        $verify->verifyResponseContent = $verify->response[ResponseFields::UCF_RESPONSE];
+        $verify->verifyResponseContent = $verify->verifyResponse[ResponseFields::UCF_RESPONSE];
     }
 
     protected function verifyPayment(Verify $verify)
@@ -233,7 +233,7 @@ class Gateway extends Base\Gateway
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // content will contain status 100 or 101
-        if (StatusCode::checkIfSuccessStatus($status) === true)
+        if ($status === StatusCode::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }
@@ -267,18 +267,18 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequestData()
     {
+        $xml = $this->getGatewayRequestArray();
+
         $data = [
-            RequestFields::GATEWAY_PARAM => $this->getGatewayRequestArray(),
-            RequestFields::CHECKSUM      => $this->getCheckSum(),
+            RequestFields::GATEWAY_PARAM => $xml,
+            RequestFields::CHECKSUM      => $this->getChecksum($xml),
         ];
 
         return $data;
     }
 
-    protected function getCheckSum()
+    protected function getChecksum(string $xml)
     {
-        $xml = $this->getGatewayRequestArray();
-
         return hash_hmac(HashAlgo::SHA256, $xml, $this->getSecret());
     }
 
@@ -288,7 +288,24 @@ class Gateway extends Base\Gateway
 
         $xmlRoot = "<PaymentGatewayRequest />";
 
-        return $this->getXmlData($array, $xmlRoot);
+        //
+        // Simple XML Element takes the values of the associate array
+        // as the XML elements. Therefore, we need to flip the array
+        // to ensure that the keys are selected instead.
+        //
+        $gatewayParam = array_flip($array);
+
+        $gatewayParamXml = new SimpleXMLElement($xmlRoot);
+
+        //
+        // Recursively walks through the array and adds each entry in $gatewayParam
+        // into $gatewayParamXml as an XML child of the origin XML root.
+        //
+        array_walk_recursive($gatewayParam, [$gatewayParamXml, 'addChild']);
+
+        $gatewayParamXml = trim(explode('?>', $gatewayParamXml->asXML())[1]);
+
+        return $gatewayParamXml;
     }
 
     protected function getGatewayParamArray()
@@ -495,28 +512,6 @@ class Gateway extends Base\Gateway
         return $phoneUtil->parse($contact, 'IN')->getNationalNumber();
     }
 
-    protected function getXmlData(array $array, string $xmlRoot)
-    {
-        //
-        // Simple XML Element takes the values of the associate array
-        // as the XML elements. Therefore, we need to flip the array
-        // to ensure that the keys are selected instead.
-        //
-        $actionParam = array_flip($array);
-
-        $actionParamXml = new SimpleXMLElement($xmlRoot);
-
-        //
-        // Recursively walks through the array and adds each entry in $actionParam
-        // into $actionParamXml as an XML child of the origin XML root.
-        //
-        array_walk_recursive($actionParam, [$actionParamXml, 'addChild']);
-
-        $actionParamXml = trim(explode('?>', $actionParamXml->asXML())[1]);
-
-        return $actionParamXml;
-    }
-
     protected function sendSoapRequest(array $data, string $soapRoot, string $method)
     {
         $this->trace->info(
@@ -554,7 +549,7 @@ class Gateway extends Base\Gateway
 
     protected function checkGatewayResponseStatus(string $status)
     {
-        if (StatusCode::checkIfSuccessStatus($status) === false)
+        if ($status !== StatusCode::SUCCESS)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,

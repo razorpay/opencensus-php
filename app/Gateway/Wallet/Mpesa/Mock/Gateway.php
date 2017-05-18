@@ -38,7 +38,7 @@ class Gateway extends Mpesa\Gateway
         return $this->callGatewayRequestInternally($method, [$soapRoot => $data]);
     }
 
-    protected function callGatewayRequestInternally($method, $arguments)
+    protected function callGatewayRequestInternally(string $method, array $arguments)
     {
         $server = $this->app['gateway']->server($this->gateway);
 

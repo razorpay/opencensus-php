@@ -658,7 +658,7 @@ class Gateway
         return (in_array($wallet, self::POWER_WALLETS));
     }
 
-    public static function isAuthAndPowerWallet($wallet)
+    public static function isAuthAndPowerWallet(string $wallet)
     {
         return (in_array($wallet, self::AUTH_AND_POWER_WALLETS));
     }

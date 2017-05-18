@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Mpesa;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
+use Symfony\Component\HttpFoundation\Response;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class MpesaGatewayTest extends TestCase
@@ -240,7 +241,7 @@ class MpesaGatewayTest extends TestCase
         $this->assertEquals('failed', $refund['status']);
     }
 
-    protected function refundsTest($amount, $key)
+    protected function refundsTest(int $amount, string $key)
     {
         $data = $this->testData[$key];
 
@@ -262,17 +263,6 @@ class MpesaGatewayTest extends TestCase
             if ($action === Action::AUTHORIZE)
             {
                 $content['statuscode'] = '106';
-            }
-        });
-    }
-
-    protected function mockAuthChecksumFailure()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === Action::AUTH_REQUEST)
-            {
-                $content['checksum'] = 'this_is_a_fake_checksum';
             }
         });
     }
@@ -332,7 +322,7 @@ class MpesaGatewayTest extends TestCase
         });
     }
 
-    protected function runPaymentCallbackFlowWalletMpesa($response, &$callback = null)
+    protected function runPaymentCallbackFlowWalletMpesa(Response $response, string &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 
