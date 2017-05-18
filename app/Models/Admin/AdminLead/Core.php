@@ -65,13 +65,13 @@ class Core extends Base\Core
 
                 if ($org->getCustomCode() === 'rzp')
                 {
-                    $message->from($org->getFromEmail(), $org->getDisplayName());
-                }
-                else
-                {
                     $message->from('admin@razorpay.com');
 
                     $message->cc('notifications@razorpay.com');
+                }
+                else
+                {
+                    $message->from($org->getFromEmail(), $org->getDisplayName());
                 }
 
                 $message->subject($subject);
