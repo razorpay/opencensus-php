@@ -1171,6 +1171,8 @@ class InvoiceTest extends TestCase
 
     public function testGetMultipleInvoicesOnlyEsFields()
     {
+        $this->ba->proxyAuth();
+
         $this->createManyInvoicesForFetchTests();
 
         $esMock = $this->createEsMock(['search']);
@@ -1182,6 +1184,8 @@ class InvoiceTest extends TestCase
 
     public function testGetMultipleInvoicesByQ()
     {
+        $this->ba->proxyAuth();
+
         $this->createManyInvoicesForFetchTests();
 
         $esMock = $this->createEsMock(['search']);
@@ -1193,6 +1197,8 @@ class InvoiceTest extends TestCase
 
     public function testGetMultipleInvoicesOnlyMysqlFields()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice([
                 'id'      => '1000000invoice',
                 'user_id' => '1000000000user',
@@ -1221,6 +1227,8 @@ class InvoiceTest extends TestCase
 
     public function testGetMultipleInvoicesMixedFields()
     {
+        $this->ba->proxyAuth();
+
         $this->startTest();
     }
 
