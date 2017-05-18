@@ -211,17 +211,18 @@ class Core extends Base\Core
     {
         $diff = [];
 
-        $keys = array_keys($original);
+        $keys = array_merge(array_keys($original), array_keys($dirty));
+        $keys = array_values(array_unique($keys));
 
         $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
 
         foreach ($diffKeys as $key)
         {
             // Can be scalar or an array
-            $originalData = $original[$key];
+            $originalData = $original[$key] ?? null;
 
             // Can be scalar or an array
-            $dirtyData = $dirty[$key];
+            $dirtyData = $dirty[$key] ?? null;
 
             $originalDataIsIndexedArray = $dirtyDataIsIndexedArray = false;
 
