@@ -23,7 +23,7 @@ const BatchUploadsListItem = ({ batchupload, mode }) => {
 export default ({ batchuploads, isLoading, mode }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Batch Id</th>

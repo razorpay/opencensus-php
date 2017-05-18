@@ -29,7 +29,7 @@ const PaymentsListItem = ({ payment, hasOrders, orders }) => {
 export default ({ payments, isLoading, hasOrders, orders }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Payment Id</th>

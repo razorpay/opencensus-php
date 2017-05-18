@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header';
@@ -20,6 +21,26 @@ export default class RefundsListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
+        <TetherComponent
+          target="#transactions-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 20px"
+        >
+          <div />{/* required by react-tether */}
+          <ShowWhen
+            featureEnabled="Batchrefunds"
+            myRole="owner manager operations admin finance"
+          >
+            <a
+              class="btn btn-primary pull-right"
+              href="#/app/refunds/batchupload"
+            >
+              Batch Refunds
+            </a>
+          </ShowWhen>
+        </TetherComponent>
+
         <RefundsListFilter
           form="refundListFilter"
           count={this.state.count}

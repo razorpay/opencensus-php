@@ -27,7 +27,7 @@ const RefundsListItem = ({ refund }) => {
 export default ({ refunds, isLoading }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Refund Id</th>

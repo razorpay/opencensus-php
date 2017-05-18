@@ -122,7 +122,7 @@ export default class InvoicesNewContainer extends Component {
     ];
     let invoiceId = this.props.match.params.id;
 
-    if (invoiceId && invoiceId !== 'new') {
+    if (invoiceId) {
       promises.push(this.props.fetchInvoice(invoiceId));
     } else {
       this.props.initializeInvoice();

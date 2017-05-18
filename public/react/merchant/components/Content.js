@@ -17,12 +17,12 @@ export default () => {
       <Route path="/app/payments" component={Transactions} />
       <Route path="/app/refunds" component={Transactions} />
       <Route path="/app/orders" component={Transactions} />
-      <Route path="/app/batch-refunds" component={Transactions} />
 
       <Route path="/app/settlements" component={Settlements} />
 
-      <Route path="/app/invoices" exact={true} component={InvoicingContainer} />
-      <Route path="/app/invoices/:id" component={InvoicesNew} />
+      <Route path="/app/invoices" exact component={InvoicingContainer} />
+      <Route path="/app/invoices/:id(inv_.+)" component={InvoicesNew} />
+      <Route path="/app/invoices/new" component={InvoicesNew} />
       <Route path="/app/customers" component={InvoicingContainer} />
       <Route path="/app/items" component={InvoicingContainer} />
 
