@@ -37,7 +37,6 @@ class Processor extends Base\Core
 
     /**
      * Array of all entities fetched for all the rows in the file
-     * It's a key-value pair. Key - entity id, Value - entity
      */
     protected $allEntities = [];
 
@@ -144,7 +143,7 @@ class Processor extends Base\Core
                 }
                 else
                 {
-                    $this->allEntities[$entity->getId()] = $entity;
+                    $this->allEntities[] = $entity;
                 }
             }
 
@@ -246,9 +245,9 @@ class Processor extends Base\Core
     {
         $failureEntityIds = $successEntityIds = $allEntityIds = [];
 
-        foreach ($this->allEntities as $entityId => $entity)
+        foreach ($this->allEntities as $entity)
         {
-            $allEntityIds[] = $entityId;
+            $entityId = $entity->getId();
 
             if ($entity->isStatusFailed())
             {
