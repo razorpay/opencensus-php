@@ -379,7 +379,7 @@ class Gateway extends Base\Gateway
         return (array)$transactionStatus['RetrieveTransactionStatus_REC'];
     }
 
-    protected function getMerchantId() :string
+    protected function getMerchantId()
     {
         $mid = $this->getLiveMerchantId();
 
@@ -391,7 +391,7 @@ class Gateway extends Base\Gateway
         return $mid;
     }
 
-    protected function getLiveMerchantId() :string
+    protected function getLiveMerchantId()
     {
         return $this->config['live_merchant_id'];
     }
