@@ -303,7 +303,9 @@ class Processor extends Base\Core
 
             $data['profile_link'] = $this->dashboardUrl . '#/app/profile';
 
-            $data['last4'] = $entity->merchant->getRedactedAccountNumber();
+            // bankAccount for Settlelemt entity, and destination for Payout entity
+            $ba = $entity->destination ?? $entity->bankAccount;
+            $data['last4'] = $ba->getRedactedAccountNumber();
 
             $data['merchant_email'] = $entity->merchant->getEmail();
 
@@ -314,7 +316,7 @@ class Processor extends Base\Core
                 $emails = $data['merchant_email'];
                 // $emails = 'priyanshu.chhazed@razorpay.com';
 
-                $message->from('care@razorpay.com', 'Team Razorpay');
+                $message->from('care@razorpay.com', 'Razorpay Settlement Support');
                 // $message->from('priyanshu.chhazed@razorpay.com', 'Razorpay Settlement Support');
 
                 $message->cc('support@razorpay.com');
@@ -325,7 +327,7 @@ class Processor extends Base\Core
 
                 $headers = $message->getHeaders();
 
-                $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
+                $headers->addTextHeader(MailTags::HEADER, MailTags::SETTLEMENT_FAILURE_EMAIL);
             });
         }
     }
