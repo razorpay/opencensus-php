@@ -569,8 +569,12 @@ app.controller('EntitiesCtrl', [
       }
       clear('skip');
 
+      var routeName = 'admin_fetch_entity_by_id';
+      if ($scope.entity_type === 'terminal') {
+        routeName = 'admin_fetch_terminal_by_id';
+      }
       var data = {
-        route_name: 'admin_fetch_entity_by_id',
+        route_name: routeName,
         url_params: {
           '{type}': $scope.entity_type,
           '{id}': $scope.entity.id,

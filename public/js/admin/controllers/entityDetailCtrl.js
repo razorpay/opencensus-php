@@ -44,8 +44,12 @@ app
       };
 
       function fetchEntity(entityType) {
+        var routeName = 'admin_fetch_entity_by_id';
+        if (entityType === 'terminal') {
+          routeName = 'admin_fetch_terminal_by_id';
+        }
         var data = {
-          route_name: 'admin_fetch_entity_by_id',
+          route_name: routeName,
           url_params: {
             '{type}': entityType,
             '{id}': $scope.entity.id,
