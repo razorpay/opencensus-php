@@ -81,6 +81,8 @@ trait Authorize
 
         $retry = false;
 
+        $terminalGatewayInput = $gatewayInput;
+
         $this->runPreGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
         //
@@ -95,8 +97,6 @@ trait Authorize
 
         while ($retryAttempts < $maxRetryAttempts)
         {
-            $terminalGatewayInput = $gatewayInput;
-
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             $payment->associateTerminal($currentTerminal);
