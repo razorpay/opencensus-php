@@ -186,7 +186,7 @@ class Entity extends Base\PublicEntity
 
         $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
 
-        return  $currencySymbol . ' ' . $amount;
+        return $currencySymbol . ' ' . $amount;
     }
 
     public function getPaymentId()

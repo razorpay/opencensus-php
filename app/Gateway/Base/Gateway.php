@@ -830,6 +830,17 @@ class Gateway
         return $this->gateway . '_' . $input['payment']['id'];
     }
 
+    protected function isSecondRecurringPayment(array $input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['terminal']->isNon3DSRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function getMappedAttributes($attributes)
     {
         $attr = [];
