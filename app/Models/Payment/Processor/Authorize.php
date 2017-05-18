@@ -81,6 +81,8 @@ trait Authorize
 
         $retry = false;
 
+        $this->runPreGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
+
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -108,16 +110,6 @@ trait Authorize
 
             $this->segment->trackPayment($payment, TraceCode::GATEWAY_POSTPROCESSING, $segmentCustomProps);
 
-            // TODO: Refactor and move this inside the retry logic=
-            if ($this->canRunOtpPaymentFlow($payment, $input))
-            {
-                $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
-
-                $this->createAnalyticsLog($payment);
-
-                return $request;
-            }
-
             // data for terminal analytics
             $terminalData = [
                 'payment_id'    => $payment['id'],
@@ -128,7 +120,14 @@ trait Authorize
 
             try
             {
-                $request = $this->callGatewayAuthorize($terminalGatewayInput);
+                if ($this->canRunOtpPaymentFlow($payment, $input))
+                {
+                    $request = $this->callGatewayFunction(Action::OTP_GENERATE, $terminalGatewayInput);
+                }
+                else
+                {
+                    $request = $this->callGatewayAuthorize($terminalGatewayInput);
+                }
 
                 $retry = false;
 
@@ -236,7 +235,7 @@ trait Authorize
     {
         $payment->incrementOtpCount();
 
-        $payment->save();
+        $this->repo->save($payment);
 
         $response = [
             'type' => 'otp',
@@ -251,6 +250,30 @@ trait Authorize
         ];
 
         $this->segment->trackPayment($payment, TraceCode::OTP_GENERATE, $response);
+
+        // This is a hack to return direct method for IVR payments
+        if ($payment->isCard() === true)
+        {
+            $templateData = [
+               'data' => $response,
+               'cdn'  => $this->config->get('url.cdn.production')
+            ];
+
+            $content = View::make('gateway.gatewayOtpPostForm')
+                            ->with('data', $templateData)
+                            ->render();
+
+            $response = [
+                'type' => 'otp',
+                'request' => [
+                    'method' => 'direct',
+                    'content' => $content
+                ],
+                'version' => 1,
+                'payment_id' => $payment->getPublicId(),
+                'gateway' => $response['gateway']
+            ];
+        }
 
         return $response;
     }
@@ -779,7 +802,7 @@ trait Authorize
         (new Offer\Core)->validateOfferApplicableOnPayment($payment);
     }
 
-    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
+    protected function runPreGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -790,11 +813,6 @@ trait Authorize
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
-
-        //
-        // Call gateway input
-        //
-        $gatewayInput['payment'] = $payment->toArrayGateway();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
@@ -817,6 +835,14 @@ trait Authorize
         ];
 
         $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
+    }
+
+    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
+    {
+        //
+        // Call gateway input
+        //
+        $gatewayInput['payment'] = $payment->toArrayGateway();
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
