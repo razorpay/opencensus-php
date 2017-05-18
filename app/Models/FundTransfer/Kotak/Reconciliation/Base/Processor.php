@@ -323,7 +323,7 @@ class Processor extends Base\Core
                 $emails = $data['merchant_email'];
                 // $emails = 'priyanshu.chhazed@razorpay.com';
 
-                $message->from('care@razorpay.com', 'Settlement');
+                $message->from('care@razorpay.com', 'Team Razorpay');
                 // $message->from('priyanshu.chhazed@razorpay.com');
 
                 $message->cc('support@razorpay.com');
