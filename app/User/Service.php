@@ -29,6 +29,7 @@ class Service extends Base\Service
 {
     const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
     const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
+    const OAUTH_TOKENS               = 'oauth_tokens';
 
     public function __construct()
     {
@@ -805,14 +806,18 @@ class Service extends Base\Service
     {
         $user = Auth::user();
         $data = null;
-        $error = [];
+        $error = null;
         if ($user !== null)
         {
             $token = str_random(30);
-            $cacheKey = 'oauthtokens.'.$token; //Move to constants
+            $cacheKey = self::OAUTH_TOKENS.'.'.$token;
             $this->cache->put($cacheKey, $user->id.','.$user->getCurrentMerchantId(), 10);
 
             $data['token'] = $token;
+        }
+        else
+        {
+            $error[] = 'User is not signed in.';
         }
 
         return [$error, $data];
@@ -820,21 +825,23 @@ class Service extends Base\Service
 
     public function getDetailsFromToken($token)
     {
-        $error = [];
+        $error = null;
         $data = null;
-        $cacheKey = 'oauthtokens.'.$token;
+        $cacheKey = self::OAUTH_TOKENS.'.'.$token;
 
         if ($this->cache->has($cacheKey) === true)
         {
             $token_data = $this->cache->get($cacheKey);
             $token_data = explode(',', $token_data); //Decide on data to send and structure
-            $data['user_id'] = $token_data[0];
-            $data['merchant_id'] = $token_data[1];
-            $data['user'] = ['id' => '20000000000000', 'name' => 'test', 'email' => 'test@razorpay.com'];
+            $userId = $token_data[0];
+            $merchantId = $token_data[1];
+            $user = (new Entity)->findOrFail($userId);
+            $data['user'] = $user;
+            $data['user']['merchant_id'] = $merchantId;
         }
         else
         {
-            // handle cases
+            $error[] = 'User data not found';
         }
 
         return [$error, $data];
