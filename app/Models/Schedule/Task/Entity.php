@@ -65,6 +65,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $modifiers = array(
+        self::METHOD,
         self::NEXT_RUN_AT,
     );
 
@@ -94,6 +95,15 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Modifiers ---------------------------------------
+
+    protected function modifyMethod(& $input)
+    {
+        // converts the whitespaces to null
+        if (empty($input[self::METHOD]) === true)
+        {
+            $input[self::METHOD] = null;
+        }
+    }
 
     protected function modifyNextRunAt(& $input)
     {
