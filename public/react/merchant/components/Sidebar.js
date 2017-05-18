@@ -94,6 +94,17 @@ export default class Sidebar extends Component {
                 <div class="divider" />
 
                 <MainNavLink
+                  label="Marketplace"
+                  icon="icon-team"
+                  to="/app/accounts"
+                  notMyRole="sellerapp support"
+                  featureEnabled="Marketplace"
+                  beta={true}
+                />
+
+                <div class="divider" />
+
+                <MainNavLink
                   label="Reports"
                   icon="icon-reports"
                   to="/app/reports"
@@ -111,6 +122,7 @@ export default class Sidebar extends Component {
                   icon="icon-team"
                   to="/app/team"
                   myRole="owner"
+                  beta={true}
                 />
                 <MainNavLink
                   label="My Account"

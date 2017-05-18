@@ -7,6 +7,7 @@ export default ({
   featureEnabled,
   icon,
   label,
+  beta = false,
   ...linkProps
 }) => {
   return (
@@ -18,6 +19,7 @@ export default ({
       <NavLink {...linkProps}>
         <i class={`icon ${icon}`} />
         {label}
+        {beta ? <span class="badge bg-success pull-right">beta</span> : null}
       </NavLink>
     </ShowWhen>
   );
