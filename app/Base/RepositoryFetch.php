@@ -381,7 +381,8 @@ trait RepositoryFetch
 
     public function isMerchantIdRequiredForFetch()
     {
-        if ($this->auth->isPrivilegeAuth() === true)
+        if (($this->auth->isPrivilegeAuth() === true) or
+            ($this->auth->isAdminAuth() === true))
         {
              return false;
         }
