@@ -410,13 +410,6 @@ class AdminController extends Controller
         }
     }
 
-    public function getEntityById($mode, $entity, $id)
-    {
-        list($error, $data) = (new Admin\Service)->fetchEntityById($mode, $entity, $id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getAdmins()
     {
         $admins = (new Admin\Service)->getAdmins();
