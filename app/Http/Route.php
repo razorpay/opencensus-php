@@ -1115,6 +1115,8 @@ final class Route
         'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
+        'admin_fetch_terminal_by_id'       => '*',
+        'merchants_update_hold_funds'      => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
     ];
 
     public static $direct = [
