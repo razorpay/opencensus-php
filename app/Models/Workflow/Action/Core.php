@@ -144,7 +144,6 @@ class Core extends Base\Core
         $lastLevel = $this->repo->workflow_step
                                 ->getLastLevelOfWorkflow($workflowId);
 
-        // Value being returned is a string. Needs to be cast to int.
         if ($lastLevel !== $action->getCurrentLevel())
         {
             return false;
