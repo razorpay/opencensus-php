@@ -145,7 +145,7 @@ class Core extends Base\Core
                                 ->getLastLevelOfWorkflow($workflowId);
 
         // Value being returned is a string. Needs to be cast to int.
-        if ((int) $lastLevel !== $action->getCurrentLevel())
+        if ($lastLevel !== $action->getCurrentLevel())
         {
             return false;
         }
