@@ -3,6 +3,7 @@
 namespace RZP\Services\Mock;
 
 use RZP\Services\MaxMind as BaseMaxmind;
+use RZP\Models\Payment\Entity as Payment;
 
 class MaxMind extends BaseMaxmind
 {
@@ -13,7 +14,7 @@ class MaxMind extends BaseMaxmind
         ;
     }
 
-    public function query($input)
+    public function query(Payment $payment)
     {
         return null;
     }
