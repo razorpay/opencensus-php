@@ -351,33 +351,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function putEditBankDetails($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postEditBankDetails($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postEditMerchantComment($id)
-    {
-        $comment = Input::get('comment');
-
-        list($error, $data) = (new Admin\Service)->postEditMerchantComment($id, $comment);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postAddAdjustment($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postAddAdjustment($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getPaymentRefunds($mode, $paymentId)
     {
         list($error, $data) = (new Admin\Service)->getPaymentRefunds($mode, $paymentId);
@@ -435,13 +408,6 @@ class AdminController extends Controller
         {
             return AppResponse::jsonResponse($error, $data);
         }
-    }
-
-    public function getEntityById($mode, $entity, $id)
-    {
-        list($error, $data) = (new Admin\Service)->fetchEntityById($mode, $entity, $id);
-
-        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getAdmins()
@@ -622,16 +588,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function postSetMerchantInternational($merchantId)
-    {
-        $input = Input::only('international');
-
-        list($error, $response) = (new Admin\Service)
-            ->postSetMerchantInternational($merchantId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     public function getMerchantTags($merchantId)
     {
         list($error, $response) = (new Admin\Service)
@@ -761,15 +717,6 @@ class AdminController extends Controller
     public function getScheduleList()
     {
         list($error, $response) = (new Admin\Service)->getScheduleList();
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function postMerchantSchedule($id)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->assignMerchantSchedule($id, $input);
 
         return AppResponse::jsonResponse($error, $response);
     }

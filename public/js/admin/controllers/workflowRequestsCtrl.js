@@ -50,19 +50,10 @@ app.controller('WorkflowRequestsCtrl', [
     $scope.regenerateList = function() {
       var type = $scope.workflow_request_type;
 
-      switch (type) {
-        case 'checker':
-          $scope.getCheckerActions();
-          break;
-        case 'closer':
-          $scope.getActionsByMakerAndType('closed');
-          break;
-        case 'open':
-          $scope.getActionsByMakerAndType('open');
-          break;
-        case 'all':
-        default:
-          $scope.getActionsByMakerAndType('all');
+      if (type === 'checker') {
+        $scope.getCheckerActions();
+      } else {
+        $scope.getActionsByMakerAndType(type);
       }
     };
 

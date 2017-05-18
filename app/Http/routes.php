@@ -191,11 +191,8 @@ Route::group(['middleware' => ['web']], function () {
         // Admin merchant actions
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
-        Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
-        Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
         Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
-        Route::post('/admin/merchants/{id}/international', 'AdminController@postSetMerchantInternational');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
 
@@ -239,7 +236,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
         Route::get('admin/schedule/list', 'AdminController@getScheduleList');
-        Route::post('admin/merchant/{id}/schedules', 'AdminController@postMerchantSchedule');
 
         Route::group(['middleware'  =>  ['admin', 'superadmin', 'admin_access']], function()
         {
@@ -254,15 +250,11 @@ Route::group(['middleware' => ['web']], function () {
         });
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-        Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
 
         Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities')
                 ->name('admin_fetch_entity');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')
-                ->name('admin_fetch_entity');
-        // This is a very generic route and needs to be defined below
-        Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById')
                 ->name('admin_fetch_entity');
 
         // Upload logos for orgs
