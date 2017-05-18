@@ -64,8 +64,6 @@ class ReportsJob extends Job implements ShouldQueue
 
             $reportType = new BasicEntityReport($this->entity);
 
-            $reportType->setMode($this->mode);
-
             $reportType->setMerchant($this->merchantId);
 
             $reportType->generateReport($this->input);
@@ -86,6 +84,13 @@ class ReportsJob extends Job implements ShouldQueue
         $app = App::getFacadeRoot();
 
         $this->trace = $app['trace'];
+
+        //
+        // Set application mode as well as database connection with given mode.
+        //
+        $app['rzp.mode'] = $this->mode;
+
+        \Database\DefaultConnection::set($this->mode);
     }
 
     /**

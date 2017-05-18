@@ -35,27 +35,6 @@ class BaseReport extends Base\Core
         }
     }
 
-    /**
-     * Default mode is live
-     * Need to set this explicitly because, once pushed to queue
-     * in test mode, the default mode was being picked.
-     *
-     * This sets the mode in core and repo connection
-     * to the corresponding mode
-     *
-     * @param $mode string
-     * @return void
-     */
-    public function setMode(string $mode)
-    {
-        if ($mode !== null)
-        {
-            $this->mode = $mode;
-
-            $this->repo->connection($mode);
-        }
-    }
-
     protected function getTimestamps($input): array
     {
         $year = (int) $input['year'];
