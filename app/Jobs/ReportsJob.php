@@ -15,6 +15,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 class ReportsJob extends Job implements ShouldQueue
 {
+    use InteractsWithQueue, SerializesModels;
+
     const MAX_ALLOWED_ATTEMPTS = 5;
     const RELEASE_WAIT_SECS    = 60;
 
@@ -27,7 +29,7 @@ class ReportsJob extends Job implements ShouldQueue
 
     protected $merchantId;
 
-    use InteractsWithQueue, SerializesModels;
+    protected $mode;
 
     /**
      * Create a new job instance.
@@ -35,13 +37,18 @@ class ReportsJob extends Job implements ShouldQueue
      * @return void
      */
     public function __construct(
-        array $input, string $entity, string $merchantId)
+        array $input,
+        string $entity,
+        string $merchantId,
+        string $mode)
     {
         $this->input = $input;
 
         $this->entity = $entity;
 
         $this->merchantId = $merchantId;
+
+        $this->mode = $mode;
     }
 
     /**
@@ -56,6 +63,8 @@ class ReportsJob extends Job implements ShouldQueue
             $this->init();
 
             $reportType = new BasicEntityReport($this->entity);
+
+            $reportType->setMode($this->mode);
 
             $reportType->setMerchant($this->merchantId);
 
