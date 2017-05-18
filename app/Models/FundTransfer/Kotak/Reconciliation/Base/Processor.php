@@ -297,33 +297,25 @@ class Processor extends Base\Core
 
         foreach ($this->firstFailureEntities as $merchantId => $entity)
         {
-            $remarks = $entity->getRemarks();
+            $data['merchant_id'] = $merchantId;
 
-            $profileLink = $this->dashboardUrl . '#/app/profile';
+            $data['remarks'] = $entity->getRemarks();
 
-            $last4 = $entity->merchant->bankAccount->getLast4DigitsOfAccountNumber();
+            $data['profile_link'] = $this->dashboardUrl . '#/app/profile';
+
+            $data['last4'] = $entity->merchant->getRedactedAccountNumber();
 
             $data['merchant_email'] = $entity->merchant->getEmail();
 
             $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
 
-            $msg = 'Hi,<br><br>';
-            $msg .= 'This is to bring to your notice that the settlements are failing to your merchant account: ' . $merchantId . '. The settlements to your bank account is failing with the error: ' . $remarks . '<br><br>';
-            $msg .= 'The settlement was initiated to your bank account number ending with: ' . $last4 . '. We would request you to check if the bank account details mentioned here ' . $profileLink . ' are accurate and also verify with your bank if the account is active.<br><br>';
-            $msg .= 'In case of any discrepancy in the bank account details or if you would like us to update the bank account details, kindly respond to this email with the bank account number, IFSC code and the bank account statement for the past 3 months.<br><br>';
-            $msg .= 'Note: To avoid any further settlement failures, your funds will be on hold. We will release the funds once we have updated the details.<br><br>';
-            $msg .= 'Regards,<br>';
-            $msg .= 'Team Razorpay';
-
-            $data['body'] = $msg;
-
-            Mail::queue('emails.message', $data, function($message) use ($data)
+            Mail::queue('emails.merchant.settlement_failure', $data, function($message) use ($data)
             {
                 $emails = $data['merchant_email'];
                 // $emails = 'priyanshu.chhazed@razorpay.com';
 
                 $message->from('care@razorpay.com', 'Team Razorpay');
-                // $message->from('priyanshu.chhazed@razorpay.com', 'Team Razorpay');
+                // $message->from('priyanshu.chhazed@razorpay.com', 'Razorpay Settlement Support');
 
                 $message->cc('support@razorpay.com');
 
