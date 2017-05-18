@@ -174,26 +174,30 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getRequestData(array $input, array $payment = [])
+    protected function getRequestData(array $input, $payment = [])
     {
         $data = [
-            RequestFields::MODE       => Constants::PAY,
             RequestFields::PAYEE_ID   => $this->getPid(),
             RequestFields::USER_TYPE  => User::RETAIL,
         ];
 
         if ($this->action === Action::AUTHORIZE)
         {
+            $data[RequestFields::MODE] = Constants::PAY;
+
             $data[RequestFields::ENCRYPTED_STRING] = $this->getAuthorizeEncryptedString($input);
         }
         else
         {
+            $data[RequestFields::MODE] = Constants::VERIFY;
+
             $data[RequestFields::ENCRYPTED_STRING] =  $this->getVerifyEncryptedString($input, $payment);
         }
 
+        return $data;
     }
 
-    protected function getVerifyEncryptedString(array $input, array $payment): string
+    protected function getVerifyEncryptedString(array $input, $payment): string
     {
         $data = [
             RequestFields::ITEM_CODE          => $input['payment']['id'],
