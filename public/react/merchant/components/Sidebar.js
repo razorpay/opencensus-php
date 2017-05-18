@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { NavLink, withRouter } from 'react-router-dom';
-import ShowWhen from 'merchant/components/ShowWhen';
+import { withRouter } from 'react-router-dom';
+import MainNavLink from 'merchant/components/MainNavLink';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/app\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/app\/(profile|activation|credits|addfunds)/;
@@ -57,66 +57,72 @@ export default class Sidebar extends Component {
           {!isMerchant
             ? null
             : <div class="nav">
-                <ShowWhen notMyRole="sellerapp">
-                  <NavLink exact to="/">
-                    <i class="icon icon-chart" />
-                    Home
-                  </NavLink>
-                </ShowWhen>
-
-                <ShowWhen notMyRole="sellerapp">
-                  <NavLink to={routes.transactions}>
-                    <i class="icon icon-transactions" />
-                    Transactions
-                  </NavLink>
-                </ShowWhen>
-
-                <ShowWhen notMyRole="sellerapp">
-                  <NavLink to="/app/settlements">
-                    <i class="icon icon-done-all" />
-                    Settlements
-                  </NavLink>
-                </ShowWhen>
-
-                <div class="divider" />
-
-                <NavLink to={routes.invoices}>
-                  <i class="icon icon-invoices" />
-                  Invoices
-                </NavLink>
-
-                <NavLink to="/app/customers">
-                  <i class="icon icon-people" />
-                  Customers
-                </NavLink>
+                <MainNavLink
+                  label="Home"
+                  icon="icon-chart"
+                  to="/"
+                  exact
+                  notMyRole="sellerapp"
+                />
+                <MainNavLink
+                  label="Transactions"
+                  icon="icon-transactions"
+                  to={routes.transactions}
+                  notMyRole="sellerapp"
+                />
+                <MainNavLink
+                  label="Settlements"
+                  icon="icon-done-all"
+                  to="/app/settlements"
+                  notMyRole="sellerapp"
+                />
 
                 <div class="divider" />
 
-                <ShowWhen notMyRole="sellerapp">
-                  <NavLink to="/app/reports">
-                    <i class="icon icon-reports" />
-                    Reports
-                  </NavLink>
-                </ShowWhen>
+                <MainNavLink
+                  label="Invoices"
+                  icon="icon-invoices"
+                  to={routes.invoices}
+                />
+                <MainNavLink
+                  label="Customers"
+                  icon="icon-people"
+                  to="/app/customers"
+                  notMyRole="sellerapp"
+                />
 
-                <ShowWhen myRole="owner">
-                  <NavLink to="/app/team">
-                    <i class="icon icon-team" />
-                    Manage Team
-                  </NavLink>
-                </ShowWhen>
+                <div class="divider" />
 
-                <NavLink to={routes.account}>
-                  <i class="icon icon-account" />
-                  My Account
-                </NavLink>
-
-                <ShowWhen myRole="owner manager admin">
-                  <NavLink to={routes.settings}>
-                    <i class="icon icon-settings" />
-                    Settings
-                  </NavLink>
-                </ShowWhen>
+                <MainNavLink
+                  label="Reports"
+                  icon="icon-reports"
+                  to="/app/reports"
+                  notMyRole="sellerapp"
+                />
+                <MainNavLink
+                  label="Referrals"
+                  icon="icon-reports"
+                  to="/app/reports"
+                  notMyRole="sellerapp support"
+                  featureEnabled="Referral"
+                />
+                <MainNavLink
+                  label="Manage Team"
+                  icon="icon-team"
+                  to="/app/team"
+                  myRole="owner"
+                />
+                <MainNavLink
+                  label="My Account"
+                  icon="icon-account"
+                  to={routes.account}
+                />
+                <MainNavLink
+                  label="Settings"
+                  icon="icon-settings"
+                  to={routes.settings}
+                  myRole="owner manager admin"
+                />
               </div>}
         </nav>
       </div>
