@@ -21,9 +21,16 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_REQUEST, $traceData);
 
-        return $this->repo->transaction(function() use ($input, $merchant)
+        $adj = (new Adjustment\Entity)->build($input);
+
+        // Workflow
+        $this->app['workflow']
+             ->setEntityAndId($adj->getEntity(), $merchant->getId())
+             ->handle((new \stdClass), $adj);
+
+        return $this->repo->transaction(function() use ($input, $adj, $merchant)
             {
-                $adj = $this->createAdjInTransaction($input, $merchant);
+                $adj = $this->createAdjInTransaction($input, $adj, $merchant);
 
                 $this->trace->info(
                     TraceCode::ADJUSTMENT_CREATE_SUCCESS,
@@ -33,7 +40,7 @@ class Core extends Base\Core
             });
     }
 
-    protected function createAdjInTransaction($input, $merchant)
+    protected function createAdjInTransaction($input, $adj, $merchant)
     {
         $updateEscrow = true;
 
@@ -50,7 +57,6 @@ class Core extends Base\Core
             unset($input['update_escrow']);
         }
 
-        $adj = (new Adjustment\Entity)->build($input);
         $adj->setChannel(Settlement\Channel::KOTAK);
 
         $adj->merchant()->associate($merchant);
