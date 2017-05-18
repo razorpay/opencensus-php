@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use phpseclib\Crypt\AES;
 use RZP\Models\Payment;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
@@ -14,6 +13,8 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+
+use phpseclib\Crypt\AES;
 
 class Gateway extends Base\Gateway
 {
@@ -205,12 +206,12 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $data = [
-            RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
+            RequestFields::ITEM_CODE          => $input['payment']['id'],
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::AMOUNT             => $this->formatAmount($input['payment']['amount']),
             RequestFields::CURRENCY_CODE      => Currency::INR,
             RequestFields::CONFIRMATION       => Constants::YES,
-            RequestFields::RETURN_URL         => "na",
+            RequestFields::RETURN_URL         => 'na',
             RequestFields::BANK_REFERENCE_ID  => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
         ];
 

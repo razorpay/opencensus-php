@@ -17,7 +17,7 @@ class Validator extends Base\Validator
     protected static $authDecryptedRules = [
         RequestFields::AMOUNT              => 'required',
         RequestFields::MERCHANT_REFERENCE  => 'required',
-        RequestFields::CURRENCY_CODE       => 'required',
+        RequestFields::CURRENCY_CODE       => 'required|in:INR',
         RequestFields::RETURN_URL          => 'required',
         RequestFields::ITEM_CODE           => 'required',
         RequestFields::CONFIRMATION       =>  'required|in:Y,N',
