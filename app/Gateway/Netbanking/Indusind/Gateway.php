@@ -38,7 +38,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attrs);
 
-        $content = $this->getAuthorizeRequestData($input);
+        $content = $this->getRequestData($input);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -169,12 +169,12 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        $data = $this->getVerifyRequestData($input, $payment);
+        $data = $this->getRequestData($input, $payment);
 
         return $data;
     }
 
-    protected function getAuthorizeRequestData(array $input): array
+    protected function getRequestData(array $input, array $payment = [])
     {
         $data = [
             RequestFields::MODE       => Constants::PAY,
@@ -182,22 +182,15 @@ class Gateway extends Base\Gateway
             RequestFields::USER_TYPE  => User::RETAIL,
         ];
 
-        $data[RequestFields::ENCRYPTED_STRING] = $this->getAuthorizeEncryptedString($input);
+        if ($this->action === Action::AUTHORIZE)
+        {
+            $data[RequestFields::ENCRYPTED_STRING] = $this->getAuthorizeEncryptedString($input);
+        }
+        else
+        {
+            $data[RequestFields::ENCRYPTED_STRING] =  $this->getVerifyEncryptedString($input, $payment);
+        }
 
-        return $data;
-    }
-
-    protected function getVerifyRequestData(array $input, array $payment): array
-    {
-        $data = [
-            RequestFields::MODE         => Constants::VERIFY,
-            RequestFields::PAYEE_ID     => $this->getPid(),
-            RequestFields::USER_TYPE    => User::RETAIL,
-        ];
-
-        $data[RequestFields::ENCRYPTED_STRING] = $this->getVerifyEncryptedString($input, $payment);
-
-        return $data;
     }
 
     protected function getVerifyEncryptedString(array $input, array $payment): string
