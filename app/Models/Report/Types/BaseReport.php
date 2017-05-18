@@ -40,6 +40,9 @@ class BaseReport extends Base\Core
      * Need to set this explicitly because, once pushed to queue
      * in test mode, the default mode was being picked.
      *
+     * This sets the mode in core and repo connection
+     * to the corresponding mode
+     *
      * @param $mode string
      * @return void
      */
@@ -48,6 +51,8 @@ class BaseReport extends Base\Core
         if ($mode !== null)
         {
             $this->mode = $mode;
+
+            $this->repo->connection($mode);
         }
     }
 
