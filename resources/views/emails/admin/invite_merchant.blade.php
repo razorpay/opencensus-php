@@ -2,7 +2,7 @@ Hi!
 
 <br><br>
 
-{{ $adminName }} has invited you to sign up for HDFC Merchant Services. <!-- TODO Parse invitation array and fill correct data -->
+{{ $adminName }} has invited you to sign up for {{ $businessName }} Merchant Services. <!-- TODO Parse invitation array and fill correct data -->
 
 <br><br>
 
@@ -19,9 +19,9 @@ See you soon!
 <div>
 	<p>
 	--<br/>
-	The Razorpay Team <br/>
+	The {{ $businessName }} Team <br/>
 	 <!--TODO Add respective org name here and in following details -->
-	<a href="mailto:contact@razorpay.com">contact@razorpay.com</a>
+	<a href="mailto: {{ $signatureEmail }}">{{ $signatureEmail }}</a>
 	</p>
 	<a href="https://razorpay.com" target="_blank">
 		<img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">

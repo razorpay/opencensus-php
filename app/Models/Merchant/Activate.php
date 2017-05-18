@@ -86,9 +86,13 @@ class Activate extends Base\Core
      */
     protected function sendActivationEmail($merchant, $plan)
     {
+        $org = $merchant->org;
+
         $subjectName = $merchant->getBillingLabelElseName();
 
-        $subject = "Razorpay | Account activated for $subjectName";
+        $businessName = $org->getBusinessName();
+
+        $subject = "$businessName | Account activated for $subjectName";
 
         $plan = $plan->toArrayPublic();
 
@@ -100,6 +104,8 @@ class Activate extends Base\Core
             'rules'    => $this->formatPricingRules($rules),
             'subject'  => $subject,
         ];
+
+        $data['merchant']['org']['hostname'] = $org->hostnames->first()->getHostname();
 
         $config = $this->app->config->get('applications.mailgun');
 
@@ -119,8 +125,19 @@ class Activate extends Base\Core
             function ($message) use ($data, $config)
             {
                 $message->to($data['merchant']['email']);
-                $message->from($config['from_email'], $config['from_name']);
-                $message->cc('notifications@razorpay.com');
+                $message->from($data['from_email'], $data['from_name']);
+
+                if ($data['merchant']['org']['custom_code'] === 'rzp')
+                {
+                    $message->from($config['from_email'], $config['from_name']);
+                    $message->cc('notifications@razorpay.com');
+                }
+                else
+                {
+                    $message->from($data['merchant']['org']['from_email'],
+                        $data['merchant']['org']['display_name']);
+                }
+
                 $message->subject($data['subject']);
 
                 $headers = $message->getHeaders();

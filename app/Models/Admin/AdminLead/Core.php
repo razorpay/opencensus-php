@@ -33,7 +33,9 @@ class Core extends Base\Core
 
     public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation)
     {
-        $orgName = $admin->org->getDisplayName();
+        $org = $admin->org;
+
+        $orgName = $org->getDisplayName();
 
         // date format = 6th July 2015
         $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
@@ -46,8 +48,10 @@ class Core extends Base\Core
         $contactName = $invitation->getFormData()['contact_name'] ?? '';
 
         $data = [
-            'invitation' => $invitation->toArrayPublic(),
-            'adminName'  => $admin->getName(),
+            'invitation'     => $invitation->toArrayPublic(),
+            'adminName'      => $admin->getName(),
+            'businessName'   => $org->getBusinessName(),
+            'signatureEmail' => $org->getSignatureEmail()
         ];
 
         $data['invitation']['token'] = $invitation->getToken();
@@ -55,12 +59,20 @@ class Core extends Base\Core
         Mail::queue(
             'emails.admin.invite_merchant',
             $data,
-            function ($message) use ($subject, $email, $contactName)
+            function ($message) use ($subject, $email, $contactName, $org)
             {
                 $message->to($email, $contactName);
 
-                $message->from('admin@razorpay.com');
-                $message->cc('notifications@razorpay.com');
+                if ($org->getCustomCode() === 'rzp')
+                {
+                    $message->from($org->getFromEmail(), $org->getDisplayName());
+                }
+                else
+                {
+                    $message->from('admin@razorpay.com');
+
+                    $message->cc('notifications@razorpay.com');
+                }
 
                 $message->subject($subject);
 
