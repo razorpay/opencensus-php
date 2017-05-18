@@ -28,6 +28,8 @@ class TransactionTest extends TestCase
         $testData = $this->testData['testGetAdjustment'];
         $testData['request']['url'] = '/adjustments/'.$adj['id'];
 
+
+        $this->ba->proxyAuth();
         $adj = $this->runRequestResponseFlow($testData);
 
         $txn = $this->getLastTransaction(true);
