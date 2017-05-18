@@ -96,6 +96,8 @@ class Entity extends Base\PublicEntity
 
     const DEFAULT_CURRENCY      = 'INR';
 
+    const ACQUIRER              = 'acquirer';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -236,6 +238,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::ACQUIRER,
         // self::SUBSCRIPTION_ID,
         self::CREATED_AT,
     ];
@@ -249,11 +252,12 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::TOKEN_ID,
         self::SUBSCRIPTION_ID,
+        self::ACQUIRER,
     ];
 
     protected $guarded = [self::ID];
 
-    protected $appends = [self::PUBLIC_ID, self::CAPTURED];
+    protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER];
 
     protected static $modifiers = [
         self::EMAIL,
@@ -776,6 +780,48 @@ class Entity extends Base\PublicEntity
     protected function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
+    }
+
+    protected function getAcquirerAttribute()
+    {
+        switch ($this->getAttribute(self::METHOD))
+        {
+            case Method::CARD:
+
+                $acquirer = [
+                    'authorization_code' => $this->getAttribute(self::APPROVAL_CODE),
+                    'rrn' => $this->getAttribute(self::REFERENCE1),
+                ];
+                break;
+
+            case Method::NETBANKING:
+
+                $acquirer = [
+                    'rrn' => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Method::WALLET:
+
+                $acquirer = [
+
+                ];
+                break;
+
+            case Method::UPI:
+
+                $acquirer = [
+                    'rrn' => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            default:
+
+                $acquirer = [];
+                break;
+        }
+
+        return $acquirer;
     }
 
     protected function getOtpAttemptsAttribute()
@@ -1496,6 +1542,17 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[self::SUBSCRIPTION_ID]);
+        }
+    }
+
+    public function setPublicAcquirerAttribute(array & $array)
+    {
+        $merchantId = '';
+
+        // We are only doing this for policy bazar right now
+        if ($this->getAttribute(self::MERCHANT_ID) === $merchantId)
+        {
+            unset($array[self::ACQUIRER]);
         }
     }
 

@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Base\Action;
@@ -106,5 +107,14 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         }
 
         return true;
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankPaymentId()
+            ]
+        ];
     }
 }
