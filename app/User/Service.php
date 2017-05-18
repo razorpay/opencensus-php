@@ -781,6 +781,8 @@ class Service extends Base\Service
 
             $user->confirm();
 
+            $this->confirmUserOnApi($user->id);
+
             $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
 
             $this->subscribeToMailingList($user);
