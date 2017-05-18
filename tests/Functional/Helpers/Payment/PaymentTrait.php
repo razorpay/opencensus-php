@@ -289,7 +289,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doS2sRecurringPayment($payment = null, $server = null)
+    protected function doS2SRecurringPayment($payment = null, $server = null)
     {
         if ($payment === null)
         {

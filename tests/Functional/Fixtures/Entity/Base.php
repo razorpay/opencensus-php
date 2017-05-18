@@ -7,7 +7,6 @@ use Eloquent;
 use RZP\Models;
 use RZP\Constants\Entity as E;
 use RZP\Tests\TestDummy\Factory;
-use RZP\Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;
 
 class Base
@@ -31,6 +30,7 @@ class Base
         'token'             => \RZP\Models\Customer\Token\Entity::class,
         'device'            => \RZP\Models\Device\Entity::class,
         'payout'            => \RZP\Models\Payout\Entity::class,
+        'addon'             => \RZP\Models\Plan\Subscription\Addon\Entity::class,
         'refund'            => \RZP\Models\Payment\Refund\Entity::class,
         'address'           => \RZP\Models\Address\Entity::class,
         'balance'           => \RZP\Models\Merchant\Balance\Entity::class,

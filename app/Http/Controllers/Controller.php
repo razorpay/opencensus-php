@@ -10,6 +10,9 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 use App;
+use Request;
+
+use RZP\Constants\Entity as E;
 
 abstract class Controller extends BaseController
 {
@@ -20,7 +23,19 @@ abstract class Controller extends BaseController
     protected $repo;
     protected $route;
 
+    /**
+     * Service class name which this controller usage
+     *
+     * @var string
+     */
     protected $service;
+
+    /**
+     * HTTP request input
+     *
+     * @var array
+     */
+    protected $input;
 
     public function __construct()
     {
@@ -35,6 +50,8 @@ abstract class Controller extends BaseController
         $this->route = $this->app['api.route'];
 
         $this->ba = $this->app['basicauth'];
+
+        $this->input = Request::all();
     }
 
     protected function getCheckoutCommon(array $input = [])
@@ -72,6 +89,13 @@ abstract class Controller extends BaseController
         return $data;
     }
 
+    /**
+     * Returns the service instance.
+     *
+     * @param string|null $service
+     *
+     * @return \RZP\Models\Base\Service
+     */
     protected function service($service = null)
     {
         if ($service !== null)

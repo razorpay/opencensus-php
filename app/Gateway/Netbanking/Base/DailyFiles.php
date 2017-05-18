@@ -64,7 +64,7 @@ class DailyFiles
 
         $count = $refunds->count();
 
-        if ($count == 0)
+        if ($count === 0)
         {
             return [
                 'total_amount'   => 0,
@@ -138,18 +138,18 @@ class DailyFiles
         return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
-    protected function sendMail($amount, $claimsFile, $refundsFile, $email = null)
+    protected function sendMail($amount, $claimsFileData, $refundsFileData, $email = null)
     {
         $bankName = $this->getBankName();
 
         $emails = $this->getEmailsToSendTo($email);
 
         $data = [
-            'amount'      => $amount,
-            'claimsFile'  => $claimsFile,
-            'refundsFile' => $refundsFile,
-            'bankName'    => $bankName,
-            'emails'      => $emails,
+            'amount'          => $amount,
+            'claimsFileData'  => $claimsFileData,
+            'refundsFileData' => $refundsFileData,
+            'bankName'        => $bankName,
+            'emails'          => $emails,
         ];
 
         $dailyFileMail = new DailyFileMail($data);

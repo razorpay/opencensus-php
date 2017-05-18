@@ -34,7 +34,7 @@ class Name
     const EDIT_MERCHANT_TAGS              = 'edit_merchant_tags';
     const EDIT_MERCHANT_FEATURES          = 'edit_merchant_features';
     const EDIT_MERCHANT_COMMENTS          = 'edit_merchant_comments';
-    const EDIT_MERCHANT_BANKS             = 'edit_merchant_banks';
+    const EDIT_MERCHANT_BANK_DETAIL       = 'edit_merchant_bank_detail';
     const EDIT_IIN_RULE                   = 'edit_iin_rule';
     const CREATE_MERCHANT_ADJUSTMENTS     = 'create_merchant_adjustments';
     const EDIT_ACTIVATE_MERCHANT          = 'edit_activate_merchant';
@@ -75,6 +75,7 @@ class Name
     const EDIT_MERCHANT_RELEASE_FUNDS     = 'edit_merchant_release_funds';
     const EDIT_MERCHANT_ENABLE_RECEIPT    = 'edit_merchant_enable_receipt';
     const EDIT_MERCHANT_DISABLE_RECEIPT   = 'edit_merchant_disable_receipt';
+    const EDIT_BULK_MERCHANT_HOLD_FUNDS   = 'edit_bulk_merchant_hold_funds';
     const ASSIGN_MERCHANT_TERMINAL        = 'assign_merchant_terminal';
     const ASSIGN_MERCHANT_BANKS           = 'assign_merchant_banks';
     const ADD_MERCHANT_ADJUSTMENT         = 'add_merchant_adjustment';
@@ -138,9 +139,13 @@ class Name
     const DELETE_WORKFLOW                 = 'delete_workflow';
 
     public static $actionMap = [
-        Merchant\Action::ARCHIVE   => self::EDIT_MERCHANT_ARCHIVE,
-        Merchant\Action::UNARCHIVE => self::EDIT_MERCHANT_UNARCHIVE,
-        Merchant\Action::SUSPEND   => self::EDIT_MERCHANT_SUSPEND,
-        Merchant\Action::UNSUSPEND => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::ARCHIVE            => self::EDIT_MERCHANT_ARCHIVE,
+        Merchant\Action::UNARCHIVE          => self::EDIT_MERCHANT_UNARCHIVE,
+        Merchant\Action::SUSPEND            => self::EDIT_MERCHANT_SUSPEND,
+        Merchant\Action::UNSUSPEND          => self::EDIT_MERCHANT_UNSUSPEND,
+        Merchant\Action::LOCK               => self::EDIT_MERCHANT_LOCK_ACTIVATION,
+        Merchant\Action::UNLOCK             => self::EDIT_MERCHANT_UNLOCK_ACTIVATION,
+        Merchant\Action::EDIT_COMMENT       => self::EDIT_MERCHANT_COMMENTS,
+        Merchant\Action::EDIT_INTERNATIONAL => self::EDIT_MERCHANT_INTERNATIONAL,
     ];
 }

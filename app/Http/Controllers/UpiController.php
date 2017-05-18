@@ -20,7 +20,7 @@ class UpiController extends Controller
         $this->core = new Upi\Core;
 
         $body = Request::getContent();
-        if (substr($id, 0, 3) == 'RAY')
+        if (substr($id, 0, 3) === 'RAY')
         {
             $forwardUrl = 'http://api2.razorpay.dev/' . Request::path();
 

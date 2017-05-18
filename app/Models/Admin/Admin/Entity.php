@@ -13,6 +13,9 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base\Traits\RevisionableTrait;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Permission;
 
 class Entity extends Base\Entity
 {
@@ -74,6 +77,7 @@ class Entity extends Base\Entity
         self::NAME,
         self::USERNAME,
         self::PASSWORD,
+        self::PASSWORD_CONFIRMATION,
         self::REMEMBER_TOKEN,
         self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
@@ -494,7 +498,6 @@ class Entity extends Base\Entity
 
     /**
      * Get all relations to the array
-     *
      */
     public function getRelationsForDiffer() : array
     {
@@ -506,8 +509,36 @@ class Entity extends Base\Entity
 
     public function hasPermission($permission)
     {
+        $app = App::getFacadeRoot();
+
+        if ($app['api.route']->isWorkflowExecuteCall() === true)
+        {
+            return true;
+        }
+
         $adminPermissions = $this->getPermissionsList();
 
-        return in_array($permission, $adminPermissions);
+        return (in_array($permission, $adminPermissions, true) === true);
+    }
+
+    public function hasPermissionOrFail($permission)
+    {
+        $hasPermission = $this->hasPermission($permission);
+
+        if ($hasPermission === false)
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
+
+        // $hasPermission === true
+        return $hasPermission;
+    }
+
+    public function hasMerchantActionPermissionOrFail($action)
+    {
+        $routePermission = Permission\Name::$actionMap[$action];
+
+        return $this->hasPermissionOrFail($routePermission);
     }
 }

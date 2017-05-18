@@ -97,7 +97,6 @@ class Validator extends Base\Validator
     protected static $firstDataTerminalRules = [
         Entity::GATEWAY                     => 'required|in:first_data',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:5',
-        Entity::GATEWAY_ACQUIRER            => 'required|string|in:icic',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string|min:5',
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string|min:5',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string|min:5',
@@ -118,7 +117,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
         Entity::EMI                         => 'sometimes|boolean',
-        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 

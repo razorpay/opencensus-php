@@ -194,7 +194,7 @@ class Notify
         $amount = $this->template['payment']['raw_amount'];
 
         // The priority order is important here
-        if ($riskRating == self::MAX_HIGH_RISK_RATING)
+        if ($riskRating === self::MAX_HIGH_RISK_RATING)
         {
             return $config->get('slack.channels.highrisk');
         }

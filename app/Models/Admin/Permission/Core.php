@@ -37,15 +37,13 @@ class Core extends Base\Core
             }
         });
 
-        $permission = $this->repo->permission
-                                 ->findOrFailPublicWithRelations(
-                                     $permission->getId(), ['orgs']);
+        return $this->get($permission->getId(), ['orgs', 'workflow_orgs']);
+    }
 
-        $workflowOrgs = $this->getOrgsWithWorkflow($permission);
-
-        $permission->setWorkflowOrgs($workflowOrgs);
-
-        return $permission;
+    public function get(string $id, array $relations = [])
+    {
+        return $this->repo->permission
+                          ->findOrFailPublicWithRelations($id, $relations);
     }
 
     public function edit(Entity $permission, array $input)
@@ -69,15 +67,7 @@ class Core extends Base\Core
             }
         });
 
-        $permission = $this->repo->permission
-                                 ->findOrFailPublicWithRelations(
-                                     $permission->getId(), ['orgs']);
-
-        $workflowOrgs = $this->getOrgsWithWorkflow($permission);
-
-        $permission->setWorkflowOrgs($workflowOrgs);
-
-        return $permission;
+        return $this->get($permission->getId(), ['orgs', 'workflow_orgs']);
     }
 
     public function delete(Entity $permission)

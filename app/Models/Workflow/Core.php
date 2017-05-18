@@ -16,26 +16,23 @@ class Core extends Base\Core
     {
         $workflow = (new Entity)->generateId();
 
-        $workflow->getValidator()->validatePermissionHasOneWorkflow(
-            $input[Entity::PERMISSIONS]);
-
+        // Check if the permissions given are enabled to have workflows
         $workflow->getValidator()->validatePermissionsForOrg(
+            $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
+
+        // Check if there are workflows for any permission given
+        $workflow->getValidator()->validatePermissionHasOneWorkflow(
             $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
 
         $workflow->build($input);
 
-        // $minLevel = $this->getMinLevelFromSteps($input[Entity::STEPS]);
-        // $this->validateExistingWorkflows($input[Entity::PERMISSIONS], $minLevel);
-
         $this->repo->transactionOnLiveAndTest(function() use ($workflow, $input)
         {
-            // 1. Create a workflow
             $this->repo->saveOrFail($workflow);
 
-            // 2. Sync its permissions
             $this->repo->sync($workflow, Entity::PERMISSIONS, $input[Entity::PERMISSIONS]);
 
-            // 3. Create its steps
+            // Create the workflow steps
             foreach ($input[Entity::LEVELS] as $level)
             {
                 $step = $this->createStepsForWorkflow($level, $workflow);

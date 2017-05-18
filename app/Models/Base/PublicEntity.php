@@ -282,6 +282,19 @@ class PublicEntity extends UniqueIdEntity
         return $newIds;
     }
 
+    public static function verifyIdAndSilentlyStripSignMultiple(array & $ids)
+    {
+        $newIds = array_map(function(&$id)
+        {
+            return static::verifyIdAndSilentlyStripSign($id);
+        }, $ids);
+
+        $ids = $newIds;
+
+        return $newIds;
+    }
+
+
     protected static function stripSignOrFail(& $id)
     {
         if (static::stripSign($id) === false)
@@ -366,6 +379,10 @@ class PublicEntity extends UniqueIdEntity
     /**
      * Returns id with the sign prefix attached.
      * However, if the value is null, then simply return null.
+     *
+     * @param $id
+     *
+     * @return null|string
      */
     public static function getSignedIdOrNull($id)
     {

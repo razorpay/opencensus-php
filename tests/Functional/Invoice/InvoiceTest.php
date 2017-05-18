@@ -1496,8 +1496,8 @@ class InvoiceTest extends TestCase
                 'expire_by'  => 1484519217,
             ]);
 
-        // Not picked: Cancelled invoice, can be past expire_by if cancelled in between
-        // after issuing.
+        // Not picked: Cancelled invoice, can be past expire_by if cancelled in
+        // between after issuing.
         $this->createOrder(['id' => '100000002order']);
         $this->fixtures->create('invoice',
             [
@@ -1511,7 +1511,7 @@ class InvoiceTest extends TestCase
         // Not picked: Draft invoice
         $this->createDraftInvoice(['id' => '1000003invoice']);
 
-        // Not picked: Issued invoice, past expire_by but paid
+        // Not picked: Past expire_by but paid invoice
         $this->createOrder(['id' => '100000004order']);
         $this->fixtures->create('invoice',
             [
@@ -1521,8 +1521,8 @@ class InvoiceTest extends TestCase
                 'status'     => 'paid',
             ]);
 
-        // Fails: Issued invoice with created payments (not captured so invoice still
-        // not paid) and past expire_by.
+        // Picked and failed: Issued invoice with created payments (not captured
+        // so invoice still not paid) and past expire_by.
         $this->createOrder(['id' => '100000005order']);
         $this->fixtures->create('invoice',
             [
@@ -1533,9 +1533,26 @@ class InvoiceTest extends TestCase
             ]);
         $this->fixtures->payment->createAuthorized(
             [
-                'order_id' => '100000005order',
+                'order_id'   => '100000005order',
                 'invoice_id' => '1000005invoice',
             ]);
+
+        // Picked and expired: Issued invoice with a payment which might be
+        // late authorized and got auto refunded by cron.
+        $this->createOrder(['id' => '100000006order']);
+        $this->fixtures->create('invoice',
+            [
+                'id'         => '1000006invoice',
+                'order_id'   => '100000006order',
+                'expire_by'  => 1484519217,
+                'status'     => 'issued',
+            ]);
+        $payment = $this->fixtures->payment->createAuthorized(
+                        [
+                            'order_id'   => '100000006order',
+                            'invoice_id' => '1000006invoice',
+                        ]);
+        $this->refundAuthorizedPayment($payment->getPublicId());
 
         $this->ba->appAuth();
 

@@ -67,29 +67,14 @@ class DailyFile extends Mailable
 
     protected function addAttachments()
     {
-        // @note Check with Firi once on this change
-        if (empty($this->data['claimsFile']) === false)
+        if (empty($data['claimsFileData']) === false)
         {
-            if (isset($this->data['claimsFile']['url']) === true)
-            {
-                $this->attach($this->data['claimsFile']['url'], ['as' => $this->data['claimsFile']['name']]);
-            }
-            else
-            {
-                $this->attach($this->data['claimsFile']);
-            }
+            $message->attach($data['claimsFileData']['signed_url'], ['as' => $data['claimsFileData']['name']]);
         }
 
-        if (empty($this->data['refundFile']) === false)
+        if (empty($data['refundsFileData']) === false)
         {
-            if (isset($this->data['refundsFile']['url']) === true)
-            {
-                $this->attach($this->data['refundsFile']['url'], ['as' => $this->data['refundsFile']['name']]);
-            }
-            else
-            {
-                $this->attach($this->data['refundsFile']);
-            }
+            $message->attach($data['refundsFileData']['signed_url'], ['as' => $data['refundsFileData']['name']]);
         }
 
         return $this;
@@ -113,20 +98,7 @@ class DailyFile extends Mailable
     {
         $bankName = $this->data['bankName'];
 
-        switch ($bankName)
-        {
-            case 'Axis':
-
-                return MailTags::AXIS_NETBANKING_REFUNDS_MAIL;
-
-            case 'Federal':
-
-                return MailTags::FEDERAL_NETBANKING_REFUNDS_MAIL;
-
-            case 'Kotak':
-
-                return MailTags::KOTAK_NETBANKING_REFUNDS_MAIL;
-        }
+        return (strtolower($bankName) . '_' . MailTags::DAILY_FILE);
     }
 
     protected function getSubject()

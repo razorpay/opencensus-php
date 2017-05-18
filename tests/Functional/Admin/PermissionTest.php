@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Admin;
 
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
 
 use RZP\Models\Admin\Org\Repository as OrgRepo;
@@ -11,6 +12,7 @@ use RZP\Models\Admin\Permission;
 
 class PermissionTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()

@@ -65,7 +65,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($input['gateway']);
         $gatewayPayment->saveOrFail();
 
-        return $this->verifyPaymentCallbackResponse($input);
+        return $this->verifyPaymentCallbackResponse($gatewayPayment, $input);
     }
 
     public function capture(array $input)
@@ -660,7 +660,7 @@ class Gateway extends Base\Gateway
             'vpc_Command'       => AxisMigs\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
             'vpc_Currency'      => $input['currency'],
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_MerchTxnRef'   => $input['refund']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         ];
 
@@ -672,7 +672,7 @@ class Gateway extends Base\Gateway
         $content = [
             'vpc_Command'       => AxisMigs\Command::REVERSAL,
             'vpc_Currency'      => $input['payment']['currency'],
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_MerchTxnRef'   => $input['refund']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         ];
 
@@ -826,7 +826,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifyPaymentCallbackResponse(array $input)
+    protected function verifyPaymentCallbackResponse($gatewayPayment, array $input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
 
@@ -845,25 +845,27 @@ class Gateway extends Base\Gateway
             // then we need to block the transaction on the international card.
             //
 
+            $acquirerData = $this->getAcquirerData($gatewayPayment);
+
             if (ThreeDSecureStatus::getThreeDSstatus($threeDSstatus) === Payment\TwoFactorAuth::FAILED)
             {
                 if ($input['merchant']['international'] === false)
                 {
                     $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED;
                 }
-                else if($input['merchant']['risk_rating'] > Notify::MIN_HIGH_RISK_RATING)
+                else if ($input['merchant']['risk_rating'] > Notify::MIN_HIGH_RISK_RATING)
                 {
                     $apiErrorCode = Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK;
                 }
                 else
                 {
-                    return $this->getCallbackResponseData(['threeDSstatus' => $threeDSstatus]); // payment succeeds
+                    return $this->getCallbackResponseData(['threeDSstatus' => $threeDSstatus], $acquirerData); // payment succeeds
                 }
             }
             else
             {
                 // payment succeeds
-                return $this->getCallbackResponseData(['threeDSstatus' => $threeDSstatus]);
+                return $this->getCallbackResponseData(['threeDSstatus' => $threeDSstatus], $acquirerData);
             }
         }
         else
@@ -875,13 +877,23 @@ class Gateway extends Base\Gateway
         $this->throwException($apiErrorCode, $txnResponseCode, $message, $threeDSstatus);
     }
 
-    protected function getCallbackResponseData(array $input)
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
+                Payment\Entity::REFERENCE1    => $gatewayPayment->getReceiptNo()
+            ]
+        ];
+    }
+
+    protected function getCallbackResponseData(array $input, $response = [])
     {
         $twoFactorAuth = ThreeDSecureStatus::getThreeDSstatus($input['threeDSstatus']);
 
-        $data = [Payment\Entity::TWO_FACTOR_AUTH => $twoFactorAuth];
+        $response[Payment\Entity::TWO_FACTOR_AUTH] = $twoFactorAuth;
 
-        return $data;
+        return $response;
     }
 
     protected function throwException($code, $gatewayErrorCode, $gatewayErrorDesc, $threeDSstatus = null)

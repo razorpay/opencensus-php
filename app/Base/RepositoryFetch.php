@@ -238,7 +238,7 @@ trait RepositoryFetch
     {
         foreach ($params as $key => $value)
         {
-            $func = 'addQueryParam'.studly_case($key);
+            $func = 'addQueryParam' . studly_case($key);
 
             if (method_exists($this, $func))
             {
@@ -453,7 +453,7 @@ trait RepositoryFetch
 
         if ($merchantId !== null)
         {
-            $attr = static::getAttributeWithTableName(Common::MERCHANT_ID);
+            $attr = static::dbColumn(Common::MERCHANT_ID);
             $query = $query->where($attr, '=', $merchantId);
         }
 
@@ -475,13 +475,13 @@ trait RepositoryFetch
 
     protected function addQueryParamFrom($query, $params)
     {
-        $createdAt = $this->getAttributeWithTableName(Common::CREATED_AT);
+        $createdAt = $this->dbColumn(Common::CREATED_AT);
         $query = $query->where($createdAt, '>=', $params['from']);
     }
 
     protected function addQueryParamTo($query, $params)
     {
-        $createdAt = $this->getAttributeWithTableName(Common::CREATED_AT);
+        $createdAt = $this->dbColumn(Common::CREATED_AT);
         $query = $query->where($createdAt, '<=', $params['to']);
     }
 

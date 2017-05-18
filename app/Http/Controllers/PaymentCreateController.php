@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Redirect;
 use Response;
@@ -307,8 +308,7 @@ class PaymentCreateController extends Controller
             {
                 if ($data['request']['method'] === 'post')
                 {
-                    return View::make('gateway.gatewayPostForm')
-                               ->with('data', $data);
+                    return $this->redirectToGatewayPostForm($data);
                 }
                 else if ($data['request']['method'] === 'get')
                 {
@@ -353,6 +353,17 @@ class PaymentCreateController extends Controller
         {
             return $data;
         }
+    }
+
+    protected function redirectToGatewayPostForm($data)
+    {
+        $merchant = \BasicAuth::getMerchant();
+        $postFormData = $data;
+        $postFormData['theme']['color'] = $merchant->getBrandColorElseDefault();
+        $postFormData['name'] = $merchant->getBillingLabelElseName();
+
+        return View::make('gateway.gatewayPostForm')
+                   ->with('data', $postFormData);
     }
 
     /**

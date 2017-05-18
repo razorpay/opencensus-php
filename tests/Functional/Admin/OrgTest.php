@@ -4,9 +4,11 @@ namespace RZP\Tests\Functional\Admin;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class OrgTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()

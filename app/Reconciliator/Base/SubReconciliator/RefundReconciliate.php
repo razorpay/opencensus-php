@@ -461,6 +461,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
 
         $refund->setRrn($rrn);
+        $refund->setStatusProcessed();
 
         $this->repo->saveOrFail($refund);
     }

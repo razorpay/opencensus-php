@@ -44,7 +44,7 @@ class Service extends Base\Service
 
         Entity::verifyIdAndStripSign($actionId);
 
-        $relations = ['workflow.steps', 'admin'];
+        $relations = ['workflow.steps', 'admin', 'permission'];
 
         $action = $this->repo
                        ->workflow_action

@@ -44,6 +44,7 @@ class Validator extends Base\Validator
         'callback_url'            => 'sometimes|url',
         'order_id'                => 'sometimes|filled',
         'customer_id'             => 'required_if:wallet,openwallet|public_id|filled',
+        'subscription_id'         => 'sometimes|public_id',
         'app_token'               => 'sometimes',
         'token'                   => 'sometimes',
         'save'                    => 'sometimes|in:0,1',
@@ -58,9 +59,15 @@ class Validator extends Base\Validator
         '_'                       => 'sometimes|array',
     ];
 
+    protected static $editRules = [
+        Entity::APPROVAL_CODE     => 'sometimes|string|max:6',
+        Entity::REFERENCE1        => 'sometimes|string',
+        Entity::REFERENCE2        => 'sometimes|string',
+    ];
+
     protected static $captureRules = [
-        'amount'        => 'required|integer',
-        'currency'      => 'required|in:INR,USD',
+        Entity::AMOUNT            => 'required|integer',
+        Entity::CURRENCY          => 'required|in:INR,USD',
     ];
 
     protected static $refundRules = [

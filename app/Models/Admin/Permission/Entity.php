@@ -50,6 +50,10 @@ class Entity extends Base\Entity
         self::WORKFLOW_ORGS,
     ];
 
+    protected $diff = [
+        self::NAME
+    ];
+
     protected $visible = [
         self::ID,
         self::NAME,
@@ -61,6 +65,10 @@ class Entity extends Base\Entity
 
     protected $casts = [
         self::ASSIGNABLE        => 'bool',
+    ];
+
+    protected $publicSetters = [
+        self::ID,
     ];
 
     protected static function boot()
@@ -92,14 +100,13 @@ class Entity extends Base\Entity
         return $this->morphedByMany(Org\Entity::class, 'entity', Table::PERMISSION_MAP);
     }
 
+    public function workflow_orgs()
+    {
+        return $this->orgs()->where('enable_workflow', '=', 1);
+    }
+
     public function workflows()
     {
         return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSIONS);
     }
-
-    public function setWorkflowOrgs($orgs)
-    {
-        $this->attributes[Entity::WORKFLOW_ORGS] = $orgs;
-    }
-
 }

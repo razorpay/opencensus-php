@@ -72,7 +72,7 @@ class Base extends Mailable
 
     protected function addAttachments()
     {
-        $this->attach($this->data['file_path']);
+        $this->attach($this->data['signed_url'], ['as' => $this->data['file_name']]);
 
         return $this;
     }

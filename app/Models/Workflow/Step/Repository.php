@@ -102,8 +102,8 @@ class Repository extends Base\Repository
 
     public function getLastLevelOfWorkflow(string $workflowId)
     {
-        return $this->newQuery()
-                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
-                    ->max(Entity::LEVEL);
+        return (int) $this->newQuery()
+                          ->where(Entity::WORKFLOW_ID, '=', $workflowId)
+                          ->max(Entity::LEVEL);
     }
 }

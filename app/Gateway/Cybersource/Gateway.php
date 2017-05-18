@@ -145,6 +145,8 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackGatewayFields($input);
 
+        $this->fixParesIfRequired($input);
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
@@ -154,7 +156,9 @@ class Gateway extends Base\Gateway
 
         $this->authorizeEnrolled($input, $response, $gatewayPayment);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function refund(array $input)
@@ -1678,6 +1682,20 @@ class Gateway extends Base\Gateway
         return str_limit($label, 19);
     }
 
+    protected function fixParesIfRequired(&$input)
+    {
+        $input['gateway']['PaRes'] = str_replace(["\n", "\r"], "", $input['gateway']['PaRes']);
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode()
+            ]
+        ];
+    }
+
     /**
      * @codeCoverageIgnore
      * @incomplete Optimize callback response verification
@@ -1692,13 +1710,13 @@ class Gateway extends Base\Gateway
         $PaResObject = simplexml_load_string($PaRes);
         $PaRes = json_decode(json_encode($PaResObject), true);
 
-        if ((isset($PaRes['Message']['PARes']['TX']['status']) === true) and
-            ($PaRes['Message']['PARes']['TX']['status'] === 'Y'))
+        if ((isset($PaRes['Message']['PaRes']['TX']['status']) === true) and
+            ($PaRes['Message']['PaRes']['TX']['status'] === 'Y'))
         {
             $this->trace->info(TraceCode::GATEWAY_CALLBACK_PARES,
                 [
                     'gateway' => 'cybersource',
-                    'PaResStatus' => $PaRes['Message']['PARes']['TX']['status']
+                    'PaResStatus' => $PaRes['Message']['PaRes']['TX']['status']
                 ]);
         }
     }

@@ -16,6 +16,9 @@ class Entity extends Base\PublicEntity
     const METHOD            = 'method';
     const SCHEDULE_ID       = 'schedule_id';
     const NEXT_RUN_AT       = 'next_run_at';
+    const LAST_RUN_AT       = 'last_run_at';
+
+    const SCHEDULE_NAME     = 'schedule_name';
 
     protected $entity = 'schedule_task';
 
@@ -35,7 +38,9 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::METHOD,
         self::SCHEDULE_ID,
+        self::SCHEDULE_NAME,
         self::NEXT_RUN_AT,
+        self::LAST_RUN_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -48,17 +53,24 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::METHOD,
         self::SCHEDULE_ID,
-        self::NEXT_RUN_AT
+        self::NEXT_RUN_AT,
+        self::LAST_RUN_AT,
     ];
 
     protected $defaults = [
-        self::METHOD      => null,
-        self::TYPE        => Type::SETTLEMENT,
+        self::METHOD        => null,
+        self::TYPE          => Type::SETTLEMENT,
+        self::NEXT_RUN_AT   => null,
+        self::LAST_RUN_AT   => null,
     ];
 
     protected static $modifiers = array(
         self::NEXT_RUN_AT,
     );
+
+    protected $appends = [
+        self::SCHEDULE_NAME,
+    ];
 
     protected $casts = [
         self::NEXT_RUN_AT => 'int',
@@ -91,6 +103,16 @@ class Entity extends Base\PublicEntity
 
             $input[self::NEXT_RUN_AT] = $nextRunAt;
         }
+    }
+
+    protected function getScheduleNameAttribute()
+    {
+        if ($this->getScheduleId() === null)
+        {
+            return '';
+        }
+
+        return $this->schedule->getName();
     }
 
     // ---------------------- Getters ------------------------------------------
@@ -132,17 +154,38 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::NEXT_RUN_AT, $timestamp);
     }
 
-    // ------------------------- Helper mehtods --------------------------------
+    public function setLastRunAt(int $timestamp)
+    {
+        return $this->setAttribute(self::LAST_RUN_AT, $timestamp);
+    }
 
-    public function updateNextRun()
+    // ------------------------- Helper methods --------------------------------
+
+    public function updateNextRunAndLastRun($considerHolidays = true)
     {
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), 'Asia/Kolkata');
 
         $currentTime = Carbon::now('Asia/Kolkata');
 
-        $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun);
+        $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun->copy(), $considerHolidays);
 
         $this->setNextRunAt($nextRun->timestamp);
+        $this->setLastRunAt($lastRun->timestamp);
+    }
+
+    /**
+     * NOTE: This function does not take holidays into consideration.
+     * It also updates the last run. So, calculations for next_run based
+     * on the last_run may not end up correct. BE CAREFUL.
+     */
+    public function incrementNextRunByOneDayAndUpdateLastRun()
+    {
+        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), 'Asia/Kolkata');
+
+        $nextRun = $lastRun->copy()->addDay();
+
+        $this->setNextRunAt($nextRun->timestamp);
+        $this->setLastRunAt($lastRun->timestamp);
     }
 
     public function isTypeSettlement()

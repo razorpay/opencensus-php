@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Config;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\User;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
@@ -48,6 +49,8 @@ class Entity extends Base\PublicEntity
     const SUSPENDED_AT              = 'suspended_at';
     const MERCHANT_USERS            = 'merchant_users';
     const USER_ID                   = 'user_id';
+    const GROUPS                    = 'groups';
+    const ADMINS                    = 'admins';
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
@@ -144,8 +147,8 @@ class Entity extends Base\PublicEntity
         self::ARCHIVED_AT,
         self::LOGO_URL,
         self::ORG_ID,
-        'groups',
-        'admins',
+        self::GROUPS,
+        self::ADMINS,
      ];
 
     protected $defaults = [
@@ -610,6 +613,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * check if api or gateway should do currency conversion for merchant
+     *
      * @return bool
      */
     public function convertOnApi()
@@ -620,6 +624,12 @@ class Entity extends Base\PublicEntity
     public function getBrandColor()
     {
         return $this->getAttribute(self::BRAND_COLOR);
+    }
+
+    public function getBrandColorElseDefault()
+    {
+        return $this->getAttribute(self::BRAND_COLOR) ??
+            Merchant\Checkout::CHECKOUT_DEFAULT_THEME_COLOR;
     }
 
     protected function getBrandColorAttribute()

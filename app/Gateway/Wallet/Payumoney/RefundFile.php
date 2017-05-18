@@ -38,8 +38,12 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $fileData = [
-            'file_path' => $file['local_file_path'],
+            'file_path'  => $file['local_file_path'],
+            'signed_url' => $signedFileUrl,
+            'name'       => basename($file['local_file_path'])
         ];
 
         $this->sendRefundEmail($fileData);

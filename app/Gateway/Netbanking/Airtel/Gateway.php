@@ -70,6 +70,8 @@ class Gateway extends Base\Gateway
         $this->saveCallbackContent($input, $content);
 
         $this->checkActionStatus($content);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)

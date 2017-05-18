@@ -250,6 +250,7 @@ return array(
         'AWS'           => Aws\Laravel\AwsFacade::class,
         'Slack'         => Razorpay\Slack\Laravel\Facade::class,
         'Mail'          => RZP\Mail\Facade::class,
+        'Workflow'      => RZP\Services\Workflow\Facade::class,
     ),
 
     'context' => env('CONTEXT'),

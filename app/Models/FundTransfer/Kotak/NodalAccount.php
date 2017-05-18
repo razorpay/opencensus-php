@@ -190,7 +190,7 @@ class NodalAccount
 
         $name = $this->getFileToWriteName();
 
-        $fullpath = $this->saveLocally($name, $txt);
+        $fullpath = $this->createTxtFile($name, $txt);
 
         $this->sendKotakPayoutsMail($name, $count, $amounts);
 
@@ -305,14 +305,12 @@ class NodalAccount
                                                  ->metadata($metadata)
                                                  ->save();
         }
-        else
-        {
-            $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
-                                                 ->content($textData)
-                                                 ->extension(FileStore\Format::TXT)
-                                                 ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
-                                                 ->save();
-        }
+
+        $textFile = (new FileStore\Creator())->name($this->getFileToWriteNameWithoutExt())
+                                             ->content($textData)
+                                             ->extension(FileStore\Format::TXT)
+                                             ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                                             ->save();
 
         return [$excelFile, $textFile];
     }

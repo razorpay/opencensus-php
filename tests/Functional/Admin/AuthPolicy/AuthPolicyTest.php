@@ -6,11 +6,13 @@ use Hash;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 use RZP\Models\Admin\Admin;
 
 class AuthPolicyTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -217,7 +219,7 @@ class AuthPolicyTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $passwordChangedAt = Carbon::now()->subDays(40)->timestamp;
+        $passwordChangedAt = Carbon::now()->subDays(130)->timestamp;
 
         $admin = $this->fixtures->create('admin', [
             'email'               => 'randomemail2@rzp.com',

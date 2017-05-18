@@ -54,6 +54,7 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertNotNull($payment['approval_code']);
         $this->assertTestResponse($payment);
 
         $payment = $this->getLastEntity('cybersource', true);
@@ -103,6 +104,26 @@ class CybersourceGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() {
             $this->doAuthPayment();
         });
+    }
+
+    public function testParesFixPayment()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $messyPaRes = "eNpV\r\nUttygjAQfc9XM\r\nP0AkiAw";
+            $fixedPaRes = "eNpVUttygjAQfc9XMP0AkiAw";
+
+            if ($action === 'callback')
+            {
+                $content['PaRes'] = $messyPaRes;
+            }
+            else if ($action === 'verify_pares')
+            {
+                $this->assertEquals($fixedPaRes, $content['payerAuthValidateService']['signedPARes']);
+            }
+        });
+
+        $this->doAuthAndCapturePayment();
     }
 
     public function testGatewayProcessorTimeout()

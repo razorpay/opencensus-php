@@ -7,10 +7,12 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class MerchantDetailTest extends TestCase
 {
     use PaymentTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -28,7 +30,7 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateIFSCCode()
+    public function testUpdateIfscCode()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -55,7 +57,7 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
-    public function testUpdateIFSCCodeWithFailure()
+    public function testUpdateIfscCodeWithFailure()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -102,6 +104,13 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    protected function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
     public function testLockMerchant()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -113,6 +122,10 @@ class MerchantDetailTest extends TestCase
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }
@@ -128,6 +141,10 @@ class MerchantDetailTest extends TestCase
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }
@@ -146,6 +163,10 @@ class MerchantDetailTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -160,6 +181,10 @@ class MerchantDetailTest extends TestCase
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }
@@ -178,6 +203,10 @@ class MerchantDetailTest extends TestCase
 
         $this->ba->appAuth();
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $this->startTest();
     }
 
@@ -194,6 +223,10 @@ class MerchantDetailTest extends TestCase
         $testData['request']['url'] = "/merchant/activation/$merchantId/update";
 
         $this->ba->appAuth();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
 
         $this->startTest();
     }

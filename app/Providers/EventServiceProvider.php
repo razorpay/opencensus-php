@@ -23,10 +23,7 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         'RZP\Events\AuditLogEntry' => [
             'RZP\Listeners\AuditLogListener',
-        ],
-        'RZP\Events\DifferEvent' => [
-            'RZP\Listeners\DifferEventListener',
-        ],
+        ]
     ];
 
     /**

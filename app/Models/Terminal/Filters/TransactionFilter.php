@@ -136,8 +136,11 @@ class TransactionFilter extends Terminal\Filter
             $issuer = $input['payment']->card->getIssuer();
 
             if (($issuer === Issuer::ICIC) and
-                ($terminal->getGateway() === Gateway::FIRST_DATA))
+                ($terminal->getGateway() === Gateway::FIRST_DATA) and
+                ($input['merchant']->getId() !== '5ubLZpACTmD8D4'))
             {
+                // ICICI cards currently don't work on FirstData
+                // This allows transactions only on test merchant
                 return false;
             }
         }
@@ -204,10 +207,13 @@ class TransactionFilter extends Terminal\Filter
                 }
             }
 
+            $ba = app('basicauth');
+
             // Check if this is the second recurring payment
             if (($payment->getTokenId() !== null) and
                 ($payment->localToken->isRecurring() === true) and
-                (app('basicauth')->isPrivateAuth() === true))
+                (($ba->isPrivateAuth() === true) or
+                 ($ba->isPrivilegeAuth() === true)))
             {
                 // For second recurring payment, ensure that we select a terminal
                 // of the same gateway as for the first recurring payment.

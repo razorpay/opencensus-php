@@ -107,6 +107,8 @@ class Gateway
      * */
     const REFUND_RETRY_GATEWAYS = [
         Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::BILLDESK,
+        Payment\Gateway::HDFC,
     ];
 
     public static $channels = [
@@ -197,6 +199,19 @@ class Gateway
         ],
     ];
 
+    const CARD_GATEWAYS_LIVE = [
+        self::HDFC,
+        self::AXIS_MIGS,
+        self::AMEX,
+        self::CYBERSOURCE,
+        self::FIRST_DATA,
+    ];
+
+    const SHARED_NETBANKING_GATEWAYS_LIVE = [
+        self::BILLDESK,
+        self::EBS
+    ];
+
     /**
      * Card gateways which support auth and capture mechanism for at
      * least one card network.
@@ -225,6 +240,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::AXIS_MIGS,
+        self::AMEX,
         self::WALLET_OPENWALLET,
     ];
 
@@ -249,46 +265,46 @@ class Gateway
      *
      * @var array
      */
-    public static $cardNetworkMap = array(
-        self::HDFC => array(
+    public static $cardNetworkMap = [
+        self::HDFC => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN),
-        self::AXIS_MIGS => array(
+            Network::UNKNOWN],
+        self::AXIS_MIGS => [
             Network::MC,
-            Network::VISA),
-        self::AXIS_GENIUS => array(
+            Network::VISA],
+        self::AXIS_GENIUS => [
             Network::MC,
-            Network::VISA),
-        self::ATOM => array(
+            Network::VISA],
+        self::ATOM => [
             Network::MC,
-            Network::VISA),
-        self::AMEX => array(
-            Network::AMEX),
-        self::PAYTM => array(
+            Network::VISA],
+        self::AMEX => [
+            Network::AMEX],
+        self::PAYTM => [
             Network::MC,
-            Network::VISA),
-        self::SHARP => array(
+            Network::VISA],
+        self::SHARP => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::AMEX,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN),
-        self::CYBERSOURCE => array(
+            Network::UNKNOWN],
+        self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA),
-        self::FIRST_DATA => array(
+            Network::VISA],
+        self::FIRST_DATA => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::RUPAY,
-        ),
-    );
+        ],
+    ];
 
     public static $walletToGatewayMap = array(
         Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
@@ -470,6 +486,20 @@ class Gateway
         return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
+    public static function isDirectNetbankingGateway(string $gateway)
+    {
+        $directNetbankingGateways = array_values(self::$netbankingToGatewayMap);
+
+        return in_array($gateway, $directNetbankingGateways, true);
+    }
+
+    public static function getBankForDirectNetbankingGateway(string $gateway)
+    {
+        $gatewayToBankMap = array_flip(self::$netbankingToGatewayMap);
+
+        return $gatewayToBankMap[$gateway];
+    }
+
     public static function isRecurringGateway($gateway)
     {
         return in_array($gateway, self::$recurringGateways, true);
@@ -483,6 +513,18 @@ class Gateway
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
+    }
+
+    public static function isValidGatewayAcquirer(string $gatewayAcquirer)
+    {
+        return array_key_exists($gatewayAcquirer, self::GATEWAY_ACQUIRERS);
+    }
+
+    public static function isValidAcquirerForGateway(string $gatewayAcquirer, string $gateway): bool
+    {
+        $validAcquirersForGateway = self::GATEWAY_ACQUIRERS[$gateway];
+
+        return in_array($gatewayAcquirer, $validAcquirersForGateway, true);
     }
 
     public static function getGatewayForWallet($wallet)
@@ -599,6 +641,38 @@ class Gateway
     {
         return ((array_key_exists($gateway, self::$cardNetworkMap)) and
                 (in_array($network, self::$cardNetworkMap[$gateway])));
+    }
+
+    public static function getExclusiveNetworksForGateway(string $gateway)
+    {
+        $exclusiveNetworks = self::$cardNetworkMap[$gateway];
+
+        foreach (self::CARD_GATEWAYS_LIVE as $cardGateway)
+        {
+            if ($gateway !== $cardGateway)
+            {
+                $networks = self::$cardNetworkMap[$cardGateway];
+
+                $exclusiveNetworks = array_diff($exclusiveNetworks, $networks);
+            }
+        }
+
+        // Filter out the UNKNOWN network if present
+        $exclusiveNetworks = array_filter($exclusiveNetworks, function ($network)
+        {
+            return ($network !== Network::UNKNOWN);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $exclusiveNetworks = array_values($exclusiveNetworks);
+
+        return $exclusiveNetworks;
+    }
+
+    public static function isNetworkExclusiveToGateway(string $network, string $gateway)
+    {
+        $exclusiveNetworks = self::getExclusiveNetworksForGateway($gateway);
+
+        return in_array($network, $exclusiveNetworks, true);
     }
 
     public static function getGatewaysForNetbankingBank($bank, $isTPV = false)

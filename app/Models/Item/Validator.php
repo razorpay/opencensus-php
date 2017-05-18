@@ -13,6 +13,7 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|nullable|string|max:2048',
         Entity::AMOUNT              => 'required|integer|min:100',
         Entity::CURRENCY            => 'required|size:3|in:INR',
+        Entity::TYPE                => 'sometimes|string|max:16|custom',
     ];
 
     protected static $editRules  = [
@@ -22,6 +23,11 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::CURRENCY            => 'sometimes|size:3|in:INR',
     ];
+
+    public function validateType($attribute, $value)
+    {
+        Type::checkType($value);
+    }
 
     public function validateDeleteOperation(Entity $item)
     {
