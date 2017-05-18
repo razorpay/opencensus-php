@@ -15,7 +15,6 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Admin\Permission;
 
 class Entity extends Base\Entity
 {

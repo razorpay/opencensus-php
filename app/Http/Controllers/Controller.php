@@ -12,8 +12,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App;
 use Request;
 
-use RZP\Constants\Entity as E;
-
 abstract class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
