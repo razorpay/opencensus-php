@@ -129,9 +129,7 @@ class Gateway extends Base\Gateway
                 $desc);
         }
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
-
-        return $this->getCallbackResponseData($input, $acquirerData);
+        return $this->getCallbackResponseData($input);
     }
 
     protected function getAcquirerData($gatewayPayment)

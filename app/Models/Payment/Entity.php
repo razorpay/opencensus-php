@@ -790,29 +790,25 @@ class Entity extends Base\PublicEntity
 
                 $acquirer = [
                     'authorization_code' => $this->getAttribute(self::APPROVAL_CODE),
-                    'rrn' => $this->getAttribute(self::REFERENCE1),
+                    'bank_transaction_id' => $this->getAttribute(self::REFERENCE1),
                 ];
                 break;
 
             case Method::NETBANKING:
 
                 $acquirer = [
-                    'rrn' => $this->getAttribute(self::REFERENCE1)
+                    'bank_transaction_id' => $this->getAttribute(self::REFERENCE1)
                 ];
                 break;
 
             case Method::WALLET:
 
-                $acquirer = [
-
-                ];
+                $acquirer = [];
                 break;
 
             case Method::UPI:
 
-                $acquirer = [
-                    'rrn' => $this->getAttribute(self::REFERENCE1)
-                ];
+                $acquirer = [];
                 break;
 
             default:
@@ -1547,10 +1543,14 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerAttribute(array & $array)
     {
-        $merchantId = '';
+        // Adding test merchants.
+        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74'];
 
-        // We are only doing this for policy bazar right now
-        if ($this->getAttribute(self::MERCHANT_ID) === $merchantId)
+        $currentMerchantId = $this->getAttribute(self::MERCHANT_ID);
+
+        // We are hardcoding the merchant ids for now.
+        // Will move this to feature flag.
+        if (in_array($currentMerchantId, $merchantIds, true) === true)
         {
             unset($array[self::ACQUIRER]);
         }
