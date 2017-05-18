@@ -43,18 +43,6 @@ class RzpDbRefresh extends RefreshCommand
             $this->info('<info>Installing live database.</info>');
 
             $this->call('migrate', ['--database' => 'live']);
-
-            //
-            // TODO: Remove this after upgrading to laravel >= 5.3
-            // that supports https://laravel.com/docs/5.3/packages#migrations
-            //
-            $this->info('<info>Running OAuth migrations on live DB</info>');
-
-            $this->call('migrate',
-                        [
-                            '--database' => 'live',
-                            '--path'     => 'vendor/razorpay/oauth/database/migrations',
-                        ]);
         }
         else
         {
