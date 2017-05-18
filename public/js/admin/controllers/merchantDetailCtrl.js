@@ -1300,7 +1300,6 @@ app
                   'Credits added successfully',
                   true
                 );
-                $scope.merchant.creditsLog = data.data;
               }
             } else {
               $scope.alerts.resetAlerts();
