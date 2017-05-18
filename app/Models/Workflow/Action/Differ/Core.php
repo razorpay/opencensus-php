@@ -248,9 +248,16 @@ class Core extends Base\Core
                 // array_values() is used to re-set indexes
                 // [54 => 'YESB'] => [0 => 'YESB']
 
-                $diff['old'][$key] = array_values(array_diff($originalData, $dirtyData));
+                $orgDirtyDiff = array_values(array_diff($originalData, $dirtyData));
+                $dirtyOrgDiff = array_values(array_diff($dirtyData, $originalData));
 
-                $diff['new'][$key] = array_values(array_diff($dirtyData, $originalData));
+                if ((empty($orgDirtyDiff) === false) or
+                    (empty($dirtyOrgDiff) === false))
+                {
+                    $diff['old'][$key] = $orgDirtyDiff;
+
+                    $diff['new'][$key] = $dirtyOrgDiff;
+                }
             }
             else
             {
