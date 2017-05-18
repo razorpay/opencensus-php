@@ -200,6 +200,16 @@ class Service
         return $permissionHasWorkflow;
     }
 
+    /*
+        In case of an edit operation both $originalData
+        and $dirtyData should be set.
+
+        In case of an "add" operation pass an empty stdClass
+        object as $originalData.
+
+        In case of a "delete" operation pass an empty stdClass
+        object as $dirtyData.
+    */
     public function handle($originalData = null, $dirtyData = null)
     {
         // 1. If the permission has no workflow then don't do anything
@@ -229,32 +239,32 @@ class Service
         }
         else
         {
-            // Check for an empty original array being passed in
-            // If so, use []
-            $originalDataArray = (array) $originalData;
-
-            if (empty($originalDataArray) === true)
-            {
-                // Reset originalDataArray to []
-                $originalDataArray = [];
-
-                // Create an array with same keys as dirty
-                // but with the key values as present.
-                foreach ($dirtyData->toArray() as $key => $value)
-                {
-                    $originalDataArray[$key] = '';
-                }
-            }
-            else
+            if (method_exists($originalData, 'toArray') === true)
             {
                 $originalDataArray = $originalData->toArray();
             }
+            else
+            {
+                $originalDataArray = (array) $originalData;
+            }
+
+            if (method_exists($dirtyData, 'toArray') === true)
+            {
+                $dirtyDataArray = $dirtyData->toArray();
+            }
+            else
+            {
+                $dirtyDataArray = (array) $dirtyData;
+            }
 
             // Set entity
-            $this->setEntity($dirtyData->getEntityName());
+            if (method_exists($dirtyData, 'getEntityName') === true)
+            {
+                $this->setEntity($dirtyData->getEntityName());
+            }
 
             $diff = $differCore->createDiff(
-                $originalDataArray, $dirtyData->toArray());
+                $originalDataArray, $dirtyDataArray);
         }
 
         $this->setDiff($diff);
