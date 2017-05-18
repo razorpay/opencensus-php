@@ -11,6 +11,7 @@ use RZP\Models\FileStore;
 use RZP\Base\JitValidator;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Merchant;
 
 class BasicEntityReport extends BaseReport
 {
@@ -73,6 +74,24 @@ class BasicEntityReport extends BaseReport
         $this->entity = $entity;
 
         $this->relationsToFetch = $this->entityToRelationFetchMap[$entity];
+    }
+
+    /**
+     * This is done because once the process is pushed to queue,
+     * we do not have merchant set, and hence,
+     * while creating report & file entity, we are unable to set merchant
+     *
+     * It is used inside ReportsJob before starting `generateReport()`
+     *
+     * @param $merchant Merchant\Entity
+     * @return void
+     */
+    public function setMerchant(string $merchantId)
+    {
+        if ($this->merchant === null)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
     }
 
     /**

@@ -25,6 +25,8 @@ class ReportsJob extends Job implements ShouldQueue
 
     protected $entity;
 
+    protected $merchantId;
+
     use InteractsWithQueue, SerializesModels;
 
     /**
@@ -32,11 +34,14 @@ class ReportsJob extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(array $input, string $entity)
+    public function __construct(
+        array $input, string $entity, string $merchantId)
     {
         $this->input = $input;
 
         $this->entity = $entity;
+
+        $this->merchantId = $merchantId;
     }
 
     /**
@@ -51,6 +56,8 @@ class ReportsJob extends Job implements ShouldQueue
             $this->init();
 
             $reportType = new BasicEntityReport($this->entity);
+
+            $reportType->setMerchant($this->merchantId);
 
             $reportType->generateReport($this->input);
         }

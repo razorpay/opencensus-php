@@ -61,7 +61,7 @@ class Core extends Base\Core
         {
             (new Validator)->validateInput('report_queue', array_merge($input, [Entity::TYPE => $entity]));
 
-            $reportsJob = new ReportsJob($input, $entity);
+            $reportsJob = new ReportsJob($input, $entity, $this->merchant->getId());
 
             (new DispatchRouter)->dispatchOn($reportsJob, DispatchRouter::REPORTS);
         }
