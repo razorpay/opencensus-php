@@ -123,7 +123,7 @@ class Gateway extends Base\Gateway
         $verify->payment = $this->saveVerifyContent($verify);
     }
 
-    protected function getVerifyStatus(Verify $verify, array $response): string
+    protected function getVerifyStatus(Verify $verify, array $response) :string
     {
         $this->checkApiSuccess($verify);
 
@@ -169,7 +169,7 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        $data = $this->getVerifyRequestData($input);
+        $data = $this->getVerifyRequestData($input, $payment);
 
         return $data;
     }
@@ -187,7 +187,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getVerifyRequestData(array $input): array
+    protected function getVerifyRequestData(array $input, array $payment): array
     {
         $data = [
             RequestFields::MODE         => Constants::VERIFY,
@@ -195,16 +195,13 @@ class Gateway extends Base\Gateway
             RequestFields::USER_TYPE    => User::RETAIL,
         ];
 
-        $data[RequestFields::ENCRYPTED_STRING] = $this->getVerifyEncryptedString($input);
+        $data[RequestFields::ENCRYPTED_STRING] = $this->getVerifyEncryptedString($input, $payment);
 
         return $data;
     }
 
-    protected function getVerifyEncryptedString(array $input): string
+    protected function getVerifyEncryptedString(array $input, array $payment): string
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
-
         $data = [
             RequestFields::ITEM_CODE          => $input['payment']['id'],
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
@@ -212,7 +209,7 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY_CODE      => Currency::INR,
             RequestFields::CONFIRMATION       => Constants::YES,
             RequestFields::RETURN_URL         => 'na',
-            RequestFields::BANK_REFERENCE_ID  => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
+            RequestFields::BANK_REFERENCE_ID  => $payment[Base\Entity::BANK_PAYMENT_ID],
         ];
 
         $queryString = http_build_query($data);
@@ -330,8 +327,8 @@ class Gateway extends Base\Gateway
     protected function getVerifyAttributes(array $content): array
     {
         return [
-            'received'          => true,
-            'status'            => $content[ResponseFields::VERIFICATION],
+            Base\Entity::RECEIVED => true,
+            Base\Entity::STATUS   => $content[ResponseFields::VERIFICATION],
         ];
     }
 
