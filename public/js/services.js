@@ -982,7 +982,6 @@ angular
 
           return result;
         },
-
         isWorkflow: function(data) {
           if (
             data.id.indexOf('w_action') === 0 &&
@@ -1001,7 +1000,11 @@ angular
               idParam: 'id',
               sign: '',
             },
-
+            credits: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
             role: {
               route: 'app.roles.edit',
               idParam: 'id',
