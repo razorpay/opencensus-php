@@ -324,7 +324,7 @@ class Processor extends Base\Core
                 // $emails = 'priyanshu.chhazed@razorpay.com';
 
                 $message->from('care@razorpay.com', 'Team Razorpay');
-                // $message->from('priyanshu.chhazed@razorpay.com');
+                // $message->from('priyanshu.chhazed@razorpay.com', 'Team Razorpay');
 
                 $message->cc('support@razorpay.com');
 
