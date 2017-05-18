@@ -43,6 +43,8 @@ class Processor extends Base\Core
 
     protected $firstFailureEntities = [];
 
+    protected $dashboardUrl;
+
     /**
      * Array of ids for which entity couldn't be found in database
      */
@@ -59,6 +61,8 @@ class Processor extends Base\Core
         $this->reconciledAt = time();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->dashboardUrl = $this->app['config']->get('applications.dashboard.url');
     }
 
     public function process($input)
@@ -294,31 +298,44 @@ class Processor extends Base\Core
 
         foreach ($this->firstFailureEntities as $merchantId => $entity)
         {
-            $data['remarks'] = $entity->getRemarks();
-            $data['entity_id'] = $entity->getPublicId();
-            $data['merchant_id'] = $merchantId;
+            $remarks = $entity->getRemarks();
+
+            $profileLink = $this->dashboardUrl . '#/app/profile';
+
+            $last4 = $entity->merchant->bankAccount->getLast4DigitsOfAccountNumber();
+
             $data['merchant_email'] = $entity->merchant->getEmail();
-            $data['last_4_ba_number'] = $entity->merchant->bankAccount->getLast4DigitsOfAccountNumber();
-            // $data['subject'] = ;
-            // $data['body'] = ;
-            // s($data);
 
-            // Mail::queue('emails.message', $data, function($message) use ($data)
-            // {
-            //     $emails = $data['merchant_email'];
+            $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
 
-            //     $message->from('care@razorpay.com', 'Settlement');
+            $msg = 'Hi,<br><br>';
+            $msg .= 'This is to bring to your notice that the settlements are failing to your merchant account: ' . $merchantId . '. The settlements to your bank account is failing with the error: ' . $remarks . '<br><br>';
+            $msg .= 'The settlement was initiated to your bank account number ending with: ' . $last4 . '. We would request you to check if the bank account details mentioned here ' . $profileLink . ' are accurate and also verify with your bank if the account is active.<br><br>';
+            $msg .= 'In case of any discrepancy in the bank account details or if you would like us to update the bank account details, kindly respond to this email with the bank account number, IFSC code and the bank account statement for the past 3 months.<br><br>';
+            $msg .= 'Note: To avoid any further settlement failures, your funds will be on hold. We will release the funds once we have updated the details.<br><br>';
+            $msg .= 'Regards,<br>';
+            $msg .= 'Team Razorpay';
 
-            //     $message->cc('support@razorpay.com');
+            $data['body'] = $msg;
 
-            //     $message->subject($data['subject']);
+            Mail::queue('emails.message', $data, function($message) use ($data)
+            {
+                $emails = $data['merchant_email'];
+                // $emails = 'priyanshu.chhazed@razorpay.com';
 
-            //     $message->to($emails);
+                $message->from('care@razorpay.com', 'Settlement');
+                // $message->from('priyanshu.chhazed@razorpay.com');
 
-            //     $headers = $message->getHeaders();
+                $message->cc('support@razorpay.com');
 
-            //     $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
-            // });
+                $message->subject($data['subject']);
+
+                $message->to($emails);
+
+                $headers = $message->getHeaders();
+
+                $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
+            });
         }
     }
 
