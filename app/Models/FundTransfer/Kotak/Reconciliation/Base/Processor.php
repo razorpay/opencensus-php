@@ -8,6 +8,7 @@ use Mail;
 
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
@@ -283,6 +284,11 @@ class Processor extends Base\Core
 
     protected function sendReconciliationEmails($response)
     {
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
         $this->sendReconciliationSummaryMail($response);
 
         if (empty($this->firstFailureEntities) !== true)
