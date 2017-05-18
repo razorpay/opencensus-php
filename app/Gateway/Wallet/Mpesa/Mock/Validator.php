@@ -18,9 +18,7 @@ class Validator extends Base\Validator
         RequestFields::TRANSACTION_REFERENCE => 'required|string|size:14',
         RequestFields::TRANSACTION_TYPE      => 'required|string|in:W',
         RequestFields::AMOUNT                => 'required|string',
-        RequestFields::NARRATION             => 'required|string|in:Razorpay Payments',
         RequestFields::RETURN_URL            => 'required|string',
-        RequestFields::SURCHARGE             => 'required|string|in:0.0',
     ];
 
     protected static $validateCustomerRules = [

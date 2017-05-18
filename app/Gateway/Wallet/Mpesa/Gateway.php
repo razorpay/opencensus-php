@@ -318,9 +318,7 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
             RequestFields::AMOUNT                => $amount,
-            RequestFields::NARRATION             => Constants::NARRATION,
             RequestFields::RETURN_URL            => $this->input['callbackUrl'],
-            RequestFields::SURCHARGE             => Constants::SURCHARGE,
         ];
 
         return $gatewayParam;

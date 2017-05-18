@@ -5,8 +5,6 @@ namespace RZP\Gateway\Wallet\Mpesa;
 class Constants
 {
     // Request constants
-    const SURCHARGE        = '0.0';
-    const NARRATION        = 'Razorpay Payments';
     const REFUND_NARRATION = 'refund';
     const CHANNEL_ID       = 11;
     const ENTITY_TYPE_ID   = 80;
