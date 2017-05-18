@@ -260,8 +260,6 @@ class EntityReportTest extends TestCase
         $this->generateEntityReport($entity, $input);
 
         $reports = $this->fetchReports(['type' => 'transaction']);
-
-        assert($reports['count'] === 1);
     }
 
     public function testGenerateReportSettlement()
@@ -282,8 +280,6 @@ class EntityReportTest extends TestCase
         $this->generateEntityReport($entity, $input);
 
         $reports = $this->fetchReports(['type' => 'settlement']);
-
-        assert($reports['count'] === 1);
     }
 
     public function testGenerateReportPayment()
@@ -304,7 +300,5 @@ class EntityReportTest extends TestCase
         $this->generateEntityReport($entity, $input);
 
         $reports = $this->fetchReports(['type' => 'payment']);
-
-        assert($reports['count'] === 1);
     }
 }
