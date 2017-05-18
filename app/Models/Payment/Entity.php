@@ -1546,7 +1546,7 @@ class Entity extends Base\PublicEntity
         // Adding test merchants.
         $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74'];
 
-        $currentMerchantId = $this->getAttribute(self::MERCHANT_ID);
+        $currentMerchantId = $this->getMerchantId();
 
         // We are hardcoding the merchant ids for now.
         // Will move this to feature flag.
