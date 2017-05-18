@@ -29,6 +29,7 @@ class Workflow
         Permission::EDIT_MERCHANT_METHODS,
         Permission::ASSIGN_MERCHANT_BANKS,
         Permission::ADD_MERCHANT_CREDITS,
+        Permission::EDIT_MERCHANT_PRICING,
     ];
 
     protected $app;

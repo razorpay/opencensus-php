@@ -196,7 +196,7 @@ trait Callback
             $this->processPaymentCallbackException($e);
         }
 
-        $this->updateAndNotifyPaymentAuthorized();
+        $this->updateAndNotifyPaymentAuthorized($data);
     }
 
     protected function acquireLockAndProcessCallback($payment, $gatewayInput)

@@ -2014,3 +2014,12 @@ ALTER TABLE reports
 
 # Makes international attribute of gateway rules nullable
 ALTER TABLE gateway_rules MODIFY COLUMN international TINYINT(1);
+
+ALTER TABLE payments
+    ADD COLUMN approval_code VARCHAR(10) NULL AFTER terminal_id,
+    ADD COLUMN reference1 VARCHAR NULL AFTER approval_code,
+    ADD COLUMN reference2 VARCHAR NULL AFTER reference1;
+
+# Adds type to terminals
+ALTER TABLE terminals
+    ADD COLUMN type TINYINT(1) DEFAULT 3 NOT NULL AFTER tpv;
