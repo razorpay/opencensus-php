@@ -77,6 +77,12 @@ class WorkflowController extends Controller
                 ErrorCode::BAD_REQUEST_ACTION_ALREADY_EXECUTED);
         }
 
+        list($actionCore, $stateCore, $differCore) = [
+            new Action\Core,
+            new State\Core,
+            new Differ\Core,
+        ];
+
         $diff = (new Differ\Service)->fetchRequest($id);
 
         $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
@@ -87,9 +93,18 @@ class WorkflowController extends Controller
 
         $functionName = $diff[Differ\Entity::FUNCTION_NAME];
 
+        $authDetails = $diff[Differ\Entity::AUTH_DETAILS];
+
+        // Replace the current request's payload with the
+        // actual maker request payload.
         Request::replace($payload);
 
+        // Create controller object
         $controller = App::make($controller);
+
+        // Auth details have to be initialized before
+        // the actual code (Controller@action) runs.
+        $actionCore->initAuthDetails($authDetails);
 
         $response = App::call([$controller, $functionName], array_values($routeParams));
 
@@ -104,11 +119,11 @@ class WorkflowController extends Controller
 
         // Update states
 
-        (new Action\Core)->updateState($action, $state);
+        $actionCore->updateState($action, $state);
 
-        (new State\Core)->changeActionState($action->getId(), $state, $adminId);
+        $stateCore->changeActionState($action->getId(), $state, $adminId);
 
-        (new Differ\Core)->updateStateInEs($action->getId(), $state);
+        $differCore->updateStateInEs($action->getId(), $state);
 
         return $response;
     }
