@@ -22,7 +22,7 @@ class ItemTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['invoice']);
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
 
         $this->seed('TaxGroupAndTaxSeeder');
     }

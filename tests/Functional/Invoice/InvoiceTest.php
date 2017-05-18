@@ -28,7 +28,7 @@ class InvoiceTest extends TestCase
                 'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
             ]);
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
     }
 
     // ------------------------------------------------------------
@@ -710,6 +710,8 @@ class InvoiceTest extends TestCase
 
     public function testAddLineItemToInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $response = $this->startTest();
@@ -749,6 +751,8 @@ class InvoiceTest extends TestCase
 
     public function testAddManyLineItemsToInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->startTest();
@@ -758,6 +762,8 @@ class InvoiceTest extends TestCase
 
     public function testAddTooManyLineItemsToInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         foreach (range(1, 18) as $i)
@@ -783,6 +789,8 @@ class InvoiceTest extends TestCase
 
     public function testAddLineItemToInvoiceWithBadData()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $response = $this->startTest();
@@ -790,6 +798,8 @@ class InvoiceTest extends TestCase
 
     public function testAddManyLineItemsToInvoiceWithBadData()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->startTest();
@@ -800,6 +810,8 @@ class InvoiceTest extends TestCase
 
     public function testAddLineItemsToIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');
@@ -809,6 +821,8 @@ class InvoiceTest extends TestCase
 
     public function testAddManyLineItemsToIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');
@@ -818,6 +832,8 @@ class InvoiceTest extends TestCase
 
     public function testAddLineItemsToInvoiceAndIssueAndPay()
     {
+        $this->ba->proxyAuth();
+
         // Steps:
         // - Creates a draft invoice
         // - Adds 2 line items to it
@@ -880,6 +896,8 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->fixtures->create('item');
@@ -892,6 +910,8 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfInvoiceWithExistingItem()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->fixtures->create('item');
@@ -913,6 +933,8 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfInvoiceWithBadData()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->fixtures->create('item');
@@ -923,6 +945,8 @@ class InvoiceTest extends TestCase
 
     public function testUpdateLineItemOfIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');
@@ -934,6 +958,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveLineItemOfInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->fixtures->create('item');
@@ -949,6 +975,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveManyLineItemsOfInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->createFewLineItems();
@@ -963,6 +991,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveManyLineItemsOfInvoiceWithBadData()
     {
+        $this->ba->proxyAuth();
+
         $this->createDraftInvoice();
 
         $this->createFewLineItems();
@@ -975,6 +1005,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveLineItemOfIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');
@@ -986,6 +1018,8 @@ class InvoiceTest extends TestCase
 
     public function testRemoveManyLineItemsOfIssuedInvoice()
     {
+        $this->ba->proxyAuth();
+
         $this->createOrder();
 
         $this->fixtures->create('invoice');

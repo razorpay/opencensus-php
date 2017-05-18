@@ -15,7 +15,7 @@ class TaxTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
     }
 
     public function testGetTax()
