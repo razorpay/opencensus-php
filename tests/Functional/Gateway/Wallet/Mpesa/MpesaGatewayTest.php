@@ -91,7 +91,7 @@ class MpesaGatewayTest extends TestCase
         $payment = $this->payment;
         $payment['_']['isOtp'] = false;
 
-        $this->mockAuthCallbackFailure();
+        $this->mockActionFailure();
 
         $this->runRequestResponseFlow(
             $data,
@@ -105,7 +105,7 @@ class MpesaGatewayTest extends TestCase
     {
         $data = $this->testData['testOtpAuthFailure'];
 
-        $this->mockCustomerValidationFailure();
+        $this->mockActionFailure();
 
         $this->runRequestResponseFlow(
             $data,
@@ -120,7 +120,7 @@ class MpesaGatewayTest extends TestCase
     {
         $data = $this->testData['testOtpAuthFailure'];
 
-        $this->mockOtpGenerationFailure();
+        $this->mockActionFailure();
 
         $this->runRequestResponseFlow(
             $data,
@@ -135,7 +135,7 @@ class MpesaGatewayTest extends TestCase
     {
         $data = $this->testData['testOtpAuthFailure'];
 
-        $this->mockCallbackOtpSubmitFailure();
+        $this->mockActionFailure(SoapAction::OTP_SUBMIT_API);
 
         $this->runRequestResponseFlow(
             $data,
@@ -172,7 +172,7 @@ class MpesaGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->mockVerifyFailure();
+        $this->mockActionFailure();
 
         $this->runRequestResponseFlow(
             $data,
@@ -229,7 +229,7 @@ class MpesaGatewayTest extends TestCase
     {
         $this->testOtpPayment();
 
-        $this->mockRefundFailure();
+        $this->mockActionFailure();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -256,68 +256,31 @@ class MpesaGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($data, $refund);
     }
 
-    protected function mockAuthCallbackFailure()
+    protected function mockActionFailure($method = null)
     {
-        $this->mockServerContentFunction(function(& $content, $action = null)
+        $this->mockServerContentFunction(function(& $content, $action = null) use ($method)
         {
-            if ($action === Action::AUTHORIZE)
+            //
+            // For cases when the mock response to be failed is after
+            // a couple of steps in the flow that need to pass
+            // For eg. testCallbackOtpSubmitFailure needs the response
+            // to be a failure only in the OTP_SUBMIT stage.
+            //
+            if (($method) and
+                ($method !== $action))
             {
-                $content['statuscode'] = '106';
+                return;
             }
-        });
-    }
 
-    protected function mockCustomerValidationFailure()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === SoapAction::CUSTOMER_API)
+            switch ($action)
             {
-                $content['statusCode'] = '104';
-            }
-        });
-    }
+                case Action::AUTHORIZE:
+                    $content['statuscode'] = '106';
+                    break;
 
-    protected function mockOtpGenerationFailure()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === SoapAction::OTP_GENERATE_API)
-            {
-                $content['statusCode'] = '104';
-            }
-        });
-    }
-
-    protected function mockCallbackOtpSubmitFailure()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === SoapAction::OTP_SUBMIT_API)
-            {
-                $content['statusCode'] = '104';
-            }
-        });
-    }
-
-    protected function mockVerifyFailure()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === SoapAction::QUERY_API)
-            {
-                $content['statusCode'] = '104';
-            }
-        });
-    }
-
-    protected function mockRefundFailure()
-    {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            if ($action === SoapAction::REFUND_API)
-            {
-                $content['statusCode'] = '104';
+                default:
+                    $content['statusCode'] = '104';
+                    break;
             }
         });
     }
