@@ -27,7 +27,7 @@ export default props => {
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel-detail-container invoice-details">
+        : <div class="invoice-details">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
             <div class="invoice-header">

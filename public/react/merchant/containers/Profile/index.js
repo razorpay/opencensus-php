@@ -118,7 +118,7 @@ export default class Profile extends Component {
 
     return (
       <div class="content-wrapper content-sm">
-        <div class="panel-detail-container">
+        <div class="profile-container">
           <Alert type="error" message={this.state.errors} showDismiss={false} />
           <div class="panel panel-default">
             {user.current &&
@@ -126,40 +126,38 @@ export default class Profile extends Component {
                 Merchant Id: <strong>{user.id}</strong>
               </div>}
 
-            <div class="panel-body">
-              {user && user.current ? <MerchantDetails user={user} /> : null}
+            {user && user.current ? <MerchantDetails user={user} /> : null}
+          </div>
 
-              {bankAccount
-                ? <BankAccountDetails bankAccount={bankAccount} />
-                : null}
+          {bankAccount
+            ? <BankAccountDetails bankAccount={bankAccount} />
+            : null}
 
-              {this.state.merchantCount > 1 ||
-                this.state.loggedInUser.email !== user.email
-                ? <LoggedInUserDetails
-                    loggedInUser={this.state.loggedInUser}
-                    loggedInUserRole={this.state.loggedInUserRole}
-                  />
-                : null}
+          {this.state.merchantCount > 1 ||
+            this.state.loggedInUser.email !== user.email
+            ? <LoggedInUserDetails
+                loggedInUser={this.state.loggedInUser}
+                loggedInUserRole={this.state.loggedInUserRole}
+              />
+            : null}
 
-              {invitations.length
-                ? <Invitations
-                    invitations={invitations}
-                    onAcceptClick={this.updateInvitation}
-                    onRejectClick={this.updateInvitation}
-                  />
-                : null}
+          {invitations.length
+            ? <Invitations
+                invitations={invitations}
+                onAcceptClick={this.updateInvitation}
+                onRejectClick={this.updateInvitation}
+              />
+            : null}
 
-              {!this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
+          {!this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
 
-              <div class="text-center">
-                <button
-                  class="btn btn-primary"
-                  onClick={this.openChangePasswordModal}
-                >
-                  Change Password
-                </button>
-              </div>
-            </div>
+          <div class="text-center">
+            <button
+              class="btn btn-primary"
+              onClick={this.openChangePasswordModal}
+            >
+              Change Password
+            </button>
           </div>
         </div>
       </div>

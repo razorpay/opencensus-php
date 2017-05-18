@@ -54,7 +54,7 @@ class Alert extends Component {
           {msgs.map((msg, index) => (
             <li key={index}>
               {msg.stack
-                ? `JS Error: ${msg.stack}`
+                ? msg.stack
                 : typeof msg === 'object' ? JSON.stringify(msg) : msg}
             </li>
           ))}

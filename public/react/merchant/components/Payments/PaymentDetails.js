@@ -102,7 +102,7 @@ export default props => {
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel-detail-container">
+        : <div>
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
             <div class="panel-heading">
