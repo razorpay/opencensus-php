@@ -35,7 +35,7 @@ const SwitchMerchantDropdown = ({ user, onSwitchMerchant }) => {
               <li key={merchantId}>
                 <a onClick={() => onSwitchMerchant(merchant)}>
                   {merchant.id === user.current
-                    ? <i class="fa fa-check text-success" />
+                    ? <i class="icon icon-done text-success" />
                     : <i class="fa fa-fw" />}
                   <span>{merchant.name}</span>
                 </a>

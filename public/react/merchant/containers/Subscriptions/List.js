@@ -36,7 +36,7 @@ export default class SubscriptionsListContainer extends Component {
             href="#/app/subscriptions/new"
             className="pull-right btn btn-primary btn-rounded"
           >
-            <i className="fa fa-plus" />
+            <i className="icon icon-plus" />
             <span>New Subscription</span>
           </a>
         </Header>

@@ -63,7 +63,7 @@ export default class SubscriptionsNewContainer extends ModalContainer {
       <div>
         <Header title="New Subscription">
           <a href="#/app/subscriptions" class="pull-right btn btn-link btn-sm">
-            <i class="fa fa-close" />
+            <i class="icon icon-close" />
           </a>
         </Header>
 
@@ -105,7 +105,7 @@ export default class SubscriptionsNewContainer extends ModalContainer {
                             select.close();
                           }}
                         >
-                          <i class="fa fa-plus" />
+                          <i class="icon icon-plus" />
                           <span>Add New Customer</span>
                         </div>
                       )}

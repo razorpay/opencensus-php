@@ -85,7 +85,7 @@ export default class ItemsListContainer extends ListContainer {
                 class="pull-right btn btn-primary btn-rounded"
                 onClick={() => this.showItemModal()}
               >
-                <i class="fa fa-plus" />
+                <i class="icon icon-plus" />
                 <span>New Item</span>
               </button>
             </div>

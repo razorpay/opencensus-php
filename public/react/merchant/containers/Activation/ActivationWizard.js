@@ -62,8 +62,8 @@ export default class ActivationWizard extends Component {
 
   renderNavAnchor(stepNumber, title) {
     let icon = {
-      success: <i class="fa fa-check" />,
-      error: <i class="fa fa-times" />,
+      success: <i class="icon icon-done" />,
+      error: <i class="icon icon-done" />,
     };
     let iconType = this.props.steps[stepNumber];
 

@@ -42,7 +42,7 @@ const InvoiceListItem = props => {
               disabled={!invoice.isEditable}
               onClick={props.onEditClick}
             >
-              <i class="fa fa-edit" />
+              <i class="icon icon-edit" />
               <span>edit</span>
             </button>
           </div>

@@ -44,8 +44,8 @@ webpackConfig.entry = {
 // Bundle Output
 // ------------------------------------
 webpackConfig.output = {
-  path: path.resolve(__dirname, 'public'),
-  filename: './js/generated/[name]_react.js',
+  path: path.resolve(__dirname, 'public/dist'),
+  filename: '[name]_react.js',
 };
 
 // ------------------------------------
@@ -111,7 +111,7 @@ webpackConfig.plugins = [
   }),
 
   new ExtractTextPlugin({
-    filename: './css/generated/[name].css',
+    filename: '[name].css',
   }),
 ];
 

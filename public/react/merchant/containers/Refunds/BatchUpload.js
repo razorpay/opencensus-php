@@ -57,7 +57,7 @@ export default class BatchUpload extends Component {
                 target="_blank"
               >
                 DOCUMENTATION &nbsp;
-                <i class="fa fa-external-link" />
+                <i class="icon icon-new-tab-link" />
               </a>
             </small>
           </div>

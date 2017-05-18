@@ -665,7 +665,7 @@ export default class InvoicesNewContainer extends Component {
                                 });
                               })}
                             >
-                              <i class="fa fa-check" />
+                              <i class="icon icon-done" />
                               <span>Finalize and Issue</span>
                             </AsyncButton>}
 
@@ -676,7 +676,7 @@ export default class InvoicesNewContainer extends Component {
                               disabled={this.state.isSaving}
                               onClick={handleSubmit(this.resendInvoice)}
                             >
-                              <i class="fa fa-paper-plane" />
+                              <i class="icon icon-send" />
                               <span>Resend Invoice</span>
                             </AsyncButton>}
 
@@ -694,7 +694,7 @@ export default class InvoicesNewContainer extends Component {
                                 });
                               })}
                             >
-                              <i class="fa fa-floppy-o" />
+                              <i class="icon icon-save" />
                               <span>Save Invoice</span>
                             </AsyncButton>}
                           {(isNew || isDraft) &&
@@ -704,7 +704,7 @@ export default class InvoicesNewContainer extends Component {
                               onClick={this.deleteInvoice}
                               disabled={this.state.isSaving}
                             >
-                              <i class="fa fa-times" />
+                              <i class="icon icon-done" />
                               <span>Delete Invoice</span>
                             </button>}
                           {isIssued &&
@@ -714,7 +714,7 @@ export default class InvoicesNewContainer extends Component {
                               onClick={this.cancelInvoice}
                               disabled={this.state.isSaving}
                             >
-                              <i class="fa fa-times" />
+                              <i class="icon icon-done" />
                               <span>Cancel Invoice</span>
                             </button>}
                         </div>

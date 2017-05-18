@@ -59,7 +59,7 @@ export default class InvoicesListContainer extends ListContainer {
                 class="btn btn-primary btn-rounded"
                 onClick={() => this.showPaymentLinkModal()}
               >
-                <i class="fa fa-plus" />
+                <i class="icon icon-plus" />
                 <span>Create Payment Link</span>
               </button>
 
@@ -68,7 +68,7 @@ export default class InvoicesListContainer extends ListContainer {
                   href="#/app/invoices/new"
                   class="btn btn-primary btn-rounded"
                 >
-                  <i class="fa fa-plus" />
+                  <i class="icon icon-plus" />
                   <span>Create Invoice</span>
                 </a>
               </ShowWhen>

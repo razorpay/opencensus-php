@@ -68,7 +68,7 @@ class Notification extends Component {
                   {message.map((msg, idx) => <li key={idx}>{msg}</li>)}
                 </ul>
               : message}
-        {showClose && <i class="fa fa-close" onClick={this.close} />}
+        {showClose && <i class="icon icon-close" onClick={this.close} />}
       </div>
     );
   }

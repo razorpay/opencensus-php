@@ -13,15 +13,20 @@ body {
   outline: 0 !important;
 }
 
-.btn {
-  .fa + span {
-    margin-left: 5px;
-  }
+.icon {
+  vertical-align: text-bottom;
+  font-size: 110%;
 }
 
 .main-content {
   margin-left: 200px;
   margin-top: 51px;
+}
+
+.btn {
+  .icon + span {
+    margin-left: 5px;
+  }
 }
 
 .sidebar {
@@ -32,17 +37,33 @@ body {
   width: 200px;
 
   .brand-logo {
+    margin-bottom: 15px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      border: 1px solid #45495A;
+      left: 20px;
+      right: 20px;
+    }
+
     > a {
       display: block;
       line-height: 50px;
       text-align: center;
+      padding: 10px;
 
       > img {
         max-width: 145px;
-        max-height: 40px;
+        max-height: 28px;
         display: inline-block;
       }
     }
+  }
+
+  .divider {
+    margin: 5px;
+    border-top: 1px solid transparent;
   }
 
   .nav > a {
@@ -51,6 +72,10 @@ body {
     display: block;
     line-height: 40px;
     padding: 0 20px;
+
+    .icon {
+      margin-right: 10px;
+    }
 
     &:hover, &:focus {
       background-color: #32374a;

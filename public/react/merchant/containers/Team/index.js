@@ -43,7 +43,7 @@ export default class TeamContainer extends Component {
             target="_blank"
           >
             Team & Roles Documentation &nbsp;
-            <i class="fa fa-external-link" />
+            <i class="icon icon-new-tab-link" />
           </a>
         </header>
 

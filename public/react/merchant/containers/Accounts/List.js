@@ -90,7 +90,7 @@ export default class AccountsListContainer extends ListContainer {
             target="_blank"
           >
             Marketplace APIs Documentation &nbsp;
-            <i class="fa fa-external-link" />
+            <i class="icon icon-external-link" />
           </a>
         </Header>
 
@@ -104,14 +104,14 @@ export default class AccountsListContainer extends ListContainer {
                   class="btn btn-sm btn-default"
                   onClick={this.exportAccountsCSV}
                 >
-                  <i class="fa fa-download" />
+                  <i class="icon icon-download" />
                   <span>Export All (CSV)</span>
                 </button>
                 <button
                   class="btn btn-sm btn-primary"
                   onClick={this.showAddAccountModal}
                 >
-                  <i class="fa fa-plus" />
+                  <i class="icon icon-plus" />
                   <span>Add Account</span>
                 </button>
               </div>

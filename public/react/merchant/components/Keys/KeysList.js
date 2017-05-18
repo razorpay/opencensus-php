@@ -29,7 +29,7 @@ const KeysListItem = props => {
                   props.showRollKeyModal({ id });
                 }}
               >
-                <i class="fa fa-refresh" />
+                <i class="icon icon-refresh" />
                 <span>Regenerate {mode} Key</span>
               </button>
             </div>}
