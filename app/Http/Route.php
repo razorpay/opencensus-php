@@ -861,7 +861,6 @@ final class Route
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
-        'schedule_fetch_multiple',
         'schedule_migration',
         'internal_dummy_account_test',
         'user_create',
@@ -925,6 +924,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'schedule_fetch_multiple',
         'feature_delete',
         'admin_dummy_account_test',
         // workflows
@@ -1072,6 +1072,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'schedule_fetch_multiple',
         'feature_delete',
         'admin_dummy_account_test',
         // workflows
