@@ -82,9 +82,11 @@ class Gateway extends Base\Gateway
         $this->verifyCallback($input);
 
         // Saving callback response only if the above checks pass
-        $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->saveCallbackResponse($content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -271,6 +273,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
     }
 
     protected function checkCallbackStatus(array $content)
