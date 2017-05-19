@@ -492,11 +492,17 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Schedule Assigned successfully',
-                true
-              );
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Schedule Assigned successfully',
+                  true
+                );
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {

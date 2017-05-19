@@ -1020,6 +1020,11 @@ angular
               idParam: 'id',
               sign: '',
             },
+            schedule_task: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
           };
 
           if (typeof entityMap[entityName] !== 'undefined') {
