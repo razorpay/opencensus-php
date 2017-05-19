@@ -32,7 +32,7 @@ class AdminAccess
 
     public function handle($request, Closure $next)
     {
-        if ($this->ba->isAdminAuth())
+        if ($this->ba->isAdminAuth() === true)
         {
             $admin = $this->ba->getAdmin();
 

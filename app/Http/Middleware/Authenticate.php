@@ -74,10 +74,6 @@ class Authenticate
         {
             $ret = $ba->deviceAuth();
         }
-        else if (in_array($route, Route::$admin, true))
-        {
-            $ret = $ba->adminAuth();
-        }
         else if (in_array($route, Route::$direct, true))
         {
             ; // $ret = $ba->proxyAuth();
