@@ -640,7 +640,11 @@ class Processor
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
-        $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
+        // Do not track payment when Gateway verify is called
+        if ($action !== Payment\Action::VERIFY)
+        {
+            $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
+        }
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
