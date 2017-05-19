@@ -49,6 +49,8 @@ class Entity extends Base\PublicEntity
     const SUSPENDED_AT              = 'suspended_at';
     const MERCHANT_USERS            = 'merchant_users';
     const USER_ID                   = 'user_id';
+    const GROUPS                    = 'groups';
+    const ADMINS                    = 'admins';
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
@@ -145,8 +147,8 @@ class Entity extends Base\PublicEntity
         self::ARCHIVED_AT,
         self::LOGO_URL,
         self::ORG_ID,
-        'groups',
-        'admins',
+        self::GROUPS,
+        self::ADMINS,
      ];
 
     protected $defaults = [

@@ -240,6 +240,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::AXIS_MIGS,
+        self::AMEX,
         self::WALLET_OPENWALLET,
     ];
 

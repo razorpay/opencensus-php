@@ -383,7 +383,7 @@ trait Authorize
 
             // The first argument marks the payment as converted from failed
             // to authorized
-            $this->updateAndNotifyPaymentAuthorized(true);
+            $this->updateAndNotifyPaymentAuthorized([], true);
 
             $this->repo->saveOrFail($payment);
         });
@@ -897,7 +897,7 @@ trait Authorize
 
             // The first argument marks the payment as converted from failed
             // to authorized
-            $this->updateAndNotifyPaymentAuthorized(true);
+            $this->updateAndNotifyPaymentAuthorized([], true);
 
             $this->autoCapturePaymentIfApplicable($payment);
 
@@ -1499,9 +1499,7 @@ trait Authorize
 
         $data['gateway'] = $this->getEncryptedGatewayText($payment->getGateway());
 
-        $amount = $payment->getAmount() / 100;
-
-        $data['amount'] = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
+        $data['amount'] =  $payment->getFormattedAmount();
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
@@ -1556,10 +1554,10 @@ trait Authorize
         }
     }
 
-    protected function updateAndNotifyPaymentAuthorized(bool $wasFailed = false)
+    protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
-        $updated = $this->updatePaymentAuthorized($wasFailed);
+        $updated = $this->updatePaymentAuthorized($data, $wasFailed);
 
         //
         // If payment has not been updated to authorized, we don't fire the webhook
@@ -2512,11 +2510,11 @@ trait Authorize
         }
     }
 
-    protected function updatePaymentAuthorized(bool $wasFailed = false)
+    protected function updatePaymentAuthorized($data = [], bool $wasFailed = false)
     {
         $payment = $this->payment;
 
-        $updated = $this->repo->transaction(function() use ($payment, $wasFailed)
+        $updated = $this->repo->transaction(function() use ($payment, $data, $wasFailed)
         {
             $this->lockForUpdateAndReload($payment);
 
@@ -2538,6 +2536,8 @@ trait Authorize
             $payment->setAuthorizeTimestamp();
 
             $payment->terminal->incrementUsedCount();
+
+            $this->updateAcquirerData($payment, $data);
 
             // If payment was earlier failed, then that means it's
             // getting authorized late.
@@ -2583,6 +2583,27 @@ trait Authorize
         return $updated;
     }
 
+    protected function updateAcquirerData(Payment\Entity $payment, $data = [])
+    {
+        // We don't want the acquirer update to fail the payment
+        // This can happen if validation check fails.
+        try
+        {
+            if (isset($data['acquirer']) === true)
+            {
+                $payment->edit($data['acquirer']);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::ERROR_EXCEPTION,
+                $data['acquirer']);
+        }
+
+    }
+
     protected function updateAssociatedPaymentEntities(Payment\Entity $payment)
     {
         $this->updateTokenOnAuthorized();
@@ -2594,6 +2615,20 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
+        $terminalType = $payment->terminal->getType();
+
+        if ($terminalType === Terminal\Type::AUTH_CAPTURE)
+        {
+            return true;
+        }
+        else if ($terminalType === Terminal\Type::PURCHASE)
+        {
+            return false;
+        }
+
+        // For dual (and null) terminal type, we check if the card
+        // network supports purchase or auth+capture. Eg. FSS uses
+        // auth+capture for MC/VISA and purchase for Rupay/DICL/MAESTRO
         $gateway = $payment->getGateway();
 
         $networkCode = null;
