@@ -1,5 +1,4 @@
 import Amount from 'rzp/ui/Amount';
-import Spinner from 'rzp/ui/Spinner';
 import {
   PaymentStatusLabel,
   SettlementStatusLabel,

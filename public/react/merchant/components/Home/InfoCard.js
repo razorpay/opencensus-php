@@ -1,5 +1,3 @@
-import Spinner from 'rzp/ui/Spinner';
-
 export default ({ bg, content, title, loading, error }) => {
   let panelClass = 'panel padder-v item';
   let textClass = 'font-thin h1';

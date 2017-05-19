@@ -1,6 +1,5 @@
 import { createLineData, timeScale } from 'rzp/utils/chart';
 import { Line } from 'react-chartjs-2';
-import Spinner from 'rzp/ui/Spinner';
 
 export default ({ title, style, data, loading, panelClass, error }) => {
   return (

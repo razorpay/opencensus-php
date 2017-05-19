@@ -1,4 +1,3 @@
-import Spinner from 'rzp/ui/Spinner';
 import { titleCase, colors } from 'rzp/utils/rzp-utils';
 
 export default ({ data, loading, error }) => {
