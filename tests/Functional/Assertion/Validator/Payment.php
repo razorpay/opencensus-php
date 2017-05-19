@@ -33,7 +33,7 @@ class Payment extends Validator
         Entity::INTERNATIONAL       => 'sometimes|',
         Entity::ERROR_CODE          => 'sometimes|',
         Entity::ERROR_DESCRIPTION   => 'sometimes|',
-        Entity::FEE                 => 'required_if:status,captured,refunded|integer',
+        Entity::FEE                 => 'required_if:status,captured,refunded|nullable|integer',
         Entity::ACQUIRER            => 'sometimes|array',
         Entity::SERVICE_TAX         => 'sometimes|',
         Entity::CREATED_AT          => 'sometimes|',
