@@ -474,7 +474,6 @@ class BasicAuth
             if ($token->getAdminId() !== null)
             {
                 $this->setAdminTrue();
-                $this->setType(Type::ADMIN_AUTH);
 
                 $this->admin = $token->admin;
 
@@ -1086,11 +1085,6 @@ class BasicAuth
     }
 
     public function isAdminAuth()
-    {
-        return ($this->type === Type::ADMIN_AUTH);
-    }
-
-    public function isAdmin()
     {
         return $this->isAdmin;
     }
