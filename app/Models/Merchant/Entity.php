@@ -58,6 +58,9 @@ class Entity extends Base\PublicEntity
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
 
+    const ROLE                      = 'role';
+    const PIVOT                     = 'pivot';
+
     protected $entity = 'merchant';
 
     protected static $sign = '';
@@ -973,7 +976,8 @@ class Entity extends Base\PublicEntity
     public function users()
     {
         return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
-                    ->withPivot(User\Entity::ROLE);
+                    ->withPivot(User\Entity::ROLE)
+                    ->orderBy(self::NAME);
     }
 
     public function isEmailOptional()
@@ -1001,5 +1005,23 @@ class Entity extends Base\PublicEntity
         }
 
         return $config;
+    }
+
+    public function toArrayUser()
+    {
+        $attributes = [
+            self::ID           => $this->getAttribute(self::ID),
+            self::NAME         => $this->getAttribute(self::NAME),
+            self::EMAIL        => $this->getAttribute(self::EMAIL),
+            self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
+            self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
+            self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
+            self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
+            self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
+        ];
+
+        $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
+
+        return $attributes;
     }
 }

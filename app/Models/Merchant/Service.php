@@ -958,9 +958,11 @@ class Service extends Base\Service
 
     public function getUsers(string $merchantId)
     {
-        $merchants = (new Merchant\Core)->getUsers($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        return $merchants;
+        $users = (new Merchant\Core)->getUsers($merchant);
+
+        return $users;
     }
 
     /**

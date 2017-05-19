@@ -102,19 +102,16 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
         }
 
-        return $this->get($user->getId());
+        return $this->get($user);
     }
 
-    public function get(string $userId, array $input = [])
+    public function get(Entity $user)
     {
-        $user = $this->repo->user->findOrFail($userId);
-
-        $merchants = $this->repo->merchant->getMerchantsForUser($userId, $input);
-
         $userArray = $user->toArrayPublic();
 
-        // $merchants->toArray will return only the selected column names.
-        $userArray[Entity::MERCHANTS] = $merchants->toArray();
+        $merchants = $user->merchants->callOnEveryItem('toArrayUser');
+
+        $userArray[Entity::MERCHANTS] = $merchants;
 
         return $userArray;
     }

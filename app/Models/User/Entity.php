@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID           = 'merchant_id';
     const MERCHANTS             = 'merchants';
     const ROLE                  = 'role';
+    const PIVOT                 = 'pivot';
     const OWNER                 = 'owner';
     const CONFIRMED             = 'confirmed';
 
@@ -49,7 +50,7 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = false;
 
-    protected $appends = ['confirmed'];
+    protected $appends = [self::CONFIRMED];
 
     public function merchants()
     {
@@ -71,5 +72,14 @@ class Entity extends Base\PublicEntity
     public function getConfirmedAttribute()
     {
         return ($this->getAttribute(self::CONFIRM_TOKEN) === null);
+    }
+
+    public function toArrayMerchant()
+    {
+        $attributes = $this->toArrayPublic();
+
+        $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
+
+        return $attributes;
     }
 }

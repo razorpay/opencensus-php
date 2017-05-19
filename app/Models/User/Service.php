@@ -61,9 +61,11 @@ class Service extends Base\Service
         return (new Core)->login($input);
     }
 
-    public function get(string $id, array $input): array
+    public function get(string $id): array
     {
-        $response = (new Core)->get($id, $input);
+        $user = $this->repo->user->findOrFailPublic($id);
+
+        $response = (new Core)->get($user);
 
         return $response;
     }

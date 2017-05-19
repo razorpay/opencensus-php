@@ -364,28 +364,6 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function getMerchantsForUser(string $userId, array $input)
-    {
-        $query = $this->newQuery()
-                      ->select(Entity::ID,
-                               Entity::NAME,
-                               Entity::EMAIL,
-                               Entity::ACTIVATED,
-                               Entity::ARCHIVED_AT,
-                               Entity::SUSPENDED_AT,
-                               'merchants.created_at',
-                               'merchants.updated_at',
-                               'merchant_users.role'
-                        )
-                      ->join(Table::MERCHANT_USERS, Entity::ID, '=', 'merchant_users.merchant_id')
-                      ->where('merchant_users.user_id', '=', $userId);
-
-        $this->modifyQuery($query, $input);
-
-        return $query->orderBy(Entity::NAME, 'asc')
-                     ->get();
-    }
-
     protected function modifyQuery($query, array $input)
     {
         $submittedAt = $this->repo

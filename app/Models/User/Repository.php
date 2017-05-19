@@ -2,9 +2,7 @@
 
 namespace RZP\Models\User;
 
-use DB;
 use RZP\Models\Base;
-use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -29,22 +27,4 @@ class Repository extends Base\Repository
                     ->where(Entity::CONFIRM_TOKEN, '=', $token)
                     ->firstOrFailPublic();
     }
-
-    public function getUsersForMerchant(string $merchantId)
-    {
-        return $this->newQuery()
-                    ->select(Entity::ID,
-                             Entity::NAME,
-                             Entity::EMAIL,
-                             Entity::CONTACT_MOBILE,
-                             Entity::CONFIRM_TOKEN,
-                             'users.created_at',
-                             'merchant_users.role'
-                        )
-                    ->join(Table::MERCHANT_USERS, Entity::ID, '=', 'merchant_users.user_id')
-                    ->where('merchant_users.merchant_id', '=', $merchantId)
-                    ->orderBy(Entity::NAME, 'asc')
-                    ->get();
-    }
-
 }

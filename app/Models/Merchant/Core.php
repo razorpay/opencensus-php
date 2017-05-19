@@ -216,16 +216,9 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    public function getUsers(string $merchantId)
+    public function getUsers(Entity $merchant)
     {
-        $users = $this->repo->user->getUsersForMerchant($merchantId);
-
-        foreach ($users as $user)
-        {
-            $user[User\Entity::CONFIRMED] = ($user[User\Entity::CONFIRM_TOKEN] === null);
-
-            unset($user[User\Entity::CONFIRM_TOKEN]);
-        }
+        $users = $merchant->users->callOnEveryItem('toArrayMerchant');
 
         return $users;
     }
