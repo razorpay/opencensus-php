@@ -714,13 +714,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function getScheduleList()
-    {
-        list($error, $response) = (new Admin\Service)->getScheduleList();
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     public function getEmailLogs()
     {
         $input = Input::all();
