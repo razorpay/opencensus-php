@@ -10,14 +10,15 @@ use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
 use RZP\Models\Base\PublicEntity;
 
+use RZP\Models\Admin\Org;
+use RZP\Models\Workflow;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Workflow\Action;
+
 class Core extends Base\Core
 {
-    public function create(array $input)
+    private function buildParams(array $input) : array
     {
-        $action = new Entity;
-
-        $action->generateId();
-
         $admin = $this->app['basicauth']->getAdmin();
 
         $params = [
@@ -76,23 +77,75 @@ class Core extends Base\Core
 
         $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME] ?: null;
 
-        $action->build($params);
+        return $params;
+    }
 
-        $this->repo->transactionOnLiveAndTest(function() use($action, $params)
+    private function buildParamsForRetry(array $input) : array
+    {
+        $strip = 'verifyIdAndStripSign';
+
+        $params = [
+            Entity::ORG_ID          => Org\Entity::$strip($input[Entity::ORG_ID]),
+            Entity::ADMIN_ID        => Admin\Entity::$strip($input[Entity::ADMIN_ID]),
+            Entity::WORKFLOW_ID     => Workflow\Entity::$strip($input[Entity::WORKFLOW_ID]),
+            Entity::PERMISSION_ID   => Permission\Entity::$strip($input[Entity::PERMISSION_ID]),
+            Entity::ENTITY_ID       => $input[Entity::ENTITY_ID],
+            Entity::ENTITY_NAME     => $input[Entity::ENTITY_NAME],
+        ];
+
+        return $params;
+    }
+
+    public function create(array $input, $retry = false)
+    {
+        $action = new Entity;
+
+        $action->generateId();
+
+        if ($retry === true)
         {
+            $params = $this->buildParamsForRetry($input);
+
+            $actionId = $input[Entity::ID];
+
+            Action\Entity::verifyIdAndStripSign($actionId);
+
+            $action->setId($actionId);
+        }
+        else
+        {
+            $params = $this->buildParams($input);
+        }
+
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry)
+        {
+            $differInput = $params[Entity::DIFFER] ?? null;
+
+            unset($params[Entity::DIFFER]);
+
+            $action->build($params);
+
             $this->repo->saveOrFail($action);
 
             $this->createInitialStateForAction($action);
 
-            $differ = $params[Entity::DIFFER];
+            if (($retry === false) and (empty($differInput) === false))
+            {
+                unset($differInput[Entity::ORG_ID]);
 
-            unset($differ[Entity::ORG_ID]);
-
-            // Create the diff for the entity
-            (new Differ\Core)->create($action, $differ);
+                // Create the diff for the entity
+                (new Differ\Core)->create($action, $differInput);
+            }
         });
 
         return $action;
+    }
+
+    public function retryCreate(array $input)
+    {
+        $action = $this->create($input, $retry = true);
+
+        return $action->toArrayPublic();
     }
 
     protected function createInitialStateForAction(Entity $action)
@@ -300,6 +353,11 @@ class Core extends Base\Core
     public function get(string $id)
     {
         return $this->repo->workflow_action->findOrFailPublic($id);
+    }
+
+    public function getByIdAndOrgId(string $id, string $orgId)
+    {
+        return $this->repo->workflow_action->findByIdAndOrgId($id, $orgId);
     }
 
     public function edit(Entity $action, array $input)

@@ -336,4 +336,27 @@ class Service
             ['Content-Type' => 'application/json']
         );
     }
+
+    public function saveActionIfTransactionFailed(array $data)
+    {
+        $core = new Action\Core;
+
+        $workflowAction = $core->getByIdAndOrgId($data['id'], $data['org_id']);
+
+        $count = $workflowAction->count();
+
+        // Transaction failed and no entry was created
+        if ($count === 0)
+        {
+            // Let's re-try creating workflow action and relevant entities
+
+            $action = $core->retryCreate($data);
+        }
+        else
+        {
+            $action = $workflowAction->first()->toArrayPublic();
+        }
+
+        return $action;
+    }
 }

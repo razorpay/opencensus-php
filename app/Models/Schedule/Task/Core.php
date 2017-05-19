@@ -46,6 +46,8 @@ class Core extends Base\Core
     {
         $scheduleTask = $this->create($merchant, $entity, $input);
 
+        $this->app['workflow']->setEntityId($merchant->getId());
+
         $this->repo->transactionOnLiveAndTest(function() use ($scheduleTask)
         {
             // for settlements, we want to keep schedules in sync in test and live
@@ -125,12 +127,32 @@ class Core extends Base\Core
                                     ->connection($mode)
                                     ->fetchExistingScheduleTask($entity);
 
+        $originalData = [];
+
         if ($currentScheduleTask !== null)
         {
             $entity->setNextRunAt($currentScheduleTask->getNextRunAt());
 
+            $originalData = [
+                'type' => $currentScheduleTask->getType(),
+                'schedule' => $currentScheduleTask->schedule->getName(),
+                'next_run_at' => $currentScheduleTask->getNextRunAt(),
+                'method' => $currentScheduleTask->getMethod(),
+            ];
+
             $this->repo->deleteOrFail($currentScheduleTask);
         }
+
+        $dirtyData = [
+            'type' => $entity->getType(),
+            'schedule' => $entity->schedule->getName(),
+            'next_run_at' => $entity->getNextRunAt(),
+            'method' => $entity->getMethod(),
+        ];
+
+        $this->app['workflow']
+             ->setEntity($entity->getEntity())
+             ->handle($originalData, $dirtyData);
 
         $this->repo->saveOrFail($entity);
     }
