@@ -22,11 +22,14 @@ class TransactionTest extends TestCase
 
     public function testAddAdjustment()
     {
+        $this->ba->appAuth();
         $adj = $this->startTest();
 
         $testData = $this->testData['testGetAdjustment'];
         $testData['request']['url'] = '/adjustments/'.$adj['id'];
 
+
+        $this->ba->proxyAuth();
         $adj = $this->runRequestResponseFlow($testData);
 
         $txn = $this->getLastTransaction(true);
@@ -40,7 +43,7 @@ class TransactionTest extends TestCase
 
     public function testAddReverseAdjustment()
     {
-        $this->ba->proxyAuth();
+        $this->ba->appAuth();
         $adj = $this->testAddAdjustment();
 
         $testData = $this->testData['testAddReverseAdjustment'];
@@ -59,6 +62,7 @@ class TransactionTest extends TestCase
 
     public function testAddAdjustmentWithoutUpdatingEscrowBalance()
     {
+        $this->ba->appAuth();
         $adj = $this->startTest();
 
         $txn = $this->getLastEntity('transaction', true);

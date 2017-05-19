@@ -8,6 +8,7 @@ return [
     'testAddAdjustment' => [
         'request' => [
             'content' => [
+                'merchant_id' => '10000000000000',
                 'amount'      => 100,
                 'description' => 'random desc',
                 'currency'    => 'INR',
@@ -42,6 +43,7 @@ return [
    'testAddAdjustmentWithoutUpdatingEscrowBalance' => [
         'request' => [
             'content' => [
+                'merchant_id' => '10000000000000',
                 'amount'        => 100,
                 'description'   => 'random desc',
                 'currency'      => 'INR',

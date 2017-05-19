@@ -242,6 +242,7 @@ class ReconciliationTest extends TestCase
         $setlId = $setl['id'];
 
         $adjustmentData =[
+            'merchant_id'   => '10000000000000',
             'amount'        => 100,
             'currency'      => 'INR',
             'description'   => 'random desc',
@@ -254,7 +255,7 @@ class ReconciliationTest extends TestCase
             'content'   => $adjustmentData
         ];
 
-        $this->ba->proxyAuth();
+        $this->ba->appAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
