@@ -93,7 +93,7 @@ class Gateway extends Base\Gateway
         // Create Gateway Payment Entity
         $contentToSave = $this->getOtpGenerateContentToSave($response[ResponseFields::OTP_GENERATE]);
 
-        $this->createGatewayPaymentEntity($contentToSave);
+        $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
@@ -325,9 +325,9 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData()
     {
-        $wallet = $this->repo->findByPaymentIdAndActions(
+        $wallet = $this->repo->findByPaymentIdAndAction(
             $this->input['payment']['id'],
-            [Action::AUTHORIZE, Action::OTP_GENERATE]);
+            Action::AUTHORIZE);
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId() ?? "";
 
@@ -344,7 +344,12 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT                    => $amount,
         ];
 
-        if ($wallet->getAction() === Action::OTP_GENERATE)
+        //
+        // We save the gateway payment id 2 only during the
+        // otp_generate flow. Therefore, this a good measure
+        // of whether the CMDID field needs to be sent
+        //
+        if (empty($wallet->getGatewayPaymentId2()) === false)
         {
             $queryData[RequestFields::CMDID] = Constants::CMDID;
         }
@@ -381,7 +386,8 @@ class Gateway extends Base\Gateway
     protected function getOtpSubmitData()
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'], Action::OTP_GENERATE);
+            $this->input['payment']['id'],
+            [Action::AUTHORIZE]);
 
         $gatewayPaymentId2 = $wallet->getGatewayPaymentId2();
 
@@ -407,9 +413,9 @@ class Gateway extends Base\Gateway
 
     protected function getRefundData()
     {
-        $wallet = $this->repo->findByPaymentIdAndActions(
+        $wallet = $this->repo->findByPaymentIdAndAction(
             $this->input['payment']['id'],
-            [Action::AUTHORIZE, Action::OTP_GENERATE]);
+            [Action::AUTHORIZE]);
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId();
 
@@ -447,7 +453,8 @@ class Gateway extends Base\Gateway
     protected function saveOtpCallbackContent(array $content)
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'], Action::OTP_GENERATE);
+                    $this->input['payment']['id'],
+                    Action::AUTHORIZE);
 
         $attributes = [
             Base\Entity::RECEIVED            => true,
@@ -559,7 +566,8 @@ class Gateway extends Base\Gateway
     protected function saveCallbackResponse(array $content)
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'], Action::AUTHORIZE);
+                    $this->input['payment']['id'],
+                    Action::AUTHORIZE);
 
         $contentToSave = [
             Base\Entity::RECEIVED             => true,
@@ -573,9 +581,9 @@ class Gateway extends Base\Gateway
 
     protected function saveVerifyContent(Verify $verify)
     {
-        $wallet = $this->repo->findByPaymentIdAndActions(
-            $this->input['payment']['id'],
-            [Action::AUTHORIZE, Action::OTP_GENERATE]);
+        $wallet = $this->repo->findByPaymentIdAndAction(
+                    $this->input['payment']['id'],
+                    Action::AUTHORIZE);
 
         $content = $verify->verifyResponseContent;
 
@@ -646,10 +654,9 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentToVerify(Verify $verify)
     {
-        $actions = [Action::AUTHORIZE, Action::OTP_GENERATE];
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActions(
-                    $verify->input['payment']['id'], $actions);
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $this->input['payment']['id'],
+            Action::AUTHORIZE);
 
         $verify->payment = $gatewayPayment;
 

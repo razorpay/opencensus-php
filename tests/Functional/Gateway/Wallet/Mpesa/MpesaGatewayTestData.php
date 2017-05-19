@@ -19,7 +19,7 @@ return [
     ],
 
     'testOtpPaymentWalletEntity' => [
-        'action'   => 'otp_generate',
+        'action'   => 'authorize',
         'received' => true,
         'wallet'   => 'mpesa',
         'amount'   => 50000
@@ -123,7 +123,7 @@ return [
     'verifySuccessWalletEntity' => [
         'status_code'          => '100',
         'wallet'               => 'mpesa',
-        'action'               => 'otp_generate',
+        'action'               => 'authorize',
         'received'             => true,
         'response_description' => 'Success',
         'entity'               => 'wallet'

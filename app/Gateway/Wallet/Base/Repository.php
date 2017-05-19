@@ -81,12 +81,4 @@ class Repository extends Base\Repository
                     ->where(Entity::WALLET, '=', $wallet)
                     ->first();
     }
-
-    public function findByPaymentIdAndActions(string $paymentId, array $actions)
-    {
-        return $this->newQuery()
-                    ->where(Base\Entity::PAYMENT_ID, '=', $paymentId)
-                    ->whereIn('action', $actions)
-                    ->first();
-    }
 }
