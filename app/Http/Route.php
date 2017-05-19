@@ -1189,6 +1189,7 @@ final class Route
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'       => '*',
         'merchants_update_hold_funds'      => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
+        'schedule_fetch_multiple'          => Permission::SCHEDULE_FETCH_MULTIPLE,
     ];
 
     public static $direct = [
