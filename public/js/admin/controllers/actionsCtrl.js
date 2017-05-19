@@ -751,9 +751,6 @@ app
     '$modalInstance',
     '$http',
     function($scope, $modalInstance, $http) {
-      $scope.schedule = {
-        type: 'settlement',
-      };
       $scope.ok = function(schedule) {
         $modalInstance.close(schedule);
       };
