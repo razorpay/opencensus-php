@@ -655,11 +655,4 @@ class Gateway extends Base\Gateway
 
         return $gatewayPayment;
     }
-
-    protected function getRepository()
-    {
-        $gateway = $this->gateway;
-
-        return $this->app['repo']->$gateway;
-    }
 }
