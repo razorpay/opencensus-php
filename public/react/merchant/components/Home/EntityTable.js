@@ -1,8 +1,10 @@
 import Amount from 'rzp/ui/Amount';
+import Spinner from 'rzp/ui/Spinner';
 import {
   PaymentStatusLabel,
   SettlementStatusLabel,
 } from 'merchant/components/StatusLabel';
+
 import { titleCase, formatFromNow } from 'rzp/utils/rzp-utils';
 
 const StatusLabel = ({ status, entity, children, ...otherProps }) => {
@@ -18,42 +20,54 @@ const StatusLabel = ({ status, entity, children, ...otherProps }) => {
   );
 };
 
-export default ({ entity, data }) => {
+export default ({ entity, data, loading }) => {
+  let items = data[`${entity}s`];
   return (
     <div class="col-md-4 b-light no-border-xs">
       <a
-        data-tip="See All Payments"
+        data-tip={`See All ${titleCase(entity)}s`}
         class="pull-right"
         href={`#/app/${entity}s/list`}
       >
         <i class="icon-arrow-right" />
       </a>
       <h4 style={{ margin: '0 0 10px' }}>Recent {titleCase(entity)}s</h4>
-      {data.count
-        ? data.items.slice(0, 5).map((item, index) => {
-            return (
-              <div key={index} class="row" style={{ margin: '10px' }}>
-                <a href={`#/app/${entity}/${item.id}`}>
-                  <StatusLabel
-                    entity={entity}
-                    status={item.status}
-                    data-tip={titleCase(item.status) || null}
-                    data-place="right"
-                  >
-                    <Amount value={item.amount} />
-                  </StatusLabel>
+      {loading
+        ? <div
+            class="text-thin h1"
+            style={{
+              height: '426px',
+              textAlign: 'center',
+              lineHeight: '426px',
+            }}
+          >
+            ...
+          </div>
+        : data.count
+            ? items.slice(0, 5).map((item, index) => {
+                return (
+                  <div key={index} class="row" style={{ margin: '10px' }}>
+                    <a href={`#/app/${entity}/${item.id}`}>
+                      <StatusLabel
+                        entity={entity}
+                        status={item.status}
+                        data-tip={titleCase(item.status) || null}
+                        data-place="right"
+                      >
+                        <Amount value={item.amount} />
+                      </StatusLabel>
 
-                  <div class="col-xs-8 col-md-9">
-                    <code class="hidden-xs">{item.id}</code>
-                    <span class="pull-right">
-                      {formatFromNow(item.created_at)}
-                    </span>
+                      <div class="col-xs-8 col-md-9">
+                        <code class="hidden-xs">{item.id}</code>
+                        <span class="pull-right">
+                          {formatFromNow(item.created_at)}
+                        </span>
+                      </div>
+                    </a>
                   </div>
-                </a>
-              </div>
-            );
-          })
-        : <div>No Recent Payments</div>}
+                );
+              })
+            : <div>No Recent {titleCase(entity)}</div>}
     </div>
   );
 };

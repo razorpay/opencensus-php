@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import Header from 'rzp/ui/Header';
 import { connect } from 'react-redux';
-import { fetchAggregrations, fetchAnalytics } from 'merchant/modules/home';
+import * as HomeActions from 'merchant/modules/home';
+import { fetchPayments } from 'merchant/modules/payments/list';
+import { fetchRefunds } from 'merchant/modules/refunds/list';
+import { fetchSettlements } from 'merchant/modules/settlements/list';
 import moment from 'moment';
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
-import { createLineData, makeLineData, timeScale } from 'rzp/utils/chart';
-import { Line } from 'react-chartjs-2';
-import Amount from 'rzp/ui/Amount';
-import Spinner from 'rzp/ui/Spinner';
-import InfoCard from 'merchant/components/Home/InfoCard';
+import { createLineData } from 'rzp/utils/chart';
+import InfoCardList from 'merchant/components/Home/InfoCardList';
 import RecentEntityTable from 'merchant/components/Home/EntityTable';
-import { titleCase, colors, formatFromNow } from 'rzp/utils/rzp-utils';
+import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
+import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
 
 // graph data
 // numbers
@@ -18,15 +19,20 @@ import { titleCase, colors, formatFromNow } from 'rzp/utils/rzp-utils';
   state => {
     return {
       mode: state.session.mode,
-
       analytics: state.home.analytics,
-
-      aggregations: state.home.aggregations,
+      entity_totals: state.home.entity_totals,
+      payment_breakup: state.home.payment_breakup,
+      current_balance: state.home.current_balance,
+      payments: state.payments,
+      refunds: state.refunds,
+      settlements: state.settlements,
     };
   },
   {
-    fetchAggregrations,
-    fetchAnalytics,
+    ...HomeActions,
+    fetchPayments,
+    fetchRefunds,
+    fetchSettlements,
   }
 )
 export default class HomeContainer extends Component {
@@ -34,7 +40,7 @@ export default class HomeContainer extends Component {
   focusedDate = null;
 
   state = {
-    /* date/intervel controls */
+    /* date/interval controls */
     from: moment().endOf('day').subtract(30, 'days'),
     to: moment().endOf('day'),
 
@@ -46,232 +52,167 @@ export default class HomeContainer extends Component {
     super(props);
   }
 
+  fetchAggregrations() {
+    this.props.fetchEntityTotals();
+    this.props.fetchPaymentBreakup();
+    this.props.fetchCurrentBalance();
+    this.props.fetchPayments({ count: 5 });
+    this.props.fetchRefunds({ count: 5 });
+    this.props.fetchSettlements({ count: 5 });
+  }
+
   componentWillMount() {
-    this.props.fetchAggregrations();
+    this.fetchAggregrations();
     this.props.fetchAnalytics(this.state);
   }
 
-  getContent() {
-    let aggregations = this.props.aggregations;
-    let graph_data = this.props.analytics;
+  getTransactionCountData(data, isLive) {
+    return createLineData(
+      data.filter(d => {
+        if (isLive) {
+          return !d.mode;
+        }
+        return d.mode;
+      }),
+      'count',
+      'Successful Transactions'
+    );
+  }
+
+  getTransactionAmountData(data, isLive) {
+    data = JSON.parse(JSON.stringify(data));
+    data = data.filter(d => {
+      if (isLive) {
+        return !d.mode;
+      }
+      d.amount = d.amount / 100;
+      return d.mode;
+    });
+    return createLineData(data, 'amount', 'Transaction Volume');
+  }
+
+  render() {
+    let { from, to } = this.state;
+    let {
+      entity_totals,
+      payment_breakup,
+      current_balance,
+      payments,
+      refunds,
+      settlements,
+    } = this.props;
     let isLive = this.props.mode === 'live';
+    let graphData = this.props.analytics;
+
+    let transactionCountData = this.getTransactionCountData(
+      graphData.data,
+      isLive
+    );
+    let transactionAmountData = this.getTransactionAmountData(
+      graphData.data,
+      isLive
+    );
 
     return (
-      aggregations &&
-      <div class="wrapper-md">
-        <div class="row">
-          <div class="col-md-12 col-lg-6">
-            <div class="row row-sm text-center">
-              <InfoCard
-                content={
-                  aggregations.entity_totals.data.settlement
-                    .successful_txn_count
-                }
-                title="Total Settlements"
-              />
-              <InfoCard
-                content={
-                  aggregations.recent_payments.data.count
-                    ? formatFromNow(
-                        aggregations.recent_payments.data.items[0].created_at
-                      )
-                    : 'Never'
-                }
-                title="Last Transaction"
-              />
-              <InfoCard
-                bg="info"
-                content={
-                  aggregations.entity_totals.data.payment.successful_txn_count
-                }
-                title="Total Payments"
-              />
-              <InfoCard
-                bg="primary"
-                content={
-                  aggregations.entity_totals.data.refund.successful_txn_count
-                }
-                title="Total Refunds"
-              />
-              <InfoCard
-                amount
-                content={aggregations.entity_totals.data.payment.total_amount}
-                title="Total Volume"
-              />
-              <InfoCard
-                amount
-                content={aggregations.current_balance.data.balance}
-                title="Current Balance"
-              />
-            </div>
+      <div class="react-root">
+        <Header title="Dashboard" showMode={false}>
+          <div style={{ float: 'right' }}>
+            <DateRangePickerField
+              startDate={from}
+              endDate={to}
+              onDatesChange={({ startDate, endDate }) => {
+                this.setState(
+                  {
+                    from: startDate,
+                    to: endDate,
+                  },
+                  () => {
+                    if (!this.focusedDate && startDate && endDate) {
+                      this.props.fetchAnalytics(this.state);
+                    }
+                  }
+                );
+              }}
+              onFocusChange={focused => {
+                this.focusedDate = focused;
+              }}
+              isOutsideRange={day => moment().isBefore(day)}
+              initialVisibleMonth={_ => from}
+            />
           </div>
-          <div class="col-md-12 col-lg-6">
-            <div class="panel wrapper">
-              <h4 class="font-thin text-muted">Successful Transactions</h4>
-              <div
+          <div>
+            <small class="text-muted">
+              Welcome to Razorpay.
+            </small>
+            {/*<a class='start-tour-link'>Start Tour</a>*/}
+          </div>
+        </Header>
+        <div class="wrapper-md">
+          <div class="row">
+            <InfoCardList
+              entity_totals={entity_totals}
+              payment_breakup={payment_breakup}
+              current_balance={current_balance}
+              payments={payments}
+              refunds={refunds}
+              settlements={settlements}
+              isLive={isLive}
+            />
+            <div class="col-md-12 col-lg-6">
+              <AnalyticsGraph
+                panelClass="panel wrapper"
+                title="Successful Transactions"
                 style={{
                   height: '244px',
                   textAlign: 'center',
                   lineHeight: '244px',
                 }}
-              >
-                {(graph_data &&
-                  <Line
-                    options={timeScale}
-                    data={createLineData(
-                      graph_data.data.filter(d => {
-                        if (isLive) {
-                          return !d.mode;
-                        }
-                        return d.mode;
-                      }),
-                      'count',
-                      'Successful Transactions'
-                    )}
-                  />) ||
-                  <Spinner />}
-              </div>
+                loading={graphData.loading}
+                error={graphData.error}
+                data={transactionCountData}
+              />
             </div>
           </div>
-        </div>
-        <div class="panel hbox hbox-auto-xs">
-          <div class="col wrapper">
-            <h4 class="font-thin text-muted">Transaction Volume</h4>
-            <div
+          <div class="panel hbox hbox-auto-xs">
+            <AnalyticsGraph
+              panelClass="col wrapper"
+              title="Transaction Volume"
               style={{
                 height: '300px',
                 textAlign: 'center',
                 lineHeight: '300px',
               }}
-            >
-              {(graph_data &&
-                <Line
-                  options={timeScale}
-                  data={createLineData(
-                    graph_data.data.filter(d => {
-                      if (isLive) {
-                        return !d.mode;
-                      }
-                      d.amount = d.amount / 100;
-                      return d.mode;
-                    }),
-                    'amount',
-                    'Transaction Volume'
-                  )}
-                />) ||
-                <Spinner />}
+              loading={graphData.loading}
+              error={graphData.error}
+              data={transactionAmountData}
+            />
+            <MethodBreakupCard
+              data={payment_breakup.data}
+              loading={payment_breakup.loading}
+              error={payment_breakup.error}
+            />
+          </div>
+          <div class="panel wrapper">
+            <div class="row">
+              <RecentEntityTable
+                entity="payment"
+                data={payments}
+                loading={payments.loading}
+              />
+              <RecentEntityTable
+                entity="refund"
+                data={refunds}
+                loading={refunds.loading}
+              />
+              <RecentEntityTable
+                entity="settlement"
+                data={settlements}
+                loading={settlements.loading}
+              />
             </div>
           </div>
-          <div class="col wrapper-lg w-lg bg-light dk r-r">
-            <h4 class="font-thin">Transaction Types</h4>
-            {this.methodBreakup().map((methodData, index) => {
-              return (
-                <div key={index}>
-                  {methodData
-                    ? <div>
-                        <div class="text-center-folded">
-                          <span class="pull-right">{methodData.value}</span>
-                          <span>{titleCase(methodData.title)}</span>
-                        </div>
-                        <div class="progress-xs bg-white progress">
-                          <div
-                            class={'progress-bar progress-bar-' + methodData.bg}
-                            role="progressbar"
-                            style={{ width: methodData.value }}
-                          />
-                        </div>
-                      </div>
-                    : 'No Data'}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <div class="panel wrapper">
-          <div class="row">
-            <RecentEntityTable
-              entity="payment"
-              data={aggregations.recent_payments.data}
-            />
-            <RecentEntityTable
-              entity="refund"
-              data={aggregations.recent_refunds.data}
-            />
-            <RecentEntityTable
-              entity="settlement"
-              data={aggregations.recent_settlements.data}
-            />
-          </div>
         </div>
       </div>
     );
-  }
-
-  render() {
-    let { from, to } = this.state;
-
-    let { analytics, aggregations, fetchAnalytics } = this.props;
-
-    let content = this.getContent();
-    let header = (
-      <Header title="Dashboard" showMode={false}>
-        <div style={{ float: 'right' }}>
-          <DateRangePickerField
-            startDate={from}
-            endDate={to}
-            onDatesChange={({ startDate, endDate }) => {
-              this.setState({
-                from: startDate,
-                to: endDate,
-              });
-              if (!this.focusedDate && startDate && endDate) {
-                this.props.fetchAnalytics(this.state);
-              }
-            }}
-            onFocusChange={focused => {
-              this.focusedDate = focused;
-            }}
-            isOutsideRange={day => moment().isBefore(day)}
-            initialVisibleMonth={_ => from}
-          />
-        </div>
-        <div>
-          <small class="text-muted">
-            Welcome to Razorpay.
-          </small>
-          {/*<a class='start-tour-link'>Start Tour</a>*/}
-        </div>
-      </Header>
-    );
-
-    return (
-      <div class="react-root">
-        {header}
-        {content}
-      </div>
-    );
-  }
-
-  methodBreakup() {
-    const data = this.props.aggregations.payment_breakup.data;
-    const methods = ['CARD', 'EMI', 'NETBANKING', 'WALLET', 'UPI'].filter(
-      method => data[method]
-    );
-
-    const total = methods.reduce((prev, cur) => {
-      return prev + data[cur];
-    }, 0);
-
-    if (total) {
-      return methods.map((method, index) => {
-        return {
-          bg: colors[index],
-          title: titleCase(method),
-          value: (100 * data[method] / total).toFixed(1).replace('.0', '') +
-            '%',
-        };
-      });
-    }
-    return [null];
   }
 }

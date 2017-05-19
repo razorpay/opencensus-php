@@ -1,4 +1,6 @@
-export default ({ bg, content, title }) => {
+import Spinner from 'rzp/ui/Spinner';
+
+export default ({ bg, content, title, loading, error }) => {
   let panelClass = 'panel padder-v item';
   let textClass = 'font-thin h1';
 
@@ -7,11 +9,25 @@ export default ({ bg, content, title }) => {
     textClass += ` text-white`;
   }
 
+  if (error) {
+    textClass = bg
+      ? textClass.replace('text-white', 'text-danger')
+      : `${textClass} text-danger`;
+  }
+
   return (
     <div class="col-xxs-12 col-xs-6 col-sm-6 col-md-4 col-lg-6">
       <div class={panelClass}>
-        <div class={textClass}>{content}</div>
-        <span class="text-muted text-xs">{title}</span>
+        <div>
+          <div class={textClass}>
+            {loading
+              ? '...'
+              : error
+                  ? 'Error'
+                  : typeof content === 'function' ? content() : content}
+          </div>
+          <span class="text-muted text-xs">{title}</span>
+        </div>
       </div>
     </div>
   );

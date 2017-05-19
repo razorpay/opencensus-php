@@ -1,36 +1,36 @@
-import { Component } from 'react'
-import { DateRangePicker } from 'react-dates'
-import moment from 'moment'
+import { Component } from 'react';
+import { DateRangePicker } from 'react-dates';
+import moment from 'moment';
 
 export default class DateRangePickerField extends Component {
   state = {
     focused: null,
     from: this.props.startDate,
-    to: this.props.endDate
-  }
+    to: this.props.endDate,
+  };
 
   constructor(props) {
-    super(props)
+    super(props);
   }
 
-  onDatesChange = (dates)=> {
+  onDatesChange = dates => {
     this.setState({
       from: dates.startDate,
-      to: dates.endDate
-    })
+      to: dates.endDate,
+    });
     if (this.props.onDatesChange) {
-      this.props.onDatesChange(dates)
+      this.props.onDatesChange(dates);
     }
-  }
+  };
 
-  onFocusChange = (focused)=> {
+  onFocusChange = focused => {
     this.setState({
-      focused: focused
-    })
+      focused: focused,
+    });
     if (this.props.onFocusChange) {
-      this.props.onFocusChange(focused)
+      this.props.onFocusChange(focused);
     }
-  }
+  };
 
   render() {
     let {
@@ -40,7 +40,7 @@ export default class DateRangePickerField extends Component {
       onDatesChange,
       onFocusChange,
       ...otherProps
-    } = this.props
+    } = this.props;
 
     return (
       <div
@@ -56,10 +56,10 @@ export default class DateRangePickerField extends Component {
           {...otherProps}
         />
       </div>
-    )
+    );
   }
 }
 
 DateRangePickerField.defaultProps = {
-  displayFormat: 'DD MMM YYYY'
-}
+  displayFormat: 'DD MMM YYYY',
+};
