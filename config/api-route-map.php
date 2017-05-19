@@ -342,6 +342,9 @@ return [
 
         'merchant_edit'                     => 'merchants/{id}',
 
+        // Schedule
+        'schedule_fetch_multiple'           => 'schedules',
+
         // Entities
         'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
         'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',

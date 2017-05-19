@@ -2201,7 +2201,12 @@ app
       $scope.schedule_id = current.schedule;
       $scope.method = current.method;
 
-      var request = $http.get('/admin/schedule/list');
+      var data = {
+        route_name: 'schedule_fetch_multiple',
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request.success(function(data) {
         angular.forEach(data.data.items, function(value) {
           $scope.schedule_list[value.id] = value.name;
