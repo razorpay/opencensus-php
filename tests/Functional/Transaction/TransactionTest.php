@@ -6,10 +6,12 @@ use Carbon\Carbon;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class TransactionTest extends TestCase
 {
     use PaymentTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -23,6 +25,10 @@ class TransactionTest extends TestCase
     public function testAddAdjustment()
     {
         $this->ba->appAuth();
+
+        $this->setAdminForInternalAuth();
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $adj = $this->startTest();
 
         $testData = $this->testData['testGetAdjustment'];
@@ -30,6 +36,7 @@ class TransactionTest extends TestCase
 
 
         $this->ba->proxyAuth();
+        $this->ba->addAdminAuthHeaders(null, null);
         $adj = $this->runRequestResponseFlow($testData);
 
         $txn = $this->getLastTransaction(true);
@@ -63,7 +70,13 @@ class TransactionTest extends TestCase
     public function testAddAdjustmentWithoutUpdatingEscrowBalance()
     {
         $this->ba->appAuth();
+
+        $this->setAdminForInternalAuth();
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
         $adj = $this->startTest();
+
+        $this->ba->addAdminAuthHeaders(null, null);
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertTestResponse($txn, 'txnDataAfterAddingAdjWithNoEscrowUpdate');
@@ -147,5 +160,12 @@ class TransactionTest extends TestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
 }
