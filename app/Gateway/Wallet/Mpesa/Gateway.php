@@ -14,9 +14,10 @@ use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-use libphonenumber\PhoneNumberUtil;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Wallet;
+
+use libphonenumber\PhoneNumberUtil;
 
 class Gateway extends Base\Gateway
 {
@@ -62,7 +63,7 @@ class Gateway extends Base\Gateway
 
         $this->saveCallbackResponse($content);
 
-        $this->checkGatewayResponseStatus($content[ResponseFields::STATUS_CODE]);
+        $this->checkGatewayResponse($content[ResponseFields::STATUS_CODE]);
 
         return $this->getCallbackResponseData($input);
     }
@@ -97,7 +98,7 @@ class Gateway extends Base\Gateway
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // Otp generation fails, throw exception
-        $this->checkGatewayResponseStatus($status);
+        $this->checkGatewayResponse($status);
 
         return $this->getOtpSubmitRequest($input);
     }
@@ -129,7 +130,7 @@ class Gateway extends Base\Gateway
         $this->saveOtpCallbackContent($content);
 
         // Otp submission fails, throw exception
-        $this->checkGatewayResponseStatus($status);
+        $this->checkGatewayResponse($status);
 
         return $this->getCallbackResponseData($input);
     }
@@ -162,7 +163,7 @@ class Gateway extends Base\Gateway
         $this->createGatewayRefundEntity($attributes);
 
         // response will contain status 100 or 101
-        $this->checkGatewayResponseStatus($status);
+        $this->checkGatewayResponse($status);
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
@@ -262,7 +263,7 @@ class Gateway extends Base\Gateway
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
         // response will contain status 100 or 101
-        $this->checkGatewayResponseStatus($status);
+        $this->checkGatewayResponse($status);
     }
 
     protected function getAuthorizeRequestData()
@@ -303,9 +304,7 @@ class Gateway extends Base\Gateway
         //
         array_walk_recursive($gatewayParam, [$gatewayParamXml, 'addChild']);
 
-        $gatewayParamXml = trim(explode('?>', $gatewayParamXml->asXML())[1]);
-
-        return $gatewayParamXml;
+        return $gatewayParamXml->asXML();
     }
 
     protected function getGatewayParamArray()
@@ -545,7 +544,7 @@ class Gateway extends Base\Gateway
         return $headers;
     }
 
-    protected function checkGatewayResponseStatus(string $status)
+    protected function checkGatewayResponse(string $status)
     {
         if ($status !== StatusCode::SUCCESS)
         {
@@ -623,11 +622,11 @@ class Gateway extends Base\Gateway
 
     protected function getSoapUserId()
     {
-        $userId = $this->config['test_user_id'];
+        $userId = $this->config['live_user_id'];
 
-        if ($this->mode === Mode::LIVE)
+        if ($this->mode === Mode::TEST)
         {
-            $userId = $this->config['live_user_id'];
+            $userId = $this->config['test_user_id'];
         }
 
         return $userId;
@@ -635,17 +634,17 @@ class Gateway extends Base\Gateway
 
     protected function getSoapPassword()
     {
-        $password = $this->config['test_password'];
+        $password = $this->config['live_password'];
 
-        if ($this->mode === Mode::LIVE)
+        if ($this->mode === Mode::TEST)
         {
-            $password = $this->config['live_password'];
+            $password = $this->config['test_password'];
         }
 
         return $password;
     }
 
-    protected function getPaymentToVerify($verify)
+    protected function getPaymentToVerify(Verify $verify)
     {
         $actions = [Action::AUTHORIZE, Action::OTP_GENERATE];
 

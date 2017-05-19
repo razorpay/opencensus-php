@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Hdfc;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\TraceCode;
 
@@ -72,7 +73,7 @@ trait Inquiry
         return $attributes;
     }
 
-    protected function getPaymentToVerify($verify)
+    protected function getPaymentToVerify(Verify $verify)
     {
         $input = $verify->input;
 

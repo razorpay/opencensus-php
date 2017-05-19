@@ -10,6 +10,7 @@ class Validator extends Base\Validator
     protected static $authRules = [
         RequestFields::GATEWAY_PARAM => 'required|string',
         RequestFields::CHECKSUM      => 'required|string',
+        'paymentId'                  => 'required|string',
     ];
 
     protected static $gatewayparamRules = [

@@ -1569,7 +1569,7 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                        => Terminal\Shared::VODAFONEMPESA_RAZORPAY_TERMINAL,
+                'id'                        => Terminal\Shared::MPESA_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
                 'gateway'                   => Gateway::WALLET_MPESA,
                 'card'                      => '0',

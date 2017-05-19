@@ -18,8 +18,6 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
-        unset($input['paymentId']);
-
         $this->validateAuthorizeInput($input);
 
         $request = $this->parseRequestXml($input);
