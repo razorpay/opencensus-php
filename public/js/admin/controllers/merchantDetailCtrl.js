@@ -588,6 +588,8 @@ app
         var mode = adjustment.mode;
         delete adjustment.mode;
 
+        adjustment.merchant_id = $scope.merchant.id;
+
         var data = {
           route_name: 'adj_add',
           merchant_id: $scope.merchant.id,
