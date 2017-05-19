@@ -1,5 +1,5 @@
-import { defaults } from 'react-chartjs-2'
-import moment from 'moment'
+import { defaults } from 'react-chartjs-2';
+import moment from 'moment';
 
 const global = defaults.global;
 global.maintainAspectRatio = false;
@@ -23,51 +23,61 @@ const colors = [
   [241, 196, 15],
   [155, 89, 182],
   [231, 76, 60],
-  [26, 188, 156]
-]
+  [26, 188, 156],
+];
 
-const rgb = (array, alpha)=> {
-  if (alpha)
-    return `rgba(${array[0]}, ${array[1]}, ${array[2]}, ${alpha})`;
+const rgb = (array, alpha) => {
+  if (alpha) return `rgba(${array[0]}, ${array[1]}, ${array[2]}, ${alpha})`;
   return `rgb(${array[0]}, ${array[1]}, ${array[2]})`;
-}
+};
 
 export const timeScale = {
   scales: {
-    xAxes: [{
-      type: 'time',
-      time: {
-        displayFormats: {
-          hour: 'HH'
+    xAxes: [
+      {
+        type: 'time',
+        time: {
+          displayFormats: {
+            day: 'DD, MMM',
+          },
+          unit: 'day',
+          parser: utcMoment => utcMoment.utcOffset('+0000'),
+          tooltipFormat: 'ddd DD MMM YYYY',
         },
-        unit: 'day',
-        parser: utcMoment=> utcMoment.utcOffset('+0000'),
-        tooltipFormat: 'ddd DD MMM YYYY'
-      }
-    }]
-  }
-}
+      },
+    ],
+    yAxes: [
+      {
+        ticks: {
+          beginAtZero: true,
+        },
+      },
+    ],
+  },
+};
 
-export const processLineData = (data)=> {
-  data.datasets.map((d, index)=> {
+export const processLineData = data => {
+  data.datasets.map((d, index) => {
     let color = colors[index];
     d.pointBorderColor = '#fff';
     d.pointHoverBorderColor = '#fff';
     d.pointBackgroundColor = rgb(color);
     d.borderColor = rgb(color);
-    d.backgroundColor = rgb(color, .4);
-  })
+    d.backgroundColor = rgb(color, 0.4);
+  });
   return data;
-}
+};
 
-export const createLineData = (rawData, column, title)=> {
+export const createLineData = (rawData, column, title) => {
   return processLineData({
-    labels: rawData.map(d=> moment(d.created_at * 1e3)),
-    datasets: [{
-      label: title,
-      data: rawData.map((d)=> {
-        return d[column];
-      })
-    }]
-  })
-}
+    labels: rawData.map(d => moment(d.created_at * 1e3)),
+    datasets: [
+      {
+        label: title,
+        data: rawData.map(d => {
+          return d[column];
+        }),
+      },
+    ],
+  });
+};
