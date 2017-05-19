@@ -2,12 +2,12 @@ Hi!
 
 <br><br>
 
-{{ $adminName }} has invited you to sign up for {{ $businessName }} Merchant Services. <!-- TODO Parse invitation array and fill correct data -->
+{{ $adminName }} has invited you to sign up for {{ $org['business_name'] }} Merchant Services. <!-- TODO Parse invitation array and fill correct data -->
 
 <br><br>
 
-<a href="{{ url('/#/access/signup?merchant_invitation=' . $invitation['token']) }}">
-    {{ URL::to('/#/access/signup?merchant_invitation='. $invitation['token']) }}
+<a href="{{ 'https://' .$hostname .'/#/access/signup?merchant_invitation=' . $invitation['token'] }}">
+    {{ 'https://' .$hostname .'/#/access/signup?merchant_invitation='. $invitation['token'] }}
 </a>
 
 <br><br>
@@ -19,11 +19,19 @@ See you soon!
 <div>
 	<p>
 	--<br/>
-	The {{ $businessName }} Team <br/>
+	The {{ $org['business_name'] }} Team <br/>
 	 <!--TODO Add respective org name here and in following details -->
-	<a href="mailto: {{ $signatureEmail }}">{{ $signatureEmail }}</a>
+	<a href="mailto: {{ $org['signature_email'] }}">{{ $org['signature_email'] }}</a>
 	</p>
-	<a href="https://razorpay.com" target="_blank">
-		<img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
-	</a>
+
+    @if ($org['custom_code'] === 'rzp')
+        <a href="https://razorpay.com" target="_blank">
+            <img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
+        </a>
+    @elseif ($org['login_logo_url'] !== '')
+        <a href="{{ 'https://' .$hostname }}" target="_blank">
+            <img style="width:200px; height:auto;" src="{{ $org['login_logo_url'] }}">
+        </a>
+    @endif
+
 </div>

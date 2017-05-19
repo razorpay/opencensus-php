@@ -50,8 +50,8 @@ class Core extends Base\Core
         $data = [
             'invitation'     => $invitation->toArrayPublic(),
             'adminName'      => $admin->getName(),
-            'businessName'   => $org->getBusinessName(),
-            'signatureEmail' => $org->getSignatureEmail()
+            'org'            => $org->toArrayPublic(),
+            'hostname'       => $org->hostnames->first()->getHostname(),
         ];
 
         $data['invitation']['token'] = $invitation->getToken();
