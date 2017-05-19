@@ -11,7 +11,6 @@ use RZP\Models\FileStore;
 use RZP\Base\JitValidator;
 use RZP\Constants\Entity as E;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Models\Merchant;
 
 class BasicEntityReport extends BaseReport
 {
