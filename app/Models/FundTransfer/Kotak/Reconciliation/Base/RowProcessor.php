@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 
 use RZP\Constants\Entity;
+use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
@@ -24,19 +26,34 @@ class RowProcessor extends BaseCore
 
     protected $parsedData;
 
+    /**
+     * Entity corresponding to the payment_ref_no column in the file
+     */
+    protected $reconEntity;
+
+    /**
+     * Public id of $reconEntity
+     */
     protected $reconEntityId;
 
-    protected $reconEntity;
+    /**
+     * Entity returned by method updateEntities. Is either settlement/payout entity
+     */
+    protected $entity;
 
     protected $reconciledAt;
 
     protected $firstFailure = false;
+
+    protected $dashboardUrl;
 
     public function __construct($row)
     {
         parent::__construct();
 
         $this->row = $row;
+
+        $this->dashboardUrl = $this->app['config']->get('applications.dashboard.url');
     }
 
     public function process($reconciledAt)
@@ -49,9 +66,14 @@ class RowProcessor extends BaseCore
 
         $this->getReconciliationStatus();
 
-        $entity = $this->updateEntities();
+        $this->entity = $this->updateEntities();
 
-        return ['entity' => $entity, 'first_failure' => $this->firstFailure];
+        if ($this->firstFailure === true)
+        {
+            $this->sendReconciliationFailureEmail();
+        }
+
+        return $this->entity;
     }
 
     protected function parseRow()
@@ -137,5 +159,47 @@ class RowProcessor extends BaseCore
         $this->parsedData['failure_reason'] = $failureReason;
 
         $this->parsedData['status'] = $status;
+    }
+
+    protected function sendReconciliationFailureEmail()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        $data['merchant_id'] = $this->entity->getMerchantId();
+
+        $data['remarks'] = $this->entity->getRemarks();
+
+        $data['profile_link'] = $this->dashboardUrl . '#/app/profile';
+
+        // bankAccount for Settlelemt entity, and destination for Payout entity
+        $ba = $this->entity->destination ?? $this->entity->bankAccount;
+
+        $data['last4'] = $ba->getRedactedAccountNumber();
+
+        $data['merchant_email'] = $this->entity->merchant->getEmail();
+
+        $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
+
+        Mail::queue('emails.merchant.settlement_failure', $data, function($message) use ($data)
+        {
+            // $emails = $data['merchant_email'];
+            $emails = 'priyanshu.chhazed@razorpay.com';
+
+            // $message->from('care@razorpay.com', 'Razorpay Settlement Support');
+            $message->from('priyanshu.chhazed@razorpay.com', 'Razorpay Settlement Support');
+
+            // $message->cc('support@razorpay.com');
+
+            $message->subject($data['subject']);
+
+            $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::SETTLEMENT_FAILURE_EMAIL);
+        });
     }
 }

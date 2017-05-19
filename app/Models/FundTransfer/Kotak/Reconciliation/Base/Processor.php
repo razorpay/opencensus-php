@@ -41,10 +41,6 @@ class Processor extends Base\Core
      */
     protected $allEntities = [];
 
-    protected $firstFailureEntities = [];
-
-    protected $dashboardUrl;
-
     /**
      * Array of ids for which entity couldn't be found in database
      */
@@ -61,8 +57,6 @@ class Processor extends Base\Core
         $this->reconciledAt = time();
 
         $this->mutex = $this->app['api.mutex'];
-
-        $this->dashboardUrl = $this->app['config']->get('applications.dashboard.url');
     }
 
     public function process($input)
@@ -111,7 +105,7 @@ class Processor extends Base\Core
 
             $this->storeReconciledFile($reconcileFile);
 
-            $this->sendReconciliationEmails($response);
+            $this->sendReconciliationSummaryMail($response);
         }
 
         return $response;
@@ -127,16 +121,7 @@ class Processor extends Base\Core
         {
             foreach ($data as $row)
             {
-                $reconResponse = $this->reconcileEntity($row);
-
-                $entity = $reconResponse['entity'];
-
-                $this->updateBatchFundTransferStats($entity);
-
-                if ($reconResponse['first_failure'] === true)
-                {
-                    $this->firstFailureEntities[$entity->getMerchantId()] = $entity;
-                }
+                $entity = $this->reconcileEntity($row);
 
                 if ($entity === null)
                 {
@@ -145,6 +130,8 @@ class Processor extends Base\Core
                 else
                 {
                     $this->allEntities[] = $entity;
+
+                    $this->updateBatchFundTransferStats($entity);
                 }
             }
 
@@ -250,6 +237,8 @@ class Processor extends Base\Core
         {
             $entityId = $entity->getId();
 
+            $allEntityIds[] = $entityId;
+
             if ($entity->isStatusFailed())
             {
                 $failureEntityIds[] = $entityId;
@@ -282,64 +271,13 @@ class Processor extends Base\Core
         ];
     }
 
-    protected function sendReconciliationEmails($response)
+    protected function sendReconciliationSummaryMail($response)
     {
         if ($this->mode === Mode::TEST)
         {
             return;
         }
 
-        $this->sendReconciliationSummaryMail($response);
-
-        if (empty($this->firstFailureEntities) !== true)
-        {
-            $this->sendReconciliationFailureEmails();
-        }
-    }
-
-    protected function sendReconciliationFailureEmails()
-    {
-        $data = [];
-
-        foreach ($this->firstFailureEntities as $merchantId => $entity)
-        {
-            $data['merchant_id'] = $merchantId;
-
-            $data['remarks'] = $entity->getRemarks();
-
-            $data['profile_link'] = $this->dashboardUrl . '#/app/profile';
-
-            // bankAccount for Settlelemt entity, and destination for Payout entity
-            $ba = $entity->destination ?? $entity->bankAccount;
-            $data['last4'] = $ba->getRedactedAccountNumber();
-
-            $data['merchant_email'] = $entity->merchant->getEmail();
-
-            $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
-
-            Mail::queue('emails.merchant.settlement_failure', $data, function($message) use ($data)
-            {
-                $emails = $data['merchant_email'];
-                // $emails = 'priyanshu.chhazed@razorpay.com';
-
-                $message->from('care@razorpay.com', 'Razorpay Settlement Support');
-                // $message->from('priyanshu.chhazed@razorpay.com', 'Razorpay Settlement Support');
-
-                $message->cc('support@razorpay.com');
-
-                $message->subject($data['subject']);
-
-                $message->to($emails);
-
-                $headers = $message->getHeaders();
-
-                $headers->addTextHeader(MailTags::HEADER, MailTags::SETTLEMENT_FAILURE_EMAIL);
-            });
-        }
-    }
-
-    protected function sendReconciliationSummaryMail($response)
-    {
         $msg = 'UTR File reconciled.' . PHP_EOL;
 
         $failureCount = $response['failures_count'];
