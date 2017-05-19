@@ -97,7 +97,7 @@ class BasicAuth
      * Admin who is authenticating himself
      * through adminAuth
      */
-    private $isAdmin = null;
+    private $isAdmin = false;
 
     /**
      * During app authentication, the app
@@ -208,6 +208,9 @@ class BasicAuth
         $this->route = $this->app['api.route'];
         $this->merchant = null;
         $this->device = null;
+        $this->isAdmin = false;
+        $this->appAuth = false;
+        $this->proxy = false;
     }
 
     public function setCredentials()
