@@ -23,7 +23,8 @@ class Gateway extends Base\Gateway
 
     const VERIFY_TO_CALLBACK_STATUS = [
         Status::SUCCESS => Status::YES,
-        Status::NO      => Status::NO
+        Status::NO      => Status::NO,
+        Status::ERROR   => Status::NO,
     ];
 
     protected $map = [
@@ -81,9 +82,11 @@ class Gateway extends Base\Gateway
         $this->verifyCallback($input);
 
         // Saving callback response only if the above checks pass
-        $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->saveCallbackResponse($content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -196,7 +199,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         //
-        // Verify response will contain S or N, but we have already
+        // Verify response will contain S or N or E, but we have already
         // mapped the S status to Y in parseVerifyResponse
         //
         if ($content[ResponseFields::STATUS] === Status::getAuthSuccessStatus())
@@ -270,6 +273,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
     }
 
     protected function checkCallbackStatus(array $content)

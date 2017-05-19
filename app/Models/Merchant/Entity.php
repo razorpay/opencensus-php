@@ -46,6 +46,8 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
+    const GROUPS                    = 'groups';
+    const ADMINS                    = 'admins';
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
@@ -145,8 +147,8 @@ class Entity extends Base\PublicEntity
         self::ARCHIVED_AT,
         self::LOGO_URL,
         self::ORG_ID,
-        'groups',
-        'admins',
+        self::GROUPS,
+        self::ADMINS,
      ];
 
     protected $defaults = [

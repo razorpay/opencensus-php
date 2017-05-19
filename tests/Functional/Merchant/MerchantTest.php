@@ -1288,7 +1288,7 @@ class MerchantTest extends TestCase
             'id'       => $id,
             'name'     => 'Tester 2',
             'email'    => 'liveandtest@localhost.com',
-            'admin_id' => $adminId,
+            'admins'   => [$adminId],
         ];
 
         $request = [

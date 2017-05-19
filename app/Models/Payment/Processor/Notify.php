@@ -784,6 +784,14 @@ class Notify
      */
     protected function isMailEnabled($event, $isMerchant = false)
     {
+        // If it is a customer mail and the customer's email address
+        // is null or void@razorpay.com don't send email
+        if (($isMerchant === false) and
+            ($this->payment->isCustomerMailAbsent() === true))
+        {
+            return false;
+        }
+
         // If the merchant has disabled customer emails
         // And this was a customer receipt email
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
@@ -793,7 +801,6 @@ class Notify
         }
 
         return $this->isEnabled();
-
     }
 
     /**
