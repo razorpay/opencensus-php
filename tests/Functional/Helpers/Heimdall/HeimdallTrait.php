@@ -104,7 +104,7 @@ trait HeimdallTrait
             ],
         ];
 
-        $this->ba->adminAuth('test', $token);
+        $this->ba->adminAuth('test', $token, $orgId);
 
         $content = $this->makeRequestAndGetContent($request);
 
