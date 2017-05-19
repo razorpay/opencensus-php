@@ -471,7 +471,9 @@ class Entity extends Base\PublicEntity
         $gateway = $input[self::GATEWAY];
         $methods = [
             self::CARD,
-            self::NETBANKING
+            self::NETBANKING,
+            self::UPI,
+            self::AEPS,
         ];
 
         foreach ($methods as $method)

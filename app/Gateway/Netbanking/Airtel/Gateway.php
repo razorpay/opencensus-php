@@ -67,11 +67,13 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($content);
 
-        $this->saveCallbackContent($input, $content);
+        $gatewayPayment = $this->saveCallbackContent($input, $content);
 
         $this->checkActionStatus($content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function refund(array $input)
@@ -208,6 +210,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
     }
 
     protected function getCallbackAttributes($content)

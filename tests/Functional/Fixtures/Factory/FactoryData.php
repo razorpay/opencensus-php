@@ -119,6 +119,7 @@ final class FactoryData
             'email' => $faker->email,
             'auto_captured' => 0,
             'captured_at' => null,
+            'reference1' => $faker->uniqueid,
             'transaction_id' => null,
             'on_hold' => 0,
             'created_at' => $faker->timestamp,
