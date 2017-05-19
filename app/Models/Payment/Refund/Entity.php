@@ -178,11 +178,15 @@ class Entity extends Base\PublicEntity
     {
         $currency = $this->getCurrency();
 
+        $currencySymbol = Currency\Currency::SYMBOL[$currency];
+
         $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
 
-        $amount = number_format($this->getAmount() / $denominationFactor, 2);
+        $amount = $this->getAmount() / $denominationFactor;
 
-        return $currency . ' ' . $amount;
+        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
+
+        return $currencySymbol . ' ' . $amount;
     }
 
     public function getPaymentId()

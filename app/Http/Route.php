@@ -836,6 +836,7 @@ final class Route
         'upi_fill_bank',
         'methods_update_merchants',
         'payments_multiple_authorize_refund',
+        'adj_add',
         'adj_add_reverse',
         'admin_get_app_auth',
         'admin_authentication',
@@ -890,7 +891,6 @@ final class Route
         'setl_get_details',
         'adj_fetch_by_id',
         'adj_fetch_multiple',
-        'adj_add',
         'card_fetch_multiple',
         'webhook_create',
         'webhook_edit',
@@ -1111,8 +1111,14 @@ final class Route
         'merchant_activation_update'       => '*', // permission handled in code
         'merchant_assign_pricing'          => Permission::EDIT_MERCHANT_PRICING,
         'merchant_get_banks'               => Permission::VIEW_MERCHANT_BANKS,
-        'merchant_set_banks'               => Permission::EDIT_MERCHANT_BANKS,
+        'merchant_set_banks'               => Permission::ASSIGN_MERCHANT_BANKS,
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
+        'merchant_edit'                    => '*', // permission handled in code
+        'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
+        'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
+        'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
+        'admin_fetch_terminal_by_id'       => '*',
+        'merchants_update_hold_funds'      => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
     ];
 
     public static $direct = [

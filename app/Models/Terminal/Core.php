@@ -72,7 +72,8 @@ class Core extends Base\Core
                 'merchant_id'           => $merchant->getId(),
             ]);
 
-        if ($terminal->isShared() === true)
+        if (($terminal->isShared() === true) and
+            ($terminal->isEnabled() === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED);
