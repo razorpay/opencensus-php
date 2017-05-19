@@ -113,8 +113,6 @@ class Processor extends Base\Core
 
     protected function startReconciliation($data): array
     {
-        $unprocessedIds = [];
-
         $this->repo->beginTransaction();
 
         try
@@ -168,9 +166,9 @@ class Processor extends Base\Core
 
         $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\' . ucwords($version) . '\\RowProcessor';
 
-        $reconResponse = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
+        $reconciledEntity = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
 
-        return $reconResponse;
+        return $reconciledEntity;
     }
 
     protected function updateBatchFundTransferStats($reconciledEntity)

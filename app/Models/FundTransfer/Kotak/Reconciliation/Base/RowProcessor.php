@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
+use Mail;
 
 use RZP\Constants\Entity;
 use RZP\Constants\MailTags;
@@ -43,6 +44,9 @@ class RowProcessor extends BaseCore
 
     protected $reconciledAt;
 
+    /**
+     * Denotes whether the reconEntity is being marked at failed for the first time
+     */
     protected $firstFailure = false;
 
     protected $dashboardUrl;
@@ -149,11 +153,6 @@ class RowProcessor extends BaseCore
                     'Old status: ' . $oldStatus . ' New status: ' . $status .
                     'Entity Id: ' . $this->reconEntity->getPublicId());
             }
-
-            if ($status === $class::FAILED)
-            {
-                $this->firstFailure = true;
-            }
         }
 
         $this->parsedData['failure_reason'] = $failureReason;
@@ -168,7 +167,9 @@ class RowProcessor extends BaseCore
             return;
         }
 
-        $data['merchant_id'] = $this->entity->getMerchantId();
+        $merchantId = $this->entity->getMerchantId();
+
+        $data['merchant_id'] = $merchantId;
 
         $data['remarks'] = $this->entity->getRemarks();
 
@@ -185,13 +186,13 @@ class RowProcessor extends BaseCore
 
         Mail::queue('emails.merchant.settlement_failure', $data, function($message) use ($data)
         {
-            // $emails = $data['merchant_email'];
-            $emails = 'priyanshu.chhazed@razorpay.com';
+            $emails = $data['merchant_email'];
+            // $emails = 'priyanshu.chhazed@razorpay.com';
 
-            // $message->from('care@razorpay.com', 'Razorpay Settlement Support');
-            $message->from('priyanshu.chhazed@razorpay.com', 'Razorpay Settlement Support');
+            $message->from('care@razorpay.com', 'Razorpay Settlement Support');
+            // $message->from('priyanshu.chhazed@razorpay.com', 'Razorpay Settlement Support');
 
-            // $message->cc('support@razorpay.com');
+            $message->cc('support@razorpay.com');
 
             $message->subject($data['subject']);
 
