@@ -1,15 +1,18 @@
 import Time from 'rzp/ui/Time';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from '../TableBody';
-import { NavLink } from 'react-router-dom';
+import TransactionNavLink from 'merchant/components/TransactionNavLink';
 
 const PaymentsListItem = ({ payment, hasOrders, orders }) => {
   return (
     <tr>
       <td>
-        <NavLink to={`/app/payments/${payment.id}`}>
+        <TransactionNavLink
+          to={`#/app/payments/${payment.id}`}
+          queryParam="fullview"
+        >
           {payment.id}
-        </NavLink>
+        </TransactionNavLink>
       </td>
       {hasOrders && <td>{orders[payment.id]}</td>}
       <td>{payment.currency}</td>
