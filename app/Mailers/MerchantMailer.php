@@ -52,9 +52,7 @@ class MerchantMailer extends Mailer
         $this->fromEmail = $this->org['from_email'];
         $this->fromName = $this->org['display_name'];
 
-        $this->data['business_name'] = $this->org['business_name'];
-        $this->data['display_name'] = $this->org['display_name'];
-        $this->data['signature_email'] = $this->org['signature_email'];
+        $this->data['org'] = $this->org;
 
         return $this;
     }

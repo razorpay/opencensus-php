@@ -23,6 +23,7 @@ class UserMailer extends Mailer
 
         $domain = \Request::server('SERVER_NAME');
         list($error, $org) = (new Admin\Service)->getOrg($domain);
+
         $this->org = $org;
     }
 
@@ -38,11 +39,10 @@ class UserMailer extends Mailer
         $this->view = 'emails.confirmation';
         $this->mailTag = MailTags::ACCOUNT_CONFIRMATION_MAIL;
 
-        $this->data['business_name'] = $org['business_name'];
-        $this->data['display_name'] = $org['display_name'];
-        $this->data['signature_email'] = $org['signature_email'];
-        $this->fromEmail = $org['from_email'];
-        $this->fromName = $org['display_name'];
+        $this->data['org'] = $this->org;
+
+        $this->fromEmail = $this->org['from_email'];
+        $this->fromName = $this->org['display_name'];
 
         return $this;
     }
