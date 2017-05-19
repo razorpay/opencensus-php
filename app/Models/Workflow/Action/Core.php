@@ -13,7 +13,6 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow;
 use RZP\Models\Admin\Permission;
-use RZP\Models\Workflow\Action;
 
 class Core extends Base\Core
 {
@@ -108,7 +107,7 @@ class Core extends Base\Core
 
             $actionId = $input[Entity::ID];
 
-            Action\Entity::verifyIdAndStripSign($actionId);
+            Entity::verifyIdAndStripSign($actionId);
 
             $action->setId($actionId);
         }
@@ -357,6 +356,8 @@ class Core extends Base\Core
 
     public function getByIdAndOrgId(string $id, string $orgId)
     {
+        Entity::verifyIdAndStripSign($id);
+
         return $this->repo->workflow_action->findByIdAndOrgId($id, $orgId);
     }
 

@@ -168,7 +168,8 @@ class Service
 
         $diff = $this->getDiff();
 
-        if (empty($diff) === false)
+        // we will consider empty array as valid diff for now
+        if ((is_array($diff) === true) or (empty($diff) === false))
         {
             $differEntity[Differ\Entity::DIFF] = $diff;
         }
