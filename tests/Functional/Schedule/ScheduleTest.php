@@ -6,10 +6,12 @@ use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 
 class ScheduleTest extends TestCase
 {
     use ScheduleTrait;
+    use SubscriptionTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -160,59 +162,76 @@ class ScheduleTest extends TestCase
 
     public function testScheduleSyncLiveAndTest()
     {
-        $this->ba->adminAuth();
+        $this->ba->adminAuth('test');
 
         // Created schedule has default type settlement
-        $response = $this->createSchedule();
+        $testSchedule = $this->createSchedule();
 
         $this->ba->appAuthLive();
 
         // Settlement schedules are synced in test and live
-        $liveSchedule = $this->fetchSchedule($response['id']);
-
-        $this->ba->appAuthTest();
-
-        $testSchedule = $this->fetchSchedule($response['id']);
+        $liveSchedule = $this->fetchSchedule($testSchedule['id']);
 
         $this->assertArraySelectiveEquals($testSchedule, $liveSchedule);
 
-        $this->ba->adminAuth();
+        $this->ba->adminAuth('test');
 
-        $updateData = ['name' => 'New name'];
+        $updateTestData = ['name' => 'New name'];
 
-        $this->editSchedule($testSchedule['id'], $updateData);
+        $this->editSchedule($testSchedule['id'], $updateTestData);
 
         $this->ba->appAuthLive();
 
-        $liveSchedule = $this->fetchSchedule($response['id']);
+        $liveSchedule = $this->fetchSchedule($testSchedule['id']);
 
         // Changes made in test mode are synced in live db
-        $this->assertArraySelectiveEquals($updateData, $liveSchedule);
+        $this->assertArraySelectiveEquals($updateTestData, $liveSchedule);
 
-        $input = $this->getDefaultScheduleArray();
+        $response = $this->createSubscriptionToSync();
 
-        // Create another schedule, of type subscription
-        $input['type'] = 'subscription';
+        $testSchedule = $this->getLastEntity('schedule', true);
 
-        $this->ba->adminAuth();
-
-        $response = $this->createSchedule($input);
+        $testScheduleTask = $this->getLastEntity('schedule_task', true);
 
         $this->ba->appAuthLive();
 
-        // Schedule was created in test mode, so does not exist in live db
+        // Schedule was created in test mode, but is still synced to live db
+        $liveSchedule = $this->fetchSchedule($testSchedule['id']);
+
+        // Schedule tasks aren't synced for subscription type, so this throws an error
         $this->runRequestResponseFlow(
             $this->testData[__FUNCTION__],
-            function() use ($response)
+            function() use ($testScheduleTask)
             {
-                $liveSchedule = $this->fetchSchedule($response['id']);
+                $this->getEntityById(
+                    'schedule_task',
+                    $testScheduleTask['id'],
+                    true,
+                    'live');
             });
 
-        $this->ba->appAuthTest();
+        // Schedule task does exist in test db, so fetch works
+        $testScheduleTask = $this->getEntityById(
+                                'schedule_task',
+                                $testScheduleTask['id'],
+                                true,
+                                'test');
 
-        // Schedule does exist in test db, so fetch works
-        $testSchedule = $this->fetchSchedule($response['id']);
+        $this->assertEquals('subscription', $testScheduleTask['type']);
+    }
 
-        $this->assertEquals($input['type'], $testSchedule['type']);
+    protected function createSubscriptionToSync()
+    {
+        $this->fixtures->base->connection('test');
+
+        $this->createSubscriptionPreRequisiteEntities();
+
+        $this->fixtures->merchant->addFeatures(['subscriptions']);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

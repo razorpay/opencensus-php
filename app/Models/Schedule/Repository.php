@@ -26,11 +26,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    protected function shouldSync($entity) : bool
-    {
-        return Type::isSyncedInLiveAndTest($entity->getType());
-    }
-
     protected function addQueryParamDeleted($query, $params)
     {
         if ($params[self::WITH_TRASHED] === '1')
