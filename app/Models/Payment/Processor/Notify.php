@@ -524,6 +524,13 @@ class Notify
      */
     protected function isCustomerMailEnabled(PaymentMail\Base $mailable)
     {
+        // If it is a customer mail and the customer's email address
+        // is null or void@razorpay.com don't send email
+        if ($this->payment->isCustomerMailAbsent() === true)
+        {
+            return false;
+        }
+
         // If the merchant has disabled customer emails
         // And this was a customer receipt email don't send a mail
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
