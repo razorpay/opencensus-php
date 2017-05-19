@@ -67,6 +67,8 @@ class ReportsJob extends Job implements ShouldQueue
             $reportType->setMerchant($this->merchantId);
 
             $reportType->generateReport($this->input);
+
+            $this->delete();
         }
         catch (\Exception $e)
         {
