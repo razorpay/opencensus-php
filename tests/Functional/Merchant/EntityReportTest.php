@@ -244,49 +244,26 @@ class EntityReportTest extends TestCase
 
     public function testGenerateReportCombined()
     {
-        $this->doAuthAndCapturePayment();
-        $this->doAuthCaptureAndRefundPayment();
-
-        $dt = Carbon::today('Asia/Kolkata');
-
-        $input = [
-            'year' => $dt->year,
-            'month' => $dt->month,
-            'day' => $dt->day
-        ];
-
         $entity = 'transaction';
 
-        $this->generateEntityReport($entity, $input);
-
-        $reports = $this->fetchReports(['type' => 'transaction']);
-
-        assert($reports['count'] === 1);
+        $this->generateReportAndFetch($entity);
     }
 
     public function testGenerateReportSettlement()
     {
-        $this->doAuthAndCapturePayment();
-        $this->doAuthCaptureAndRefundPayment();
-
-        $dt = Carbon::today('Asia/Kolkata');
-
-        $input = [
-            'year' => $dt->year,
-            'month' => $dt->month,
-            'day' => $dt->day
-        ];
-
         $entity = 'settlement';
 
-        $this->generateEntityReport($entity, $input);
-
-        $reports = $this->fetchReports(['type' => 'settlement']);
-
-        assert($reports['count'] === 1);
+        $this->generateReportAndFetch($entity);
     }
 
     public function testGenerateReportPayment()
+    {
+        $entity = 'payment';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    protected function generateReportAndFetch(string $entity)
     {
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
@@ -299,11 +276,9 @@ class EntityReportTest extends TestCase
             'day' => $dt->day
         ];
 
-        $entity = 'payment';
-
         $this->generateEntityReport($entity, $input);
 
-        $reports = $this->fetchReports(['type' => 'payment']);
+        $reports = $this->fetchReports(['type' => $entity]);
 
         assert($reports['count'] === 1);
     }

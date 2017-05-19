@@ -260,19 +260,20 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function generateEntityReport($entity, $content, $id = Account::TEST_ACCOUNT)
+    protected function generateEntityReport($entity, $content)
     {
-        $request = array(
+        $request = [
             'url' => '/reports/' .$entity. '/generate',
             'method' => 'post',
-            'content' => $content);
+            'content' => $content
+        ];
 
         $this->ba->proxyAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function fetchReports($content, $id = Account::TEST_ACCOUNT)
+    protected function fetchReports($content)
     {
         $request = array(
             'url' => '/reports',

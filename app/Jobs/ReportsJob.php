@@ -18,7 +18,7 @@ class ReportsJob extends Job implements ShouldQueue
     use InteractsWithQueue, SerializesModels;
 
     const MAX_ALLOWED_ATTEMPTS = 5;
-    const RELEASE_WAIT_SECS    = 60;
+    const RELEASE_WAIT_SECS    = 300;
 
     const JOB_DELETED          = 'job_deleted';
     const JOB_RELEASED         = 'job_released';
