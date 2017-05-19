@@ -185,6 +185,7 @@ class Entity extends Base\PublicEntity
         self::APPROVAL_CODE,
         self::REFERENCE1,
         self::REFERENCE2,
+        self::ACQUIRER,
         self::TRANSFER_ID,
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
@@ -784,6 +785,8 @@ class Entity extends Base\PublicEntity
 
     protected function getAcquirerAttribute()
     {
+        $acquirer = [];
+
         switch ($this->getAttribute(self::METHOD))
         {
             case Method::CARD:
@@ -807,11 +810,6 @@ class Entity extends Base\PublicEntity
                 break;
 
             case Method::UPI:
-
-                $acquirer = [];
-                break;
-
-            default:
 
                 $acquirer = [];
                 break;
@@ -1550,7 +1548,7 @@ class Entity extends Base\PublicEntity
 
         // We are hardcoding the merchant ids for now.
         // Will move this to feature flag.
-        if (in_array($currentMerchantId, $merchantIds, true) === true)
+        if (in_array($currentMerchantId, $merchantIds, true) === false)
         {
             unset($array[self::ACQUIRER]);
         }
