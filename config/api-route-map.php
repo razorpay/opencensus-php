@@ -85,6 +85,7 @@ return [
         // Create Schedule
         'schedule_create'                   => 'schedules',
         'schedule_assign'                   => 'merchants/{id}/schedules',
+        'schedule_fetch_multiple'           => 'schedules',
     ],
 
     // auth
@@ -341,9 +342,6 @@ return [
         'merchant_add_bank_account'         => 'merchants/{id}/bank_account',
 
         'merchant_edit'                     => 'merchants/{id}',
-
-        // Schedule
-        'schedule_fetch_multiple'           => 'schedules',
 
         // Entities
         'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
