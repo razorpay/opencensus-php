@@ -42,9 +42,7 @@
               </li>
             </ul>
           </li>
-          <li class="dropdown" ng-controller="switchMerchantCtrl" id="switch-merchant-button">
-            <!-- ng-show="merchants.length > 1" -->
-
+          <li class="dropdown" ng-controller="switchMerchantCtrl" id="switch-merchant-button" ng-show="merchants.length > 1">
             <select ui-select2 ng-model="select2" style="width: 180px">
               <option ng-repeat="merchant in merchants" value="{{merchant.id}}">
                 {{merchant.name | titlecase}}
