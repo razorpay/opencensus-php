@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import createHashHistory from 'history/createHashHistory';
 import Router from 'rzp/HashRouter';
 import { fetchUser, fetchOrg } from 'merchant/modules/session';
 
