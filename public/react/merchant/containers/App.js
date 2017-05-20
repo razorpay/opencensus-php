@@ -1,11 +1,15 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { HashRouter as Router } from 'react-router-dom';
+import createHashHistory from 'history/createHashHistory';
+import Router from 'rzp/HashRouter';
 import { fetchUser, fetchOrg } from 'merchant/modules/session';
 
 import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
+import ModalDialog from 'rzp/ui/ModalDialog';
+import Slider from 'rzp/ui/Slider';
+import Notifications from 'rzp/ui/Notifications';
 
 @connect(state => state.session, {
   fetchUser,
@@ -41,6 +45,11 @@ export default class App extends Component {
           />
           <Sidebar user={user} />
           <Content />
+
+          {/* Creates Portal for the comp */}
+          <ModalDialog />
+          <Slider />
+          <Notifications />
         </div>
       </Router>
     );
