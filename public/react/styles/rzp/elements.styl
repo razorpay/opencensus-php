@@ -4,19 +4,24 @@ tabbed-container {
 
   header {
     line-height: 46px;
-    border: 1px solid #E2E8EA;
-    padding-left: 16px;
-    background-color: #fff;
+    border-bottom: 1px solid #E2E8EA;
     position: relative;
+    margin-bottom: 16px;
+
     a {
       color: #555;
-      border-bottom: 2px solid transparent;
+      border-bottom: 4px solid transparent;
       display: inline-block;
       margin: 0 16px;
+      font-weight: bold;
+
+      &:first-child {
+        margin-left: 0;
+      }
 
       &.active {
-        color: #111;
-        border-color: #556AD0;
+        color: #6A55D1;
+        border-color: #6A55D1;
       }
     }
   }
@@ -27,7 +32,6 @@ tabbed-container {
 
   header + .content-wrapper {
     border: 1px solid #e2e8ea;
-    border-top: 0;
     background-color: #fff;
   }
 }

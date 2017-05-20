@@ -92,21 +92,24 @@ const keysNotShown = entity => {
 };
 
 export default props => {
-  let { payment, card, refunds, isLoading, statusMsg } = props;
+  let { payment, card, refunds, isLoading, statusMsg, onCloseClick } = props;
 
   let otherKeys = keysNotShown(payment);
 
   return (
-    <div>
+    <div class="content-wrapper content-sm txn-details">
       {isLoading
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div>
+        : <div class="panel panel-default">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
             <div class="panel-heading">
               Payment ID: <b>{payment.id}</b>
+              <button type="button" class="close" onClick={onCloseClick}>
+                <i class="icon icon-close" />
+              </button>
             </div>
 
             <div class="panel-body">

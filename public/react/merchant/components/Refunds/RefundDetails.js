@@ -6,7 +6,7 @@ import ListGroupToggler from 'rzp/ui/ListGroupToggler';
 import TableBody from 'merchant/components/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
 
-export default ({ refund, isLoading, statusMsg }) => {
+export default ({ refund, isLoading, statusMsg, onCloseClick }) => {
   let refundNotes = null;
   if (Object.keys(refund.notes).length) {
     refundNotes = (
@@ -24,16 +24,19 @@ export default ({ refund, isLoading, statusMsg }) => {
   }
 
   return (
-    <div>
+    <div class="content-wrapper content-sm txn-details">
       {isLoading
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div>
+        : <div class="panel panel-default">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
             <div class="panel-heading">
               Refund ID: <b>{refund.id}</b>
+              <button type="button" class="close" onClick={onCloseClick}>
+                <i class="icon icon-close" />
+              </button>
             </div>
 
             <div class="panel-body">

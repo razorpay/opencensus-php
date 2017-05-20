@@ -3,13 +3,13 @@ import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from '../TableBody';
 import TransactionNavLink from 'merchant/components/TransactionNavLink';
 
-const PaymentsListItem = ({ payment, hasOrders, orders }) => {
+const PaymentsListItem = ({ payment, hasOrders, orders, onPaymentClick }) => {
   return (
     <tr>
       <td>
         <TransactionNavLink
           to={`#/app/payments/${payment.id}`}
-          queryParam="fullview"
+          onClick={() => onPaymentClick(payment)}
         >
           {payment.id}
         </TransactionNavLink>
@@ -29,7 +29,7 @@ const PaymentsListItem = ({ payment, hasOrders, orders }) => {
   );
 };
 
-export default ({ payments, isLoading, hasOrders, orders }) => {
+export default ({ payments, isLoading, hasOrders, orders, onPaymentClick }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -57,6 +57,7 @@ export default ({ payments, isLoading, hasOrders, orders }) => {
               payment={payment}
               hasOrders={hasOrders}
               orders={orders}
+              onPaymentClick={onPaymentClick}
             />
           ))}
         </TableBody>

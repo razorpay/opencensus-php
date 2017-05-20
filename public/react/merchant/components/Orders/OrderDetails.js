@@ -31,19 +31,22 @@ const PaymentList = ({ payment }) => {
 };
 
 export default props => {
-  let { order, payments, isLoading, statusMsg } = props;
+  let { order, payments, isLoading, statusMsg, onCloseClick } = props;
 
   return (
-    <div>
+    <div class="content-wrapper content-sm txn-details">
       {isLoading
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div>
+        : <div class="panel panel-default">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
             <div class="panel-heading">
               Order ID: <b>{order.id}</b>
+              <button type="button" class="close" onClick={onCloseClick}>
+                <i class="icon icon-close" />
+              </button>
             </div>
 
             <div class="panel-body">

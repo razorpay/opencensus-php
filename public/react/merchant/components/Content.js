@@ -2,6 +2,7 @@ import { Route } from 'react-router-dom';
 
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
+import PaymentLinks from 'merchant/containers/Invoices/PaymentLinks';
 import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
 import Customers from 'merchant/containers/Customers/List';
@@ -26,8 +27,11 @@ export default () => {
       <Route path="/app/invoices" exact component={InvoicingContainer} />
       <Route path="/app/invoices/:id(inv_.+)" component={InvoicesNew} />
       <Route path="/app/invoices/new" component={InvoicesNew} />
-      <Route path="/app/customers" component={Customers} />
       <Route path="/app/items" component={InvoicingContainer} />
+
+      <Route path="/app/paymentlinks" exact component={PaymentLinks} />
+
+      <Route path="/app/customers" component={Customers} />
 
       <Route path="/app/accounts" component={Accounts} />
 

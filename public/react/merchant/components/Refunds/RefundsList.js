@@ -1,14 +1,17 @@
 import Time from 'rzp/ui/Time';
 import TableBody from '../TableBody';
-import { NavLink } from 'react-router-dom';
+import TransactionNavLink from 'merchant/components/TransactionNavLink';
 
-const RefundsListItem = ({ refund }) => {
+const RefundsListItem = ({ refund, onRefundClick }) => {
   return (
     <tr>
       <td>
-        <NavLink to={`/app/refunds/${refund.id}`}>
+        <TransactionNavLink
+          to={`/app/refunds/${refund.id}`}
+          onClick={() => onRefundClick(refund)}
+        >
           {refund.id}
-        </NavLink>
+        </TransactionNavLink>
       </td>
       <td>
         <a target="_blank" href={`#/app/payments/${refund.payment_id}`}>
@@ -24,7 +27,7 @@ const RefundsListItem = ({ refund }) => {
   );
 };
 
-export default ({ refunds, isLoading }) => {
+export default ({ refunds, isLoading, onRefundClick }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -44,7 +47,11 @@ export default ({ refunds, isLoading }) => {
           emptyTableMsg="No Refunds found!"
         >
           {refunds.map(refund => (
-            <RefundsListItem key={refund.id} refund={refund} />
+            <RefundsListItem
+              key={refund.id}
+              refund={refund}
+              onRefundClick={onRefundClick}
+            />
           ))}
         </TableBody>
       </table>

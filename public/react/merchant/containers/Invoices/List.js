@@ -6,7 +6,6 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
 import InvoicesList from 'merchant/components/Invoices/InvoicesList';
 import ListContainer from 'merchant/containers/ListContainer';
-import CreatePaymentLink from './CreatePaymentLink';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
@@ -14,29 +13,12 @@ import * as ModalActions from 'rzp/modules/modals';
 @connect(state => state.invoices, { ...InvoiceActions, ...ModalActions })
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
+    params.type = 'invoice';
     return this.props.fetchInvoices(params);
   }
 
-  showPaymentLinkModal(invoice = null) {
-    this.props.openModal({
-      component: (
-        <CreatePaymentLink
-          invoice={invoice}
-          onSave={invoice => {
-            this.props.highLightInvoice(invoice.id);
-          }}
-          closeModal={this.props.closeModal}
-        />
-      ),
-    });
-  }
-
   editInvoice = invoice => {
-    if (invoice.type === 'link') {
-      this.showPaymentLinkModal(invoice);
-    } else if (invoice.type === 'invoice') {
-      location.hash = `#/app/invoices/${invoice.id}`;
-    }
+    location.hash = `#/app/invoices/${invoice.id}`;
   };
 
   render() {
@@ -52,27 +34,11 @@ export default class InvoicesListContainer extends ListContainer {
           offset="-8px 20px"
         >
           <div />{/* required by react-tether */}
-
-          <ShowWhen notMyRole="support">
-            <div class="btn-toolbar pull-right">
-              <button
-                class="btn btn-primary btn-rounded"
-                onClick={() => this.showPaymentLinkModal()}
-              >
-                <i class="icon icon-plus" />
-                <span>Create Payment Link</span>
-              </button>
-
-              <ShowWhen notMyRole="sellerapp" featureEnabled="Invoice">
-                <a
-                  href="#/app/invoices/new"
-                  class="btn btn-primary btn-rounded"
-                >
-                  <i class="icon icon-plus" />
-                  <span>Create Invoice</span>
-                </a>
-              </ShowWhen>
-            </div>
+          <ShowWhen notMyRole="sellerapp support" featureEnabled="Invoice">
+            <a href="#/app/invoices/new" class="btn btn-primary pull-right">
+              <i class="icon icon-plus" />
+              <span>Create Invoice</span>
+            </a>
           </ShowWhen>
         </TetherComponent>
 

@@ -9,8 +9,6 @@ import 'rzp/utils/polyfills';
 import store from './store';
 
 import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
-import ModalDialog from 'rzp/ui/ModalDialog';
-import Notifications from 'rzp/ui/Notifications';
 
 import App from './containers/App';
 
@@ -24,8 +22,6 @@ render(
     <ConfirmModalProvider>
       <div id="react_root" class="react-root">
         <App />
-        <ModalDialog />
-        <Notifications />
       </div>
     </ConfirmModalProvider>
   </Provider>,

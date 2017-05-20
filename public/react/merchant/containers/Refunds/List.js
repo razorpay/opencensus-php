@@ -1,20 +1,34 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header';
 import ShowWhen from 'merchant/components/ShowWhen';
 import RefundsList from 'merchant/components/Refunds/RefundsList';
+import RefundDetails from 'merchant/containers/Refunds/Details';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
 import { fetchRefunds } from 'merchant/modules/refunds/list';
+import * as SliderActions from 'rzp/modules/slider';
 
-@connect(state => state.refunds, { fetchRefunds })
+@withRouter
+@connect(state => state.refunds, { fetchRefunds, ...SliderActions })
 export default class RefundsListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchRefunds(params);
   }
+
+  showRefundDetails = refund => {
+    this.props.history.push(`/app/refunds/${refund.id}`, {
+      notify: false,
+    });
+
+    this.props.openSlider({
+      component: <RefundDetails id={refund.id} />,
+    });
+  };
 
   render() {
     let { loading, refunds, error } = this.props;
@@ -49,7 +63,11 @@ export default class RefundsListContainer extends ListContainer {
 
         {error && <Alert type="error" message={error} />}
 
-        <RefundsList refunds={refunds} isLoading={loading} />
+        <RefundsList
+          refunds={refunds}
+          isLoading={loading}
+          onRefundClick={this.showRefundDetails}
+        />
 
         <Pager
           count={this.state.count}

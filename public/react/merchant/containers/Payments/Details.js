@@ -6,6 +6,7 @@ import PaymentDetails from 'merchant/components/Payments/PaymentDetails';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import * as PaymentActions from 'merchant/modules/payments/details';
 import * as ModalActions from 'rzp/modules/modals';
+import { closeSlider } from 'rzp/modules/slider';
 import RefundModal from './RefundModal';
 
 @withRouter
@@ -13,6 +14,7 @@ import RefundModal from './RefundModal';
   ...ModalActions,
   ...PaymentActions,
   ...NotificationsActions,
+  closeSlider,
 })
 export default class PaymentDetailsContainer extends Component {
   static contextTypes = {
@@ -39,6 +41,12 @@ export default class PaymentDetailsContainer extends Component {
 
   fetchRefunds = payment => {
     return this.props.fetchRefunds(payment);
+  };
+
+  closeSlider = () => {
+    this.props.closeSlider({
+      closeURL: '/app/payments',
+    });
   };
 
   confirmCapture = payment => {
@@ -107,6 +115,7 @@ export default class PaymentDetailsContainer extends Component {
         onToggleRefundList={this.fetchRefunds}
         confirmCapture={this.confirmCapture}
         openRefundModal={this.openRefundModal}
+        onCloseClick={this.closeSlider}
       />
     );
   }

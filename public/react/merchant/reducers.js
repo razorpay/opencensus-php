@@ -2,6 +2,7 @@ import { combineReducers } from 'redux';
 import { reducer as formReducer } from 'redux-form';
 import sessionReducer from 'merchant/modules/session';
 import modalReducer from 'rzp/modules/modals';
+import sliderReducer from 'rzp/modules/slider';
 import notificationsReducer from 'rzp/modules/notifications';
 import invoicesReducer from 'merchant/modules/invoices/list';
 import invoiceDetailsReducer from 'merchant/modules/invoices/details';
@@ -32,6 +33,7 @@ export default combineReducers({
   form: formReducer,
   session: sessionReducer,
   modal: modalReducer,
+  slider: sliderReducer,
   notifications: notificationsReducer,
   invoices: invoicesReducer,
   invoice: invoiceDetailsReducer,

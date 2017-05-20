@@ -4,12 +4,13 @@ import Amount from 'rzp/ui/Amount';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 const InvoiceListItem = props => {
-  let { invoice, canHighlight } = props;
+  let { invoice, canHighlight, onEditClick } = props;
   return (
     <tr class={canHighlight ? 'luminate' : ''}>
       <td>
         <a
-          href={`${invoice.type === 'invoice' ? `#/app/invoices/${invoice.id}` : `#/app/invoices/${invoice.id}/details`}`}
+          href={`${invoice.type === 'invoice' ? `#/app/invoices/${invoice.id}` : ''}`}
+          onClick={onEditClick}
         >
           {invoice.id}
         </a>
@@ -24,7 +25,6 @@ const InvoiceListItem = props => {
           invoice.customer_details.customer_name}
       </td>
       <td>{invoice.short_url}</td>
-      <td>{invoice.type}</td>
       <td class="text-right">
         <Amount value={invoice.amount} />
       </td>
@@ -53,19 +53,19 @@ const InvoiceListItem = props => {
 };
 
 export default props => {
-  let { invoices, isLoading, highlightRow = () => {} } = props;
+  let { type, invoices, isLoading, highlightRow = () => {} } = props;
+  let label = type === 'link' ? 'Payment Link' : 'Invoice';
 
   return (
     <div class="table-responsive">
       <table class="table table-hover table-striped">
         <thead>
           <tr>
-            <th>Invoice Id</th>
-            <th>Invoice Date</th>
+            <th>{label} Id</th>
+            <th>{label} Date</th>
             <th>Receipt No.</th>
             <th>Customer</th>
             <th>Payment Link</th>
-            <th>Type</th>
             <th class="text-right">Amount (INR)</th>
             <th class="text-right">Status</th>
             <th>Actions</th>
@@ -73,9 +73,9 @@ export default props => {
         </thead>
         <TableBody
           isLoading={isLoading}
-          colSpan={9}
+          colSpan={8}
           rows={invoices}
-          emptyTableMsg="No Invoices found!"
+          emptyTableMsg="No data found!"
         >
           {invoices.map(invoice => (
             <InvoiceListItem

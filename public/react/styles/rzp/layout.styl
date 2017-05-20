@@ -171,7 +171,6 @@ body.ReactModal__Body--open {
   margin: 0;
 }
 
-
 .ReactModal__Content {
   transition: transform 300ms ease-in-out;
   transform: translateY(-15%);
@@ -182,37 +181,6 @@ body.ReactModal__Body--open {
   &--before-close {
     transform: translateY(-15%);
   }
-}
-
-.ModalSlider__Overlay.ReactModal__Overlay {
-  width: 600px;
-  position: fixed;
-  top: 51px;
-  right: 0;
-  bottom: 0;
-  left: auto;
-  box-shadow: 3px 11px 22px -1px #3a3f51;
-  transform: translateX(90%);
-  transition: transform 300ms linear;
-  z-index: 9998;
-  background-color: #fff;
-  overflow: auto;
-  padding-bottom: 45px;
-
-  &.ReactModal__Overlay--after-open {
-    transform: translateX(1%);
-  }
-
-  &.ReactModal__Overlay--before-close {
-    opacity: 1;
-    transform: translateX(90%);
-  }
-}
-
-.ModalSlider__Content {
-  padding: 20px 10px;
-  min-height: 100%;
-  transform: none;
 }
 
 .ReactModalPortal > * {
@@ -372,4 +340,24 @@ tr:hover .row-action > .btn-group {
 
 .btn-group > .tooltip-wrapper {
   display: inline-block;
+}
+
+.txn-details {
+  .panel {
+    border: none;
+
+    > .panel-heading {
+      border-bottom: none;
+
+      > .close {
+        display: none;
+      }
+    }
+  }
+}
+
+.ModalSlider__Content {
+  .panel > .panel-heading > .close {
+    display: block;
+  }
 }

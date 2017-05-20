@@ -29,6 +29,12 @@ export default class Pager extends Component {
     let skip = +this.props.skip;
     let nextDisabled = length < count;
     let prevDisabled = !skip;
+    let total = skip + length;
+    let current = skip + 1;
+
+    if (!total) {
+      return null;
+    }
 
     return (
       <div
@@ -55,7 +61,7 @@ export default class Pager extends Component {
           : null}
 
         <small class="text-muted">
-          Showing {skip + 1} - {skip + length}
+          Showing {current} - {total}
         </small>
       </div>
     );

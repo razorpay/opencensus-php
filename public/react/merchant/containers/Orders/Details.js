@@ -3,9 +3,10 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import OrderDetails from 'merchant/components/Orders/OrderDetails';
 import * as OrderActions from 'merchant/modules/orders/details';
+import { closeSlider } from 'rzp/modules/slider';
 
 @withRouter
-@connect(state => state.order, OrderActions)
+@connect(state => state.order, { ...OrderActions, closeSlider })
 export default class OrderDetailsContainer extends Component {
   componentWillMount() {
     let id = this.props.id || this.props.match.params.id;
@@ -22,6 +23,12 @@ export default class OrderDetailsContainer extends Component {
 
   fetchOrderPayments = order => {
     return this.props.fetchOrderPayments(order);
+  };
+
+  closeSlider = () => {
+    this.props.closeSlider({
+      closeURL: '/app/orders',
+    });
   };
 
   render() {
@@ -42,6 +49,7 @@ export default class OrderDetailsContainer extends Component {
         onTogglePayments={this.fetchOrderPayments}
         isLoading={loading}
         statusMsg={statusMsg}
+        onCloseClick={this.closeSlider}
       />
     );
   }

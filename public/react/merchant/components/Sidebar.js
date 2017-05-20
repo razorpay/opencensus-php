@@ -85,6 +85,12 @@ export default class Sidebar extends Component {
                   to={routes.invoices}
                 />
                 <MainNavLink
+                  label="Payment Links"
+                  icon="icon-link"
+                  to="/app/paymentlinks"
+                />
+
+                <MainNavLink
                   label="Customers"
                   icon="icon-people"
                   to="/app/customers"
