@@ -145,8 +145,11 @@ angular
         });
       });
 
-      $scope.switchMerchant = function(merchant) {
-        var request = $http.get('/settings/merchants/switch/' + merchant.id);
+      $scope.$watch('select2', function(merchantId) {
+        if (!merchantId) {
+          return;
+        }
+        var request = $http.get('/settings/merchants/switch/' + merchantId);
         request
           .success(function(data) {
             if (data.success) {
@@ -158,7 +161,7 @@ angular
           .error(function() {
             $scope.alerts.addAlert('danger', null, true);
           });
-      };
+      });
     },
   ])
   .controller('activationModalCtrl', [

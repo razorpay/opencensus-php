@@ -118,6 +118,7 @@ const concatJs = lazypipe().pipe(concatMulti, {
     'public/js/merchant/**/*.js',
     'public/js/*.js',
     'node_modules/moment/min/moment.min.js',
+    'public/js/angular/ui-select2.js',
   ],
 
   'js/generated/merchant_react.js': ['public/react/dist/merchant_react.js'],
