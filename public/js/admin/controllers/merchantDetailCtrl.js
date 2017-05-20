@@ -1408,6 +1408,7 @@ app
               $scope.merchant = data.data;
               sortTerminals();
               $scope.scheduleKeys = [
+                'schedule_name',
                 'type',
                 'method',
                 'schedule_id',
