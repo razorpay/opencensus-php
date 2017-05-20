@@ -86,6 +86,9 @@ return [
         'schedule_create'                   => 'schedules',
         'schedule_assign'                   => 'merchants/{id}/schedules',
         'schedule_fetch_multiple'           => 'schedules',
+
+        // Add Adjustment
+        'adj_add'                           => 'adjustments',
     ],
 
     // auth
@@ -269,9 +272,6 @@ return [
             'url'       => 'balance',
             'routeName' => 'balance_get'
         ],
-
-        // Add Adjustment
-        'adj_add'                           => 'adjustments',
     ],
 
     // auth
