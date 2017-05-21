@@ -611,8 +611,13 @@ class Service extends Base\Service
      */
     public function refundMultipleAuthorizedPaymentsForOrders()
     {
+        // we dont need query full db, 10 days is good enough even in case of
+        // issues where cron did not run
+        $date = Carbon::today('Asia/Kolkata');
+        $ts = $date->subDays(10)->timestamp;
+
         // We get all the orders which have multiple authorized or captured payments.
-        $orders = $this->repo->order->getOrdersWithMultipleAuthorizedOrCapturedPayments();
+        $orders = $this->repo->order->getOrdersWithMultipleAuthorizedOrCapturedPayments($ts);
 
         $data = [];
         $time = time();

@@ -54,13 +54,13 @@ class SettlementTest extends TestCase
             {
                 $txn = $payment->transaction;
 
-                $this->assertEquals(2300, $txn->fee);
-                $this->assertEquals(7700, $txn->credit);
+                $this->assertEquals(2000, $txn->fee);
+                $this->assertEquals(8000, $txn->credit);
                 $this->assertEquals(0, $txn->debit);
-                $this->assertEquals(300, $txn->service_tax);
+                $this->assertEquals(0, $txn->service_tax);
             }
 
-            $this->assertEquals(15400, $merchant->balance->getBalance());
+            $this->assertEquals(16000, $merchant->balance->getBalance());
 
             $merchantPayments[] = $payments;
         }
@@ -71,8 +71,8 @@ class SettlementTest extends TestCase
 
         $this->assertEquals(10000, $refund->transaction->debit);
 
-        $this->assertEquals(5400, $merchants[0]->balance->reload()->getBalance());
-        $this->assertEquals(5400, $merchants[0]->balance->reload()->getBalance());
+        $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
+        $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
     }
 
     /**
