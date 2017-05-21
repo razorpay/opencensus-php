@@ -17,7 +17,7 @@ import CustomersListContainer from './containers/Customers/List';
 import ItemsListContainer from './containers/Items/List';
 import InvoicesListContainer from './containers/Invoices/List';
 import InvoicesNewContainer from './containers/Invoices/New';
-import InvoiceDetailsContainer from './containers/Invoices/Details';
+import InvoiceDetailsContainer from './containers/PaymentLinks/Details';
 
 import OrdersListContainer from './containers/Orders/List';
 import OrderDetailsContainer from './containers/Orders/Details';

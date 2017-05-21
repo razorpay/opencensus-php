@@ -17,11 +17,10 @@ export default class OrdersListContainer extends ListContainer {
   }
 
   showOrderDetails = order => {
-    this.props.history.push(`/app/orders/${order.id}`, {
-      notify: false,
-    });
     this.props.openSlider({
       component: <OrderDetails id={order.id} />,
+      onOpenURL: `/app/orders/${order.id}`,
+      onCloseURL: '/app/orders',
     });
   };
 

@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RefundDetails from 'merchant/components/Refunds/RefundDetails';
 import * as RefundActions from 'merchant/modules/refunds/details';
-import * as SliderActions from 'rzp/modules/slider';
 
-@connect(state => state.refund, { ...RefundActions, ...SliderActions })
+@connect(state => state.refund, RefundActions)
 export default class RefundDetailsContainer extends Component {
   componentWillMount() {
     let id = this.props.id || this.props.match.params.id;
@@ -18,12 +17,6 @@ export default class RefundDetailsContainer extends Component {
       this.props.fetchRefund(newId);
     }
   }
-
-  closeSlider = () => {
-    this.props.closeSlider({
-      closeURL: '/app/refunds',
-    });
-  };
 
   render() {
     let { loading, error, refund, payments } = this.props;
@@ -41,7 +34,6 @@ export default class RefundDetailsContainer extends Component {
         refund={refund}
         isLoading={loading}
         statusMsg={statusMsg}
-        onCloseClick={this.closeSlider}
       />
     );
   }

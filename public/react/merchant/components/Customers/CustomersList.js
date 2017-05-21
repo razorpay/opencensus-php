@@ -4,7 +4,7 @@ const CustomersListItem = props => {
   let { customer, canHighlightRow } = props;
   return (
     <tr class={canHighlightRow ? 'luminate' : ''}>
-      <td>{customer.name}</td>
+      <td><a onClick={props.onEdit}>{customer.name}</a></td>
       <td>{customer.email}</td>
       <td>{customer.contact}</td>
       <td class="row-action">

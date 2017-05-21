@@ -53,6 +53,8 @@ class RouterExt extends Router {
   }
 }
 
+export { history };
+
 export default class HashRouterExt extends HashRouter {
   history = history;
 

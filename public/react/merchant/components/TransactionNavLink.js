@@ -13,7 +13,7 @@ const TransactionNavLink = ({ onClick, children, ...otherProps }) => {
         }
       }}
     >
-      {children}
+      <code>{children}</code>
     </NavLink>
   );
 };

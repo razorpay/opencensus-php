@@ -65,11 +65,10 @@ export default class PaymentsListContainer extends ListContainer {
   }
 
   showPaymentDetails = payment => {
-    this.props.history.push(`/app/payments/${payment.id}`, {
-      notify: false,
-    });
     this.props.openSlider({
       component: <PaymentsDetails id={payment.id} />,
+      onOpenURL: `/app/payments/${payment.id}`,
+      onCloseURL: '/app/payments',
     });
   };
 

@@ -30,8 +30,8 @@ const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <NavLink to={`/app/refunds/${refund.id}`}>
-          {refund.id}
+        <NavLink to={`/app/refunds/${refund.id}`} target="_blank">
+          <code>{refund.id}</code>
         </NavLink>
       </td>
       <td>
@@ -92,7 +92,7 @@ const keysNotShown = entity => {
 };
 
 export default props => {
-  let { payment, card, refunds, isLoading, statusMsg, onCloseClick } = props;
+  let { payment, card, refunds, isLoading, statusMsg } = props;
 
   let otherKeys = keysNotShown(payment);
 
@@ -107,9 +107,6 @@ export default props => {
 
             <div class="panel-heading">
               Payment ID: <b>{payment.id}</b>
-              <button type="button" class="close" onClick={onCloseClick}>
-                <i class="icon icon-close" />
-              </button>
             </div>
 
             <div class="panel-body">

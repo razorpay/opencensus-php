@@ -31,7 +31,7 @@ const PaymentList = ({ payment }) => {
 };
 
 export default props => {
-  let { order, payments, isLoading, statusMsg, onCloseClick } = props;
+  let { order, payments, isLoading, statusMsg } = props;
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -44,9 +44,6 @@ export default props => {
 
             <div class="panel-heading">
               Order ID: <b>{order.id}</b>
-              <button type="button" class="close" onClick={onCloseClick}>
-                <i class="icon icon-close" />
-              </button>
             </div>
 
             <div class="panel-body">

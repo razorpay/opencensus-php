@@ -2,7 +2,7 @@ import Time from 'rzp/ui/Time';
 import TableBody from '../TableBody';
 import TransactionNavLink from 'merchant/components/TransactionNavLink';
 
-const RefundsListItem = ({ refund, onRefundClick }) => {
+const RefundsListItem = ({ refund, onRefundClick, onPaymentClick }) => {
   return (
     <tr>
       <td>
@@ -14,9 +14,12 @@ const RefundsListItem = ({ refund, onRefundClick }) => {
         </TransactionNavLink>
       </td>
       <td>
-        <a target="_blank" href={`#/app/payments/${refund.payment_id}`}>
+        <TransactionNavLink
+          to={`/app/payments/${refund.payment_id}`}
+          onClick={() => onPaymentClick(refund)}
+        >
           {refund.payment_id}
-        </a>
+        </TransactionNavLink>
       </td>
       <td>{refund.currency}</td>
       <td>{refund.amountInINR}</td>
@@ -27,7 +30,7 @@ const RefundsListItem = ({ refund, onRefundClick }) => {
   );
 };
 
-export default ({ refunds, isLoading, onRefundClick }) => {
+export default ({ refunds, isLoading, onRefundClick, onPaymentClick }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -51,6 +54,7 @@ export default ({ refunds, isLoading, onRefundClick }) => {
               key={refund.id}
               refund={refund}
               onRefundClick={onRefundClick}
+              onPaymentClick={onPaymentClick}
             />
           ))}
         </TableBody>

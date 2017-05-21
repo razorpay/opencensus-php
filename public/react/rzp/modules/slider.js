@@ -5,37 +5,33 @@ const SLIDER_CLOSE = 'SLIDER_CLOSE';
 
 export const openSlider = payload => {
   return dispatch => {
-    if (payload.openURL) {
-      location.hash = payload.openURL;
-    }
-
     return dispatch({
       type: SLIDER_OPEN,
       payload: {
-        ...payload,
         isOpen: true,
+        ...payload,
       },
     });
   };
 };
 
-export const closeSlider = payload => {
+export const closeSlider = (payload = {}) => {
   return dispatch => {
-    if (payload && payload.closeURL) {
-      location.hash = payload.closeURL;
-    }
-
     return dispatch({
       type: SLIDER_CLOSE,
       payload: {
-        ...payload,
         isOpen: false,
+        ...payload,
       },
     });
   };
 };
 
-let initialState = {};
+let initialState = {
+  isOpen: false,
+  onOpenURL: null,
+  onCloseURL: null,
+};
 
 export default (state = initialState, action) => {
   switch (action.type) {
@@ -43,7 +39,10 @@ export default (state = initialState, action) => {
       return merge(state, action.payload);
 
     case SLIDER_CLOSE:
-      return merge(state, action.payload);
+      return merge(state, {
+        ...action.payload,
+        ...initialState,
+      });
 
     default:
       return state;

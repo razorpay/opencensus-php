@@ -1,25 +1,29 @@
 import { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
 import * as SliderActions from 'rzp/modules/slider';
 import './ModalSlider.styl';
 
+@withRouter
 @connect(state => state.slider, SliderActions)
 class ModalSlider extends Component {
-  // Closes the slider on document click excluding clicks on top nav bar & transaction links in the table
+  // Closes the slider
+  //  1. When slider `Close` button is clicked
+  //  2. When clicking on the document except on the Slider view, Top Navbar & transaction links
+
   handleDocumentClick = event => {
     let target = event.target;
     if (
-      !(target.closest('.NavLink__transaction') ||
-        target.closest('.navbar-fixed-top') ||
+      !(target.closest('.content-wrapper') ||
         target.closest('.ReactModalPortal'))
     ) {
-      this.props.closeSlider();
+      this.close();
     }
   };
 
   componentDidMount() {
-    document.addEventListener('click', this.handleDocumentClick);
+    document.addEventListener('click', this.handleDocumentClick, true);
   }
 
   componentWillUnmount() {
@@ -27,8 +31,21 @@ class ModalSlider extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    debugger;
+    if (nextProps.isOpen && this.props.isOpen !== nextProps.isOpen) {
+      this.props.history.push(nextProps.onOpenURL, {
+        notify: false,
+      });
+    }
   }
+
+  close = () => {
+    if (this.props.isOpen) {
+      if (this.props.onCloseURL) {
+        this.props.history.push(this.props.onCloseURL);
+      }
+      this.props.closeSlider();
+    }
+  };
 
   render() {
     let { isOpen, component } = this.props;
@@ -42,6 +59,10 @@ class ModalSlider extends Component {
           class="ModalSlider__Content"
           contentLabel="Modal"
         >
+          <button type="button" class="close" onClick={this.close}>
+            <i class="icon icon-close" />
+          </button>
+
           {component}
         </Modal>
       </div>
