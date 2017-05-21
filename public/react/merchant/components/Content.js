@@ -10,7 +10,6 @@ import InvoicesNew from 'merchant/containers/Invoices/New';
 import Customers from 'merchant/containers/Customers/List';
 import Accounts from 'merchant/containers/Accounts/List';
 import Reports from 'merchant/containers/Reports';
-import Referrals from 'merchant/containers/Referrals/List';
 import TeamManagement from 'merchant/containers/Team';
 
 import MyAccount from 'merchant/containers/MyAccount';
@@ -73,13 +72,13 @@ export default () => {
         <Route path="/app/accounts" component={Accounts} />
 
         <Route path="/app/reports" component={Reports} />
-        <Route path="/app/referrals" component={Referrals} />
         <Route path="/app/team" component={TeamManagement} />
 
         <Route path="/app/profile" component={MyAccount} />
         <Route path="/app/activation" component={MyAccount} />
         <Route path="/app/addfunds" component={MyAccount} />
         <Route path="/app/credits" component={MyAccount} />
+        <Route path="/app/referrals" component={MyAccount} />
 
         <Route path="/app/config" component={Settings} />
         <Route path="/app/keys" component={Settings} />

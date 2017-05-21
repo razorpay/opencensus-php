@@ -3,7 +3,7 @@ import { withRouter } from 'react-router-dom';
 import MainNavLink from 'merchant/components/MainNavLink';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/app\/(payments|refunds|orders|batch-refunds)/;
-const ACCOUNTS_ROUTES_REGEX = /^\/app\/(profile|activation|credits|addfunds)/;
+const ACCOUNTS_ROUTES_REGEX = /^\/app\/(profile|activation|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/app\/(config|webhooks|keys)/;
 const INVOICES_ROUTES_REGEX = /^\/app\/(invoices|items)/;
 
@@ -115,13 +115,6 @@ export default class Sidebar extends Component {
                   icon="icon-reports"
                   to="/app/reports"
                   notMyRole="sellerapp support"
-                />
-                <MainNavLink
-                  label="Referrals"
-                  icon="icon-reports"
-                  to="/app/referrals"
-                  notMyRole="sellerapp support"
-                  featureEnabled="Referral"
                 />
                 <MainNavLink
                   label="Manage Team"
