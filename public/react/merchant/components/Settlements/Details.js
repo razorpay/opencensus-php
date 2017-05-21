@@ -10,7 +10,7 @@ export default props => {
   let { settlement, breakupDetails, isLoading, statusMsg } = props;
 
   return (
-    <div>
+    <div class="content-wrapper content-sm txn-details">
       {isLoading
         ? <div class="page-spinner-container">
             <Spinner />
@@ -24,7 +24,7 @@ export default props => {
               </div>
 
               <div class="panel-body">
-                <div class="list-group">
+                <div class="list-group details-row-container">
                   <div class="list-group-item">
                     <span>Amount</span>
                     <Amount value={settlement.amount} />

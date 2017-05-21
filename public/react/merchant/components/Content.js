@@ -2,6 +2,7 @@ import { NavLink, Switch, Route } from 'react-router-dom';
 
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
+import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinks from 'merchant/containers/PaymentLinks/List';
 import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Details';
 import InvoicingContainer from 'merchant/containers/Invoicing';
@@ -24,7 +25,24 @@ export default () => {
         <Route path="/app/refunds" component={Transactions} />
         <Route path="/app/orders" component={Transactions} />
 
-        <Route path="/app/settlements" component={Settlements} />
+        <Route
+          path="/app/settlements"
+          render={() => (
+            <tabbed-container>
+              <header id="link-header">
+                <NavLink to="/app/settlements">Settlements</NavLink>
+              </header>
+
+              <Switch>
+                <Route
+                  path="/app/settlements/:id"
+                  component={SettlementDetails}
+                />
+                <Route path="/app/settlements" component={Settlements} />
+              </Switch>
+            </tabbed-container>
+          )}
+        />
 
         <Route path="/app/invoices" exact component={InvoicingContainer} />
         <Route path="/app/invoices/:id(inv_.+)" component={InvoicesNew} />

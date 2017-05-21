@@ -2,14 +2,22 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from '../TableBody';
+import TransactionNavLink from 'merchant/components/TransactionNavLink';
 
-const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
+const SettlementsListItem = ({
+  settlement,
+  handleBreakupClick,
+  onSettlementClick,
+}) => {
   return (
     <tr>
       <td>
-        <a href={`#/app/settlements/${settlement.id}`} target="_blank">
-          <code>{settlement.id}</code>
-        </a>
+        <TransactionNavLink
+          to={`/app/settlements/${settlement.id}`}
+          onClick={() => onSettlementClick(settlement)}
+        >
+          {settlement.id}
+        </TransactionNavLink>
       </td>
       <td class="text-right">
         <Amount value={settlement.amount} />
@@ -36,7 +44,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
 };
 
 export default props => {
-  let { settlements, isLoading, showBreakup } = props;
+  let { settlements, isLoading, showBreakup, onSettlementClick } = props;
 
   return (
     <div class="table-responsive">
@@ -63,6 +71,7 @@ export default props => {
               key={settlement.id}
               settlement={settlement}
               handleBreakupClick={() => showBreakup(settlement)}
+              onSettlementClick={onSettlementClick}
             />
           ))}
         </TableBody>
