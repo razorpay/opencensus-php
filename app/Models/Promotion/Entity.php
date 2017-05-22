@@ -5,6 +5,7 @@ namespace RZP\Models\Promotion;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Transaction\CreditType;
 
 class Entity extends Base\PublicEntity
 {
@@ -64,7 +65,7 @@ class Entity extends Base\PublicEntity
 
     public function schedule()
     {
-        return $this->hasOne('RZP\Models\Schedule\Entity');
+        return $this->belongsTo('RZP\Models\Schedule\Entity');
     }
 
     public function coupons()

@@ -30,14 +30,14 @@ class Service extends Base\Service
 
         $promotion = $this->repo->promotion->findByPublicId($id);
 
-        $promotion = $this->core->update($offer, $input);
+        $promotion = $this->core->update($promotion, $input);
 
         return $promotion->toArrayPublic();
     }
 
     public function fetch(string $id)
     {
-        $promotion = $this->repo->merchant->findByPublicId($id);
+        $promotion = $this->repo->promotion->findByPublicId($id);
 
         return $promotion->toArrayPublic();
     }

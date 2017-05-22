@@ -27,6 +27,22 @@ class Core extends Base\Core
     {
         $promotion->edit($input);
 
+        if ($promotion->doCreditsExpire() === true)
+        {
+            $schedule = $promotion->schedule;
+
+            if (empty($schedule) === true)
+            {
+                $schedule = $this->createSchedule($input);
+            }
+            else
+            {
+                $schedule = $this->editSchedule($schedule, $input);
+            }
+
+            $promotion->schedule()->associate($schedule);
+        }
+
         $this->repo->saveOrFail($promotion);
 
         return $promotion;
@@ -34,8 +50,6 @@ class Core extends Base\Core
 
     protected function createSchedule(array $input)
     {
-        (new Validator)->validateInput('schedule', $input);
-
         $scheduleInput = [
             Schedule\Entity::NAME       => $input['credits_expiry_interval'] . '/' . $input['credits_expiry_period'],
             Schedule\Entity::INTERVAL   => $input['credits_expiry_interval'],
@@ -43,6 +57,17 @@ class Core extends Base\Core
         ];
 
         $schedule = (new Schedule\Core)->createSchedule($scheduleInput);
+
+        return $schedule;
+    }
+
+    protected function editSchedule($schedule, array $input)
+    {
+        $scheduleInput = [
+            Schedule\Entity::INTERVAL   => $input['credits_expiry_interval'],
+        ];
+
+        $schedule = (new Schedule\Core)->editSchedule($schedule, $scheduleInput);
 
         return $schedule;
     }

@@ -2023,3 +2023,11 @@ ALTER TABLE payments
 # Adds type to terminals
 ALTER TABLE terminals
     ADD COLUMN type TINYINT(1) DEFAULT 3 NOT NULL AFTER tpv;
+
+ALTER TABLE coupons
+    CHANGE offer_id entity_id char(14) NOT NULL,
+    CHANGE expires_at ends_at int(11),
+    ADD COLUMN entity_type varchar(255) NOT NULL after entity_id,
+    ADD COLUMN merchant_id char(14) DEFAULT NULL after id,
+    ADD COLUMN starts_at int(11) after entity_type,
+    ADD CONSTRAINT coupons_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE RESTRICT;

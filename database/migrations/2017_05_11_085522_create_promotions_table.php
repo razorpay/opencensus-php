@@ -24,6 +24,9 @@ class CreatePromotionsTable extends Migration
 
             $table->string(Promotion::NAME, Promotion::NAME_LENGTH);
 
+            $table->integer(Promotion::AMOUNT)
+                  ->unsigned();
+
             $table->string(Promotion::CREDIT_TYPE);
 
             $table->char(Promotion::SCHEDULE_ID, Promotion::ID_LENGTH)

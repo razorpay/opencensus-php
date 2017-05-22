@@ -49,6 +49,7 @@ class Entity
     const SCHEDULE              = 'schedule';
     const TERMINAL              = 'terminal';
     const TRANSFER              = 'transfer';
+    const PROMOTION             = 'promotion';
     const LINE_ITEM             = 'line_item';
     const APP_TOKEN             = 'app_token';
     const ADJUSTMENT            = 'adjustment';
