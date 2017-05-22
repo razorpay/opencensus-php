@@ -15,12 +15,15 @@ class SoapClient extends BaseSoapClient
 
     public function __construct($wsdl, $options = array())
     {
-        parent::__construct($wsdl, $options);
-
         $this->app = App::getFacadeRoot();
+
+        if ($this->isGatewayMocked() === false)
+        {
+            parent::__construct($wsdl, $options);
+        }
     }
 
-    public function __soapCall($function_name, $arguments, $options = null, $input_headers = null, &$output_headers = null)
+    public function __soapCall($function_name, $arguments, $options = null, $input_headers = null, & $output_headers = null)
     {
         if ($this->isGatewayMocked() === true)
         {
