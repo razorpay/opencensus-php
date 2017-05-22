@@ -1838,30 +1838,6 @@ class Service extends Base\Service
         // return $this->cache->get($cacheKey);
     }
 
-    /**
-    * Gets Schedule list
-    * Uses admin auth on the API
-    *
-    * @return array containing all available schedules
-    */
-    public function getScheduleList()
-    {
-        $error = $data = null;
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $data = $this->api->schedule->getScheduleList();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
     public function getAdminData($admin)
     {
         $error = $data = null;

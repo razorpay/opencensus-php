@@ -492,11 +492,17 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Schedule Assigned successfully',
-                true
-              );
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Schedule Assigned successfully',
+                  true
+                );
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -588,6 +594,8 @@ app
         var mode = adjustment.mode;
         delete adjustment.mode;
 
+        adjustment.merchant_id = $scope.merchant.id;
+
         var data = {
           route_name: 'adj_add',
           merchant_id: $scope.merchant.id,
@@ -602,12 +610,18 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Adjustment added successfully',
-                true
-              );
-              fetchBalance();
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Adjustment added successfully',
+                  true
+                );
+                fetchBalance();
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1394,6 +1408,7 @@ app
               $scope.merchant = data.data;
               sortTerminals();
               $scope.scheduleKeys = [
+                'schedule_name',
                 'type',
                 'method',
                 'schedule_id',
@@ -2200,7 +2215,12 @@ app
       $scope.schedule_id = current.schedule;
       $scope.method = current.method;
 
-      var request = $http.get('/admin/schedule/list');
+      var data = {
+        route_name: 'schedule_fetch_multiple',
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request.success(function(data) {
         angular.forEach(data.data.items, function(value) {
           $scope.schedule_list[value.id] = value.name;

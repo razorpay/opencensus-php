@@ -984,6 +984,7 @@ angular
         },
         isWorkflow: function(data) {
           if (
+            typeof data.id !== 'undefined' &&
             data.id.indexOf('w_action') === 0 &&
             typeof data.workflow_id !== 'undefined'
           ) {
@@ -1010,8 +1011,17 @@ angular
               idParam: 'id',
               sign: 'role_',
             },
-
             methods: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            adjustment: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            schedule_task: {
               route: 'app.merchants.detail',
               idParam: 'id',
               sign: '',
