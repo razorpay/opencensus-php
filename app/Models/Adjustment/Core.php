@@ -13,15 +13,26 @@ class Core extends Base\Core
 {
     public function createAdjustment(array $input, $merchant)
     {
-        $traceData = [
-            'input'    => $input,
-            'merchant' => $merchant->getId(),
-        ];
-
         $this->trace->info(
-            TraceCode::ADJUSTMENT_CREATE_REQUEST, $traceData);
+            TraceCode::ADJUSTMENT_CREATE_REQUEST,
+            ['input' => $input, 'merchant' => $merchant->getId()]);
 
-        $updateEscrow = true;
+        $updateEscrow = $this->shouldUpdateEscrow($input);
+
+        $adj = (new Adjustment\Entity)->build($input);
+
+        // Workflow
+        $this->app['workflow']
+             ->setEntityAndId($adj->getEntity(), $merchant->getId())
+             ->handle((new \stdClass), $adj);
+
+        return $this->transaction(
+            [$this, 'createAdjInTransaction'], $adj, $merchant, $updateEscrow);
+    }
+
+    protected function shouldUpdateEscrow(array & $input)
+    {
+        $updateEscrow = null;
 
         if (isset($input['update_escrow']))
         {
@@ -36,27 +47,13 @@ class Core extends Base\Core
             unset($input['update_escrow']);
         }
 
-        $adj = (new Adjustment\Entity)->build($input);
-
-        // Workflow
-        $this->app['workflow']
-             ->setEntityAndId($adj->getEntity(), $merchant->getId())
-             ->handle((new \stdClass), $adj);
-
-        return $this->repo->transaction(function() use ($adj, $merchant, $updateEscrow)
-            {
-                $adj = $this->createAdjInTransaction($adj, $merchant, $updateEscrow);
-
-                $this->trace->info(
-                    TraceCode::ADJUSTMENT_CREATE_SUCCESS,
-                    $adj->toArrayPublic());
-
-                return $adj;
-            });
+        return $updateEscrow;
     }
 
     protected function createAdjInTransaction($adj, $merchant, $updateEscrow)
     {
+        $this->repo->assertTransactionActive();
+
         $adj->setChannel(Settlement\Channel::KOTAK);
 
         $adj->merchant()->associate($merchant);
@@ -67,6 +64,10 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($txn);
         $this->repo->saveOrFail($adj);
+
+        $this->trace->info(
+            TraceCode::ADJUSTMENT_CREATE_SUCCESS,
+            $adj->toArrayPublic());
 
         return $adj;
     }
