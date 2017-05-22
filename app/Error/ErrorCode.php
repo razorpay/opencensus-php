@@ -490,6 +490,8 @@ class ErrorCode
     const BAD_REQUEST_AUTHENTICATION_FAILED                                         = 'BAD_REQUEST_AUTHENTICATION_FAILED';
     const BAD_REQUEST_USER_ACCOUNT_LOCKED                                           = 'BAD_REQUEST_USER_ACCOUNT_LOCKED';
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                         = 'BAD_REQUEST_USER_ACCOUNT_DISABLED';
+    const BAD_REQUEST_USER_NOT_AUTHENTICATED                                        = 'BAD_REQUEST_USER_NOT_AUTHENTICATED';
+    const BAD_REQUEST_USER_NOT_FOUND                                                = 'BAD_REQUEST_USER_NOT_FOUND';
     const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                    = 'BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED';
