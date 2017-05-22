@@ -791,10 +791,7 @@ class Entity extends Base\PublicEntity
         {
             case Method::CARD:
 
-                $acquirerData = [
-                    'authorization_code' => $this->getAttribute(self::APPROVAL_CODE),
-                    'bank_transaction_id' => $this->getAttribute(self::REFERENCE1),
-                ];
+                $acquirerData = [];
                 break;
 
             case Method::NETBANKING:
