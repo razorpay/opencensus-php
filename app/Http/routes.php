@@ -251,8 +251,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
 
-        Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities')
-                ->name('admin_fetch_entity');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')
                 ->name('admin_fetch_entity');
