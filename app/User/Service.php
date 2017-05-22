@@ -353,6 +353,7 @@ class Service extends Base\Service
     public function confirmUserByEmail($email)
     {
         $confirm_data = ['email' => $email];
+
         list($error, $response) = $this->confirmUserByDataOnApi($confirm_data);
 
         if (empty($error) === false)
@@ -441,6 +442,7 @@ class Service extends Base\Service
         $user->confirm();
 
         $this->confirmUserOnApi($user->id);
+
 
         $this->subscribeToMailingList($user);
     }

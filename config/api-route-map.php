@@ -85,6 +85,10 @@ return [
         // Create Schedule
         'schedule_create'                   => 'schedules',
         'schedule_assign'                   => 'merchants/{id}/schedules',
+        'schedule_fetch_multiple'           => 'schedules',
+
+        // Add Adjustment
+        'adj_add'                           => 'adjustments',
     ],
 
     // auth
@@ -268,9 +272,6 @@ return [
             'url'       => 'balance',
             'routeName' => 'balance_get'
         ],
-
-        // Add Adjustment
-        'adj_add'                           => 'adjustments',
     ],
 
     // auth
@@ -341,6 +342,10 @@ return [
         'merchant_add_bank_account'         => 'merchants/{id}/bank_account',
 
         'merchant_edit'                     => 'merchants/{id}',
+
+        // Entities
+        'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
+        'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
 
         'merchant_action'                   => 'merchants/{id}/action',
         'merchant_live_enable'              => 'merchants/{id}/live/enable',

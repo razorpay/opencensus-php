@@ -227,7 +227,7 @@
 
 <script type="text/ng-template" id="actionChanges.html">
   <div class="modal-header">
-    <h3 class="modal-title">Entity Changes</h3>
+    <h3 class="modal-title">Changes</h3>
   </div>
 
   <div class="modal-body new-key-modal" style="overflow: auto;">
@@ -251,6 +251,11 @@
           <ul ng-if="isArray(data.data.old[type])" class="comparison-list">
             <li ng-repeat="obj in data.data.old[type]" ng-if="obj.name">{{obj.name}}</li>
           </ul>
+
+          <ul ng-if="isIndexedArray(data.data.old[type])" class="comparison-list">
+            <li ng-repeat="item in data.data.old[type]">{{item}}</li>
+          </ul>
+
           <span ng-if="!isArray(data.data.old[type])">
             {{ displayValue(type, data.data.old[type]) }}
           </span>
@@ -259,6 +264,11 @@
           <ul ng-if="isArray(data.data.new[type])" class="comparison-list">
             <li ng-repeat="obj in data.data.new[type]"  ng-if="obj.name">{{obj.name}}</li>
           </ul>
+
+          <ul ng-if="isIndexedArray(data.data.new[type])" class="comparison-list">
+            <li ng-repeat="item in data.data.new[type]">{{item}}</li>
+          </ul>
+
           <span ng-if="!isArray(data.data.new[type])">
             {{ displayValue(type, data.data.new[type]) }}
           </span>
