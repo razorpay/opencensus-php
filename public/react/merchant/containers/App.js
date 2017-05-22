@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import Router from 'rzp/HashRouter';
+import { Router } from 'react-router-dom';
 import { fetchUser, fetchOrg } from 'merchant/modules/session';
 
 import Sidebar from 'merchant/components/Sidebar';
@@ -9,6 +9,39 @@ import Content from 'merchant/components/Content';
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Slider from 'rzp/ui/Slider';
 import Notifications from 'rzp/ui/Notifications';
+import createHashHistory from 'history/createHashHistory';
+
+const history = createHashHistory();
+const push = history.push;
+let shouldNotify = true;
+
+history.push = function(path, options = {}, state) {
+  if (options.notify === false) {
+    shouldNotify = false;
+  } else {
+    shouldNotify = true;
+  }
+  push(path, state);
+};
+
+// Will be moved to separate file
+class Layout extends Component {
+  shouldComponentUpdate() {
+    if (!shouldNotify) {
+      shouldNotify = true;
+      return false;
+    }
+    return true;
+  }
+
+  render() {
+    return (
+      <div class="layout">
+        {this.props.children}
+      </div>
+    );
+  }
+}
 
 @connect(state => state.session, {
   fetchUser,
@@ -33,8 +66,8 @@ export default class App extends Component {
     }
 
     return (
-      <Router>
-        <div class="layout">
+      <Router history={history}>
+        <Layout>
           <HeaderNav
             user={user}
             modeFormatted={modeFormatted}
@@ -49,7 +82,7 @@ export default class App extends Component {
           <ModalDialog />
           <Slider />
           <Notifications />
-        </div>
+        </Layout>
       </Router>
     );
   }
