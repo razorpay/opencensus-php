@@ -10,25 +10,6 @@ const ENTITY_TOTALS_FETCH = 'ENTITY_TOTALS_FETCH';
 const PAYMENT_BREAKUP_FETCH = 'PAYMENT_BREAKUP_FETCH';
 const CURRENT_BALANCE_FETCH = 'CURRENT_BALANCE_FETCH';
 
-const intervals = [
-  {
-    value: 'day',
-    label: 'Daily',
-  },
-  {
-    value: 'week',
-    label: 'Weekly',
-  },
-  {
-    value: 'month',
-    label: 'Monthly',
-  },
-  {
-    value: 'year',
-    label: 'Yearly',
-  },
-];
-
 let initialState = {
   analytics: {
     loading: true,
@@ -136,16 +117,16 @@ export default function(state = initialState, action) {
   }
 }
 
-export const fetchAnalytics = state => {
+export const fetchAnalytics = params => {
   return dispatch => {
     return dispatch({
       type: ANALYTICS_FETCH,
       payload: ajax({
         url: '/analytics/transactions',
         data: {
-          type: intervals[state.interval].value,
-          from: state.from.unix(),
-          to: state.to.unix(),
+          type: 'day',
+          from: params.from.unix(),
+          to: params.to.unix(),
         },
       }),
     });

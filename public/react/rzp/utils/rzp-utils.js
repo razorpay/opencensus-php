@@ -106,3 +106,22 @@ export const paymentStatusColor = {
   refunded: colors[3],
   failed: colors[4],
 };
+
+export const intervals = [
+  {
+    value: 'day',
+    label: 'Daily',
+  },
+  {
+    value: 'week',
+    label: 'Weekly',
+  },
+  {
+    value: 'month',
+    label: 'Monthly',
+  },
+  {
+    value: 'year',
+    label: 'Yearly',
+  },
+];

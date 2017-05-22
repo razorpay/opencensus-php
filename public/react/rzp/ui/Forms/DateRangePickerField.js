@@ -5,31 +5,45 @@ import moment from 'moment';
 export default class DateRangePickerField extends Component {
   state = {
     focused: null,
-    from: this.props.startDate,
-    to: this.props.endDate,
+    from: moment().endOf('day').subtract(30, 'days'),
+    to: moment().endOf('day'),
   };
 
-  constructor(props) {
-    super(props);
+  componentWillMount() {
+    this.props.onDatesChange({
+      from: this.state.from,
+      to: this.state.to,
+    });
   }
 
   onDatesChange = dates => {
-    this.setState({
+    let params = {
       from: dates.startDate,
       to: dates.endDate,
+    };
+    this.setState(params, () => {
+      if (
+        !this.state.focused &&
+        dates.startDate &&
+        dates.endDate &&
+        this.props.onDatesChange
+      ) {
+        this.props.onDatesChange(params);
+      }
     });
-    if (this.props.onDatesChange) {
-      this.props.onDatesChange(dates);
-    }
   };
 
   onFocusChange = focused => {
-    this.setState({
-      focused: focused,
-    });
-    if (this.props.onFocusChange) {
-      this.props.onFocusChange(focused);
-    }
+    this.setState(
+      {
+        focused: focused,
+      },
+      () => {
+        if (this.props.onFocusChange) {
+          this.props.onFocusChange(focused);
+        }
+      }
+    );
   };
 
   render() {
@@ -42,6 +56,8 @@ export default class DateRangePickerField extends Component {
       ...otherProps
     } = this.props;
 
+    let from = this.state.from;
+
     return (
       <div
         class={`datepicker-container ${this.state.focused ? 'datepicker--focused' : ''}`}
@@ -53,6 +69,8 @@ export default class DateRangePickerField extends Component {
           onDatesChange={this.onDatesChange}
           onFocusChange={this.onFocusChange}
           focusedInput={this.state.focused}
+          isOutsideRange={day => moment().isBefore(day)}
+          initialVisibleMonth={_ => from}
           {...otherProps}
         />
       </div>

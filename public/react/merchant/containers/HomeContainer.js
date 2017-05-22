@@ -36,34 +36,17 @@ import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
   }
 )
 export default class HomeContainer extends Component {
-  // currently focused daterange input field
-  focusedDate = null;
-
-  state = {
-    /* date/interval controls */
-    from: moment().endOf('day').subtract(30, 'days'),
-    to: moment().endOf('day'),
-
-    /* not in use */
-    interval: 0,
-  };
-
   constructor(props) {
     super(props);
   }
 
-  fetchAggregrations() {
+  componentWillMount() {
     this.props.fetchEntityTotals();
     this.props.fetchPaymentBreakup();
     this.props.fetchCurrentBalance();
     this.props.fetchPayments({ count: 5 });
     this.props.fetchRefunds({ count: 5 });
     this.props.fetchSettlements({ count: 5 });
-  }
-
-  componentWillMount() {
-    this.fetchAggregrations();
-    this.props.fetchAnalytics(this.state);
   }
 
   getTransactionCountData(data, isLive) {
@@ -92,7 +75,6 @@ export default class HomeContainer extends Component {
   }
 
   render() {
-    let { from, to } = this.state;
     let {
       entity_totals,
       payment_breakup,
@@ -118,26 +100,9 @@ export default class HomeContainer extends Component {
         <Header title="Dashboard" showMode={false}>
           <div style={{ float: 'right' }}>
             <DateRangePickerField
-              startDate={from}
-              endDate={to}
-              onDatesChange={({ startDate, endDate }) => {
-                this.setState(
-                  {
-                    from: startDate,
-                    to: endDate,
-                  },
-                  () => {
-                    if (!this.focusedDate && startDate && endDate) {
-                      this.props.fetchAnalytics(this.state);
-                    }
-                  }
-                );
+              onDatesChange={params => {
+                this.props.fetchAnalytics(params);
               }}
-              onFocusChange={focused => {
-                this.focusedDate = focused;
-              }}
-              isOutsideRange={day => moment().isBefore(day)}
-              initialVisibleMonth={_ => from}
             />
           </div>
           <div>
