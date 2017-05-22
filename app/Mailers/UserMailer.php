@@ -2,6 +2,7 @@
 
 namespace App\Mailers;
 
+use App\Admin;
 use App\User\Entity as UserEntity;
 use App\Exception\InvalidContactInformationException;
 
@@ -19,6 +20,11 @@ class UserMailer extends Mailer
         $this->to = $user->name;
         $this->email = $user->email;
         $this->data = $user->toArray();
+
+        $domain = \Request::server('SERVER_NAME');
+        list($error, $org) = (new Admin\Service)->getOrg($domain);
+
+        $this->org = $org;
     }
 
     /**
@@ -28,9 +34,15 @@ class UserMailer extends Mailer
      */
     public function accountVerification()
     {
-        $this->subject = 'Razorpay | Confirm Your Email';
+        $this->subject = $this->org['business_name'] . ' | Confirm Your Email';
+
         $this->view = 'emails.confirmation';
         $this->mailTag = MailTags::ACCOUNT_CONFIRMATION_MAIL;
+
+        $this->data['org'] = $this->org;
+
+        $this->fromEmail = $this->org['from_email'];
+        $this->fromName = $this->org['display_name'];
 
         return $this;
     }
