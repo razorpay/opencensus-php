@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const CODE        = 'code';
     const START_DATE  = 'start_date';
     const END_DATE    = 'end_date';
+    const EXPIRES_AT = 'expires_at';
 
     //maxinmum use count
     const USAGE       = 'usage';

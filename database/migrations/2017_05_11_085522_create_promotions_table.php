@@ -3,6 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
+use RZP\Models\Schedule;
 use RZP\Models\Promotion\Entity as Promotion;
 
 class CreatePromotionsTable extends Migration

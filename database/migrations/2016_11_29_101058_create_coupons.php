@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Coupon\Entity as Coupon;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant;
 
 class CreateCoupons extends Migration
