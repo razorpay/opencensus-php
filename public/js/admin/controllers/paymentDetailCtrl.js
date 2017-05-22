@@ -292,16 +292,19 @@ app
           return;
         }
 
+        var paymentRefundData = {
+          route_name: 'payment_refund',
+          merchant_id: $scope.entity.merchant_id,
+          mode: $scope.mode,
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/' +
-            $scope.mode +
-            '/' +
-            $scope.entity.merchant_id +
-            '/payments/' +
-            $scope.entity.id +
-            '/refund',
-          data: data,
+          url: '/admin/generic',
+          data: paymentRefundData,
         });
         request
           .success(function(data) {

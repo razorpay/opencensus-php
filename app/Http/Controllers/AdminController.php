@@ -360,15 +360,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postRefund($mode, $merchantId, $id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->refundPayment($mode, $merchantId, $id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postCapture($mode, $merchantId, $id)
     {
         $input = Input::all();

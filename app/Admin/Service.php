@@ -747,27 +747,6 @@ class Service extends Base\Service
         }
     }
 
-    public function refundPayment($mode, $merchantId, $id, $input)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        try
-        {
-            $data = $this->api->payment->fetch($id)
-                ->refund($input)
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
     /**
      * Makes a request to fetch the list of payment_analytics entities
      * for that payment, and then returns the URL for the entity

@@ -274,6 +274,8 @@ return [
 
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
+        // Refund Payment
+        'payment_refund'                    => 'payments/{id}/refund',
     ],
 
     // auth
