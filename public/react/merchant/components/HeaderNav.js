@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
+import { PowerSelect } from 'react-power-select';
 
 const ModesDropdown = ({ mode, modeFormatted, onSwitchMode }) => {
   return (
@@ -25,31 +26,28 @@ const ModesDropdown = ({ mode, modeFormatted, onSwitchMode }) => {
   );
 };
 
-const SwitchMerchantDropdown = ({ user, onSwitchMerchant }) => {
+const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   let merchants = user.merchants;
+  merchants = Object.keys(merchants).map(merchantId => merchants[merchantId]);
   return (
-    <Dropdown>
-      <DropdownTrigger class="dropdown-toggle">
-        Switch Merchant <span class="caret" />
-      </DropdownTrigger>
-      <DropdownContent>
-        <ul class="dropdown-menu">
-          {Object.keys(merchants).map(merchantId => {
-            let merchant = merchants[merchantId];
-            return (
-              <li key={merchantId}>
-                <a onClick={() => onSwitchMerchant(merchant)}>
-                  {merchant.id === user.current
-                    ? <i class="icon icon-done text-success" />
-                    : <i class="fa fa-fw" />}
-                  <span>{merchant.name}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      </DropdownContent>
-    </Dropdown>
+    <PowerSelect
+      options={merchants}
+      placeholder="Switch Merchant"
+      searchIndices={['name', 'email']}
+      optionComponent={({ option }) => {
+        return (
+          <a class="SwitchMerchantDropdown__option">
+            {option.id === user.current
+              ? <i class="icon icon-done text-success pull-right" />
+              : null}
+            <span>{option.name}</span>
+          </a>
+        );
+      }}
+      onChange={(option, select) => {
+        onSwitchMerchant(option);
+      }}
+    />
   );
 };
 
@@ -103,8 +101,8 @@ export default ({
               />
             </li>
             {Object.keys(user.merchants).length > 1
-              ? <li>
-                  <SwitchMerchantDropdown
+              ? <li class="SwitchMerchantDropdown">
+                  <SwitchMerchant
                     user={user}
                     onSwitchMerchant={onSwitchMerchant}
                   />

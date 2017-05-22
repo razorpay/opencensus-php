@@ -39,6 +39,15 @@ export const fetchOrg = () => {
   };
 };
 
+export const switchMerchant = merchantId => {
+  return dispatch => {
+    return ajax({
+      url: `/settings/merchants/switch/${merchantId}`,
+      appendModeInURL: false,
+    });
+  };
+};
+
 let initialState = {
   user: null,
   org: {},

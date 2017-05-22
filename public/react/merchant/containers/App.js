@@ -11,6 +11,7 @@ import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
 import ActivationRequired from 'merchant/components/ActivationRequired';
 import * as ModalActions from 'rzp/modules/modals';
+import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 
 const history = createHashHistory();
@@ -48,6 +49,7 @@ class Layout extends Component {
 @connect(state => state.session, {
   ...ModalActions,
   ...SessionActions,
+  ...NotificationActions,
 })
 export default class App extends Component {
   state = {
@@ -88,7 +90,19 @@ export default class App extends Component {
     }
   };
 
-  switchMerchant = () => {};
+  switchMerchant = merchant => {
+    this.props
+      .switchMerchant(merchant.id)
+      .then(() => {
+        location.reload();
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
 
   logout = () => {};
 
