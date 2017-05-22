@@ -233,11 +233,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
-    public function getType()
-    {
-        return $this->getAttribute(self::TYPE);
-    }
-
     protected function getSubMerchants()
     {
         $subMerchants = $this->merchants()->get();
