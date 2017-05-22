@@ -861,7 +861,6 @@ final class Route
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
-        'schedule_fetch_multiple',
         'schedule_migration',
         'internal_dummy_account_test',
         'user_create',
@@ -925,6 +924,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'schedule_fetch_multiple',
         'feature_delete',
         'admin_dummy_account_test',
         // workflows
@@ -1072,6 +1072,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'schedule_fetch_multiple',
         'feature_delete',
         'admin_dummy_account_test',
         // workflows
@@ -1189,6 +1190,7 @@ final class Route
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'       => '*',
         'merchants_update_hold_funds'      => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
+        'schedule_fetch_multiple'          => Permission::SCHEDULE_FETCH_MULTIPLE,
     ];
 
     public static $direct = [
