@@ -832,7 +832,7 @@ class Service extends Base\Service
         if ($this->cache->has($cacheKey) === true)
         {
             $token_data = $this->cache->get($cacheKey);
-            $token_data = explode(',', $token_data); //Decide on data to send and structure
+            $token_data = explode(',', $token_data);
             $userId = $token_data[0];
             $merchantId = $token_data[1];
             $user = (new Entity)->findOrFail($userId);

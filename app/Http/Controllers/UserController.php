@@ -208,15 +208,14 @@ class UserController extends Controller
         if ($data !== null)
         {
             $response = AppResponse::jsonResponse([], $data);
-            $response->header('Access-Control-Allow-Origin', 'http://localhost:8000');
-            $response->header('Access-Control-Allow-Credentials', 'true');
         }
         else
         {
             $response = AppResponse::unauthorizedResponse($error);
-            $response->header('Access-Control-Allow-Origin', 'http://localhost:8000');
-            $response->header('Access-Control-Allow-Credentials', 'true');
         }
+
+        $response = AppResponse::allowOriginForAuthService($response);
+
         return $response;
     }
 
