@@ -1,10 +1,12 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import { showNotification } from 'rzp/modules/notifications';
 import { uploadBatchRefunds } from 'merchant/modules/refunds/batchuploads';
 
+@withRouter
 @connect(state => state.session, { uploadBatchRefunds, showNotification })
 export default class BatchUpload extends Component {
   static contextTypes = {
@@ -33,7 +35,7 @@ export default class BatchUpload extends Component {
               type: 'success',
               message: 'Successful',
             });
-            location.hash = '/app/refunds/batchuploads';
+            this.props.history.push('/app/refunds/batchuploads');
           })
           .catch(({ errors }) => {
             this.props.showNotification({

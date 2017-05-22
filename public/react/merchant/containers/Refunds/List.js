@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -51,12 +52,12 @@ export default class RefundsListContainer extends ListContainer {
             featureEnabled="Batchrefunds"
             myRole="owner manager operations admin finance"
           >
-            <a
+            <NavLink
               class="btn btn-primary pull-right"
-              href="#/app/refunds/batchupload"
+              to="/app/refunds/batchupload"
             >
               Batch Refunds
-            </a>
+            </NavLink>
           </ShowWhen>
         </TetherComponent>
 

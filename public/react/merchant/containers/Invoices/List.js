@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { NavLink, withRouter } from 'react-router-dom';
 import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -10,6 +11,7 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 
+@withRouter
 @connect(state => state.invoices, { ...InvoiceActions, ...ModalActions })
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
@@ -18,7 +20,7 @@ export default class InvoicesListContainer extends ListContainer {
   }
 
   editInvoice = invoice => {
-    location.hash = `#/app/invoices/${invoice.id}`;
+    this.props.history.push(`/app/invoices/${invoice.id}`);
   };
 
   render() {
@@ -35,10 +37,10 @@ export default class InvoicesListContainer extends ListContainer {
         >
           <div />{/* required by react-tether */}
           <ShowWhen notMyRole="sellerapp support" featureEnabled="Invoice">
-            <a href="#/app/invoices/new" class="btn btn-primary pull-right">
+            <NavLink to="/app/invoices/new" class="btn btn-primary pull-right">
               <i class="icon icon-plus" />
               <span>Create Invoice</span>
-            </a>
+            </NavLink>
           </ShowWhen>
         </TetherComponent>
 

@@ -1,6 +1,7 @@
 import { Component, PropTypes } from 'react';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -62,6 +63,8 @@ function validate(values) {
 }
 
 const selector = formValueSelector('newInvoice');
+
+@withRouter
 @connect(
   state => {
     let customers = state.customers.customers;
@@ -238,7 +241,7 @@ export default class InvoicesNewContainer extends Component {
         type: 'success',
         message: 'Invoice Saved',
       });
-      location.hash = `#/app/invoices/${invoice.id}`;
+      this.props.history.push(`/app/invoices/${invoice.id}`);
       return invoice;
     });
   };
@@ -253,7 +256,7 @@ export default class InvoicesNewContainer extends Component {
           type: 'success',
           message: 'Invoice Issued',
         });
-        location.hash = `#/app/invoices/${invoice.id}`;
+        this.props.history.push(`/app/invoices/${invoice.id}`);
         return invoice;
       });
     });
@@ -302,7 +305,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   navigateToList() {
-    location.hash = '#/app/invoices';
+    this.props.history.push('/app/invoices');
   }
 
   deleteInvoice = () => {

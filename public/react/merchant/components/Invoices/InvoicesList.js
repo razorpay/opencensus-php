@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import TableBody from '../TableBody';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
@@ -16,9 +17,9 @@ const InvoiceListItem = props => {
             >
               {invoice.id}
             </TransactionNavLink>
-          : <a href={`#/app/invoices/${invoice.id}`}>
+          : <NavLink to={`/app/invoices/${invoice.id}`}>
               {invoice.id}
-            </a>}
+            </NavLink>}
       </td>
       <td>
         <Time value={invoice.date} />

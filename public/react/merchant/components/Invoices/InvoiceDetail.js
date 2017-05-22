@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
@@ -78,9 +79,9 @@ export default props => {
                         return '--';
                       }
                       return (
-                        <a href={`#/app/payments/${invoice.payment_id}`}>
+                        <NavLink to={`/app/payments/${invoice.payment_id}`}>
                           {invoice.payment_id}
-                        </a>
+                        </NavLink>
                       );
                     }}
                   />
