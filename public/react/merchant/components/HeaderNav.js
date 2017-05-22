@@ -1,8 +1,5 @@
 import { Link } from 'react-router-dom';
-import Dropdown, {
-  DropdownTrigger,
-  DropdownContent,
-} from 'react-simple-dropdown';
+import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 
 const ModesDropdown = ({ mode, modeFormatted, onSwitchMode }) => {
   return (
@@ -66,7 +63,7 @@ const ProfileDropdown = ({ user, onLogoutClick }) => {
         <ul class="dropdown-menu">
           {user.current &&
             <li>
-              <Link to="/orders">
+              <Link to="/app/activation">
                 Activation
                 {' '}
                 {!user.activated &&
@@ -75,7 +72,7 @@ const ProfileDropdown = ({ user, onLogoutClick }) => {
                   </span>}
               </Link>
             </li>}
-          <li><Link to="/orders">Profile</Link></li>
+          <li><Link to="/app/profile">Profile</Link></li>
           <li class="divider" />
           <li><a onClick={onLogoutClick}>Logout</a></li>
         </ul>
