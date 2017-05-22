@@ -193,7 +193,7 @@ class Entity extends Base\Entity
 
     public function getFromEmail()
     {
-        return $this->getAttribute(self::FROM_EMAIL);
+        return $this->getAttribute(self::FROM_EMAIL) ?? "support@razorpay.com";
     }
 
     public function getSignatureEmail()

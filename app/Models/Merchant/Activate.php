@@ -3,8 +3,11 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+
+use RZP\Constants\MailTags;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Key;
@@ -14,7 +17,6 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Constants\MailTags;
 
 class Activate extends Base\Core
 {
@@ -92,7 +94,7 @@ class Activate extends Base\Core
 
         $businessName = $org->getBusinessName();
 
-        $subject = "$businessName | Account activated for $subjectName";
+        $subject = $org->getBusinessName() . " | Account activated for $subjectName";
 
         $plan = $plan->toArrayPublic();
 
@@ -105,7 +107,7 @@ class Activate extends Base\Core
             'subject'  => $subject,
         ];
 
-        $data['merchant']['org']['hostname'] = $org->hostnames->first()->getHostname();
+        $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
 
         $config = $this->app->config->get('applications.mailgun');
 
@@ -122,20 +124,19 @@ class Activate extends Base\Core
                 'text' => 'emails.merchant.activation_text'
             ],
             $data,
-            function ($message) use ($data, $config)
+            function ($message) use ($data, $config, $org)
             {
                 $message->to($data['merchant']['email']);
                 $message->from($data['from_email'], $data['from_name']);
 
-                if ($data['merchant']['org']['custom_code'] === 'rzp')
+                if ($org->getId() === Org\Entity::RAZORPAY_ORG_ID)
                 {
                     $message->from($config['from_email'], $config['from_name']);
                     $message->cc('notifications@razorpay.com');
                 }
                 else
                 {
-                    $message->from($data['merchant']['org']['from_email'],
-                        $data['merchant']['org']['display_name']);
+                    $message->from($org->getFromEmail(), $org->getDisplayName());
                 }
 
                 $message->subject($data['subject']);

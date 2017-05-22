@@ -12,7 +12,7 @@ class Entity extends Base\Entity
     const ORG_ID        = 'org_id';
     const HOSTNAME      = 'hostname';
 
-    protected $entity = 'orghost';
+    protected $entity = 'org_hostname';
 
     protected $generateIdOnCreate = false;
 
