@@ -259,4 +259,29 @@ trait EntityActionTrait
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    protected function generateEntityReport($entity, $content)
+    {
+        $request = [
+            'url' => '/reports/' .$entity. '/generate',
+            'method' => 'post',
+            'content' => $content
+        ];
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function fetchReports($content)
+    {
+        $request = array(
+            'url' => '/reports',
+            'method' => 'get',
+            'content' => $content);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
 }

@@ -7,8 +7,9 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class CombinedReconciliate extends Base\CombinedReconciliate
 {
-    // ----- Row header names -----
-
+    /*******************
+     * Row Header Names
+     *******************/
     const REFUND_TXN_CLM     = 'refunded';
     const CAPTURE_TXN_CLM    = 'captured';
 
@@ -24,7 +25,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      * @param $row array
      * @return string
      */
-    protected function getReconciliationTypeForRow(array $row)
+    protected function getReconciliationTypeForRow($row)
     {
         // This indicates the file is frome email
         if (isset($row[self::TXN_TYPE_COLUMN]) === true)

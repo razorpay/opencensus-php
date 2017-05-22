@@ -3,8 +3,11 @@
 namespace RZP\Models\Report;
 
 use RZP\Models\Base;
+use RZP\Trace\Trace;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\ReportsJob;
+use RZP\Jobs\DispatchRouter;
 
 class Core extends Base\Core
 {
@@ -40,5 +43,34 @@ class Core extends Base\Core
         $report->merchant()->associate($merchant);
 
         return $report;
+    }
+
+    /**
+     * Validates the input
+     * Validates the entity
+     * Queues report generation for merchant
+     *
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
+     * @param $entity string
+     * @return void
+     */
+    public function queueGenerateReport(array $input, string $entity)
+    {
+        try
+        {
+            (new Validator)->validateInput('report_queue', array_merge($input, [Entity::TYPE => $entity]));
+
+            $reportsJob = new ReportsJob($input,
+                                        $entity,
+                                        $this->merchant->getId(),
+                                        $this->mode);
+
+            (new DispatchRouter)->dispatchOn($reportsJob, DispatchRouter::REPORTS);
+        }
+        catch (Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::REPORT_QUEUE_JOB_FAILED);
+        }
     }
 }

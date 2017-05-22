@@ -61,6 +61,39 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMerchantUsers()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+        $user2 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'owner');
+
+        $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
+
+        $this->ba->appAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'role'        => 'owner1',
+            'merchant_id' => $merchant['id']
+        ];
+
+        $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/users';
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $roles = array_column($response, 'role');
+
+        $this->assertEquals(count($roles), 2);
+
+        $this->assertTrue(in_array('owner', $roles));
+
+        $this->assertTrue(in_array('manager', $roles));
+    }
+
     public function testGetBalance()
     {
         // The merchant and balances have been created in
@@ -1286,5 +1319,17 @@ class MerchantTest extends TestCase
                    ->first();
 
         $this->assertNotNull($row);
+    }
+
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
+    {
+        DB::table('merchant_users')
+            ->insert([
+                'merchant_id' => $merchantId,
+                'user_id'     => $userId,
+                'role'        => $role,
+                'created_at'  => 1493805150,
+                'updated_at'  => 1493805150
+            ]);
     }
 }

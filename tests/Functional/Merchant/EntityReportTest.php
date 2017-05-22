@@ -241,4 +241,45 @@ class EntityReportTest extends TestCase
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    public function testGenerateReportCombined()
+    {
+        $entity = 'transaction';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    public function testGenerateReportSettlement()
+    {
+        $entity = 'settlement';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    public function testGenerateReportPayment()
+    {
+        $entity = 'payment';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    protected function generateReportAndFetch(string $entity)
+    {
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $this->generateEntityReport($entity, $input);
+
+        $reports = $this->fetchReports(['type' => $entity]);
+
+        assert($reports['count'] === 1);
+    }
 }

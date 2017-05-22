@@ -336,4 +336,23 @@ class Entity extends Base\PublicEntity
 
         $this->attributes[self::TYPE] = Type::MERCHANT;
     }
+
+    public function getRedactedAccountNumber()
+    {
+        $ac = $this->getAccountNumber();
+        //
+        // How many times should we repeat the redacted portion
+        // This does not give a precise result,
+        // but it looks good in groups of 4
+        //
+        // (strlen($ac) - 4) = Length of the segment we want to convert to X
+        // divide by 4 to get number of such segments
+        // and take ceil so we have a whole number of these
+
+        $repeat = ceil((strlen($ac) - 4) / 4);
+
+        // repeat this section $repeat times
+        // and then just append the original last 4 digits
+        return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+    }
 }
