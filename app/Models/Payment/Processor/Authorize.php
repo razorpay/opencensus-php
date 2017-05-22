@@ -2241,7 +2241,7 @@ trait Authorize
      * @param  array $input
      * @return boolean
      */
-    protected function canRunOtpPaymentFlow(Payment\Entity $payment, array $input = []): bool
+    protected function canRunOtpPaymentFlow(Payment\Entity $payment): bool
     {
         // All the IVR terminal use Otp payment flow regardless of their method
         if ($payment->terminal->isIvr() === true)
@@ -2269,8 +2269,7 @@ trait Authorize
         {
             $sources = ['checkoutjs', 's2s'];
 
-            if ((isset($input['_']['source']) === false) or
-                (in_array($input['_']['source'], $sources, true) === false))
+            if (in_array($payment->getMetadata('source'), $sources, true) === false)
             {
                 return false;
             }
