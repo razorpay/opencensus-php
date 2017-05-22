@@ -640,7 +640,7 @@ class FeeCalculator
             $payment = $this->entity;
 
             if (($payment->isMethodCardOrEmi() === true) and
-                ($this->amount <= 200000))
+                ($payment->getBaseAmount() <= 200000))
             {
                 $totalTaxes = 0;
             }
