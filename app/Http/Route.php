@@ -1130,6 +1130,11 @@ final class Route
         'admin_fetch_terminal_by_id'       => '*',
         'merchants_update_hold_funds'      => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
         'schedule_fetch_multiple'          => Permission::SCHEDULE_FETCH_MULTIPLE,
+        'admin_fetch_entity_multiple'      => '*',
+        'payment_authorize_refund'         => Permission::EDIT_AUTHORIZED_REFUND_PAYMENT,
+        'payment_fetch_refunds'            => Permission::VIEW_REFUND_PAYMENTS,
+        'payment_refund'                   => Permission::EDIT_PAYMENT_REFUND,
+        'payment_capture'                  => Permission::EDIT_PAYMENT_CAPTURE,
     ];
 
     public static $direct = [
