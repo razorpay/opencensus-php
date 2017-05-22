@@ -210,6 +210,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
     public function isStatusCreated()
     {
         return ($this->getStatus() === Status::CREATED);

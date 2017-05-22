@@ -45,12 +45,14 @@ class RowProcessor extends Base\RowProcessor
     protected function updateEntities()
     {
         $utr = $this->parsedData['utr'];
+        $currentUtr = $this->reconEntity->getUtr();
 
-        if ($utr !== null)
+        if (($currentUtr === null) and ($utr !== null))
         {
-            $this->reconEntity->setUtr($utr);
             $this->reconEntity->setProcessedAt(Carbon::now('Asia/Kolkata')->timestamp);
         }
+
+        $this->reconEntity->setUtr($utr);
 
         $this->reconEntity->setStatus($this->parsedData['status']);
         $this->reconEntity->setFailureReason($this->parsedData['failure_reason']);

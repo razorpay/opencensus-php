@@ -84,13 +84,14 @@ class RowProcessor extends Base\RowProcessor
         $this->reconEntity->saveOrFail();
 
         $source = $this->reconEntity->source;
+        $currentUtr = $source->getUtr();
 
-        $source->setUtr($utr);
-
-        if ($utr !== null)
+        if (($currentUtr === null) and ($utr !== null))
         {
             $source->setProcessedAt(Carbon::now('Asia/Kolkata')->timestamp);
         }
+
+        $source->setUtr($utr);
 
         $source->setFailureReason($this->parsedData['failure_reason']);
         $source->setStatus($this->parsedData['status']);
