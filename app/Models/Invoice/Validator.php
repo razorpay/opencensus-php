@@ -165,6 +165,7 @@ class Validator extends Base\Validator
     //
 
     protected static $createValidators =[
+        Entity::PARTIAL_PAYMENT,
         Entity::AMOUNT,
         Entity::CURRENCY,
     ];
@@ -174,13 +175,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editDraftValidators = [
+        Entity::PARTIAL_PAYMENT,
         Entity::AMOUNT,
-
-        //
-        // Amount should not be updated by via input if line items already exists
-        // for the invoice.
-        //
-
         self::EDIT_DRAFT . Entity::AMOUNT,
     ];
 
@@ -194,6 +190,27 @@ class Validator extends Base\Validator
         $this->checkIfAmountIsExpectedInInput($input);
 
         $this->validateMaxAllowedAmount($input[Entity::AMOUNT]);
+    }
+
+    /**
+     * Validates partial_payment input is sent only for type invoice.
+     *
+     * @param array $input
+     */
+    public function validatePartialPayment(array $input)
+    {
+        if (isset($input[Entity::PARTIAL_PAYMENT]) === false)
+        {
+            return;
+        }
+
+        $type = $input[Entity::TYPE] ?? $this->entity->getType();
+
+        if ($type !== Type::INVOICE)
+        {
+            throw new BadRequestValidationFailureException(
+                'partial_payment is not expected with link type');
+        }
     }
 
     /**
@@ -295,6 +312,12 @@ class Validator extends Base\Validator
         Type::checkType($value);
     }
 
+    /**
+     * Amount should not be updated by via input if line items already exists
+     * for the invoice.
+     *
+     * @param array $input
+     */
     public function validateEditDraftAmount(array $input)
     {
         if (isset($input[Entity::AMOUNT]) === false)
@@ -523,7 +546,8 @@ class Validator extends Base\Validator
     }
 
     /**
-     * Invoice is only payable if it's not deleted and is in ISSUED state.
+     * Invoice is only payable if it's not deleted and is in either
+     * issued or partially_paid state.
      *
      * @return void
      * @throws BadRequestValidationFailureException

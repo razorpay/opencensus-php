@@ -2023,3 +2023,10 @@ ALTER TABLE payments
 # Adds type to terminals
 ALTER TABLE terminals
     ADD COLUMN type TINYINT(1) DEFAULT 3 NOT NULL AFTER tpv;
+
+# Pre deployment of branch order-partial-payments
+ALTER TABLE orders
+    ADD COLUMN partial_payment TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id,
+    ADD COLUMN amount_paid INT(10) unsigned NOT NULL DEFAULT 0 AFTER partial_payment;
+
+ALTER TABLE invoices ADD COLUMN partial_payment TINYINT(4) NOT NULL DEFAULT 0 AFTER sms_status;

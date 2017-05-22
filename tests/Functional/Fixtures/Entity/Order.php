@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Order\Entity as OrderEntity;
+
 class Order extends Base
 {
     public function createTpvOrder(Array $attributes = array())
@@ -50,7 +52,16 @@ class Order extends Base
         return parent::create($attributes);
     }
 
-    public function createPaidOrder(array $attributes = [])
+    /**
+     * Creates a paid order.
+     * If not passed, usage default amount value as amount_paid and 'paid' as
+     * status.
+     *
+     * @param array $attributes
+     *
+     * @return OrderEntity
+     */
+    public function createPaidOrder(array $attributes = []): OrderEntity
     {
         $amountPaid = $attributes['amount_paid'] ?? 1000000;
         $status     = $attributes['status'] ?? 'paid';

@@ -376,3 +376,8 @@ daily_settlements.processed_amount = stats.processed_amount;
 
 #Adds Auth code to a payment
 UPDATE cybersource set authorizationCode='T38678' where id=28984;
+
+
+# Post deployment of branch order-partial-payments
+# Updates amount_paid value for old rows
+UPDATE orders SET amount_paid = amount where status = 'paid' and amount_paid = 0;

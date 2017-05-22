@@ -51,8 +51,22 @@ class Entity extends Base\PublicEntity
     const COMMENT                  = 'comment';
     const SHORT_URL                = 'short_url';
     const VIEW_LESS                = 'view_less';
+
+    /**
+     * If set to true, partial payments would be accepted
+     * against this invoice and invoice status would move
+     * to PARTIALLY_PAID in those cases.
+     * Once there is no due amount left, it goes to PAID.
+     */
     const PARTIAL_PAYMENT          = 'partial_payment';
     const AMOUNT                   = 'amount';
+
+    /**
+     * Following two attributes are looked up from corresponding
+     * order entity. Order maintains 'amount_paid'. If no order
+     * has been created for invoice till now, followings will be
+     * null.
+     */
     const AMOUNT_PAID              = 'amount_paid';
     const AMOUNT_DUE               = 'amount_due';
     const CURRENCY                 = 'currency';
@@ -703,6 +717,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRE_BY, $expireBy);
     }
 
+    /**
+     * Updates invoice status post capture.
+     * If all amount has been paid, move to PAID else PARTIALLY_PAID.
+     */
     public function updateStatusPostCapture()
     {
         $newStatus = ($this->getAmountPaid() === $this->getAmount()) ?
@@ -711,6 +729,12 @@ class Entity extends Base\PublicEntity
         $this->setStatus($newStatus);
     }
 
+    /**
+     * Updates invoice entity post a payment refund.
+     * If all paid amount gets refunded, invoice moves to issued state
+     * else in(or stays in) partially_paid.
+     * Also unset paid attribute in this case.
+     */
     public function updateStatusPostRefund()
     {
         $newStatus = ($this->getAmountPaid() === 0) ?
@@ -777,6 +801,12 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    /**
+     * Looks up amount_paid attribute from corresponding
+     * order entity.
+     *
+     * @return null|int
+     */
     public function getAmountPaidAttribute()
     {
         if ($this->getOrderId() === null)
@@ -787,6 +817,12 @@ class Entity extends Base\PublicEntity
         return $this->order->getAmountPaid();
     }
 
+    /**
+     * Looks up amount_due attribute from corresponding
+     * order entity.
+     *
+     * @return null|int
+     */
     public function getAmountDueAttribute()
     {
         if ($this->getOrderId() === null)
