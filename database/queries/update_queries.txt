@@ -379,6 +379,12 @@ set processed_at = updated_at
 where utr is not null
 and processed_at is null;
 
+
+update payouts
+set processed_at = updated_at
+where utr is not null
+and processed_at is null;
+
 #Adds Auth code to a payment
 UPDATE cybersource set authorizationCode='T38678' where id=28984;
 

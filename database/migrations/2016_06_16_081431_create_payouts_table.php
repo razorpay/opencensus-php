@@ -85,7 +85,6 @@ class CreatePayoutsTable extends Migration
                   ->nullable();
 
             $table->integer(Payout::PROCESSED_AT)
-                  ->unsigned()
                   ->nullable();
 
             $table->integer(Payout::CREATED_AT);

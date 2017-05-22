@@ -2,8 +2,6 @@
 
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V2;
 
-use Carbon\Carbon;
-
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\V3;
