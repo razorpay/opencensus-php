@@ -44,14 +44,21 @@ app
       };
 
       function fetchEntity(entityType) {
-        var url =
-          '/admin/' +
-          $scope.mode +
-          '/fetchentity/' +
-          entityType +
-          '/' +
-          $scope.entity.id;
-        var request = $http.get(url);
+        var routeName = 'admin_fetch_entity_by_id';
+        if (entityType === 'terminal') {
+          routeName = 'admin_fetch_terminal_by_id';
+        }
+        var data = {
+          route_name: routeName,
+          url_params: {
+            '{type}': entityType,
+            '{id}': $scope.entity.id,
+          },
+          mode: $scope.mode,
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
         request
           .success(function(data) {
             $scope.alerts.resetAlerts();
