@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Route, NavLink, withRouter } from 'react-router-dom';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
@@ -11,14 +12,19 @@ export default class Settings extends Component {
     return (
       <tabbed-container>
         <header>
-          <NavLink to="/app/config">Configuration</NavLink>
-          <NavLink to="/app/webhooks">Webhooks</NavLink>
-          <NavLink to="/app/keys">API Keys</NavLink>
+          <ShowWhen myRole="owner manager admin">
+            <NavLink to="/app/config">Configuration</NavLink>
+            <NavLink to="/app/webhooks">Webhooks</NavLink>
+          </ShowWhen>
+
+          <ShowWhen myRole="owner admin">
+            <NavLink to="/app/keys">API Keys</NavLink>
+          </ShowWhen>
         </header>
 
         <Route path="/app/config" component={Configuration} />
-        <Route path="/app/keys" component={ApiKeys} />
         <Route path="/app/webhooks" component={Webhooks} />
+        <Route path="/app/keys" component={ApiKeys} />
       </tabbed-container>
     );
   }

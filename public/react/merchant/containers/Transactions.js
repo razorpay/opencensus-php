@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import PaymentsList from 'merchant/containers/Payments/List';
 import PaymentsDetails from 'merchant/containers/Payments/Details';

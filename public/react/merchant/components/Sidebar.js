@@ -83,6 +83,8 @@ export default class Sidebar extends Component {
                   label="Invoices"
                   icon="icon-invoices"
                   to={routes.invoices}
+                  featureEnabled="Invoice"
+                  notMyRole="sellerapp"
                 />
                 <MainNavLink
                   label="Payment Links"
@@ -94,6 +96,7 @@ export default class Sidebar extends Component {
                   label="Customers"
                   icon="icon-people"
                   to="/app/customers"
+                  featureEnabled="Invoice"
                   notMyRole="sellerapp"
                 />
 

@@ -4,6 +4,7 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
+import ShowWhen from 'merchant/components/ShowWhen';
 import LineItemReadOnlyTable from './LineItemReadOnlyTable';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import DetailRow from 'merchant/components/DetailRow';
@@ -35,24 +36,25 @@ export default props => {
               <div class="panel-heading">
                 Invoice ID: <strong>{invoice.id}</strong>
 
-                <div class="btn-toolbar pull-right">
-                  {(isDraft || isIssued) &&
-                    <button
-                      class="btn btn-primary btn-sm"
-                      onClick={props.onIssue}
-                    >
-                      Send Link
-                    </button>}
+                <ShowWhen notMyRole="support finance">
+                  <div class="btn-toolbar pull-right">
+                    {(isDraft || isIssued) &&
+                      <button
+                        class="btn btn-primary btn-sm"
+                        onClick={props.onIssue}
+                      >
+                        Send Link
+                      </button>}
 
-                  {isIssued &&
-                    <button
-                      class="btn btn-default btn-sm"
-                      onClick={props.onCancel}
-                    >
-                      Cancel Link
-                    </button>}
-                </div>
-
+                    {isIssued &&
+                      <button
+                        class="btn btn-default btn-sm"
+                        onClick={props.onCancel}
+                      >
+                        Cancel Link
+                      </button>}
+                  </div>
+                </ShowWhen>
               </div>
 
               <div class="panel-body">
