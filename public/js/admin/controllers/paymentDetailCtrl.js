@@ -103,15 +103,18 @@ app
         }, $.noop);
       };
       $scope.refundAuthorized = function() {
+        var data = {
+          route_name: 'payment_authorize_refund',
+          merchant_id: $scope.entity.merchant_id,
+          mode: $scope.mode,
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/' +
-            $scope.mode +
-            '/' +
-            $scope.entity.merchant_id +
-            '/payments/' +
-            $scope.entity.id +
-            '/refund_authorized',
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {

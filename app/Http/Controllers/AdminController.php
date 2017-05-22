@@ -367,13 +367,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postRefundAuthorizedPayment($mode, $merchantId, $id)
-    {
-        list($error, $data) = (new Admin\Service)->refundAuthorizedPayment($mode, $merchantId, $id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postRefund($mode, $merchantId, $id)
     {
         $input = Input::all();

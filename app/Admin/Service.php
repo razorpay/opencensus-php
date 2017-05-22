@@ -747,27 +747,6 @@ class Service extends Base\Service
         }
     }
 
-    public function refundAuthorizedPayment($mode, $merchantId, $id)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        try
-        {
-            $data = $this->api->payment->fetch($id)
-                ->refundAuthorized()
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
     public function refundPayment($mode, $merchantId, $id, $input)
     {
         $data = [];

@@ -271,6 +271,9 @@ return [
 
         // Add Adjustment
         'adj_add'                           => 'adjustments',
+
+        // Refund Authorized Payment
+        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
     ],
 
     // auth
