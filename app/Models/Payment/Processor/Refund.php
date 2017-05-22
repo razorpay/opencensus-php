@@ -38,7 +38,10 @@ trait Refund
         return $refund;
     }
 
-    public function createRefundOnApiFromRecon(Payment\Entity $payment, string $refundId, int $refundAmount)
+    public function createRefundOnApiFromRecon(
+        Payment\Entity $payment,
+        string $refundId,
+        int $refundAmount)
     {
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
@@ -51,7 +54,7 @@ trait Refund
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
 
-    public function verifyRefund(Payment\Refund\Entity $refund)
+    public function verifyInternalRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
@@ -59,7 +62,7 @@ trait Refund
 
         $gateway = $payment->getGateway();
 
-        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
+        Payment\Refund\Validator::validateVerifyInternalRefundAllowed($gateway);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
 
@@ -71,7 +74,7 @@ trait Refund
 
         $msg = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
-            $verify = $this->callGatewayForVerifyRefund($data);
+            $verify = $this->callGatewayForVerifyInternalRefund($data);
 
             // Flag indicating if this is a buggy case fix.
             $this->verifyRefundStatus = $verify;
@@ -166,6 +169,33 @@ trait Refund
             'payment_id'            => $payment->getId(),
             'refund_id'             => $refund->getId(),
         ];
+    }
+
+    /**
+     * Calls verifyRefund on gateway.
+     * Identifies if the refund passed here was processed
+     * by the gateway.
+     *
+     * @param Payment\Refund\Entity $refund
+     *
+     * @return bool
+     * @throws Exception\BadRequestException
+     */
+    public function verifyRefund(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $gateway = $payment->getGateway();
+
+        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
+
+        $data = $this->getGatewayDataForRefund($refund, $payment);
+
+        $verifyRefundResult = $this->callGatewayForVerifyRefund($data);
+
+        return $verifyRefundResult;
     }
 
     public function createGatewayRefundRecord(Payment\Refund\Entity $refund)
@@ -353,33 +383,46 @@ trait Refund
      */
     protected function getPaymentRefundType(array $input)
     {
-        $type = Payment\Refund\Status::PARTIAL;
+        $type = Payment\RefundStatus::PARTIAL;
 
         if ((isset($input['amount']) === false) or
             ((int) $input['amount'] === $this->payment->getAmountUnrefunded()))
         {
-            $type = Payment\Refund\Status::FULL;
+            $type = Payment\RefundStatus::FULL;
         }
 
         return $type;
     }
 
-    protected function callGatewayForVerifyRefund($data)
+    protected function callGatewayForVerifyInternalRefund($data)
     {
         $verifyRefundResult = null;
 
         try
         {
-            $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
+            $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_INTERNAL_REFUND, $data);
         }
         catch (Exception\BaseException $e)
         {
             $this->tracePaymentFailed(
                     $e->getError(),
-                    TraceCode::PAYMENT_VERIFY_REFUND_FAILURE);
+                    TraceCode::PAYMENT_VERIFY_INTERNAL_REFUND_FAILURE);
 
             throw $e;
         }
+
+        return $verifyRefundResult;
+    }
+
+    /**
+     * @param $data
+     *
+     * @return bool
+     * @throws Exception\LogicException
+     */
+    protected function callGatewayForVerifyRefund($data)
+    {
+        $verifyRefundResult = $this->callGatewayFunction(Payment\Action::VERIFY_REFUND, $data);
 
         return $verifyRefundResult;
     }
@@ -456,7 +499,7 @@ trait Refund
 
     protected function refundOnGateway($data)
     {
-        $gateway = $data['payment']['gateway'];
+        $gatewayRefunded = false;
 
         try
         {
@@ -467,42 +510,20 @@ trait Refund
 
             if (($paymentId === '6pHu2RnPzTeI51') and ($refAmount === 784000))
             {
-                return;
+                return true;
             }
 
             // HDFC refund which got timed out on HDFC end, but was successful.
             if (($paymentId === '7V6tmkxLdC4xyd') and ($refAmount === 18500))
             {
-                return;
+                return true;
             }
 
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
-        }
-        catch (Exception\GatewayTimeoutException $ex)
-        {
-            //
-            // Currently, we are running this experiment only for Billdesk.
-            // Billdesk gives us a way to find out how much amount has been refunded.
-            // We are not aware of any other gateway which
-            // provides us this feature, currently.
-            //
 
-            if (in_array($gateway, Payment\Gateway::REFUND_TIMEOUT_HANDLED_GATEWAYS, true) === false)
-            {
-                throw $ex;
-            }
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
 
-            $this->trace->traceException($ex);
-
-            //
-            // We just ignore the timeout and mark it as refunded on the api side.
-            // Later we would run verify for these refunds and
-            // create appropriate entries on the gateway side.
-            //
-
-            $this->trace->info(
-                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
-                ['payment_id' => $this->payment->getId()]);
+            $gatewayRefunded = true;
         }
         catch (Exception\BaseException $e)
         {
@@ -513,15 +534,23 @@ trait Refund
                     $e->getError(),
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
-            throw $e;
+            $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
+
+        return $gatewayRefunded;
     }
 
     protected function reverseOnGateway($data)
     {
+        $reversed = false;
+
         try
         {
             $this->callGatewayFunction(Payment\Action::REVERSE, $data);
+
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+
+            $reversed = true;
         }
         catch (Exception\BaseException $e)
         {
@@ -531,45 +560,29 @@ trait Refund
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
+
+            $this->refund->setStatus(Payment\Refund\Status::FAILED);
         }
+
+        return $reversed;
     }
 
     protected function recordTransactionForRefund()
     {
-        try
+        $this->repo->transaction(function()
         {
-            return $this->repo->transaction(
-                function()
-                {
-                    $payment = $this->payment;
+            $payment = $this->payment;
 
-                    $this->paymentRepo->lockForUpdate($payment->getKey());
+            $this->repo->payment->lockForUpdate($payment->getKey());
 
-                    $this->createTransactionForRefund($this->refund, $payment);
+            $this->createTransactionForRefund($this->refund, $payment);
 
-                    //
-                    // This needs to be saved here because of the association with
-                    // transaction which is set in the createTransactionForRefund function.
-                    //
-                    $this->repo->saveOrFail($this->refund);
-
-                    return true;
-                });
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::REFUND_TRANSACTION_FAILED,
-                [
-                    'payment_id'    => $this->payment->getId(),
-                    'refund_id'     => $this->refund->getId(),
-                    'error_message' => $ex->getMessage(),
-                ]);
-
-            return false;
-        }
+            //
+            // This needs to be saved here because of the association with
+            // transaction which is set in the createTransactionForRefund function.
+            //
+            $this->repo->saveOrFail($this->refund);
+        });
     }
 
     protected function recordTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
@@ -578,7 +591,7 @@ trait Refund
         {
             $payment = $this->payment;
 
-            $this->paymentRepo->lockForUpdate($payment->getKey());
+            $this->repo->payment->lockForUpdate($payment->getKey());
 
             $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
 
@@ -601,9 +614,9 @@ trait Refund
             $this->validateMerchantBalance($refund);
         }
 
-        $this->refund = $refund;
-
         $refund->batch()->associate($batch);
+
+        $this->refund = $refund;
 
         return $refund;
     }
@@ -614,59 +627,110 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($this->refund, $payment);
 
-        if ($payment->isMethodCardOrEmi() === true)
-        {
-            $card = $this->repo->card->fetchForPayment($this->refund->payment);
-
-            $data['card'] = $card->toArray();
-        }
-
-        if ($payment->getTokenId() !== null)
-        {
-            $data['token'] = $payment->localToken;
-        }
-
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            if (($payment->getTransactionId() !== null) or
-                ($payment->isGatewayCaptured() === true))
+            $this->repo->transaction(function() use ($data, $payment)
             {
-                $this->refundOnGateway($data);
+                $this->recordTransactionForRefund();
 
-                $this->refund->setGatewayRefunded(true);
-            }
-            else if ($this->gatewaySupportsReversal($payment) === true)
-            {
-                $this->reverseOnGateway($data);
+                // update the payment entity for refund
+                $this->updatePaymentRefunded();
 
-                // TODO: Record this too.
-            }
+                $refunded = $this->callGatewayRefundFunction($payment, $data);
 
-            $refundCopy = clone $this->refund;
+                $this->refund->setGatewayRefunded($refunded);
+            });
 
-            //
-            // NOTE: We should create the transaction before we update
-            // the payment as refunded since there is different logic
-            // for creating a refund transaction based on the payment status.
-            //
-            $success = $this->recordTransactionForRefund();
+            $this->refund->incrementAttempts();
 
-            //
-            // `recordTransactionForRefund()` may have made modifications to the refund
-            // entity which we don't want to update, since recording transaction failed.
-            //
-            if ($success === false)
-            {
-                $this->refund = $refundCopy;
-            }
+            // We don't want the transaction to fail if this
+            // save fails that's why keeping it outside.
+            $this->repo->saveOrFail($this->refund);
 
-            // Record refund since it's refunded on gateway
-            $this->updatePaymentRefunded();
-
+            // send notification to merchant/customer, this is outside transaction
+            // as we dont want to to reverse the actions if mail sending fails
             $this->sendRefundNotification($payment);
         });
 
         return $this->refund;
+    }
+
+    protected function callGatewayRefundFunction($payment, $data)
+    {
+        $refunded = false;
+
+        // refund/reverse on gateway
+        if (($payment->getTransactionId() !== null) or
+            ($payment->isGatewayCaptured() === true))
+        {
+            $refunded = $this->refundOnGateway($data);
+        }
+        else if ($this->gatewaySupportsReversal($payment) === true)
+        {
+            $refunded = $this->reverseOnGateway($data);
+        }
+
+        return $refunded;
+    }
+
+    /**
+     * When a refund is requested to be retried.
+     * i.e A failed refund on api side.
+     *
+     * - first verify on gateway if the refund was processed.
+     * - if not processed, refund on gateway
+     *
+     *   if refund was attempted i.e after the verify call
+     *   if a call to reverse or refund occurred
+     *   increment attempts and set last_attempted_at
+     *
+     *   if successful
+     * - update the refund status to processed.
+     * - no need to update payment - marked as refunded
+     *
+     * @param Payment\Refund\Entity $refund
+     *
+     * @return string
+     */
+    public function processRefundRetry(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $data = $this->getGatewayDataForRefund($refund, $payment);
+
+        if ($refund->isProcessed() === true)
+        {
+            return Payment\Refund\Status::PROCESSED;
+        }
+
+        $this->refund->incrementAttempts();
+        $this->repo->saveOrFail($this->refund);
+
+        // true  if refunded
+        // false if not refunded
+        $refundedOnGateway = $this->verifyRefund($refund);
+
+        if ($refundedOnGateway === false)
+        {
+            $refundedOnGateway = $this->mutex->acquireAndRelease(
+                $payment->getId(),
+                function() use ($data, $payment)
+                {
+                    return $this->callGatewayRefundFunction($payment, $data);
+                });
+        }
+        else
+        {
+            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+        }
+
+        $this->refund->setGatewayRefunded($refundedOnGateway);
+
+        $this->repo->saveOrFail($this->refund);
+
+        return $this->refund->getStatus();
     }
 
     protected function gatewaySupportsReversal($payment)
@@ -678,10 +742,16 @@ trait Refund
 
     protected function updatePaymentRefunded()
     {
-        // Indicates buggy case where refund entity is already present
+        //
+        // Indicates inverse of buggy case where
+        // refund entity is already present
+        // Need to check against false only, since
+        // it can be `null` also. In case of `null`
+        // or `true`, it should go to the else block.
+        //
         if ($this->verifyRefundStatus === false)
         {
-            ; // No action required here.
+            ;
         }
         else
         {
@@ -741,6 +811,13 @@ trait Refund
             $data['amount'] = $refund->getBaseAmount();
 
             $data['currency'] = Currency\Currency::INR;
+        }
+
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $card = $this->repo->card->fetchForPayment($payment);
+
+            $data['card'] = $card->toArray();
         }
 
         return $data;
@@ -847,7 +924,10 @@ trait Refund
         $this->notifyDashboard('refund', $this->refund);
     }
 
-    protected function createRefundOnApiSeparately(Payment\Entity $payment, string $refundId, int $refundAmount)
+    protected function createRefundOnApiSeparately(
+        Payment\Entity $payment,
+        string $refundId,
+        int $refundAmount)
     {
         if ($payment->transaction === null)
         {
@@ -855,7 +935,9 @@ trait Refund
                 'Transaction expected but not present for payment: ' . $payment->getId());
         }
 
-        $input = ['amount' => $refundAmount];
+        $input = [
+            'amount' => $refundAmount
+        ];
 
         $refund = $this->buildRefundEntity($payment, $input);
 

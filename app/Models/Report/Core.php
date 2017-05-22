@@ -3,73 +3,74 @@
 namespace RZP\Models\Report;
 
 use RZP\Models\Base;
+use RZP\Trace\Trace;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\ReportsJob;
+use RZP\Jobs\DispatchRouter;
 
 class Core extends Base\Core
 {
     /**
-     * @param   $input
-     *          Expected params in $input are : start_time, end_time, entity
-     * @return  Entity
+     * builds the report entity, given params
+     *
+     * @param   $input    array
+     *          Expected params in $input are :
+     *          start_time, end_time, entity, day, month, year
+     * @param   $merchant Merchant\Entity
+     *
+     * @return  $report Entity
      */
-    public function create(array $input, Merchant\Entity $merchant)
+    public function buildEntity(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
             TraceCode::REPORT_CREATE_REQUEST,
             $input
         );
 
-        $report = (new Entity)->build($input);
+        $params = [
+            Entity::DAY             => $input['day'] ?? null,
+            Entity::MONTH           => $input['month'],
+            Entity::YEAR            => $input['year'],
+            Entity::START_TIME      => $input['from'],
+            Entity::END_TIME        => $input['to'],
+            Entity::TYPE            => $input['entity'],
+            Entity::GENERATED_BY    => $this->getInternalUsernameOrEmail(),
+        ];
+
+        $report = (new Entity)->build($params);
 
         $report->merchant()->associate($merchant);
-
-        $this->repo->saveOrFail($report);
 
         return $report;
     }
 
     /**
-     * Checks if a report entity exists for give parameters
+     * Validates the input
+     * Validates the entity
+     * Queues report generation for merchant
      *
-     * @param $from integer
-     * @param $to   integer
+     * @param $input array
+     *        expected : 'day', 'month', 'year'
      * @param $entity string
-     * @param $input array containing day, month, year
-     * @return $report Report\Entity
+     * @return void
      */
-    public function getReportEntity($from, $to, $entity, array $input)
+    public function queueGenerateReport(array $input, string $entity)
     {
-        $this->trace->info(
-            TraceCode::REPORT_ENTITY_FETCH_REQUEST,
-            [
-                'method'        => __METHOD__,
-                'entity'        => $entity,
-                'from'          => $from,
-                'to'            => $to,
-                'input'         => $input,
-            ]);
-
-        $merchant = $this->merchant;
-
-        $report = $this->repo->report->fetchReportEntity(
-                                        $from, $to, $entity, $merchant->getId());
-
-        if ($report === null)
+        try
         {
-            $params = [
-                Entity::DAY             => $input['day'] ?? null,
-                Entity::MONTH           => $input['month'],
-                Entity::YEAR            => $input['year'],
-                Entity::START_TIME      => $from,
-                Entity::END_TIME        => $to,
-                Entity::TYPE            => $entity,
-                Entity::GENERATED_BY    => $this->getInternalUsernameOrEmail(),
-            ];
+            (new Validator)->validateInput('report_queue', array_merge($input, [Entity::TYPE => $entity]));
 
-            $report = $this->create($params, $merchant);
+            $reportsJob = new ReportsJob($input,
+                                        $entity,
+                                        $this->merchant->getId(),
+                                        $this->mode);
+
+            (new DispatchRouter)->dispatchOn($reportsJob, DispatchRouter::REPORTS);
         }
-
-        return $report;
+        catch (Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::REPORT_QUEUE_JOB_FAILED);
+        }
     }
 }

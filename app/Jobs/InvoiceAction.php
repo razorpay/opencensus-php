@@ -26,10 +26,10 @@ class InvoiceAction extends Job implements ShouldQueue
     // Following are the events handled
     //
 
-    const ISSUED     = 'issued';
-    const UPDATED    = 'updated';
-    const EXPIRED    = 'expired';
-    const AUTHORIZED = 'authorized';
+    const ISSUED                = 'issued';
+    const UPDATED               = 'updated';
+    const EXPIRED               = 'expired';
+    const AUTHORIZED            = 'authorized';
 
     protected $mode;
     protected $event;
@@ -191,7 +191,7 @@ class InvoiceAction extends Job implements ShouldQueue
 
         if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
         {
-            $this->deleted();
+            $this->delete();
         }
         else
         {

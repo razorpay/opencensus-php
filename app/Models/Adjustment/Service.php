@@ -6,9 +6,13 @@ use RZP\Models\Base;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
+use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
 {
+    use NotifyTrait;
+
     public function getAdjustment($id)
     {
         $adj = $this->repo->adjustment->findByPublicIdAndMerchant($id, $this->merchant);
@@ -25,9 +29,14 @@ class Service extends Base\Service
 
     public function addAdjustment($input)
     {
-        $merchant = $this->merchant;
+        $merchantId = $input[Entity::MERCHANT_ID];
+        unset($input[Entity::MERCHANT_ID]);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
+
+        $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
 
         return $adj->toArrayPublic();
     }

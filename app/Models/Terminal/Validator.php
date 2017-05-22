@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::NETBANKING                  => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::UPI                         => 'sometimes|boolean',
+        Entity::AEPS                        => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::RECURRING                   => 'sometimes|integer|max:7',
@@ -68,6 +69,11 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
+    ];
+
+    protected static $aepsIciciTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:aeps_icici',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num',
     ];
 
     protected static $billdeskTerminalRules = [
@@ -111,7 +117,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required',
         Entity::EMI                         => 'sometimes|boolean',
-        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
+        Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 
@@ -237,7 +243,6 @@ class Validator extends Base\Validator
 
     protected static $netbankingFederalTerminalRules = [
         Entity::GATEWAY                     => 'required|in:netbanking_federal',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string'
     ];
 
     protected function validateGateway($input)
@@ -307,6 +312,13 @@ class Validator extends Base\Validator
         if (isset(Payment\Gateway::GATEWAY_ACQUIRERS[$gateway]) === false)
         {
             return;
+        }
+
+        // Gateway acquirer is required
+        if (empty($input[Entity::GATEWAY_ACQUIRER]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway acquirer is required for ' . $gateway);
         }
 
         $gatewayAcquirer = $input[Entity::GATEWAY_ACQUIRER];
@@ -381,6 +393,7 @@ class Validator extends Base\Validator
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
             ($new->getRecurring() === $existing->getRecurring()) and
+            ($new->getCurrency() === $existing->getCurrency()) and
             ($new->getNetworkCategory() === $existing->getNetworkCategory()))
         {
             throw new Exception\BadRequestException(

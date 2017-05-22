@@ -15,6 +15,13 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
         }
 
+        // Orgs for which workflows have to be enabled
+        if (empty($input[Entity::WORKFLOW_ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::WORKFLOW_ORGS]);
+        }
+
         $permission = $this->core()->create($input);
 
         $response = $permission->toArrayPublic();
@@ -22,14 +29,13 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function getPermission(string $permissionId)
+    public function getPermission(string $id)
     {
-        $relations = ['orgs'];
+        Entity::verifyIdAndStripSign($id);
 
-        $permission = $this->repo
-                           ->permission
-                           ->findByPublicIdWithRelations(
-                               $permissionId, $relations);
+        $relations = ['orgs', 'workflow_orgs'];
+
+        $permission = $this->core()->get($id, $relations);
 
         return $permission->toArrayPublic();
     }
@@ -54,6 +60,13 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSignMultiple($input[Entity::ORGS]);
         }
 
+        // Orgs for which workflows have to be enabled
+        if (empty($input[Entity::WORKFLOW_ORGS]) === false)
+        {
+            Org\Entity::verifyIdAndStripSignMultiple(
+                $input[Entity::WORKFLOW_ORGS]);
+        }
+
         $permission = $this->repo->permission->findOrFail($id);
 
         $permission = $this->core()->edit($permission, $input);
@@ -61,11 +74,13 @@ class Service extends Base\Service
         return $permission->toArrayPublic();
     }
 
-    public function getMultiplePermissions(string $orgId)
+    public function getMultiplePermissions(string $orgId, array $input)
     {
         Org\Entity::verifyIdAndStripSign($orgId);
 
-        $perms = $this->repo->permission->fetchAllByOrg($orgId);
+        $type = $input['type'] ?? null;
+
+        $perms = $this->repo->permission->fetchAllByOrg($orgId, $type);
 
         return $perms->toArrayPublic();
     }

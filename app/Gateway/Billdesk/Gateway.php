@@ -106,7 +106,18 @@ class Gateway extends Base\Gateway
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankReferenceNo()
+            ]
+        ];
     }
 
     public function refund(array $input)
@@ -129,7 +140,7 @@ class Gateway extends Base\Gateway
         $response['CurrencyType'] = 'INR';
         $response['received'] = 1;
 
-        $refund = $this->createGatewayPaymentEntity($response);
+        $this->createGatewayPaymentEntity($response);
 
         if ($response['ProcessStatus'] !== 'Y')
         {
@@ -383,6 +394,13 @@ class Gateway extends Base\Gateway
 
     protected function checkIfAlreadyRefunded(array $response, array $input)
     {
+        // Billdesk returns ERR_REF013 when a duplicate reference id
+        // is used to do any refund. This way we can identify if a
+        // refund has already been processed or not
+        if ($response['ErrorCode'] === Billdesk\ErrorCode::ERR_REF013)
+        {
+            return true;
+        }
         //
         // NOTE: Billdesk is NOT going to throw this error if the
         // attempted refund is less than [transaction_amount - {refunds so far}]
@@ -390,12 +408,12 @@ class Gateway extends Base\Gateway
         // This error is thrown only when the total refund
         // equals/exceeds the total payment.
         //
-        if ($response['ErrorCode'] === 'ERR_REF010')
+        if ($response['ErrorCode'] === Billdesk\ErrorCode::ERR_REF010)
         {
             return $this->validateAlreadyRefundedByApi($input);
         }
 
-        if ($response['ErrorCode'] === 'ERR_REF009')
+        if ($response['ErrorCode'] === Billdesk\ErrorCode::ERR_REF009)
         {
             return $this->validateAutoRefundedByBilldesk($response, $input);
         }
@@ -1078,6 +1096,20 @@ class Gateway extends Base\Gateway
             return true;
         }
 
+        return false;
+    }
+
+    /**
+     * Calls gateway to verify if a refund has
+     * been successfully performed or not.
+     *
+     * true  if refunded
+     * false if not refunded
+     * @param array $input
+     * @return bool
+     */
+    public function verifyRefund(array $input)
+    {
         return false;
     }
 }

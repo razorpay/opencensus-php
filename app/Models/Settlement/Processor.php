@@ -25,9 +25,9 @@ class Processor extends Base\Core
 
     protected $mutex;
 
-    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
+    const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING_%s';
 
-    const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY';
+    const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY_%s';
 
     const MUTEX_LOCK_TIMEOUT    = 900;
 
@@ -40,14 +40,21 @@ class Processor extends Base\Core
 
     public function processFailedSettlements(array $input)
     {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_RETRY_REQUEST,
+            $input
+        );
+
         $this->preSettlementProcessing($input);
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements();
 
         if ($shouldProcess === true)
         {
+            $mutexResource = sprintf(self::MUTEX_RETRY_RESOURCE, $this->mode);
+
             $data = $this->mutex->acquireAndRelease(
-                self::MUTEX_RETRY_RESOURCE,
+                $mutexResource,
                 function () use ($input)
                 {
                     return $this->retryProcessFailedSettlements();
@@ -67,8 +74,10 @@ class Processor extends Base\Core
 
         if ($shouldProcess === true)
         {
+            $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
+
             $data = $this->mutex->acquireAndRelease(
-                self::MUTEX_RESOURCE,
+                $mutexResource,
                 function () use ($channel)
                 {
                     return $this->processSettlements($channel);
@@ -78,9 +87,6 @@ class Processor extends Base\Core
         }
 
         $this->updateSettlementScheduleTaskNextRun();
-
-        // this is needed temp until we move to pivot
-        // $this->updateSettlementScheduleNextRun();
 
         return $data;
     }
@@ -95,6 +101,8 @@ class Processor extends Base\Core
 
             foreach ($channels as $channel)
             {
+                $this->batchFundTransfer = null;
+
                 list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel);
 
                 $response[$channel] = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel);
@@ -165,7 +173,7 @@ class Processor extends Base\Core
             $totalTxns += $setlTxnsCount;
         }
 
-        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel, false);
+        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
 
         return $response;
     }
@@ -277,10 +285,15 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements()
     {
+        if (($this->mode === Mode::TEST) and
+            ($this->env === 'testing'))
+        {
+            return [true, null];
+        }
+
         $today = Carbon::today('Asia/Kolkata');
 
-        if (($this->mode === Mode::LIVE) and
-            (Holidays::isWorkingDay($today) === false))
+        if (Holidays::isWorkingDay($today) === false)
         {
             return [false, Holidays::HOLIDAY_MESSAGE];
         }
@@ -296,9 +309,10 @@ class Processor extends Base\Core
     /**
      *  NEFT can be processed between 8am and 6 pm only, while batch file can be
      *  uploaded anytime.
-     * @return [boolean] [returns if settlement can be proessed now]
+     *
+     * @return bool returns if settlement can be processed now
      */
-    protected function isInvalidSettlementTime()
+    protected function isInvalidSettlementTime(): bool
     {
         // Cron runs at 5.01pm.
         $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;
@@ -306,8 +320,7 @@ class Processor extends Base\Core
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us
         // some time for fixing things before settlement window opens.
-        if (($this->mode === Mode::LIVE) and
-            ($this->setlTime >= $fivePm))
+        if (($this->setlTime >= $fivePm) and ($this->env !== 'testing'))
         {
             return true;
         }
@@ -318,22 +331,11 @@ class Processor extends Base\Core
     protected function updateSettlementScheduleTaskNextRun()
     {
         $scheduleTasks = $this->repo->schedule_task->fetchDueScheduleTasks(
-                        ScheduleTask\Type::SETTLEMENT,
-                        $this->setlTime);
+                                                        ScheduleTask\Type::SETTLEMENT,
+                                                        $this->setlTime);
 
-        $scheduleTasks->callOnEveryItem('updateNextRun');
+        $scheduleTasks->callOnEveryItem('updateNextRunAndLastRun');
 
         $this->repo->saveOrFailCollection($scheduleTasks);
-    }
-
-    protected function updateSettlementScheduleNextRun()
-    {
-        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
-
-        $schedules->callOnEveryItem('updateNextRun');
-
-        $this->repo->saveOrFailCollection($schedules);
-
-        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
     }
 }

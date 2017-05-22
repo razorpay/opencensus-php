@@ -7,6 +7,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -104,7 +105,12 @@ trait Capture
             // We are not re-throwing $e because we don't want the
             // customer to know that it was a capture error.
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                [
+                    'payment_id'     => $payment->getId(),
+                    'payment_status' => $payment->getStatus(),
+                ]);
         }
     }
 
@@ -423,6 +429,12 @@ trait Capture
         $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
     }
 
+    /**
+     * This function is called when we captured successfully on the gateway side but threw an error on the API side.
+     * So, as far as the merchant is concerned, the capture did not happen and
+     * we are not going to settle any money to him.
+     * Hence, we should not save any fees details in this case.
+     */
     protected function recordTransactionForFailedApiCapture()
     {
         $payment = $this->payment;
@@ -434,13 +446,11 @@ trait Capture
             // This could be actually misleading.
             // We are creating a transaction even if the payment
             // is in refunded state.
-
-            list($txn, $feesSplit) = $txnCore->createFromPaymentAuthorized($payment);
+            list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
             $this->repo->saveOrFail($txn);
-            $this->repo->saveOrFail($payment);
 
-            $this->saveFeeDetails($txn, $feesSplit);
+            $this->repo->saveOrFail($payment);
 
             $this->tracePaymentInfo(TraceCode::TRANSACTION_CREATED_IN_VERIFY_CAPTURE);
         });
@@ -551,18 +561,9 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $auth = ($payment->hasTransaction() === false);
-
         $feesSplit = new PublicCollection;
 
-        if ($auth === true)
-        {
-            list($txn, $feesSplit) = $txnCore->createFromPaymentCaptured($payment);
-        }
-        else
-        {
-            $txn = $txnCore->updateOnCapture($payment);
-        }
+        list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
         $payment->setServiceTax($txn->getServiceTax());
 
@@ -573,12 +574,13 @@ trait Capture
         }
 
         $this->repo->saveOrFail($txn);
+
         $this->repo->saveOrFail($payment);
 
         $this->saveFeeDetails($txn, $feesSplit);
     }
 
-    protected function verifyOrderUnpaid($payment)
+    protected function verifyOrderUnpaid(Payment\Entity $payment)
     {
         if ($payment->hasOrder())
         {

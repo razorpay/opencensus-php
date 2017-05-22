@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Admin;
 use Cache;
 use Carbon\Carbon;
 use Hash;
+use Mail;
+use Mockery;
 
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
@@ -12,9 +14,11 @@ use RZP\Models\Admin\Role;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class AdminTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -33,7 +37,7 @@ class AdminTest extends TestCase
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->repo = (new Admin\Repository);
     }
@@ -53,6 +57,22 @@ class AdminTest extends TestCase
         $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
 
         $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
+
+        Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $this->assertArrayHasKey('user', $data);
+
+                        $this->assertArrayHasKey('password', $data['user']);
+
+                        $this->assertArrayHasKey('url', $data['user']);
+
+                        return true;
+                    }),
+                    Mockery::any());
 
         $result = $this->startTest();
 
@@ -158,6 +178,8 @@ class AdminTest extends TestCase
 
     public function testDeleteAllRolesAdmin()
     {
+        $this->markTestSkipped();
+
         $admin = $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID => $this->orgId,
         ]);
@@ -516,6 +538,22 @@ class AdminTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->appAuth();
+
+        Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $this->assertArrayHasKey('firstName', $data);
+
+                        $this->assertArrayHasKey('resetUrl', $data);
+
+                        $this->assertArrayHasKey('orgName', $data);
+
+                        return true;
+                    }),
+                    Mockery::any());
 
         $this->startTest();
     }
@@ -913,5 +951,39 @@ class AdminTest extends TestCase
         $this->assertEquals($result['roles'][0]['id'], $managerRole);
 
         $this->assertEquals($result['groups'][0]['id'], $group);
+    }
+
+    public function testCreateAdminWithoutPassword()
+    {
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateAdminWithOAuth()
+    {
+        $org = $this->fixtures->create('org', [
+            'email'         => 'random@abc.com',
+            'email_domains' => 'abc.com',
+            'auth_type'     => 'google_auth',
+        ]);
+
+        $orgId = $org->getId();
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
     }
 }

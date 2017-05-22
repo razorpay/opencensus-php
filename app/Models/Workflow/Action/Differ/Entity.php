@@ -9,7 +9,7 @@ use RZP\Models\Workflow\Base;
     is just used to represent our differ data that eventually
     goes into ES. This is how it looks like (sorta):
 
-    array (13) [
+    array (14) [
         'id' => string (14) "7bWmWhpptgAjhY"
         'entity_name' => string (5) "hello"
         'entity_id' => string (20) "admin_7bU48ZewEqdPUk"
@@ -32,6 +32,7 @@ use RZP\Models\Workflow\Base;
         ]
         'controller' => string (53) "RZP\Http\Controllers\OrganizationController@editAdmin"
         'route' => string (10) "admin_edit"
+        'permission' => string (21) "edit_merchant_archive"
         'action_id' => string (14) "7bWmWeONFIeZrJ"
         'created_at' => integer 1491488037
     ]
@@ -39,26 +40,27 @@ use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity
 {
-    const ID           = 'id';
-    const ENTITY_NAME  = 'entity_name';
-    const ENTITY_ID    = 'entity_id';
-    const ADMIN_ID     = 'admin_id';
-    const MAKER        = 'maker';
-    const TYPE         = 'type';
-    const URL          = 'url';
-    const ROUTE_PARAMS = 'route_params';
-    const METHOD       = 'method';
-    const PAYLOAD      = 'payload';
-    const CONTROLLER   = 'controller';
-    const ROUTE        = 'route';
-    const DIFF         = 'diff';
-    const ACTION_ID    = 'action_id';
-    const STATE        = 'state';
+    const ID            = 'id';
+    const ENTITY_NAME   = 'entity_name';
+    const ENTITY_ID     = 'entity_id';
+    const ADMIN_ID      = 'admin_id';
+    const MAKER         = 'maker';
+    const TYPE          = 'type';
+    const URL           = 'url';
+    const ROUTE_PARAMS  = 'route_params';
+    const METHOD        = 'method';
+    const PAYLOAD       = 'payload';
+    const CONTROLLER    = 'controller';
+    const ROUTE         = 'route';
+    const DIFF          = 'diff';
+    const ACTION_ID     = 'action_id';
+    const STATE         = 'state';
+    const AUTH_DETAILS  = 'auth_details';
 
     const CREATED_AT    = 'created_at';
 
     const FUNCTION_NAME = 'function_name';
-    const PERMISSIONS   = 'permissions';
+    const PERMISSION    = 'permission';
 
     protected $entity   = 'action';
 
@@ -78,6 +80,8 @@ class Entity extends Base\Entity
         self::ACTION_ID,
         self::CREATED_AT,
         self::STATE,
+        self::PERMISSION,
+        self::AUTH_DETAILS,
     ];
 
     protected $visible = [
@@ -97,6 +101,8 @@ class Entity extends Base\Entity
         self::ACTION_ID,
         self::CREATED_AT,
         self::STATE,
+        self::PERMISSION,
+        self::AUTH_DETAILS,
     ];
 
     protected $public = [
@@ -116,11 +122,18 @@ class Entity extends Base\Entity
         self::ACTION_ID,
         self::CREATED_AT,
         self::STATE,
+        self::PERMISSION,
+        self::AUTH_DETAILS,
     ];
 
     public function setDiff(array $diff)
     {
         $this->setAttribute(self::DIFF, $diff);
+    }
+
+    public function getDiff()
+    {
+        return $this->getAttribute(self::DIFF);
     }
 
     public function getEntityName() : string
@@ -146,5 +159,10 @@ class Entity extends Base\Entity
     public function getPayload()
     {
         return $this->getAttribute(self::PAYLOAD);
+    }
+
+    public function getPermission()
+    {
+        return $this->getAttribute(self::PERMISSION);
     }
 }

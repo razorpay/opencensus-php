@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Admin;
 
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
 
 use RZP\Models\Admin\Org\Repository as OrgRepo;
@@ -11,6 +12,7 @@ use RZP\Models\Admin\Permission;
 
 class PermissionTest extends TestCase
 {
+    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -28,7 +30,7 @@ class PermissionTest extends TestCase
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
     }
 
     public function testGetPermission()
@@ -184,8 +186,6 @@ class PermissionTest extends TestCase
         $url = sprintf($url, $perm->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->addAdminAuthHeaders($this->org->getPublicId());
 
         $result = $this->startTest();
 

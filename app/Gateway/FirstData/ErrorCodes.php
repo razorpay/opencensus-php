@@ -178,7 +178,7 @@ class ErrorCodes
         'N:800'    => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         'N:8400'   => ErrorCode::GATEWAY_ERROR_COMMUNICATION_ERROR,
         'N:87'     => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
-        'N:89'     => ErrorCode::BAD_REQUEST_ERROR,
+        'N:89'     => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
         'N:9'      => ErrorCode::BAD_REQUEST_PAYMENT_MISSING_DATA,
         'N:91'     => ErrorCode::BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE,
         'N:94'     => ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,

@@ -24,6 +24,9 @@ class Validator extends Base\Validator
         Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::EMAIL                       => 'required|email',
+        Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
+        Entity::GROUPS                      => 'sometimes|array',
+        Entity::ADMINS                      => 'sometimes|array',
     );
 
     protected static $editRules = array(
@@ -42,11 +45,13 @@ class Validator extends Base\Validator
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
-        'groups'                            => 'sometimes|array',
         // max: 5 days (don't change max value without consult), min:60 minutes
         Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',
         Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
-        Entity::CONVERT_CURRENCY            => 'sometimes|boolean'
+        Entity::CONVERT_CURRENCY            => 'sometimes|boolean',
+        Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
+        Entity::GROUPS                      => 'sometimes|array',
+        Entity::ADMINS                      => 'sometimes|array',
     );
 
     protected static $uniqueEmailRules = array(
@@ -75,6 +80,16 @@ class Validator extends Base\Validator
     protected static $featureRules = [
         'features'          => 'required|array',
         'optout_reason'     => 'sometimes|string|max:200'
+    ];
+
+    protected static $updateHoldFundsRules = [
+        'hold_funds'   => 'required|boolean',
+        'merchant_ids' => 'required|array'
+    ];
+
+    protected static $updateBankAccountRules = [
+        'bank_account'   => 'required|array',
+        'merchant_ids'   => 'required|array'
     ];
 
     protected static $editConfigValidators = [

@@ -43,6 +43,7 @@ class Orchestrator extends Base\Core
     const NETBANKING_ICICI   = 'NetbankingIcici';
     const NETBANKING_FEDERAL = 'NetbankingFederal';
     const JIOMONEY           = 'Jiomoney';
+    const EBS                = 'Ebs';
     const ADMIN              = 'admin';
 
     /**
@@ -63,6 +64,7 @@ class Orchestrator extends Base\Core
         self::NETBANKING_ICICI   => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL => ['fednetrm@federalbank.co.in'],
         self::JIOMONEY           => [],
+        self::EBS                => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN              => ['prashanth.yv@razorpay.com'],
@@ -704,9 +706,8 @@ class Orchestrator extends Base\Core
      */
     protected function getFileContentInArrayAndSet($fileDetails)
     {
-        // All file types are segregated into either CSV or Excel.
         $fileType = self::getKeyFromSubArrayMatch(
-            $fileDetails[FileProcessor::EXTENSION], FileProcessor::FILE_TYPES_MAPPINGS);
+            $fileDetails[FileProcessor::MIME_TYPE], FileProcessor::FILE_TYPES_MAPPINGS);
 
         $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
 
@@ -831,7 +832,9 @@ class Orchestrator extends Base\Core
 
         $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip();
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $this->gateway);
+        $delimiter = $this->gatewayReconciliator->getDelimiter();
+
+        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip, $delimiter);
 
         $this->setExtraDetails($csvArray, $fileDetails);
         $this->allFilesContents[] = $csvArray;

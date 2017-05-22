@@ -8,7 +8,7 @@ use RZP\Gateway\Netbanking\Base;
 class DailyFiles extends Base\DailyFiles
 {
 
-    public function generate($from, $to)
+    public function generate($from, $to, $email = null)
     {
         // Since Kotak TPV requires entries for separate pool accounts in a
         // separate mail we will have to send them separately
@@ -18,7 +18,7 @@ class DailyFiles extends Base\DailyFiles
 
         foreach ($tpvType as $tpv)
         {
-            $files[] = $this->generateMail($from, $to, $tpv);
+            $files[] = $this->generateMail($from, $to, $tpv, $email);
         }
 
         return [
@@ -33,24 +33,27 @@ class DailyFiles extends Base\DailyFiles
                 ];
     }
 
-    public function generateMail($from, $to, $tpvEnabled = false)
+    public function generateMail($from, $to, $tpvEnabled = false, $email = null)
     {
-        list($refundAmount, $refundsFile) = $this->getRefundsDataForTpv($from, $to, $tpvEnabled);
+        $claimsFileData = $this->getClaimsDataForTpv($from, $to, $tpvEnabled);
 
-        list($claimAmount, $claimsFile) = $this->getClaimsDataForTpv($from, $to, $tpvEnabled);
+        $refundFileData = $this->getRefundsDataForTpv($from, $to, $tpvEnabled);
 
         $amount = [];
-        $amount['claims'] = $claimAmount;
-        $amount['refunds'] = $refundAmount;
-        $amount['total'] = $claimAmount - $refundAmount;
+        $amount['claims'] = $claimsFileData['total_amount'];
+        $amount['refunds'] = $refundFileData['total_amount'];
+        $amount['total'] = $claimsFileData['total_amount'] - $refundFileData['total_amount'];
 
         // Send the mail only when there is at least 1 claim or refund
         if ($amount['claims'] + $amount['refunds'] > 0)
         {
-            $this->sendMail($amount, $claimsFile, $refundsFile);
+            $this->sendMail($amount, $claimsFileData, $refundFileData, $email);
         }
 
-        return ['refunds' => $refundsFile, 'claims' => $claimsFile];
+        return [
+                    'claims' => $claimsFileData['local_file_path'],
+                    'refunds' => $refundFileData['local_file_path']
+                ];
     }
 
     public function getRefundsDataForTpv($from, $to, $tpvEnabled = false)
@@ -67,7 +70,12 @@ class DailyFiles extends Base\DailyFiles
 
         if ($count == 0)
         {
-            return [0, ''];
+            return [
+                'total_amount'   => 0,
+                'count'          => 0,
+                'signed_url'     => '',
+                'local_file_path' => '',
+             ];
         }
 
         $data = [];
@@ -114,7 +122,12 @@ class DailyFiles extends Base\DailyFiles
 
         if ($claims->count() === 0)
         {
-            return [0, ''];
+            return [
+                'total_amount'   => 0,
+                'count'          => 0,
+                'signed_url'     => '',
+                'local_file_path' => '',
+             ];
         }
 
         $data = [];

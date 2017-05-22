@@ -36,6 +36,7 @@ class Service extends Base\Service
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED,
+                null,
                 $data);
         }
 

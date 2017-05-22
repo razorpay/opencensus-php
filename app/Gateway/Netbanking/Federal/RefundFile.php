@@ -25,7 +25,7 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        list($txt, $totalAmount) = $this->getRefundData($input);
+        list($txt, $totalAmount, $count) = $this->getRefundData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -38,16 +38,21 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        $fileData = $this->getFileData();
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
-        $this->sendRefundEmail($fileData);
-
-        return [$totalAmount, $file['local_file_path']];
+        return [
+            'total_amount'    => $totalAmount,
+            'count'           => $count,
+            'signed_url'      => $signedFileUrl,
+            'local_file_path' => $file['local_file_path'],
+        ];
     }
 
     protected function getRefundData($input)
     {
         $totalAmount = 0;
+
+        $count = 0;
 
         foreach ($input['data'] as $row)
         {
@@ -62,16 +67,18 @@ class RefundFile extends Base\RefundFile
                 'PRN'           => $row['payment']['id'],
                 'FREEFIELD'     => Constants::FREEFIELD,
                 'BID'           => $row['gateway']['bank_payment_id'],
-                'TXN Amount'    => $row['payment']['amount'],
-                'Refund Amount' => $row['refund']['amount']
+                'TXN Amount'    => $row['payment']['amount'] / 100,
+                'Refund Amount' => $row['refund']['amount'] / 100
             ];
 
-            $totalAmount += $row['refund']['amount'];
+            $totalAmount += $row['refund']['amount'] / 100;
+
+            $count++;
         }
 
         $txt = $this->getTextData($data);
 
-        return [$txt, $totalAmount];
+        return [$txt, $totalAmount, $count];
     }
 
     protected function getTextData($data)
@@ -79,39 +86,6 @@ class RefundFile extends Base\RefundFile
         $txt = $this->generateText($data, '|', true);
 
         return $txt;
-    }
-
-    protected function sendRefundEmail($fileData = [])
-    {
-        $this->mail->queue('email.message', $fileData, function ($message) use ($fileData)
-        {
-            $emails = $fileData['emails'];
-
-            $message->from('refunds@razorpay.com', 'Federal Netbanking refunds');
-
-            $message->subject($fileData['subject']);
-
-            $message->to($emails);
-
-            $message->attach($fileData['file_path']);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::FEDERAL_NETBANKING_REFUNDS_MAIL);
-        });
-    }
-
-    protected function getFileData()
-    {
-        $today = Carbon::now('Asia/Kolkata')->format('d_m_Y');
-
-        $emails = ['settlements@razorpay.com'];
-
-        return [
-            'file_path' => $this->getFileToWriteName(),
-            'subject'   => 'Federal Netbanking refunds file for ' . $today,
-            'emails'    => $emails
-        ];
     }
 
     protected function getFileToWriteNameWithoutExt()

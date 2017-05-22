@@ -31,7 +31,6 @@ class RoutesTest extends TestCase
             Route::$publicCallback,
             Route::$proxy,
             Route::$device,
-            Route::$admin,
             Route::$direct,
         ];
 

@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Emi;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -22,6 +23,9 @@ use RZP\Models\Gateway\Downtime;
 class Checkout
 {
     const CHECKOUT_LOGO_SIZE = 'medium';
+    const CHECKOUT_DEFAULT_THEME_COLOR = '#3594E2';
+
+    const SUBSCRIPTION_ID    = 'subscription_id';
 
     public function __construct()
     {
@@ -46,7 +50,11 @@ class Checkout
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
+        $this->checkAndAddDetailsForSubscription($input, $merchant, $data);
+
         $this->checkAndFillOfferDetails($merchant, $input, $data);
+
+        $this->checkAndFillGatewayDowntime($merchant, $data);
 
         $this->tracePreferencesResponse($merchant, $data);
 
@@ -81,6 +89,18 @@ class Checkout
                 $data['customer'] = $invoiceData['customer'];
             }
         }
+    }
+
+    protected function checkAndAddDetailsForSubscription(array $input, Merchant\Entity $merchant, array & $data)
+    {
+        if (empty($input[self::SUBSCRIPTION_ID]) === true)
+        {
+            return;
+        }
+
+        $subscriptionId = $input[self::SUBSCRIPTION_ID];
+
+        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($merchant, $subscriptionId);
     }
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)
@@ -296,21 +316,123 @@ class Checkout
     {
         $offerCore = new Offer\Core;
 
-        // Temporaily commenting fetching shared offers
-        // $sharedOffers = $offerCore->fetchSharedOffers();
-
         $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
 
-        if ($orderId === null)
+        if ($orderId !== null)
         {
-            return;
+            $orderOffer = $offerCore->fetchForOrder($orderId, $merchant);
+
+            if ($orderOffer !== null)
+            {
+                // For offer applied on a particular order only enable methods eligible for the
+                // offer. Customer won't be able to select other payment methods
+                $this->updateMethodsToEnableOnCheckout($orderOffer, $data);
+
+                $data['offers'] = [
+                    $orderOffer->toArrayCheckout()
+                ];
+
+                return;
+            }
         }
 
-        $directOffer = $offerCore->fetchForOrder($orderId, $merchant);
+        $this->checkAndFillNonOrderOffers($merchant, $data);
+    }
 
-        if ($directOffer !== null)
+    protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)
+    {
+        $nonOrderOffers = (new Offer\Core)->fetchMerchantOffersForCheckout($merchant);
+
+        foreach ($nonOrderOffers as $offer)
         {
-            $data['offers'] = $directOffer->toArrayCheckout();
+            $data['offers'][] = $offer->toArrayCheckout();
+        }
+    }
+
+    protected function updateMethodsToEnableOnCheckout(Offer\Entity $offer, array & $data)
+    {
+        $method = $offer->getPaymentMethod();
+
+        $enabledBanks = $data['methods']['netbanking'];
+
+        $enabledWallets = $data['methods']['wallet'];
+
+        $data['methods'] = [
+            'entity' => 'methods'
+        ];
+
+        switch ($method)
+        {
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+
+                // For card offers only set card method to true
+                $data['methods']['card'] = true;
+
+                break;
+
+            case Payment\Method::NETBANKING:
+
+                // Only allow payments through supported banks
+                $data['methods']['netbanking'] = $enabledBanks;
+
+                // Only allow payment through specific bank if network is specified
+                if ($offer->getPaymentNetwork() !== null)
+                {
+                    $bankCode = $offer->getPaymentNetwork();
+
+                    $bankName = Netbanking::getName($bankCode);
+
+                    $data['methods']['netbanking'] = [
+                        $bankCode => $bankName
+                    ];
+                }
+
+                break;
+
+            case Payment\Method::WALLET:
+
+                // Only allow payments through supported wallets
+                $data['methods']['wallet'] = $enabledWallets;
+
+                // For wallet offers if network is specified, lock method to only that wallet
+                if ($offer->getPaymentNetwork() !== null)
+                {
+                    $wallet = $offer->getPaymentNetwork();
+
+                    $data['methods']['wallet'] = [
+                        $wallet
+                    ];
+                }
+
+                break;
+
+            // For other methods like UPI, we currently handle it here, by just
+            // enabling the particular method.
+            default:
+                $data['methods'][$method] = true;
+
+                break;
+        }
+    }
+
+    public function checkAndFillGatewayDowntime(Merchant\Entity $merchant, array & $data)
+    {
+        try
+        {
+            if ($merchant->isFeatureEnabled(Feature\Constants::EXPOSE_DOWNTIMES) === true)
+            {
+                $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+
+                if (empty($downtimeData) === false)
+                {
+                    $data['downtime'] = $downtimeData;
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
         }
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal\Entity as Terminal;
+use RZP\Models\Terminal\Type;
 use RZP\Models\Terminal\Recurring;
 
 class CreateTerminals extends Migration
@@ -72,6 +73,9 @@ class CreateTerminals extends Migration
             $table->tinyInteger(Terminal::UPI)
                   ->default(0);
 
+            $table->tinyInteger(Terminal::AEPS)
+                  ->default(0);
+
             $table->tinyInteger(Terminal::EMI)
                   ->default(0);
 
@@ -90,6 +94,9 @@ class CreateTerminals extends Migration
 
             $table->tinyInteger(Terminal::TPV)
                   ->default(0);
+
+            $table->tinyInteger(Terminal::TYPE)
+                  ->default(Type::DUAL);
 
             $table->string(Terminal::CURRENCY, 3)
                   ->default(Terminal::DEFAULT_CURRENCY);

@@ -933,7 +933,8 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedAmount($amount)
     {
-        return number_format(($amount / 100), 2);
+        // The amount should be in the format like 100.00, or 1500.00
+        return number_format(($amount / 100), 2, '.', '');
     }
 
     protected function getMappedAttributes($attributes)

@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Action\State;
+use RZP\Models\Workflow\Action\Checker;
 use RZP\Constants\Table;
 
 class Repository extends Base\Repository
@@ -17,16 +18,32 @@ class Repository extends Base\Repository
         Entity::ORG_ID      => 'sometimes|string|max:14',
     ];
 
+    protected function getNewQueryWithPermissions()
+    {
+        $permission = Table::PERMISSION;
+
+        return $this->newQuery()
+                    ->select(
+                        Table::WORKFLOW_ACTION . '.*',
+                        'permissions.name AS permission_name',
+                        'permissions.description AS permission_description')
+                    ->join($permission, function ($join) {
+                        $join->on('permissions.id', '=', 'workflow_actions.permission_id');
+                    });
+    }
+
     public function findByOrgId(string $orgId)
     {
-        return $this->newQuery()
+        return $this->getNewQueryWithPermissions()
                     ->orgId($orgId)
                     ->get();
     }
 
     public function findByAdminIdAndOrgIdWithRelations($adminId, $orgId, $relations = [])
     {
-        return $this->newQuery()
+        $permission = Table::PERMISSION;
+
+        return $this->getNewQueryWithPermissions()
                     ->where(Entity::ADMIN_ID, '=', $adminId)
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->with($relations)
@@ -50,6 +67,8 @@ class Repository extends Base\Repository
             JOIN
                 workflow_steps ws ON wa.workflow_id = ws.workflow_id
                 AND wa.current_level = ws.level
+            JOIN
+                permissions p ON p.id = wa.permission_id
             WHERE
                 wa.state = 'open'
                 AND ws.role_id IN ($adminIds);
@@ -57,8 +76,9 @@ class Repository extends Base\Repository
 
         $wStep = Table::WORKFLOW_STEP;
 
-        return $this->newQuery()
-                    ->select(Table::WORKFLOW_ACTION . '.*')
+        $permission = Table::PERMISSION;
+
+        return $this->getNewQueryWithPermissions()
                     ->join($wStep, function ($join) {
                         $join->on('workflow_actions.workflow_id', '=', 'workflow_steps.workflow_id')
                              ->on('workflow_actions.current_level', '=', 'workflow_steps.level');
@@ -78,22 +98,20 @@ class Repository extends Base\Repository
          *
          */
 
-        $acsDao = $this->manager->action_state;
+        $acsDao = $this->repo->action_state;
 
         $acsTable = $acsDao->getTableName();
 
-        $attrs = $this->getAttributeWithTableName('*');
-        $aId = $this->getAttributeWithTableName(Entity::ID);
-        $acsActionId = $acsDao->getAttributeWithTableName(State\Entity::ACTION_ID);
+        $aId = $this->dbColumn(Entity::ID);
+        $acsActionId = $acsDao->dbColumn(State\Entity::ACTION_ID);
 
-        $acsState = $acsDao->getAttributeWithTableName(State\Entity::NAME);
+        $acsState = $acsDao->dbColumn(State\Entity::NAME);
 
         // CLOSED is the absolute last state, We can expect unique entries.
-        $acsAdminId = $acsDao->getAttributeWithTableName(State\Entity::ADMIN_ID);
+        $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
 
 
-        return $this->newQuery()
-                    ->select($attrs)
+        return $this->getNewQueryWithPermissions()
                     ->join($acsTable, $aId, '=', $acsActionId)
                     ->where($acsState, '=', State\Entity::CLOSED)
                     ->where($acsAdminId, '=', $adminId)
@@ -106,7 +124,7 @@ class Repository extends Base\Repository
 
         $openStates = State\Entity::OPEN_STATES;
 
-        return $this->newQuery()
+        return $this->getNewQueryWithPermissions()
                     ->orgId($orgId)
                     ->whereIn(Entity::STATE, $openStates)
                     ->get();
@@ -119,6 +137,26 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
                     ->whereIn(Entity::STATE, $openStates)
+                    ->get();
+    }
+
+    public function getActionsCheckedByAdmin(string $adminId)
+    {
+        $checkerRepo = $this->repo->action_checker;
+
+        $attributes = $this->dbColumn('*');
+        $aId = $this->repo->workflow_action->dbColumn(Entity::ID);
+
+        $cActionId = $checkerRepo->dbColumn(Checker\Entity::ACTION_ID);
+
+        $cAdminId = $checkerRepo->dbColumn(Checker\Entity::ADMIN_ID);
+
+        $checkerTable = Table::ACTION_CHECKER;
+
+        return $this->newQuery()
+                    ->select($attributes)
+                    ->join($checkerTable, $aId, '=', $cActionId)
+                    ->where($cAdminId, '=', $adminId)
                     ->get();
     }
 }

@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Workflow\Action;
 
-use RZP\Exception;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
+use RZP\Models\Base\PublicEntity;
 
 class Core extends Base\Core
 {
@@ -29,19 +29,52 @@ class Core extends Base\Core
 
         $orgId = $admin->getOrgId();
 
-        $routePermissions = $input[Differ\Entity::PERMISSIONS];
+        $routePermission = $input[Differ\Entity::PERMISSION];
 
-        // Not all route permissions could be present in admin.
-        $commonPermissions = array_intersect($routePermissions, $adminPermissions);
+        // Implicit check for permission existance in the organisation.
+        $permissionId = $this->repo
+                             ->permission
+                             ->retrieveIdsByNamesAndOrg($routePermission, $orgId)
+                             ->toArray()[0];
 
-        $workflows = $this->getWorkflowsForPermissions($commonPermissions, $orgId);
+        // We don't need to check the following 2 things:
+        //
+        // - Whether a workflow exists against the routePermission
+        // because this is already done in workflow middleware
+        //
+        // - Whether the admin has access to this permission because
+        // that is also done in the middleware or should be done
+        // from whereever this code is called/triggered.
+
+        // Currently single permission can have only 1 workflow
+        // App level checks are in place. But this is sort of progressive
+        // code where a single permission might have multiple workflows
+        // in future.
+        $workflows = $this->getWorkflowsForPermission($permissionId, $orgId);
 
         // More than one workflow could be found.
         $workflow = $workflows->first();
 
         $params[Entity::WORKFLOW_ID] = $workflow->getId();
 
+        $params[Entity::PERMISSION_ID] = $permissionId;
+
         $params[Entity::DIFFER] = $input;
+
+        // $params will also have ENTITY_ID and
+        // ENTITY_NAME which will get saved in
+        // workflow_actions table.
+        $params[Entity::ENTITY_ID] = $input[Differ\Entity::ENTITY_ID] ?: null;
+
+        // We can verify ID using one of the static functions in
+        // PublicEntity by instantiation the Entity class of
+        // $input[Differ\Entity::ENTITY_NAME] but we'll keep it
+        // simple and fast for now.
+
+        // explode('_', null) === [""]
+        $params[Entity::ENTITY_ID] = last(explode('_', $params[Entity::ENTITY_ID])) ?: null;
+
+        $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME] ?: null;
 
         $action->build($params);
 
@@ -55,8 +88,7 @@ class Core extends Base\Core
 
             unset($differ[Entity::ORG_ID]);
 
-            unset($differ[Differ\Entity::PERMISSIONS]);
-
+            // Create the diff for the entity
             (new Differ\Core)->create($action, $differ);
         });
 
@@ -85,21 +117,12 @@ class Core extends Base\Core
      * @param string $orgId
      * @return array
      **/
-    public function getWorkflowsForPermissions(array $permissions, string $orgId)
+    public function getWorkflowsForPermission(string $permissionId, string $orgId)
     {
-        // Implicit check for permission existance in the organisation.
-        $permissionIds = $this->repo
-                              ->permission
-                              ->retrieveIdsByNamesAndOrg($permissions, $orgId)
-                              ->map(function ($permission){
-                                    return $permission->getId();
-                                })
-                              ->toArray();
-
         // Implicit check for workflow in the organisation against permission ids.
         $workflows = $this->repo
                           ->workflow
-                          ->fetchWorkflowsByPermissionsAndOrgId($permissionIds, $orgId);
+                          ->fetchWorkflowsByPermissionsAndOrgId($permissionId, $orgId);
 
         return $workflows;
     }
@@ -281,6 +304,14 @@ class Core extends Base\Core
 
     public function edit(Entity $action, array $input)
     {
+        //
+        // Dashboard requirement is that we should not
+        // let admin edit action if the action is closed.
+        // Shift the check to Service.php if the check is
+        // a blocker for other functionality
+        //
+        $action->getValidator()->validateActionIsOpen($action);
+
         $action->edit($input);
 
         $this->repo->saveOrFail($action);
@@ -318,5 +349,17 @@ class Core extends Base\Core
         ];
 
         return $this->edit($action, $input);
+    }
+
+    public function initAuthDetails(array $authDetails)
+    {
+        if (empty($authDetails['merchant_id']) === false)
+        {
+            $merchantId = $authDetails['merchant_id'];
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $this->app['basicauth']->setMerchant($merchant);
+        }
     }
 }

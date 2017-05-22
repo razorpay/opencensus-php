@@ -329,10 +329,7 @@ class OlamoneyGatewayTest extends TestCase
 
         $paymentId = $payment['razorpay_payment_id'];
 
-        $this->runRequestResponseFlow($data, function() use ($paymentId, $input)
-        {
-            $this->refundAuthorizedPayment($paymentId, $input);
-        });
+        $this->refundAuthorizedPayment($paymentId, $input);
 
         $refund = $this->getLastEntity('wallet', true);
 

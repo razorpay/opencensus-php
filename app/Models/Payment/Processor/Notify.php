@@ -288,7 +288,6 @@ class Notify
                 {
                     $this->sendMail($view, $subject, $label, $to);
                 }
-
             }
         }
     }
@@ -355,7 +354,7 @@ class Notify
         $amount = $this->template['payment']['raw_amount'];
 
         // The priority order is important here
-        if ($riskRating == self::MAX_HIGH_RISK_RATING)
+        if ($riskRating === self::MAX_HIGH_RISK_RATING)
         {
             return $config->get('slack.channels.highrisk');
         }
@@ -626,11 +625,11 @@ class Notify
                 'id'            => $this->payment->merchant->getId(),
             ],
             'payment'   => [
-                'id'        => $this->payment->getId(),
-                'public_id' => $this->payment->getPublicId(),
-                'amount'    => "INR ".number_format($this->payment['amount'] / 100, 2),
-                'raw_amount' => $this->payment['amount'],
-                'timestamp' => $this->payment->getUpdatedAt(),
+                'id'          => $this->payment->getId(),
+                'public_id'   => $this->payment->getPublicId(),
+                'amount'      => $this->payment->getFormattedAmount(),
+                'raw_amount'  => $this->payment['base_amount'],
+                'timestamp'   => $this->payment->getUpdatedAt(),
                 'captured_at' => $this->payment->getAttribute('captured_at'),
 
                 // note that payment method is unavailable to the merchant
@@ -657,11 +656,11 @@ class Notify
         if ($this->refund)
         {
             $data['refund'] = [
-                'id'        => $this->refund->getId(),
-                'amount'    => 'INR ' . number_format($this->refund->getAmount() / 100, 2),
-                'timestamp' => $this->refund->getCreatedAt(),
+                'id'         => $this->refund->getId(),
+                'amount'     => $this->refund->getFormattedAmount(),
+                'timestamp'  => $this->refund->getCreatedAt(),
                 'payment_id' => $this->refund->payment->getId(),
-                'public_id' => $this->refund->getPublicId(),
+                'public_id'  => $this->refund->getPublicId(),
             ];
         }
 
@@ -669,7 +668,7 @@ class Notify
         {
             $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
 
-            $data['invoice'] = $payloadForInvoice['invoice'];
+            $data['invoice']   = $payloadForInvoice['invoice'];
             $data['merchant'] += $payloadForInvoice['merchant'];
         }
 
@@ -785,6 +784,14 @@ class Notify
      */
     protected function isMailEnabled($event, $isMerchant = false)
     {
+        // If it is a customer mail and the customer's email address
+        // is null or void@razorpay.com don't send email
+        if (($isMerchant === false) and
+            ($this->payment->isCustomerMailAbsent() === true))
+        {
+            return false;
+        }
+
         // If the merchant has disabled customer emails
         // And this was a customer receipt email
         if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
@@ -794,7 +801,6 @@ class Notify
         }
 
         return $this->isEnabled();
-
     }
 
     /**

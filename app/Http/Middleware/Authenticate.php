@@ -122,10 +122,6 @@ class Authenticate
         {
             $ret = $ba->deviceAuth();
         }
-        else if (in_array($route, Route::$admin, true) === true)
-        {
-            $ret = $ba->adminAuth();
-        }
         else if (in_array($route, Route::$direct, true) === true)
         {
             ; // $ret = $ba->proxyAuth();
@@ -179,7 +175,7 @@ class Authenticate
         // Set merchant for the current request
         // TODO: Move this to a common auth class
         //
-        $this->ba->setMerchant($merchantId);
+        $this->ba->setMerchantById($merchantId);
     }
 
     protected function checkScopes(array $routeScopes) : bool

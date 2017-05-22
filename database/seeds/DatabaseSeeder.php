@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call('PermissionSeeder');
         $this->call('GroupMapSeeder');
         $this->call('WorkflowSeeder');
+        $this->call('TaxGroupAndTaxSeeder');
     }
 
     private function seed()
@@ -503,6 +504,15 @@ class DatabaseSeeder extends Seeder
                 ]
             ]);
 
+            // for curl/postman testing purposes
+            DB::table(Table::ADMIN_TOKEN)->insert([
+                    'id'                  => '7gyptrWlOKu6z9',
+                    'admin_id'            => '6dLbNSpv5Ycccc',
+                    'token'               => '1234567',
+                    'created_at'          => time(),
+                    'updated_at'          => time(),
+            ]);
+
             DB::table(Table::ROLE)->insert([
                 // RZP
                 [
@@ -890,7 +900,7 @@ class DatabaseSeeder extends Seeder
                 'id'                        => Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL,
                 'merchant_id'               => Account::DEMO_ACCOUNT,
                 'gateway'                   => Gateway::FIRST_DATA,
-                'gateway'                   => 'icic',
+                'gateway_acquirer'          => 'icic',
                 'card'                      => '1',
                 'gateway_merchant_id'       => 'demo_merchant_first_data',
                 'created_at'                => time(),

@@ -31,7 +31,8 @@ class Gateway extends Base\Gateway
         Status::SUCCESS    => Confirmation::YES,
         Status::FAILED     => Confirmation::NO,
         Status::REVERSED   => Confirmation::NO,
-        Status::IN_PROCESS => Confirmation::NO
+        Status::IN_PROCESS => Confirmation::NO,
+        Status::ERROR      => Confirmation::NO
     ];
 
     public function authorize(array $input)
@@ -73,7 +74,9 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)

@@ -23,7 +23,8 @@ class Gateway extends Base\Gateway
 
     const VERIFY_TO_CALLBACK_STATUS = [
         Status::SUCCESS => Status::YES,
-        Status::NO      => Status::NO
+        Status::NO      => Status::NO,
+        Status::ERROR   => Status::NO,
     ];
 
     protected $map = [
@@ -81,9 +82,11 @@ class Gateway extends Base\Gateway
         $this->verifyCallback($input);
 
         // Saving callback response only if the above checks pass
-        $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->saveCallbackResponse($content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -195,8 +198,11 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        // content will contain status S or F
-        if ($content[ResponseFields::STATUS] === Status::SUCCESS)
+        //
+        // Verify response will contain S or N or E, but we have already
+        // mapped the S status to Y in parseVerifyResponse
+        //
+        if ($content[ResponseFields::STATUS] === Status::getAuthSuccessStatus())
         {
             $verify->gatewaySuccess = true;
         }
@@ -267,6 +273,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attributes);
 
         $gatewayPayment->saveOrFail();
+
+        return $gatewayPayment;
     }
 
     protected function checkCallbackStatus(array $content)
@@ -302,11 +310,9 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyAttributesToSave(array $content, Base\Entity $gatewayPayment)
     {
-        $status = self::VERIFY_TO_CALLBACK_STATUS[$content[ResponseFields::STATUS]];
-
         if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
         {
-            $attributes[Base\Entity::STATUS] = $status;
+            $attributes[Base\Entity::STATUS] = $content[ResponseFields::STATUS];
         }
 
         //
@@ -358,7 +364,13 @@ class Gateway extends Base\Gateway
 
         $keys = $this->getVerifyResponseKeys();
 
-        return array_combine($keys, $values);
+        $content = array_combine($keys, $values);
+
+        $status = self::VERIFY_TO_CALLBACK_STATUS[$content[ResponseFields::STATUS]];
+
+        $content[ResponseFields::STATUS] = $status;
+
+        return $content;
     }
 
     protected function getVerifyResponseKeys()
@@ -376,11 +388,18 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
+        $mode = $this->getLiveMerchantId();
+
         if ($this->mode === Mode::TEST)
         {
-            return $this->getTestMerchantId();
+            $mode = $this->getTestMerchantId();
         }
 
-        return $this->getLiveMerchantId();
+        return $mode;
+    }
+
+    protected function getLiveMerchantId()
+    {
+        return $this->config['live_merchant_id'];
     }
 }

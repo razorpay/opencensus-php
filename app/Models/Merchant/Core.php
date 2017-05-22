@@ -2,23 +2,28 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Models\BankAccount;
-use RZP\Models\Feature;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Pricing;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Terminal;
-use RZP\Exception;
-use RZP\Models\Admin\Action;
-
 use Config;
+use ApiResponse;
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\Feature;
+use RZP\Constants\Mode;
+use RZP\Models\Pricing;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
+use RZP\Models\Admin\Action;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Core extends Base\Core
 {
+    use Notify;
+
     public function create($input)
     {
         $merchant = (new Merchant\Entity)->build($input);
@@ -35,10 +40,7 @@ class Core extends Base\Core
 
         $this->addMerchantSupportingEntities($merchant);
 
-        if (isset($input['groups']) === true)
-        {
-            $this->repo->sync($merchant, 'groups', $input['groups']);
-        }
+        $this->syncHeimdallRelatedEntities($merchant, $input);
 
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
@@ -85,10 +87,12 @@ class Core extends Base\Core
 
         $this->addMerchantSupportingEntities($subMerchant);
 
+        $this->syncHeimdallRelatedEntities($subMerchant, $input);
+
         return $subMerchant;
     }
 
-    protected function addMerchantSupportingEntities($merchant)
+    protected function addMerchantSupportingEntities(Entity $merchant)
     {
         $this->createBalance($merchant, Mode::TEST);
 
@@ -101,6 +105,25 @@ class Core extends Base\Core
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
     }
 
+    public function syncHeimdallRelatedEntities(Entity $merchant, array $input)
+    {
+        if (isset($input[Entity::GROUPS]) === true)
+        {
+            $this->repo->sync($merchant, Entity::GROUPS, $input[Entity::GROUPS]);
+        }
+
+        if (isset($input[Entity::ADMINS]) === true)
+        {
+            $this->repo->sync($merchant, Entity::ADMINS, $input[Entity::ADMINS]);
+        }
+    }
+
+    public function get($id, $relations = [])
+    {
+        return $this->repo->merchant->findOrFailPublicWithRelations(
+            $id, $relations);
+    }
+
     /**
      * Edit merchant entity
      *
@@ -110,6 +133,15 @@ class Core extends Base\Core
      */
     public function edit($merchant, $input)
     {
+        if (isset($input['international']) === true)
+        {
+            $action = Merchant\Action::EDIT_INTERNATIONAL;
+
+            $admin = $this->app['basicauth']->getAdmin();
+
+            $admin->hasMerchantActionPermissionOrFail($action);
+        }
+
         $merchant->setAuditAction(Action::EDIT_MERCHANT);
 
         $merchant->edit($input);
@@ -118,18 +150,23 @@ class Core extends Base\Core
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
-        if (isset($input['groups']) === true)
-        {
-            $this->repo->sync($merchant, 'groups', $input['groups']);
+        $this->saveAndNotify($merchant);
 
+        $this->syncHeimdallRelatedEntities($merchant, $input);
+
+        // Groups have to be saved separately
+        //
+        // Also since we're doing a fetch again it's better we save
+        // the previous version of $merchant entity first and then fetch it.
+        if ((empty($input[Entity::GROUPS]) === false) or
+            (empty($input[Entity::ADMINS]) === false))
+        {
             // If groups has been edited, fetch the entity again with relations.
             // Simple entity edit does not contain updated relations
-            $merchant = $this->repo
-                             ->merchant
-                             ->findOrFailPublicWithRelations($merchant->getId(), ['groups']);
+            $merchant = $this->get(
+                $merchant->getId(),
+                [Entity::GROUPS, Entity::ADMINS]);
         }
-
-        $this->saveAndNotify($merchant);
 
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -198,6 +235,13 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
+    public function getUsers(Entity $merchant)
+    {
+        $users = $merchant->users->callOnEveryItem('toArrayMerchant');
+
+        return $users;
+    }
+
     /**
      * Save merchant entity and notify on slack
      *
@@ -253,5 +297,32 @@ class Core extends Base\Core
 
             return $data;
         }
+    }
+
+    public function action($merchant, $input)
+    {
+        $merchant->getValidator()->validateInput('action', $input);
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $action = $input['action'];
+
+        // Check for admin permissions
+        $admin->hasMerchantActionPermissionOrFail($action);
+
+        $routePermission = Permission\Name::$actionMap[$action];
+
+        $originalMerchant = clone $merchant;
+
+        $merchant->$action();
+
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $originalMerchant, $merchant);
+
+        $this->repo->saveOrFail($merchant);
+
+        $this->logActionToSlack($merchant, $action);
+
+        return $merchant;
     }
 }

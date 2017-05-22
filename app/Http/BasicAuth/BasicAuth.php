@@ -98,7 +98,7 @@ class BasicAuth
      * Admin who is authenticating himself
      * through adminAuth
      */
-    private $isAdmin = null;
+    private $isAdmin = false;
 
     /**
      * During app authentication, the app
@@ -211,6 +211,9 @@ class BasicAuth
         $this->route = $this->app['api.route'];
         $this->merchant = null;
         $this->device = null;
+        $this->isAdmin = false;
+        $this->appAuth = false;
+        $this->proxy = false;
     }
 
     public function setCredentials()
@@ -325,47 +328,6 @@ class BasicAuth
             $this->setProxyTrue();
 
             return $this->checkAndSetAccountScope();
-        }
-
-        return $this->invalidApiKey();
-    }
-
-    public function adminAuth()
-    {
-        $this->setType(Type::ADMIN_AUTH);
-
-        $res = $this->setCredentials();
-
-        // null is the good value here
-        if ($res !== null)
-        {
-            return $res;
-        }
-
-        if ($this->getKey() === 'admin')
-        {
-            $this->setAdminTrue();
-
-            $token = $this->getSecret();
-
-            $adminToken = $this->fetchAdminToken($token);
-
-            if ($adminToken->getAdminId() !== null)
-            {
-                $this->checkForDashboardMerchantHeader();
-
-                $this->setDashboardHeaders();
-
-                $this->admin = $adminToken->admin;
-
-                $this->adminOrgId = $this->admin->getOrgId();
-
-                return $this->checkAndSetAccountScope();
-            }
-        }
-        else if ($this->isKeyBlank())
-        {
-            return $this->appAuth();
         }
 
         return $this->invalidApiKey();
@@ -518,7 +480,6 @@ class BasicAuth
             if ($token->getAdminId() !== null)
             {
                 $this->setAdminTrue();
-                $this->setType(Type::ADMIN_AUTH);
 
                 $this->admin = $token->admin;
 
@@ -854,7 +815,9 @@ class BasicAuth
         // The key in case of app proxy will be the merchant id
         $merchantId = $this->getKey();
 
-        $this->merchant = $this->repo->merchant->find($merchantId);
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        $this->setMerchant($merchant);
 
         // If merchant id isn't found, then return false.
         return ($this->merchant !== null);
@@ -980,12 +943,12 @@ class BasicAuth
 
                 $this->internalApp = $name;
 
-                if ((isset($info['cloud'])) and
-                    ($info['cloud'] === true))
-                {
-                    // Disable internal ip checks for now
-                    // $verify = $this->verifyClientIpInternal();
-                }
+                // if ((isset($info['cloud'])) and
+                //     ($info['cloud'] === true))
+                // {
+                //     Disable internal ip checks for now
+                //     $verify = $this->verifyClientIpInternal();
+                // }
 
                 break;
             }
@@ -1095,10 +1058,15 @@ class BasicAuth
         $this->app['rzp.mode'] = $mode;
     }
 
-    public function setMerchant(string $merchantId)
+    public function setMerchantById(string $merchantId)
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
+        $this->merchant = $merchant;
+    }
+
+    public function setMerchant($merchant)
+    {
         $this->merchant = $merchant;
     }
 
@@ -1138,7 +1106,7 @@ class BasicAuth
 
     public function isAdminAuth()
     {
-        return ($this->type === Type::ADMIN_AUTH);
+        return $this->isAdmin;
     }
 
     public function isPublicAuth()
@@ -1249,7 +1217,18 @@ class BasicAuth
 
     protected function fetchAdminToken($token)
     {
-        $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
+        if ($this->app->environment('testing') === false)
+        {
+            $mode = Mode::LIVE;
+        }
+        else
+        {
+            $mode = $this->mode;
+        }
+
+        // Admin token check should always be done in the
+        // live mode (since we don't sync it in heimdall)
+        $this->adminToken = $this->repo->admin_token->connection($mode)->findOrFailToken($token);
 
         return $this->adminToken;
     }

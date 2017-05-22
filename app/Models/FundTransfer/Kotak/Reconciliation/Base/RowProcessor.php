@@ -1,0 +1,204 @@
+<?php
+
+namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
+
+use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
+use Mail;
+
+use RZP\Constants\Entity;
+use RZP\Constants\MailTags;
+use RZP\Constants\Mode;
+use RZP\Models\Base\Core as BaseCore;
+use RZP\Models\FundTransfer\Kotak\Headings;
+use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
+
+class RowProcessor extends BaseCore
+{
+    const SUCCESS_STATUS = [
+        'Beneficiary Account Credited',
+        'Account Debited',
+        'Presented and Paid',
+    ];
+
+    protected $row;
+
+    protected $version;
+
+    protected $parsedData;
+
+    /**
+     * Entity corresponding to the payment_ref_no column in the file
+     */
+    protected $reconEntity;
+
+    /**
+     * Public id of $reconEntity
+     */
+    protected $reconEntityId;
+
+    /**
+     * Entity returned by method updateEntities. Is either settlement/payout entity
+     */
+    protected $entity;
+
+    protected $reconciledAt;
+
+    /**
+     * Denotes whether the reconEntity is being marked at failed for the first time
+     */
+    protected $firstFailure = false;
+
+    protected $dashboardUrl;
+
+    public function __construct($row)
+    {
+        parent::__construct();
+
+        $this->row = $row;
+
+        $this->dashboardUrl = $this->app['config']->get('applications.dashboard.url');
+    }
+
+    public function process($reconciledAt)
+    {
+        $this->reconciledAt = $reconciledAt;
+
+        $this->parseRow();
+
+        $this->fetchEntities();
+
+        $this->getReconciliationStatus();
+
+        $this->entity = $this->updateEntities();
+
+        if ($this->firstFailure === true)
+        {
+            $this->sendReconciliationFailureEmail();
+        }
+
+        return $this->entity;
+    }
+
+    protected function parseRow()
+    {
+        $utr = trim($this->row[Headings::UTR_NUMBER]);
+
+        if (empty($utr) === true)
+        {
+            $utr = null;
+        }
+
+        $this->parsedData = [
+            'payment_ref_no'    => trim($this->row[Headings::PAYMENT_REF_NO] ?? null),
+            'utr'               => $utr,
+            'bank_status_code'  => trim($this->row[Headings::STATUS_OF_TRANSACTION] ?? null),
+            'remarks'           => trim($this->row[Headings::REMARKS] ?? null),
+            'payment_date'      => trim($this->row[Headings::PAYMENT_DATE] ?? null),
+            'date_time'         => trim($this->row[Headings::DATE_TIME] ?? null),
+            'cms_ref_no'        => trim($this->row[Headings::CMS_REF_NO] ?? null),
+        ];
+
+        $this->reconEntityId = $this->parsedData['payment_ref_no'];
+    }
+
+    protected function getReconciliationStatus()
+    {
+        $recordDate = Carbon::createFromFormat('d-M-y', $this->parsedData['payment_date'], 'Asia/Kolkata');
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $tenPm = $recordDate->hour(22)->timestamp;
+
+        $failureReason = null;
+
+        $class = Entity::getEntityNamespace($this->reconEntity->getEntityName()) . '\\Status';
+
+        $status = $class::FAILED;
+
+        if ($this->parsedData['bank_status_code'] === Status::PROCESSED)
+        {
+            $remarks = $this->parsedData['remarks'];
+
+            if ((empty($remarks) === false) and
+                (in_array($remarks, self::SUCCESS_STATUS) === false))
+            {
+                $status = $class::FAILED;
+
+                $failureReason = 'Reconciliation';
+            }
+            else
+            {
+                $status = $class::PROCESSED;
+
+                // If current time is before 10 pm, dont mark the settlement as
+                // processed and update only the utr
+                if (($now < $tenPm) and ($this->env !== 'testing'))
+                {
+                    $status = $this->reconEntity->getStatus();
+                }
+            }
+        }
+
+        // Verify status
+        $oldStatus = $this->reconEntity->getStatus();
+
+        if ($oldStatus !== $status)
+        {
+            // if already processed
+            if ($this->reconEntity->isPendingReconciliation() === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Old and new status not matching. ' .
+                    'Old status: ' . $oldStatus . ' New status: ' . $status .
+                    'Entity Id: ' . $this->reconEntity->getPublicId());
+            }
+        }
+
+        $this->parsedData['failure_reason'] = $failureReason;
+
+        $this->parsedData['status'] = $status;
+    }
+
+    protected function sendReconciliationFailureEmail()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return;
+        }
+
+        $merchantId = $this->entity->getMerchantId();
+
+        $data['merchant_id'] = $merchantId;
+
+        $data['remarks'] = $this->entity->getRemarks();
+
+        $data['profile_link'] = $this->dashboardUrl . '#/app/profile';
+
+        // bankAccount for Settlelemt entity, and destination for Payout entity
+        $ba = $this->entity->destination ?? $this->entity->bankAccount;
+
+        $data['last4'] = $ba->getRedactedAccountNumber();
+
+        $data['merchant_email'] = $this->entity->merchant->getEmail();
+
+        $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
+
+        Mail::queue('emails.merchant.settlement_failure', $data, function($message) use ($data)
+        {
+            $emails = $data['merchant_email'];
+
+            $message->from('care@razorpay.com', 'Razorpay Settlement Support');
+
+            $message->cc('support@razorpay.com');
+
+            $message->subject($data['subject']);
+
+            $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::SETTLEMENT_FAILURE_EMAIL);
+        });
+    }
+}

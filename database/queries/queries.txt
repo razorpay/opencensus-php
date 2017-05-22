@@ -1897,9 +1897,129 @@ ALTER TABLE settlements
 ALTER TABLE payment_analytics
     ADD CONSTRAINT payment_analytics_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments(id);
 
+ALTER TABLE gateway_downtimes DROP COLUMN public;
+
 ALTER TABLE upi
     ADD COLUMN refund_id CHAR(14) DEFAULT NULL AFTER payment_id,
     ADD INDEX upi_refund_id_index (refund_id);
 
+ALTER TABLE daily_settlements
+    ADD COLUMN processed_amount bigint(20) unsigned AFTER amount,
+    ADD COLUMN processed_count int(11) AFTER total_count;
+
+# Query to add checkout_display flag to offers
+ALTER TABLE offers
+    ADD COLUMN checkout_display TINYINT(1) DEFAULT 0 NOT NULL AFTER block;
+
 ALTER TABLE workflow_steps
     ADD COLUMN op_type VARCHAR(15) DEFAULT 'and' NOT NULL AFTER REVIEWER_COUNT;
+
+# Rrn column for refunds
+ALTER TABLE refunds
+    ADD COLUMN rrn VARCHAR(255) AFTER gateway_refunded;
+
+# arn_no column for hdfc
+ALTER TABLE hdfc
+    ADD COLUMN arn_no VARCHAR(255) AFTER avr;
+
+ALTER TABLE axis
+    ADD INDEX axis_vpc_Command_index (vpc_Command),
+    ADD INDEX axis_vpc_MerchTxnRef_index (vpc_MerchTxnRef);
+
+#PR 2989 Adds foreign key for pricing_rule_id in fees_breakup
+SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE fees_breakup
+    ADD CONSTRAINT fees_breakup_pricing_rule_id_foreign FOREIGN KEY (pricing_rule_id) REFERENCES pricing(id);
+SET FOREIGN_KEY_CHECKS=1;
+
+ALTER TABLE permissions
+    ADD COLUMN enable_workflow TINYINT(1) NOT NULL DEFAULT 0 AFTER assignable;
+
+ALTER TABLE permissions DROP COLUMN  `enable_workflow`;
+
+ALTER TABLE permission_map ADD COLUMN `enable_workflow` boolean DEFAULT 0 NOT NULL AFTER entity_type;
+
+ALTER TABLE refunds
+    ADD COLUMN status VARCHAR(255) NULL AFTER base_amount,
+    ADD COLUMN attempts TINYINT(1) NULL AFTER transaction_id,
+    ADD COLUMN last_attempted_at INT NULL DEFAULT NULL AFTER attempts,
+    ADD INDEX refunds_status_index (status),
+    ADD INDEX refunds_attempts_index (attempts),
+    ADD INDEX refunds_created_at_index (created_at),
+    ADD INDEX refunds_last_attempted_at_index (last_attempted_at);
+
+# Post deployment query for updating status of all the refunds #2673
+UPDATE refunds SET status = "processed", attempts = 1, last_attempted_at = created_at WHERE status is null;
+
+# ---- subscriptions ----
+
+ALTER TABLE payments
+    ADD COLUMN subscription_id CHAR(14) DEFAULT NULL AFTER invoice_id;
+
+ALTER TABLE invoices
+    ADD COLUMN subscription_id CHAR(14) DEFAULT NULL AFTER merchant_id,
+    ADD COLUMN billing_start INT(11) DEFAULT NULL AFTER subscription_id,
+    ADD COLUMN billing_end INT(11) DEFAULT NULL AFTER billing_start,
+    ADD COLUMN subscription_status VARCHAR(32) NULL AFTER status,
+    ADD INDEX invoices_subscription_status_index (subscription_status);
+
+ALTER TABLE items
+    ADD COLUMN type VARCHAR(16) DEFAULT 'invoice' AFTER currency,
+    ADD INDEX items_type_index (type);
+
+ALTER TABLE line_items
+    ADD COLUMN ref_id CHAR(14) DEFAULT NULL AFTER item_id,
+    ADD COLUMN ref_type VARCHAR(32) DEFAULT NULL AFTER ref_id,
+    ADD INDEX line_items_ref_id_index (ref_id),
+    ADD INDEX line_items_ref_type_index (ref_type);
+
+ALTER TABLE schedules
+    DROP INDEX `schedules_type_index`,
+    DROP INDEX `schedules_next_run_index`,
+    DROP COLUMN type,
+    DROP COLUMN next_run,
+    MODIFY COLUMN `delay` TINYINT(1) NOT NULL DEFAULT 0;
+
+ALTER TABLE schedule_tasks
+    ADD COLUMN last_run_at INT(11) DEFAULT NULL AFTER next_run_at,
+    ADD INDEX schedule_tasks_entity_id_index (entity_id),
+    ADD INDEX schedule_tasks_next_run_at_index (next_run_at),
+    ADD INDEX schedule_tasks_last_run_at_index (last_run_at),
+    ADD INDEX schedule_tasks_created_at_index (created_at);
+
+# ---- POST DEPLOYMENT ONLY ----
+SET foreign_key_checks = 0;
+ALTER TABLE payments
+    ADD CONSTRAINT payments_subscription_id_foreign FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE RESTRICT;
+SET foreign_key_checks = 1;
+
+# ---- End subscriptions ----
+
+ALTER TABLE merchant_banks
+    ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE terminals
+    ADD COLUMN aeps TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE workflow_actions
+    ADD COLUMN permission_id char(14) DEFAULT NULL AFTER `workflow_id`;
+
+ALTER TABLE workflow_actions
+    ADD CONSTRAINT workflow_actions_permission_id_foreign
+    FOREIGN KEY(permission_id) REFERENCES permissions(id) ON DELETE RESTRICT;
+
+# Add FK for file in reports
+ALTER TABLE reports
+    ADD CONSTRAINT report_file_id_foreign FOREIGN KEY (file_id) REFERENCES files(id);
+
+# Makes international attribute of gateway rules nullable
+ALTER TABLE gateway_rules MODIFY COLUMN international TINYINT(1);
+
+ALTER TABLE payments
+    ADD COLUMN approval_code VARCHAR(10) NULL AFTER terminal_id,
+    ADD COLUMN reference1 VARCHAR NULL AFTER approval_code,
+    ADD COLUMN reference2 VARCHAR NULL AFTER reference1;
+
+# Adds type to terminals
+ALTER TABLE terminals
+    ADD COLUMN type TINYINT(1) DEFAULT 3 NOT NULL AFTER tpv;

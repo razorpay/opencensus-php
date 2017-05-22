@@ -8,8 +8,10 @@ use DB;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -17,10 +19,12 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
-    use PaymentTrait;
     use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
+    use EntityActionTrait;
+    use RequestResponseFlowTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -55,6 +59,39 @@ class MerchantTest extends TestCase
 
         $this->ba->appAuthLive();
         $this->startTest();
+    }
+
+    public function testGetMerchantUsers()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+        $user2 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'owner');
+
+        $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
+
+        $this->ba->appAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'role'        => 'owner1',
+            'merchant_id' => $merchant['id']
+        ];
+
+        $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/users';
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $roles = array_column($response, 'role');
+
+        $this->assertEquals(count($roles), 2);
+
+        $this->assertTrue(in_array('owner', $roles));
+
+        $this->assertTrue(in_array('manager', $roles));
     }
 
     public function testGetBalance()
@@ -137,6 +174,10 @@ class MerchantTest extends TestCase
     public function testEditMerchant()
     {
         $this->createMerchant();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $result = $this->startTest();
 
@@ -367,6 +408,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->addAssignablePermissionsToOrg($this->org);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
     public function testMerchantArchive()
     {
         $merchant = $this->getLastEntity('merchant', true);
@@ -378,6 +428,10 @@ class MerchantTest extends TestCase
                 'locked'      => true
             ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
         $this->startTest();
 
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
@@ -387,6 +441,10 @@ class MerchantTest extends TestCase
 
     public function testMerchantArchiveWithNoMerchantDetails()
     {
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
         $this->startTest();
     }
 
@@ -396,6 +454,10 @@ class MerchantTest extends TestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => '123456789' ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
         $this->startTest();
     }
 
@@ -404,6 +466,10 @@ class MerchantTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => '123456789' ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
 
@@ -416,7 +482,11 @@ class MerchantTest extends TestCase
     {
         $merchant = $this->getLastEntity('merchant', true);
 
-        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => NULL ]);
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], ['archived_at' => null]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
     }
@@ -424,6 +494,10 @@ class MerchantTest extends TestCase
     public function testMerchantSuspend()
     {
         $merchant = $this->getLastEntity('merchant', true);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
 
@@ -438,6 +512,10 @@ class MerchantTest extends TestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
 
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
         $this->startTest();
     }
 
@@ -446,6 +524,10 @@ class MerchantTest extends TestCase
         $merchant = $this->getLastEntity('merchant', true);
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
 
@@ -458,7 +540,11 @@ class MerchantTest extends TestCase
     {
         $merchant = $this->getLastEntity('merchant', true);
 
-        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => NULL ]);
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], ['suspended_at' => null]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
     }
@@ -651,23 +737,162 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
-    public function testGetCheckoutPreferencesWithOffer()
+    public function testGetCheckoutPreferencesWithAllCardGeatewayDowntime()
     {
-        $this->markTestSkipped('Skipping till new offers changes are merged');
-
         $this->ba->publicAuth();
 
-        $offer = $this->fixtures->offer->createCardOffer();
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'ALL',
+            'issuer'  => 'ALL',
+            'network' => 'VISA']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'first_data',
+            'issuer'  => 'UNKNOWN',
+            'network' => 'UNKNOWN']);
 
         $content = $this->startTest();
 
-        $countCardOffers = count($content['offers']['card']['items']);
+        $this->assertArrayNotHasKey('downtime', $content);
+    }
 
-        $countWalletOffers = count($content['offers']['wallet']['items']);
+    public function testGetCheckoutPreferencesWithCardDowntimeWithSpecificGatewayDown()
+    {
+        $this->ba->publicAuth();
 
-        $this->assertEquals(1, $countCardOffers);
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
 
-        $this->assertEquals(0, $countWalletOffers);
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'hdfc',
+            'issuer'  => 'ALL',
+            'network' => 'ALL']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithCardDowntimeWithGatewayExclusiveNetworkDown()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:card', [
+            'gateway' => 'hdfc',
+            'issuer'  => 'ALL',
+            'network' => 'DICL']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingDowntimeWithAllGateway()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'ALL',
+            'issuer'  => 'HDFC',]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingDowntimeWithSharedNetbankingGateway()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'billdesk',
+            'issuer'  => 'ALL',]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNetbankingWithIssuerExclusiveTogateway()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+         $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'billdesk',
+            'issuer'  => 'ALLA',]);
+
+         $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithDirectNetbankingDowntime()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway'     => 'netbanking_hdfc',
+            'issuer'      => 'ALL',]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithWalletDowntime()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures('expose_downtimes');
+
+        $this->fixtures->create('gateway_downtime:wallet', [
+            'gateway' => 'wallet_olamoney',
+            'issuer'  => 'olamoney']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNonOrderRelatedOffer()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
+
+        $offer = $this->fixtures->create('offer:wallet', [
+                'checkout_display' => true,
+                'display_text'     => 'Some display text',
+                'terms'            => 'Some terms',
+                'starts_at'        => $startsAt,
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithOrderRelatedOffer()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
+
+        $offer = $this->fixtures->create('offer:card', [
+                'display_text' => 'Some display text',
+                'terms'        => 'Some terms',
+                'starts_at'    => $startsAt
+            ]);
+
+        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+        $this->startTest();
     }
 
     public function testGetCheckoutRouteWithSavedLocal()
@@ -1051,14 +1276,14 @@ class MerchantTest extends TestCase
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
         $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
-        $this->assertEquals(NULL , $scheduleTask['method']);
+        $this->assertEquals(null, $scheduleTask['method']);
 
         $this->ba->appAuthLive();
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
         $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
-        $this->assertEquals(NULL , $scheduleTask['method']);
+        $this->assertEquals(null, $scheduleTask['method']);
     }
 
     public function testCreateMerchantWithAdmin()
@@ -1071,7 +1296,7 @@ class MerchantTest extends TestCase
             'id'       => $id,
             'name'     => 'Tester 2',
             'email'    => 'liveandtest@localhost.com',
-            'admin_id' => $adminId,
+            'admins'   => [$adminId],
         ];
 
         $request = [
@@ -1089,5 +1314,17 @@ class MerchantTest extends TestCase
                    ->first();
 
         $this->assertNotNull($row);
+    }
+
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
+    {
+        DB::table('merchant_users')
+            ->insert([
+                'merchant_id' => $merchantId,
+                'user_id'     => $userId,
+                'role'        => $role,
+                'created_at'  => 1493805150,
+                'updated_at'  => 1493805150
+            ]);
     }
 }

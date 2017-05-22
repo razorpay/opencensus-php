@@ -25,8 +25,14 @@ class Validator extends Base\Validator
         'currency'                => 'required|size:3',
         'method'                  => 'custom',
         'vpa'                     => 'required_if:method,upi|max:100|custom',
+        'aadhaar'                 => 'required_if:method,aeps',
+        'aadhaar.number'          => 'required_if:method,aeps|size:12|string',
+        'aadhaar.fingerprint'     => 'required_if:method,aeps|max:999|string',
+        'aadhaar.session_key'     => 'sometimes_if:method,aeps|size:344|string',
+        'aadhaar.hmac'            => 'sometimes_if:method,aeps|size:64|string',
+        'aadhaar.cert_expiry'     => 'sometimes_if:method,aeps|size:8|string',
         'card'                    => 'sometimes',
-        'bank'                    => 'required_if:method,netbanking',
+        'bank'                    => 'required_if:method,netbanking,aeps',
         'wallet'                  => 'required_if:method,wallet|custom',
         'emi_duration'            => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             => 'sometimes',
@@ -38,6 +44,7 @@ class Validator extends Base\Validator
         'callback_url'            => 'sometimes|url',
         'order_id'                => 'sometimes|filled',
         'customer_id'             => 'required_if:wallet,openwallet|public_id|filled',
+        'subscription_id'         => 'sometimes|public_id',
         'app_token'               => 'sometimes',
         'token'                   => 'sometimes',
         'save'                    => 'sometimes|in:0,1',
@@ -52,9 +59,15 @@ class Validator extends Base\Validator
         '_'                       => 'sometimes|array',
     ];
 
+    protected static $editRules = [
+        Entity::APPROVAL_CODE     => 'sometimes|string|max:6',
+        Entity::REFERENCE1        => 'sometimes|string',
+        Entity::REFERENCE2        => 'sometimes|string',
+    ];
+
     protected static $captureRules = [
-        'amount'        => 'required|integer',
-        'currency'      => 'required|in:INR,USD',
+        Entity::AMOUNT            => 'required|integer',
+        Entity::CURRENCY          => 'required|in:INR,USD',
     ];
 
     protected static $refundRules = [

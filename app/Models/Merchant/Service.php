@@ -2,36 +2,40 @@
 
 namespace RZP\Models\Merchant;
 
-use Carbon\Carbon;
-use Config;
-use Mail;
 use DB;
-use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
+use Mail;
+use Config;
 use RZP\Exception;
-use RZP\Models\BankAccount;
-use RZP\Models\Base;
+use Carbon\Carbon;
 use RZP\Models\Emi;
 use RZP\Models\Key;
+use RZP\Models\Base;
 use RZP\Models\User;
-use RZP\Models\Merchant;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Schedule;
-use RZP\Models\Settlement\Holidays;
-use RZP\Models\Terminal;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Schedule;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Models\Admin;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
 use RZP\Constants\MailTags;
+use RZP\Models\BankAccount;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Webhook;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
 {
+    use Notify;
+
     /**
      * Creates a merchant and saves in database
      *
@@ -40,20 +44,16 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
-        if (empty($input['admin_id']) === false)
+        if (empty($input[Entity::ADMINS]) === false)
         {
-            $adminId = $input['admin_id'];
-
-            $adminId = Admin\Admin\Entity::verifyIdAndStripSign($adminId);
-
-            unset($input['admin_id']);
+            Admin\Entity::verifyIdAndStripSignMultiple($input[Entity::ADMINS]);
         }
 
-        if (empty($input['org_id']) === true)
+        if (empty($input[Entity::ORG_ID]) === true)
         {
             // If the organization ID is not present,
             // assume the organization is razorpay
-            $orgId = Admin\Org\Entity::RAZORPAY_ORG_ID;
+            $input[Entity::ORG_ID] = Org\Entity::RAZORPAY_ORG_ID;
 
             $this->trace->info(
                 TraceCode::MERCHANT_ORG_NOT_GIVEN,
@@ -64,36 +64,10 @@ class Service extends Base\Service
         }
         else
         {
-            $orgId = $input['org_id'];
-
-            $orgId = Admin\Org\Entity::verifyIdAndStripSign($orgId);
-
-            unset($input['org_id']);
+            Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
         $merchant = (new Merchant\Core)->create($input);
-
-        //
-        // Once the merchant is created we must
-        // tag him to the admin referral
-        //
-        if (empty($adminId) === false)
-        {
-            //
-            // This step is important to ensure that we are
-            // attaching a valid admin in merchant_map table.
-            // This will throw an exception if adminId doesn't exist.
-            //
-            $admin = $this->repo->admin->findOrFailPublic($adminId);
-
-            // Attach merchant to admin
-            $this->repo->sync($merchant, 'admins', [$adminId]);
-        }
-
-        $org = $this->repo->org->findOrFailPublic($orgId);
-
-        // Update merchant org
-        $merchant->org()->associate($org);
 
         $this->repo->saveOrFail($merchant);
 
@@ -122,16 +96,19 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        if (isset($input['groups']) === true)
+        if (empty($input[Entity::GROUPS]) === false)
         {
-            $groupIds = [];
+            Group\Entity::verifyIdAndStripSignMultiple($input[Entity::GROUPS]);
+        }
 
-            foreach ($input['groups'] as $id)
-            {
-                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
-            }
+        if (empty($input[Entity::ADMINS]) === false)
+        {
+            Admin\Entity::verifyIdAndStripSignMultiple($input[Entity::ADMINS]);
+        }
 
-            $input['groups'] = $groupIds;
+        if (isset($input[Entity::ORG_ID]) === true)
+        {
+            Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
         $merchant = (new Merchant\Core)->edit($merchant, $input);
@@ -146,8 +123,8 @@ class Service extends Base\Service
     protected function sendSubMerchantCreationMail($subMerchant, $aggregator)
     {
         $data = [
-            'name'  =>  $subMerchant->name,
-            'email' =>  $subMerchant->email
+            'name'  => $subMerchant->name,
+            'email' => $subMerchant->email
         ];
 
         if ($subMerchant->email !== $aggregator->email)
@@ -205,9 +182,8 @@ class Service extends Base\Service
     // This is on internal auth
     public function fetch($id)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $methods = $merchant->methods;
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+            $id, ['methods', Entity::GROUPS, Entity::ADMINS]);
 
         return $merchant->toArrayPublic();
     }
@@ -315,9 +291,29 @@ class Service extends Base\Service
 
         (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
 
+        $originalPricingPlan = null;
+
+        if (empty($merchant->pricing) === false)
+        {
+            $originalPricingPlan = $merchant->pricing->getPlanName();
+        }
+
+        list($original, $dirty) = [
+            // Current plan
+            ['pricing_plan' => $originalPricingPlan],
+            // New plan
+            ['pricing_plan' => $plan->first()->getPlanName()],
+        ];
+
+        $this->app['workflow']
+             ->setEntity($merchant->getEntity())
+             ->handle($original, $dirty);
+
         $merchant->setPricingPlan($input['pricing_plan_id']);
 
         $this->repo->saveOrFail($merchant);
+
+        $this->logActionToSlack($merchant, SlackActions::ASSIGN_PRICING, $input);
 
         return $plan->toArrayPublic();
     }
@@ -333,17 +329,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        // this is a hack until dashboard starts using the route with new values
-        if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
-        {
-            $scheduleId = $input[Entity::SETTLEMENT_SCHEDULE_ID];
-
-            $input = [
-                ScheduleTask\Entity::METHOD      => null,
-                ScheduleTask\Entity::TYPE        => ScheduleTask\Type::SETTLEMENT,
-                ScheduleTask\Entity::SCHEDULE_ID => $scheduleId
-            ];
-        }
+        $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
         $scheduleTask = (new ScheduleTask\Core)->createOrUpdate($merchant, $merchant, $input);
 
@@ -454,6 +440,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
+        $this->logActionToSlack($merchant, 'enable');
+
         return $merchant->toArrayPublic();
     }
 
@@ -477,6 +465,8 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchant);
 
+        $this->logActionToSlack($merchant, 'disable');
+
         return $merchant->toArrayPublic();
     }
 
@@ -484,13 +474,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant->getValidator()->validateInput('action', $input);
-
-        $function = $input['action'];
-
-        $merchant->$function();
-
-        $this->repo->saveOrFail($merchant);
+        $merchant = (new Merchant\Core)->action($merchant, $input);
 
         return $merchant->toArrayPublic();
     }
@@ -500,6 +484,8 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $merchant);
+
+        $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
 
         return $ba->toArray();
     }
@@ -575,8 +561,12 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        return (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
+        $enabledDisabledBanks = (new Merchant\Methods\Core)->setPaymentBanksForMerchant(
             $merchant, $input);
+
+        $this->logActionToSlack($merchant, SlackActions::ASSIGN_BANKS);
+
+        return $enabledDisabledBanks;
     }
 
     public function getFeeBearer()
@@ -689,7 +679,7 @@ class Service extends Base\Service
             $today = Carbon::today('Asia/Kolkata');
         }
 
-        if (Holidays::isWorkingDay($today) == false)
+        if (Holidays::isWorkingDay($today) === false)
         {
             return ['message' => 'Today is a holiday! Happy holidays :)'];
         }
@@ -797,6 +787,106 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function updateHoldFundsForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('updateHoldFunds', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $holdFunds = $input['hold_funds'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->updateHoldFunds($merchantId, $holdFunds);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
+    public function updateBankAccountForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('updateBankAccount', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $bankAccount = $input['bank_account'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->addBankAccount($merchantId, $bankAccount);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BANK_ACCOUNT_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
     public function getOffers(string $mid)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
@@ -836,6 +926,24 @@ class Service extends Base\Service
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
         return $data;
+    }
+
+    protected function updateHoldFunds(string $merchantId, bool $holdFunds)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant->setHoldFunds($holdFunds);
+
+        $this->repo->saveOrFail($merchant);
+    }
+
+    public function getUsers(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $users = (new Merchant\Core)->getUsers($merchant);
+
+        return $users;
     }
 
     /**
