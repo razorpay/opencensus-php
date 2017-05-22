@@ -32,7 +32,7 @@ class Core extends Base\Core
 
         $order->build($input);
 
-        $order->getValidator()->validateMerchantSpecificData($order);
+        $order->getValidator()->validateMerchantSpecificData();
 
         if (isset($input[Entity::OFFER_ID]) === true)
         {

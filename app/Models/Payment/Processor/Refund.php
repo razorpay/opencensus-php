@@ -636,6 +636,10 @@ trait Refund
                 // update the payment entity for refund
                 $this->updatePaymentRefunded();
 
+                $this->updateOrderAfterRefund();
+
+                $this->updateInvoiceAfterRefund();
+
                 $refunded = $this->callGatewayRefundFunction($payment, $data);
 
                 $this->refund->setGatewayRefunded($refunded);
@@ -984,5 +988,30 @@ trait Refund
         ];
 
         return $this->callGatewayForRefundValidation($data);
+    }
+
+    protected function updateOrderAfterRefund()
+    {
+        if ($this->payment->hasOrder() === false)
+        {
+            return;
+        }
+
+        $order = $this->payment->order;
+
+        $order->decrementAmountPaidBy($this->payment->getAmountRefunded());
+
+        $this->repo->saveOrFail($order);
+    }
+
+    protected function updateInvoiceAfterRefund()
+    {
+        if ($this->payment->hasInvoice() === false)
+        {
+            return;
+        }
+
+        // TODO: Update invoice's amount(s) and status
+        //       and other fields (paid_at, etc..).
     }
 }

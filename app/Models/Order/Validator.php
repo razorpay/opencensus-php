@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
+        Entity::PARTIAL_PAYMENT =>  'sometimes|boolean',
         Entity::AMOUNT          =>  'required|integer|min:100',
         Entity::CURRENCY        =>  'required|size:3|in:INR,USD',
         Entity::RECEIPT         =>  'required|string|max:40',
@@ -43,44 +44,101 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateOrderNotPaid($order)
+    /**
+     * Given a filled payment entity, validates against this order
+     * if the same should be allowed to proceed.
+     *
+     * @param Payment\Entity $payment
+     */
+    public function validatePaymentCreation(Payment\Entity $payment)
     {
+        $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
+
+        $this->validateOrderCurrency($payment->getCurrency());
+
+        $this->validateOrderNotPaid();
+
+        $this->validateMerchantSpecificData($payment);
+    }
+
+    /**
+     * Validates that order is not already paid.
+     */
+    protected function validateOrderNotPaid()
+    {
+        $order = & $this->entity;
+
+        // An order is assumed paid if:
+        // - status = PAID (Perfect case, amount of order is captured as well)
+        // - it doesn't accept partial payments and there is one authorized
+        //   payment waiting to be captured by merchant. This we do to avoid
+        //   multiple authorized payment against same order.
+
+        // But please not that in case of partial payment, 'authorized' has
+        // no sense as there will be multiple authorized payments and we need
+        // to continue allow payment creation for rest of the partial payments
+        // until status changes to PAID, which is once amount paid = amount.
+
         if (($order->getStatus() === Status::PAID) or
-            ($order->isAuthorized()))
+            (
+                ($order->hasPartialPaymentEnabled() === false) and
+                ($order->isAuthorized() === true)
+            ))
         {
-            // Order already paid for
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
     }
 
-    public function validateOrderAmount($order, $amount)
+    /**
+     * Validates given amount against order's amounts to decide if payment
+     * creation should be allowed.
+     *
+     * @param int $paymentAmount
+     */
+    protected function validateOrderAmount(int $paymentAmount)
     {
-        if ($order->getAmount() !== $amount)
+        $orderAmountDue = $this->entity->getAmountDue();
+
+        // In case of partial payment, $paymentAmount <= $orderAmountDue,
+        // otherwise it should be same.
+
+        $hasPartialPaymentEnabled = $this->entity->hasPartialPaymentEnabled();
+
+
+        if (($hasPartialPaymentEnabled === false) and
+            ($orderAmountDue !== $paymentAmount))
         {
-            // Order and Payment amount mismatch
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
         }
+
+        if (($hasPartialPaymentEnabled === true) and
+            ($paymentAmount > $orderAmountDue))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_TOO_MUCH_FOR_ORDER);
+        }
     }
 
-    public function validateOrderCurrency($order, $currency)
+    protected function validateOrderCurrency(string $currency)
     {
-        if ($order->getCurrency() !== $currency)
+        if ($this->entity->getCurrency() !== $currency)
         {
-            // Order and Payment currency mismatch
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH);
         }
     }
 
-    public function validateMerchantSpecificData($order, $payment = null)
+    public function validateMerchantSpecificData(Payment\Entity $payment = null)
     {
-        $this->validateOrderTpvChecks($order, $payment);
+        $this->validateOrderTpvChecks($payment);
     }
 
-    public function validateOrderTpvChecks($order, $payment = null)
+    protected function validateOrderTpvChecks(Payment\Entity $payment = null)
     {
+        $order = $this->entity;
+
         // TPV - Third Party Validation
         $tpvRequired = $order->merchant->isTPVRequired();
 

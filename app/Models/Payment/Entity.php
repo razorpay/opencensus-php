@@ -1083,6 +1083,25 @@ class Entity extends Base\PublicEntity
         return $this->getAmount() - $this->getAmountTransferred();
     }
 
+    /**
+     * Gets adjusted amount with respect to customer fee bearer merchants.
+     * This amount is compared against the requested capture amount by merchant
+     * and a few other places.
+     *
+     * @return int
+     */
+    public function getAdjustedAmountWrtCustFeeBearer(): int
+    {
+        $amount = $this->getAmount();
+
+        if ($this->merchant->isFeeBearerCustomer() === true)
+        {
+            $amount -= $this->getFee();
+        }
+
+        return $amount;
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);

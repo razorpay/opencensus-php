@@ -259,6 +259,7 @@ class ErrorCode
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                          = 'BAD_REQUEST_ORDER_DOES_NOT_EXIST';
     const BAD_REQUEST_ORDER_INVALID_OFFER                                           = 'BAD_REQUEST_ORDER_INVALID_OFFER';
     const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                                 = 'BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH';
+    const BAD_REQUEST_PAYMENT_AMOUNT_TOO_MUCH_FOR_ORDER                             = 'BAD_REQUEST_PAYMENT_AMOUNT_TOO_MUCH_FOR_ORDER';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                               = 'BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                    = 'BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID';
     const BAD_REQUEST_PAYMENT_ABORTED                                               = 'BAD_REQUEST_PAYMENT_ABORTED';

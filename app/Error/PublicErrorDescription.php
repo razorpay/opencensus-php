@@ -128,6 +128,7 @@ class PublicErrorDescription
     const BAD_REQUEST_VPA_DOESNT_EXIST                                          = 'VPA does not exist.';
     const BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED                             = 'Your UPI application is facing issues with handling collect requests. Please try again later';
     const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                             = 'Payment amount provided does not match with the amount in order';
+    const BAD_REQUEST_PAYMENT_AMOUNT_TOO_MUCH_FOR_ORDER                         = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                           = 'Payment currency provided does not match with the currency in order';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                = 'Payment already done for this order.';
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';

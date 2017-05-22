@@ -10,34 +10,55 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID            = 'id';
-    const MERCHANT_ID   = 'merchant_id';
-    const OFFER_ID      = 'offer_id';
-    const AMOUNT        = 'amount';
-    const CURRENCY      = 'currency';
-    const ATTEMPTS      = 'attempts';
-    const STATUS        = 'status';
-    const NOTES         = 'notes';
+    const ID              = 'id';
+    const MERCHANT_ID     = 'merchant_id';
+    const OFFER_ID        = 'offer_id';
 
-    // Ideally should be a unique from the merchant side as well
-    const RECEIPT       = 'receipt';
+    /**
+     * If set to true, partial payments are allowed on this order amount.
+     */
+    const PARTIAL_PAYMENT = 'partial_payment';
 
-    // To Mark If a payment corresponding to
-    // this order is in authorized state
-    const AUTHORIZED    = 'authorized';
-    const METHOD        = 'method';
-    const BANK          = 'bank';
-    const ACCOUNT_NUMBER = 'account_number';
+    /**
+     * Amount:      Amount of the order
+     * Amount paid: Amount paid for the order till present.
+     *              Amount paid ∈ [0, Amount], if partial_payment = true
+     *                          ∈ {0, Amount}, otherwise
+     * Amount due:  Amount due is derived appended attribute.
+     */
+    const AMOUNT          = 'amount';
+    const AMOUNT_PAID     = 'amount_paid';
+    const AMOUNT_DUE      = 'amount_due';
 
-    const CUSTOMER_ID = 'customer_id';
+    const CURRENCY        = 'currency';
+    const ATTEMPTS        = 'attempts';
+    const STATUS          = 'status';
+    const NOTES           = 'notes';
 
-    // const VALIDITY     = 'validity';
-    // const VALID_TILL   = 'valid_till';
+    /**
+     * Receipt provided by merchant against the order. Ideally should be
+     * unique from the merchant side.
+     */
+    const RECEIPT         = 'receipt';
 
-    // Auto capture if set
+    /**
+     * To Mark If a payment corresponding to this order is in authorized state.
+     *
+     */
+    const AUTHORIZED      = 'authorized';
+
+    const METHOD          = 'method';
+    const BANK            = 'bank';
+    const ACCOUNT_NUMBER  = 'account_number';
+    const CUSTOMER_ID     = 'customer_id';
+
+    /**
+     * Auto capture corresponding payment(s) if this value set to true.
+     */
     const PAYMENT_CAPTURE = 'payment_capture';
 
     protected $fillable = [
+        self::PARTIAL_PAYMENT,
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
@@ -51,9 +72,11 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
+        self::PARTIAL_PAYMENT => false,
         self::ATTEMPTS        => 0,
         self::STATUS          => Status::CREATED,
         self::PAYMENT_CAPTURE => 0,
+        self::AMOUNT_PAID     => 0,
         self::AUTHORIZED      => 0,
         self::NOTES           => [],
         self::METHOD          => null,
@@ -64,31 +87,41 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::PARTIAL_PAYMENT,
         self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
         self::CURRENCY,
         self::RECEIPT,
         self::OFFER_ID,
         self::STATUS,
         self::ATTEMPTS,
         self::NOTES,
-        self::CREATED_AT
+        self::CREATED_AT,
     ];
 
     protected $casts = [
+        self::PARTIAL_PAYMENT => 'bool',
         self::AMOUNT          => 'int',
+        self::AMOUNT_PAID     => 'int',
+        self::AMOUNT_DUE      => 'int',
         self::PAYMENT_CAPTURE => 'bool',
         self::AUTHORIZED      => 'bool',
-        self::ATTEMPTS        => 'int'
+        self::ATTEMPTS        => 'int',
     ];
 
     protected $amounts = [
-        self::AMOUNT
+        self::AMOUNT,
+    ];
+
+    protected $appends = [
+        self::AMOUNT_DUE,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::OFFER_ID
+        self::OFFER_ID,
     ];
 
     protected static $sign = 'order';
@@ -118,6 +151,15 @@ class Entity extends Base\PublicEntity
 
     /** End Related Models */
 
+    /** Appends */
+
+    public function getAmountDueAttribute()
+    {
+        return $this->getAmount() - $this->getAmountPaid();
+    }
+
+    /** End Appends */
+
     /** Setters And Getters */
     public function setStatus($status)
     {
@@ -134,6 +176,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::AUTHORIZED, $authorized);
     }
 
+    public function setAmountPaid(int $amountPaid)
+    {
+        $this->setAttribute(self::AMOUNT_PAID, $amountPaid);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -142,6 +189,16 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getAmountPaid()
+    {
+        return $this->getAttribute(self::AMOUNT_PAID);
+    }
+
+    public function getAmountDue()
+    {
+        return $this->getAttribute(self::AMOUNT_DUE);
     }
 
     public function getPaymentCapture()
@@ -195,11 +252,54 @@ class Entity extends Base\PublicEntity
     /** End Setters And Getters */
 
     /** Other Functions */
+
+    public function hasPartialPaymentEnabled()
+    {
+        return (bool) $this->getAttribute(self::PARTIAL_PAYMENT);
+    }
+
     public function incrementAttempts()
     {
         $attempts = $this->getAttempts() + 1;
 
         $this->setAttempts($attempts);
+    }
+
+    /**
+     * Increments amount paid by given amount.
+     * Also, if after the increment no amount is due, set the status of order
+     * to paid.
+     *
+     * @param int $amount
+     */
+    public function incrementAmountPaidBy(int $amount)
+    {
+        $amountPaid = $this->getAmountPaid() + $amount;
+
+        $this->setAmountPaid($amountPaid);
+
+        // If there is not amount due after increment,
+        // set the status to be paid.
+
+        if ($this->hasAmountDue() === false)
+        {
+            $this->setStatus(Status::PAID);
+        }
+    }
+
+    /**
+     * Decrement amount paid by given refunded amount.
+     * Also, set the status back to ATTEMPTED.
+     *
+     * @param int $amountRefunded
+     */
+    public function decrementAmountPaidBy(int $amountRefunded)
+    {
+        $amountPaid = $this->getAmountPaid() - $amountRefunded;
+
+        $this->setAmountPaid($amountPaid);
+
+        $this->setStatus(Status::ATTEMPTED);
     }
 
     public function isAuthorized()
@@ -215,6 +315,11 @@ class Entity extends Base\PublicEntity
     public function hasOffer()
     {
         return $this->isAttributeNotNull(self::OFFER_ID);
+    }
+
+    public function hasAmountDue(): bool
+    {
+        return (bool) $this->getAmountDue();
     }
 
     public function getOfferIfExists()

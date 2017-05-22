@@ -476,7 +476,7 @@ trait Capture
 
             $this->createTransactionFromCapturedPayment($payment);
 
-            $this->updatePaidOrderStatus($payment);
+            $this->updateOrderAfterCapture($payment);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
@@ -594,7 +594,12 @@ trait Capture
         }
     }
 
-    protected function updatePaidOrderStatus(Payment\Entity $payment)
+    /**
+     * Update attributes of Order entity post corresponding payment is captured.
+     *
+     * @param Payment\Entity $payment
+     */
+    protected function updateOrderAfterCapture(Payment\Entity $payment)
     {
         if ($payment->hasOrder() === false)
         {
@@ -603,47 +608,46 @@ trait Capture
 
         $order = $payment->order;
 
-        $order->setStatus(Order\Status::PAID);
+        $order->incrementAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
+
+        $this->repo->saveOrFail($order);
 
         $this->trace->info(
             TraceCode::ORDER_STATUS_PAID,
             [
                 'payment_id' => $payment->getId(),
-                'order_id' => $order->getId(),
+                'order_id'   => $order->getId(),
             ]);
 
-        $this->repo->saveOrFail($order);
+        $invoice = $order->invoice;
 
-        if ($order->invoice !== null)
+        if ($invoice !== null)
         {
-            $this->updatePaidInvoiceStatus($order, $payment);
+            $this->updateInvoiceAfterCapture($invoice, $payment);
         }
     }
 
-    protected function updatePaidInvoiceStatus(Order\Entity $order, Payment\Entity $payment)
+    /**
+     * Updates attributes of Invoice post corresponding payment is captured.
+     *
+     * @param Invoice\Entity $invoice
+     * @param Payment\Entity $payment
+     */
+    protected function updateInvoiceAfterCapture(
+        Invoice\Entity $invoice,
+        Payment\Entity $payment)
     {
-        $invoice = $order->invoice;
-
-        assert($invoice !== null);
-
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE,
             [
                 'payment_id'    => $payment->getId(),
                 'invoice_id'    => $invoice->getId(),
-                'order_id'      => $order->getId(),
+                'order_id'      => $invoice->getOrderId(),
             ]);
 
         if ($invoice->hasBeenPaid() === true)
         {
-            throw new Exception\LogicException(
-                'The invoice is already paid for.',
-                null,
-                [
-                    'payment_id'    => $order->payment->getId(),
-                    'invoice_id'    => $invoice->getId(),
-                    'order_id'      => $order->getId(),
-                ]);
+            throw new Exception\LogicException('The invoice is already paid.');
         }
 
         $invoice->setStatus(Invoice\Status::PAID);

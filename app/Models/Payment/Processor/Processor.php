@@ -666,9 +666,9 @@ class Processor
 
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
-        $this->setOrderDetails($payment, $input);
+        $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
 
-        $this->setInvoiceDetails($payment);
+        $this->validateAndSetInvoiceDetailsIfApplicable($payment);
 
         $metadata = $payment->getMetadata();
 
@@ -830,11 +830,13 @@ class Processor
         return $order;
     }
 
-    protected function setOrderDetails(Payment\Entity $payment, array $input)
+    protected function validateAndSetOrderDetailsIfApplicable(
+        Payment\Entity $payment,
+        array $input)
     {
         if (empty($input['order_id']) === true)
         {
-            if ($this->merchant->isTPVRequired())
+            if ($this->merchant->isTPVRequired() === true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
@@ -846,27 +848,7 @@ class Processor
 
         $this->order = $this->fetchOrderFromInput($input);
 
-        $amount = $payment->getAmount();
-
-        // If the merchant is a customer-fee-bearer client, use the adjusted amount to
-        // match order amount.
-        if ($this->merchant->isFeeBearerCustomer())
-        {
-            $amount = $amount - $payment->getFee();
-        }
-
-        $currency = $payment->getCurrency();
-
-        // Move this to a common validate function.
-        $validator = new Order\Validator;
-
-        $validator->validateOrderAmount($this->order, $amount);
-
-        $validator->validateOrderCurrency($this->order, $currency);
-
-        $validator->validateOrderNotPaid($this->order);
-
-        $validator->validateMerchantSpecificData($this->order, $payment);
+        $this->order->getValidator()->validatePaymentCreation($payment);
 
         $this->order->setStatus(Order\Status::ATTEMPTED);
 
@@ -884,7 +866,7 @@ class Processor
         $payment->order()->associate($this->order);
     }
 
-    protected function setInvoiceDetails(Payment\Entity $payment)
+    protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
     {
         if ($this->order === null)
         {
