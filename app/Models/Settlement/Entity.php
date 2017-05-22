@@ -294,7 +294,7 @@ class Entity extends Base\PublicEntity
     {
         $processedAt = $this->attributes[self::PROCESSED_AT];
 
-        return $this->getDateInFormatDMY($processedAt);
+        return date('d/m/y', $processedAt);
     }
 
     // ------------------------------- mutators --------------------------------
