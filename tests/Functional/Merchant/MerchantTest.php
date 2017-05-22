@@ -83,7 +83,15 @@ class MerchantTest extends TestCase
 
         $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/users';
 
-        $this->startTest();
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $roles = array_column($response, 'role');
+
+        $this->assertEquals(count($roles), 2);
+
+        $this->assertTrue(in_array('owner', $roles));
+
+        $this->assertTrue(in_array('manager', $roles));
     }
 
     public function testGetBalance()

@@ -18,7 +18,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      *
      * @param $row array
      */
-    protected function getReconciliationTypeForRow(array $row)
+    protected function getReconciliationTypeForRow($row)
     {
         if ($row[self::COLUMN_REFUND_AMOUNT] !== 'None')
         {

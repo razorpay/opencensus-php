@@ -57,7 +57,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * @param $row array
      * @return $refundAmount integer
      */
-    protected function getRefundAmount($row)
+    protected function getRefundAmount(array $row)
     {
         $refundAmount = floatval($row[self::COLUMN_REFUND_AMOUNT]) * 100;
 
