@@ -52,11 +52,11 @@ class Validator extends Base\Validator
      */
     public function validatePaymentCreation(Payment\Entity $payment)
     {
+        $this->validateOrderNotPaid();
+
         $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
 
         $this->validateOrderCurrency($payment->getCurrency());
-
-        $this->validateOrderNotPaid();
 
         $this->validateMerchantSpecificData($payment);
     }

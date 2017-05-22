@@ -291,17 +291,19 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Order\Entity::class, [
-            'id' => $faker->uniqueid,
-            'merchant_id' => '10000000000000',
-            'amount' => 1000000,
-            'currency' => 'INR',
-            'status' => 'created',
-            'receipt' => $faker->uniqueid,
+            'id'              => $faker->uniqueid,
+            'merchant_id'     => '10000000000000',
+            'partial_payment' => 0,
+            'amount'          => 1000000,
+            'amount_paid'     => 0,
+            'currency'        => 'INR',
+            'status'          => 'created',
+            'receipt'         => $faker->uniqueid,
             'payment_capture' => false,
-            'notes' => null,
-            'attempts' => 0,
-            'created_at' => $faker->timestamp,
-            'updated_at' => $faker->timestamp,
+            'notes'           => null,
+            'attempts'        => 0,
+            'created_at'      => $faker->timestamp,
+            'updated_at'      => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\Item\Entity::class, [

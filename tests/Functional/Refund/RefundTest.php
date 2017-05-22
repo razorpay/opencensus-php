@@ -178,10 +178,12 @@ class RefundTest extends TestCase
     public function testRefundOfMultipleAuthorizedPaymentsForOrder()
     {
         $this->ba->appAuth();
-        $orders = $this->fixtures->times(2)->create('order');
 
-        $orderIdOne = $orders[0]->getId();
-        $orderIdTwo = $orders[1]->getId();
+        $order1 = $this->fixtures->order->create();
+        $order2 = $this->fixtures->order->createPaidOrder();
+
+        $orderIdOne = $order1->getId();
+        $orderIdTwo = $order2->getId();
 
         // Card not getting created properly when using ->times(x)
         $this->fixtures->payment->createAuthorized(['order_id' => $orderIdOne]);

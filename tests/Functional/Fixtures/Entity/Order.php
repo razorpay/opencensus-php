@@ -49,4 +49,19 @@ class Order extends Base
 
         return parent::create($attributes);
     }
+
+    public function createPaidOrder(array $attributes = [])
+    {
+        $amountPaid = $attributes['amount_paid'] ?? 1000000;
+        $status     = $attributes['status'] ?? 'paid';
+
+        $attributes = array_merge(
+                        $attributes,
+                        [
+                            'amount_paid' => $amountPaid,
+                            'status'      => $status,
+                        ]);
+
+        return parent::create($attributes);
+    }
 }

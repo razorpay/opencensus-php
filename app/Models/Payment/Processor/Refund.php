@@ -997,6 +997,11 @@ trait Refund
             return;
         }
 
+        if ($this->payment->hasBeenCaptured() === false)
+        {
+            return;
+        }
+
         $order = $this->payment->order;
 
         $order->decrementAmountPaidBy($this->payment->getAmountRefunded());
