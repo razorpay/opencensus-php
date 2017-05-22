@@ -187,10 +187,8 @@ class RowProcessor extends BaseCore
         Mail::queue('emails.merchant.settlement_failure', $data, function($message) use ($data)
         {
             $emails = $data['merchant_email'];
-            // $emails = 'priyanshu.chhazed@razorpay.com';
 
             $message->from('care@razorpay.com', 'Razorpay Settlement Support');
-            // $message->from('priyanshu.chhazed@razorpay.com', 'Razorpay Settlement Support');
 
             $message->cc('support@razorpay.com');
 

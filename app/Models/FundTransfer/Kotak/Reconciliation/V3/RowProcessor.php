@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V3;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
+use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
 
 class RowProcessor extends Base\RowProcessor
 {
@@ -60,15 +61,20 @@ class RowProcessor extends Base\RowProcessor
 
         $this->reconEntity->setFailureReason($this->parsedData['failure_reason']);
         $this->reconEntity->setRemarks($this->parsedData['remarks']);
-        $this->reconEntity->setBankStatusCode($this->parsedData['bank_status_code']);
+
+        $bankStatusCode = $this->parsedData['bank_status_code'];
+        $this->reconEntity->setBankStatusCode($bankStatusCode);
+
         $this->reconEntity->setDateTime($this->parsedData['date_time']);
         $this->reconEntity->setCmsRefNo($this->parsedData['cms_ref_no']);
 
         $dirtyAttributes = $this->reconEntity->getDirty();
 
+        // The below conditions check that it's not an upload-level failure
         if (($status === Attempt\Status::FAILED) and
-            ($utr !== null) and
-            (in_array(Attempt\Entity::STATUS, array_keys($dirtyAttributes)) === true))
+            (empty($utr) === false) and
+            (in_array(Attempt\Entity::STATUS, array_keys($dirtyAttributes)) === true) and
+            ($bankStatusCode === Status::PROCESSED))
         {
             $this->firstFailure = true;
         }
