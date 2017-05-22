@@ -208,14 +208,7 @@ Route::group(['middleware' => ['web']], function () {
 
         // Admin Payment Actions
         Route::get('/admin/{mode}/payments/{id}/analytics', 'AdminController@getPaymentAnalytics');
-        Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
 
-        // More admin payment actions
-        // These use proxy auth so needs merchantId
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture')
-                ->name('admin_payment_capture');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Newsletter
@@ -249,8 +242,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
 
-        Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities')
-                ->name('admin_fetch_entity');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')
                 ->name('admin_fetch_entity');
