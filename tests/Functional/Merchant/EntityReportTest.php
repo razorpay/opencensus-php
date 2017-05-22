@@ -169,8 +169,8 @@ class EntityReportTest extends TestCase
 
         $invoice = $this->fetchInvoice($input);
 
-        $this->assertEquals('2300', $invoice['total_fee']);
-        $this->assertEquals('300', $invoice['tax']);
+        $this->assertEquals('2000', $invoice['total_fee']);
+        $this->assertEquals('0', $invoice['tax']);
         $this->assertEquals(2000, $invoice['razorpay_fee']);
     }
 

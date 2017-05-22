@@ -97,7 +97,7 @@ class BasicAuth
      * Admin who is authenticating himself
      * through adminAuth
      */
-    private $isAdmin = null;
+    private $isAdmin = false;
 
     /**
      * During app authentication, the app
@@ -208,6 +208,9 @@ class BasicAuth
         $this->route = $this->app['api.route'];
         $this->merchant = null;
         $this->device = null;
+        $this->isAdmin = false;
+        $this->appAuth = false;
+        $this->proxy = false;
     }
 
     public function setCredentials()
@@ -322,47 +325,6 @@ class BasicAuth
             $this->setProxyTrue();
 
             return $this->checkAndSetAccountScope();
-        }
-
-        return $this->invalidApiKey();
-    }
-
-    public function adminAuth()
-    {
-        $this->setType(Type::ADMIN_AUTH);
-
-        $res = $this->setCredentials();
-
-        // null is the good value here
-        if ($res !== null)
-        {
-            return $res;
-        }
-
-        if ($this->getKey() === 'admin')
-        {
-            $this->setAdminTrue();
-
-            $token = $this->getSecret();
-
-            $adminToken = $this->fetchAdminToken($token);
-
-            if ($adminToken->getAdminId() !== null)
-            {
-                $this->checkForDashboardMerchantHeader();
-
-                $this->setDashboardHeaders();
-
-                $this->admin = $adminToken->admin;
-
-                $this->adminOrgId = $this->admin->getOrgId();
-
-                return $this->checkAndSetAccountScope();
-            }
-        }
-        else if ($this->isKeyBlank())
-        {
-            return $this->appAuth();
         }
 
         return $this->invalidApiKey();
@@ -515,7 +477,6 @@ class BasicAuth
             if ($token->getAdminId() !== null)
             {
                 $this->setAdminTrue();
-                $this->setType(Type::ADMIN_AUTH);
 
                 $this->admin = $token->admin;
 
@@ -1127,11 +1088,6 @@ class BasicAuth
     }
 
     public function isAdminAuth()
-    {
-        return ($this->type === Type::ADMIN_AUTH);
-    }
-
-    public function isAdmin()
     {
         return $this->isAdmin;
     }

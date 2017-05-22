@@ -393,6 +393,7 @@ class Validator extends Base\Validator
             ($new->isEmiEnabled() === $existing->isEmiEnabled()) and
             ($new->getEmiDuration() === $existing->getEmiDuration()) and
             ($new->getRecurring() === $existing->getRecurring()) and
+            ($new->getCurrency() === $existing->getCurrency()) and
             ($new->getNetworkCategory() === $existing->getNetworkCategory()))
         {
             throw new Exception\BadRequestException(
