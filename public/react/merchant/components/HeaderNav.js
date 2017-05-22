@@ -45,7 +45,9 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
         );
       }}
       onChange={(option, select) => {
-        onSwitchMerchant(option);
+        if (option) {
+          onSwitchMerchant(option);
+        }
       }}
     />
   );

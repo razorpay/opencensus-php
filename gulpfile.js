@@ -120,8 +120,6 @@ const concatJs = lazypipe().pipe(concatMulti, {
     'node_modules/moment/min/moment.min.js',
   ],
 
-  'js/generated/admin_react.js': ['public/react/dist/admin_react.js'],
-
   'js/generated/admin.js': [
     'public/js/admin/**/*.js',
     'public/js/*.js',
