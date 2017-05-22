@@ -31,6 +31,7 @@ class Workflow
         Permission::ADD_MERCHANT_CREDITS,
         Permission::EDIT_MERCHANT_PRICING,
         Permission::EDIT_ACTIVATE_MERCHANT,
+        Permission::ADD_MERCHANT_ADJUSTMENT,
     ];
 
     protected $app;

@@ -350,4 +350,16 @@ class Core extends Base\Core
 
         return $this->edit($action, $input);
     }
+
+    public function initAuthDetails(array $authDetails)
+    {
+        if (empty($authDetails['merchant_id']) === false)
+        {
+            $merchantId = $authDetails['merchant_id'];
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $this->app['basicauth']->setMerchant($merchant);
+        }
+    }
 }

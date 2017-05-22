@@ -55,7 +55,6 @@ return [
             Permission::EDIT_MERCHANT_FEATURES => '',
             Permission::EDIT_MERCHANT_BANK_DETAIL => '',
             Permission::EDIT_IIN_RULE => '',
-            Permission::CREATE_MERCHANT_ADJUSTMENTS => '',
             Permission::EDIT_ACTIVATE_MERCHANT => '',
             Permission::EDIT_MERCHANT_ENABLE_LIVE => '',
             Permission::EDIT_MERCHANT_DISABLE_LIVE => '',
