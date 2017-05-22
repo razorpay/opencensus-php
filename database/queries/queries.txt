@@ -2007,3 +2007,19 @@ ALTER TABLE workflow_actions
 ALTER TABLE workflow_actions
     ADD CONSTRAINT workflow_actions_permission_id_foreign
     FOREIGN KEY(permission_id) REFERENCES permissions(id) ON DELETE RESTRICT;
+
+# Add FK for file in reports
+ALTER TABLE reports
+    ADD CONSTRAINT report_file_id_foreign FOREIGN KEY (file_id) REFERENCES files(id);
+
+# Makes international attribute of gateway rules nullable
+ALTER TABLE gateway_rules MODIFY COLUMN international TINYINT(1);
+
+ALTER TABLE payments
+    ADD COLUMN approval_code VARCHAR(10) NULL AFTER terminal_id,
+    ADD COLUMN reference1 VARCHAR NULL AFTER approval_code,
+    ADD COLUMN reference2 VARCHAR NULL AFTER reference1;
+
+# Adds type to terminals
+ALTER TABLE terminals
+    ADD COLUMN type TINYINT(1) DEFAULT 3 NOT NULL AFTER tpv;

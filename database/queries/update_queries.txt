@@ -373,3 +373,49 @@ update daily_settlements join
 on daily_settlements.id =  stats.`batch_fund_transfer_id`
 set daily_settlements.processed_count = stats.processed_count,
 daily_settlements.processed_amount = stats.processed_amount;
+
+#Adds Auth code to a payment
+UPDATE cybersource set authorizationCode='T38678' where id=28984;
+
+### Updates type in terminals
+
+###########################################################################
+##          ##                                                           ##
+##          ## aeps_icici         netbanking_federal  wallet_airtelmoney ##
+##          ## billdesk           netbanking_hdfc     wallet_freecharge  ##
+## PURCHASE ## ebs                netbanking_icici    wallet_jiomoney    ##
+##          ## mobikwik           netbanking_kotak    wallet_olamoney    ##
+##          ## netbanking_airtel  upi_icici           wallet_payumoney   ##
+##          ## netbanking_axis    upi_idfc            wallet_payzapp     ##
+##          ##                                                           ##
+###########################################################################
+##          ##                                                           ##
+##          ## atom               first_data          sharp              ##
+##  DUAL    ## axis_genius        hdfc                                   ##
+##          ## cybersource        paytm                                  ##
+##          ##                                                           ##
+###########################################################################
+##          ##                                                           ##
+## AUTH-    ## amex               wallet_openwallet                      ##
+## CAPTURE  ## axis_migs                                                 ##
+##          ##                                                           ##
+###########################################################################
+
+UPDATE terminals
+    SET type=2
+    WHERE gateway='first_data' AND recurring=4;
+
+UPDATE terminals
+    SET type=1
+    WHERE gateway in (
+        'axis_migs', 'amex', 'wallet_openwallet'
+    );
+
+UPDATE terminals
+    SET type=2
+    WHERE
+        card=0
+        AND gateway NOT IN (
+                'sharp', 'atom', 'wallet_openwallet'
+            );
+###########################################################################

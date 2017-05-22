@@ -43,6 +43,7 @@ class Orchestrator extends Base\Core
     const NETBANKING_ICICI   = 'NetbankingIcici';
     const NETBANKING_FEDERAL = 'NetbankingFederal';
     const JIOMONEY           = 'Jiomoney';
+    const EBS                = 'Ebs';
     const ADMIN              = 'admin';
 
     /**
@@ -63,6 +64,7 @@ class Orchestrator extends Base\Core
         self::NETBANKING_ICICI   => ['ubpshelp@icicibank.com'],
         self::NETBANKING_FEDERAL => ['fednetrm@federalbank.co.in'],
         self::JIOMONEY           => [],
+        self::EBS                => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN              => ['prashanth.yv@razorpay.com'],

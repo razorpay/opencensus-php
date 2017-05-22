@@ -105,6 +105,20 @@ class Core extends Base\Core
         ];
     }
 
+    public function fetchResponse(string $actionId)
+    {
+        $esResponse = $this->esDao->searchByIndexTypeAndActionId(
+            strtolower($this->baseIndex), self::ES_TYPE, $actionId);
+
+        if ($esResponse === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND);
+        }
+
+        return $esResponse[0]['_source'];
+    }
+
     public function saveToES(array $differ)
     {
         try
@@ -193,21 +207,67 @@ class Core extends Base\Core
     }
 
     // TODO: Recursion
-    public function createDiff(array $oldEntity, array $newEntity)
+    public function createDiff(array $original, array $dirty)
     {
         $diff = [];
 
-        $keys = array_keys($oldEntity);
+        $keys = array_merge(array_keys($original), array_keys($dirty));
+        $keys = array_values(array_unique($keys));
 
         $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
 
         foreach ($diffKeys as $key)
         {
-            if ($oldEntity[$key] !== $newEntity[$key])
-            {
-                $diff['old'][$key] = $oldEntity[$key];
+            // Can be scalar or an array
+            $originalData = $original[$key] ?? null;
 
-                $diff['new'][$key] = $newEntity[$key];
+            // Can be scalar or an array
+            $dirtyData = $dirty[$key] ?? null;
+
+            $originalDataIsIndexedArray = $dirtyDataIsIndexedArray = false;
+
+            if ((is_array($originalData) === true) and
+                (is_associative_array($originalData) === false))
+            {
+                $originalDataIsIndexedArray = true;
+            }
+
+            if ((is_array($dirtyData) === true) and
+                (is_associative_array($dirtyData) === false))
+            {
+                $dirtyDataIsIndexedArray = true;
+            }
+
+            if (($originalDataIsIndexedArray === true) or
+                ($dirtyDataIsIndexedArray === true))
+            {
+                $originalData = $originalData ?? [];
+
+                $dirtyData = $dirtyData ?? [];
+
+                // array_values() is used to re-set indexes
+                // [54 => 'YESB'] => [0 => 'YESB']
+
+                $orgDirtyDiff = array_values(array_diff($originalData, $dirtyData));
+                $dirtyOrgDiff = array_values(array_diff($dirtyData, $originalData));
+
+                if ((empty($orgDirtyDiff) === false) or
+                    (empty($dirtyOrgDiff) === false))
+                {
+                    $diff['old'][$key] = $orgDirtyDiff;
+
+                    $diff['new'][$key] = $dirtyOrgDiff;
+                }
+            }
+            else
+            {
+                // Compute scalar value differences (first level)
+                if ($originalData !== $dirtyData)
+                {
+                    $diff['old'][$key] = $originalData;
+
+                    $diff['new'][$key] = $dirtyData;
+                }
             }
         }
 

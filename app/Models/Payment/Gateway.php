@@ -108,6 +108,7 @@ class Gateway
     const REFUND_RETRY_GATEWAYS = [
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::HDFC,
     ];
 
     public static $channels = [
@@ -239,6 +240,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::AXIS_MIGS,
+        self::AMEX,
         self::WALLET_OPENWALLET,
     ];
 
@@ -511,6 +513,18 @@ class Gateway
     public static function isValidGateway($gateway)
     {
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
+    }
+
+    public static function isValidGatewayAcquirer(string $gatewayAcquirer)
+    {
+        return array_key_exists($gatewayAcquirer, self::GATEWAY_ACQUIRERS);
+    }
+
+    public static function isValidAcquirerForGateway(string $gatewayAcquirer, string $gateway): bool
+    {
+        $validAcquirersForGateway = self::GATEWAY_ACQUIRERS[$gateway];
+
+        return in_array($gatewayAcquirer, $validAcquirersForGateway, true);
     }
 
     public static function getGatewayForWallet($wallet)

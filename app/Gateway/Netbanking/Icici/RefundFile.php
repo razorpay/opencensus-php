@@ -40,14 +40,18 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
 
         $fileData = [
-            'subject'   => 'Icici Netbanking refunds file for ' . $today,
-            'file_path' => $file['local_file_path'],
-            'count'     => count($data),
-            'amount'    => number_format($totalAmount, 2, '.', ''),
-            'date'      => $today
+            'subject'    => 'Icici Netbanking refunds file for ' . $today,
+            'file_path'  => $file['local_file_path'],
+            'file_name'  => basename($file['local_file_path']),
+            'signed_url' => $signedFileUrl,
+            'count'      => count($data),
+            'amount'     => number_format($totalAmount, 2, '.', ''),
+            'date'       => $today
         ];
 
         $this->sendRefundEmail($fileData);
@@ -95,7 +99,7 @@ class RefundFile extends Base\RefundFile
 
             $message->to($emails);
 
-            $message->attach($fileData['file_path']);
+            $message->attach($fileData['signed_url'], ['as' => $fileData['file_name']]);
 
             $headers = $message->getHeaders();
 

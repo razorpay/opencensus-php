@@ -26,9 +26,13 @@ class Service
 
     protected $config;
 
-    protected $permission = [];
+    protected $permission;
 
     protected $diff = [];
+
+    protected $originalData;
+
+    protected $dirtyData;
 
     public function __construct($app)
     {
@@ -155,9 +159,38 @@ class Service
         return $this->diff;
     }
 
+    public function setOriginal($entity)
+    {
+        $this->originalData = $entity;
+
+        return $this;
+    }
+
+    public function getOriginal()
+    {
+        return $this->originalData;
+    }
+
+    public function setDirty($entity)
+    {
+        $this->dirtyData = $entity;
+
+        return $this;
+    }
+
+    public function getDirty()
+    {
+        return $this->dirtyData;
+    }
+
     protected function permissionHasWorkflow()
     {
         $permission = $this->getPermission();
+
+        if (empty($permission) === true)
+        {
+            return false;
+        }
 
         $admin = $this->ba->getAdmin();
 
@@ -167,63 +200,72 @@ class Service
         return $permissionHasWorkflow;
     }
 
-    protected function isExecuteCall()
-    {
-        $routeName = $this->router->currentRouteName();
-
-        if ($routeName === self::EXECUTE_ROUTE_NAME)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     /*
-        Can be used like this:
+        In case of an edit operation both $originalData
+        and $dirtyData should be set.
 
-        Workflow::setPermission($permission)
-                ->handle($entity, function ($entity) {
-                    // Execute business logic on the $entity
-                })
+        In case of an "add" operation pass an empty stdClass
+        object as $originalData.
 
-        $entity is supposed to be the main entity on which
-        diff will be computed pre callback execution and post
-        callback execution which will change the $entity due to
-        the business logic code.
+        In case of a "delete" operation pass an empty stdClass
+        object as $dirtyData.
     */
-    public function handle($entity, $callback)
+    public function handle($originalData = null, $dirtyData = null)
     {
         // 1. If the permission has no workflow then don't do anything
         // 2. If this is an execute call, then return as well
-        //
+
         if (($this->permissionHasWorkflow() === false) or
             ($this->config->get('heimdall.workflows.mock') === true) or
-            ($this->isExecuteCall() === true))
+            ($this->app['api.route']->isWorkflowExecuteCall() === true))
         {
-            // Run the callback though, as it might have business
-            // specific logic actually required for execution.
-            $callback($entity);
-
             return;
         }
-
-        // Set entity
-        $this->setEntity($entity->getEntityName());
 
         // Instantiate code for diff creation
         $differCore = new Differ\Core;
 
-        $oldEntity = clone $entity;
+        if (($originalData === null) and ($dirtyData === null))
+        {
+            $originalData = $this->getOriginal();
 
-        $callback($entity);
+            $dirtyData = $this->getDirty();
+        }
 
-        // If the callback modifies the $entity then
-        // we will have $newEntity due to call by reference!
-        $newEntity = $entity;
+        if ((is_array($originalData) === true) and (is_array($dirtyData) === true))
+        {
+            $diff = $differCore->createDiff(
+                $originalData, $dirtyData);
+        }
+        else
+        {
+            if (method_exists($originalData, 'toArray') === true)
+            {
+                $originalDataArray = $originalData->toArray();
+            }
+            else
+            {
+                $originalDataArray = (array) $originalData;
+            }
 
-        $diff = $differCore->createDiff(
-            $oldEntity->toArray(), $newEntity->toArray());
+            if (method_exists($dirtyData, 'toArray') === true)
+            {
+                $dirtyDataArray = $dirtyData->toArray();
+            }
+            else
+            {
+                $dirtyDataArray = (array) $dirtyData;
+            }
+
+            // Set entity
+            if (method_exists($dirtyData, 'getEntityName') === true)
+            {
+                $this->setEntity($dirtyData->getEntityName());
+            }
+
+            $diff = $differCore->createDiff(
+                $originalDataArray, $dirtyDataArray);
+        }
 
         $this->setDiff($diff);
 

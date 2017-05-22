@@ -15,4 +15,5 @@ class Category
     const AUDIT_LOG         = 'audit_log';
     const INVITATION        = 'invitation';
     const WORKFLOW          = 'workflow';
+    const PRICING           = 'pricing';
 }

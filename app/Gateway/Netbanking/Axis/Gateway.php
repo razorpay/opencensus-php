@@ -69,7 +69,9 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($attrs, $content);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayEntity);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)

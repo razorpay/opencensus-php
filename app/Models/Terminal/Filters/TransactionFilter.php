@@ -136,8 +136,11 @@ class TransactionFilter extends Terminal\Filter
             $issuer = $input['payment']->card->getIssuer();
 
             if (($issuer === Issuer::ICIC) and
-                ($terminal->getGateway() === Gateway::FIRST_DATA))
+                ($terminal->getGateway() === Gateway::FIRST_DATA) and
+                ($input['merchant']->getId() !== '5ubLZpACTmD8D4'))
             {
+                // ICICI cards currently don't work on FirstData
+                // This allows transactions only on test merchant
                 return false;
             }
         }

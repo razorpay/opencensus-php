@@ -602,6 +602,8 @@ class Gateway extends Base\Gateway
 
         // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
+
+        return [];
     }
 
     public function refund(array $input)

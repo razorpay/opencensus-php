@@ -205,6 +205,7 @@ class Payment extends Base
             'terminal_id'   => '1n25f6uN5S1Z5a',
             'card_id'       => $card['id'],
             'international' => false,
+            'approval_code' => rand(111111, 999999)
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

@@ -156,7 +156,9 @@ class Gateway extends Base\Gateway
 
         $this->authorizeEnrolled($input, $response, $gatewayPayment);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function refund(array $input)
@@ -1683,6 +1685,15 @@ class Gateway extends Base\Gateway
     protected function fixParesIfRequired(&$input)
     {
         $input['gateway']['PaRes'] = str_replace(["\n", "\r"], "", $input['gateway']['PaRes']);
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode()
+            ]
+        ];
     }
 
     /**

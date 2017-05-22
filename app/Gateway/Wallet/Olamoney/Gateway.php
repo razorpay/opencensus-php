@@ -429,6 +429,8 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $responseStatus);
         }
+
+        return [];
     }
 
     protected function getCreateWalletAttributes(array $input, array $content)

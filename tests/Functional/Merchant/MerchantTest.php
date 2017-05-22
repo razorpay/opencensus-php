@@ -61,6 +61,31 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMerchantUsers()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+        $user2 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'owner');
+
+        $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
+
+        $this->ba->appAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'role'        => 'owner1',
+            'merchant_id' => $merchant['id']
+        ];
+
+        $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/users';
+
+        $this->startTest();
+    }
+
     public function testGetBalance()
     {
         // The merchant and balances have been created in
@@ -141,6 +166,10 @@ class MerchantTest extends TestCase
     public function testEditMerchant()
     {
         $this->createMerchant();
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $result = $this->startTest();
 
@@ -393,7 +422,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
 
@@ -406,7 +435,7 @@ class MerchantTest extends TestCase
     {
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
     }
@@ -419,7 +448,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
     }
@@ -432,7 +461,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
 
@@ -445,11 +474,11 @@ class MerchantTest extends TestCase
     {
         $merchant = $this->getLastEntity('merchant', true);
 
-        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => NULL ]);
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], ['archived_at' => null]);
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
     }
@@ -460,7 +489,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
 
@@ -477,7 +506,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
     }
@@ -490,7 +519,7 @@ class MerchantTest extends TestCase
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
 
@@ -503,11 +532,11 @@ class MerchantTest extends TestCase
     {
         $merchant = $this->getLastEntity('merchant', true);
 
-        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => NULL ]);
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], ['suspended_at' => null]);
 
         $this->setAdminForInternalAuth();
 
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
         $this->startTest();
     }
@@ -1239,14 +1268,14 @@ class MerchantTest extends TestCase
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
         $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
-        $this->assertEquals(NULL , $scheduleTask['method']);
+        $this->assertEquals(null, $scheduleTask['method']);
 
         $this->ba->appAuthLive();
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
         $this->assertEquals($merchant['settlement_schedule_id'], $scheduleTask['schedule_id']);
-        $this->assertEquals(NULL , $scheduleTask['method']);
+        $this->assertEquals(null, $scheduleTask['method']);
     }
 
     public function testCreateMerchantWithAdmin()
@@ -1259,7 +1288,7 @@ class MerchantTest extends TestCase
             'id'       => $id,
             'name'     => 'Tester 2',
             'email'    => 'liveandtest@localhost.com',
-            'admin_id' => $adminId,
+            'admins'   => [$adminId],
         ];
 
         $request = [
@@ -1277,5 +1306,17 @@ class MerchantTest extends TestCase
                    ->first();
 
         $this->assertNotNull($row);
+    }
+
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)
+    {
+        DB::table('merchant_users')
+            ->insert([
+                'merchant_id' => $merchantId,
+                'user_id'     => $userId,
+                'role'        => $role,
+                'created_at'  => 1493805150,
+                'updated_at'  => 1493805150
+            ]);
     }
 }

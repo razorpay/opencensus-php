@@ -165,6 +165,15 @@ class CreatePayments extends Migration
             $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->string(Payment::APPROVAL_CODE, 10)
+                  ->nullable();
+
+            $table->string(Payment::REFERENCE1)
+                  ->nullable();
+
+            $table->string(Payment::REFERENCE2)
+                  ->nullable();
+
             $table->tinyInteger(Payment::SIGNED)
                   ->default(0);
 

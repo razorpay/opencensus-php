@@ -4,7 +4,7 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Report\BasicEntityReport;
+use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Constants\Entity as E;
 use RZP\Models\Settlement;
 use RZP\Models\FundTransfer\Icici;
