@@ -608,7 +608,9 @@ trait Capture
 
         $order = $payment->order;
 
-        $order->incrementAmountPaidBy($payment->getAdjustedAmountWrtCustFeeBearer());
+        $paidAmount = $payment->getAdjustedAmountWrtCustFeeBearer();
+
+        $order->incrementAmountPaidBy($paidAmount);
 
         $this->repo->saveOrFail($order);
 
@@ -650,7 +652,7 @@ trait Capture
             throw new Exception\LogicException('The invoice is already paid.');
         }
 
-        $invoice->setStatus(Invoice\Status::PAID);
+        $invoice->updateStatusPostCapture();
 
         $this->repo->saveOrFail($invoice);
     }

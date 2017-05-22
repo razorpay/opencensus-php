@@ -316,6 +316,8 @@ class Generator extends Base\Core
 
         $orderCurrency = $this->invoice->getCurrency();
 
+        $allowPartialPayment = $this->invoice->hasPartialPaymentEnabled();
+
         $orderReceipt = 'Invoice Order';
 
         $orderInput = [
@@ -323,6 +325,7 @@ class Generator extends Base\Core
             Order\Entity::CURRENCY          => $orderCurrency,
             Order\Entity::RECEIPT           => $orderReceipt,
             Order\Entity::PAYMENT_CAPTURE   => true,
+            Order\Entity::PARTIAL_PAYMENT   => $allowPartialPayment,
         ];
 
         $order = (new Order\Core)->create($orderInput, $this->merchant);

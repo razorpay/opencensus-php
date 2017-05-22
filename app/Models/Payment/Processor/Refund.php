@@ -15,6 +15,7 @@ use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
+use RZP\Models\Invoice;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -638,8 +639,6 @@ trait Refund
 
                 $this->updateOrderAfterRefund();
 
-                $this->updateInvoiceAfterRefund();
-
                 $refunded = $this->callGatewayRefundFunction($payment, $data);
 
                 $this->refund->setGatewayRefunded($refunded);
@@ -1004,19 +1003,22 @@ trait Refund
 
         $order = $this->payment->order;
 
-        $order->decrementAmountPaidBy($this->payment->getAmountRefunded());
+        $order->decrementAmountPaidBy($this->refund->getAmount());
 
         $this->repo->saveOrFail($order);
+
+        $invoice = $order->invoice;
+
+        if ($invoice !== null)
+        {
+            $this->updateInvoiceAfterRefund($invoice);
+        }
     }
 
-    protected function updateInvoiceAfterRefund()
+    protected function updateInvoiceAfterRefund(Invoice\Entity $invoice)
     {
-        if ($this->payment->hasInvoice() === false)
-        {
-            return;
-        }
+        $invoice->updateStatusPostRefund();
 
-        // TODO: Update invoice's amount(s) and status
-        //       and other fields (paid_at, etc..).
+        $this->repo->saveOrFail($invoice);
     }
 }

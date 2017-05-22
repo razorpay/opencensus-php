@@ -51,7 +51,10 @@ class Entity extends Base\PublicEntity
     const COMMENT                  = 'comment';
     const SHORT_URL                = 'short_url';
     const VIEW_LESS                = 'view_less';
+    const PARTIAL_PAYMENT          = 'partial_payment';
     const AMOUNT                   = 'amount';
+    const AMOUNT_PAID              = 'amount_paid';
+    const AMOUNT_DUE               = 'amount_due';
     const CURRENCY                 = 'currency';
     const USER_ID                  = 'user_id';
     const SOURCE                   = 'source';
@@ -137,6 +140,7 @@ class Entity extends Base\PublicEntity
         self::VIEW_LESS                => 1,
         self::TYPE                     => Type::INVOICE,
         self::USER_ID                  => null,
+        self::PARTIAL_PAYMENT          => false,
         self::AMOUNT                   => null,
         self::CURRENCY                 => 'INR',
         self::BILLING_START            => null,
@@ -168,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::SMS_STATUS,
         self::DATE,
         self::TERMS,
+        self::PARTIAL_PAYMENT,
         self::AMOUNT,
         self::DESCRIPTION,
         self::NOTES,
@@ -221,7 +226,10 @@ class Entity extends Base\PublicEntity
         self::VIEW_LESS,
         self::SOURCE,
         self::TYPE,
+        self::PARTIAL_PAYMENT,
         self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
         self::BILLING_START,
         self::BILLING_END,
         self::USER_ID,
@@ -254,7 +262,10 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::DATE,
         self::TERMS,
+        self::PARTIAL_PAYMENT,
         self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
         self::DESCRIPTION,
         self::NOTES,
         self::COMMENT,
@@ -271,11 +282,11 @@ class Entity extends Base\PublicEntity
 
     // Fields to be added while retrieving the entity
     protected $appends = [
-        self::PUBLIC_ID,
-        self::ENTITY,
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
         self::PAYMENT_ID,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
     ];
 
     // The functions for these fields will be called only
@@ -290,11 +301,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::VIEW_LESS  => 'bool',
-        self::AMOUNT     => 'int',
-        self::DATE       => 'int',
-        self::EXPIRE_BY  => 'int',
-        self::EXPIRED_AT => 'int',
+        self::VIEW_LESS       => 'bool',
+        self::PARTIAL_PAYMENT => 'bool',
+        self::AMOUNT          => 'int',
+        self::AMOUNT_PAID     => 'int',
+        self::AMOUNT_DUE      => 'int',
+        self::DATE            => 'int',
+        self::EXPIRE_BY       => 'int',
+        self::EXPIRED_AT      => 'int',
     ];
 
     // -------------------------------------- Mutators --------------------------------------
@@ -354,9 +368,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function hasPartialPaymentEnabled()
+    {
+        return $this->getAttribute(self::PARTIAL_PAYMENT);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getAmountPaid()
+    {
+        return $this->getAttribute(self::AMOUNT_PAID);
+    }
+
+    public function getAmountDue()
+    {
+        return $this->getAttribute(self::AMOUNT_DUE);
     }
 
     public function getFormattedAmount()
@@ -448,7 +477,7 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenPaid()
     {
-        return ($this->getPaidAt() !== null);
+        return ($this->getStatus() === Status::PAID);
     }
 
     public function getDueBy()
@@ -674,6 +703,24 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRE_BY, $expireBy);
     }
 
+    public function updateStatusPostCapture()
+    {
+        $newStatus = ($this->getAmountPaid() === $this->getAmount()) ?
+                        Status::PAID : Status::PARTIALLY_PAID;
+
+        $this->setStatus($newStatus);
+    }
+
+    public function updateStatusPostRefund()
+    {
+        $newStatus = ($this->getAmountPaid() === 0) ?
+                        Status::ISSUED : Status::PARTIALLY_PAID;
+
+        $this->setStatus($newStatus);
+
+        $this->setAttribute(self::PAID_AT, null);
+    }
+
     // -------------------------------------- End Setters --------------------------------------
 
     // -------------------------------------- Accessors --------------------------------------
@@ -728,6 +775,26 @@ class Entity extends Base\PublicEntity
         }
 
         return null;
+    }
+
+    public function getAmountPaidAttribute()
+    {
+        if ($this->getOrderId() === null)
+        {
+            return null;
+        }
+
+        return $this->order->getAmountPaid();
+    }
+
+    public function getAmountDueAttribute()
+    {
+        if ($this->getOrderId() === null)
+        {
+            return null;
+        }
+
+        return $this->order->getAmountDue();
     }
 
     // -------------------------------------- End Accessors --------------------------------------

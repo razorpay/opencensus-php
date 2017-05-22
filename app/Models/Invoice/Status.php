@@ -2,31 +2,33 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class Status
 {
-    // ----------- Invoice Statuses -----------
+    // ----------- Invoice Statuses ----------------------------------
 
-    // Almost all attributes can be edited for invoice in draft status.
-    const DRAFT         = 'draft';
-    // Invoice when issued is payable by customer. And very few attributes can
-    // be changed.
-    const ISSUED        = 'issued';
-    // Invoice has been paid.
-    const PAID          = 'paid';
-    // Invoice has been cancelled by the creator. It cannot be paid or viewed by
-    // customers.
-    const CANCELLED     = 'cancelled';
-    // Invoice has been expired by our system as it has went past the expire_by
-    // set for invoice.
-    const EXPIRED       = 'expired';
+    // DRAFT:          Almost all attributes can be edited for invoice.
+    // ISSUED:         Invoice is payable by customer and a few attributes can be edited.
+    // PARTIALLY_PAID: Invoice is paid in partial. More payments can be accepted.
+    // PAID:           Invoice is paid in full.
+    // CANCELLED:      Invoice is cancelled by merchant and is not payable.
+    // EXPIRED:        Invoice is expired by our system as it has went pas the expire_by.
 
-    // ----------- End Invoice Statuses -----------
+    const DRAFT          = 'draft';
+    const ISSUED         = 'issued';
+    const PARTIALLY_PAID = 'partially_paid';
+    const PAID           = 'paid';
+    const CANCELLED      = 'cancelled';
+    const EXPIRED        = 'expired';
 
-    // ----------- Invoice Sub Statuses -----------
+    // ----------- End Invoice Statuses ------------------------------
+
+    // ----------- Invoice subscription statuses ---------------------
 
     const HALTED    = 'halted';
 
-    // ----------- End Invoice Sub Statuses -----------
+    // ----------- End Invoice subscription Statuses -----------------
 
     // These statuses have corresponding timestamps column in invoice
     public static $timestampedStatuses = [
@@ -39,6 +41,7 @@ class Status
     public static $invoiceStatuses = [
         self::DRAFT,
         self::ISSUED,
+        self::PARTIALLY_PAID,
         self::PAID,
         self::CANCELLED,
         self::EXPIRED,
@@ -63,7 +66,8 @@ class Status
     {
         if (self::isStatusValid($status) === false)
         {
-            throw new \InvalidArgumentException('Not a valid status: ' . $status);
+            throw new BadRequestValidationFailureException(
+                'Not a valid status: ' . $status);
         }
     }
 
@@ -76,7 +80,8 @@ class Status
     {
         if (self::isSubscriptionStatusValid($subscriptionStatus) === false)
         {
-            throw new \InvalidArgumentException("Not a valid subscription status: " . $subscriptionStatus);
+            throw new BadRequestValidationFailureException(
+                "Not a valid subscription status: " . $subscriptionStatus);
         }
     }
 }
