@@ -30,6 +30,12 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /**
      * Gets amount captured.
      *
+     * We are converting to int after casting to string as PHP randomly
+     * returns wrong int values due to differing floating point precisions
+     * So something like intval(31946.0) may give 31945 or 31946
+     * Convering to string using number_format and then converting
+     * is a hack to avoid this issue
+     *
      * @param $row array
      * @return $paymentAmount integer
      */
