@@ -125,6 +125,10 @@ var app = angular
           url: '/:id/activation',
           templateUrl: 'tpl/admin/app_merchant_activation.html',
         })
+        .state('app.gateway', {
+          url: '/gateway',
+          templateUrl: 'tpl/admin/app_gateway.html',
+        })
         .state('app.pricing', {
           url: '/pricing',
           templateUrl: 'tpl/admin/app_pricing.html',
