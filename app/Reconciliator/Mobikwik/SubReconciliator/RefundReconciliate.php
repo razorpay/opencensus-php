@@ -30,7 +30,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             return null;
         }
 
-        $mobikwik = $this->app['repo']->wallet_mobikwik;
+        $mobikwik = $this->app['repo']->mobikwik;
 
         $refundId = $mobikwik->findByGatewayRefundId($paymentId)->getRefundId();
 
