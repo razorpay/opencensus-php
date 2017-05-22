@@ -501,10 +501,14 @@ final class Route
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
 
         // OAuth routes
-        'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getTokens'                                         ],
-        'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@getToken'                                          ],
-        'oauth_token_edit'                        => ['patch',    'oauth/tokens/{id}',                              'OAuthTokenController@updateToken'                                       ],
-        'oauth_token_revoke'                      => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revokeToken'                                       ],
+        'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getTokens'                                    ],
+        'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@getToken'                                     ],
+        'oauth_token_edit'                        => ['patch',    'oauth/tokens/{id}',                              'OAuthTokenController@updateToken'                                  ],
+        'oauth_token_revoke'                      => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revokeToken'                                  ],
+        'oauth_client_fetch'                      => ['get',      'oauth/clients/{id}',                             'OAuthClientController@getClient'                                   ],
+        'oauth_client_create'                     => ['post',     'oauth/clients',                                  'OAuthClientController@createClient'                                ],
+        'oauth_client_edit'                       => ['patch',    'oauth/clients/{id}',                             'OAuthClientController@editClient'                                  ],
+        'oauth_client_delete'                     => ['delete',   'oauth/clients/{id}',                             'OAuthClientController@deleteClient'                                ],
     );
 
     public static $public = array(
@@ -898,6 +902,10 @@ final class Route
         'oauth_token_fetch',
         'oauth_token_edit',
         'oauth_token_revoke',
+        'oauth_client_fetch',
+        'oauth_client_create',
+        'oauth_client_edit',
+        'oauth_client_delete',
     );
 
     public static $admin = [
