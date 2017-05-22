@@ -55,6 +55,7 @@ class Entity extends Base\Entity
     const DIFF          = 'diff';
     const ACTION_ID     = 'action_id';
     const STATE         = 'state';
+    const AUTH_DETAILS  = 'auth_details';
 
     const CREATED_AT    = 'created_at';
 
@@ -80,6 +81,7 @@ class Entity extends Base\Entity
         self::CREATED_AT,
         self::STATE,
         self::PERMISSION,
+        self::AUTH_DETAILS,
     ];
 
     protected $visible = [
@@ -100,6 +102,7 @@ class Entity extends Base\Entity
         self::CREATED_AT,
         self::STATE,
         self::PERMISSION,
+        self::AUTH_DETAILS,
     ];
 
     protected $public = [
@@ -120,6 +123,7 @@ class Entity extends Base\Entity
         self::CREATED_AT,
         self::STATE,
         self::PERMISSION,
+        self::AUTH_DETAILS,
     ];
 
     public function setDiff(array $diff)

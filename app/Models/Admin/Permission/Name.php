@@ -36,7 +36,6 @@ class Name
     const EDIT_MERCHANT_COMMENTS          = 'edit_merchant_comments';
     const EDIT_MERCHANT_BANK_DETAIL       = 'edit_merchant_bank_detail';
     const EDIT_IIN_RULE                   = 'edit_iin_rule';
-    const CREATE_MERCHANT_ADJUSTMENTS     = 'create_merchant_adjustments';
     const EDIT_ACTIVATE_MERCHANT          = 'edit_activate_merchant';
     const EDIT_MERCHANT_ENABLE_LIVE       = 'edit_merchant_enable_live';
     const EDIT_MERCHANT_DISABLE_LIVE      = 'edit_merchant_disable_live';

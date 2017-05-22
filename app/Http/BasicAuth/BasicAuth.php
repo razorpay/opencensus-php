@@ -812,7 +812,9 @@ class BasicAuth
         // The key in case of app proxy will be the merchant id
         $merchantId = $this->getKey();
 
-        $this->merchant = $this->repo->merchant->find($merchantId);
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        $this->setMerchant($merchant);
 
         // If merchant id isn't found, then return false.
         return ($this->merchant !== null);
@@ -1051,6 +1053,11 @@ class BasicAuth
     {
         $this->mode = $mode;
         $this->app['rzp.mode'] = $mode;
+    }
+
+    public function setMerchant($merchant)
+    {
+        $this->merchant = $merchant;
     }
 
     protected function setType($type)

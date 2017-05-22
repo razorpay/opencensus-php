@@ -14,6 +14,7 @@ use RZP\Models\FileStore;
 use RZP\Models\Merchant\Account;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\FundTransfer\Kotak;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class ReconciliationTest extends TestCase
 {
@@ -22,6 +23,7 @@ class ReconciliationTest extends TestCase
     use PayoutTrait;
     use ReconciliationTrait;
     use FileHandlerTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -215,7 +217,7 @@ class ReconciliationTest extends TestCase
         });
     }
 
-    public function testAsjustmentCreationAgainstSettlement()
+    public function testAdjustmentCreationAgainstSettlement()
     {
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
@@ -247,7 +249,9 @@ class ReconciliationTest extends TestCase
             'content'   => $adjustmentData
         ];
 
-        $this->ba->appAuth();
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -390,5 +394,12 @@ class ReconciliationTest extends TestCase
         );
 
         return $textFile;
+    }
+
+    protected function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
 }
