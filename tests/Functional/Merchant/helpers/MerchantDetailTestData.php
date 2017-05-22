@@ -14,11 +14,11 @@ return [
         ],
         'response' => [
             'content' => [
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -26,19 +26,19 @@ return [
     'testUpdateIfscCode' => [
         'request' => [
             'content' => [
-                "bank_branch_ifsc" => "ICIC0000002"
+                'bank_branch_ifsc' => 'ICIC0000002'
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                "bank_branch_ifsc" => "ICIC0000002",
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -46,18 +46,18 @@ return [
     'testSubmit' => [
         'request' => [
             'content' => [
-                "submit" => true
+                'submit' => true
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                "submitted" => true,
-                "verification" => [
-                    "status" => "pending"
+                'submitted' => true,
+                'verification' => [
+                    'status' => 'pending'
                 ],
-                "can_submit" => true,
+                'can_submit' => true,
             ],
         ],
     ],
@@ -65,18 +65,18 @@ return [
     'testSubmitWithInvalidFields' => [
         'request' => [
             'content' => [
-                "submit" => true
+                'submit' => true
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -84,7 +84,7 @@ return [
     'testUpdateIfscCodeWithFailure' => [
         'request' => [
             'content' => [
-                "bank_branch_ifsc" => "ICIC000000"
+                'bank_branch_ifsc' => 'ICIC000000'
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -107,19 +107,19 @@ return [
     'testUpdateEmail' => [
         'request' => [
             'content' => [
-                "transaction_report_email" => "a.b@c.com,a.c@d.com"
+                'transaction_report_email' => 'a.b@c.com,a.c@d.com'
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                "transaction_report_email" => "a.b@c.com,a.c@d.com",
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'transaction_report_email' => 'a.b@c.com,a.c@d.com',
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -127,7 +127,7 @@ return [
     'testUpdateEmails' => [
         'request' => [
             'content' => [
-                "transaction_report_email" => "a.b@c.com,a.c"
+                'transaction_report_email' => 'a.b@c.com,a.c'
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -150,7 +150,7 @@ return [
     'testUpdateEmailWithFailure' => [
         'request' => [
             'content' => [
-                "transaction_report_email" => "a.b"
+                'transaction_report_email' => 'a.b'
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -173,7 +173,7 @@ return [
     'testUpdateDetailForLockedMerchant' => [
         'request' => [
             'content' => [
-                "bank_branch_ifsc" => "ICIC0000001"
+                'bank_branch_ifsc' => 'ICIC0000001'
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -196,19 +196,18 @@ return [
     'testLockMerchant' => [
         'request' => [
             'content' => [
-                "locked" => true
+                'locked' => true
             ],
-            'url' => '/merchant/activation/lock',
             'method' => 'PUT'
         ],
         'response' => [
             'content' => [
-                "locked" => true,
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'locked' => true,
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -216,18 +215,17 @@ return [
     'testCommentMerchant' => [
         'request' => [
             'content' => [
-                "comment" => "true"
+                'comment' => 'true'
             ],
-            'url' => '/merchant/activation/lock',
             'method' => 'PUT'
         ],
         'response' => [
             'content' => [
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -235,18 +233,18 @@ return [
     'testCommentForLockedMerchant' => [
         'request' => [
             'content' => [
-                "comment" => "true"
+                'comment' => 'true'
             ],
             'url' => '/merchant/activation/lock',
             'method' => 'PUT'
         ],
         'response' => [
             'content' => [
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -254,18 +252,18 @@ return [
     'testCommentMerchantWithNoMerchantDetail' => [
         'request' => [
             'content' => [
-                "comment" => "true"
+                'comment' => 'true'
             ],
             'url' => '/merchant/activation/lock',
             'method' => 'PUT'
         ],
         'response' => [
             'content' => [
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -273,19 +271,19 @@ return [
     'testUnlockMerchant' => [
         'request' => [
             'content' => [
-                "locked" => 0
+                'locked' => 0
             ],
             'url' => '/merchant/activation/lock',
             'method' => 'PUT'
         ],
         'response' => [
             'content' => [
-                "locked" => false,
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'locked' => false,
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -293,19 +291,19 @@ return [
     'testUnlockMerchant2' => [
         'request' => [
             'content' => [
-                "locked" => 0
+                'locked' => 0
             ],
             'url' => '/merchant/activation/lock',
             'method' => 'PUT'
         ],
         'response' => [
             'content' => [
-                "locked" => false,
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'locked' => false,
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],
@@ -313,19 +311,19 @@ return [
     'testCreateMerchantDetailIfNotExist' => [
         'request' => [
             'content' => [
-                "bank_branch_ifsc" => "ICIC0000002",
+                'bank_branch_ifsc' => 'ICIC0000002',
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                "bank_branch_ifsc" => "ICIC0000002",
-                "verification" => [
-                    "status" => "disabled",
-                    "disabled_reason" => "required_fields",
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
                 ],
-                "can_submit" => false,
+                'can_submit' => false,
             ],
         ],
     ],

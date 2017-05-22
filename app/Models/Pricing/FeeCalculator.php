@@ -643,11 +643,7 @@ class FeeCalculator
         {
             $payment = $this->entity;
 
-            $method = $payment->getMethod();
-
-            // from 20th may, 2017
-            if ((time() >= 1495218600) and
-                ($method === Payment\Method::CARD) and
+            if (($payment->isMethodCardOrEmi() === true) and
                 ($payment->getBaseAmount() <= 200000))
             {
                 $totalTaxes = 0;

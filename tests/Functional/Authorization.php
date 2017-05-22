@@ -13,15 +13,20 @@ class Authorization
     protected $proxy = false;
 
     protected $key = null;
+    protected $token = null;
     protected $secret = null;
     protected $account = null;
+    protected $orgId = null;
     protected $adminHeaders = null;
+
+    protected $admin = null;
 
     protected $defaultKey = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret = 'TheKeySecretForTests';
     protected $defaultDeviceToken = 'authentication_token';
 
     protected $defaultToken = 'SecretTokenForRazorpayAdminAuthentication';
+    protected $defaultOrgId = 'org_100000Razorpay';
 
     protected $defaultAccountId = 'acc_10000000000001';
 
@@ -169,20 +174,15 @@ class Authorization
         $this->basicAuth($key, $secret);
     }
 
-    public function adminAuth($mode = 'test', $token = null)
+    public function adminAuth($mode = 'test', $token = null, $orgId = null)
     {
+        $appAuthCaller = 'appAuth' . studly_case($mode);
+
+        $this->$appAuthCaller();
+
         $this->type = 'admin';
 
-        $this->key = "rzp_{$mode}_admin";
-
-        if ($token === null)
-        {
-            $token = $this->defaultToken;
-        }
-
-        $this->setSecret($token);
-
-        $this->basicAuth($this->key, $token);
+        $this->addAdminAuthHeaders($orgId, $token);
     }
 
     public function dashboardAuth($mode = 'test')
@@ -231,6 +231,19 @@ class Authorization
      */
     public function addAdminAuthHeaders(string $orgId = null, string $adminToken = null)
     {
+        if ($adminToken === null)
+        {
+            $adminToken = $this->defaultToken;
+        }
+
+        if ($orgId === null)
+        {
+            $orgId = $this->defaultOrgId;
+        }
+
+        $this->setToken($adminToken);
+        $this->setOrganisation($orgId);
+
         $this->adminHeaders = ['X-Org-Id' => $orgId, 'X-Admin-Token' => $adminToken];
     }
 
@@ -327,6 +340,20 @@ class Authorization
         return $this;
     }
 
+    public function setToken($token)
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    public function setOrganisation($orgId)
+    {
+        $this->orgId = $orgId;
+
+        return $this;
+    }
+
     public function setKeyAndSecret($key, $secret)
     {
         $this->setKey($key);
@@ -366,11 +393,18 @@ class Authorization
         $this->appAuth($key);
     }
 
-    public function getAdmin()
+    public function getAdmin($token = null)
     {
-        $token = $this->secret;
+        if ($token === null)
+        {
+            $token = $this->token ?: $this->defaultToken;
+        }
 
-        $this->admin = (new \RZP\Models\Admin\Admin\Token\Repository)->findOrFailToken($token)->admin;
+        if ($this->admin === null)
+        {
+            $this->admin = (new \RZP\Models\Admin\Admin\Token\Repository)
+                                ->findOrFailToken($token)->admin;
+        }
 
         return $this->admin;
     }
