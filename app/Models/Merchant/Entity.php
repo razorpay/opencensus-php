@@ -3,14 +3,13 @@
 namespace RZP\Models\Merchant;
 
 use Config;
-
-use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\User;
+use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
@@ -47,8 +46,8 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
-    const MERCHANT_USERS            = 'merchant_users';
-    const USER_ID                   = 'user_id';
+    const GROUPS                    = 'groups';
+    const ADMINS                    = 'admins';
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
@@ -60,6 +59,9 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
+
+    const ROLE                      = 'role';
+    const PIVOT                     = 'pivot';
 
     protected $entity = 'merchant';
 
@@ -145,8 +147,8 @@ class Entity extends Base\PublicEntity
         self::ARCHIVED_AT,
         self::LOGO_URL,
         self::ORG_ID,
-        'groups',
-        'admins',
+        self::GROUPS,
+        self::ADMINS,
      ];
 
     protected $defaults = [
@@ -862,21 +864,7 @@ class Entity extends Base\PublicEntity
 
         if ($bankAccount !== null)
         {
-            $ac = $bankAccount->getAccountNumber();
-            //
-            // How many times should we repeat the redacted portion
-            // This does not give a precise result,
-            // but it looks good in groups of 4
-            //
-            // (strlen($ac) - 4) = Length of the segment we want to convert to X
-            // divide by 4 to get number of such segments
-            // and take ceil so we have a whole number of these
-
-            $repeat = ceil((strlen($ac) - 4) / 4);
-
-            // repeat this section $repeat times
-            // and then just append the original last 4 digits
-            return str_repeat('XXXX-', $repeat) . substr($ac, -4);
+            return $bankAccount->getRedactedAccountNumber();
         }
         else
         {
@@ -973,41 +961,11 @@ class Entity extends Base\PublicEntity
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
     }
 
-    /**
-     * Determine if the merchant has any users.
-     *
-     * @return bool
-     */
-    public function hasUsers()
-    {
-        return count($this->users) > 0;
-    }
-
-    /**
-     * Get all of the users that belong to the merchant.
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
     public function users()
     {
-        return $this->belongsToMany(
-            User\Entity::class, self::MERCHANT_USERS, self::MERCHANT_ID, self::USER_ID
-        )->withPivot('role');
-    }
-
-    /**
-     * Get the owners of the merchant.
-     */
-    public function owners()
-    {
-        return $this->users()->where('role', 'owner')->orderBy(self::MERCHANT_USERS.'.updated_at', 'desc')->get();
-    }
-
-    /**
-     * Get the primary owner of the merchant.
-     */
-    public function primaryOwner()
-    {
-        return $this->owners()->first();
+        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
+                    ->withPivot(User\Entity::ROLE)
+                    ->orderBy(self::NAME);
     }
 
     public function isEmailOptional()
@@ -1035,5 +993,23 @@ class Entity extends Base\PublicEntity
         }
 
         return $config;
+    }
+
+    public function toArrayUser()
+    {
+        $attributes = [
+            self::ID           => $this->getAttribute(self::ID),
+            self::NAME         => $this->getAttribute(self::NAME),
+            self::EMAIL        => $this->getAttribute(self::EMAIL),
+            self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
+            self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
+            self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
+            self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
+            self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
+        ];
+
+        $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
+
+        return $attributes;
     }
 }

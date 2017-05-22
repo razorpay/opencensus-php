@@ -282,6 +282,19 @@ class PublicEntity extends UniqueIdEntity
         return $newIds;
     }
 
+    public static function verifyIdAndSilentlyStripSignMultiple(array & $ids)
+    {
+        $newIds = array_map(function(&$id)
+        {
+            return static::verifyIdAndSilentlyStripSign($id);
+        }, $ids);
+
+        $ids = $newIds;
+
+        return $newIds;
+    }
+
+
     protected static function stripSignOrFail(& $id)
     {
         if (static::stripSign($id) === false)

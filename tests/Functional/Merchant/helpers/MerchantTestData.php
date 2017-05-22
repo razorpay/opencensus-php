@@ -65,6 +65,23 @@ return [
         ],
     ],
 
+    'testGetMerchantUsers' => [
+        'request' => [
+            'url' => '/merchants/1X4hRFHFx4UiXt/users',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'role' => 'owner'
+                ],
+                [
+                    'role' => 'manager'
+                ]
+            ],
+        ],
+    ],
+
     'testGetBalance' => [
         'request' => [
             'url' => '/balance',
@@ -1073,9 +1090,12 @@ return [
                                 'NKGS',
                                 'PMCB',
                                 'RATN',
+                                'SBBJ',
                                 'SBHY',
                                 'SBIN',
+                                'SBMY',
                                 'STBP',
+                                'SBTR',
                                 'SCBL',
                                 'SIBL',
                                 'SVCB',

@@ -87,7 +87,7 @@ return array(
             'base_url' => env('GIMLI_BASE_URL')
         ],
         'bitly'    => [
-            'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC', 'access_token'),
+            'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC'),
         ],
         'allow_fallback' => true,
     ],

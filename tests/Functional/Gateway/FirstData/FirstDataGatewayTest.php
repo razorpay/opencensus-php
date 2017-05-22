@@ -53,13 +53,22 @@ class FirstDataGatewayTest extends TestCase
 
         $response = $this->doS2sRecurringPayment($payment);
         $paymentId = $response['razorpay_payment_id'];
-        $this->capturePayment($paymentId, $payment['amount']);
 
         $paymentEntity = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertNotNull($paymentEntity['token_id']);
         $this->assertEquals(true, $paymentEntity['recurring']);
         $this->assertEquals('FDRcrgTrmlN3DS', $paymentEntity['terminal_id']);
+        $this->assertNotNull($paymentEntity['transaction_id']);
+
+        // Transaction created at auth step itself, as recurring payment is a purchase request
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals($paymentEntity['id'], $transaction['entity_id']);
+
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+        $this->assertEquals('captured', $paymentEntity['status']);
 
         $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
 

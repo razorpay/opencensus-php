@@ -2,12 +2,12 @@
 
 namespace RZP\Tests\Functional\Fixtures\Factory;
 
-use RZP\Models\Merchant;
 use Config;
 use Eloquent;
-use RZP\Tests\TestDummy\Factory;
 use RZP\Models;
 use Carbon\Carbon;
+use RZP\Models\Merchant;
+use RZP\Tests\TestDummy\Factory;
 
 final class FactoryData
 {
@@ -119,6 +119,7 @@ final class FactoryData
             'email' => $faker->email,
             'auto_captured' => 0,
             'captured_at' => null,
+            'reference1' => $faker->uniqueid,
             'transaction_id' => null,
             'on_hold' => 0,
             'created_at' => $faker->timestamp,
@@ -491,6 +492,15 @@ final class FactoryData
         $factory(\RZP\Models\Merchant\Detail\Entity::class, [
             'merchant_id'   => $faker->uniqueid,
             'contact_email' => $faker->email,
+        ]);
+
+        $factory(\RZP\Models\User\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'name'       => $faker->word,
+            'email'      => $faker->email,
+            'password'   => $faker->word,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\Customer\Balance\Entity::class, [

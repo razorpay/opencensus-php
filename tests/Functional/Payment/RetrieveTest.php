@@ -69,6 +69,8 @@ class PaymentRetrieveTest extends TestCase
         $payment = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($id, $payment['id']);
+        $this->assertTrue(isset($payment['acquirer']));
+        $this->assertNotEquals([], $payment['acquirer']);
     }
 
     public function testRetrievePaymentWithCount()

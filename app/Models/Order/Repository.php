@@ -46,17 +46,23 @@ class Repository extends Base\Repository
      *
      * @return Base\Collection
      */
-    public function getOrdersWithMultipleAuthorizedOrCapturedPayments()
+    public function getOrdersWithMultipleAuthorizedOrCapturedPayments($timestamp)
     {
-        // select count(*), orders.id
-        // from `orders` inner join `payments` on `payments`.`order_id` = `orders`.`id`
-        // where `payments`.`status` in (?, ?)
-        // group by `orders`.`id`
-        // having count(*) > 1
+        // SELECT count(*),
+        //        orders.id
+        // FROM `orders`
+        // INNER JOIN `payments` ON `payments`.`order_id` = `orders`.`id`
+        // WHERE `payments`.`status` IN (?,
+        //                               ?)
+        //   AND `payments`.`created_at` > ?
+        //   AND `orders`.`created_at` > ?
+        // GROUP BY `orders`.`id` HAVING count(*) > 1
 
         $paymentOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
         $paymentStatus = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+        $paymentCreatedAt = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
         $orderId = $this->dbColumn(Entity::ID);
+        $orderCreatedAt = $this->dbColumn(Entity::CREATED_AT);
         $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
         $pTable = $this->repo->payment->getTableName();
 
@@ -66,6 +72,8 @@ class Repository extends Base\Repository
                 $paymentOrderId, '=', $orderId)
             ->selectRaw('count(*), ' . $orderId)
             ->whereIn($paymentStatus, $paymentStatusArray)
+            ->where($paymentCreatedAt, '>', $timestamp)
+            ->where($orderCreatedAt, '>', $timestamp)
             ->groupBy($orderId)
             ->havingRaw('count(*) > 1')
             ->with('payments')

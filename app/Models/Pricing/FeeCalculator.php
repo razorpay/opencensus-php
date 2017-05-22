@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
@@ -636,6 +637,18 @@ class FeeCalculator
         }
 
         $totalTaxes = (int) round(($fee * $totalTaxPercentage) / 10000);
+
+        // total service tax should be zero for card payments below 2k
+        if ($this->entity->getEntity() === Constants\Entity::PAYMENT)
+        {
+            $payment = $this->entity;
+
+            if (($payment->isMethodCardOrEmi() === true) and
+                ($payment->getBaseAmount() <= 200000))
+            {
+                $totalTaxes = 0;
+            }
+        }
 
         foreach ($taxComponents as $name => $percentage)
         {
