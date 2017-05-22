@@ -1,16 +1,13 @@
 import Time from 'rzp/ui/Time';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from '../TableBody';
-import TransactionNavLink from 'merchant/components/TransactionNavLink';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
-const PaymentsListItem = ({ payment, hasOrders, orders, onPaymentClick }) => {
+const PaymentsListItem = ({ payment, hasOrders, orders }) => {
   return (
     <tr>
       <td>
-        <TransactionNavLink
-          to={`#/app/payments/${payment.id}`}
-          onClick={() => onPaymentClick(payment)}
-        >
+        <TransactionNavLink to={`#/app/payments/${payment.id}`}>
           {payment.id}
         </TransactionNavLink>
       </td>
@@ -29,7 +26,7 @@ const PaymentsListItem = ({ payment, hasOrders, orders, onPaymentClick }) => {
   );
 };
 
-export default ({ payments, isLoading, hasOrders, orders, onPaymentClick }) => {
+export default ({ payments, isLoading, hasOrders, orders }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -57,7 +54,6 @@ export default ({ payments, isLoading, hasOrders, orders, onPaymentClick }) => {
               payment={payment}
               hasOrders={hasOrders}
               orders={orders}
-              onPaymentClick={onPaymentClick}
             />
           ))}
         </TableBody>

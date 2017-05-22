@@ -1,23 +1,17 @@
 import Time from 'rzp/ui/Time';
 import TableBody from '../TableBody';
-import TransactionNavLink from 'merchant/components/TransactionNavLink';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
-const RefundsListItem = ({ refund, onRefundClick, onPaymentClick }) => {
+const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <TransactionNavLink
-          to={`/app/refunds/${refund.id}`}
-          onClick={() => onRefundClick(refund)}
-        >
+        <TransactionNavLink to={`/app/refunds/${refund.id}`}>
           {refund.id}
         </TransactionNavLink>
       </td>
       <td>
-        <TransactionNavLink
-          to={`/app/payments/${refund.payment_id}`}
-          onClick={() => onPaymentClick(refund)}
-        >
+        <TransactionNavLink to={`/app/payments/${refund.payment_id}`}>
           {refund.payment_id}
         </TransactionNavLink>
       </td>
@@ -30,7 +24,7 @@ const RefundsListItem = ({ refund, onRefundClick, onPaymentClick }) => {
   );
 };
 
-export default ({ refunds, isLoading, onRefundClick, onPaymentClick }) => {
+export default ({ refunds, isLoading }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -50,12 +44,7 @@ export default ({ refunds, isLoading, onRefundClick, onPaymentClick }) => {
           emptyTableMsg="No Refunds found!"
         >
           {refunds.map(refund => (
-            <RefundsListItem
-              key={refund.id}
-              refund={refund}
-              onRefundClick={onRefundClick}
-              onPaymentClick={onPaymentClick}
-            />
+            <RefundsListItem key={refund.id} refund={refund} />
           ))}
         </TableBody>
       </table>

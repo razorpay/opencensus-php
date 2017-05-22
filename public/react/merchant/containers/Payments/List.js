@@ -4,14 +4,12 @@ import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header';
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
-import PaymentsDetails from 'merchant/containers/Payments/Details';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter
   from 'merchant/components/Payments/PaymentsListFilter';
 import { fetchPayments } from 'merchant/modules/payments/list';
-import { openSlider } from 'rzp/modules/slider';
 
-@connect(state => state.payments, { fetchPayments, openSlider })
+@connect(state => state.payments, { fetchPayments })
 export default class PaymentsListContainer extends ListContainer {
   state = {
     orders: {},
@@ -64,14 +62,6 @@ export default class PaymentsListContainer extends ListContainer {
     });
   }
 
-  showPaymentDetails = payment => {
-    this.props.openSlider({
-      component: <PaymentsDetails id={payment.id} />,
-      onOpenURL: `/app/payments/${payment.id}`,
-      onCloseURL: '/app/payments',
-    });
-  };
-
   render() {
     let { loading, payments = [], error } = this.props;
 
@@ -90,7 +80,6 @@ export default class PaymentsListContainer extends ListContainer {
           isLoading={loading}
           hasOrders={this.state.hasOrders}
           orders={this.state.orders}
-          onPaymentClick={this.showPaymentDetails}
         />
 
         <Pager

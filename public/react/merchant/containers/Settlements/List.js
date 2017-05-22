@@ -5,30 +5,19 @@ import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header';
 import ListContainer from 'merchant/containers/ListContainer';
 import SettlementsList from 'merchant/components/Settlements/List';
-import SettlementDetails from 'merchant/containers/Settlements/Details';
 import SettlementsListFilter from 'merchant/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
 import { fetchSettlements } from 'merchant/modules/settlements/list';
 import * as ModalActions from 'rzp/modules/modals';
-import { openSlider } from 'rzp/modules/slider';
 
 @connect(state => state.settlements, {
   fetchSettlements,
-  openSlider,
   ...ModalActions,
 })
 export default class SettlementsListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchSettlements(params);
   }
-
-  showSettlementDetails = settlement => {
-    this.props.openSlider({
-      component: <SettlementDetails id={settlement.id} />,
-      onOpenURL: `/app/settlements/${settlement.id}`,
-      onCloseURL: '/app/settlements',
-    });
-  };
 
   showBreakup = settlement => {
     this.props.openModal({
@@ -53,7 +42,6 @@ export default class SettlementsListContainer extends ListContainer {
           settlements={settlements}
           isLoading={loading}
           showBreakup={this.showBreakup}
-          onSettlementClick={this.showSettlementDetails}
         />
 
         <Pager

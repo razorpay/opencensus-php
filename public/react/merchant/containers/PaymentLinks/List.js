@@ -9,15 +9,12 @@ import InvoicesList from 'merchant/components/Invoices/InvoicesList';
 import ListContainer from 'merchant/containers/ListContainer';
 import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
-import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Details';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
-import { openSlider } from 'rzp/modules/slider';
 
 @connect(state => state.invoices, {
   ...InvoiceActions,
   ...ModalActions,
-  openSlider,
 })
 export default class PaymentLinksContainer extends ListContainer {
   fetchEntityList(params) {
@@ -36,14 +33,6 @@ export default class PaymentLinksContainer extends ListContainer {
           closeModal={this.props.closeModal}
         />
       ),
-    });
-  };
-
-  showPaymentLinkDetails = invoice => {
-    this.props.openSlider({
-      component: <PaymentLinkDetails id={invoice.id} />,
-      onOpenURL: `/app/paymentlinks/${invoice.id}`,
-      onCloseURL: '/app/paymentlinks',
     });
   };
 
@@ -89,7 +78,6 @@ export default class PaymentLinksContainer extends ListContainer {
           type="link"
           highlightRow={invoice => invoice.id === this.props.highLightInvoiceId}
           onEdit={this.showPaymentLinkModal}
-          onInvoiceClick={this.showPaymentLinkDetails}
         />
 
         <Pager

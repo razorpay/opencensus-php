@@ -7,22 +7,12 @@ import OrdersList from 'merchant/components/Orders/OrdersList';
 import ListContainer from 'merchant/containers/ListContainer';
 import OrdersListFilter from 'merchant/components/Orders/OrdersListFilter';
 import { fetchOrders } from 'merchant/modules/orders/list';
-import OrderDetails from 'merchant/containers/Orders/Details';
-import { openSlider } from 'rzp/modules/slider';
 
-@connect(state => state.orders, { fetchOrders, openSlider })
+@connect(state => state.orders, { fetchOrders })
 export default class OrdersListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchOrders(params);
   }
-
-  showOrderDetails = order => {
-    this.props.openSlider({
-      component: <OrderDetails id={order.id} />,
-      onOpenURL: `/app/orders/${order.id}`,
-      onCloseURL: '/app/orders',
-    });
-  };
 
   render() {
     let { loading, orders, error } = this.props;
@@ -37,11 +27,7 @@ export default class OrdersListContainer extends ListContainer {
 
         {error && <Alert type="error" message={error} />}
 
-        <OrdersList
-          orders={orders}
-          isLoading={loading}
-          onOrderClick={this.showOrderDetails}
-        />
+        <OrdersList orders={orders} isLoading={loading} />
 
         <Pager
           count={this.state.count}

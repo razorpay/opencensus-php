@@ -11,6 +11,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import TableBody from 'merchant/components/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 import { NavLink } from 'react-router-dom';
 
 const ListItem = ({ item, value }) => {
@@ -30,9 +31,9 @@ const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <NavLink to={`/app/refunds/${refund.id}`} target="_blank">
+        <TransactionNavLink to={`/app/refunds/${refund.id}`}>
           <code>{refund.id}</code>
-        </NavLink>
+        </TransactionNavLink>
       </td>
       <td>
         <Amount value={refund.amount} />

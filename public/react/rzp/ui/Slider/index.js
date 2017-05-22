@@ -31,6 +31,10 @@ class ModalSlider extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    if (!this.props.isOpen && nextProps.isOpen) {
+      this.closeURL = this.props.history.location.pathname;
+    }
+
     if (nextProps.isOpen && this.props.onOpenURL !== nextProps.onOpenURL) {
       this.props.history.push(nextProps.onOpenURL, {
         notify: false,
@@ -40,8 +44,9 @@ class ModalSlider extends Component {
 
   close = () => {
     if (this.props.isOpen) {
-      if (this.props.onCloseURL) {
-        this.props.history.push(this.props.onCloseURL);
+      let closeURL = this.closeURL;
+      if (closeURL) {
+        this.props.history.push(closeURL);
       }
       this.props.closeSlider();
     }

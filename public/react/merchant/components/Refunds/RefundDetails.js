@@ -5,6 +5,7 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
 import TableBody from 'merchant/components/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
 export default ({ refund, isLoading, statusMsg }) => {
   let refundNotes = null;
@@ -38,7 +39,16 @@ export default ({ refund, isLoading, statusMsg }) => {
 
             <div class="panel-body">
               <div class="list-group details-row-container">
-                <DetailRow label="Payment" value={refund.payment_id} />
+                <DetailRow
+                  label="Payment"
+                  value={() => (
+                    <TransactionNavLink
+                      to={`/app/payments/${refund.payment_id}`}
+                    >
+                      {refund.payment_id}
+                    </TransactionNavLink>
+                  )}
+                />
 
                 <DetailRow
                   label="Amount"

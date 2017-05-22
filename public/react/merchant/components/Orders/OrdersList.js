@@ -1,16 +1,13 @@
 import Time from 'rzp/ui/Time';
 import { OrderStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from '../TableBody';
-import TransactionNavLink from 'merchant/components/TransactionNavLink';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
-const OrdersListItem = ({ order, onOrderClick }) => {
+const OrdersListItem = ({ order }) => {
   return (
     <tr>
       <td>
-        <TransactionNavLink
-          to={`/app/orders/${order.id}`}
-          onClick={() => onOrderClick(order)}
-        >
+        <TransactionNavLink to={`/app/orders/${order.id}`}>
           {order.id}
         </TransactionNavLink>
       </td>
@@ -28,7 +25,7 @@ const OrdersListItem = ({ order, onOrderClick }) => {
   );
 };
 
-export default ({ orders, isLoading, onOrderClick }) => {
+export default ({ orders, isLoading }) => {
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -49,13 +46,7 @@ export default ({ orders, isLoading, onOrderClick }) => {
           rows={orders}
           emptyTableMsg="No Orders found!"
         >
-          {orders.map(order => (
-            <OrdersListItem
-              key={order.id}
-              order={order}
-              onOrderClick={onOrderClick}
-            />
-          ))}
+          {orders.map(order => <OrdersListItem key={order.id} order={order} />)}
         </TableBody>
       </table>
     </div>

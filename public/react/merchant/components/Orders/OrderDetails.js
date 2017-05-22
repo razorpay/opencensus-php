@@ -10,15 +10,15 @@ import {
 } from 'merchant/components/StatusLabel';
 import TableBody from 'merchant/components/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
-import { NavLink } from 'react-router-dom';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
 const PaymentList = ({ payment }) => {
   return (
     <tr>
       <td>
-        <NavLink to={`/app/payments/${payment.id}`}>
-          {payment.id}
-        </NavLink>
+        <TransactionNavLink to={`/app/payments/${payment.id}`}>
+          <code>{payment.id}</code>
+        </TransactionNavLink>
       </td>
       <td>
         <PaymentStatusLabel status={payment.status} />

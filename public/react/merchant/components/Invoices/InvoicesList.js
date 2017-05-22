@@ -3,18 +3,15 @@ import TableBody from '../TableBody';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import TransactionNavLink from 'merchant/components/TransactionNavLink';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
 const InvoiceListItem = props => {
-  let { invoice, canHighlight, onEditClick, onInvoiceClick } = props;
+  let { invoice, canHighlight, onEditClick } = props;
   return (
     <tr class={canHighlight ? 'luminate' : ''}>
       <td>
         {invoice.type === 'link'
-          ? <TransactionNavLink
-              to={`/app/paymentlinks/${invoice.id}`}
-              onClick={onInvoiceClick}
-            >
+          ? <TransactionNavLink to={`/app/paymentlinks/${invoice.id}`}>
               {invoice.id}
             </TransactionNavLink>
           : <NavLink to={`/app/invoices/${invoice.id}`}>
@@ -59,13 +56,7 @@ const InvoiceListItem = props => {
 };
 
 export default props => {
-  let {
-    type,
-    invoices,
-    isLoading,
-    highlightRow = () => {},
-    onInvoiceClick,
-  } = props;
+  let { type, invoices, isLoading, highlightRow = () => {} } = props;
   let label = type === 'link' ? 'Payment Link' : 'Invoice';
 
   return (
@@ -96,7 +87,6 @@ export default props => {
               canHighlight={highlightRow(invoice)}
               onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
-              onInvoiceClick={() => onInvoiceClick(invoice)}
             />
           ))}
         </TableBody>
