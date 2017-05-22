@@ -47,25 +47,20 @@ class OAuthClientController extends Controller
         return ApiResponse::json($client);
     }
 
-    /**
-     * Update the given client.
-     *
-     * @param  string  $clientId
-     * @return ApiResponse
-     */
-    public function editClient($clientId)
+    public function editClient(string $id)
     {
-        $input = \Request::all();
+        $input = Request::all();
 
-        // $client = (new Client\Service)->update($clientId, $input);
-        $client = null;
+        $merchantId = $this->merchant->getId();
+
+        $client = $this->clientService->update($id, $merchantId, $input);
 
         return ApiResponse::json($client);
     }
 
     public function deleteClient(string $id)
     {
-        $data = (new Client\Service)->delete($id, $this->merchant->getId());
+        $data = $this->clientService->delete($id, $this->merchant->getId());
 
         return ApiResponse::json($data);
     }
