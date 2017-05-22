@@ -410,13 +410,6 @@ class AdminController extends Controller
         }
     }
 
-    public function getEntityById($mode, $entity, $id)
-    {
-        list($error, $data) = (new Admin\Service)->fetchEntityById($mode, $entity, $id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getAdmins()
     {
         $admins = (new Admin\Service)->getAdmins();
@@ -717,13 +710,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $response) = (new Admin\Service)->uploadOrgLogo($orgId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function getScheduleList()
-    {
-        list($error, $response) = (new Admin\Service)->getScheduleList();
 
         return AppResponse::jsonResponse($error, $response);
     }

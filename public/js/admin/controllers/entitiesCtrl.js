@@ -568,14 +568,22 @@ app.controller('EntitiesCtrl', [
         return;
       }
       clear('skip');
-      var request = $http.get(
-        '/admin/' +
-          $scope.mode +
-          '/fetchentity/' +
-          $scope.entity_type +
-          '/' +
-          $scope.entity.id
-      );
+
+      var routeName = 'admin_fetch_entity_by_id';
+      if ($scope.entity_type === 'terminal') {
+        routeName = 'admin_fetch_terminal_by_id';
+      }
+      var data = {
+        route_name: routeName,
+        url_params: {
+          '{type}': $scope.entity_type,
+          '{id}': $scope.entity.id,
+        },
+        mode: $scope.mode,
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request
         .success(function(data) {
           $scope.alerts.resetAlerts();
@@ -584,8 +592,8 @@ app.controller('EntitiesCtrl', [
             var stateArray = {
               payment: 'app.payments',
               merchant: 'app.merchants.detail',
-            },
-              state = 'app.entitiesdetail';
+            };
+            var state = 'app.entitiesdetail';
             if (entity in stateArray) {
               state = stateArray[entity];
             }

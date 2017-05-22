@@ -525,11 +525,11 @@ angular
           if (this.users) {
             return this.users;
           }
-
+          var deferred = $q.defer();
           var users = [];
+
           $http
             .get('/admin/generic', {
-              ignoreErrors: true,
               params: {
                 route_name: 'admin_get_multiple',
               },
@@ -541,13 +541,18 @@ angular
                     users.push(user);
                   });
                 }
+
+                deferred.resolve(users);
               } else {
-                users = {};
+                users = [];
               }
             })
-            .error(function() {});
+            .error(function(data) {
+              return data.errors;
+            });
+
           this.users = users;
-          return this.users;
+          return deferred.promise;
         },
       };
     },
@@ -955,6 +960,14 @@ angular
           return val instanceof Array;
         },
 
+        isIndexedArray: function(val) {
+          if (this.isArray(val) === false) {
+            return false;
+          }
+
+          return ['object', 'undefined'].indexOf(typeof val[0]) === -1;
+        },
+
         // rightmost obj gets preference for same keys
         concatObj: function() {
           var result = {};
@@ -969,9 +982,9 @@ angular
 
           return result;
         },
-
         isWorkflow: function(data) {
           if (
+            typeof data.id !== 'undefined' &&
             data.id.indexOf('w_action') === 0 &&
             typeof data.workflow_id !== 'undefined'
           ) {
@@ -988,14 +1001,27 @@ angular
               idParam: 'id',
               sign: '',
             },
-
+            credits: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
             role: {
               route: 'app.roles.edit',
               idParam: 'id',
               sign: 'role_',
             },
-
             methods: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            adjustment: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            schedule_task: {
               route: 'app.merchants.detail',
               idParam: 'id',
               sign: '',

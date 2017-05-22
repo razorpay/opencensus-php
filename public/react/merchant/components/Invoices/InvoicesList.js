@@ -19,9 +19,9 @@ const InvoiceListItem = props => {
       </td>
       <td>{invoice.receipt}</td>
       <td>
-        {invoice.customer_details.customer_contact ||
-          invoice.customer_details.customer_email ||
-          invoice.customer_details.customer_name}
+        {invoice.customer.contact ||
+          invoice.customer.email ||
+          invoice.customer.name}
       </td>
       <td>{invoice.short_url}</td>
       <td>{invoice.type}</td>

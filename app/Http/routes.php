@@ -235,8 +235,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
-        Route::get('admin/schedule/list', 'AdminController@getScheduleList');
-
         Route::group(['middleware'  =>  ['admin', 'superadmin', 'admin_access']], function()
         {
             // This is the RAW API route which processes api calls
@@ -255,9 +253,6 @@ Route::group(['middleware' => ['web']], function () {
                 ->name('admin_fetch_entity');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')
-                ->name('admin_fetch_entity');
-        // This is a very generic route and needs to be defined below
-        Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById')
                 ->name('admin_fetch_entity');
 
         // Upload logos for orgs
