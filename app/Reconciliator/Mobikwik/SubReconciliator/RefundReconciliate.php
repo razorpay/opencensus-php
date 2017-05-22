@@ -3,7 +3,6 @@
 namespace RZP\Reconciliator\Mobikwik;
 
 use RZP\Reconciliator\Base;
-use RZP\Models\Payment;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
