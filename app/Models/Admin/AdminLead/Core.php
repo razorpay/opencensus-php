@@ -51,7 +51,7 @@ class Core extends Base\Core
             'invitation'     => $invitation->toArrayPublic(),
             'adminName'      => $admin->getName(),
             'org'            => $org->toArrayPublic(),
-            'hostname'       => $org->hostnames->first()->getHostname(),
+            'hostname'       => $org->getPrimaryHostName(),
         ];
 
         $data['invitation']['token'] = $invitation->getToken();

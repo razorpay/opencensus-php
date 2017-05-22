@@ -12,7 +12,7 @@ class Entity extends Base\Entity
     const ORG_ID        = 'org_id';
     const HOSTNAME      = 'hostname';
 
-    protected $entity = 'org_hostname';
+    protected $entity = 'orghost';
 
     protected $generateIdOnCreate = false;
 
@@ -21,12 +21,23 @@ class Entity extends Base\Entity
     protected $revisionCreationsEnabled = true;
 
     protected $fillable = [
-        self::HOSTNAME
+        self::ORG_ID,
+        self::HOSTNAME,
     ];
 
     protected $visible = [
         self::ORG_ID,
-        self::HOSTNAME
+        self::HOSTNAME,
+    ];
+
+    protected $public = [
+        self::ORG_ID,
+        self::HOSTNAME,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ORG_ID,
     ];
 
     public function org()

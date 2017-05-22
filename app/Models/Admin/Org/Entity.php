@@ -252,4 +252,9 @@ class Entity extends Base\Entity
     {
         return $this->fillable;
     }
+
+    public function getPrimaryHostName()
+    {
+        return $this->hostnames()->first()->getHostName();
+    }
 }
