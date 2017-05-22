@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Settlement;
 
-use Carbon\Carbon;
-
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
