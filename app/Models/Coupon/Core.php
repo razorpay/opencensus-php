@@ -11,7 +11,14 @@ class Core extends Base\Core
     {
         $coupon = (new Entity)->build($input);
 
-        $this->repo->saveOrFail($coupon);
+        if ($input[Entity::ENTITY_TYPE] === 'promotion')
+        {
+        	$entity = $this->repo->promotion->findByPublicId($input[Entity::ENTITY_ID]);
+        }
+
+        $coupon->source()->associate($entity);
+
+        $coupon = $entity->coupons()->save($coupon);
 
         return $coupon;
     }

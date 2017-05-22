@@ -23,6 +23,8 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'promotion';
 
+    protected $morphClass  = 'promotion';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
@@ -70,7 +72,7 @@ class Entity extends Base\PublicEntity
 
     public function coupons()
     {
-        return $this->morphToMany('RZP\Models\Coupon\Entity', 'entity');
+        return $this->morphMany('RZP\Models\Coupon\Entity', 'entity');
     }
 
 // ----------------------- Getters ---------------------------------------------

@@ -151,7 +151,7 @@ class Entity
         self::ADDON                 => \RZP\Models\Plan\Subscription\Addon::class,
         self::ORDER                 => \RZP\Models\Order::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
-        self::COUPON                => \RZP\Models\Offer\Coupon::class,
+        self::COUPON                => \RZP\Models\Coupon::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
         self::REPORT                => \RZP\Models\Report::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,

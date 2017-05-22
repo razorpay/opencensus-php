@@ -25,11 +25,4 @@ class CouponController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function fetchCouponsByPromotion(string $id)
-    {
-        $data = (new Coupon\Service)->fetch($id);
-
-        return ApiResponse::json($data);
-    }
 }

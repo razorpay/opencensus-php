@@ -537,12 +537,15 @@ final class Route
         'tax_group_create'                       => ['post',     'tax_groups',                                      'TaxGroupController@create'                                         ],
         'tax_group_update'                       => ['patch',    'tax_groups/{id}',                                 'TaxGroupController@update'                                         ],
         'tax_group_delete'                       => ['delete',   'tax_groups/{id}',                                 'TaxGroupController@delete'                                         ],
-        'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
         //promotion routes
         'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@createPromotion'                               ],
         'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@updatePromotion'                               ],
         'promotion_fetch_by_id'                   => ['get',      'promotions/{id}',                                'PromotionController@fetchPromotionById'                            ],
         'promotion_fetch_multiple'                => ['get',      'promotions',                                     'PromotionController@fetchPromotions'                               ],
+        //coupon routes
+        'coupon_create'                           => ['post',      'coupons',                                       'CouponController@createCoupon'                                     ],
+        'coupon_fetch_multiple'                   => ['get',       'coupons',                                       'CouponController@fetchCoupons'                                     ],
+
 
     ];
 
@@ -969,6 +972,8 @@ final class Route
         'promotion_update',
         'promotion_fetch_by_id',
         'promotion_fetch_multiple',
+        'coupon_create',
+        'coupon_fetch_multiple',
     ];
 
     public static $proxy = [

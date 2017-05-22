@@ -3,6 +3,8 @@
 namespace RZP\Models\Coupon;
 
 use DB;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
@@ -10,14 +12,15 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
-        Entity::PROMOTION_ID        => 'sometimes|alpha_num',
-        Entity::STARTS_AT           => 'sometimes|int',
-        Entity::ENDS_AT             => 'sometimes|int',
+        Entity::ENTITY_ID           => 'required|alpha_num',
+        Entity::ENTITY_TYPE         => 'required|string',
     ];
 
 
     public function fetchByPromotion(string $id)
     {
+        $id  = PublicEntity::stripSignWithoutValidation($id);
+
         return $this->newQuery()
                     ->where(Entity::PROMOTION_ID, '=', $id)
                     ->get();

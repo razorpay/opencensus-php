@@ -21,21 +21,13 @@ class Service extends Base\Service
 
         $coupon = $this->core->create($input);
 
-        return $promotion->toArrayPublic();
-    }
-
-
-    public function fetch(string $id)
-    {
-        $promotion = $this->repo->merchant->findByPublicId($id);
-
-        return $promotion->toArrayPublic();
+        return $coupon->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
     {
-        $promotions = $this->repo->promotion->fetch($input);
+        $coupons = $this->repo->coupon->fetch($input);
 
-        return $promotions->toArrayPublic();
+        return $coupons->toArrayPublic();
     }
 }

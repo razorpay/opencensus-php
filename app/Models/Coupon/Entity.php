@@ -11,23 +11,25 @@ class Entity extends Base\PublicEntity
     const CODE        = 'code';
     const START_DATE  = 'start_date';
     const END_DATE    = 'end_date';
-    const EXPIRES_AT = 'expires_at';
-
-    //maxinmum use count
-    const USAGE       = 'usage';
 
     protected $entity = 'coupon';
 
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::ENTITY_ID,
-        self::ENTITY_TYPE,
         self::MERCHANT_ID,
         self::CODE,
         self::START_DATE,
         self::END_DATE,
-        self::USAGE,
+    ];
+
+    protected $public = [
+        self::ID,
+        self::CODE,
+        self::START_DATE,
+        self::END_DATE,
+        self::CREATED_AT,
+        self::UPDATED_AT
     ];
 
     protected $visible = [
@@ -40,13 +42,11 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::USAGE      => 1,
         self::START_DATE => null,
         self::END_DATE   => null,
     ];
 
     protected $casts = [
-        self::USAGE      => 'int',
         self::START_DATE => 'int',
         self::END_DATE   => 'int',
     ];
@@ -56,8 +56,8 @@ class Entity extends Base\PublicEntity
      * implementing a morphMany association on the
      * 'entity' key
      */
-    public function entity()
+    public function source()
     {
-        return $this->morphTo();
+        return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
     }
 }

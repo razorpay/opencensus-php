@@ -31,14 +31,15 @@ class CreateCoupons extends Migration
 
             $table->string(Coupon::ENTITY_TYPE);
 
-            $table->integer(Coupon::STARTS_AT);
+            $table->string(Coupon::CODE);
 
-            $table->integer(Coupon::ENDS_AT);
+            $table->integer(Coupon::START_DATE);
+
+            $table->integer(Coupon::END_DATE);
 
             $table->integer(Coupon::CREATED_AT);
 
             $table->integer(Coupon::UPDATED_AT);
-
 
             $table->foreign(COUPON::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
