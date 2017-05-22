@@ -332,6 +332,7 @@ app
         }
         var data = {
           route_name: 'payment_fetch_refunds',
+          merchant_id: $scope.entity.merchant_id,
           url_params: {
             '{id}': $scope.entity.id,
           },

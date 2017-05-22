@@ -280,6 +280,8 @@ return [
         'payment_refund'                    => 'payments/{id}/refund',
         // Capture Payment
         'payment_capture'                   => 'payments/{id}/capture',
+        // View Payment Refunds
+        'payment_fetch_refunds'             => 'payments/{id}/refunds',
     ],
 
     // auth
@@ -355,9 +357,6 @@ return [
         'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
         'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
         'admin_fetch_entity_multiple'       => 'admin/{type}',
-
-        // View Payment Refunds
-        'payment_fetch_refunds'             => 'payments/{id}/refunds',
 
         'merchant_action'                   => 'merchants/{id}/action',
         'merchant_live_enable'              => 'merchants/{id}/live/enable',
