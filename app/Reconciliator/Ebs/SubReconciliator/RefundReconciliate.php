@@ -45,7 +45,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * @param $row array
      * @return $paymentAmount integer
      */
-    protected function getRefundAmount($row)
+    protected function getRefundAmount(array $row)
     {
         $columnRefundAmount = null;
 
