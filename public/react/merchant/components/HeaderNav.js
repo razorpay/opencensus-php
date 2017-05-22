@@ -4,11 +4,19 @@ import Dropdown, {
   DropdownContent,
 } from 'react-simple-dropdown';
 
-const ModesDropdown = ({ modeFormatted, onSwitchMode }) => {
+const ModesDropdown = ({ mode, modeFormatted, onSwitchMode }) => {
   return (
     <Dropdown>
       <DropdownTrigger class="dropdown-toggle">
-        {modeFormatted} Mode <span class="caret" />
+        <span
+          class={`ModeIndicator ${mode === 'test' ? 'ModeIndicator--test' : 'ModeIndicator--live'}`}
+        />
+        {' '}
+        {modeFormatted}
+        {' '}
+        Mode
+        {' '}
+        <span class="caret" />
       </DropdownTrigger>
       <DropdownContent>
         <ul class="dropdown-menu">
@@ -78,6 +86,7 @@ const ProfileDropdown = ({ user, onLogoutClick }) => {
 
 export default ({
   user,
+  mode,
   modeFormatted,
   onSwitchMode,
   onSwitchMerchant,
@@ -91,6 +100,7 @@ export default ({
             <li><a data-tip="Merchant ID" data-place="bottom">{user.id}</a></li>
             <li>
               <ModesDropdown
+                mode={mode}
                 modeFormatted={modeFormatted}
                 onSwitchMode={onSwitchMode}
               />

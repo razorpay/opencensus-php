@@ -1,15 +1,17 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Router } from 'react-router-dom';
-import { fetchUser, fetchOrg } from 'merchant/modules/session';
+import createHashHistory from 'history/createHashHistory';
 
-import Sidebar from 'merchant/components/Sidebar';
-import HeaderNav from 'merchant/components/HeaderNav';
-import Content from 'merchant/components/Content';
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Slider from 'rzp/ui/Slider';
 import Notifications from 'rzp/ui/Notifications';
-import createHashHistory from 'history/createHashHistory';
+import Sidebar from 'merchant/components/Sidebar';
+import HeaderNav from 'merchant/components/HeaderNav';
+import Content from 'merchant/components/Content';
+import ActivationRequired from 'merchant/components/ActivationRequired';
+import * as ModalActions from 'rzp/modules/modals';
+import * as SessionActions from 'merchant/modules/session';
 
 const history = createHashHistory();
 const push = history.push;
@@ -44,24 +46,56 @@ class Layout extends Component {
 }
 
 @connect(state => state.session, {
-  fetchUser,
-  fetchOrg,
+  ...ModalActions,
+  ...SessionActions,
 })
 export default class App extends Component {
+  state = {
+    isLoading: true,
+  };
+
   componentWillMount() {
-    return Promise.all([this.props.fetchUser(), this.props.fetchOrg()]);
+    let currentMode = localStorage.getItem('rzp_mode');
+
+    if (currentMode) {
+      this.props.updateSession({ mode: currentMode });
+    }
+    Promise.all([
+      this.props.fetchUser().then(response => {
+        if (!currentMode) {
+          currentMode = parseInt(response.data.activated) === 1
+            ? 'live'
+            : 'test';
+          this.props.updateSession({ mode: currentMode });
+        }
+      }),
+      this.props.fetchOrg(),
+    ]).then(() => {
+      this.setState({ isLoading: false });
+    });
   }
 
-  switchMode = () => {};
+  switchMode = mode => {
+    let user = this.props.user;
+    if (mode === 'live' && parseInt(user.activated) !== 1) {
+      this.props.openModal({
+        size: 'small',
+        component: <ActivationRequired onCloseClick={this.props.closeModal} />,
+      });
+    } else {
+      localStorage.setItem('rzp_mode', mode);
+      location.reload();
+    }
+  };
 
   switchMerchant = () => {};
 
   logout = () => {};
 
   render() {
-    let { user, modeFormatted } = this.props;
+    let { user, mode, modeFormatted } = this.props;
 
-    if (!user) {
+    if (this.state.isLoading) {
       return null;
     }
 
@@ -70,6 +104,7 @@ export default class App extends Component {
         <Layout>
           <HeaderNav
             user={user}
+            mode={mode}
             modeFormatted={modeFormatted}
             onSwitchMode={this.switchMode}
             onSwitchMerchant={this.switchMerchant}
