@@ -277,7 +277,7 @@ final class Route
         'order_fetch'                             => ['get',      'orders',                                         'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
-        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],

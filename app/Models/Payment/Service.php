@@ -604,37 +604,33 @@ class Service extends Base\Service
     }
 
     /**
-     * If there are multiple authorized payments for a single order,
-     * and if at least one of them has a captured payment,
-     * we refund all the other payments immediately.
+     * If there are multiple authorized payments for a paid order,
+     * we refund all those payments immediately.
+     *
+     * This method is triggered by a CRON job.
      */
-    public function refundMultipleAuthorizedPaymentsForOrders()
+    public function refundAuthorizedPaymentsOfPaidOrders()
     {
-        // We get all the orders which have multiple authorized or captured payments.
-        $orders = $this->repo->order->getOrdersWithMultipleAuthorizedOrCapturedPayments();
+        $orders = $this->repo->order->getPaidOrdersWithAuthorizedPayments();
 
-        $data = [];
+        $orderLevelRefundDetails = [];
+
         $time = time();
-
-        $totalOrdersCount = $orders->count();
 
         foreach ($orders as $order)
         {
-            $data[] = $this->refundMultipleAuthorizedPaymentsForOrder($order);
+            $orderLevelRefundDetails[] = $this->refundAuthorizedPaymentsOfPaidOrder($order);
         }
 
         $time = time() - $time;
 
         $results = [
-            'total_orders'          => $totalOrdersCount,
-            'order_level_details'   => $data,
-            'total time'            => $time . ' secs'
+            'count'      => $orders->count(),
+            'items'      => $orderLevelRefundDetails,
+            'total_time' => $time . ' secs'
         ];
 
-        $this->trace->info(
-            TraceCode::ORDERS_MULTIPLE_AUTHORIZED_REFUNDS,
-            $results
-        );
+        $this->trace->info(TraceCode::ORDERS_MULTIPLE_AUTHORIZED_REFUNDS, $results);
 
         $message = 'Multiple authorized payments for orders with a captured payment refunded';
 
@@ -643,53 +639,28 @@ class Service extends Base\Service
         return $results;
     }
 
-    protected function refundMultipleAuthorizedPaymentsForOrder(Order\Entity $order)
-    {
-        $payments = $order->payments;
-
-        // Check if there are any captured payments.
-        $capturedPayments = $payments->filter(function ($item)
-        {
-            return $item->hasBeenCaptured();
-        })->values();
-
-        $refundDetails = [];
-
-        if ($capturedPayments->count() === 0)
-        {
-            //do nothing
-        }
-        else if ($capturedPayments->count() === 1)
-        {
-            $refundDetails = $this->refundAuthorizedPaymentsForOrderWithCapturedPayment($payments);
-        }
-        else
-        {
-            $this->trace->error(
-                TraceCode::ORDER_MULTIPLE_CAPTURED_PAYMENTS,
-                [
-                    'order_id'      => $order->getId(),
-                    'payment_ids'   => $capturedPayments->getIds()
-                ]);
-        }
-
-        return [
-            'order_id'                  => $order->getId(),
-            'total_payments'            => $payments->count(),
-            'total_captured_payments'   => $capturedPayments->count(),
-            'refund_details'            => $refundDetails,
-        ];
-    }
-
-    protected function refundAuthorizedPaymentsForOrderWithCapturedPayment(Base\PublicCollection $payments)
+    /**
+     * Refunds all authorized (read extra payments) for a paid order.
+     * A paid order won't accept new payments and there are cases when
+     * a payment comes as late authorized and customer has already made another
+     * payment to get order fulfilled. Those payments will stay in authorized
+     * state and will be refunded in this flow.
+     *
+     * @param Order\Entity $order
+     *
+     * @return array
+     */
+    protected function refundAuthorizedPaymentsOfPaidOrder(Order\Entity $order)
     {
         $refundedCount = $failureCount = 0;
 
-        // Get all payments which are in authorized state currently
+        $payments = $order->payments;
+
         $authorizedPayments = $payments->filter(function ($item)
-        {
-            return $item->isAuthorized();
-        })->values();
+                                        {
+                                            return ($item->isAuthorized() === true);
+                                        })
+                                       ->values();
 
         foreach ($authorizedPayments as $authorizedPayment)
         {
@@ -722,9 +693,11 @@ class Service extends Base\Service
         }
 
         return [
-            'total_authorized_payments' => $authorizedPayments->count(),
-            'total_refunded_payments'   => $refundedCount,
-            'total_failed_refunds'      => $failureCount,
+            'id'                              => $order->getId(),
+            'payments_count'                  => $payments->count(),
+            'extra_authorized_payments_count' => $authorizedPayments->count(),
+            'refunded_payments_count'         => $refundedCount,
+            'failed_refunds_count'            => $failureCount,
         ];
     }
 

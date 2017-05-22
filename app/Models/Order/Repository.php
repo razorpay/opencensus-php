@@ -42,34 +42,32 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Gets all the orders which have more than 1 payment in authorized or captured state.
+     * Gets all the paid orders which have any authorized payments.
      *
      * @return Base\Collection
      */
-    public function getOrdersWithMultipleAuthorizedOrCapturedPayments()
+    public function getPaidOrdersWithAuthorizedPayments()
     {
-        // select count(*), orders.id
-        // from `orders` inner join `payments` on `payments`.`order_id` = `orders`.`id`
-        // where `payments`.`status` in (?, ?)
-        // group by `orders`.`id`
-        // having count(*) > 1
+        // Raw SQL:
+        // SELECT orders.id
+        // FROM orders
+        // INNER JOIN payments ON payments.order_id = orders.id
+        // WHERE orders.status = 'paid' AND payments.status = 'authorized'
 
+        $orderId     = $this->dbColumn(Entity::ID);
+        $orderStatus = $this->dbColumn(Entity::STATUS);
+
+        $paymentTable   = $this->repo->payment->getTableName();
+        $paymentStatus  = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
         $paymentOrderId = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
-        $paymentStatus = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
-        $orderId = $this->dbColumn(Entity::ID);
-        $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
-        $pTable = $this->repo->payment->getTableName();
 
         $results = $this->newQuery()
-            ->join(
-                $pTable,
-                $paymentOrderId, '=', $orderId)
-            ->selectRaw('count(*), ' . $orderId)
-            ->whereIn($paymentStatus, $paymentStatusArray)
-            ->groupBy($orderId)
-            ->havingRaw('count(*) > 1')
-            ->with('payments')
-            ->get();
+                        ->join($paymentTable, $paymentOrderId, '=', $orderId)
+                        ->selectRaw($orderId)
+                        ->where($orderStatus, Status::PAID)
+                        ->where($paymentStatus, Payment\Status::AUTHORIZED)
+                        ->with('payments')
+                        ->get();
 
         return $results;
     }
