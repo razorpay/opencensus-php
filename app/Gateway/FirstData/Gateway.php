@@ -124,7 +124,19 @@ class Gateway extends Base\Gateway
 
         $this->checkApprovalCode($gatewayPayment);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        return [
+            'acquirer' => [
+                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
+                Payment\Entity::REFERENCE1    => $gatewayPayment->getEndpointTransactionId()
+            ]
+        ];
     }
 
     protected function runCallbackVerify(array $input)
@@ -153,11 +165,6 @@ class Gateway extends Base\Gateway
     public function capture(array $input)
     {
         parent::capture($input);
-
-        if ($this->shouldCapture($input) === false)
-        {
-            return;
-        }
 
         $requestContent = $this->getCaptureRequestArray($input);
 
@@ -928,48 +935,6 @@ class Gateway extends Base\Gateway
         }
 
         return false;
-    }
-
-    protected function isSecondRecurringPayment(array $input)
-    {
-        if (($input['payment']['recurring'] === true) and
-            (isset($input['token']) === true) and
-            ($input['token'] !== null) and
-            ($input['token']->isRecurring() === true) and
-            ($input['terminal']->isNon3DSRecurring() === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function shouldCapture(array $input)
-    {
-        $captureEntity = $this->repo->findByPaymentIdAndAction(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::CAPTURE);
-
-        if ($captureEntity !== null)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_ALREADY_CAPTURED,
-                $input['payment']);
-
-            return false;
-        }
-
-        $purchaseEntity = $this->repo->findByPaymentIdAndAction(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::PURCHASE);
-
-        if ($purchaseEntity !== null)
-        {
-            // First gatewayPayment entity was a purchase transaction,
-            // so capture is not needed.
-            // This happens in case of second recurring payment requests.
-            return false;
-        }
     }
 
     protected function getRequestOptions()

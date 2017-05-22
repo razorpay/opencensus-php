@@ -8,6 +8,7 @@ return [
     'testAddAdjustment' => [
         'request' => [
             'content' => [
+                'merchant_id' => '10000000000000',
                 'amount'      => 100,
                 'description' => 'random desc',
                 'currency'    => 'INR',
@@ -42,6 +43,7 @@ return [
    'testAddAdjustmentWithoutUpdatingEscrowBalance' => [
         'request' => [
             'content' => [
+                'merchant_id' => '10000000000000',
                 'amount'        => 100,
                 'description'   => 'random desc',
                 'currency'      => 'INR',
@@ -115,12 +117,12 @@ return [
         'amount'          => 50000,
         'currency'        => 'INR',
         'debit'           => 0,
-        'credit'          => 48850,
-        'fee'             => 1150,
-        'service_tax'     => 150,
+        'credit'          => 49000,
+        'fee'             => 1000,
+        'service_tax'     => 0,
         'gateway_fee'     => 0,
         'api_fee'         => 0,
-        'balance'         => 1048850,
+        'balance'         => 1049000,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
         'channel'         => 'kotak',
@@ -154,7 +156,7 @@ return [
         'gateway_fee'     => 0,
         'api_fee'         => 0,
         'gratis'          => false,
-        'balance'         => 998850,
+        'balance'         => 999000,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
         'channel'         => 'kotak',

@@ -41,6 +41,7 @@ class Entity extends Base\PublicEntity
     const SHARED                        = 'shared';
     const ENABLED                       = 'enabled';
     const NETWORK_CATEGORY              = 'network_category';
+    const TYPE                          = 'type';
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
@@ -104,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_ID,
         self::GATEWAY_ACQUIRER,
         self::USED_COUNT,
+        self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -141,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::TPV                       => false,
+        self::TYPE                      => Type::DUAL,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
@@ -160,6 +163,7 @@ class Entity extends Base\PublicEntity
         self::AEPS                      => 'boolean',
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'boolean',
+        self::TYPE                      => 'int',
     ];
 
     // ---------------------- GETTERS ----------------------
@@ -221,6 +225,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     protected function getSubMerchants()
     {
         $subMerchants = $this->merchants()->get();
@@ -254,14 +263,21 @@ class Entity extends Base\PublicEntity
         return 'razorpay@icici';
     }
 
-    public function isEnabled()
+    public function getCurrency()
     {
-        return $this->getAttribute(self::ENABLED);
+        return $this->getAttribute(self::CURRENCY);
     }
 
     public function getNetworkCategory()
     {
         return $this->getAttribute(self::NETWORK_CATEGORY);
+    }
+
+    // ---------------------- END GETTERS ----------------------
+
+    public function isEnabled()
+    {
+        return $this->getAttribute(self::ENABLED);
     }
 
     public function isCardEnabled()
@@ -296,12 +312,15 @@ class Entity extends Base\PublicEntity
         return ($merchantId === Merchant\Account::SHARED_ACCOUNT);
     }
 
-    public function getCurrency()
+    public function isAuthCapture()
     {
-        return $this->getAttribute(self::CURRENCY);
+        return ($this->getAttribute(self::TYPE) === Type::AUTH_CAPTURE);
     }
 
-    // ---------------------- END GETTERS ----------------------
+    public function isPurchase()
+    {
+        return ($this->getAttribute(self::TYPE) === Type::PURCHASE);
+    }
 
     // ---------------------- SETTERS ----------------------
 
@@ -318,6 +337,11 @@ class Entity extends Base\PublicEntity
     public function setMerchantId($merchantId)
     {
         $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -447,7 +471,9 @@ class Entity extends Base\PublicEntity
         $gateway = $input[self::GATEWAY];
         $methods = [
             self::CARD,
-            self::NETBANKING
+            self::NETBANKING,
+            self::UPI,
+            self::AEPS,
         ];
 
         foreach ($methods as $method)

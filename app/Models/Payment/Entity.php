@@ -74,6 +74,9 @@ class Entity extends Base\PublicEntity
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
+    const APPROVAL_CODE         = 'approval_code';
+    const REFERENCE1            = 'reference1';
+    const REFERENCE2            = 'reference2';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -92,6 +95,8 @@ class Entity extends Base\PublicEntity
     const SUBSCRIPTION_ID       = 'subscription_id';
 
     const DEFAULT_CURRENCY      = 'INR';
+
+    const ACQUIRER              = 'acquirer';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -131,6 +136,9 @@ class Entity extends Base\PublicEntity
         self::SAVE,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
+        self::APPROVAL_CODE,
+        self::REFERENCE1,
+        self::REFERENCE2,
     ];
 
     protected $visible = [
@@ -174,6 +182,10 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
+        self::APPROVAL_CODE,
+        self::REFERENCE1,
+        self::REFERENCE2,
+        self::ACQUIRER,
         self::TRANSFER_ID,
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
@@ -227,6 +239,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::ACQUIRER,
         // self::SUBSCRIPTION_ID,
         self::CREATED_AT,
     ];
@@ -240,11 +253,12 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::TOKEN_ID,
         self::SUBSCRIPTION_ID,
+        self::ACQUIRER,
     ];
 
     protected $guarded = [self::ID];
 
-    protected $appends = [self::PUBLIC_ID, self::CAPTURED];
+    protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER];
 
     protected static $modifiers = [
         self::EMAIL,
@@ -769,6 +783,41 @@ class Entity extends Base\PublicEntity
         return ($this->attributes[self::CAPTURED_AT] !== null);
     }
 
+    protected function getAcquirerAttribute()
+    {
+        $acquirer = [];
+
+        switch ($this->getAttribute(self::METHOD))
+        {
+            case Method::CARD:
+
+                $acquirer = [
+                    'authorization_code' => $this->getAttribute(self::APPROVAL_CODE),
+                    'bank_transaction_id' => $this->getAttribute(self::REFERENCE1),
+                ];
+                break;
+
+            case Method::NETBANKING:
+
+                $acquirer = [
+                    'bank_transaction_id' => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Method::WALLET:
+
+                $acquirer = [];
+                break;
+
+            case Method::UPI:
+
+                $acquirer = [];
+                break;
+        }
+
+        return $acquirer;
+    }
+
     protected function getOtpAttemptsAttribute()
     {
         $attempts = $this->attributes[self::OTP_ATTEMPTS];
@@ -1027,6 +1076,13 @@ class Entity extends Base\PublicEntity
         return ($this->getWallet() === Processor\Wallet::OPENWALLET);
     }
 
+    public function isCustomerMailAbsent(): bool
+    {
+        $email = $this->getEmail();
+
+        return ((empty($email) === true) or ($email === self::DUMMY_EMAIL));
+    }
+
 // ----------------------- Getters ---------------------------------------------
 
     public function getTransferId()
@@ -1091,7 +1147,7 @@ class Entity extends Base\PublicEntity
 
         $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
 
-        return  $currencySymbol . ' ' . $amount;
+        return $currencySymbol . ' ' . $amount;
     }
 
     public function getAmountPaidout()
@@ -1487,6 +1543,21 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[self::SUBSCRIPTION_ID]);
+        }
+    }
+
+    public function setPublicAcquirerAttribute(array & $array)
+    {
+        // Adding test merchants and policy bazaar merchant.
+        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f'];
+
+        $currentMerchantId = $this->getMerchantId();
+
+        // We are hardcoding the merchant ids for now.
+        // Will move this to feature flag.
+        if (in_array($currentMerchantId, $merchantIds, true) === false)
+        {
+            unset($array[self::ACQUIRER]);
         }
     }
 

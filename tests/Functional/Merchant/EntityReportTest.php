@@ -169,8 +169,8 @@ class EntityReportTest extends TestCase
 
         $invoice = $this->fetchInvoice($input);
 
-        $this->assertEquals('2300', $invoice['total_fee']);
-        $this->assertEquals('300', $invoice['tax']);
+        $this->assertEquals('2000', $invoice['total_fee']);
+        $this->assertEquals('0', $invoice['tax']);
         $this->assertEquals(2000, $invoice['razorpay_fee']);
     }
 
@@ -240,5 +240,46 @@ class EntityReportTest extends TestCase
         $this->ba->proxyAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGenerateReportCombined()
+    {
+        $entity = 'transaction';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    public function testGenerateReportSettlement()
+    {
+        $entity = 'settlement';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    public function testGenerateReportPayment()
+    {
+        $entity = 'payment';
+
+        $this->generateReportAndFetch($entity);
+    }
+
+    protected function generateReportAndFetch(string $entity)
+    {
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $this->generateEntityReport($entity, $input);
+
+        $reports = $this->fetchReports(['type' => $entity]);
+
+        assert($reports['count'] === 1);
     }
 }

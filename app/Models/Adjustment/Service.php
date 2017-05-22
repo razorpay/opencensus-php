@@ -29,7 +29,10 @@ class Service extends Base\Service
 
     public function addAdjustment($input)
     {
-        $merchant = $this->merchant;
+        $merchantId = $input[Entity::MERCHANT_ID];
+        unset($input[Entity::MERCHANT_ID]);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
 

@@ -37,9 +37,7 @@ class FeaturesTest extends TestCase
 
     public function testDeleteFeatureFromMerchant()
     {
-        $this->ba->adminAuth();
-
-        $this->ba->addAdminAuthHeaders('org_100000razorpay');
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
 
         $features = $this->fixtures->merchant->addFeatures(['dummy']);
 
@@ -68,9 +66,7 @@ class FeaturesTest extends TestCase
 
     public function testDeleteNonExistentFeatureFromMerchant()
     {
-        $this->ba->adminAuth();
-
-        $this->ba->addAdminAuthHeaders('org_100000razorpay');
+        $this->ba->adminAuth('test', null, 'org_100000razorpay');
 
         $this->startTest();
 
