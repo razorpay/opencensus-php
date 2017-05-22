@@ -9,7 +9,7 @@ const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
     <tr>
       <td>
         <TransactionNavLink to={`/app/settlements/${settlement.id}`}>
-          {settlement.id}
+          <code>{settlement.id}</code>
         </TransactionNavLink>
       </td>
       <td class="text-right">

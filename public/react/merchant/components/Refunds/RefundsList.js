@@ -7,12 +7,12 @@ const RefundsListItem = ({ refund }) => {
     <tr>
       <td>
         <TransactionNavLink to={`/app/refunds/${refund.id}`}>
-          {refund.id}
+          <code>{refund.id}</code>
         </TransactionNavLink>
       </td>
       <td>
         <TransactionNavLink to={`/app/payments/${refund.payment_id}`}>
-          {refund.payment_id}
+          <code>{refund.payment_id}</code>
         </TransactionNavLink>
       </td>
       <td>{refund.currency}</td>

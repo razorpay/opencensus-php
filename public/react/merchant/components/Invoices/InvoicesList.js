@@ -12,10 +12,10 @@ const InvoiceListItem = props => {
       <td>
         {invoice.type === 'link'
           ? <TransactionNavLink to={`/app/paymentlinks/${invoice.id}`}>
-              {invoice.id}
+              <code>{invoice.id}</code>
             </TransactionNavLink>
           : <NavLink to={`/app/invoices/${invoice.id}`}>
-              {invoice.id}
+              <code>{invoice.id}</code>
             </NavLink>}
       </td>
       <td>

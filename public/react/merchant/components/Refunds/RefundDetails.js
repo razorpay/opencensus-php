@@ -45,7 +45,7 @@ export default ({ refund, isLoading, statusMsg }) => {
                     <TransactionNavLink
                       to={`/app/payments/${refund.payment_id}`}
                     >
-                      {refund.payment_id}
+                      <code>{refund.payment_id}</code>
                     </TransactionNavLink>
                   )}
                 />

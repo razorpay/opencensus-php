@@ -8,7 +8,7 @@ const PaymentsListItem = ({ payment, hasOrders, orders }) => {
     <tr>
       <td>
         <TransactionNavLink to={`#/app/payments/${payment.id}`}>
-          {payment.id}
+          <code>{payment.id}</code>
         </TransactionNavLink>
       </td>
       {hasOrders && <td>{orders[payment.id]}</td>}

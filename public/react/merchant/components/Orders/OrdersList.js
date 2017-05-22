@@ -8,7 +8,7 @@ const OrdersListItem = ({ order }) => {
     <tr>
       <td>
         <TransactionNavLink to={`/app/orders/${order.id}`}>
-          {order.id}
+          <code>{order.id}</code>
         </TransactionNavLink>
       </td>
       <td>{order.attempts}</td>
