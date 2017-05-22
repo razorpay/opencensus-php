@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Wallet\Mpesa\Mock;
+namespace RZP\Gateway\Wallet\Mpesa;
 
 use App;
 use SoapClient as BaseSoapClient;

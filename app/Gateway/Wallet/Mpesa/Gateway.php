@@ -16,7 +16,6 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Gateway\Wallet\Mpesa\Mock\SoapClient;
 
 use libphonenumber\PhoneNumberUtil;
 
@@ -38,13 +37,13 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $content = $this->getAuthorizeRequestData();
+        $content = $this->getAuthorizeRequestData($input);
 
         $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        $contentToSave = $this->getGatewayParamArray();
+        $contentToSave = $this->getGatewayParamArray($input);
 
         $this->createGatewayPaymentEntity($contentToSave);
 
@@ -75,7 +74,7 @@ class Gateway extends Base\Gateway
 
         $this->action($input, Action::OTP_GENERATE);
 
-        $data = $this->getOtpGenerateData();
+        $data = $this->getOtpGenerateData($input);
 
         $response = $this->sendSoapRequest($data,
                                            SoapAction::OTP_GENERATE_API,
@@ -110,7 +109,7 @@ class Gateway extends Base\Gateway
 
         $this->verifyOtpAttempts($input['payment']);
 
-        $data = $this->getOtpSubmitData();
+        $data = $this->getOtpSubmitData($input);
 
         $response = $this->sendSoapRequest($data,
                                            SoapAction::OTP_SUBMIT_API,
@@ -149,7 +148,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $data = $this->getRefundData();
+        $data = $this->getRefundData($input);
 
         $response = $this->sendSoapRequest($data,
                                            SoapAction::REFUND_API,
@@ -169,7 +168,9 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $data = $this->getVerifyRequestData();
+        $input = $verify->input;
+
+        $data = $this->getVerifyRequestData($input);
 
         $verify->verifyResponse = $this->sendSoapRequest($data,
                                                    SoapAction::QUERY_API,
@@ -245,7 +246,7 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::VALIDATE_CUSTOMER);
 
-        $data = $this->getValidateCustomerData();
+        $data = $this->getValidateCustomerData($input);
 
         $response = $this->sendSoapRequest($data,
                                            SoapAction::CUSTOMER_API,
@@ -256,7 +257,7 @@ class Gateway extends Base\Gateway
             [
                 'gateway'    => $this->gateway,
                 'response'   => $response,
-                'payment_id' => $this->input['payment']['id'],
+                'payment_id' => $input['payment']['id'],
             ]);
 
         $content = $response[ResponseFields::VALIDATE_CUSTOMER];
@@ -267,9 +268,9 @@ class Gateway extends Base\Gateway
         $this->checkGatewayResponse($status);
     }
 
-    protected function getAuthorizeRequestData()
+    protected function getAuthorizeRequestData(array $input)
     {
-        $xml = $this->getGatewayRequestArray();
+        $xml = $this->getGatewayRequestArray($input);
 
         $data = [
             RequestFields::GATEWAY_PARAM => $xml,
@@ -284,9 +285,9 @@ class Gateway extends Base\Gateway
         return hash_hmac(HashAlgo::SHA256, $xml, $this->getSecret());
     }
 
-    protected function getGatewayRequestArray()
+    protected function getGatewayRequestArray(array $input)
     {
-        $array = $this->getGatewayParamArray();
+        $array = $this->getGatewayParamArray($input);
 
         $xmlRoot = "<PaymentGatewayRequest />";
 
@@ -308,33 +309,33 @@ class Gateway extends Base\Gateway
         return $gatewayParamXml->asXML();
     }
 
-    protected function getGatewayParamArray()
+    protected function getGatewayParamArray(array $input)
     {
-        $amount = $this->input['payment']['amount'] / 100;
+        $amount = $input['payment']['amount'] / 100;
 
         $gatewayParam = [
             RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
-            RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
+            RequestFields::TRANSACTION_REFERENCE => $input['payment']['id'],
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
             RequestFields::AMOUNT                => $amount,
-            RequestFields::RETURN_URL            => $this->input['callbackUrl'],
+            RequestFields::RETURN_URL            => $input['callbackUrl'],
         ];
 
         return $gatewayParam;
     }
 
-    protected function getVerifyRequestData()
+    protected function getVerifyRequestData(array $input)
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'],
+            $input['payment']['id'],
             Action::AUTHORIZE);
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId() ?? "";
 
-        $paymentId = $this->input['payment']['id'];
+        $paymentId = $input['payment']['id'];
 
-        $amount = $this->input['payment']['amount'] / 100;
+        $amount = $input['payment']['amount'] / 100;
 
         $queryData = [
             RequestFields::MERCHANT_CODE             => $this->getMerchantId(),
@@ -358,9 +359,9 @@ class Gateway extends Base\Gateway
         return $queryData;
     }
 
-    protected function getValidateCustomerData()
+    protected function getValidateCustomerData(array $input)
     {
-        $contact = $this->input['payment']['contact'];
+        $contact = $input['payment']['contact'];
 
         $data = [
             RequestFields::CHANNEL_ID    => Constants::CHANNEL_ID,
@@ -371,15 +372,15 @@ class Gateway extends Base\Gateway
         return [RequestFields::COMMON_SERVICE_DATA => $data];
     }
 
-    protected function getOtpGenerateData()
+    protected function getOtpGenerateData(array $input)
     {
-        $contact = $this->input['payment']['contact'];
+        $contact = $input['payment']['contact'];
 
         $data = [
             RequestFields::REQUEST_ID     => uniqid(),
             RequestFields::CHANNEL_ID     => Constants::CHANNEL_ID,
             RequestFields::ENTITY_TYPE_ID => Constants::ENTITY_TYPE_ID,
-            RequestFields::MOBILE_NUMBER => $this->getFormattedContact($contact)
+            RequestFields::MOBILE_NUMBER  => $this->getFormattedContact($contact)
         ];
 
         return [
@@ -388,29 +389,29 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getOtpSubmitData()
+    protected function getOtpSubmitData(array $input)
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'],
-            [Action::AUTHORIZE]);
+            $input['payment']['id'],
+            Action::AUTHORIZE);
 
         $gatewayPaymentId2 = $wallet->getGatewayPaymentId2();
 
-        $amount = $this->input['payment']['amount'] / 100;
+        $amount = $input['payment']['amount'] / 100;
 
-        $contact = $this->input['payment']['contact'];
+        $contact = $input['payment']['contact'];
 
         $data = [
             RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
-            RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
+            RequestFields::TRANSACTION_REFERENCE => $input['payment']['id'],
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
             RequestFields::AMOUNT                => $amount,
             RequestFields::MOBILE_NUMBER         => $this->getFormattedContact($contact),
             RequestFields::FROM_ENTITY_TYPE      => Constants::ENTITY_TYPE_ID,
             RequestFields::TO_ENTITY_TYPE        => Constants::TO_ENTITY_TYPE,
             RequestFields::COMMAND_ID            => Constants::COMMAND_ID,
-            RequestFields::OTP                   => $this->input['gateway']['otp'],
+            RequestFields::OTP                   => $input['gateway']['otp'],
             RequestFields::OTP_REF_NUMBER        => $gatewayPaymentId2,
             RequestFields::CHANNEL_ID            => Constants::CHANNEL_ID,
         ];
@@ -418,23 +419,23 @@ class Gateway extends Base\Gateway
         return [RequestFields::MCOM_PAYMENT_REQ => $data];
     }
 
-    protected function getRefundData()
+    protected function getRefundData(array $input)
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'],
+            $input['payment']['id'],
             [Action::AUTHORIZE]);
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId();
 
-        $amount = $this->input['refund']['amount'] / 100;
+        $amount = $input['refund']['amount'] / 100;
 
         $data = [
             RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::COM_TRANSACTION_ID    => $gatewayPaymentId ?? "",
-            RequestFields::QUERY_TRANSACTION_REF => $this->input['payment']['id'],
+            RequestFields::QUERY_TRANSACTION_REF => $input['payment']['id'],
             RequestFields::S2S_AMOUNT            => $amount,
             RequestFields::REFUND_NARRATION      => Constants::REFUND_NARRATION,
-            RequestFields::REVERSAL_TYPE         => $this->getReversalType()
+            RequestFields::REVERSAL_TYPE         => $this->getReversalType($input)
         ];
 
         return $data;
@@ -475,16 +476,14 @@ class Gateway extends Base\Gateway
 
     protected function getRefundAttributes(array $content)
     {
-        $input = $this->input;
-
         $attributes = [
             Base\Entity::RECEIVED             => true,
-            Base\Entity::PAYMENT_ID           => $input['payment']['id'],
+            Base\Entity::PAYMENT_ID           => $this->input['payment']['id'],
             Base\Entity::WALLET               => Wallet::MPESA,
-            Base\Entity::AMOUNT               => $input['refund']['amount'],
+            Base\Entity::AMOUNT               => $this->input['refund']['amount'],
             Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID],
             Base\Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
-            Base\Entity::REFUND_ID            => $input['refund']['id'],
+            Base\Entity::REFUND_ID            => $this->input['refund']['id'],
             Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
         ];
 
@@ -496,9 +495,9 @@ class Gateway extends Base\Gateway
      *
      * @return string $reversalType
      */
-    protected function getReversalType()
+    protected function getReversalType(array $input)
     {
-        if ($this->input['payment']['amount'] === $this->input['refund']['amount'])
+        if ($input['payment']['amount'] === $input['refund']['amount'])
         {
             return Constants::FULL_REVERSAL;
         }
