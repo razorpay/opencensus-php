@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Mpesa;
 
-use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -17,6 +16,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Gateway\Wallet\Mpesa\Mock\SoapClient;
 
 use libphonenumber\PhoneNumberUtil;
 

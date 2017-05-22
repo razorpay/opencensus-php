@@ -20,32 +20,4 @@ class Gateway extends Mpesa\Gateway
 
         return $request;
     }
-
-    protected function sendSoapRequest(array $data, string $soapRoot, string $method)
-    {
-        $this->trace->info(
-            TraceCode::GATEWAY_SOAP_REQUEST,
-            [
-                'payment_id'  => $this->input['payment']['id'],
-                'gateway'     => $this->gateway,
-                'soap_method' => $method,
-                'request'     => [
-                    'soap_root' => $soapRoot,
-                    'data'      => $data,
-                ],
-            ]);
-
-        return $this->callGatewayRequestInternally($method, [$soapRoot => $data]);
-    }
-
-    protected function callGatewayRequestInternally(string $method, array $arguments)
-    {
-        $server = $this->app['gateway']->server($this->gateway);
-
-        $server->setInput($arguments);
-
-        $response = $server->$method($arguments);
-
-        return $response;
-    }
 }
