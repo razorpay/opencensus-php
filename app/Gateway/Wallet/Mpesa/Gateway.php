@@ -6,6 +6,7 @@ use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
 use RZP\Exception;
+use Lib\PhoneBook;
 use SimpleXMLElement;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -359,10 +360,12 @@ class Gateway extends Base\Gateway
 
     protected function getValidateCustomerData()
     {
+        $contact = $this->input['payment']['contact'];
+
         $data = [
             RequestFields::CHANNEL_ID    => Constants::CHANNEL_ID,
             RequestFields::REQUEST_ID    => uniqid(),
-            RequestFields::MOBILE_NUMBER => $this->getFormattedPhoneNo(),
+            RequestFields::MOBILE_NUMBER => $this->getFormattedContact($contact)
         ];
 
         return [RequestFields::COMMON_SERVICE_DATA => $data];
@@ -370,11 +373,13 @@ class Gateway extends Base\Gateway
 
     protected function getOtpGenerateData()
     {
+        $contact = $this->input['payment']['contact'];
+
         $data = [
             RequestFields::REQUEST_ID     => uniqid(),
             RequestFields::CHANNEL_ID     => Constants::CHANNEL_ID,
             RequestFields::ENTITY_TYPE_ID => Constants::ENTITY_TYPE_ID,
-            RequestFields::MOBILE_NUMBER  => $this->getFormattedPhoneNo()
+            RequestFields::MOBILE_NUMBER => $this->getFormattedContact($contact)
         ];
 
         return [
@@ -393,13 +398,15 @@ class Gateway extends Base\Gateway
 
         $amount = $this->input['payment']['amount'] / 100;
 
+        $contact = $this->input['payment']['contact'];
+
         $data = [
             RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
             RequestFields::TRANSACTION_REFERENCE => $this->input['payment']['id'],
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
             RequestFields::AMOUNT                => $amount,
-            RequestFields::MOBILE_NUMBER         => $this->getFormattedPhoneNo(),
+            RequestFields::MOBILE_NUMBER         => $this->getFormattedContact($contact),
             RequestFields::FROM_ENTITY_TYPE      => Constants::ENTITY_TYPE_ID,
             RequestFields::TO_ENTITY_TYPE        => Constants::TO_ENTITY_TYPE,
             RequestFields::COMMAND_ID            => Constants::COMMAND_ID,
@@ -491,29 +498,12 @@ class Gateway extends Base\Gateway
      */
     protected function getReversalType()
     {
-        $refund = $this->input['payment']['amount'] - $this->input['refund']['amount'];
-
-        if ($refund === 0)
+        if ($this->input['payment']['amount'] === $this->input['refund']['amount'])
         {
             return Constants::FULL_REVERSAL;
         }
 
         return Constants::PARTIAL_REVERSAL;
-    }
-
-    /**
-     * Converts Indian numbers into mpesa acceptable format
-     * Example: +91-1234567899 returns 1234567899
-     *
-     * @return number
-     */
-    protected function getFormattedPhoneNo()
-    {
-        $contact = $this->input['payment']['contact'];
-
-        $phoneUtil = PhoneNumberUtil::getInstance();
-
-        return $phoneUtil->parse($contact, 'IN')->getNationalNumber();
     }
 
     protected function sendSoapRequest(array $data, string $soapRoot, string $method)
@@ -650,16 +640,5 @@ class Gateway extends Base\Gateway
         }
 
         return $password;
-    }
-
-    protected function getPaymentToVerify(Verify $verify)
-    {
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-            $this->input['payment']['id'],
-            Action::AUTHORIZE);
-
-        $verify->payment = $gatewayPayment;
-
-        return $gatewayPayment;
     }
 }
