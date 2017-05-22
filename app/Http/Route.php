@@ -841,7 +841,6 @@ final class Route
         'upi_fill_bank',
         'methods_update_merchants',
         'payments_multiple_authorize_refund',
-        'adj_add',
         'adj_add_reverse',
         'admin_get_app_auth',
         'admin_authentication',
@@ -959,6 +958,7 @@ final class Route
         'workflow_get_actions_by_maker',
         'workflow_get_actions_checked',
         'merchants_update_hold_funds',
+        'adj_add',
     ];
 
     public static $proxy = [
@@ -1108,6 +1108,7 @@ final class Route
         'workflow_get_actions_by_maker',
         'workflow_get_actions_checked',
         'merchants_update_hold_funds',
+        'adj_add',
     ];
 
     public static $routePermission = [
