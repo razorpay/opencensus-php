@@ -14,6 +14,9 @@ export default class Settings extends Component {
         <header>
           <ShowWhen myRole="owner manager admin">
             <NavLink to="/app/config">Configuration</NavLink>
+          </ShowWhen>
+
+          <ShowWhen myRole="owner manager admin">
             <NavLink to="/app/webhooks">Webhooks</NavLink>
           </ShowWhen>
 
