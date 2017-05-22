@@ -341,6 +341,8 @@ class Gateway
     protected function isSecondRecurringPaymentRequest($input)
     {
         if (($input['payment']['recurring'] === true) and
+            (isset($input['token']) === true) and
+            ($input['token']->isRecurring() === true) and
             ($input['terminal']->isNon3DSRecurring() === true))
         {
             return true;
