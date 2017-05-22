@@ -25,7 +25,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      * @param $row array
      * @return string
      */
-    protected function getReconciliationTypeForRow(array $row)
+    protected function getReconciliationTypeForRow($row)
     {
         // This indicates the file is frome email
         if (isset($row[self::TXN_TYPE_COLUMN]) === true)
