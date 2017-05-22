@@ -61,7 +61,7 @@ class Order extends Base
      *
      * @return OrderEntity
      */
-    public function createPaidOrder(array $attributes = []): OrderEntity
+    public function createPaid(array $attributes = []): OrderEntity
     {
         $amountPaid = $attributes['amount_paid'] ?? 1000000;
         $status     = $attributes['status'] ?? 'paid';

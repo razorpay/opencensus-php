@@ -180,7 +180,7 @@ class RefundTest extends TestCase
         $this->ba->appAuth();
 
         $order1 = $this->fixtures->order->create();
-        $order2 = $this->fixtures->order->createPaidOrder();
+        $order2 = $this->fixtures->order->createPaid();
 
         $orderIdOne = $order1->getId();
         $orderIdTwo = $order2->getId();
