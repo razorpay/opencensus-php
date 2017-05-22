@@ -63,16 +63,9 @@ class OAuthClientController extends Controller
         return ApiResponse::json($client);
     }
 
-    /**
-     * Delete the given client.
-     *
-     * @param  string  $clientId
-     * @return ApiResponse
-     */
-    public function deleteClient($clientId)
+    public function deleteClient(string $id)
     {
-        // $data = (new Client\Service)->delete($clientId);
-        $data = null;
+        $data = (new Client\Service)->delete($id, $this->merchant->getId());
 
         return ApiResponse::json($data);
     }
