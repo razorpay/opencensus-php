@@ -33,8 +33,55 @@ let initialState = {
   },
 };
 
+export const fetchAnalytics = params => {
+  return dispatch => {
+    return dispatch({
+      type: ANALYTICS_FETCH,
+      payload: ajax({
+        url: '/analytics/transactions',
+        data: {
+          type: 'day',
+          from: params.from,
+          to: params.to,
+        },
+      }),
+    });
+  };
+};
+
+export const fetchEntityTotals = () => {
+  return dispatch => {
+    return dispatch({
+      type: ENTITY_TOTALS_FETCH,
+      payload: ajax('/analytics/aggregations'),
+    });
+  };
+};
+
+export const fetchPaymentBreakup = () => {
+  return dispatch => {
+    return dispatch({
+      type: PAYMENT_BREAKUP_FETCH,
+      payload: ajax('/analytics/payment/aggregations'),
+    });
+  };
+};
+
+export const fetchCurrentBalance = () => {
+  return dispatch => {
+    return dispatch({
+      type: CURRENT_BALANCE_FETCH,
+      payload: ajax('/user/generic', {
+        appendModeInQueryParam: true,
+        data: {
+          route_name: 'balance_fetch',
+        },
+      }),
+    });
+  };
+};
+
 export default function(state = initialState, action) {
-  /* TODO: handle failure cases */
   switch (action.type) {
     case `${ANALYTICS_FETCH}::PENDING`:
       return set(state, 'analytics', initialState.analytics);
@@ -116,51 +163,3 @@ export default function(state = initialState, action) {
       return state;
   }
 }
-
-export const fetchAnalytics = params => {
-  return dispatch => {
-    return dispatch({
-      type: ANALYTICS_FETCH,
-      payload: ajax({
-        url: '/analytics/transactions',
-        data: {
-          type: 'day',
-          from: params.from.unix(),
-          to: params.to.unix(),
-        },
-      }),
-    });
-  };
-};
-
-export const fetchEntityTotals = () => {
-  return dispatch => {
-    return dispatch({
-      type: ENTITY_TOTALS_FETCH,
-      payload: ajax('/analytics/aggregations'),
-    });
-  };
-};
-
-export const fetchPaymentBreakup = () => {
-  return dispatch => {
-    return dispatch({
-      type: PAYMENT_BREAKUP_FETCH,
-      payload: ajax('/analytics/payment/aggregations'),
-    });
-  };
-};
-
-export const fetchCurrentBalance = () => {
-  return dispatch => {
-    return dispatch({
-      type: CURRENT_BALANCE_FETCH,
-      payload: ajax('/user/generic', {
-        appendModeInQueryParam: true,
-        data: {
-          route_name: 'balance_fetch',
-        },
-      }),
-    });
-  };
-};

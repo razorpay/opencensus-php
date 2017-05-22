@@ -36,10 +36,6 @@ import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
   }
 )
 export default class HomeContainer extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   componentWillMount() {
     this.props.fetchEntityTotals();
     this.props.fetchPaymentBreakup();
@@ -98,7 +94,7 @@ export default class HomeContainer extends Component {
     return (
       <div class="react-root">
         <Header title="Dashboard" showMode={false}>
-          <div style={{ float: 'right' }}>
+          <div class="pull-right">
             <DateRangePickerField
               onDatesChange={params => {
                 this.props.fetchAnalytics(params);
@@ -121,7 +117,6 @@ export default class HomeContainer extends Component {
               payments={payments}
               refunds={refunds}
               settlements={settlements}
-              isLive={isLive}
             />
             <div class="col-md-12 col-lg-6">
               <AnalyticsGraph

@@ -18,11 +18,19 @@ export default ({ bg, content, title, loading, error }) => {
       <div class={panelClass}>
         <div>
           <div class={textClass}>
-            {loading
-              ? '...'
-              : error
-                  ? 'Error'
-                  : typeof content === 'function' ? content() : content}
+            {
+              do {
+                if (loading) {
+                  ('...');
+                } else if (error) {
+                  ('Error');
+                } else if (typeof content === 'function') {
+                  content();
+                } else {
+                  content;
+                }
+              }
+            }
           </div>
           <span class="text-muted text-xs">{title}</span>
         </div>

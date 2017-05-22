@@ -31,42 +31,48 @@ export default ({ entity, data, loading }) => {
         <i class="icon-arrow-right" />
       </a>
       <h4 style={{ margin: '0 0 10px' }}>Recent {titleCase(entity)}s</h4>
-      {loading
-        ? <div
-            class="text-thin h1"
-            style={{
-              height: '426px',
-              textAlign: 'center',
-              lineHeight: '426px',
-            }}
-          >
-            ...
-          </div>
-        : data.count
-            ? items.slice(0, 5).map((item, index) => {
-                return (
-                  <div key={index} class="row" style={{ margin: '10px' }}>
-                    <a href={`#/app/${entity}/${item.id}`}>
-                      <StatusLabel
-                        entity={entity}
-                        status={item.status}
-                        data-tip={titleCase(item.status) || null}
-                        data-place="right"
-                      >
-                        <Amount value={item.amount} />
-                      </StatusLabel>
+      {
+        do {
+          if (loading) {
+            <div
+              class="text-thin h1"
+              style={{
+                height: '426px',
+                textAlign: 'center',
+                lineHeight: '426px',
+              }}
+            >
+              ...
+            </div>;
+          } else if (data.count) {
+            items.slice(0, 5).map((item, index) => {
+              return (
+                <div key={index} class="row" style={{ margin: '10px' }}>
+                  <a href={`#/app/${entity}/${item.id}`}>
+                    <StatusLabel
+                      entity={entity}
+                      status={item.status}
+                      data-tip={titleCase(item.status) || null}
+                      data-place="right"
+                    >
+                      <Amount value={item.amount} />
+                    </StatusLabel>
 
-                      <div class="col-xs-8 col-md-9">
-                        <code class="hidden-xs">{item.id}</code>
-                        <span class="pull-right">
-                          {formatFromNow(item.created_at)}
-                        </span>
-                      </div>
-                    </a>
-                  </div>
-                );
-              })
-            : <div>No Recent {titleCase(entity)}</div>}
+                    <div class="col-xs-8 col-md-9">
+                      <code class="hidden-xs">{item.id}</code>
+                      <span class="pull-right">
+                        {formatFromNow(item.created_at)}
+                      </span>
+                    </div>
+                  </a>
+                </div>
+              );
+            });
+          } else {
+            <div>No Recent {titleCase(entity)}</div>;
+          }
+        }
+      }
     </div>
   );
 };
