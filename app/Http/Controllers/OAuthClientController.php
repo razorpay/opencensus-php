@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use Trace;
 use ApiResponse;
 
@@ -35,17 +36,13 @@ class OAuthClientController extends Controller
         return ApiResponse::json($client);
     }
 
-    /**
-     * Store a new client.
-     *
-     * @return ApiResponse
-     */
-    public function postCreateClient()
+    public function createClient()
     {
-        $input = \Request::all();
+        $input = Request::all();
 
-        // $client = (new ComposerClient\Service)->create($input);    TODO
-        $client = null;
+        $merchantId = $this->merchant->getId();
+
+        $client = $this->clientService->create($input, $merchantId);
 
         return ApiResponse::json($client);
     }
