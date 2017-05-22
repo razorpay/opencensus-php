@@ -37,12 +37,18 @@ class Core extends Base\Core
         if (isset($input['update_escrow']))
         {
             if ($input['update_escrow'] === '1')
+            {
                 $updateEscrow = true;
+            }
             else if ($input['update_escrow'] === '0')
+            {
                 $updateEscrow = false;
+            }
             else
+            {
                 throw new BadRequestValidationFailureException(
                     'update_escrow field should be boolean', 'update_escrow');
+            }
 
             unset($input['update_escrow']);
         }

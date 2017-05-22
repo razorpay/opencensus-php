@@ -958,6 +958,7 @@ final class Route
         'workflow_get_actions_by_maker',
         'workflow_get_actions_checked',
         'merchants_update_hold_funds',
+        'adj_add',
     ];
 
     public static $proxy = [
