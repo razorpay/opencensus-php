@@ -27,7 +27,7 @@ class BaseReport extends Base\Core
      * @param $merchant Merchant\Entity
      * @return void
      */
-    public function setMerchant(string $merchantId)
+    public function setMerchant(string $merchantId = null)
     {
         if ($this->merchant === null)
         {

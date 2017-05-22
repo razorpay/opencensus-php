@@ -70,7 +70,7 @@ class Core extends Base\Core
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::REPORT_REQUEST_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::REPORT_QUEUE_JOB_FAILED);
         }
     }
 }
