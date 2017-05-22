@@ -31,7 +31,7 @@ class ModalSlider extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.isOpen && this.props.isOpen !== nextProps.isOpen) {
+    if (nextProps.isOpen && this.props.onOpenURL !== nextProps.onOpenURL) {
       this.props.history.push(nextProps.onOpenURL, {
         notify: false,
       });
