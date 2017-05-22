@@ -816,35 +816,6 @@ class Service extends Base\Service
         return [$error, $analytics];
     }
 
-    public function getPaymentRefunds($mode, $paymentId)
-    {
-        list($error, $response) = $this->fetchEntityById($mode, 'payment', $paymentId);
-
-        if(empty($error))
-        {
-            $merchantId = $response['merchant_id'];
-            $this->setApiCredentials($merchantId, $mode);
-
-            try
-            {
-                $data = $this->api->payment->fetch($paymentId)
-                    ->refunds()
-                    ->all()
-                    ->toArray();
-            }
-            catch (\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error = $e->getMessage();
-            }
-
-            return array($error, $data);
-        }
-        else
-        {
-            return [$error, null];
-        }
-    }
-
     public function capturePayment($mode, $merchantId, $id, $input)
     {
         $data = [];

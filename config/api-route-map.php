@@ -350,6 +350,9 @@ return [
         'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
         'admin_fetch_entity_multiple'       => 'admin/{type}',
 
+        // View Payment Refunds
+        'payment_fetch_refunds'             => 'payments/{id}/refunds',
+
         'merchant_action'                   => 'merchants/{id}/action',
         'merchant_live_enable'              => 'merchants/{id}/live/enable',
         'merchant_live_disable'             => 'merchants/{id}/live/disable',

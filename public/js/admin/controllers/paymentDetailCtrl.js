@@ -328,9 +328,16 @@ app
           $scope.isRefundsCollapsed = true;
           return;
         }
-        var request = $http.get(
-          '/admin/' + $scope.mode + '/payments/' + $scope.entity.id + '/refunds'
-        );
+        var data = {
+          route_name: 'payment_fetch_refunds',
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+          mode: $scope.mode,
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
         request
           .success(function(data) {
             $scope.alerts.resetAlerts();

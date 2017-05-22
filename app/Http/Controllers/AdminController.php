@@ -351,13 +351,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getPaymentRefunds($mode, $paymentId)
-    {
-        list($error, $data) = (new Admin\Service)->getPaymentRefunds($mode, $paymentId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getPaymentAnalytics($mode, $id)
     {
         $this->checkMode($mode);
