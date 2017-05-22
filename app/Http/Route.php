@@ -381,6 +381,7 @@ final class Route
         'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
         'gateway_validate_unknown_refund'         => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
         'reports_fetch_multiple'                  => ['get',      'reports',                                        'ReportController@getReports'                                       ],
+        'reports_generate'                        => ['post',     'reports/{entity}/generate',                      'ReportController@generateReport'                                   ],
         'file_get_signed_url'                     => ['get',      '{entity}/{entityId}/signed-url',                 'FileStoreController@getSignedUrlForEntity'                         ],
 
         // Routes for the admin roles project
@@ -1022,6 +1023,7 @@ final class Route
         'offer_fetch_by_id',
         'reports_fetch_multiple',
         'file_get_signed_url',
+        'reports_generate',
         'tax_get',
         'tax_list',
         'tax_create',
