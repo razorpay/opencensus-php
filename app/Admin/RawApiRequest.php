@@ -135,6 +135,15 @@ class RawApiRequest
     {
         $this->setApiCredentials($mode);
 
+        if (empty($token) === true)
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'Admin token invalid.',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
         $this->params['headers']['X-Admin-Token'] = $token;
     }
 
