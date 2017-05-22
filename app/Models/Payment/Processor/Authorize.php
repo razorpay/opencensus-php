@@ -2535,8 +2535,6 @@ trait Authorize
 
             $payment->setAuthorizeTimestamp();
 
-            $payment->terminal->incrementUsedCount();
-
             $this->updateAcquirerData($payment, $data);
 
             // If payment was earlier failed, then that means it's
@@ -2567,7 +2565,12 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
-            $this->repo->saveOrFail($payment->terminal);
+            if ($payment->terminal->isUsed() === false)
+            {
+                $payment->terminal->setUsed();
+
+                $this->repo->saveOrFail($payment->terminal);
+            }
 
             $this->updateAssociatedPaymentEntities($payment);
 

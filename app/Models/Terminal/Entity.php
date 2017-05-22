@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const ID                            = 'id';
     const MERCHANT_ID                   = 'merchant_id';
     const USED_COUNT                    = 'used_count';
+    const USED                          = 'used';
     const CATEGORY                      = 'category';
     const GATEWAY                       = 'gateway';
     const GATEWAY_MERCHANT_ID           = 'gateway_merchant_id';
@@ -150,6 +151,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING                 => 1,
         self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
+        self::USED                      => false,
     ];
 
     protected $casts = [
@@ -164,6 +166,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'boolean',
         self::TYPE                      => 'int',
+        self::USED                      => 'boolean',
     ];
 
     // ---------------------- GETTERS ----------------------
@@ -203,6 +206,11 @@ class Entity extends Base\PublicEntity
     public function getUsedCount()
     {
         return $this->getAttribute(self::USED_COUNT);
+    }
+
+    public function isUsed()
+    {
+        return $this->getAttribute(self::USED);
     }
 
     public function getCategory()
@@ -491,7 +499,7 @@ class Entity extends Base\PublicEntity
 
     public function edit(array $input = [], $operation = 'edit')
     {
-        if ($this->getUsedCount() === 0)
+        if ($this->isUsed() === false)
         {
             // Essentially we ask for all the input anew and fill it in.
             // Put the values which are not changing like gateway and merchant_id
@@ -510,7 +518,7 @@ class Entity extends Base\PublicEntity
 
     protected function editUsedTerminal(array $input)
     {
-        assert ($this->getUsedCount() !== 0);
+        assert ($this->isUsed() === true);
 
         $this->getValidator()->usedTerminalValidator($this, $input);
 
@@ -522,6 +530,11 @@ class Entity extends Base\PublicEntity
         $usedCount = $this->getUsedCount() + 1;
 
         $this->setAttribute(self::USED_COUNT, $usedCount);
+    }
+
+     public function setUsed()
+    {
+        $this->setAttribute(self::USED, true);
     }
 
     public function merchant()
