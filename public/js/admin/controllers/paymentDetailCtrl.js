@@ -243,23 +243,23 @@ app
           $scope.alerts.addAlert('danger', 'Invalid capture amount', true);
           return;
         }
-
         var data = {
           amount: captureAmount,
           currency: $scope.entity.currency,
         };
-
+        var paymentCaptureData = {
+          route_name: 'payment_capture',
+          merchant_id: $scope.entity.merchant_id,
+          mode: $scope.mode,
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/' +
-            $scope.mode +
-            '/' +
-            $scope.entity.merchant_id +
-            '/payments/' +
-            $scope.entity.id +
-            '/capture',
-          transformRequest: transformRequestAsFormPost,
-          data: data,
+          url: '/admin/generic',
+          data: paymentCaptureData,
         });
         request
           .success(function(data) {
@@ -291,7 +291,6 @@ app
           );
           return;
         }
-
         var paymentRefundData = {
           route_name: 'payment_refund',
           merchant_id: $scope.entity.merchant_id,

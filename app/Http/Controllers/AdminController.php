@@ -360,15 +360,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postCapture($mode, $merchantId, $id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->capturePayment($mode, $merchantId, $id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getMultipleEntities($mode, $entity, $format = 'json')
     {
         $input = Input::all();
