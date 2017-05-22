@@ -505,7 +505,7 @@ final class Route
         'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@getToken'                                     ],
         'oauth_token_edit'                        => ['patch',    'oauth/tokens/{id}',                              'OAuthTokenController@updateToken'                                  ],
         'oauth_token_revoke'                      => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revokeToken'                                  ],
-        'oauth_client_fetch'                      => ['get',      'oauth/clients/{id}',                             'OAuthClientController@getClients'                                  ],
+        'oauth_client_fetch'                      => ['get',      'oauth/clients/{id}',                             'OAuthClientController@getClient'                                   ],
         'oauth_client_create'                     => ['post',     'oauth/clients',                                  'OAuthClientController@postCreateClient'                            ],
         'oauth_client_edit'                       => ['patch',    'oauth/clients/{id}',                             'OAuthClientController@editClient'                                  ],
         'oauth_client_delete'                     => ['delete',   'oauth/clients/{id}',                             'OAuthClientController@deleteClient'                                ],

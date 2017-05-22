@@ -4,31 +4,35 @@ namespace RZP\Http\Controllers;
 
 use Trace;
 use ApiResponse;
-use Illuminate\Http\Request;
-// use client service from composer;  TODOuse ApiResponse;
 
-class ClientController extends Controller
+use Razorpay\OAuth\Client;
+
+class OAuthClientController extends Controller
 {
-    use HandlesOAuthErrors;
+    /**
+     * @var \RZP\Models\Merchant\Entity
+     */
+    protected $merchant;
 
     /**
-     * Get all of the clients for given merchant.
-     *
-     * @return ApiResponse
+     * @var Client\Service
      */
-    public function getClients()
+    protected $clientService;
+
+    public function __construct()
     {
-        $input = \Request::all();
+        parent::__construct();
 
-        // $clients = (new ComposerClient\Service)->fetchMultiple($input['merchant_id']); TODO
+        $this->merchant = $this->app['basicauth']->getMerchant();
 
-        // foreach ($clients as $client) {
-        //     $client->makeVisible('secret')->toArray(); TODO
-        // }
+        $this->clientService = new Client\Service;
+    }
 
-        $clients = null;
+    public function getClient(string $id)
+    {
+        $client = $this->clientService->fetch($id, $this->merchant->getId());
 
-        return ApiResponse::json($clients);
+        return ApiResponse::json($client);
     }
 
     /**
