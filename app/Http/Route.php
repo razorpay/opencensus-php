@@ -499,16 +499,16 @@ final class Route
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
-        'clients_get'                             => ['get',      'clients',                                        'ClientController@getClients'                                       ],
-        'client_post'                             => ['post',     'clients',                                        'ClientController@postCreateClient'                                 ],
-        'client_put'                              => ['put',      'clients/{client_id}',                            'ClientController@editClient'                                       ],
-        'client_delete'                           => ['delete',   'clients/{client_id}',                            'ClientController@deleteClient'                                     ],
 
         // OAuth routes
         'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getTokens'                                    ],
         'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@getToken'                                     ],
         'oauth_token_edit'                        => ['patch',    'oauth/tokens/{id}',                              'OAuthTokenController@updateToken'                                  ],
         'oauth_token_revoke'                      => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revokeToken'                                  ],
+        'oauth_client_fetch'                      => ['get',      'oauth/clients/{id}',                             'OAuthClientController@getClients'                                  ],
+        'oauth_client_create'                     => ['post',     'oauth/clients',                                  'OAuthClientController@postCreateClient'                            ],
+        'oauth_client_edit'                       => ['patch',    'oauth/clients/{id}',                             'OAuthClientController@editClient'                                  ],
+        'oauth_client_delete'                     => ['delete',   'oauth/clients/{id}',                             'OAuthClientController@deleteClient'                                ],
     );
 
     public static $public = array(
@@ -834,10 +834,6 @@ final class Route
         'user_merchant_mapping_action',
         'merchant_admin_lead_put',
         'payment_update_on_hold',
-        'clients_get',
-        'client_post',
-        'client_put',
-        'client_delete',
     );
 
     public static $proxy = array(
@@ -906,6 +902,10 @@ final class Route
         'oauth_token_fetch',
         'oauth_token_edit',
         'oauth_token_revoke',
+        'oauth_client_fetch',
+        'oauth_client_create',
+        'oauth_client_edit',
+        'oauth_client_delete',
     );
 
     public static $admin = [
