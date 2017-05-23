@@ -3,104 +3,102 @@ import { NavLink, Switch, Route, withRouter } from 'react-router-dom';
 
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
-import SettlementDetails from 'merchant/containers/Settlements/Details';
 import PaymentLinks from 'merchant/containers/PaymentLinks/List';
-import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Details';
 import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
 import Customers from 'merchant/containers/Customers/List';
 import Accounts from 'merchant/containers/Accounts/List';
 import Reports from 'merchant/containers/Reports';
 import TeamManagement from 'merchant/containers/Team';
-
 import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
+
+import SettlementDetails from 'merchant/containers/Settlements/Details';
+import PaymentLinkDetails from 'merchant/containers/PaymentLinks/Details';
+import PaymentsDetails from 'merchant/containers/Payments/Details';
+import RefundDetails from 'merchant/containers/Refunds/Details';
+import OrderDetails from 'merchant/containers/Orders/Details';
 
 const getBaseView = location => {
   return (
     <Switch location={location}>
-      <Route path="/app/payments" component={Transactions} />
-      <Route path="/app/refunds" component={Transactions} />
-      <Route path="/app/orders" component={Transactions} />
+      <Route path="/payments" component={Transactions} />
+      <Route path="/refunds" component={Transactions} />
+      <Route path="/orders" component={Transactions} />
 
       <Route
-        path="/app/settlements"
+        path="/settlements"
         render={() => (
           <tabbed-container>
             <header id="link-header">
-              <NavLink to="/app/settlements">Settlements</NavLink>
+              <NavLink to="/settlements">Settlements</NavLink>
             </header>
-            <Route path="/app/settlements" component={Settlements} />
+            <Route path="/settlements" component={Settlements} />
           </tabbed-container>
         )}
       />
 
-      <Route path="/app/invoices" exact component={InvoicingContainer} />
-      <Route path="/app/invoices/:id(inv_.+)" component={InvoicesNew} />
-      <Route path="/app/invoices/new" component={InvoicesNew} />
-      <Route path="/app/items" component={InvoicingContainer} />
+      <Route path="/invoices" exact component={InvoicingContainer} />
+      <Route path="/invoices/:id(inv_.+)" component={InvoicesNew} />
+      <Route path="/invoices/new" component={InvoicesNew} />
+      <Route path="/items" component={InvoicingContainer} />
 
       <Route
-        path="/app/paymentlinks"
+        path="/paymentlinks"
         render={() => (
           <tabbed-container>
             <header id="link-header">
-              <NavLink to="/app/paymentlinks">Payment Links</NavLink>
+              <NavLink to="/paymentlinks">Payment Links</NavLink>
             </header>
 
-            <Switch>
-              <Route
-                path="/app/paymentlinks/:id"
-                component={PaymentLinkDetails}
-              />
-              <Route path="/app/paymentlinks" component={PaymentLinks} />
-            </Switch>
+            <Route path="/paymentlinks" component={PaymentLinks} />
           </tabbed-container>
         )}
       />
 
-      <Route path="/app/customers" component={Customers} />
+      <Route path="/customers" component={Customers} />
 
-      <Route path="/app/accounts" component={Accounts} />
+      <Route path="/accounts" component={Accounts} />
 
-      <Route path="/app/reports" component={Reports} />
-      <Route path="/app/team" component={TeamManagement} />
+      <Route path="/reports" component={Reports} />
+      <Route path="/team" component={TeamManagement} />
 
-      <Route path="/app/profile" component={MyAccount} />
-      <Route path="/app/activation" component={MyAccount} />
-      <Route path="/app/addfunds" component={MyAccount} />
-      <Route path="/app/credits" component={MyAccount} />
-      <Route path="/app/referrals" component={MyAccount} />
+      <Route path="/profile" component={MyAccount} />
+      <Route path="/activation" component={MyAccount} />
+      <Route path="/addfunds" component={MyAccount} />
+      <Route path="/credits" component={MyAccount} />
+      <Route path="/referrals" component={MyAccount} />
 
-      <Route path="/app/config" component={Settings} />
-      <Route path="/app/keys" component={Settings} />
-      <Route path="/app/webhooks" component={Settings} />
+      <Route path="/config" component={Settings} />
+      <Route path="/keys" component={Settings} />
+      <Route path="/webhooks" component={Settings} />
     </Switch>
   );
 };
 
 @withRouter
 export default class Content extends Component {
-  baseLocation = null;
+  componentWillMount() {
+    this.baseLocation = this.props.location;
+  }
 
   render() {
-    var location = this.props.location;
-    var urlFragments = location.pathname.slice(1).split('/').filter(_ => _);
-
-    var entity =
-      urlFragments.length > 1 &&
-      urlFragments.slice(-1)[0].match(/^([a-z]+)_.+/);
-
-    if (!entity) {
-      this.baseLocation = location;
-    }
-
-    let baseView = getBaseView(this.baseLocation);
-
     return (
       <main class="main-content">
-        {baseView}
-
+        <Switch>
+          <Route path="/payments/:id" component={PaymentsDetails} />
+          <Route path="/refunds/:id" component={RefundDetails} />
+          <Route path="/orders/:id" component={OrderDetails} />
+          <Route path="/settlements/:id" component={SettlementDetails} />
+          <Route path="/paymentlinks/:id" component={PaymentLinkDetails} />
+          <Route
+            render={_ => {
+              this.baseLocation = this.props.location;
+              return null;
+            }}
+          />
+        </Switch>
+        <Route render={_ => getBaseView(this.baseLocation)} />
       </main>
     );
   }

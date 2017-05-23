@@ -2,20 +2,20 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import MainNavLink from 'merchant/components/MainNavLink';
 
-const TRANSACTIONS_ROUTES_REGEX = /^\/app\/(payments|refunds|orders|batch-refunds)/;
-const ACCOUNTS_ROUTES_REGEX = /^\/app\/(profile|activation|credits|addfunds|referrals)/;
-const SETTINGS_ROUTES_REGEX = /^\/app\/(config|webhooks|keys)/;
-const INVOICES_ROUTES_REGEX = /^\/app\/(invoices|items)/;
+const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
+const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
+const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys)/;
+const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 
 @withRouter
 export default class Sidebar extends Component {
   // currently active routes in tabbed containers
   // populated with initial values
   routes = {
-    transactions: '/app/payments',
-    account: '/app/activation',
-    settings: '/app/config',
-    invoices: '/app/invoices',
+    transactions: '/payments',
+    account: '/activation',
+    settings: '/config',
+    invoices: '/invoices',
   };
 
   componentWillMount() {
@@ -73,7 +73,7 @@ export default class Sidebar extends Component {
                 <MainNavLink
                   label="Settlements"
                   icon="icon-done-all"
-                  to="/app/settlements"
+                  to="/settlements"
                   notMyRole="sellerapp support"
                 />
 
@@ -89,13 +89,13 @@ export default class Sidebar extends Component {
                 <MainNavLink
                   label="Payment Links"
                   icon="icon-link"
-                  to="/app/paymentlinks"
+                  to="/paymentlinks"
                 />
 
                 <MainNavLink
                   label="Customers"
                   icon="icon-people"
-                  to="/app/customers"
+                  to="/customers"
                   featureEnabled="Invoice"
                   notMyRole="sellerapp"
                 />
@@ -105,7 +105,7 @@ export default class Sidebar extends Component {
                 <MainNavLink
                   label="Marketplace"
                   icon="icon-team"
-                  to="/app/accounts"
+                  to="/accounts"
                   notMyRole="sellerapp support"
                   featureEnabled="Marketplace"
                   beta={true}
@@ -116,13 +116,13 @@ export default class Sidebar extends Component {
                 <MainNavLink
                   label="Reports"
                   icon="icon-reports"
-                  to="/app/reports"
+                  to="/reports"
                   notMyRole="sellerapp support"
                 />
                 <MainNavLink
                   label="Manage Team"
                   icon="icon-team"
-                  to="/app/team"
+                  to="/team"
                   myRole="owner"
                   beta={true}
                 />

@@ -92,7 +92,7 @@ export default class App extends Component {
     }
 
     return (
-      <Router>
+      <Router basename="/app">
         <Layout>
           <HeaderNav
             user={user}

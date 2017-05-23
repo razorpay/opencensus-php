@@ -1,19 +1,19 @@
 import Time from 'rzp/ui/Time';
 import TableBody from '../TableBody';
-import TransactionNavLink from 'merchant/containers/TransactionNavLink';
+import { NavLink } from 'react-router-dom';
 
 const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <TransactionNavLink to={`/app/refunds/${refund.id}`}>
+        <NavLink to={`/refunds/${refund.id}`}>
           <code>{refund.id}</code>
-        </TransactionNavLink>
+        </NavLink>
       </td>
       <td>
-        <TransactionNavLink to={`/app/payments/${refund.payment_id}`}>
+        <NavLink to={`/payments/${refund.payment_id}`}>
           <code>{refund.payment_id}</code>
-        </TransactionNavLink>
+        </NavLink>
       </td>
       <td>{refund.currency}</td>
       <td>{refund.amountInINR}</td>

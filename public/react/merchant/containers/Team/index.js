@@ -35,7 +35,7 @@ export default class TeamContainer extends Component {
     return (
       <tabbed-container>
         <header>
-          <NavLink to="/app/team">Manage Team</NavLink>
+          <NavLink to="/team">Manage Team</NavLink>
 
           <a
             class="pull-right"

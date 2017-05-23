@@ -3,6 +3,7 @@ import { Field, reduxForm } from 'redux-form';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import { PowerSelect } from 'react-power-select';
+import { Link } from 'react-router-dom';
 
 import Modal from 'rzp/ui/Modal';
 import Header from 'rzp/ui/Header';
@@ -62,9 +63,9 @@ export default class SubscriptionsNewContainer extends ModalContainer {
     return (
       <div>
         <Header title="New Subscription">
-          <a href="#/app/subscriptions" class="pull-right btn btn-link btn-sm">
+          <Link to="/subscriptions" class="pull-right btn btn-link btn-sm">
             <i class="icon icon-close" />
-          </a>
+          </Link>
         </Header>
 
         <Modal
@@ -199,9 +200,9 @@ export default class SubscriptionsNewContainer extends ModalContainer {
                       pendingText="Saving..."
                       onClick={handleSubmit(this.save)}
                     />
-                    <a href="#/app/subscriptions" class="btn btn-default">
+                    <Link to="/subscriptions" class="btn btn-default">
                       Cancel
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </form>
