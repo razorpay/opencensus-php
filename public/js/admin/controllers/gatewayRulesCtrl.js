@@ -7,6 +7,7 @@ app
     'alertsFactory',
     '$modal',
     'admin',
+    'utilMapping',
     'transformRequestAsFormPost',
     function(
       $scope,
@@ -14,38 +15,16 @@ app
       alertsFactory,
       $modal,
       admin,
+      utilMapping,
       transformRequestAsFormPost
     ) {
       $scope.mode = 'live';
       $scope.entity_type = 'gateway_rule';
       $scope.alerts = alertsFactory.getHandler();
 
-      $scope.networkMap = {
-        AMEX: 'American Express',
-        DICL: 'Diners Club',
-        DISC: 'Discover',
-        JCB: 'JCB',
-        MAES: 'Maestro',
-        MC: 'MasterCard',
-        RUPAY: 'RuPay',
-        VISA: 'Visa',
-        UNP: 'Union Pay',
-      };
-
-      $scope.gatewayAcquirerMap = {
-        axis: 'Axis',
-        hdfc: 'HDFC',
-        amex: 'Amex',
-        icic: 'ICICI',
-      };
-
-      $scope.methodMap = {
-        card: 'Card',
-        wallet: 'Wallet',
-        netbanking: 'Netbanking',
-        upi: 'UPI',
-        emi: 'EMI',
-      };
+      $scope.networkMap = utilMapping.getMap('networkMap');
+      $scope.methodMap = utilMapping.getMap('methodMap');
+      $scope.gatewayAcquirerMap = utilMapping.getMap('gatewayAcquirerMap');
 
       admin.identity().then(function(data) {
         $scope.admin = data;
@@ -242,15 +221,6 @@ app
             current: function() {
               return jQuery.extend({}, gatewayRule);
             },
-            networkMap: function() {
-              return $scope.networkMap;
-            },
-            gatewayAcquirerMap: function() {
-              return $scope.gatewayAcquirerMap;
-            },
-            methodMap: function() {
-              return $scope.methodMap;
-            },
           },
         });
         modalInstance.result.then(function(currentRule) {
@@ -269,23 +239,12 @@ app
     '$modalInstance',
     'admin',
     'current',
-    'gatewayAcquirerMap',
-    'networkMap',
-    'methodMap',
-    function(
-      $scope,
-      $http,
-      $modalInstance,
-      admin,
-      current,
-      gatewayAcquirerMap,
-      networkMap,
-      methodMap
-    ) {
+    'utilMapping',
+    function($scope, $http, $modalInstance, admin, current, utilMapping) {
       $scope.current = current;
-      $scope.gatewayAcquirerMap = gatewayAcquirerMap;
-      $scope.networkMap = networkMap;
-      $scope.methodMap = methodMap;
+      $scope.networkMap = utilMapping.getMap('networkMap');
+      $scope.methodMap = utilMapping.getMap('methodMap');
+      $scope.gatewayAcquirerMap = utilMapping.getMap('gatewayAcquirerMap');
 
       $scope.editMode = false;
 

@@ -14,6 +14,7 @@ app
     'organization',
     'displayValue',
     'utils',
+    'utilMapping',
     '$state',
     function(
       $scope,
@@ -28,6 +29,7 @@ app
       organization,
       displayValue,
       utils,
+      utilMapping,
       $state
     ) {
       admin.identity().then(function(data) {
@@ -54,6 +56,9 @@ app
           });
         }
       });
+
+      $scope.networkMap = utilMapping.getMap('networkMap');
+      $scope.methodMap = utilMapping.getMap('methodMap');
       $scope.selected_groups = {};
 
       generateMerchant();
