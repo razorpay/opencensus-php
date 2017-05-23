@@ -233,11 +233,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
-    public function getType()
-    {
-        return $this->getAttribute(self::TYPE);
-    }
-
     protected function getSubMerchants()
     {
         $subMerchants = $this->merchants()->get();
@@ -281,6 +276,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NETWORK_CATEGORY);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     // ---------------------- END GETTERS ----------------------
 
     public function isEnabled()
@@ -318,16 +318,6 @@ class Entity extends Base\PublicEntity
         $merchantId = $this->getAttribute(self::MERCHANT_ID);
 
         return ($merchantId === Merchant\Account::SHARED_ACCOUNT);
-    }
-
-    public function isAuthCapture()
-    {
-        return ($this->getAttribute(self::TYPE) === Type::AUTH_CAPTURE);
-    }
-
-    public function isPurchase()
-    {
-        return ($this->getAttribute(self::TYPE) === Type::PURCHASE);
     }
 
     // ---------------------- SETTERS ----------------------
@@ -625,6 +615,16 @@ class Entity extends Base\PublicEntity
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);
+    }
+
+    public function isAuthCapture()
+    {
+        return ($this->getAttribute(self::TYPE) === Type::AUTH_CAPTURE);
+    }
+
+    public function isPurchase()
+    {
+        return ($this->getAttribute(self::TYPE) === Type::PURCHASE);
     }
 
     public function isDomestic()

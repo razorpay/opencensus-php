@@ -42,20 +42,26 @@ class Terminal extends Base
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
-        $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl123',
-                                         'merchant_id' => $sharedMerchantAccount,
-                                         'category' => 123,
-                                         'shared' => 1]);
+        $this->createSharedHdfcTerminal([
+            'id' => 'SharedTrmnl123',
+            'merchant_id' => $sharedMerchantAccount,
+            'category' => 123,
+            'shared' => 1
+        ]);
 
-        $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl124',
-                                         'merchant_id' => $sharedMerchantAccount,
-                                         'category' => 124,
-                                         'shared' => 1]);
+        $this->createSharedHdfcTerminal([
+            'id' => 'SharedTrmnl124',
+            'merchant_id' => $sharedMerchantAccount,
+            'category' => 124,
+            'shared' => 1
+        ]);
 
-        $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl125',
-                                         'merchant_id' => $sharedMerchantAccount,
-                                         'category' => 125,
-                                         'shared' => 1]);
+        $this->createSharedHdfcTerminal([
+            'id' => 'SharedTrmnl125',
+            'merchant_id' => $sharedMerchantAccount,
+            'category' => 125,
+            'shared' => 1
+        ]);
     }
 
     public function createAtomTerminal(array $attributes = [])
@@ -432,6 +438,29 @@ class Terminal extends Base
             'type'                      => Type::PURCHASE,
             'gateway_merchant_id'       => 'random',
         ];
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedMigsRecurringTerminals()
+    {
+        $attributes = [
+            'id'                        => 'MiGSRcgTmnl3DS',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'axis_migs',
+            'gateway_acquirer'          => 'axis',
+            'card'                      => 1,
+            'shared'                    => 1,
+            'recurring'                 => 3,
+            'gateway_merchant_id'       => 'random',
+            'gateway_terminal_id'       => 'recurring_random',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $attributes['id']               = 'MiGSRcgTmlN3DS';
+        $attributes['recurring']        = 4;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
     }
