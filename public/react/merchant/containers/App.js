@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Router } from 'react-router-dom';
-import createHashHistory from 'history/createHashHistory';
+import { HashRouter as Router } from 'react-router-dom';
 
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Slider from 'rzp/ui/Slider';
@@ -14,29 +13,8 @@ import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 
-const history = createHashHistory();
-const push = history.push;
-let shouldNotify = true;
-
-history.push = function(path, options = {}, state) {
-  if (options.notify === false) {
-    shouldNotify = false;
-  } else {
-    shouldNotify = true;
-  }
-  push(path, state);
-};
-
 // Will be moved to separate file
 class Layout extends Component {
-  shouldComponentUpdate() {
-    if (!shouldNotify) {
-      shouldNotify = true;
-      return false;
-    }
-    return true;
-  }
-
   render() {
     return (
       <div class="layout">
@@ -114,7 +92,7 @@ export default class App extends Component {
     }
 
     return (
-      <Router history={history}>
+      <Router>
         <Layout>
           <HeaderNav
             user={user}
