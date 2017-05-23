@@ -12,14 +12,7 @@ class Utility extends \RZP\Gateway\Utility
 
         foreach ($array as $key => $value)
         {
-            if (is_array($value) === false)
-            {
-                $xml .= "<$key>$value</$key>\n";
-            }
-            else
-            {
-                $xml .= "<$key>" . self::createXml($value) . "</$key>\n";
-            }
+            $xml .= "<$key>$value</$key>\n";
         }
 
         return $xml;

@@ -83,8 +83,6 @@ trait Authorize
 
         $terminalGatewayInput = $gatewayInput;
 
-        $this->runPreGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
-
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -120,7 +118,7 @@ trait Authorize
 
             try
             {
-                if ($this->canRunOtpPaymentFlow($payment, $input))
+                if ($this->canRunOtpPaymentFlow($payment) === true)
                 {
                     $request = $this->callGatewayFunction(Action::OTP_GENERATE, $terminalGatewayInput);
                 }
@@ -802,7 +800,7 @@ trait Authorize
         (new Offer\Core)->validateOfferApplicableOnPayment($payment);
     }
 
-    protected function runPreGatewaySelectionPreProcessing($payment, array & $gatewayInput)
+    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
@@ -813,6 +811,11 @@ trait Authorize
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
+
+        //
+        // Call gateway input
+        //
+        $gatewayInput['payment'] = $payment->toArrayGateway();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
@@ -835,14 +838,6 @@ trait Authorize
         ];
 
         $this->segment->trackPayment($payment, TraceCode::GATEWAY_SELECTION_PREPROCESSING, $customProperties);
-    }
-
-    protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
-    {
-        //
-        // Call gateway input
-        //
-        $gatewayInput['payment'] = $payment->toArrayGateway();
     }
 
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
