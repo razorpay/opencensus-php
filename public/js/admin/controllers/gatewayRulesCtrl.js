@@ -53,12 +53,19 @@ app
 
       // fetch gateway rules on basis of mode and merchant id selected by user
       $scope.getRulesById = function(merchantId) {
-        var request = $http.get(
-          '/admin/' +
-            $scope.mode +
-            '/fetchentity/gateway_rule?merchant_id=' +
-            merchantId
-        );
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'gateway_rule',
+          },
+          mode: $scope.mode,
+          query_params: {
+            merchant_id: merchantId,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
 
         request
           .success(function(data) {

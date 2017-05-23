@@ -594,11 +594,8 @@
         <a href class="list-group-item" ng-init="isGatewayRulesCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isGatewayRulesCollapsed = !isGatewayRulesCollapsed"
-                      ng-if="gatewayRules && gatewayRules.items.length != 0">Show/Hide</button>
-              <span ng-if="!gatewayRules">
-                Some error occured
-              </span>
-              <span ng-if="gatewayRules && gatewayRules.items.length !== 0">
+                      ng-show="gatewayRules && gatewayRules.items.length != 0">Show/Hide</button>
+              <span ng-if="gatewayRules && gatewayRules.items.length === 0">
                 No Gateway rules found
               </span>
             </span>

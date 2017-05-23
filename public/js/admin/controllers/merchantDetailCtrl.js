@@ -57,6 +57,8 @@ app
       $scope.selected_groups = {};
 
       generateMerchant();
+      getGatewayRulesOfMerchant();
+
       $scope.lockForm = function() {
         var data = {
           route_name: 'merchant_activation_update',
@@ -1406,6 +1408,38 @@ app
         });
 
         $scope.terminals = terminals;
+      }
+
+      function getGatewayRulesOfMerchant() {
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'gateway_rule',
+          },
+          mode: $scope.mode,
+          query_params: {
+            merchant_id: $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.gatewayRules = data.data.items;
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
       }
 
       function generateMerchant() {
