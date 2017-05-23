@@ -136,6 +136,11 @@ class Service extends Base\Service
             {
                 // Finally attach the current user to the new user's team
                 $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+
+                (new User\Service)->attachMerchantUserOnApi(
+                                        $this->currentUser->id,
+                                        $merchant->id,
+                                        'owner');
             }
 
             return [null, $merchant->toArray()];
@@ -632,6 +637,8 @@ class Service extends Base\Service
         }
 
         $this->currentMerchant->users()->detach($userId);
+
+        (new User\Service)->detachMerchantUserOnApi($userId, $this->currentUser->currentMerchant()->id);
 
         return $error;
     }

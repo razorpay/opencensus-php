@@ -228,11 +228,11 @@ class Service extends Base\Service
         $response = $this->api->user->updateMapping($userId, $data);
     }
 
-    public function detachMerchantUserOnApi($userId, $merchantId, $role)
+    public function detachMerchantUserOnApi($userId, $merchantId)
     {
         $this->setApiCredentials();
 
-        $data = ['role' => $role, 'merchant_id' => $merchantId];
+        $data = ['merchant_id' => $merchantId];
 
         $response = $this->api->user->detach($userId, $data);
     }
@@ -321,6 +321,8 @@ class Service extends Base\Service
 
         $user->confirm();
 
+        $this->confirmUserOnApi($user->id);
+
         $this->subscribeToMailingList($user);
 
         /*
@@ -377,6 +379,8 @@ class Service extends Base\Service
         Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
 
         $user->confirm();
+
+        $this->confirmUserOnApi($user->id);
 
         $this->subscribeToMailingList($user);
 
@@ -777,6 +781,10 @@ class Service extends Base\Service
 
             $user->confirm();
 
+            $this->confirmUserOnApi($user->id);
+
+            $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
+
             $this->subscribeToMailingList($user);
         }
 
@@ -787,7 +795,12 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->user->changePassword($user->id, ['password' => $user->password]);
+        $params = [
+            'password'              => $user->password,
+            'password_confirmation' => $user->password,
+        ];
+
+        $response = $this->api->user->changePassword($user->id, $params);
 
         return $response;
     }

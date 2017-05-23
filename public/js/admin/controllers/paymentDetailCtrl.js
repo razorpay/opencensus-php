@@ -103,15 +103,18 @@ app
         }, $.noop);
       };
       $scope.refundAuthorized = function() {
+        var data = {
+          route_name: 'payment_authorize_refund',
+          merchant_id: $scope.entity.merchant_id,
+          mode: $scope.mode,
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/' +
-            $scope.mode +
-            '/' +
-            $scope.entity.merchant_id +
-            '/payments/' +
-            $scope.entity.id +
-            '/refund_authorized',
+          url: '/admin/generic',
+          data: data,
         });
         request
           .success(function(data) {
@@ -240,23 +243,23 @@ app
           $scope.alerts.addAlert('danger', 'Invalid capture amount', true);
           return;
         }
-
         var data = {
           amount: captureAmount,
           currency: $scope.entity.currency,
         };
-
+        var paymentCaptureData = {
+          route_name: 'payment_capture',
+          merchant_id: $scope.entity.merchant_id,
+          mode: $scope.mode,
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/' +
-            $scope.mode +
-            '/' +
-            $scope.entity.merchant_id +
-            '/payments/' +
-            $scope.entity.id +
-            '/capture',
-          transformRequest: transformRequestAsFormPost,
-          data: data,
+          url: '/admin/generic',
+          data: paymentCaptureData,
         });
         request
           .success(function(data) {
@@ -288,17 +291,19 @@ app
           );
           return;
         }
-
+        var paymentRefundData = {
+          route_name: 'payment_refund',
+          merchant_id: $scope.entity.merchant_id,
+          mode: $scope.mode,
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+          body: data,
+        };
         var request = $http({
           method: 'post',
-          url: '/admin/' +
-            $scope.mode +
-            '/' +
-            $scope.entity.merchant_id +
-            '/payments/' +
-            $scope.entity.id +
-            '/refund',
-          data: data,
+          url: '/admin/generic',
+          data: paymentRefundData,
         });
         request
           .success(function(data) {
@@ -325,9 +330,17 @@ app
           $scope.isRefundsCollapsed = true;
           return;
         }
-        var request = $http.get(
-          '/admin/' + $scope.mode + '/payments/' + $scope.entity.id + '/refunds'
-        );
+        var data = {
+          route_name: 'payment_fetch_refunds',
+          merchant_id: $scope.entity.merchant_id,
+          url_params: {
+            '{id}': $scope.entity.id,
+          },
+          mode: $scope.mode,
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
         request
           .success(function(data) {
             $scope.alerts.resetAlerts();

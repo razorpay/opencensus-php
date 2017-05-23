@@ -681,12 +681,23 @@ app.controller('EntitiesCtrl', [
         $scope.from,
         $scope.to
       );
-      var url = '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
       if (csv) {
+        var url =
+          '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
         window.open(url + '/csv?' + $.param(query));
         return;
       }
-      var request = $http.get(url, { params: query });
+      var data = {
+        route_name: 'admin_fetch_entity_multiple',
+        url_params: {
+          '{type}': $scope.entity_type,
+        },
+        mode: $scope.mode,
+        query_params: query,
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request
         .success(function(data) {
           $scope.alerts.resetAlerts();

@@ -2,6 +2,7 @@
 
 namespace App\Mailers;
 
+use App\Admin;
 use App\Merchant\Entity as MerchantEntity;
 use App\Exception\InvalidContactInformationException;
 
@@ -26,6 +27,11 @@ class MerchantMailer extends Mailer
         $this->data = $merchant->toArray();
         $this->data['merchant_details'] = $merchantDetails;
 
+        $domain = \Request::server('SERVER_NAME');
+        list($error, $org) = (new Admin\Service)->getOrg($domain);
+
+        $this->org = $org;
+
         $this->merchantDetails = $merchantDetails;
     }
 
@@ -36,12 +42,17 @@ class MerchantMailer extends Mailer
      */
     public function confirmActivationSubmission()
     {
-        $this->subject = 'Razorpay | Account pending approval for ' . $this->merchantDetails['business_name'];
+        $this->subject = $this->org['business_name'] . ' | Account pending approval for ' . $this->merchantDetails['business_name'];
 
         $this->to = $this->merchantDetails['contact_name'];
         $this->email = $this->merchantDetails['contact_email'];
         $this->view = 'emails.submission';
         $this->mailTag = MailTags::CONFIRM_ACTIVATION_SUBMISSION;
+
+        $this->fromEmail = $this->org['from_email'];
+        $this->fromName = $this->org['display_name'];
+
+        $this->data['org'] = $this->org;
 
         return $this;
     }
