@@ -605,19 +605,25 @@ class Core extends Base\Core
      */
     public function calculateAndSetAmountsOfInvoice(Entity $invoice)
     {
+        // Other types won't have taxation, their tax amount will be 0
+        // and net amount will be equal to amount.
+
+        if ($invoice->isTypeInvoice() === false)
+        {
+            $invoice->setTaxAmount(0);
+            $invoice->setNetAmount($invoice->getAmount());
+
+            return;
+        }
+
         $lineItems = $invoice->lineItems()->get();
 
-        // If there are no line items associated with invoice object,
-        // and it's of type invoice, make all amounts field 'null' (ie. unset).
-        //
-        // In any case, with no line items associated, just return.
+        // If there are no line items associated with invoice, make all amounts
+        // field 'null' (i.e. unset).
 
         if ($lineItems->count() === 0)
         {
-            if ($invoice->isTypeInvoice() === true)
-            {
-                $invoice->setAmountsToNull();
-            }
+            $invoice->setAmountsToNull();
 
             return;
         }

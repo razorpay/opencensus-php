@@ -6,6 +6,8 @@ use RZP\Models\Base;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Tax;
+use RZP\Exception\BadRequestException;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -161,5 +163,18 @@ class Core extends Base\Core
         $entity->lineItem()->associate($lineItem);
 
         $this->repo->saveOrFail($entity);
+    }
+
+    /**
+     * Taxation is done only for Invoice and not other types - eg. link/ecod.
+     *
+     * @param LineItem\Entity $lineItem
+     */
+    protected function validateLineItemIsOfAnInvoice(LineItem\Entity $lineItem)
+    {
+        if ($lineItem->entity->isTypeInvoice() === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_LINK_TYPE_HAS_NO_TAXATION);
+        }
     }
 }
