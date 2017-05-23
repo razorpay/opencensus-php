@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
-use BasicAuth;
+use App;
 use RZP\Constants\Mode;
 use RZP\Models;
 use RZP\Models\Base;
@@ -35,13 +35,22 @@ class Merchant
     protected $setlDetailAmounts;
     protected $scheduleTasks;
 
+    /**
+     * @var \RZP\Http\BasicAuth\BasicAuth
+     */
+    protected $ba;
+
     public function __construct($merchant, $channel, $repo = null)
     {
+        $app = App::getFacadeRoot();
+
         $this->merchant = $merchant;
 
         $this->channel = $channel;
 
         $this->repo = $repo;
+
+        $this->ba = $app['basicauth'];
 
         // Get merchant bank account
         $this->attachMerchantBankAccount();
@@ -408,7 +417,7 @@ class Merchant
      */
     protected function attachMerchantBankAccount(): BankAccount\Entity
     {
-        $mode = BasicAuth::getMode();
+        $mode = $this->ba->getMode();
 
         if (($mode === Mode::TEST) and
             ($this->merchant->bankAccount === null))
