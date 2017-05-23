@@ -143,7 +143,7 @@ export default props => {
                       label="Card Details"
                       onToggleClick={() => props.onToggleCardDetails(payment)}
                     >
-                      <table class="table table-hover table-striped">
+                      <table class="table table-hover">
                         <TableBody
                           colSpan={2}
                           isLoading={card.loading}
@@ -214,7 +214,7 @@ export default props => {
                   : null}
                 {Object.keys(payment.notes).length > 0
                   ? <ListGroupToggler label="Notes">
-                      <table class="table table-hover table-striped">
+                      <table class="table table-hover">
                         <TableBody
                           colSpan={2}
                           rows={Object.keys(payment.notes)}
@@ -245,7 +245,7 @@ export default props => {
                       label="Refunds"
                       onToggleClick={() => props.onToggleRefundList(payment)}
                     >
-                      <table class="table table-hover table-striped">
+                      <table class="table table-hover">
                         <TableBody
                           colSpan={2}
                           isLoading={refunds.loading}

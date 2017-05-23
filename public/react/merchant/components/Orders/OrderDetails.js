@@ -66,7 +66,7 @@ export default props => {
                       label="Payments"
                       onToggleClick={() => props.onTogglePayments(order)}
                     >
-                      <table class="table table-hover table-striped">
+                      <table class="table table-hover">
                         <TableBody
                           colSpan={2}
                           isLoading={payments.loading}
