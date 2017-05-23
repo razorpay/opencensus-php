@@ -134,7 +134,7 @@ class TerminalLoadSorterTest extends TestCase
     {
         $existingRule = $this->fixtures->create('gateway_rule:card', [
             'network' => null,
-            'load' => 6000,
+            'load' => 60,
         ]);
 
         $this->ba->appAuth();
@@ -146,7 +146,7 @@ class TerminalLoadSorterTest extends TestCase
     {
         $existingRule = $this->fixtures->create('gateway_rule:card', [
             'network' => null,
-            'load' => 6000,
+            'load' => 60,
         ]);
 
         $this->ba->appAuth();
@@ -171,7 +171,7 @@ class TerminalLoadSorterTest extends TestCase
 
         $rule2 = $existingRule = $this->fixtures->create('gateway_rule:card', [
             'network' => null,
-            'load' => 5000,
+            'load' => 50,
         ]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $rule2->getId();
@@ -200,7 +200,7 @@ class TerminalLoadSorterTest extends TestCase
             'gateway' => 'axis_migs',
             'method'  => 'card',
             'network' => 'VISA',
-            'load'    => 7000
+            'load'    => 70
         ]);
 
         Options::setTestChance(5000);
@@ -226,7 +226,7 @@ class TerminalLoadSorterTest extends TestCase
             'gateway' => 'axis_migs',
             'method'  => 'card',
             'network' => 'MC',
-            'load'    => 7000
+            'load'    => 70
         ]);
 
         Options::setTestChance(8000);
@@ -252,7 +252,7 @@ class TerminalLoadSorterTest extends TestCase
             'gateway' => 'axis_migs',
             'method'  => 'card',
             'network' => 'VISA',
-            'load'    => 7000
+            'load'    => 70
         ]);
 
         Options::setTestChance(9000);
@@ -278,21 +278,21 @@ class TerminalLoadSorterTest extends TestCase
             'gateway' => 'hdfc',
             'method'  => 'card',
             'network' => 'VISA',
-            'load'    => 3000
+            'load'    => 30
         ]);
 
         $this->fixtures->create('gateway_rule:card', [
             'gateway' => 'axis_migs',
             'method'  => 'card',
             'network' => 'VISA',
-            'load'    => 6000
+            'load'    => 60
         ]);
 
         $this->fixtures->create('gateway_rule:card', [
             'gateway' => 'cybersource',
             'method'  => 'card',
             'network' => 'VISA',
-            'load'    => 1000
+            'load'    => 10
         ]);
 
         Options::setTestChance(5000);
@@ -319,7 +319,7 @@ class TerminalLoadSorterTest extends TestCase
             'gateway'     => 'axis_migs',
             'method'      => 'card',
             'network'     => 'VISA',
-            'load'        => 7000
+            'load'        => 70
         ]);
 
         Options::setTestChance(5000);
@@ -341,14 +341,14 @@ class TerminalLoadSorterTest extends TestCase
             'gateway' => 'axis_migs',
             'method'  => 'card',
             'network' => 'VISA',
-            'load'    => 7000
+            'load'    => 70
         ]);
 
         $this->fixtures->create('gateway_rule:card', [
             'gateway' => 'hdfc',
             'method'  => 'card',
             'network' => 'VISA',
-            'load'    => 2000
+            'load'    => 20
         ]);
 
         Options::setTestChance(4000);
@@ -372,7 +372,7 @@ class TerminalLoadSorterTest extends TestCase
             'network'          => 'VISA',
             'issuer'           => 'HDFC',
             'gateway_acquirer' => 'hdfc',
-            'load'             => 7000
+            'load'             => 70
         ]);
 
         Options::setTestChance(4000);
@@ -398,7 +398,7 @@ class TerminalLoadSorterTest extends TestCase
         $this->fixtures->create('gateway_rule:netbanking', [
             'gateway' => 'paytm',
             'issuer'  => 'HDFC',
-            'load'    => 7000
+            'load'    => 70
         ]);
 
         Options::setTestChance(4000);
@@ -419,7 +419,7 @@ class TerminalLoadSorterTest extends TestCase
 
         $this->fixtures->create('gateway_rule:wallet', [
             'gateway' => 'wallet_mobikwik',
-            'load'    => 7000
+            'load'    => 70
         ]);
 
         Options::setTestChance(4000);

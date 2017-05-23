@@ -136,6 +136,9 @@ class Name
     const VIEW_ALL_WORKFLOW               = 'view_all_workflow';
     const EDIT_WORKFLOW                   = 'edit_workflow';
     const DELETE_WORKFLOW                 = 'delete_workflow';
+    const CREATE_GATEWAY_RULE             = 'create_gateway_rule';
+    const EDIT_GATEWAY_RULE               = 'edit_gateway_rule';
+    const DELETE_GATEWAY_RULE             = 'delete_gateway_rule';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE            => self::EDIT_MERCHANT_ARCHIVE,

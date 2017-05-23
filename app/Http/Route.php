@@ -1135,6 +1135,9 @@ final class Route
         'payment_fetch_refunds'            => Permission::VIEW_REFUND_PAYMENTS,
         'payment_refund'                   => Permission::EDIT_PAYMENT_REFUND,
         'payment_capture'                  => Permission::EDIT_PAYMENT_CAPTURE,
+        'gateway_create_rule'              => Permission::CREATE_GATEWAY_RULE,
+        'gateway_update_rule'              => Permission::EDIT_GATEWAY_RULE,
+        'gateway_delete_rule'              => Permission::DELETE_GATEWAY_RULE,
     ];
 
     public static $direct = [

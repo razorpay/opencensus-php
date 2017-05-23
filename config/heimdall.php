@@ -200,6 +200,11 @@ return [
             Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
         ],
 
+        PermissionCategory::GATEWAY_RULE => [
+            Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
+            Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
+            Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+        ],
     ],
 
     // trimmed down assignable permissions which an HDFC manager would have
@@ -311,6 +316,12 @@ return [
             Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
             Permission::CREATE_WORKFLOW    => 'Create a workflow',
         ],
+
+        PermissionCategory::GATEWAY_RULE => [
+            Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
+            Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
+            Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+        ],
     ],
 
     'enable_workflow_permissions' => [
@@ -382,6 +393,12 @@ return [
             Permission::EDIT_WORKFLOW      => 'Edit Workflows',
             Permission::DELETE_WORKFLOW    => 'Delete Workflows',
             Permission::CREATE_WORKFLOW    => 'Create a workflow',
+        ],
+
+        PermissionCategory::GATEWAY_RULE => [
+            Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
+            Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
+            Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
         ],
     ],
 
