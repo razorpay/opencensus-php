@@ -47,8 +47,12 @@ app
         },
       };
 
-      organization.fetchGroups().then(function(groups) {
-        $scope.groups = groups;
+      admin.identity().then(function(adminData) {
+        if (adminData.permissions.indexOf('view_all_group') !== -1) {
+          organization.fetchGroups().then(function(groups) {
+            $scope.groups = groups;
+          });
+        }
       });
       $scope.selected_groups = {};
 
@@ -1331,16 +1335,22 @@ app
           merchant_id: $scope.merchant.id,
           mode: mode,
         };
-        var request = $http.get('/admin/generic', {
-          params: data,
-        });
-        request.success(function(data) {
-          if (data.success) {
-            $scope.merchant.creditsLog = data.data;
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function(value) {
-              $scope.alerts.addAlert('danger', value);
+        admin.identity().then(function(adminData) {
+          if (
+            adminData.permissions.indexOf('view_merchant_credits_log') !== -1
+          ) {
+            var request = $http.get('/admin/generic', {
+              params: data,
+            });
+            request.success(function(data) {
+              if (data.success) {
+                $scope.merchant.creditsLog = data.data;
+              } else {
+                $scope.alerts.resetAlerts();
+                angular.forEach(data.errors, function(value) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
             });
           }
         });
@@ -1463,28 +1473,33 @@ app
             '{entityId}': $scope.merchant.id,
           },
         };
-        var request = $http.get('/admin/generic', {
-          params: data,
-        });
-        request
-          .success(function(data) {
-            if (data.success) {
-              // Full list of features which can be assigned to merchant
-              $scope.merchant.details.allowedFeatures = data.data.all_features;
-              // List of features currently assigned to merchant
-              $scope.merchant.details.features = getFeatureNames(
-                data.data.assigned_features
-              );
-            } else {
-              $scope.alerts.resetAlerts(true);
-              angular.forEach(data.errors, function(value) {
-                $scope.alerts.addAlert('danger', value);
+        admin.identity().then(function(adminData) {
+          if (adminData.permissions.indexOf('view_merchant_features') !== -1) {
+            var request = $http.get('/admin/generic', {
+              params: data,
+            });
+            request
+              .success(function(data) {
+                if (data.success) {
+                  // Full list of features which can be assigned to merchant
+                  $scope.merchant.details.allowedFeatures =
+                    data.data.all_features;
+                  // List of features currently assigned to merchant
+                  $scope.merchant.details.features = getFeatureNames(
+                    data.data.assigned_features
+                  );
+                } else {
+                  $scope.alerts.resetAlerts(true);
+                  angular.forEach(data.errors, function(value) {
+                    $scope.alerts.addAlert('danger', value);
+                  });
+                }
+              })
+              .error(function() {
+                $scope.alerts.addAlert('danger', null);
               });
-            }
-          })
-          .error(function() {
-            $scope.alerts.addAlert('danger', null);
-          });
+          }
+        });
       }
 
       /**
@@ -1526,55 +1541,59 @@ app
         $scope.merchant.credits = {};
         $scope.merchant.fee_credits = {};
 
-        // live mode
-        var request = $http.get('/admin/generic', {
-          params: {
-            route_name: 'balance_fetch',
-            merchant_id: $scope.merchant.id,
-            mode: 'live',
-          },
-        });
-        request
-          .success(function(data) {
-            if (data.success) {
-              $scope.merchant.balance.live = data.data.balance;
-              $scope.merchant.credits.live = data.data.credits;
-              $scope.merchant.fee_credits.live = data.data.fee_credits;
-            } else {
-              $scope.alerts.resetAlerts();
-              angular.forEach(data.errors, function(value) {
-                $scope.alerts.addAlert('danger', value);
+        admin.identity().then(function(adminData) {
+          if (adminData.permissions.indexOf('view_merchant_balance') !== -1) {
+            // live mode
+            var request = $http.get('/admin/generic', {
+              params: {
+                route_name: 'balance_fetch',
+                merchant_id: $scope.merchant.id,
+                mode: 'live',
+              },
+            });
+            request
+              .success(function(data) {
+                if (data.success) {
+                  $scope.merchant.balance.live = data.data.balance;
+                  $scope.merchant.credits.live = data.data.credits;
+                  $scope.merchant.fee_credits.live = data.data.fee_credits;
+                } else {
+                  $scope.alerts.resetAlerts();
+                  angular.forEach(data.errors, function(value) {
+                    $scope.alerts.addAlert('danger', value);
+                  });
+                }
+              })
+              .error(function() {
+                $scope.alerts.addAlert('danger', null, true);
               });
-            }
-          })
-          .error(function() {
-            $scope.alerts.addAlert('danger', null, true);
-          });
 
-        // test mode
-        var request = $http.get('/admin/generic', {
-          params: {
-            route_name: 'balance_fetch',
-            merchant_id: $scope.merchant.id,
-            mode: 'test',
-          },
-        });
-        request
-          .success(function(data) {
-            if (data.success) {
-              $scope.merchant.balance.test = data.data.balance;
-              $scope.merchant.credits.test = data.data.credits;
-              $scope.merchant.fee_credits.test = data.data.fee_credits;
-            } else {
-              $scope.alerts.resetAlerts();
-              angular.forEach(data.errors, function(value) {
-                $scope.alerts.addAlert('danger', value);
+            // test mode
+            var request = $http.get('/admin/generic', {
+              params: {
+                route_name: 'balance_fetch',
+                merchant_id: $scope.merchant.id,
+                mode: 'test',
+              },
+            });
+            request
+              .success(function(data) {
+                if (data.success) {
+                  $scope.merchant.balance.test = data.data.balance;
+                  $scope.merchant.credits.test = data.data.credits;
+                  $scope.merchant.fee_credits.test = data.data.fee_credits;
+                } else {
+                  $scope.alerts.resetAlerts();
+                  angular.forEach(data.errors, function(value) {
+                    $scope.alerts.addAlert('danger', value);
+                  });
+                }
+              })
+              .error(function() {
+                $scope.alerts.addAlert('danger', null, true);
               });
-            }
-          })
-          .error(function() {
-            $scope.alerts.addAlert('danger', null, true);
-          });
+          }
+        });
       }
     },
   ])
