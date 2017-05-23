@@ -65,4 +65,19 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute('refund_id');
     }
+
+    public function getPaymentId()
+    {
+        return $this->getAttribute('payment_id');
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute('amount');
+    }
+
+    public function getStatusCode()
+    {
+        return $this->getAttribute('statuscode');
+    }
 }
