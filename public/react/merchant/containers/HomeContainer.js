@@ -7,7 +7,6 @@ import { fetchRefunds } from 'merchant/modules/refunds/list';
 import { fetchSettlements } from 'merchant/modules/settlements/list';
 import moment from 'moment';
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
-import { createLineData } from 'rzp/utils/chart';
 import InfoCardList from 'merchant/components/Home/InfoCardList';
 import RecentEntityTable from 'merchant/components/Home/EntityTable';
 import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
@@ -45,31 +44,6 @@ export default class HomeContainer extends Component {
     this.props.fetchSettlements({ count: 5 });
   }
 
-  getTransactionCountData(data, isLive) {
-    return createLineData(
-      data.filter(d => {
-        if (isLive) {
-          return !d.mode;
-        }
-        return d.mode;
-      }),
-      'count',
-      'Successful Transactions'
-    );
-  }
-
-  getTransactionAmountData(data, isLive) {
-    data = JSON.parse(JSON.stringify(data));
-    data = data.filter(d => {
-      if (isLive) {
-        return !d.mode;
-      }
-      d.amount = d.amount / 100;
-      return d.mode;
-    });
-    return createLineData(data, 'amount', 'Transaction Volume');
-  }
-
   render() {
     let {
       entity_totals,
@@ -82,15 +56,6 @@ export default class HomeContainer extends Component {
     let isLive = this.props.mode === 'live';
     let graphData = this.props.analytics;
 
-    let transactionCountData = this.getTransactionCountData(
-      graphData.data,
-      isLive
-    );
-    let transactionAmountData = this.getTransactionAmountData(
-      graphData.data,
-      isLive
-    );
-
     return (
       <div class="react-root">
         <Header title="Dashboard" showMode={false}>
@@ -99,6 +64,7 @@ export default class HomeContainer extends Component {
               onDatesChange={params => {
                 this.props.fetchAnalytics(params);
               }}
+              isLive={isLive}
             />
           </div>
           <div>
@@ -129,7 +95,7 @@ export default class HomeContainer extends Component {
                 }}
                 loading={graphData.loading}
                 error={graphData.error}
-                data={transactionCountData}
+                data={graphData.transaction_count}
               />
             </div>
           </div>
@@ -159,7 +125,7 @@ export default class HomeContainer extends Component {
               }}
               loading={graphData.loading}
               error={graphData.error}
-              data={transactionAmountData}
+              data={graphData.transaction_amount}
             />
             <MethodBreakupCard
               data={payment_breakup.data}

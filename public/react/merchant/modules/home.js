@@ -1,5 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
+import { createLineData } from 'rzp/utils/chart';
 
 // graph data
 // fetched everytime date is changed
@@ -14,7 +15,8 @@ let initialState = {
   analytics: {
     loading: true,
     data: [],
-    error: null,
+    transaction_count: null,
+    transaction_amount: null,
   },
   entity_totals: {
     loading: true,
@@ -33,6 +35,31 @@ let initialState = {
   },
 };
 
+const getTransactionCountData = (data, isLive) => {
+  return createLineData(
+    data.filter(d => {
+      if (isLive) {
+        return !d.mode;
+      }
+      return d.mode;
+    }),
+    'count',
+    'Successful Transactions'
+  );
+};
+
+const getTransactionAmountData = (data, isLive) => {
+  data = JSON.parse(JSON.stringify(data));
+  data = data.filter(d => {
+    if (isLive) {
+      return !d.mode;
+    }
+    d.amount = d.amount / 100;
+    return d.mode;
+  });
+  return createLineData(data, 'amount', 'Transaction Volume');
+};
+
 export const fetchAnalytics = params => {
   return dispatch => {
     return dispatch({
@@ -44,6 +71,22 @@ export const fetchAnalytics = params => {
           from: params.from,
           to: params.to,
         },
+      }).then(response => {
+        let transaction_count = null, transaction_amount = null;
+        if (response.data) {
+          transaction_count = getTransactionCountData(
+            response.data,
+            params.isLive
+          );
+          transaction_amount = getTransactionAmountData(
+            response.data,
+            params.isLive
+          );
+        }
+        return {
+          transaction_count,
+          transaction_amount,
+        };
       }),
     });
   };
@@ -98,7 +141,8 @@ export default function(state = initialState, action) {
     case `${ANALYTICS_FETCH}::SUCCESS`:
       return merge(state, {
         analytics: {
-          data: action.payload.data,
+          transaction_count: action.payload.transaction_count,
+          transaction_amount: action.payload.transaction_amount,
           loading: false,
           error: null,
         },
@@ -135,7 +179,8 @@ export default function(state = initialState, action) {
       return set(state, 'analytics', {
         loading: false,
         error: action.payload.errors,
-        data: initialState.analytics.data,
+        transaction_count: initialState.analytics.transaction_count,
+        transaction_amount: initialState.analytics.transaction_amount,
       });
 
     case `${ENTITY_TOTALS_FETCH}::ERROR`:
