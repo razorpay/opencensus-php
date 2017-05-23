@@ -213,6 +213,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
+    }
+
     public function isStatusCreated()
     {
         return ($this->getStatus() === Status::CREATED);
