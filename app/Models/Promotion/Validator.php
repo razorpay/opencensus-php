@@ -26,8 +26,8 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME                      => 'sometimes|string|max:50',
-        Entity::AMOUNT                    => 'required|integer|min:1',
-        Entity::CREDIT_TYPE               => 'required|in:fee,amount',
+        Entity::AMOUNT                    => 'sometimes|integer|min:1',
+        Entity::CREDIT_TYPE               => 'sometimes|in:fee,amount',
         Entity::ITERATIONS                => 'sometimes|integer|min:1',
         Entity::CREDITS_EXPIRE            => 'sometimes|boolean',
         self::CREDITS_EXPIRY_INTERVAL     => 'sometimes|integer',
@@ -44,31 +44,37 @@ class Validator extends Base\Validator
 
     protected function validateCreditsExpiryPeriod(array $input)
     {
-        if ((isset($input[Entity::CREDITS_EXPIRE]) === false) or
+        if ((empty($input[Entity::CREDITS_EXPIRE]) === true) or
             ($input[Entity::CREDITS_EXPIRE] === false))
         {
             return;
         }
 
-        if ((isset($input[self::CREDITS_EXPIRY_PERIOD]) === false) or
-            (Period::isPeriodValid($input[self::CREDITS_EXPIRY_PERIOD]) === false))
+        if (isset($input[self::CREDITS_EXPIRY_PERIOD]) === false)
         {
-            throw new Exception\BadRequestException("credits_expiry_period required");
+            throw new  Exception\BadRequestValidationFailureException(
+                'The credits expiry period must be sent');
+        }
+
+        if (Period::isPeriodValid($input[self::CREDITS_EXPIRY_PERIOD]) === false)
+        {
+           throw new  Exception\BadRequestValidationFailureException(
+                'The credits expiry period is not valid');
         }
     }
 
     protected function validateCreditsExpiryInterval(array $input)
     {
-        if ((isset($input[Entity::CREDITS_EXPIRE]) === false) or
+        if ((empty($input[Entity::CREDITS_EXPIRE]) === true) or
             ($input[Entity::CREDITS_EXPIRE] === false))
         {
             return;
         }
 
-        if ((isset($input[self::CREDITS_EXPIRY_INTERVAL]) === false) or
-            (is_int($input[self::CREDITS_EXPIRY_INTERVAL]) === false))
+        if (isset($input[self::CREDITS_EXPIRY_INTERVAL]) === false)
         {
-            throw new Exception\BadRequestException("credits_expiry_interval required");
+            throw new  Exception\BadRequestValidationFailureException(
+                'The credits expiry interval must be sent');
         }
     }
 }

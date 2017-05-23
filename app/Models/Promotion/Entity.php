@@ -62,8 +62,22 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT         => 'int',
         self::ITERATIONS     => 'int',
-        self::CREDITS_EXPIRE => 'bool',
+        self::CREDITS_EXPIRE => 'boolean',
     ];
+
+    protected static $modifiers = [
+        self::CREDITS_EXPIRE,
+    ];
+
+    protected function modifyCreditsExpire(& $input)
+    {
+        if (empty($input[self::CREDITS_EXPIRE]) === true)
+        {
+            $input[self::CREDITS_EXPIRE] = false;
+        }
+
+        $input[self::CREDITS_EXPIRE] = (bool) $input[self::CREDITS_EXPIRE];
+    }
 
     public function schedule()
     {

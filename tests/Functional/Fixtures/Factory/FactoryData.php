@@ -687,5 +687,9 @@ final class FactoryData
             'updated_at'  => $faker->timestamp,
             'deleted_at'  => null,
         ]);
+
+        $factory(\RZP\Models\Promotion\Entity::class, [
+            'id'          => $faker->uniqueid
+        ]);
     }
 }

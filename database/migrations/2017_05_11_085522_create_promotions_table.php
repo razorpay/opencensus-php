@@ -30,7 +30,7 @@ class CreatePromotionsTable extends Migration
             $table->string(Promotion::CREDIT_TYPE);
 
             $table->char(Promotion::SCHEDULE_ID, Promotion::ID_LENGTH)
-                  ->nullbale()
+                  ->nullable()
                   ->default(null);
 
             $table->integer(Promotion::ITERATIONS)
