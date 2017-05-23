@@ -215,6 +215,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_AMOUNT,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
