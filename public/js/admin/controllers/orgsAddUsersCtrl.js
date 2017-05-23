@@ -149,7 +149,7 @@ app.controller('OrgsAddUsersCtrl', [
       var request = $http.put('/admin/generic', data, {
         params: {
           route_name: 'admin_edit',
-
+          content_type: 'application/json',
           url_params: {
             '{adminId}': user.id,
           },
