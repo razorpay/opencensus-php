@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Key;
 
+use App;
 use Crypt;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
@@ -53,7 +54,9 @@ class Entity extends Base\PublicEntity
 
     public function getPublicId()
     {
-        $mode = \BasicAuth::getMode();
+        $app = App::getFacadeRoot();
+
+        $mode = $app['basicauth']->getMode();
 
         return 'rzp_' . $mode . '_' . $this->getKey();
     }
@@ -62,7 +65,9 @@ class Entity extends Base\PublicEntity
     {
         if ($mode === null)
         {
-            $mode = \BasicAuth::getMode();
+            $app = App::getFacadeRoot();
+
+            $mode = $app['basicauth']->getMode();
         }
 
         return 'rzp_' . $mode . '_' . $this->getKey();
@@ -193,7 +198,10 @@ class Entity extends Base\PublicEntity
 
     public static function stripSign(& $id)
     {
-        $mode = \BasicAuth::getMode();
+        $app = App::getFacadeRoot();
+
+        $mode = $app['basicauth']->getMode();
+
         $prefix = 'rzp_' . $mode . '_';
 
         if (strpos($id, $prefix) === false)
