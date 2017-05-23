@@ -2202,8 +2202,8 @@ trait Authorize
      */
     protected function isOtpOrAuthFlow(array $input): bool
     {
-        if ((isset($input['_']['isOtp']) === true) and
-            ($input['_']['isOtp'] === false))
+        if ((isset($input['_']['source']) === true) and
+            ($input['_']['source'] === 'auth'))
         {
             return false;
         }

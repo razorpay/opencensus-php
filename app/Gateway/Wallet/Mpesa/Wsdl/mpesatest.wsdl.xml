@@ -1,0 +1,408 @@
+<definitions xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:wsp1_2="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://paymentgateway.mcommerce/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://paymentgateway.mcommerce/" name="MCOMPGInterfaceImplService">
+<types>
+<xsd:schema>
+<xsd:import namespace="http://paymentgateway.mcommerce/" schemaLocation="http://182.19.20.182:81/mcommerce.webservices/pgService?xsd=1"/>
+</xsd:schema>
+</types>
+<message name="pgValidateOTP">
+<part name="parameters" element="tns:pgValidateOTP"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgValidateOTPResponse">
+<part name="result" element="tns:pgValidateOTPResponse"/>
+</message>
+<message name="pgSendSMS">
+<part name="parameters" element="tns:pgSendSMS"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgSendSMSResponse">
+<part name="result" element="tns:pgSendSMSResponse"/>
+</message>
+<message name="pgSendOTP">
+<part name="parameters" element="tns:pgSendOTP"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgSendOTPResponse">
+<part name="result" element="tns:pgSendOTPResponse"/>
+</message>
+<message name="pgMultiEmoneyCreation">
+<part name="parameters" element="tns:pgMultiEmoneyCreation"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgMultiEmoneyCreationResponse">
+<part name="result" element="tns:pgMultiEmoneyCreationResponse"/>
+</message>
+<message name="mrchntIntiativePymnt">
+<part name="parameters" element="tns:mrchntIntiativePymnt"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="mrchntIntiativePymntResponse">
+<part name="result" element="tns:mrchntIntiativePymntResponse"/>
+</message>
+<message name="mrchntInitiatedPymnt">
+<part name="parameters" element="tns:mrchntInitiatedPymnt"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="mrchntInitiatedPymntResponse">
+<part name="result" element="tns:mrchntInitiatedPymntResponse"/>
+</message>
+<message name="queryPaymentTransaction">
+<part name="parameters" element="tns:queryPaymentTransaction"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="queryPaymentTransactionResponse">
+<part name="result" element="tns:queryPaymentTransactionResponse"/>
+</message>
+<message name="refundPaymentTransaction">
+<part name="parameters" element="tns:refundPaymentTransaction"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="refundPaymentTransactionResponse">
+<part name="result" element="tns:refundPaymentTransactionResponse"/>
+</message>
+<message name="pgAuthenticateCustomer">
+<part name="parameters" element="tns:pgAuthenticateCustomer"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgAuthenticateCustomerResponse">
+<part name="result" element="tns:pgAuthenticateCustomerResponse"/>
+</message>
+<message name="pgEmoneyCreation">
+<part name="parameters" element="tns:pgEmoneyCreation"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgEmoneyCreationResponse">
+<part name="result" element="tns:pgEmoneyCreationResponse"/>
+</message>
+<message name="pgEncryptData">
+<part name="parameters" element="tns:pgEncryptData"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgEncryptDataResponse">
+<part name="result" element="tns:pgEncryptDataResponse"/>
+</message>
+<message name="pgMrchntPymt">
+<part name="parameters" element="tns:pgMrchntPymt"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgMrchntPymtResponse">
+<part name="result" element="tns:pgMrchntPymtResponse"/>
+</message>
+<message name="processPayment">
+<part name="parameters" element="tns:processPayment"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="processPaymentResponse">
+<part name="result" element="tns:processPaymentResponse"/>
+</message>
+<message name="validateCustomer">
+<part name="parameters" element="tns:validateCustomer"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="validateCustomerResponse">
+<part name="result" element="tns:validateCustomerResponse"/>
+</message>
+<message name="pgEmoneyCreationSI">
+<part name="parameters" element="tns:pgEmoneyCreationSI"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgEmoneyCreationSIResponse">
+<part name="result" element="tns:pgEmoneyCreationSIResponse"/>
+</message>
+<message name="pgRetrieveBalance">
+<part name="parameters" element="tns:pgRetrieveBalance"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgRetrieveBalanceResponse">
+<part name="result" element="tns:pgRetrieveBalanceResponse"/>
+</message>
+<message name="pgCreateEmoney">
+<part name="parameters" element="tns:pgCreateEmoney"/>
+<part name="userId" element="tns:userId"/>
+<part name="password" element="tns:password"/>
+</message>
+<message name="pgCreateEmoneyResponse">
+<part name="result" element="tns:pgCreateEmoneyResponse"/>
+</message>
+<portType name="MCOMPGInterface">
+<operation name="pgValidateOTP" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgValidateOTPRequest" message="tns:pgValidateOTP"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgValidateOTPResponse" message="tns:pgValidateOTPResponse"/>
+</operation>
+<operation name="pgSendSMS" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgSendSMSRequest" message="tns:pgSendSMS"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgSendSMSResponse" message="tns:pgSendSMSResponse"/>
+</operation>
+<operation name="pgSendOTP" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgSendOTPRequest" message="tns:pgSendOTP"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgSendOTPResponse" message="tns:pgSendOTPResponse"/>
+</operation>
+<operation name="pgMultiEmoneyCreation" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgMultiEmoneyCreationRequest" message="tns:pgMultiEmoneyCreation"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgMultiEmoneyCreationResponse" message="tns:pgMultiEmoneyCreationResponse"/>
+</operation>
+<operation name="mrchntIntiativePymnt" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/mrchntIntiativePymntRequest" message="tns:mrchntIntiativePymnt"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/mrchntIntiativePymntResponse" message="tns:mrchntIntiativePymntResponse"/>
+</operation>
+<operation name="mrchntInitiatedPymnt" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/mrchntInitiatedPymntRequest" message="tns:mrchntInitiatedPymnt"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/mrchntInitiatedPymntResponse" message="tns:mrchntInitiatedPymntResponse"/>
+</operation>
+<operation name="queryPaymentTransaction" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/queryPaymentTransactionRequest" message="tns:queryPaymentTransaction"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/queryPaymentTransactionResponse" message="tns:queryPaymentTransactionResponse"/>
+</operation>
+<operation name="refundPaymentTransaction" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/refundPaymentTransactionRequest" message="tns:refundPaymentTransaction"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/refundPaymentTransactionResponse" message="tns:refundPaymentTransactionResponse"/>
+</operation>
+<operation name="pgAuthenticateCustomer" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgAuthenticateCustomerRequest" message="tns:pgAuthenticateCustomer"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgAuthenticateCustomerResponse" message="tns:pgAuthenticateCustomerResponse"/>
+</operation>
+<operation name="pgEmoneyCreation" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgEmoneyCreationRequest" message="tns:pgEmoneyCreation"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgEmoneyCreationResponse" message="tns:pgEmoneyCreationResponse"/>
+</operation>
+<operation name="pgEncryptData" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgEncryptDataRequest" message="tns:pgEncryptData"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgEncryptDataResponse" message="tns:pgEncryptDataResponse"/>
+</operation>
+<operation name="pgMrchntPymt" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgMrchntPymtRequest" message="tns:pgMrchntPymt"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgMrchntPymtResponse" message="tns:pgMrchntPymtResponse"/>
+</operation>
+<operation name="processPayment" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/processPaymentRequest" message="tns:processPayment"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/processPaymentResponse" message="tns:processPaymentResponse"/>
+</operation>
+<operation name="validateCustomer" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/validateCustomerRequest" message="tns:validateCustomer"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/validateCustomerResponse" message="tns:validateCustomerResponse"/>
+</operation>
+<operation name="pgEmoneyCreationSI" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgEmoneyCreationSIRequest" message="tns:pgEmoneyCreationSI"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgEmoneyCreationSIResponse" message="tns:pgEmoneyCreationSIResponse"/>
+</operation>
+<operation name="pgRetrieveBalance" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgRetrieveBalanceRequest" message="tns:pgRetrieveBalance"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgRetrieveBalanceResponse" message="tns:pgRetrieveBalanceResponse"/>
+</operation>
+<operation name="pgCreateEmoney" parameterOrder="parameters userId password">
+<input wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgCreateEmoneyRequest" message="tns:pgCreateEmoney"/>
+<output wsam:Action="http://paymentgateway.mcommerce/MCOMPGInterface/pgCreateEmoneyResponse" message="tns:pgCreateEmoneyResponse"/>
+</operation>
+</portType>
+<binding name="MCOMPGInterfaceImplPortBinding" type="tns:MCOMPGInterface">
+<soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+<operation name="pgValidateOTP">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgValidateOTP" part="userId" use="literal"/>
+<soap:header message="tns:pgValidateOTP" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgSendSMS">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgSendSMS" part="userId" use="literal"/>
+<soap:header message="tns:pgSendSMS" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgSendOTP">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgSendOTP" part="userId" use="literal"/>
+<soap:header message="tns:pgSendOTP" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgMultiEmoneyCreation">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgMultiEmoneyCreation" part="userId" use="literal"/>
+<soap:header message="tns:pgMultiEmoneyCreation" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="mrchntIntiativePymnt">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:mrchntIntiativePymnt" part="userId" use="literal"/>
+<soap:header message="tns:mrchntIntiativePymnt" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="mrchntInitiatedPymnt">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:mrchntInitiatedPymnt" part="userId" use="literal"/>
+<soap:header message="tns:mrchntInitiatedPymnt" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="queryPaymentTransaction">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:queryPaymentTransaction" part="userId" use="literal"/>
+<soap:header message="tns:queryPaymentTransaction" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="refundPaymentTransaction">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:refundPaymentTransaction" part="userId" use="literal"/>
+<soap:header message="tns:refundPaymentTransaction" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgAuthenticateCustomer">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgAuthenticateCustomer" part="userId" use="literal"/>
+<soap:header message="tns:pgAuthenticateCustomer" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgEmoneyCreation">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgEmoneyCreation" part="userId" use="literal"/>
+<soap:header message="tns:pgEmoneyCreation" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgEncryptData">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgEncryptData" part="userId" use="literal"/>
+<soap:header message="tns:pgEncryptData" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgMrchntPymt">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgMrchntPymt" part="userId" use="literal"/>
+<soap:header message="tns:pgMrchntPymt" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="processPayment">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:processPayment" part="userId" use="literal"/>
+<soap:header message="tns:processPayment" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="validateCustomer">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:validateCustomer" part="userId" use="literal"/>
+<soap:header message="tns:validateCustomer" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgEmoneyCreationSI">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgEmoneyCreationSI" part="userId" use="literal"/>
+<soap:header message="tns:pgEmoneyCreationSI" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgRetrieveBalance">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgRetrieveBalance" part="userId" use="literal"/>
+<soap:header message="tns:pgRetrieveBalance" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+<operation name="pgCreateEmoney">
+<soap:operation soapAction=""/>
+<input>
+<soap:body use="literal" parts="parameters"/>
+<soap:header message="tns:pgCreateEmoney" part="userId" use="literal"/>
+<soap:header message="tns:pgCreateEmoney" part="password" use="literal"/>
+</input>
+<output>
+<soap:body use="literal"/>
+</output>
+</operation>
+</binding>
+<service name="MCOMPGInterfaceImplService">
+<port name="MCOMPGInterfaceImplPort" binding="tns:MCOMPGInterfaceImplPortBinding">
+<soap:address location="http://182.19.20.182:81/mcommerce.webservices/pgService"/>
+</port>
+</service>
+</definitions>

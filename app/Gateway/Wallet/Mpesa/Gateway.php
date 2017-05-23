@@ -424,7 +424,7 @@ class Gateway extends Base\Gateway
     {
         $wallet = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
-            [Action::AUTHORIZE]);
+            Action::AUTHORIZE);
 
         $gatewayPaymentId = $wallet->getGatewayPaymentId();
 
@@ -591,13 +591,27 @@ class Gateway extends Base\Gateway
 
     protected function getSoapClientObject()
     {
-        $soapClient = new SoapClient($this->getUrl());
+        $file = $this->getWsdlFile();
+
+        $soapClient = new SoapClient($file);
 
         $headers = $this->getSoapHeaders();
 
         $soapClient->__setSoapHeaders($headers);
 
         return $soapClient;
+    }
+
+    protected function getWsdlFile()
+    {
+        $file = __DIR__ . '/Wsdl/mpesalive.wsdl.xml';
+
+        if ($this->mode === Mode::TEST)
+        {
+            $file = __DIR__ . '/Wsdl/mpesatest.wsdl.xml';
+        }
+
+        return $file;
     }
 
     protected function getMappedAttributes($attributes)

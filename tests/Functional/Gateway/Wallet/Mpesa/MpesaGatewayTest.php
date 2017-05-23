@@ -63,7 +63,7 @@ class MpesaGatewayTest extends TestCase
         // instead of otp flow to execute the test case correctly
         //
         $payment = $this->payment;
-        $payment['_']['isOtp'] = false;
+        $payment['_']['source'] = 'auth';
 
         $this->doAuthPayment($payment);
 
@@ -89,7 +89,7 @@ class MpesaGatewayTest extends TestCase
         // instead of otp flow to execute the test case correctly
         //
         $payment = $this->payment;
-        $payment['_']['isOtp'] = false;
+        $payment['_']['source'] = 'auth';
 
         $this->mockActionFailure();
 

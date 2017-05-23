@@ -23,7 +23,9 @@ class Gateway extends Mpesa\Gateway
 
     protected function getSoapClientObject()
     {
-        $soapClient = new SoapClient($this->getUrl());
+        $file = __DIR__ . '../Wsdl/mpesatest.wsdl.xml';
+
+        $soapClient = new SoapClient($file);
 
         $headers = $this->getSoapHeaders();
 
