@@ -768,48 +768,6 @@ class Service extends Base\Service
         }
     }
 
-    public function refundAuthorizedPayment($mode, $merchantId, $id)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        try
-        {
-            $data = $this->api->payment->fetch($id)
-                ->refundAuthorized()
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
-    public function refundPayment($mode, $merchantId, $id, $input)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        try
-        {
-            $data = $this->api->payment->fetch($id)
-                ->refund($input)
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
-    }
-
     /**
      * Makes a request to fetch the list of payment_analytics entities
      * for that payment, and then returns the URL for the entity
@@ -856,56 +814,6 @@ class Service extends Base\Service
         }
 
         return [$error, $analytics];
-    }
-
-    public function getPaymentRefunds($mode, $paymentId)
-    {
-        list($error, $response) = $this->fetchEntityById($mode, 'payment', $paymentId);
-
-        if(empty($error))
-        {
-            $merchantId = $response['merchant_id'];
-            $this->setApiCredentials($merchantId, $mode);
-
-            try
-            {
-                $data = $this->api->payment->fetch($paymentId)
-                    ->refunds()
-                    ->all()
-                    ->toArray();
-            }
-            catch (\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error = $e->getMessage();
-            }
-
-            return array($error, $data);
-        }
-        else
-        {
-            return [$error, null];
-        }
-    }
-
-    public function capturePayment($mode, $merchantId, $id, $input)
-    {
-        $data = [];
-        $error = [];
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        try
-        {
-            $data = $this->api->payment->fetch($id)
-                ->capture($input)
-                ->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $data);
     }
 
     public function lockMerchant($id)
