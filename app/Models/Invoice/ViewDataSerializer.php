@@ -84,7 +84,7 @@ class ViewDataSerializer extends Base\Core
         $invoiceData = $this->invoice->toArrayPublic();
 
         $isInvoicePaid = $this->invoice->isPaid();
-        $invoiceAmountFormatted = number_format($invoiceData[Entity::NET_AMOUNT] / 100, 2);
+        $invoiceAmountFormatted = number_format($invoiceData[Entity::AMOUNT] / 100, 2);
 
         $invoiceData += [
             'is_paid'          => $isInvoicePaid,
@@ -113,7 +113,8 @@ class ViewDataSerializer extends Base\Core
             function (& $lineItem, $i)
             {
                 $amountFormatted = number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2);
-                $totalAmountFormatted = number_format($lineItem[LineItem\Entity::TOTAL_AMOUNT] / 100, 2);
+                $totalAmount = $lineItem[LineItem\Entity::AMOUNT] * $lineItem[LineItem\Entity::QUANTITY];
+                $totalAmountFormatted = number_format($totalAmount / 100, 2);
 
                 $lineItem += [
                     'amount_formatted'       => $amountFormatted,

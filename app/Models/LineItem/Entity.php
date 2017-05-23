@@ -92,14 +92,14 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
-        self::TOTAL_AMOUNT,
-        self::TAX_AMOUNT,
-        self::NET_AMOUNT,
+        // self::TOTAL_AMOUNT,
+        // self::TAX_AMOUNT,
+        // self::NET_AMOUNT,
         self::CURRENCY,
-        self::TAX_INCLUSIVE,
-        self::UNIT,
+        // self::TAX_INCLUSIVE,
+        // self::UNIT,
         self::QUANTITY,
-        self::TAXES,
+        // self::TAXES,
     ];
 
     protected $fillable = [
@@ -137,10 +137,10 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
-        self::UNIT,
-        self::TAX_INCLUSIVE,
-        self::TAX_ID,
-        self::TAX_GROUP_ID,
+        // self::UNIT,
+        // self::TAX_INCLUSIVE,
+        // self::TAX_ID,
+        // self::TAX_GROUP_ID,
     ];
 
     // -------------------------- Getters ----------------------------

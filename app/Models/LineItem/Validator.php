@@ -15,10 +15,10 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::AMOUNT              => 'required_without:item_id|integer|min:100',
         Entity::CURRENCY            => 'required_without:item_id|size:3|in:INR',
-        Entity::UNIT                => 'sometimes|string|max:512',
-        Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
-        Entity::TAX_ID              => 'sometimes|public_id|size:18',
-        Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
+        // Entity::UNIT                => 'sometimes|string|max:512',
+        // Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
+        // Entity::TAX_ID              => 'sometimes|public_id|size:18',
+        // Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
     ];
 
     protected static $createManyRules = [
@@ -33,10 +33,10 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
         Entity::CURRENCY            => 'sometimes|size:3|in:INR',
-        Entity::UNIT                => 'sometimes|string|max:512',
-        Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
-        Entity::TAX_ID              => 'sometimes|public_id|size:18',
-        Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
+        // Entity::UNIT                => 'sometimes|string|max:512',
+        // Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
+        // Entity::TAX_ID              => 'sometimes|public_id|size:18',
+        // Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
     ];
 
     protected static $removeManyRules = [
