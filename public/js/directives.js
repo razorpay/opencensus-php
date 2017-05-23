@@ -394,12 +394,16 @@ angular
         restrict: 'A',
         link: function(scope, element, attrs) {
           var placeholder = attrs.roleSelect;
+          var options = {
+            placeholder: placeholder,
+          };
+
+          if (attrs.theme !== 'false') {
+            options.theme = 'classic';
+          }
 
           // Add theme to custom selector
-          element.select2({
-            theme: 'classic',
-            placeholder: placeholder,
-          });
+          element.select2(options);
 
           // Call custom function to attach event listener which performs action when an option is selected
           scope.initRoleSelector(element);

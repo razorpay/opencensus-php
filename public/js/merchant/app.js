@@ -19,7 +19,6 @@ var app = angular
     'ngBusy',
     'noCAPTCHA',
     'react',
-    'ui.select2',
   ])
   .run([
     '$rootScope',
