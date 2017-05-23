@@ -20,7 +20,7 @@
       <span>Pricing Plans</span>
     </a>
   </li>
-  <li ng-if="admin.permissions">
+  <li dynamic-tooltip="view_gateway_rule" ng-if="admin.permissions && admin.permissions.indexOf('view_gateway_rule') !== -1">
     <a id="gatewayRulesNav" ui-sref="app.gateway">
       <i class="fa fa-inbox icon text-warning-lter"></i>
       <span>Gateway Rules</span>
