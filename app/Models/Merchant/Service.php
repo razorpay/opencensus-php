@@ -12,7 +12,6 @@ use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Models\Base;
 use RZP\Models\Emi;
 use RZP\Models\Key;
-use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
