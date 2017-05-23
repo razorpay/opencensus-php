@@ -32,7 +32,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         $mobikwik = $this->app['repo']->mobikwik;
 
-        $refundId = $mobikwik->findByGatewayRefundId($paymentId)->getRefundId();
+        $refundId = $mobikwik->findRefundByPaymentId($paymentId)->getRefundId();
 
         return $refundId;
     }
