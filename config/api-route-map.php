@@ -361,5 +361,10 @@ return [
         'merchant_action'                   => 'merchants/{id}/action',
         'merchant_live_enable'              => 'merchants/{id}/live/enable',
         'merchant_live_disable'             => 'merchants/{id}/live/disable',
+
+        // Gateway Rules
+        'gateway_create_rule'               => 'gateway/rules',
+        'gateway_update_rule'               => 'gateway/rules/{id}',
+        'gateway_delete_rule'               => 'gateway/rules/{id}',
     ],
 ];
