@@ -109,6 +109,7 @@ class Gateway
     const REFUND_RETRY_GATEWAYS = [
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::HDFC,
     ];
 
     public static $channels = [
@@ -242,6 +243,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::AXIS_MIGS,
+        self::AMEX,
         self::WALLET_OPENWALLET,
     ];
 
@@ -370,6 +372,7 @@ class Gateway
     public static $recurringGateways = [
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
+        Gateway::AXIS_MIGS,
     ];
 
     /**

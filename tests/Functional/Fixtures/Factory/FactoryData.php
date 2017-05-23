@@ -2,12 +2,12 @@
 
 namespace RZP\Tests\Functional\Fixtures\Factory;
 
-use RZP\Models\Merchant;
 use Config;
 use Eloquent;
-use RZP\Tests\TestDummy\Factory;
 use RZP\Models;
 use Carbon\Carbon;
+use RZP\Models\Merchant;
+use RZP\Tests\TestDummy\Factory;
 
 final class FactoryData
 {
@@ -119,6 +119,7 @@ final class FactoryData
             'email' => $faker->email,
             'auto_captured' => 0,
             'captured_at' => null,
+            'reference1' => $faker->uniqueid,
             'transaction_id' => null,
             'on_hold' => 0,
             'created_at' => $faker->timestamp,
@@ -493,6 +494,15 @@ final class FactoryData
             'contact_email' => $faker->email,
         ]);
 
+        $factory(\RZP\Models\User\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'name'       => $faker->word,
+            'email'      => $faker->email,
+            'password'   => $faker->word,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Customer\Balance\Entity::class, [
             'customer_id'   => 'factory:RZP\Models\Customer\Entity',
             'merchant_id'   => '10000000000000',
@@ -656,6 +666,26 @@ final class FactoryData
             'id'         => $faker->uniqueid,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp
+        ]);
+
+        $factory(\RZP\Models\Tax\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'name'        => 'Sample tax',
+            'rate_type'   => 'percentage',
+            'rate'        => 1000,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'deleted_at'  => null,
+        ]);
+
+        $factory(\RZP\Models\Tax\Group\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'merchant_id' => '10000000000000',
+            'name'        => 'Sample tax group',
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'deleted_at'  => null,
         ]);
     }
 }

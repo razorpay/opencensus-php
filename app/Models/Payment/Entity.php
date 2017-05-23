@@ -74,6 +74,9 @@ class Entity extends Base\PublicEntity
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
+    const APPROVAL_CODE         = 'approval_code';
+    const REFERENCE1            = 'reference1';
+    const REFERENCE2            = 'reference2';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
     const GATEWAY_CAPTURED      = 'gateway_captured';
@@ -92,6 +95,8 @@ class Entity extends Base\PublicEntity
     const SUBSCRIPTION_ID       = 'subscription_id';
 
     const DEFAULT_CURRENCY      = 'INR';
+
+    const ACQUIRER_DATA         = 'acquirer_data';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -131,6 +136,9 @@ class Entity extends Base\PublicEntity
         self::SAVE,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
+        self::APPROVAL_CODE,
+        self::REFERENCE1,
+        self::REFERENCE2,
     ];
 
     protected $visible = [
@@ -174,6 +182,10 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
+        self::APPROVAL_CODE,
+        self::REFERENCE1,
+        self::REFERENCE2,
+        self::ACQUIRER_DATA,
         self::TRANSFER_ID,
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
@@ -210,7 +222,6 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
-        self::AMOUNT_PAIDOUT,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -227,6 +238,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
         self::CREATED_AT,
     ];
@@ -240,11 +252,12 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::TOKEN_ID,
         self::SUBSCRIPTION_ID,
+        self::ACQUIRER_DATA,
     ];
 
     protected $guarded = [self::ID];
 
-    protected $appends = [self::PUBLIC_ID, self::CAPTURED];
+    protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA];
 
     protected static $modifiers = [
         self::EMAIL,
@@ -259,6 +272,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $dates = [self::AUTHORIZED_AT, self::CAPTURED_AT];
+
+    protected $hiddenInReport = [self::ACQUIRER_DATA];
 
     protected $defaults = [
         self::STATUS               => Status::CREATED,
@@ -330,10 +345,6 @@ class Entity extends Base\PublicEntity
     const DUMMY_EMAIL = 'void@razorpay.com';
 
     const DUMMY_PHONE = '+919999999999';
-
-// --------------------- Generators --------------------------------------------
-
-// --------------------- Generators Ends ---------------------------------------
 
 // --------------------- Modifiers ---------------------------------------------
 
@@ -769,6 +780,38 @@ class Entity extends Base\PublicEntity
         return ($this->attributes[self::CAPTURED_AT] !== null);
     }
 
+    protected function getAcquirerDataAttribute()
+    {
+        $acquirerData = [];
+
+        switch ($this->getAttribute(self::METHOD))
+        {
+            case Method::CARD:
+
+                $acquirerData = [];
+                break;
+
+            case Method::NETBANKING:
+
+                $acquirerData = [
+                    'bank_transaction_id' => $this->getAttribute(self::REFERENCE1)
+                ];
+                break;
+
+            case Method::WALLET:
+
+                $acquirerData = [];
+                break;
+
+            case Method::UPI:
+
+                $acquirerData = [];
+                break;
+        }
+
+        return $acquirerData;
+    }
+
     protected function getOtpAttemptsAttribute()
     {
         $attempts = $this->attributes[self::OTP_ATTEMPTS];
@@ -1027,6 +1070,13 @@ class Entity extends Base\PublicEntity
         return ($this->getWallet() === Processor\Wallet::OPENWALLET);
     }
 
+    public function isCustomerMailAbsent(): bool
+    {
+        $email = $this->getEmail();
+
+        return ((empty($email) === true) or ($email === self::DUMMY_EMAIL));
+    }
+
 // ----------------------- Getters ---------------------------------------------
 
     public function getTransferId()
@@ -1083,11 +1133,15 @@ class Entity extends Base\PublicEntity
     {
         $currency = $this->getCurrency();
 
+        $currencySymbol = Currency\Currency::SYMBOL[$currency];
+
         $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
 
-        $amount = number_format($this->getAmount() / $denominationFactor, 2);
+        $amount = $this->getAmount() / $denominationFactor;
 
-        return  $currency . ' ' . $amount;
+        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
+
+        return $currencySymbol . ' ' . $amount;
     }
 
     public function getAmountPaidout()
@@ -1483,6 +1537,21 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[self::SUBSCRIPTION_ID]);
+        }
+    }
+
+    public function setPublicAcquirerDataAttribute(array & $array)
+    {
+        // Adding test merchants and policy bazaar merchant.
+        $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f'];
+
+        $currentMerchantId = $this->getMerchantId();
+
+        // We are hardcoding the merchant ids for now.
+        // Will move this to feature flag.
+        if (in_array($currentMerchantId, $merchantIds, true) === false)
+        {
+            unset($array[self::ACQUIRER_DATA]);
         }
     }
 

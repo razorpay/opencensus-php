@@ -186,7 +186,7 @@ class NodalAccount
 
         $name = $this->getFileToWriteName();
 
-        $fullpath = $this->saveLocally($name, $txt);
+        $fullpath = $this->createTxtFile($name, $txt);
 
         $this->sendKotakPayoutsMail($name, $count, $amounts);
 

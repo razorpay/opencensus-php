@@ -23,9 +23,14 @@ class AdminLeadTest extends TestCase
 
         $this->org = $this->fixtures->create('org');
 
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => $this->org->getId(),
+            'hostname'  => 'dashboard.sampleorg.dev',
+        ]);
+
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
     }
 
     protected function getDefaultFields()
@@ -80,9 +85,9 @@ class AdminLeadTest extends TestCase
     {
         $fields = $this->getDefaultFields();
 
-        $role = $this->ba->getAdmin()->roles()->get()[0];
+        $role = $this->ba->getAdmin($this->authToken)->roles()->get()[0];
 
-        $adminEmail = $this->ba->getAdmin()->getEmail();
+        $adminEmail = $this->ba->getAdmin($this->authToken)->getEmail();
 
         $this->storeFieldsForEntity(
             $this->org->getPublicId(), 'admin_lead',

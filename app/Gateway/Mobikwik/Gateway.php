@@ -404,6 +404,45 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input);
     }
 
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId(
+            $refundId, Processor\Wallet::MOBIKWIK);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = $refundEntity->getAmount();
+        $refundEntityStatusCode = $refundEntity->getStatusCode();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount,
+                'status_code'           => $refundEntityStatusCode,
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount) or
+            ($refundEntityStatusCode === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     protected function getAuthorizeRequestContent($input)
     {
         $content = array(

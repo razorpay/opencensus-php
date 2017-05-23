@@ -50,7 +50,8 @@ class Authenticate
             return ApiResponse::routeDisabled();
         }
 
-        if (in_array($route, Route::$internal, true))
+        if ((in_array($route, Route::$internal, true)) or
+            (in_array($route, Route::$admin, true)))
         {
             $ret = $ba->appAuth();
         }
@@ -73,10 +74,6 @@ class Authenticate
         else if (in_array($route, Route::$device, true))
         {
             $ret = $ba->deviceAuth();
-        }
-        else if (in_array($route, Route::$admin, true))
-        {
-            $ret = $ba->adminAuth();
         }
         else if (in_array($route, Route::$direct, true))
         {

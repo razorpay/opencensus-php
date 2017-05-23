@@ -216,7 +216,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function getRowDetailsStructured($row)
     {
-        $this->trace->info(
+        $this->app['trace']->info(
             TraceCode::RECON_FILE_ROW,
             $row
         );
@@ -461,6 +461,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
 
         $refund->setRrn($rrn);
+        $refund->setStatusProcessed();
 
         $this->repo->saveOrFail($refund);
     }

@@ -11,6 +11,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
 {
@@ -141,15 +143,25 @@ class Service extends Base\Service
 
     public function editMerchantDetails($id, array $input)
     {
-        $lockAction = null;
+        $slackAction = null;
 
-        if (isset($input['locked']) === true)
+        if (isset($input['locked']) === true or
+            isset($input['comment']) === true)
         {
-            $lockAction = ($input['locked'] === true) ? 'lock' : 'unlock';
+            if (isset($input['locked']) === true)
+            {
+                $action = ($input['locked'] === true) ? Action::LOCK : Action::UNLOCK;
+
+                $slackAction = ($input['locked'] === true) ? SlackActions::LOCK : SlackActions::UNLOCK;
+            }
+            else
+            {
+                $action = Action::EDIT_COMMENT;
+            }
 
             $admin = $this->app['basicauth']->getAdmin();
 
-            $admin->hasMerchantActionPermissionOrFail($lockAction);
+            $admin->hasMerchantActionPermissionOrFail($action);
         }
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -160,9 +172,9 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($merchantDetails);
 
-        if (isset($lockAction) === true)
+        if (isset($slackAction) === true)
         {
-            $this->logActionToSlack($merchant, $lockAction);
+            $this->logActionToSlack($merchant, $slackAction);
         }
 
         return $this->createResponse($merchantDetails);

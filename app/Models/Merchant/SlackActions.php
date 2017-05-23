@@ -39,6 +39,8 @@ class SlackActions
     const UNLOCK                = 'unlock';
     const ASSIGN_PRICING        = 'assign_pricing';
     const ASSIGN_BANKS          = 'assign_banks';
+    const ADD_ADJUSTMENT        = 'add_adjustment';
+    const EDIT_BANK_DETAILS     = 'edit_bank_details';
 
     public static $actionMsgMap = [
         self::ARCHIVE           => self::ARCHIVED,
@@ -51,5 +53,7 @@ class SlackActions
         self::UNLOCK            => self::FORM_UNLOCKED,
         self::ASSIGN_PRICING    => self::PRICING_PLAN_SET,
         self::ASSIGN_BANKS      => self::BANK_LIST_EDITED,
+        self::ADD_ADJUSTMENT    => self::ADJUSTMENT_ADDED,
+        self::EDIT_BANK_DETAILS => self::BANK_DETAILS_EDITED,
     ];
 }

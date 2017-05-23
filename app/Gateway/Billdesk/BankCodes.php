@@ -51,13 +51,13 @@ class BankCodes
         IFSC::YESB => 'YBK',                    // Yes Bank
         IFSC::JSBP => 'JSB',                    // Janata Sahkari Bank Ltd Pune
         IFSC::NKGS => 'NKB',                    // Nkgsb Co-Op Bank Ltd
-        IFSC::SBBJ => 'SBJ',                    // State Bank of Bikaner and Jaipur
+        IFSC::SBBJ => 'SBI',                    // State Bank of Bikaner and Jaipur - Silent redirect to SBI
         IFSC::SBHY => 'SBH',                    // State Bank of Hyderabad
         IFSC::SBIN => 'SBI',                    // State Bank of India
-        IFSC::SBMY => 'SBM',                    // State Bank of Mysore
+        IFSC::SBMY => 'SBI',                    // State Bank of Mysore - Silent redirect to SBI
         IFSC::SCBL => 'SCB',                    // Standard Chartered Bank
         IFSC::STBP => 'SBP',                    // State Bank of Patiala
-        IFSC::SBTR => 'SBT',                    // State Bank of Travancore
+        IFSC::SBTR => 'SBI',                    // State Bank of Travancore - Silent redirect to SBI
         IFSC::DBSS => 'DBS',                    // DBS Bank
         IFSC::IDFB => 'IDN',                    // IDFC Bank
         Netbanking::BARB_C => 'BBC',            // Bank of Baroda - Corporate
