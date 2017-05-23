@@ -107,7 +107,6 @@ export default class App extends Component {
 
           {/* Creates Portal for the comp */}
           <ModalDialog />
-          <Slider />
           <Notifications />
         </Layout>
       </Router>
