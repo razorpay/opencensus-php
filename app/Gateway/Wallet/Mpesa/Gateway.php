@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Mpesa;
 
+use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -274,15 +275,15 @@ class Gateway extends Base\Gateway
 
         $data = [
             RequestFields::GATEWAY_PARAM => $xml,
-            RequestFields::CHECKSUM      => $this->getChecksum($xml),
+            RequestFields::CHECKSUM      => $this->getHashOfString($xml),
         ];
 
         return $data;
     }
 
-    protected function getChecksum(string $xml)
+    protected function getHashOfString($str)
     {
-        return hash_hmac(HashAlgo::SHA256, $xml, $this->getSecret());
+        return hash_hmac(HashAlgo::SHA256, $str, $this->getSecret());
     }
 
     protected function getGatewayRequestArray(array $input)
@@ -519,11 +520,7 @@ class Gateway extends Base\Gateway
                 ],
             ]);
 
-        $client = new SoapClient($this->getUrl());
-
-        $headers = $this->getSoapHeaders();
-
-        $client->__setSoapHeaders($headers);
+        $client = $this->getSoapClientObject();
 
         $response = $client->__soapCall($method, [$soapRoot => $data]);
 
@@ -590,6 +587,17 @@ class Gateway extends Base\Gateway
         }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
+    }
+
+    protected function getSoapClientObject()
+    {
+        $soapClient = new SoapClient($this->getUrl());
+
+        $headers = $this->getSoapHeaders();
+
+        $soapClient->__setSoapHeaders($headers);
+
+        return $soapClient;
     }
 
     protected function getMappedAttributes($attributes)

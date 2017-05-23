@@ -20,4 +20,15 @@ class Gateway extends Mpesa\Gateway
 
         return $request;
     }
+
+    protected function getSoapClientObject()
+    {
+        $soapClient = new SoapClient($this->getUrl());
+
+        $headers = $this->getSoapHeaders();
+
+        $soapClient->__setSoapHeaders($headers);
+
+        return $soapClient;
+    }
 }
