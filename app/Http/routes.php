@@ -207,9 +207,6 @@ Route::group(['middleware' => ['web']], function () {
         // EMI Plan Routes
         Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
 
-        // Admin Payment Actions
-        Route::get('/admin/{mode}/payments/{id}/analytics', 'AdminController@getPaymentAnalytics');
-
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Newsletter

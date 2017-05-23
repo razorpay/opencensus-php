@@ -768,54 +768,6 @@ class Service extends Base\Service
         }
     }
 
-    /**
-     * Makes a request to fetch the list of payment_analytics entities
-     * for that payment, and then returns the URL for the entity
-     * itself
-     * @param  string $mode
-     * @param  string $paymentId
-     * @return array
-     */
-    public function getPaymentAnalytics($mode, $paymentId)
-    {
-        $this->stripSign($paymentId);
-
-        $analytics = null;
-
-        list($error, $data) = $this->fetchMultipleEntities($mode, 'payment_analytics', [
-            'payment_id'    =>  $paymentId
-        ]);
-
-        if (empty($error) and $data['count'] === 1)
-        {
-            $analytics = $data['items'][0];
-
-            $ua_parsed = [];
-
-            $original_ua = $analytics['user_agent'];
-
-            try
-            {
-                $parser = Parser::create();
-
-                $analytics['user_agent'] = $parser->parse($original_ua)->toString();
-            }
-
-            // Catch any index errors and return the
-            // default response instead
-            catch(\Exception $e)
-            {
-                $analytics['user_agent'] = $original_ua;
-            }
-        }
-        else if ($data['count'] === 0)
-        {
-            $error[] = 'No analytics found';
-        }
-
-        return [$error, $analytics];
-    }
-
     public function lockMerchant($id)
     {
         $error = $merchantDetails = [];
