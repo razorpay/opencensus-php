@@ -1576,22 +1576,13 @@ app
                 mode: 'test',
               },
             });
-            request
-              .success(function(data) {
-                if (data.success) {
-                  $scope.merchant.balance.test = data.data.balance;
-                  $scope.merchant.credits.test = data.data.credits;
-                  $scope.merchant.fee_credits.test = data.data.fee_credits;
-                } else {
-                  $scope.alerts.resetAlerts();
-                  angular.forEach(data.errors, function(value) {
-                    $scope.alerts.addAlert('danger', value);
-                  });
-                }
-              })
-              .error(function() {
-                $scope.alerts.addAlert('danger', null, true);
-              });
+            request.success(function(data) {
+              if (data.success) {
+                $scope.merchant.balance.test = data.data.balance;
+                $scope.merchant.credits.test = data.data.credits;
+                $scope.merchant.fee_credits.test = data.data.fee_credits;
+              }
+            });
           }
         });
       }
