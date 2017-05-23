@@ -306,7 +306,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   navigateToList() {
-    this.props.history.push('/app/invoices');
+    this.props.history.push('/invoices');
   }
 
   deleteInvoice = () => {

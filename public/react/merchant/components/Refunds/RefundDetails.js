@@ -3,9 +3,9 @@ import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
-import TableBody from 'merchant/components/TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
-import TransactionNavLink from 'merchant/containers/TransactionNavLink';
+import { Link } from 'react-router-dom';
 
 export default ({ refund, isLoading, statusMsg }) => {
   let refundNotes = null;
@@ -42,11 +42,9 @@ export default ({ refund, isLoading, statusMsg }) => {
                 <DetailRow
                   label="Payment"
                   value={() => (
-                    <TransactionNavLink
-                      to={`/app/payments/${refund.payment_id}`}
-                    >
+                    <Link to={`/payments/${refund.payment_id}`}>
                       <code>{refund.payment_id}</code>
-                    </TransactionNavLink>
+                    </Link>
                   )}
                 />
 

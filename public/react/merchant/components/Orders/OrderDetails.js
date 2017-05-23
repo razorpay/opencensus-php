@@ -8,17 +8,17 @@ import {
   OrderStatusLabel,
   PaymentStatusLabel,
 } from 'merchant/components/StatusLabel';
-import TableBody from 'merchant/components/TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
-import TransactionNavLink from 'merchant/containers/TransactionNavLink';
+import { NavLink } from 'react-router-dom';
 
 const PaymentList = ({ payment }) => {
   return (
     <tr>
       <td>
-        <TransactionNavLink to={`/app/payments/${payment.id}`}>
+        <NavLink to={`/payments/${payment.id}`}>
           <code>{payment.id}</code>
-        </TransactionNavLink>
+        </NavLink>
       </td>
       <td>
         <PaymentStatusLabel status={payment.status} />

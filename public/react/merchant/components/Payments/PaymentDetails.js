@@ -8,11 +8,10 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
-import TableBody from 'merchant/components/TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
-import TransactionNavLink from 'merchant/containers/TransactionNavLink';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const ListItem = ({ item, value }) => {
   return (
@@ -31,9 +30,9 @@ const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <TransactionNavLink to={`/app/refunds/${refund.id}`}>
+        <Link to={`/app/refunds/${refund.id}`}>
           <code>{refund.id}</code>
-        </TransactionNavLink>
+        </Link>
       </td>
       <td>
         <Amount value={refund.amount} />

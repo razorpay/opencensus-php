@@ -4,7 +4,6 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import DetailRow from './DetailRow';
 import { NavLink } from 'react-router-dom';
-import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
 export default ({ label, value, entity = {} }) => {
   let type = getType(label, value);
@@ -28,9 +27,9 @@ export default ({ label, value, entity = {} }) => {
     case 'id':
       entityName = label.split('_')[0];
       val = () => (
-        <TransactionNavLink to={`/app/${entityName}s/${value}`}>
+        <NavLink to={`/${entityName}s/${value}`}>
           {value}
-        </TransactionNavLink>
+        </NavLink>
       );
   }
 

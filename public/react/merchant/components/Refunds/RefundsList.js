@@ -1,5 +1,5 @@
 import Time from 'rzp/ui/Time';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import { NavLink } from 'react-router-dom';
 
 const RefundsListItem = ({ refund }) => {

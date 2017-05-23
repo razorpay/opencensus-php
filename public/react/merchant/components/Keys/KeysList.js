@@ -1,4 +1,4 @@
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Key from 'merchant/models/Key';
 // import RegenerateKey from 'merchant/models/Key'

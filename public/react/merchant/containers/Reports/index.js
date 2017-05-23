@@ -108,7 +108,7 @@ export default class ReportsContainer extends Component {
     return (
       <tabbed-container>
         <header>
-          <NavLink to="/app/reports">Download Reports</NavLink>
+          <NavLink to="/reports">Download Reports</NavLink>
         </header>
         <div class="content-wrapper content-sm text-center">
           <div class="row">

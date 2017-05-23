@@ -4,13 +4,14 @@ import { NavLink } from 'react-router-dom';
 import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
-import AccountsList from 'merchant/components/Accounts/AccountsList';
-import AccountCreation from 'merchant/containers/Accounts/New';
-import AccountDetails from 'merchant/containers/Accounts/Details';
+import AccountsList
+  from 'merchant/components/Marketplace/Accounts/AccountsList';
+import AccountCreation from 'merchant/containers/Marketplace/Accounts/New';
+import AccountDetails from 'merchant/containers/Marketplace/Accounts/Details';
 import AccountsListFilter
-  from 'merchant/components/Accounts/AccountsListFilter';
+  from 'merchant/components/Marketplace/Accounts/AccountsListFilter';
 import ListContainer from 'merchant/containers/ListContainer';
-import * as AccountActions from 'merchant/modules/accounts';
+import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 

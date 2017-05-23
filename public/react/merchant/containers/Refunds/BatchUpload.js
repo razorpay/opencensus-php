@@ -35,7 +35,7 @@ export default class BatchUpload extends Component {
               type: 'success',
               message: 'Successful',
             });
-            this.props.history.push('/app/refunds/batchuploads');
+            this.props.history.push('/refunds/batchuploads');
           })
           .catch(({ errors }) => {
             this.props.showNotification({

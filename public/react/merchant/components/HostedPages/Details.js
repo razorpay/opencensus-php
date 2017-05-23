@@ -1,5 +1,5 @@
 import Amount from 'rzp/ui/Amount';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import { HostedPaymentStatusLabel } from 'merchant/components/StatusLabel';
 
 const HostedPagesListItem = ({ item }) => {

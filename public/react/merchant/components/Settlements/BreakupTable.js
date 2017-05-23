@@ -1,6 +1,6 @@
 import { titleCase } from 'rzp/utils/rzp-utils';
 import Amount from 'rzp/ui/Amount';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 
 const Breakup = ({ breakup }) => {
   return (
