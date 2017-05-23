@@ -133,14 +133,29 @@ export default class HomeContainer extends Component {
               />
             </div>
           </div>
-          <div class="panel hbox hbox-auto-xs">
+          <div
+            class="panel"
+            style={{
+              display: 'table',
+              width: '100%',
+              height: '100%',
+              borderSpacing: '0',
+              tableLayout: 'fixed',
+            }}
+          >
             <AnalyticsGraph
-              panelClass="col wrapper"
+              panelClass="wrapper"
               title="Transaction Volume"
               style={{
-                height: '300px',
+                height: '306px',
                 textAlign: 'center',
-                lineHeight: '300px',
+                lineHeight: '306px',
+              }}
+              panelStyle={{
+                display: 'table-cell',
+                float: 'none',
+                height: '100%',
+                verticalAlign: 'top',
               }}
               loading={graphData.loading}
               error={graphData.error}

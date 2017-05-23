@@ -20,7 +20,20 @@ export default ({ data, loading, error }) => {
   }
 
   return (
-    <div class="col wrapper-lg w-lg bg-light dk r-r">
+    <div
+      class="col wrapper"
+      style={{
+        display: 'table-cell',
+        float: 'none',
+        height: '100%',
+        verticalAlign: 'top',
+        backgroundColor: '#e4eaec',
+        width: '280px',
+        borderRadius: '0 2px 2px 0',
+        padding: '30px',
+        color: '#58666e',
+      }}
+    >
       <h4 class="font-thin">Transaction Types</h4>
       {loading || error
         ? <div

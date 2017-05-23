@@ -22,7 +22,7 @@ const StatusLabel = ({ status, entity, children, ...otherProps }) => {
 export default ({ entity, data, loading }) => {
   let items = data[`${entity}s`];
   return (
-    <div class="col-md-4 b-light no-border-xs">
+    <div class="col-md-4">
       <a
         data-tip={`See All ${titleCase(entity)}s`}
         class="pull-right"
@@ -37,9 +37,9 @@ export default ({ entity, data, loading }) => {
             <div
               class="text-thin h1"
               style={{
-                height: '426px',
+                height: '165px',
                 textAlign: 'center',
-                lineHeight: '426px',
+                lineHeight: '165px',
               }}
             >
               ...
