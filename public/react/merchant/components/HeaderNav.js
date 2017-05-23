@@ -33,7 +33,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
     <PowerSelect
       options={merchants}
       placeholder="Switch Merchant"
-      searchIndices={['name', 'email']}
+      searchIndices={['name']}
       optionComponent={({ option }) => {
         return (
           <a class="SwitchMerchantDropdown__option">
