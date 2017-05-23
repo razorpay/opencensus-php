@@ -589,7 +589,58 @@
             </div>
           </div>
 
-          <!-- Credits -->
+
+        <!--Merchant Gateway Rules-->
+        <a href class="list-group-item" ng-init="isGatewayRulesCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isGatewayRulesCollapsed = !isGatewayRulesCollapsed"
+                      ng-if="gatewayRules && gatewayRules.items.length != 0">Show/Hide</button>
+              <span ng-if="!gatewayRules">
+                Some error occured
+              </span>
+              <span ng-if="gatewayRules && gatewayRules.items.length !== 0">
+                No Gateway rules found
+              </span>
+            </span>
+          Gateway Rules
+        </a>
+        <div collapse="isGatewayRulesCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="gatewayRules.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light horz-scroll">
+                <thead>
+                  <tr>
+                    <th>Rule ID</th>
+                    <th>Gateway</th>
+                    <th>Gateway Acquirer</th>
+                    <th>Method</th>
+                    <th>Method Type</th>
+                    <th>Network</th>
+                    <th>Issuer</th>
+                    <th>International</th>
+                    <th>Load</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
+                    <td>{{row.id}}</td>
+                    <td>{{row.gateway}}</td>
+                    <td>{{row.gateway_acquirer || 'ALL'}}</td>
+                    <td>{{methodMap[row.method]}}</td>
+                    <td>{{row.method_type || 'ALL'}}</td>
+                    <td>{{networkMap[row.network] || 'ALL'}}</td>
+                    <td>{{row.issuer || 'ALL'}}</td>
+                    <td>{{row.international || 'BOTH'}}</td>
+                    <td>{{row.load}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Credits -->
           <div class="list-group-item" ng-init="isCreditsLogCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCreditsLogCollapsed = !isCreditsLogCollapsed"
