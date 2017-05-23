@@ -8,7 +8,9 @@ use RZP\Exception\ReconciliationException;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    // ----- Row header names -----
+    /*******************
+     * Row Header Names
+     *******************/
     const COLUMN_KK_CESS            = 'krishi_kalyan_cess';
     const COLUMN_SB_CESS            = 'swachh_bharat_cess';
     const COLUMN_SERVICE_TAX        = 'service_tax';

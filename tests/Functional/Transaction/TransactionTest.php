@@ -24,10 +24,9 @@ class TransactionTest extends TestCase
 
     public function testAddAdjustment()
     {
-        $this->ba->appAuth();
-
         $this->setAdminForInternalAuth();
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $adj = $this->startTest();
 
@@ -36,7 +35,7 @@ class TransactionTest extends TestCase
 
 
         $this->ba->proxyAuth();
-        $this->ba->addAdminAuthHeaders(null, null);
+
         $adj = $this->runRequestResponseFlow($testData);
 
         $txn = $this->getLastTransaction(true);
@@ -69,10 +68,9 @@ class TransactionTest extends TestCase
 
     public function testAddAdjustmentWithoutUpdatingEscrowBalance()
     {
-        $this->ba->appAuth();
-
         $this->setAdminForInternalAuth();
-        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $adj = $this->startTest();
 

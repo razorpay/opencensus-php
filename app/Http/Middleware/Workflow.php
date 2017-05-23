@@ -60,7 +60,7 @@ class Workflow
         // that the route might be running under proxy/app without
         // any admin context
         if (($this->config->get('heimdall.workflows.mock') === true) or
-            ($this->ba->isAdmin() !== true))
+            ($this->ba->isAdminAuth() !== true))
         {
             return $next($request);
         }

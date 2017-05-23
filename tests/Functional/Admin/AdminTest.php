@@ -37,7 +37,7 @@ class AdminTest extends TestCase
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->repo = (new Admin\Repository);
     }

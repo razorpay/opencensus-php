@@ -138,6 +138,7 @@ final class Route
         'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
         'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
+        'merchant_fetch_users'                    => ['get',      'merchants/{id}/users',                           'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
@@ -380,6 +381,7 @@ final class Route
         'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
         'gateway_validate_unknown_refund'         => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
         'reports_fetch_multiple'                  => ['get',      'reports',                                        'ReportController@getReports'                                       ],
+        'reports_generate'                        => ['post',     'reports/{entity}/generate',                      'ReportController@generateReport'                                   ],
         'file_get_signed_url'                     => ['get',      '{entity}/{entityId}/signed-url',                 'FileStoreController@getSignedUrlForEntity'                         ],
 
         // Routes for the admin roles project
@@ -515,12 +517,15 @@ final class Route
         // Dummy routes to test Account Auth
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
-        'user_create'                             => ['post',     'users',                                          'UserController@postUser'                                           ],
-        'user_edit'                               => ['put',      'users/{id}',                                     'UserController@putUser'                                            ],
+        'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
+        'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
+        'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
+        'user_edit'                               => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
+        'user_fetch'                              => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
-        'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@actionOnUserMerchantMapping'                        ],
+        'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
         'tax_get'                                => ['get',      'taxes/{id}',                                      'TaxController@get'                                                 ],
@@ -724,6 +729,7 @@ final class Route
         'merchant_fetch_webhooks',
         'merchant_post_beneficiary_file',
         'merchant_notify_holiday',
+        'merchant_fetch_users',
         'terminal_delete',
         'terminal_edit',
         'terminal_restore',
@@ -860,12 +866,14 @@ final class Route
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
-        'schedule_fetch_multiple',
         'schedule_migration',
         'internal_dummy_account_test',
         'user_create',
+        'user_confirm_by_data',
         'user_edit',
+        'user_fetch',
         'user_confirm',
+        'user_login',
         'user_change_password',
         'user_merchant_mapping_action',
         'merchant_admin_lead_put',
@@ -941,6 +949,7 @@ final class Route
         'offer_fetch_by_id',
         'reports_fetch_multiple',
         'file_get_signed_url',
+        'reports_generate',
         'tax_get',
         'tax_list',
         'tax_create',
@@ -953,6 +962,8 @@ final class Route
         'tax_group_delete',
     ];
 
+    // These will run on internal auth with the assurance
+    // of X-Admin-Token being passed.
     public static $admin = [
         'org_get',
         'org_get_multiple',
@@ -999,6 +1010,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'schedule_fetch_multiple',
         'feature_delete',
         'admin_dummy_account_test',
         // workflows
@@ -1117,6 +1129,15 @@ final class Route
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'       => '*',
         'merchants_update_hold_funds'      => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
+        'schedule_fetch_multiple'          => Permission::SCHEDULE_FETCH_MULTIPLE,
+        'admin_fetch_entity_multiple'      => '*',
+        'payment_authorize_refund'         => Permission::EDIT_AUTHORIZED_REFUND_PAYMENT,
+        'payment_fetch_refunds'            => Permission::VIEW_REFUND_PAYMENTS,
+        'payment_refund'                   => Permission::EDIT_PAYMENT_REFUND,
+        'payment_capture'                  => Permission::EDIT_PAYMENT_CAPTURE,
+        'gateway_create_rule'              => Permission::CREATE_GATEWAY_RULE,
+        'gateway_update_rule'              => Permission::EDIT_GATEWAY_RULE,
+        'gateway_delete_rule'              => Permission::DELETE_GATEWAY_RULE,
     ];
 
     public static $direct = [

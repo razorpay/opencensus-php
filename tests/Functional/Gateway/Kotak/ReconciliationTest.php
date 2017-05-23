@@ -249,7 +249,9 @@ class ReconciliationTest extends TestCase
             'content'   => $adjustmentData
         ];
 
-        $this->ba->appAuth();
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->setAdminForInternalAuth();
         $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);

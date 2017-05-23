@@ -17,6 +17,46 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
+        $date = Carbon::today('Asia/Kolkata')->format('Ymd');
+
+        $content = array(
+            'vpc_AVSRequestCode'    => 'Z',
+            'vpc_AVSResultCode'     => 'Unsupported',
+            'vpc_AcqAVSRespCode'    => 'Unsupported',
+            'vpc_AcqCSCRespCode'    => 'Unsupported',
+            'vpc_AcqResponseCode'   => '00',
+            'vpc_Amount'            => $input['vpc_Amount'],
+            'vpc_AuthorizeId'       => rand(111111, 999999),
+            'vpc_BatchNo'           => $date,
+            'vpc_CSCResultCode'     => 'Unsupported',
+            'vpc_Card'              => 'MC',
+            'vpc_Command'           => 'pay',
+            'vpc_Currency'          => $input['vpc_Currency'],
+            'vpc_Locale'            => $input['vpc_Locale'],
+            'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
+            'vpc_Message'           => 'Approved',
+            'vpc_ReceiptNo'         => '713116320780',
+            'vpc_RiskOverallResult' => 'ACC',
+            'vpc_TransactionNo'     => $this->generateTransactionNo(),
+            'vpc_TxnResponseCode'   => '0',
+            'vpc_Version'           => $input['vpc_Version'],
+        );
+
+        $this->addVpcMerchant($content, $input);
+
+        $this->addMessageAndResponseCode($content, $input);
+
+        $this->content($content);
+
+        $content['vpc_SecureHash'] = $this->generateHash($content);
+
+        return $this->prepareResponse($content);
+    }
+
+    public function acs($input)
+    {
+        $this->validateAuthenticateInput($input);
+
         // Format - YYYYMMDD
         $date = Carbon::today('Asia/Kolkata')->format('Ymd');
 
