@@ -215,14 +215,12 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
-        self::BASE_AMOUNT,
         self::STATUS,
         self::ORDER_ID,
         self::INVOICE_ID,
         self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
-        self::AMOUNT_PAIDOUT,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -344,10 +342,6 @@ class Entity extends Base\PublicEntity
     const DUMMY_EMAIL = 'void@razorpay.com';
 
     const DUMMY_PHONE = '+919999999999';
-
-// --------------------- Generators --------------------------------------------
-
-// --------------------- Generators Ends ---------------------------------------
 
 // --------------------- Modifiers ---------------------------------------------
 
