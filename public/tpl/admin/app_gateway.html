@@ -35,8 +35,8 @@
           <input id="filter" type="text" class="form-control input-sm w-sm inline m-r">
         </div>
       </div>
-      <div class="col-md-6">
-        <button id='addRoleButton' class='btn btn-default pull-right' ng-click="addNewRule()">
+      <div class="col-md-6" ng-if="admin.permissions && admin.permissions.indexOf('create_gateway_rule') !== -1">
+        <button id='addRoleButton' class='btn btn-primary pull-right' ng-click="addNewRule()">
           Add new Rule
         </button>
       </div>
@@ -54,49 +54,50 @@
     <div ng-if="gatewayRules">
       <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="pricing-table table table-responsive table-striped b-t b-light">
         <thead>
-          <tr>
-            <th>Rule ID</th>
-            <th>Merchant ID</th>
-            <th>Gateway</th>
-            <th>Method</th>
-            <th>Method Type</th>
-            <th>Network</th>
-            <th>Issuer</th>
-            <th>Load</th>
-            <th>Actions</th>
-          </tr>
+        <tr>
+          <th>Rule ID</th>
+          <th>Merchant ID</th>
+          <th>Gateway</th>
+          <th>Method</th>
+          <th>Method Type</th>
+          <th>Network</th>
+          <th>Issuer</th>
+          <th>Load</th>
+          <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
-            <td>{{row.id}}</td>
-            <td>{{row.merchant_id}}</td>
-            <td>{{row.gateway}}</td>
-            <td>{{methodMap[row.method]}}</td>
-            <td>{{row.method_type || 'ALL'}}</td>
-            <td>{{networkMap[row.network] || 'ALL'}}</td>
-            <td>{{row.issuer || 'ALL'}}</td>
-            <td>{{row.load}}</td>
-            <td>
-              <button class="btn btn-default btn-xs"
-                      ng-click="editRule(row)">
-                <i class="fa fa-pencil-square"></i>
-                view
-              </button>
-              <button class="btn btn-default btn-xs"
-                      ng-confirm-click="Are you sure you want to delete this Gateway Rule?"
-                      ng-click="deleteRuleById(row.id)">
-                <i class="fa fa-user-times text-danger"></i>
-                delete
-              </button>
-            </td>
-          </tr>
+        <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
+          <td>{{row.id}}</td>
+          <td>{{row.merchant_id}}</td>
+          <td>{{row.gateway}}</td>
+          <td>{{methodMap[row.method]}}</td>
+          <td>{{row.method_type || 'ALL'}}</td>
+          <td>{{networkMap[row.network] || 'ALL'}}</td>
+          <td>{{row.issuer || 'ALL'}}</td>
+          <td>{{row.load}}</td>
+          <td>
+            <button class="btn btn-default btn-xs"
+                    ng-click="editRule(row)">
+              <i class="fa fa-pencil-square"></i>
+              {{admin.permissions && admin.permissions.indexOf('edit_gateway_rule') !== -1 ? 'edit' : 'view'}}
+            </button>
+            <button class="btn btn-default btn-xs"
+                    ng-if="admin.permissions && admin.permissions.indexOf('delete_gateway_rule') !== -1"
+                    ng-confirm-click="Are you sure you want to delete this Gateway Rule?"
+                    ng-click="deleteRuleById(row.id)">
+              <i class="fa fa-user-times text-danger"></i>
+              delete
+            </button>
+          </td>
+        </tr>
         </tbody>
         <tfoot>
-          <tr>
-              <td colspan="12" class="text-center">
-                  <ul class="pagination"></ul>
-              </td>
-          </tr>
+        <tr>
+          <td colspan="12" class="text-center">
+            <ul class="pagination"></ul>
+          </td>
+        </tr>
         </tfoot>
       </table>
     </div>
@@ -106,7 +107,15 @@
 
 <script type="text/ng-template" id="editGatewayRuleModal.html">
   <div class="modal-header">
-    <h3 class="modal-title">{{ editMode ? 'Edit Gateway Rule' : 'Create a new Gateway Rule'}}</h3>
+    <h3 class="modal-title" ng-if="editMode && admin.permissions && admin.permissions.indexOf('edit_gateway_rule') !== -1">
+      Edit Gateway Rule
+    </h3>
+    <h3 class="modal-title" ng-if="editMode && admin.permissions && admin.permissions.indexOf('edit_gateway_rule') === -1">
+      View Gateway Rule
+    </h3>
+    <h3 class="modal-title" ng-if="!editMode && admin.permissions && admin.permissions.indexOf('create_gateway_rule') !== -1">
+      Create a new Gateway Rule
+    </h3>
   </div>
   <div class="modal-body merchant-modal">
     <div class="row wrapper" ng-if="editMode">
@@ -235,16 +244,28 @@
           <input type="decimal" class="form-control m-b" name="load"
                  ng-model="current.load"
                  placeholder="Eg: 220.15 (range is 0-100)"
-                 ng-required="!editMode">
+                 ng-required="!editMode"
+                 ng-readonly="editMode && admin.permissions && admin.permissions.indexOf('edit_gateway_rule') === -1">
         </div>
       </div>
 
       <!-- Action Buttons -->
-    <div class="modal-footer">
-      <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" type="submit" ng-click="editRuleForm.$valid && ok(current)">{{ editMode ? 'UPDATE' : 'CREATE'}}</button>
-    </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
+        <button class="btn btn-primary modal-ok" type="submit"
+                ng-if="editMode && admin.permissions && admin.permissions.indexOf('edit_gateway_rule') !== -1"
+                ng-click="editRuleForm.$valid && ok(current)">
+          UPDATE
+        </button>
 
-  </form>
+        <button class="btn btn-primary modal-ok" type="submit"
+                ng-if="!editMode && admin.permissions && admin.permissions.indexOf('create_gateway_rule') !== -1"
+                ng-click="editRuleForm.$valid && ok(current)">
+          CREATE
+        </button>
+      </div>
+
+    </form>
   </div>
 </script>
+

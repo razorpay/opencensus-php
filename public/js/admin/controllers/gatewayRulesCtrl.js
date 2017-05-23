@@ -6,8 +6,16 @@ app
     '$http',
     'alertsFactory',
     '$modal',
+    'admin',
     'transformRequestAsFormPost',
-    function($scope, $http, alertsFactory, $modal, transformRequestAsFormPost) {
+    function(
+      $scope,
+      $http,
+      alertsFactory,
+      $modal,
+      admin,
+      transformRequestAsFormPost
+    ) {
       $scope.mode = 'live';
       $scope.entity_type = 'gateway_rule';
       $scope.alerts = alertsFactory.getHandler();
@@ -38,6 +46,10 @@ app
         upi: 'UPI',
         emi: 'EMI',
       };
+
+      admin.identity().then(function(data) {
+        $scope.admin = data;
+      });
 
       // fetch gateway rules on basis of mode and merchant id selected by user
       $scope.getRulesById = function(merchantId) {
@@ -272,7 +284,6 @@ app
 
       admin.identity().then(function(data) {
         $scope.admin = data;
-        console.log('PERMISSIONS', $scope.admin.permissions);
       });
 
       if (Object.keys(current).length) {
