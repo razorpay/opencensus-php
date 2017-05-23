@@ -11,9 +11,6 @@ class ItemTest extends TestCase
 
     use \Illuminate\Foundation\Testing\DatabaseMigrations;
 
-    // TODO: Test case for items created for 1 entity should
-    // not be editable by other entities.
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/ItemTestData.php';
@@ -36,20 +33,20 @@ class ItemTest extends TestCase
         $this->assertEquals($item['id'], $response['id']);
     }
 
-    public function testCreateItemWithTaxId()
-    {
-        $this->startTest();
-    }
+    // public function testCreateItemWithTaxId()
+    // {
+    //     $this->startTest();
+    // }
 
-    public function testCreateItemWithTaxGroupId()
-    {
-        $this->startTest();
-    }
+    // public function testCreateItemWithTaxGroupId()
+    // {
+    //     $this->startTest();
+    // }
 
-    public function testCreateItemWithBothTaxIdAndTaxGroupId()
-    {
-        $this->startTest();
-    }
+    // public function testCreateItemWithBothTaxIdAndTaxGroupId()
+    // {
+    //     $this->startTest();
+    // }
 
     public function testGetItem()
     {
@@ -80,35 +77,35 @@ class ItemTest extends TestCase
         $this->assertResponseWithLastEntity('item', __FUNCTION__);
     }
 
-    public function testUpdateItemWithNewTaxId()
-    {
-        $this->fixtures->create('item', ['tax_id' => '00000000000001']);
+    // public function testUpdateItemWithNewTaxId()
+    // {
+    //     $this->fixtures->create('item', ['tax_id' => '00000000000001']);
 
-        $this->startTest();
-    }
+    //     $this->startTest();
+    // }
 
-    public function testUpdateItemWithNewTaxGroupId()
-    {
-        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+    // public function testUpdateItemWithNewTaxGroupId()
+    // {
+    //     $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
 
-        $this->startTest();
-    }
+    //     $this->startTest();
+    // }
 
-    public function testUpdateItemWithTaxIdWhenTaxGroupIdExists()
-    {
-        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+    // public function testUpdateItemWithTaxIdWhenTaxGroupIdExists()
+    // {
+    //     $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
 
-        $this->startTest();
-    }
+    //     $this->startTest();
+    // }
 
-    public function testUpdateItemWithTaxIdAndRemoveTaxGroupId()
-    {
-        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+    // public function testUpdateItemWithTaxIdAndRemoveTaxGroupId()
+    // {
+    //     $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
 
-        $this->startTest();
+    //     $this->startTest();
 
-        $this->assertResponseWithLastEntity('item', __FUNCTION__);
-    }
+    //     $this->assertResponseWithLastEntity('item', __FUNCTION__);
+    // }
 
     public function testDeleteItem()
     {

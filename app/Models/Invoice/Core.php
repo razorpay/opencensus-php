@@ -608,7 +608,7 @@ class Core extends Base\Core
         // Other types won't have taxation, their tax amount will be 0
         // and net amount will be equal to amount.
 
-        if ($invoice->isTypeInvoice() === false)
+        if (($invoice->isTypeInvoice() === false) and ($invoice->getAmount() !== null))
         {
             $invoice->setTaxAmount(0);
             $invoice->setNetAmount($invoice->getAmount());
