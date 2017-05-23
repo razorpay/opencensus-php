@@ -26,12 +26,14 @@ app
       $scope.methodMap = utilMapping.getMap('methodMap');
       $scope.gatewayAcquirerMap = utilMapping.getMap('gatewayAcquirerMap');
 
+      $scope.merchantId = '100000Razorpay'; // Default search for shared merchant
+
       admin.identity().then(function(data) {
         $scope.admin = data;
       });
 
       // fetch gateway rules on basis of mode and merchant id selected by user
-      $scope.getRulesById = function(merchantId) {
+      $scope.getRulesById = function() {
         var data = {
           route_name: 'admin_fetch_entity_multiple',
           url_params: {
@@ -39,7 +41,7 @@ app
           },
           mode: $scope.mode,
           query_params: {
-            merchant_id: merchantId,
+            merchant_id: $scope.merchantId,
           },
         };
         var request = $http.get('/admin/generic', {
@@ -69,8 +71,7 @@ app
           });
       };
 
-      // Default search for shared merchant
-      $scope.getRulesById('100000Razorpay');
+      $scope.getRulesById();
 
       function cleanRuleInfo(rule) {
         var gatewayRule = Object.assign({}, rule);
@@ -106,7 +107,7 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              $scope.getAllGateways();
+              $scope.getRulesById();
               $scope.alerts.addAlert(
                 'success',
                 'Gateway rule is successfully created',
@@ -151,7 +152,7 @@ app
                 'Gateway rule: ' + data.data.id + ' is successfully updated',
                 true
               );
-              $scope.getAllGateways();
+              $scope.getRulesById();
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -183,7 +184,7 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              $scope.getAllGateways();
+              $scope.getRulesById();
               $scope.alerts.addAlert(
                 'success',
                 'Gateway rule: ' + data.data.id + ' is successfully deleted',

@@ -9,20 +9,22 @@
     <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
   </div>
   <div class="row" style="padding: 15px;">
-    <div class="col-lg-2">
-      Mode:
-      <select class="form-control input-sm w-xs inline" ng-model="mode">
-        <option value="live">Live</option>
-        <option value="test">Test</option>
-      </select>
-    </div>
-    <div class="col-lg-5 row">
-      Merchant Id:
-      <input type="text" class="form-control" ng-model="searchMerchantId" placeholder="Merchant Id" style="width:200px; display: inline-block">
-      <button type="text" class="btn btn-info m-l save-btn ng-scope" ng-model="searchMerchantId" ng-click="getRulesById(searchMerchantId)">
-        Search
-      </button>
-    </div>
+    <form>
+      <div class="col-lg-2">
+        Mode:
+        <select class="form-control input-sm w-xs inline" ng-model="mode">
+          <option value="live">Live</option>
+          <option value="test">Test</option>
+        </select>
+      </div>
+      <div class="col-lg-5 row">
+        Merchant Id:
+        <input type="text" class="form-control" ng-model="merchantId" placeholder="Merchant Id" style="width:200px; display: inline-block">
+        <button class="btn btn-info m-l save-btn ng-scope" ng-model="searchMerchantId" ng-click="getRulesById()">
+          Search
+        </button>
+      </div>
+    </form>
   </div>
   <div class="panel panel-default" >
     <div class="panel-heading">
