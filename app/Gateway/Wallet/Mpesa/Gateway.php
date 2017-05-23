@@ -92,7 +92,7 @@ class Gateway extends Base\Gateway
         $content = $response[ResponseFields::OTP_GENERATE][ResponseFields::LC_RESPONSE];
 
         // Create Gateway Payment Entity
-        $contentToSave = $this->getOtpGenerateContentToSave($response[ResponseFields::OTP_GENERATE]);
+        $contentToSave = $this->getOtpGenerateContentToSave($input, $response[ResponseFields::OTP_GENERATE]);
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
 
@@ -110,7 +110,11 @@ class Gateway extends Base\Gateway
 
         $this->verifyOtpAttempts($input['payment']);
 
-        $data = $this->getOtpSubmitData($input);
+        $wallet = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Action::AUTHORIZE);
+
+        $data = $this->getOtpSubmitData($input, $wallet);
 
         $response = $this->sendSoapRequest($data,
                                            SoapAction::OTP_SUBMIT_API,
@@ -128,7 +132,7 @@ class Gateway extends Base\Gateway
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
-        $this->saveOtpCallbackContent($content);
+        $this->saveOtpCallbackContent($content, $wallet);
 
         // Otp submission fails, throw exception
         $this->checkGatewayResponse($status);
@@ -159,7 +163,7 @@ class Gateway extends Base\Gateway
 
         $status = $content[ResponseFields::S2S_STATUS_CODE];
 
-        $attributes = $this->getRefundAttributes($content);
+        $attributes = $this->getRefundAttributes($content, $input);
 
         $this->createGatewayRefundEntity($attributes);
 
@@ -390,12 +394,8 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getOtpSubmitData(array $input)
+    protected function getOtpSubmitData(array $input, Base\Entity $wallet)
     {
-        $wallet = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'],
-            Action::AUTHORIZE);
-
         $gatewayPaymentId2 = $wallet->getGatewayPaymentId2();
 
         $amount = $input['payment']['amount'] / 100;
@@ -442,14 +442,14 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getOtpGenerateContentToSave(array $content)
+    protected function getOtpGenerateContentToSave(array $input, array $content)
     {
         $response = $content[ResponseFields::LC_RESPONSE];
 
         $attributes = [
             Base\Entity::GATEWAY_PAYMENT_ID2  => $content[ResponseFields::S2S_REF_NUMBER],
             Base\Entity::CONTACT              => $content[ResponseFields::OTP_MOBILE_NUMBER],
-            Base\Entity::AMOUNT               => $this->input['payment']['amount'],
+            Base\Entity::AMOUNT               => $input['payment']['amount'],
             Base\Entity::STATUS               => $response[ResponseFields::LC_STATUS],
             Base\Entity::STATUS_CODE          => $response[ResponseFields::S2S_STATUS_CODE],
             Base\Entity::RESPONSE_DESCRIPTION => $response[ResponseFields::DESCRIPTION],
@@ -459,12 +459,8 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
-    protected function saveOtpCallbackContent(array $content)
+    protected function saveOtpCallbackContent(array $content, Base\Entity $wallet)
     {
-        $wallet = $this->repo->findByPaymentIdAndAction(
-                    $this->input['payment']['id'],
-                    Action::AUTHORIZE);
-
         $attributes = [
             Base\Entity::RECEIVED            => true,
             Base\Entity::GATEWAY_PAYMENT_ID  => $content[ResponseFields::S2S_TRANS_ID],
@@ -475,16 +471,16 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($wallet, $attributes, false);
     }
 
-    protected function getRefundAttributes(array $content)
+    protected function getRefundAttributes(array $content, array $input)
     {
         $attributes = [
             Base\Entity::RECEIVED             => true,
-            Base\Entity::PAYMENT_ID           => $this->input['payment']['id'],
+            Base\Entity::PAYMENT_ID           => $input['payment']['id'],
             Base\Entity::WALLET               => Wallet::MPESA,
-            Base\Entity::AMOUNT               => $this->input['refund']['amount'],
+            Base\Entity::AMOUNT               => $input['refund']['amount'],
             Base\Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::S2S_TRANS_ID],
             Base\Entity::STATUS_CODE          => $content[ResponseFields::S2S_STATUS_CODE],
-            Base\Entity::REFUND_ID            => $this->input['refund']['id'],
+            Base\Entity::REFUND_ID            => $input['refund']['id'],
             Base\Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::REASON]
         ];
 
