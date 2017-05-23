@@ -134,7 +134,7 @@ class Core extends Base\Core
         Tax\Entity $tax,
         Tax\Group\Entity $taxGroup = null)
     {
-        $taxAmount = Calculator::getTaxAmount($taxableAmount, $tax);
+        $taxAmount = Calculator::getTaxAmount($lineItem, $taxableAmount, $tax);
 
         $input = [
             Entity::NAME       => $tax->getName(),

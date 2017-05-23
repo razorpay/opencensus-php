@@ -102,35 +102,41 @@ class Core extends Base\Core
     {
         // Handles tax_id
 
-        $taxId = $input[Entity::TAX_ID] ?? null;
-
-        if (empty($taxId) === true)
+        if (array_key_exists(Entity::TAX_ID, $input) === true)
         {
-            $item->tax()->dissociate();
-        }
-        else
-        {
-            $tax = $this->repo->tax
-                              ->findByPublicIdAndMerchant($taxId, $merchant);
+            $taxId = $input[Entity::TAX_ID];
 
-            $item->tax()->associate($tax);
+            if (empty($taxId) === true)
+            {
+                $item->tax()->dissociate();
+            }
+            else
+            {
+                $tax = $this->repo->tax
+                                  ->findByPublicIdAndMerchant($taxId, $merchant);
+
+                $item->tax()->associate($tax);
+            }
         }
 
         // Handles tax_group_id
 
-        $taxGroupId = $input[Entity::TAX_GROUP_ID] ?? null;
-
-        if (empty($taxGroupId) === true)
+        if (array_key_exists(Entity::TAX_GROUP_ID, $input) === true)
         {
-            $item->taxGroup()->dissociate();
-        }
-        else
-        {
-            $taxGroup = $this->repo->tax_group
-                                   ->findByPublicIdAndMerchant(
-                                        $taxGroupId, $merchant);
+            $taxGroupId = $input[Entity::TAX_GROUP_ID];
 
-            $item->taxGroup()->associate($taxGroup);
+            if (empty($taxGroupId) === true)
+            {
+                $item->taxGroup()->dissociate();
+            }
+            else
+            {
+                $taxGroup = $this->repo->tax_group
+                                       ->findByPublicIdAndMerchant(
+                                            $taxGroupId, $merchant);
+
+                $item->taxGroup()->associate($taxGroup);
+            }
         }
     }
 }

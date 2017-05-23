@@ -73,7 +73,7 @@ return [
                     'rate'      => 10,
                     'rate_type' => 'flat',
                 ],
-                'tax_amount'    => 10,
+                'tax_amount'    => 50,
             ],
         ],
     ],
@@ -110,7 +110,7 @@ return [
                 'quantity'      => 5,
                 'tax_inclusive' => true,
             ],
-            'taxable_amount'    => 49990,
+            'taxable_amount'    => 49950,
         ],
         'taxes' => [
             [
@@ -119,7 +119,7 @@ return [
                     'rate'      => 10,
                     'rate_type' => 'flat',
                 ],
-                'tax_amount'    => 10,
+                'tax_amount'    => 50,
             ],
         ],
     ],
@@ -133,7 +133,7 @@ return [
                 'quantity'      => 5,
                 'tax_inclusive' => true,
             ],
-            'taxable_amount'    => 36704,
+            'taxable_amount'    => 35370,
         ],
         'taxes' => [
             [
@@ -142,7 +142,7 @@ return [
                     'rate'      => 1500,
                     'rate_type' => 'percentage',
                 ],
-                'tax_amount'    => 5506,
+                'tax_amount'    => 5306,
             ],
             [
                 'attributes' => [
@@ -150,7 +150,7 @@ return [
                     'rate'      => 2000,
                     'rate_type' => 'percentage',
                 ],
-                'tax_amount'    => 7341,
+                'tax_amount'    => 7074,
             ],
             [
                 'attributes' => [
@@ -158,7 +158,7 @@ return [
                     'rate'      => 450,
                     'rate_type' => 'flat',
                 ],
-                'tax_amount'    => 450,
+                'tax_amount'    => 2250,
             ],
         ],
     ],

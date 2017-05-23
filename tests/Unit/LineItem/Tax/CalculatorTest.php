@@ -51,6 +51,7 @@ class CalculatorTest extends TestCase
             foreach ($taxes as $j => $tax)
             {
                 $actualTaxAmount = Calculator::getTaxAmount(
+                                                    $lineItem,
                                                     $actualTaxableAmount,
                                                     $tax);
 

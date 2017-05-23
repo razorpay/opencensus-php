@@ -5,6 +5,8 @@ namespace RZP\Models\LineItem\Tax;
 use RZP\Models\Base;
 use RZP\Models\LineItem;
 use RZP\Models\Tax as TaxModel;
+use RZP\Exception\BadRequestException;
+use RZP\Error\ErrorCode;
 
 /**
  * Calculator for tax amounts of a line item against a particular tax.
@@ -49,11 +51,20 @@ class Calculator
             }
             else
             {
-                $flatTaxAmount += $tax->getRate();
+                $flatTaxAmount += ($tax->getRate() * $lineItem->getQuantity());
             }
         }
 
         $taxableAmount = ($totalAmount - $flatTaxAmount) / ($percentageTaxAmounts + 1);
+
+        // In case of tax inclusive line item amounts and flat taxes,
+        // there is a chance taxable amount would come as negative which
+        // is a validation error.
+
+        if ($taxableAmount <= 0)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ITEM_TAX_DETAILS);
+        }
 
         return (int) round($taxableAmount);
     }
@@ -61,12 +72,14 @@ class Calculator
     /**
      * Get tax amount against a given tax and amount.
      *
-     * @param  int             $taxableAmount
-     * @param  TaxModel\Entity $tax
+     * @param LineItem\Entity $lineItem
+     * @param int             $taxableAmount
+     * @param TaxModel\Entity $tax
      *
      * @return int
      */
     public static function getTaxAmount(
+        LineItem\Entity $lineItem,
         int $taxableAmount,
         TaxModel\Entity $tax): int
     {
@@ -76,7 +89,7 @@ class Calculator
         }
         else
         {
-            return $tax->getRate();
+            return $tax->getRate() * $lineItem->getQuantity();
         }
     }
 }

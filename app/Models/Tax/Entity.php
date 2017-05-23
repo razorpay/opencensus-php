@@ -40,6 +40,10 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $defaults = [
+        self::RATE_TYPE => RateType::PERCENTAGE,
+    ];
+
     protected $visible = [
         self::ID,
         self::PUBLIC_ID,

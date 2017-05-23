@@ -197,7 +197,7 @@ return [
                 'currency'      => 'INR',
                 'unit'          => 'Pc',
                 'tax_inclusive' => false,
-                'tax_id'        => null,
+                'tax_id'        => 'tax_00000000000001',
                 'tax_group_id'  => null,
             ],
         ],

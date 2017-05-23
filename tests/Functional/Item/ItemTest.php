@@ -68,7 +68,12 @@ class ItemTest extends TestCase
 
     public function testUpdateItem()
     {
-        $this->fixtures->create('item');
+        $this->fixtures->create(
+                            'item',
+                            [
+                                'unit'   => 'Kg',
+                                'tax_id' => '00000000000001',
+                            ]);
 
         $this->startTest();
 
