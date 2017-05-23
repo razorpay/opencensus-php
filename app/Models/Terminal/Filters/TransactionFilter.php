@@ -25,6 +25,10 @@ class TransactionFilter extends Terminal\Filter
         IFSC::UTIB,
     ];
 
+    const PREPAID_IINS = [
+        457392,
+    ];
+
     protected $properties = [
         'method',
         'network',
@@ -35,6 +39,7 @@ class TransactionFilter extends Terminal\Filter
         'amount',
         'maestro',
         'recurring',
+        'iin',
     ];
 
     public function methodFilter($terminal, $input)
@@ -276,5 +281,31 @@ class TransactionFilter extends Terminal\Filter
         $amount = $input['payment']->getAmount();
 
         return ($amount >= $minAmount);
+    }
+
+    // Filters few card terminals for prepaid iins to improve pricing on the cost
+    // of success rate
+    public function iinFilter(Terminal\Entity $terminal, array $input)
+    {
+        if ($input['payment']->isMethodCardOrEmi())
+        {
+            $iin = $input['payment']->card->getIin();
+
+            $acquirer = $terminal->getGatewayAcquirer();
+
+            $gateway = $terminal->getGateway();
+
+            // For certain iins prepaid cards Axis
+            // offers debit card pricing as opposed to
+            // HDFC who charge credit card pricing.
+            // For such iins allow only axis terminals
+            if (in_array($iin, self::PREPAID_IINS, true) === true)
+            {
+                return (($acquirer === Gateway::ACQUIRER_AXIS) or
+                        ($gateway === Gateway::AXIS_MIGS));
+            }
+        }
+
+        return true;
     }
 }

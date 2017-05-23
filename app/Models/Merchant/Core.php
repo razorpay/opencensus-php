@@ -2,22 +2,23 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Models\BankAccount;
-use RZP\Models\Feature;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Pricing;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Terminal;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Models\Admin\Action;
-use RZP\Models\Admin\Permission;
-use ApiResponse;
 use Config;
+use ApiResponse;
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\Feature;
+use RZP\Constants\Mode;
+use RZP\Models\Pricing;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
+use RZP\Models\Admin\Action;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Core extends Base\Core
 {
@@ -232,6 +233,13 @@ class Core extends Base\Core
         $this->repo->balance->createBalance($merchantBalance);
 
         return $merchantBalance;
+    }
+
+    public function getUsers(Entity $merchant)
+    {
+        $users = $merchant->users->callOnEveryItem('toArrayMerchant');
+
+        return $users;
     }
 
     /**

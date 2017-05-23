@@ -31,6 +31,9 @@ class CreateTerminals extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->tinyInteger(Terminal::USED)
+                  ->default(0);
+
             $table->integer(Terminal::CATEGORY)
                   ->unsigned()
                   ->nullable();

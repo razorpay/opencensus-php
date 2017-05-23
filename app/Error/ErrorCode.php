@@ -490,6 +490,8 @@ class ErrorCode
     const BAD_REQUEST_AUTHENTICATION_FAILED                                         = 'BAD_REQUEST_AUTHENTICATION_FAILED';
     const BAD_REQUEST_USER_ACCOUNT_LOCKED                                           = 'BAD_REQUEST_USER_ACCOUNT_LOCKED';
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                         = 'BAD_REQUEST_USER_ACCOUNT_DISABLED';
+    const BAD_REQUEST_USER_NOT_AUTHENTICATED                                        = 'BAD_REQUEST_USER_NOT_AUTHENTICATED';
+    const BAD_REQUEST_USER_NOT_FOUND                                                = 'BAD_REQUEST_USER_NOT_FOUND';
     const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                    = 'BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED';
@@ -529,6 +531,7 @@ class ErrorCode
     const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                                  = 'BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE';
     const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                               = 'BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE';
     const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND';
+    const BAD_REQUEST_WORKFLOW_ENTITY_ID_NOT_FOUND                                  = 'BAD_REQUEST_WORKFLOW_ENTITY_ID_NOT_FOUND';
     const BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS                           = 'BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS';
     const BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL                           = 'BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL';
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                     = 'BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES';

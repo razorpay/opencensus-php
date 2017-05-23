@@ -6,18 +6,18 @@ use App;
 use Carbon\Carbon;
 use Config;
 use Mail;
-use Mockery;
 use RZP\Constants\Mode;
 use RZP\Mail\Settlement\KotakReconciliation as KotakReconciliationMail;
-use RZP\Models\FileStore;
-use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Models\Merchant\Account;
-use RZP\Tests\Functional\Payout\PayoutTrait;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\FileStore;
+use RZP\Models\Merchant\Account;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class ReconciliationTest extends TestCase
 {
@@ -26,6 +26,7 @@ class ReconciliationTest extends TestCase
     use PayoutTrait;
     use ReconciliationTrait;
     use FileHandlerTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -223,7 +224,7 @@ class ReconciliationTest extends TestCase
         });
     }
 
-    public function testAsjustmentCreationAgainstSettlement()
+    public function testAdjustmentCreationAgainstSettlement()
     {
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
@@ -255,7 +256,9 @@ class ReconciliationTest extends TestCase
             'content'   => $adjustmentData
         ];
 
-        $this->ba->appAuth();
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -386,11 +389,6 @@ class ReconciliationTest extends TestCase
             $allAttempts[] = $fta;
         }
 
-        $app = App::getFacadeRoot();
-
-        // Explicitly setting mode here as we are not using request response flow here
-        $app['rzp.mode'] = Mode::TEST;
-
         list($textFile, $excelFile) = (new Kotak\NodalAccount)->generateSettlementFile(
                                                                         $allAttempts, false);
 
@@ -403,5 +401,12 @@ class ReconciliationTest extends TestCase
         );
 
         return $textFile;
+    }
+
+    protected function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
 }

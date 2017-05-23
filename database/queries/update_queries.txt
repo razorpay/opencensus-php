@@ -419,3 +419,6 @@ UPDATE terminals
                 'sharp', 'atom', 'wallet_openwallet'
             );
 ###########################################################################
+
+UPDATE terminals SET used = true WHERE used_count > 0;
+

@@ -7,7 +7,7 @@ use RZP\Models\User;
 
 class UserController extends Controller
 {
-    public function postUser()
+    public function createUser()
     {
         $input = Request::all();
 
@@ -16,22 +16,11 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function putUser(string $id)
-    {
-    	$input = Request::all();
-
-        $data = (new User\Service)->edit($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function actionOnUserMerchantMapping(string $id, string $action)
+    public function editUser(string $id)
     {
         $input = Request::all();
 
-        $input['action'] = $action;
-
-        $data = (new User\Service)->mappingAction($id, $input);
+        $data = (new User\Service)->edit($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -43,11 +32,47 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function confirmUserByData()
+    {
+        $input = Request::all();
+
+        $data = (new User\Service)->confirmUserByData($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function changeUserPassword(string $id)
     {
         $input = Request::all();
 
         $data = (new User\Service)->changePassword($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateUserMaping(string $id, string $action)
+    {
+        $input = Request::all();
+
+        $input['action'] = $action;
+
+        $data = (new User\Service)->updateUserMerchantMapping($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function loginUser()
+    {
+        $input = Request::all();
+
+        $data = (new User\Service)->login($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getUser(string $id)
+    {
+        $data = (new User\Service)->get($id);
 
         return ApiResponse::json($data);
     }

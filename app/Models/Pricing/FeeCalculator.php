@@ -405,10 +405,6 @@ class FeeCalculator
         {
             $rules = $this->filterRulesOnFieldByValue(
                 $rules, $filter[0], $filter[1], $filter[2], $filter[3]);
-
-            $this->trace->debug(
-                TraceCode::PAYMENT_PRICING_RULE_SELECTION,
-                ['filter' => $filter, 'count' => count($rules)]);
         }
 
         return $rules;
@@ -643,8 +639,15 @@ class FeeCalculator
         {
             $payment = $this->entity;
 
+            $amount = $this->amount;
+
+            if ($payment->merchant->isFeeBearerCustomer() === true)
+            {
+                $amount = $amount + $fee;
+            }
+
             if (($payment->isMethodCardOrEmi() === true) and
-                ($payment->getBaseAmount() <= 200000))
+                ($amount <= 200000))
             {
                 $totalTaxes = 0;
             }

@@ -41,12 +41,20 @@ class MerchantInvitation extends Base\Mailable
     {
         $this->from(Base\Constants::MAIL_ADDRESSES[Base\Constants::ADMIN]);
 
+        if ($this->org['custom_code'] !== 'rzp')
+        {
+            $this->from($this->org['from_email'], $this->org['display_name']);
+        }
+
         return $this;
     }
 
     protected function addCc()
     {
-        $this->cc(Base\Constants::MAIL_ADDRESSES[Base\Constants::NOTIFICATIONS]);
+        if ($this->org['custom_code'] === 'rzp')
+        {
+            $this->cc(Base\Constants::MAIL_ADDRESSES[Base\Constants::NOTIFICATIONS]);
+        }
 
         return $this;
     }
@@ -70,6 +78,8 @@ class MerchantInvitation extends Base\Mailable
         $data = [
             'invitation' => $this->invitation,
             'adminName'  => $this->admin['name'],
+            'org'        => $this->org,
+            'hostname'   => $this->org['host_name'],
         ];
 
         $data['invitation']['token'] = $this->invitation['token'];

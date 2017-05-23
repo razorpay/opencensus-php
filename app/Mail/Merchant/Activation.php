@@ -5,40 +5,26 @@ namespace RZP\Mail\Merchant;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
+use RZP\Models\Admin\Org;
 
 class Activation extends Mailable
 {
-    protected $merchant;
+    protected $data;
 
-    protected $parentAccount;
+    protected $org;
 
-    protected $plan;
-
-    protected $rules;
-
-    public function __construct(array $merchant, array $parentAccount = null, array $plan, array $rules)
+    public function __construct(array $data, array $org)
     {
         parent::__construct();
 
-        $this->merchant = $merchant;
+        $this->data = $data;
 
-        $this->parentAccount = $parentAccount;
-
-        $this->plan = $plan;
-
+        $this->org = $org;
     }
 
     protected function addRecipients()
     {
-       $email = $this->merchant['email'];
-
-       // For marketplace accounts, send this email to the parent merchant
-       if ($this->parentAccount !== null)
-       {
-            $email = $this->parentAccount['email'];
-       }
-
-       $this->to($email);
+       $this->to($this->data['merchant']['email']);
 
        return $this;
     }
@@ -57,9 +43,22 @@ class Activation extends Mailable
         return $this;
     }
 
+    protected function addSender()
+    {
+        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            $this->from($this->org['from_email'], $org['display_name']);
+        }
+
+        return $this;
+    }
+
     protected function addCc()
     {
-        $this->cc(Constants::MAIL_ADDRESSES[Constants::NOTIFICATIONS]);
+        if ($this->org[Org\Entity::ID] === Org\Entity::RAZORPAY_ORG_ID)
+        {
+            $this->cc(Constants::MAIL_ADDRESSES[Constants::NOTIFICATIONS]);
+        }
 
         return $this;
     }

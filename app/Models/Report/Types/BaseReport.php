@@ -17,6 +17,24 @@ class BaseReport extends Base\Core
         'skip'  => 'sometimes|integer|min:0',
     ];
 
+    /**
+     * This is done because once the process is pushed to queue,
+     * we do not have merchant set, and hence,
+     * while creating report & file entity, we are unable to set merchant
+     *
+     * It is used inside ReportsJob before starting `generateReport()`
+     *
+     * @param $merchant Merchant\Entity
+     * @return void
+     */
+    public function setMerchant(string $merchantId = null)
+    {
+        if ($this->merchant === null)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+    }
+
     protected function getTimestamps($input): array
     {
         $year = (int) $input['year'];

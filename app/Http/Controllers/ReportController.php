@@ -27,4 +27,17 @@ class ReportController extends Controller
 
         return ApiResponse::json($reports);
     }
+
+    /**
+     * POST /reports/{entity}/generate
+     *
+     */
+    public function generateReport(string $entity)
+    {
+        $input = Request::all();
+
+        (new Report\Service)->generateReport($input, $entity);
+
+        return ApiResponse::json([]);
+    }
 }

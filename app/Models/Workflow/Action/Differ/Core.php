@@ -98,10 +98,11 @@ class Core extends Base\Core
         $controllerSplit = explode('@', $controller);
 
         return [
-            Entity::ROUTE_PARAMS  => $esObject[Entity::ROUTE_PARAMS],
-            Entity::PAYLOAD       => $esObject[Entity::PAYLOAD],
-            Entity::CONTROLLER    => $controllerSplit[0],
-            Entity::FUNCTION_NAME => $controllerSplit[1],
+            Entity::ROUTE_PARAMS    => $esObject[Entity::ROUTE_PARAMS],
+            Entity::PAYLOAD         => $esObject[Entity::PAYLOAD],
+            Entity::CONTROLLER      => $controllerSplit[0],
+            Entity::FUNCTION_NAME   => $controllerSplit[1],
+            Entity::AUTH_DETAILS    => $esObject[Entity::AUTH_DETAILS] ?? [],
         ];
     }
 

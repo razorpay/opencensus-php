@@ -23,6 +23,11 @@ class AdminLeadTest extends TestCase
 
         $this->org = $this->fixtures->create('org');
 
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => $this->org->getId(),
+            'hostname'  => 'dashboard.sampleorg.dev',
+        ]);
+
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());

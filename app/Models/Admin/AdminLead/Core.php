@@ -34,11 +34,12 @@ class Core extends Base\Core
 
     public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation)
     {
-        $org = $admin->org->toArray();
+        $org = $admin->org->toArrayPublic();
+        $org['host_name'] = $admin->org->getPrimaryHostName();
 
-        $admin = $admin->toArray();
+        $admin = $admin->toArrayPublic();
 
-        $invitation = $invitation->toArray();
+        $invitation = $invitation->toArrayPublic();
 
         $merchantInvitationMail = new MerchantInvitationMail($admin, $org, $invitation);
 

@@ -48,6 +48,7 @@ class GenerateEmailTemplates extends Command {
             'emails/merchant/daily_report_debug',
             'emails/merchant/newsletter',
             'emails/merchant/holiday_notification',
+            'emails/merchant/settlement_failure',
             'emails/merchant/payzapp',
             'emails/merchant/welcome',
 

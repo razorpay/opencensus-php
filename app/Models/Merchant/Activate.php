@@ -3,9 +3,12 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+
+use RZP\Constants\MailTags;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Mail\Merchant\Activation as ActivationMail;
+use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Key;
@@ -15,7 +18,6 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Constants\MailTags;
 
 class Activate extends Base\Core
 {
@@ -87,22 +89,36 @@ class Activate extends Base\Core
      */
     protected function sendActivationEmail($merchant, $plan)
     {
+        $org = $merchant->org;
+
+        $subjectName = $merchant->getBillingLabelElseName();
+
+        $businessName = $org->getBusinessName();
+
+        $subject = $org->getBusinessName() . " | Account activated for $subjectName";
+
         $plan = $plan->toArrayPublic();
 
         $rules = $this->filterActiveRulesForMerchant($plan['rules'], $merchant);
 
-        $rules = $this->formatPricingRules($rules);
+        $data = [
+            'merchant' => $merchant->toArray(),
+            'plan'     => $plan,
+            'rules'    => $this->formatPricingRules($rules),
+            'subject'  => $subject,
+        ];
 
-        $parentAccount = null;
+        $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
 
+        $config = $this->app->config->get('applications.mailgun');
+
+        // For marketplace accounts, send this email to the parent merchant
         if ($merchant->isLinkedAccount() === true)
         {
-            $parentAccount = $merchant->parent->toArray();
+            $data['merchant']['email'] = $merchant->parent->getEmail();
         }
 
-        $merchant = $merchant->toArray();
-
-        $activationMail = new ActivationMail($merchant, $parentAccount, $plan, $rules);
+        $activationMail = new ActivationMail($data, $org->toArray());
 
         Mail::queue($activationMail);
     }

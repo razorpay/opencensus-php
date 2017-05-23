@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY          => 'required|string|max:50|custom',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
-        Entity::LOAD             => 'required|integer|min:0|max:10000',
+        Entity::LOAD             => 'required|numeric|between:0,100',
         Entity::METHOD           => 'required|string|max:30',
         Entity::METHOD_TYPE      => 'sometimes|filled|string|max:10',
         Entity::ISSUER           => 'sometimes|filled|string',
@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::LOAD => 'sometimes|filled|integer|min:0|max:10000'
+        Entity::LOAD => 'sometimes|filled|numeric|between:0,100'
     ];
 
     protected static $createValidators = [

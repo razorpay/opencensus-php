@@ -35,9 +35,33 @@ class Gateway extends Base\Gateway
         $content['vpc_SecureHash'] = $this->generateHash($content);
         $content['vpc_SecureHashType'] = strtoupper(HashAlgo::SHA256);
 
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
+        {
+            return $this->authorizeRecurring($content, $input);
+        }
+
         $request = $this->getAuthRequestArray($content);
 
         return $request;
+    }
+
+    protected function authorizeRecurring(array $content, array $input)
+    {
+        unset($content['vpc_CardSecurityCode'], $content['vpc_Card']);
+        unset($content['vpc_ReturnURL'], $content['vpc_gateway']);
+
+        $response = $this->postAmaTransactionRequestAndGetContent($content, $input);
+
+        $this->traceGatewayPaymentResponse(
+            $response, $input, TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE);
+
+        $response['received'] = '1';
+
+        $this->gatewayEntity->fill($response);
+
+        $this->repo->saveOrFail($this->gatewayEntity);
+
+        $this->verifyAmaTransactionResponse($response, $input);
     }
 
     public function callback(array $input)
@@ -596,7 +620,7 @@ class Gateway extends Base\Gateway
             'vpc_MerchTxnRef' => $input['payment']['id'],
         ];
 
-        $this->createGatewayPaymentEntity($attributes, $input);
+        $this->gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
 
         $network = $input['card']['network'];
 
@@ -727,6 +751,8 @@ class Gateway extends Base\Gateway
         $payment->fill($attributes);
 
         $payment->saveOrFail();
+
+        $this->gatewayEntity = $payment;
 
         return $payment;
     }
