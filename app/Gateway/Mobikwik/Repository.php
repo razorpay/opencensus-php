@@ -14,7 +14,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where('payment_id', '=', $paymentId)
-                    ->where('action', '=', Action::REFUND)
+                    ->where('action', '=', Base\Action::REFUND)
                     ->firstOrFail();
     }
 
@@ -22,7 +22,7 @@ class Repository extends Base\Repository
     {
         $refundEntities =  $this->newQuery()
                                 ->where('refund_id', '=', $refundId)
-                                ->where('action', '=', Action::REFUND)
+                                ->where('action', '=', Base\Action::REFUND)
                                 ->get();
         //
         // There should never be more than one successful gateway refund entity
