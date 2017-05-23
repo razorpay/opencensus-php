@@ -109,7 +109,9 @@ class Core extends Base\Core
     {
         $userArray = $user->toArrayPublic();
 
-        $merchants = $user->merchants->callOnEveryItem('toArrayUser');
+        $merchants = $user->merchants
+                          ->where('suspended_at', NULL)
+                          ->callOnEveryItem('toArrayUser');
 
         $userArray[Entity::MERCHANTS] = $merchants;
 
