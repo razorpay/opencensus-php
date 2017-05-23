@@ -537,6 +537,7 @@ class ErrorCode
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                     = 'BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED                            = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSED                                        = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSED';
+    const BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED                               = 'BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED';
 
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
