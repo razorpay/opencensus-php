@@ -11,6 +11,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
+use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
@@ -32,6 +33,7 @@ class Merchant
     protected $serviceTax;
     protected $setlTime;
     protected $setlDetailAmounts;
+    protected $scheduleTasks;
 
     public function __construct($merchant, $channel, $repo = null)
     {
@@ -92,6 +94,8 @@ class Merchant
 
         // Updates merchant and api balance
         $this->updateBalances();
+
+        $this->updateMerchantScheduleTask();
 
         $this->saveChangesToDb();
 
@@ -374,11 +378,29 @@ class Merchant
         $this->repo->saveOrFail($this->bankTransferAtpt);
 
         $this->repo->saveOrFailCollection($this->setlDetails);
+
+        $this->repo->saveOrFailCollection($this->scheduleTasks);
     }
 
     protected function updateBalances(): Transaction\Entity
     {
         return (new Transaction\Core)->updateBalances($this->setlTransaction);
+    }
+
+    protected function updateMerchantScheduleTask()
+    {
+        $scheduleTasks = $this->repo
+                              ->schedule_task
+                              ->fetchByMerchant($this->merchant, ScheduleTaskType::SETTLEMENT);
+
+        $this->scheduleTasks = new Base\PublicCollection;
+
+        foreach ($scheduleTasks as $scheduleTask)
+        {
+            $scheduleTask->updateNextRunAndLastRun();
+
+            $this->scheduleTasks->push($scheduleTask);
+        }
     }
 
     /**
