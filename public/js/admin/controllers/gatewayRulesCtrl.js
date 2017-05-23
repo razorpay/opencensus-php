@@ -39,28 +39,40 @@ app
         emi: 'EMI',
       };
 
-      // fetch all gateway rules
-      $scope.getAllGateways = function() {
-        var url =
-          '/admin/' + $scope.mode + '/fetchentity/' + $scope.entity_type;
+      // fetch gateway rules on basis of mode and merchant id selected by user
+      $scope.getRulesById = function(merchantId) {
+        var request = $http.get(
+          '/admin/' +
+            $scope.mode +
+            '/fetchentity/gateway_rule?merchant_id=' +
+            merchantId
+        );
 
-        var request = $http.get(url);
         request
           .success(function(data) {
-            $scope.gatewayRules = data.data.items;
+            if (data.success) {
+              $scope.gatewayRules = data.data.items;
 
-            if (!$scope.gatewayRules.length) {
-              $scope.noResults = true;
+              if (!$scope.gatewayRules.length) {
+                $scope.noResults = true;
+              } else {
+                $scope.noResults = false;
+              }
             } else {
-              $scope.noResults = false;
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
             }
           })
-          .error(function(res) {
-            $scope.alerts.addAlert('danger', res ? res : null, true);
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
           });
       };
 
-      $scope.getAllGateways();
+      // Default search for shared merchant
+      $scope.getRulesById('100000Razorpay');
 
       function cleanRuleInfo(rule) {
         var gatewayRule = Object.assign({}, rule);
@@ -236,6 +248,7 @@ app
     '$scope',
     '$http',
     '$modalInstance',
+    'admin',
     'current',
     'gatewayAcquirerMap',
     'networkMap',
@@ -244,6 +257,7 @@ app
       $scope,
       $http,
       $modalInstance,
+      admin,
       current,
       gatewayAcquirerMap,
       networkMap,
@@ -255,6 +269,11 @@ app
       $scope.methodMap = methodMap;
 
       $scope.editMode = false;
+
+      admin.identity().then(function(data) {
+        $scope.admin = data;
+        console.log('PERMISSIONS', $scope.admin.permissions);
+      });
 
       if (Object.keys(current).length) {
         $scope.editMode = true;

@@ -9,11 +9,20 @@
     <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
   </div>
   <div class="row" style="padding: 15px;">
-    Mode:
-    <select class="form-control input-sm w-xs inline" ng-model="mode" ng-change="getAllGateways()">
-      <option value="live">Live</option>
-      <option value="test">Test</option>
-    </select>
+    <div class="col-lg-2">
+      Mode:
+      <select class="form-control input-sm w-xs inline" ng-model="mode">
+        <option value="live">Live</option>
+        <option value="test">Test</option>
+      </select>
+    </div>
+    <div class="col-lg-5 row">
+      Merchant Id:
+      <input type="text" class="form-control" ng-model="searchMerchantId" placeholder="Merchant Id" style="width:200px; display: inline-block">
+      <button type="text" class="btn btn-info m-l save-btn ng-scope" ng-model="searchMerchantId" ng-click="getRulesById(searchMerchantId)">
+        Search
+      </button>
+    </div>
   </div>
   <div class="panel panel-default" >
     <div class="panel-heading">
@@ -33,7 +42,7 @@
       </div>
     </div>
 
-    <div ng-if="!gatewayRules" class="col-md-12 m-b-xs" style="text-align: center; margin: 12px;">
+    <div ng-if="!gatewayRules && noResults" class="col-md-12 m-b-xs" style="text-align: center; margin: 12px;">
       Loading Gateway Rules...
     </div>
 
