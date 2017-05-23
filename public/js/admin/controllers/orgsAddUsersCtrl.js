@@ -98,7 +98,8 @@ app.controller('OrgsAddUsersCtrl', [
       $scope.fetchUser($stateParams.id);
     }
 
-    $scope.selectAll = function() {
+    $scope.toggleSelAll = function() {
+      $scope.select_all = !$scope.select_all;
       $scope.selected_groups = {};
 
       if (!$scope.select_all) {
@@ -108,6 +109,14 @@ app.controller('OrgsAddUsersCtrl', [
       $scope.groups.map(function(group) {
         $scope.selected_groups[group.id] = true;
       });
+    };
+
+    // If an org is (un)selected, perform actions
+    $scope.updateIfGroupsChanged = function(id) {
+      // If group id is removed from selected_groups then set select_all tag to false
+      if (!$scope.selected_groups[id]) {
+        $scope.select_all = false;
+      }
     };
 
     $scope.editUser = function(user) {
