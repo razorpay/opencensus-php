@@ -20,18 +20,18 @@ class Helper
             $currentMerchant = $user->merchants->where('id', $sessionMerchantId)
                                                ->first();
 
-
             if ($currentMerchant === null)
             {
                 $currentMerchant = $user->merchants->first();
-
-                Session::put('current_merchant_id', $currentMerchant->id);
             }
         }
         else
         {
             $currentMerchant = $user->merchants->first();
+        }
 
+        if ($currentMerchant !== null)
+        {
             Session::put('current_merchant_id', $currentMerchant->id);
         }
 

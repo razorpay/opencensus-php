@@ -11,6 +11,11 @@ class GenericMerchant
      */
     protected $attributes;
 
+    const TEST_MERCHANT_IDS = [
+        '10000000000000',
+        '100DemoAccount'
+    ];
+
     /**
      * Create a new generic merchant object.
      *
@@ -70,5 +75,10 @@ class GenericMerchant
     public function toArray()
     {
         return $this->attributes;
+    }
+
+    public function isTestAccount()
+    {
+        return in_array($this->id, self::TEST_MERCHANT_IDS, true);
     }
 }

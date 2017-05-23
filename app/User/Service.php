@@ -212,9 +212,18 @@ class Service extends Base\Service
     {
         $this->setApiCredentials();
 
-        $response = $this->api->user->edit($userData, $userId);
+        $error = $response = [];
 
-        return $response;
+        try
+        {
+            $response = $this->api->user->edit($userId, $userData);
+        }
+        catch (\Exception $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $response];
     }
 
     public function attachMerchantUserOnApi($userId, $merchantId, $role)
@@ -442,7 +451,6 @@ class Service extends Base\Service
         $user->confirm();
 
         $this->confirmUserOnApi($user->id);
-
 
         $this->subscribeToMailingList($user);
     }
@@ -718,16 +726,18 @@ class Service extends Base\Service
             return [["Password change forbidden on this account"], null];
         }
 
-        $error = $user->changePassword($input);
+        $dashboardUser = Entity::findOrFail($user->id);
+
+        $error = $dashboardUser->changePassword($input);
 
         //Any changes in user password
         //are also reflected in the merchants table for now
-        DB::transaction(function() use ($user)
+        DB::transaction(function() use ($dashboardUser, $user)
         {
-            $user->password = Hash::make($user->password);
-            $user->save();
+            $dashboardUser->password = Hash::make($dashboardUser->password);
+            $dashboardUser->save();
 
-            $this->updatePasswordOnApi($user);
+            $this->updatePasswordOnApi($dashboardUser);
 
             $currentSessionId = Session::getId();
             (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->getAuthIdentifier(), $currentSessionId);
@@ -879,13 +889,18 @@ class Service extends Base\Service
 
         $userDetails = $genericUser->toArray();
 
-        $tags = $this->getTags($userDetails);
-
-        $data['tags'] = $tags;
+        $this->getTags($userDetails);
 
         $merchants = $userDetails['merchants'];
 
+        $data['user'] = $userDetails;
+
         $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
+
+        if ($currentMerchant === null)
+        {
+            return [[], $data];
+        }
 
         $data = $data + $currentMerchant->toArray();
 
@@ -915,70 +930,14 @@ class Service extends Base\Service
                 if ($merchant['id'] === $currentMerchantId)
                 {
                     $data['current'] = $currentMerchantId;
+
+                    $data['tags'] = $merchant['tags'];
                 }
             }
         }
 
-        $data['user'] = $userDetails;
-
         return [[], $data];
     }
-
-    // public function getCurrentMerchant(array $userDetails)
-    // {
-    //     $merchants = $userDetails['merchants'];
-
-    //     $sessionMerchantId = Session::get('current_merchant_id');
-
-    //     if ($sessionMerchantId !== null)
-    //     {
-    //         $currentMerchants = array_filter($merchants, function($merchant) use ($sessionMerchantId)
-    //         {
-    //             return ($merchant['id'] === $sessionMerchantId);
-    //         });
-
-    //         if (empty($currentMerchants) === true)
-    //         {
-    //             $currentMerchant = $merchants[0];
-
-    //             Session::put('current_merchant_id', $currentMerchant['id']);
-    //         }
-    //         else
-    //         {
-    //             $currentMerchant = array_values($currentMerchants)[0];
-    //         }
-    //     }
-    //     else
-    //     {
-    //         $currentMerchant = $merchants[0];
-
-    //         Session::put('current_merchant_id', $currentMerchant['id']);
-    //     }
-
-    //     return $currentMerchant;
-    // }
-
-    // public function getOwnerMerchant(array $userDetails)
-    // {
-    //     $merchants = $userDetails['merchants'];
-
-    //     $currentMerchant = $this->getCurrentMerchant($userDetails);
-
-    //     $ownerMerchants = array_filter($merchants, function($merchant) use ($currentMerchant)
-    //     {
-    //         return (($merchant['id'] === $currentMerchant['id']) and
-    //             ($merchant['role'] === 'owner'));
-    //     });
-
-    //     $ownerMerchant = null;
-
-    //     if (empty($ownerMerchants) === false)
-    //     {
-    //         $ownerMerchant = $ownerMerchants[0];
-    //     }
-
-    //     return $ownerMerchant;
-    // }
 
     protected function getTags(array & $userDetails)
     {
@@ -987,7 +946,6 @@ class Service extends Base\Service
             return;
         }
 
-        $tags = [];
         $merchants = $userDetails['merchants'];
 
         $merchantIds = array_column($merchants, 'id');
@@ -1004,15 +962,11 @@ class Service extends Base\Service
 
             if ($key !== false)
             {
-                $tags = array_merge($tags, $data[$key]['tags']);
-
                 $merchant = array_merge($merchant, $data[$key]);
             }
         }
 
         $userDetails['merchants'] = $merchants;
-
-        return $tags;
     }
 
     public function loginOnApi(array $input)

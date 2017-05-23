@@ -149,7 +149,7 @@ class Service extends Base\Service
                     }
                 }
 
-                return [$error, null];
+                return [$error, $merchant->toArray()];
             }
 
             return [null, $merchant->toArray()];

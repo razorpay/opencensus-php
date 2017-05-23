@@ -88,7 +88,7 @@ class PasswordController extends Controller
 
         $resetToken = $this->generateToken($user['id']);
 
-        if (secure_compare($credentials['token'], $resetToken) === false)
+        if (hash_equals($credentials['token'], $resetToken) === false)
         {
             return Response::json([
                             'success' => false,

@@ -2,6 +2,8 @@
 
 namespace App\RZP;
 
+use Razorpay\Api\Request as ApiRequest;
+
 class User extends Entity
 {
     public function create($params = null)
@@ -9,11 +11,16 @@ class User extends Entity
         return parent::create($params);
     }
 
-    public function edit($params, $userId)
+    public function edit($userId, array $params)
     {
         $relativeUrl = $this->getEntityUrl().$userId;
 
-        return $this->request('PUT', $relativeUrl, $params);
+        // For some reason unknown the normal way was not working
+        ApiRequest::addHeader('Content-Type', 'application/json');
+
+        $body = json_encode($params);
+
+        return $this->request('PUT', $relativeUrl, $body);
     }
 
     public function get($userId, array $params)
