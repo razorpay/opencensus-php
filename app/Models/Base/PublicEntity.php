@@ -19,6 +19,8 @@ class PublicEntity extends UniqueIdEntity
 
     protected static $delimiter = '_';
 
+    protected $hiddenInReport = [];
+
     /**
      * For an entity which is being exposed outside,
      * it is important to ensure that all the attributes
@@ -84,6 +86,12 @@ class PublicEntity extends UniqueIdEntity
             {
                 $array[$key] = $array[$key] / 100;
             }
+        }
+
+        // Remove fields hidden in reports
+        foreach ($this->getHiddenInReport() as $key)
+        {
+            unset($array[$key]);
         }
 
         $array[self::CREATED_AT] = $this->getDateInFormatDMYHMS(self::CREATED_AT);
@@ -392,6 +400,11 @@ class PublicEntity extends UniqueIdEntity
     public function getEntity()
     {
         return $this->entity;
+    }
+
+    public function getHiddenInReport()
+    {
+        return $this->hiddenInReport;
     }
 
     public function getMerchantId()

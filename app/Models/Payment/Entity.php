@@ -272,6 +272,8 @@ class Entity extends Base\PublicEntity
 
     protected $dates = [self::AUTHORIZED_AT, self::CAPTURED_AT];
 
+    protected $hiddenInReport = [self::ACQUIRER_DATA];
+
     protected $defaults = [
         self::STATUS               => Status::CREATED,
         self::REFUND_STATUS        => RefundStatus::NULL,

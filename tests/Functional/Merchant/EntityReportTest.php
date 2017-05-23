@@ -174,6 +174,24 @@ class EntityReportTest extends TestCase
         $this->assertEquals(2000, $invoice['razorpay_fee']);
     }
 
+    public function testPaymentReportWithoutAcquirerData()
+    {
+        $this->doAuthAndCapturePayment();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $paymentReport = $this->fetchReport('payment', $input);
+
+        $this->assertEquals(1, count($paymentReport));
+        $this->assertArrayNotHasKey('acquirer_data', $paymentReport[0]);
+    }
+
     public function testBrokingReport()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
