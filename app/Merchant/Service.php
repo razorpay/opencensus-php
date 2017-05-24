@@ -376,7 +376,7 @@ class Service extends Base\Service
 
         if (! empty($adminId))
         {
-            $merchantApiData['admin_id'] = $adminId;
+            $merchantApiData['admins'] = [ $adminId ];
         }
 
         // Fetch org by hostname and set the orgId in the input
