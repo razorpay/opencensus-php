@@ -29,7 +29,12 @@ class MiscMailer extends Mailer
     {
         $this->view = 'emails.auth.reminder';
 
-        $this->data = ['token' => $token, 'org' => $org, 'expiryTime' => $expiryTime];
+        $this->data = [
+                        'token'      => $token,
+                        'org'        => $org,
+                        'expiryTime' => $expiryTime,
+                        'email'      => urlencode($email),
+                    ];
 
         $this->email = $email;
 

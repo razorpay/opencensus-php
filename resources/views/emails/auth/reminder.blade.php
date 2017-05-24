@@ -7,10 +7,12 @@
 		<h2>Password Reset</h2>
 
 		<div>
-			To reset your password, <a href="{{ URL::to('/#/access/resetpwd/'.$token.'/expiry_time/'.$expiryTime) }}" target="_blank">click here</a>. <br/>
+			To reset your password, <a href="{{ URL::to('/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email) }}" target="_blank">click here</a>. <br/>
 
 			Or you may open the following link in your browser: <br/>
-			<a href="{{ URL::to('/#/access/resetpwd/'.$token.'/expiry_time/'.$expiryTime) }}" target="_blank">{{ URL::to('/#/access/resetpwd/'.$token.'/expiry_time/'.$expiryTime) }}</a>
+			<a href="{{ URL::to('/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email) }}" target="_blank">
+                {{ URL::to('/#/access/resetpwd/'.$token.'?expiry_time='.$expiryTime.'&email='.$email) }}
+            </a>
 
 		</div>
 

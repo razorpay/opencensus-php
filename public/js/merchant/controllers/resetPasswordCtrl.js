@@ -3,6 +3,7 @@ app.controller('ResetPasswordCtrl', [
   '$scope',
   '$http',
   '$state',
+  '$location',
   '$stateParams',
   'alertsFactory',
   'transformRequestAsFormPost',
@@ -11,6 +12,7 @@ app.controller('ResetPasswordCtrl', [
     $scope,
     $http,
     $state,
+    $location,
     $stateParams,
     alertsFactory,
     transformRequestAsFormPost,
@@ -21,12 +23,14 @@ app.controller('ResetPasswordCtrl', [
     $scope.success = false;
     $scope.data = {
       token: $stateParams.token,
-      expiryTime: $stateParams.expiry_time,
+      expiryTime: $location.search().expiry_time,
+      email: $location.search().email,
     };
     if (!$scope.data.token) {
       $state.go('access.signin');
     }
     $scope.submit = function($valid) {
+      debugger;
       if (!$valid) {
         $scope.alerts.addAlert(
           'danger',

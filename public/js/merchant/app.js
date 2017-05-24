@@ -381,7 +381,7 @@ var app = angular
           data: { role: 'any' },
         })
         .state('access.resetpwd', {
-          url: '/resetpwd/:token/expiry_time/:expiry_time',
+          url: '/resetpwd/:token',
           templateUrl: 'tpl/page_resetpwd.html',
         }) //404
         .state('404', {
