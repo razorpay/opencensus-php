@@ -31,6 +31,7 @@ class Workflow
         Permission::ADD_MERCHANT_CREDITS,
         Permission::EDIT_MERCHANT_PRICING,
         Permission::EDIT_ACTIVATE_MERCHANT,
+        Permission::ADD_MERCHANT_ADJUSTMENT,
     ];
 
     protected $app;
@@ -58,7 +59,7 @@ class Workflow
         // that the route might be running under proxy/app without
         // any admin context
         if (($this->config->get('heimdall.workflows.mock') === true) or
-            ($this->ba->isAdmin() !== true))
+            ($this->ba->isAdminAuth() !== true))
         {
             return $next($request);
         }

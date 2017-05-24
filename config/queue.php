@@ -99,6 +99,12 @@ return [
         'live'       => env('AWS_ES_SYNC_QUEUE'),
     ],
 
+    'reports' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_REPORTS_QUEUE'),
+        'live'       => env('AWS_REPORTS_QUEUE'),
+    ],
+
     'sqs_general_live'      => env('AWS_GENERAL_LIVE_QUEUE'),
     'sqs_general_test'      => env('AWS_GENERAL_TEST_QUEUE'),
     'sqs_general_failure'   => env('AWS_GENERAL_FAILURE_QUEUE'),

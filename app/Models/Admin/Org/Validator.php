@@ -3,9 +3,9 @@
 namespace RZP\Models\Admin\Org;
 
 use RZP\Base;
-use RZP\Models\Admin\Org\Hostname;
-use RZP\Models\Admin\Admin;
 use RZP\Exception;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Org\Hostname;
 
 class Validator extends Base\Validator
 {
@@ -22,6 +22,8 @@ class Validator extends Base\Validator
         Entity::INVOICE_LOGO_URL     => 'sometimes|url',
         Entity::ADMIN                => 'required|array',
         Entity::CUSTOM_CODE          => 'required',
+        Entity::FROM_EMAIL           => 'sometimes|email',
+        Entity::SIGNATURE_EMAIL      => 'sometimes|email',
         Entity::PERMISSIONS          => 'required|array',
         Entity::WORKFLOW_PERMISSIONS => 'sometimes|array',
     ];
@@ -38,6 +40,8 @@ class Validator extends Base\Validator
         Entity::MAIN_LOGO_URL         => 'sometimes|url',
         Entity::INVOICE_LOGO_URL      => 'sometimes|url',
         Entity::CUSTOM_CODE           => 'sometimes',
+        Entity::FROM_EMAIL            => 'sometimes|email',
+        Entity::SIGNATURE_EMAIL       => 'sometimes|email',
         Entity::PERMISSIONS           => 'sometimes|array',
         Entity::WORKFLOW_PERMISSIONS  => 'sometimes|array',
     ];

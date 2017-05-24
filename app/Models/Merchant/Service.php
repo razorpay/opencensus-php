@@ -2,34 +2,34 @@
 
 namespace RZP\Models\Merchant;
 
-use Carbon\Carbon;
-use Config;
-use Mail;
 use DB;
-use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
+use Mail;
+use Config;
 use RZP\Exception;
-use RZP\Models\Admin\Admin;
-use RZP\Models\Admin\Group;
-use RZP\Models\Admin\Org;
-use RZP\Models\BankAccount;
-use RZP\Models\Base;
+use Carbon\Carbon;
 use RZP\Models\Emi;
 use RZP\Models\Key;
+use RZP\Models\Base;
 use RZP\Models\User;
-use RZP\Models\Merchant;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Schedule;
-use RZP\Models\Settlement\Holidays;
-use RZP\Models\Terminal;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
+use RZP\Models\Schedule;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Admin\Group;
 use RZP\Constants\MailTags;
+use RZP\Models\BankAccount;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Merchant\Webhook;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
@@ -328,17 +328,6 @@ class Service extends Base\Service
             ]);
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        // this is a hack until dashboard starts using the route with new values
-        if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
-        {
-            $scheduleId = $input[Entity::SETTLEMENT_SCHEDULE_ID];
-
-            $input = [
-                ScheduleTask\Entity::METHOD      => null,
-                ScheduleTask\Entity::SCHEDULE_ID => $scheduleId
-            ];
-        }
 
         $input[ScheduleTask\Entity::TYPE] = ScheduleTask\Type::SETTLEMENT;
 
@@ -946,6 +935,15 @@ class Service extends Base\Service
         $merchant->setHoldFunds($holdFunds);
 
         $this->repo->saveOrFail($merchant);
+    }
+
+    public function getUsers(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $users = (new Merchant\Core)->getUsers($merchant);
+
+        return $users;
     }
 
     /**

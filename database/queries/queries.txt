@@ -2023,3 +2023,17 @@ ALTER TABLE payments
 # Adds type to terminals
 ALTER TABLE terminals
     ADD COLUMN type TINYINT(1) DEFAULT 3 NOT NULL AFTER tpv;
+
+# Adding from_email and signature_email in orgs
+ALTER TABLE orgs
+    ADD COLUMN from_email VARCHAR(255) DEFAULT NULL after custom_code,
+    ADD COLUMN signature_email VARCHAR(255) DEFAULT NULL after from_email;
+
+ALTER TABLE terminals
+    ADD COLUMN used TINYINT(1) DEFAULT 0 NOT NULL AFTER used_count;
+
+ALTER TABLE admin_leads
+  ADD merchant_id CHAR(14) DEFAULT NULL AFTER org_id;
+
+ALTER TABLE admin_leads
+  ADD CONSTRAINT `admin_leads_merchant_id_foreign` FOREIGN KEY (`merchant_id`) REFERENCES `merchants` (`id`);

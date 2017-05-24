@@ -372,6 +372,7 @@ class Gateway
     public static $recurringGateways = [
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
+        Gateway::AXIS_MIGS,
     ];
 
     /**

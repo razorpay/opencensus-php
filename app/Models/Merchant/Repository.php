@@ -3,14 +3,14 @@
 namespace RZP\Models\Merchant;
 
 use Closure;
-use RZP\Constants\Table;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Pricing;
+use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
-use RZP\Models\Pricing;
 
 class Repository extends Base\Repository
 {
@@ -300,41 +300,7 @@ class Repository extends Base\Repository
                       ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
                       ->whereIn(Entity::ID, $merchantIds);
 
-        switch (true)
-        {
-            case (empty($input['suspended']) === false):
-                $query = $query->whereNotNull(Entity::SUSPENDED_AT);
-                break;
-
-            case (empty($input['archived']) === false):
-                $query = $query->whereNotNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['activated']) === false):
-                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['pending']) === false):
-                $query = $query->whereNull(Entity::ACTIVATED_AT)
-                               ->whereNotNull($submittedAt)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['dead']) === false):
-                $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
-                               ->whereNull($submittedAt)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            default:
-                $query = $query->whereNull(Entity::ARCHIVED_AT)
-                               ->whereNull(Entity::SUSPENDED_AT);
-                break;
-        }
+        $this->modifyQuery($query, $input);
 
         // Marketplace accounts filter
         if (empty($input['sub_accounts']) === false)
@@ -396,5 +362,48 @@ class Repository extends Base\Repository
         return $query->take($count)
                      ->skip($skip)
                      ->get();
+    }
+
+    protected function modifyQuery($query, array $input)
+    {
+        $submittedAt = $this->repo
+                            ->merchant_detail
+                            ->dbColumn(Merchant\Detail\Entity::SUBMITTED_AT);
+
+        switch (true)
+        {
+            case (empty($input['suspended']) === false):
+                $query = $query->whereNotNull(Entity::SUSPENDED_AT);
+                break;
+
+            case (empty($input['archived']) === false):
+                $query = $query->whereNotNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['activated']) === false):
+                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['pending']) === false):
+                $query = $query->whereNull(Entity::ACTIVATED_AT)
+                               ->whereNotNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['dead']) === false):
+                $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
+                               ->whereNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            default:
+                $query = $query->whereNull(Entity::ARCHIVED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT);
+                break;
+        }
     }
 }

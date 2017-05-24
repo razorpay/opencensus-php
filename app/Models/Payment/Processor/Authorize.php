@@ -2535,8 +2535,6 @@ trait Authorize
 
             $payment->setAuthorizeTimestamp();
 
-            $payment->terminal->incrementUsedCount();
-
             $this->updateAcquirerData($payment, $data);
 
             // If payment was earlier failed, then that means it's
@@ -2567,7 +2565,12 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
-            $this->repo->saveOrFail($payment->terminal);
+            if ($payment->terminal->isUsed() === false)
+            {
+                $payment->terminal->setUsed();
+
+                $this->repo->saveOrFail($payment->terminal);
+            }
 
             $this->updateAssociatedPaymentEntities($payment);
 
@@ -2626,9 +2629,10 @@ trait Authorize
             return false;
         }
 
-        // For dual (and null) terminal type, we check if the card
-        // network supports purchase or auth+capture. Eg. FSS uses
-        // auth+capture for MC/VISA and purchase for Rupay/DICL/MAESTRO
+        // We handle dual and null terminal type as the default case
+        // In the default case, we check if the card network supports
+        // purchase or auth+capture. Example. FSS uses Auth and capture
+        // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
         $gateway = $payment->getGateway();
 
         $networkCode = null;

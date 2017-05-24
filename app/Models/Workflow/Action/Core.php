@@ -350,4 +350,38 @@ class Core extends Base\Core
 
         return $this->edit($action, $input);
     }
+
+    public function initAuthDetails(array $authDetails)
+    {
+        if (empty($authDetails['merchant_id']) === false)
+        {
+            $merchantId = $authDetails['merchant_id'];
+
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $this->app['basicauth']->setMerchant($merchant);
+        }
+    }
+
+    public function fetchOpenActionOnEntityOperation(
+        string $entityId,
+        string $entityName,
+        string $permissionName)
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $orgId = $admin->getOrgId();
+
+        $permissionId = $this->repo
+                             ->permission
+                             ->retrieveIdsByNamesAndOrg($permissionName, $orgId)
+                             ->toArray()[0];
+
+        $actions = $this->repo
+                               ->workflow_action
+                               ->getOpenActionOnEntityOperation(
+                                   $entityId, $entityName, $permissionId);
+
+        return $actions;
+    }
 }

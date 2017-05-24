@@ -2,22 +2,24 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Models\BankAccount;
-use RZP\Models\Feature;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Pricing;
-use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Terminal;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Models\Admin\Action;
-use RZP\Models\Admin\Permission;
-use ApiResponse;
 use Config;
+use ApiResponse;
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\Feature;
+use RZP\Constants\Mode;
+use RZP\Models\Pricing;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
+use RZP\Models\Admin\Action;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Admin\AdminLead;
 
 class Core extends Base\Core
 {
@@ -39,7 +41,7 @@ class Core extends Base\Core
 
         $this->addMerchantSupportingEntities($merchant);
 
-        $this->syncHeimdallRelatedEntities($merchant, $input);
+        $this->syncHeimdallRelatedEntities($merchant, $input, true);
 
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
@@ -104,7 +106,7 @@ class Core extends Base\Core
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
     }
 
-    public function syncHeimdallRelatedEntities(Entity $merchant, array $input)
+    public function syncHeimdallRelatedEntities(Entity $merchant, array $input, $create = false)
     {
         if (isset($input[Entity::GROUPS]) === true)
         {
@@ -114,6 +116,24 @@ class Core extends Base\Core
         if (isset($input[Entity::ADMINS]) === true)
         {
             $this->repo->sync($merchant, Entity::ADMINS, $input[Entity::ADMINS]);
+
+            if ($create === true)
+            {
+                $firstAdminId = current($input[Entity::ADMINS]);
+
+                if ($firstAdminId !== false)
+                {
+                    // Update admin leads
+                    $adminLead = (new AdminLead\Core)->getByAdminId($firstAdminId);
+
+                    if (empty($adminLead) === false)
+                    {
+                        $adminLead->merchant()->associate($merchant);
+
+                        $this->repo->saveOrFail($adminLead);
+                    }
+                }
+            }
         }
     }
 
@@ -132,15 +152,6 @@ class Core extends Base\Core
      */
     public function edit($merchant, $input)
     {
-        if (isset($input['international']) === true)
-        {
-            $action = Merchant\Action::EDIT_INTERNATIONAL;
-
-            $admin = $this->app['basicauth']->getAdmin();
-
-            $admin->hasMerchantActionPermissionOrFail($action);
-        }
-
         $merchant->setAuditAction(Action::EDIT_MERCHANT);
 
         $merchant->edit($input);
@@ -234,6 +245,13 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
+    public function getUsers(Entity $merchant)
+    {
+        $users = $merchant->users->callOnEveryItem('toArrayMerchant');
+
+        return $users;
+    }
+
     /**
      * Save merchant entity and notify on slack
      *
@@ -302,11 +320,20 @@ class Core extends Base\Core
         // Check for admin permissions
         $admin->hasMerchantActionPermissionOrFail($action);
 
+        if ($action === Merchant\Action::ENABLE_INTERNATIONAL)
+        {
+            $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+
+            (new Methods\Core)->validatePricingForInternational($merchant, $plan);
+        }
+
         $routePermission = Permission\Name::$actionMap[$action];
 
         $originalMerchant = clone $merchant;
 
-        $merchant->$action();
+        $function = camel_case($action);
+
+        $merchant->$function();
 
         $this->app['workflow']->setPermission($routePermission)->handle(
             $originalMerchant, $merchant);

@@ -771,4 +771,11 @@ class Repository extends Base\Repository
     {
         Processor\Wallet::validateExists($value);
     }
+
+    public function getTotalUsedCountForTerminal($terminalId)
+    {
+        return $this->newQuery()
+                    ->where(Payment\Entity::TERMINAL_ID, '=', $terminalId)
+                    ->count();
+    }
 }
