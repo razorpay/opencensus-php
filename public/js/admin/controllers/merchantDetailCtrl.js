@@ -199,7 +199,7 @@ app
                 true
               );
               $scope.merchant.details.tags = data.data.tags;
-              $scope.referer = getReferer(data.tags.tags);
+              $scope.referer = getReferer(data.data.tags);
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {

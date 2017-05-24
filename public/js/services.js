@@ -49,7 +49,7 @@ angular
             .success(function(data) {
               try {
                 dataLayer.push({
-                  merchant_id: data.data.merchants[0].pivot.merchant_id,
+                  merchant_id: data.data.merchants[0].id,
                 });
               } catch (e) {}
               _identity = data.data;

@@ -2,14 +2,13 @@
 
 namespace App\Providers;
 
-use App\Admin;
-use Illuminate\Support\Str;
+use App\User;
+use App\Merchant\GenericMerchant;
+use Illuminate\Support\Collection;
 use Illuminate\Contracts\Auth\UserProvider;
-use Illuminate\Database\ConnectionInterface;
-use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Illuminate\Contracts\Auth\Authenticatable as UserContract;
 
-class ApiUserProvider implements UserProvider
+class DashboardUserProvider implements UserProvider
 {
     protected $conn;
 
@@ -28,7 +27,9 @@ class ApiUserProvider implements UserProvider
      */
     public function retrieveById($identifier)
     {
-        return $this->getGenericUser($user);
+        $genericUser = $this->app['session']->get('dashboard_user_payload');
+
+        return $genericUser;
     }
 
     /**
@@ -63,23 +64,14 @@ class ApiUserProvider implements UserProvider
      */
     public function retrieveByCredentials(array $credentials)
     {
-        try
+        list($error, $genericUser) = (new User\Service)->loginOnApi($credentials);
+
+        if (empty($error) === true)
         {
-            $domain = request()->server->get('SERVER_NAME');
-
-            // This is password based login
-            list($error, $user) = (new Admin\Service)->passwordLogin($domain, $credentials);
-
-            $this->app['session']->put('api_admin', $user);
-
-            return $this->getGenericUser($user);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-
+            $this->app['session']->put('dashboard_user_payload', $genericUser);
         }
 
-        return null;
+        return $genericUser;
     }
 
     /**
@@ -90,7 +82,8 @@ class ApiUserProvider implements UserProvider
      */
     public function getGenericUser($user)
     {
-        if ($user !== null) {
+        if ($user !== null)
+        {
             return new GenericUser((array) $user);
         }
     }
@@ -105,5 +98,10 @@ class ApiUserProvider implements UserProvider
     public function validateCredentials(UserContract $user, array $credentials)
     {
         return true;
+    }
+
+    protected function getUserDetails($userId)
+    {
+        list($error, $userDetails) = (new User\Service)->getUserFromApi($user->id);
     }
 }

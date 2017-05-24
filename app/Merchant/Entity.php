@@ -4,7 +4,6 @@ namespace App\Merchant;
 
 use Mail;
 use Uuid;
-
 use App\Base;
 use App\User;
 use App\Invitation;

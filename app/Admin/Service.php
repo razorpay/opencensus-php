@@ -2,40 +2,38 @@
 
 namespace App\Admin;
 
-use App\Admin;
+use Auth;
+use Hash;
+use Uuid;
+use Cache;
+use Trace;
+use Queue;
+use Crypt;
+use Config;
+use Session;
+use Requests;
 use App\Base;
+use App\User;
+use App\Admin;
+use App\Generic;
 use App\Merchant;
+use App\Schedules;
+use App\Providers;
+use Carbon\Carbon;
+use App\User\Helper;
+use App\Transaction;
+use UAParser\Parser;
 use App\MerchantDetails;
 use App\Trace\TraceCode;
-use App\Transaction;
-use App\User;
 use App\Mailers\MiscMailer;
-use App\Session as SessionTable;
 use App\Providers\ApiGuard;
-use App\Schedules;
-use App\Generic;
-
-use Auth;
-use Config;
-use Hash;
-use Requests;
-use Queue;
-use Session;
-use Crypt;
-use Cache;
-use Uuid;
-use Trace;
-
+use App\Session as SessionTable;
 use Aws\Laravel\AwsFacade as AWS;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\App as App;
-
-use Razorpay\Api\Errors\BadRequestError as BadRequestError;
-use App\Transaction\Service as TransactionService;
-use Razorpay\Api\Errors\Error as ApiError;
 use Razorpay\Api\Request as ApiRequest;
-
-use UAParser\Parser;
+use Razorpay\Api\Errors\Error as ApiError;
+use Illuminate\Support\Facades\App as App;
+use App\Transaction\Service as TransactionService;
+use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 
 class Service extends Base\Service
 {
@@ -237,20 +235,42 @@ class Service extends Base\Service
      * @param  $merchantId ineteger
      * @return  Status
      */
-    public function loginUsingPrimaryOwner($merchant_id)
+    public function loginUsingPrimaryOwner($merchantId)
     {
         $error = [];
 
-        $merchant = Merchant\Entity::findOrFail($merchant_id);
+        $this->setApiCredentials();
 
-        $ownerUser = $merchant->primaryOwner();
+        $users = $this->api->merchant->getUsers($merchantId)->toArray();
 
-        if ($ownerUser)
+        $genericUsers = (new Helper)->createGenericUsers($users);
+
+        $primaryOwner = $genericUsers->where('role', 'owner')
+                                     ->first();
+
+        if ($primaryOwner === null)
         {
-            $user = Auth::guard('user')->loginUsingId($ownerUser->id);
-            (new User\Service)->switchCurrentMerchantForUser($merchant_id, $user);
+            $error[] = self::PRIMARY_LOGIN_ERROR;
+
+            return $error;
         }
-        else
+
+        try
+        {
+            list($error, $user) = (new User\Service)->getUserFromApi($primaryOwner->id);
+
+            if (empty($error) === false)
+            {
+                return $error;
+            }
+
+            $this->app['session']->put('dashboard_user_payload', $user);
+
+            Auth::login($user, false);
+
+            (new User\Service)->switchCurrentMerchantForUser($merchantId, $user);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             $error[] = self::PRIMARY_LOGIN_ERROR;
         }
@@ -305,7 +325,7 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return array($error, []);
+        return [$error, []];
     }
 
     public function listMerchants($input)
@@ -512,10 +532,10 @@ class Service extends Base\Service
 
         $activationDetails = (new MerchantDetails\Service)->getActivationFiles($id);
 
-        $data = array(
+        $data = [
             'activation' => $activationDetails,
             'merchant'   => $details
-        );
+        ];
 
         return [[], $data];
     }
@@ -530,77 +550,78 @@ class Service extends Base\Service
         {
             $details = $this->fetchMerchantDetails($id);
         }
+
         $terminal = $this->fetchMerchantTerminal($id);
 
         $pricingPlan = $this->fetchMerchantPricing($id);
 
         $scheduleTasks = $this->fetchMerchantSchedule($id);
 
-        $data = array(
-                    'details' => $details,
-                    'terminals' => $terminal,
-                    'pricing_plan' => $pricingPlan,
-                    'schedule_tasks' => $scheduleTasks);
+        $data = [
+                    'details'        => $details,
+                    'terminals'      => $terminal,
+                    'pricing_plan'   => $pricingPlan,
+                    'schedule_tasks' => $scheduleTasks
+                ];
 
         return [$error, $data];
     }
 
     public function fetchMerchantDetails($id)
     {
-        $merchant = Merchant\Entity::findOrSoftFail($id);
+        $response = [];
 
         $this->setApiCredentials();
 
         try
         {
-            $data = $this->api->merchant->fetch($id)->toArray();
-        }
-        catch (BadRequestError $e)
-        {
-            $merchant = $merchant->toArray();
-            $merchant['confirmed'] = false;
-            return $merchant;
-        }
+            $merchant = $this->api->merchant->fetch($id)->toArray();
 
-        $parentId = $data['parent_id'] ?? null;
+            $parentId = $merchant['parent_id'] ?? null;
 
-        // If parent_id is set, the merchant is a linked account under Marketplace
-        // and are marked confirmed, without email confirmation
-        if ($parentId !== null)
-        {
-            $data['confirmed'] = true;
-        }
-        else
-        {
-            try
+            // If parent_id is set, the merchant is a linked account under Marketplace
+            // and are marked confirmed, without email confirmation
+            if ($parentId !== null)
             {
-                $data['confirmed'] = ($merchant->primaryOwner()->getConfirmToken() === null);
+                $merchant['confirmed'] = true;
             }
-            catch (\Exception $e)
+            else
             {
-                $data['confirmed'] = true;
+                $users = $this->api->merchant->getUsers($id)->toArray();
+
+                $genericUsers = (new Helper)->createGenericUsers($users);
+
+                $confirmedPrimaryOwner = $genericUsers->where('role', 'owner')
+                                                      ->where('confirmed', true)
+                                                      ->first();
+
+                $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
             }
+
+            $tags = Merchant\Entity::select(['merchants.id'])
+                                    ->with('tagged')
+                                    ->where('merchants.id', $id)
+                                    ->get()
+                                    ->toArray();
+
+            $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
+
+            $merchant['merchant_details'] = $merchantDetail;
+
+            $response = [
+                'archived_at'         => $merchant['archived_at'],
+                'suspended_at'        => $merchant['suspended_at'],
+                'steps_finished'      => $merchantDetail['steps_finished'],
+                'locked'              => $merchantDetail['locked'],
+                'submitted'           => $merchantDetail['submitted'],
+                'tags'                => $tags[0]['tags'],
+                'submitted_at'        => $merchantDetail['submitted_at'],
+                'activated_dashboard' => $merchant['activated']
+            ] + $merchant;
         }
+        catch (BadRequestError $e){
 
-        $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
-
-        $data['merchant_details'] = $merchantDetail;
-
-        $merchant = $merchant->toArray();
-
-        // @todo This is failing tests on wercker, fix
-        // $merchant = Merchant\Entity::findorfail($id);
-        // Merchant\Validator::checkAPIMatch($merchant, $response);
-
-        $response = [
-            'steps_finished'      => $merchantDetail['steps_finished'],
-            'locked'              => $merchantDetail['locked'],
-            'submitted'           => $merchantDetail['submitted'],
-            'tags'                => $merchant['tags'],
-            'submitted_at'        => $merchantDetail['submitted_at'],
-            'activated_dashboard' => $merchant['activated'],
-            'referrer'            => $merchant['referrer'],
-        ] + $data;
+        }
 
         return $response;
     }
@@ -1438,14 +1459,14 @@ class Service extends Base\Service
 
     public function tagMerchant($merchantId, $input)
     {
-        $error = (new Admin\Validator)->validateInput('add_tags', $input)
-            ->messages();
+        $error = (new Admin\Validator)->validateInput('add_tags', $input)->messages();
 
         if (empty($error))
         {
             $merchant = Merchant\Entity::findOrFail($merchantId);
             $merchant->retag(explode(',', $input['tags']));
             $merchant['tags'] = $merchant->tags;
+
             $this->logActionToSlack($merchant, Actions::TAGGED, ['tags' => $input['tags']]);
 
             return [null, $merchant->toArray()];

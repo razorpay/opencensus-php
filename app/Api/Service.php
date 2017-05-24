@@ -18,8 +18,9 @@ class Service extends Base\Service
 
         if ($loggedInUser)
         {
-            $this->merchantId = $loggedInUser->getCurrentMerchantId();
-            $this->merchant   = $loggedInUser->currentMerchant;
+            $this->merchant = $loggedInUser->currentMerchant();
+
+            $this->merchantId = $this->merchant->id;
         }
         else
         {
@@ -205,6 +206,7 @@ class Service extends Base\Service
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
+
             $data = $this->api->payment
                                 ->fetch($id)
                                 ->capture($input)
