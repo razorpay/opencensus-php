@@ -73,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::INTERNATIONAL,
         self::TPV,
+        self::MODE,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
@@ -108,6 +109,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACQUIRER,
         self::USED_COUNT,
         self::TYPE,
+        self::MODE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -146,6 +148,7 @@ class Entity extends Base\PublicEntity
         self::EMI                       => false,
         self::TPV                       => false,
         self::TYPE                      => Mode::DUAL,
+        self::MODE                      => Mode::DUAL,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
@@ -167,6 +170,7 @@ class Entity extends Base\PublicEntity
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'boolean',
         self::TYPE                      => 'int',
+        self::MODE                      => 'int',
         self::USED                      => 'boolean',
     ];
 
