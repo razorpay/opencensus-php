@@ -30,7 +30,7 @@ const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <Link to={`/app/refunds/${refund.id}`}>
+        <Link to={`/refunds/${refund.id}`}>
           <code>{refund.id}</code>
         </Link>
       </td>

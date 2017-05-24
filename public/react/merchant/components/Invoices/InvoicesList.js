@@ -10,10 +10,10 @@ const InvoiceListItem = props => {
     <tr class={canHighlight ? 'luminate' : ''}>
       <td>
         {invoice.type === 'link'
-          ? <NavLink to={`/app/paymentlinks/${invoice.id}`}>
+          ? <NavLink to={`/paymentlinks/${invoice.id}`}>
               <code>{invoice.id}</code>
             </NavLink>
-          : <NavLink to={`/app/invoices/${invoice.id}`}>
+          : <NavLink to={`/invoices/${invoice.id}`}>
               <code>{invoice.id}</code>
             </NavLink>}
       </td>

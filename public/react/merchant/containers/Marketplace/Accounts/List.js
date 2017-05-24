@@ -86,7 +86,7 @@ export default class AccountsListContainer extends ListContainer {
     return (
       <tabbed-container>
         <header id="accounts-header">
-          <NavLink to="/app/accounts">Marketplace</NavLink>
+          <NavLink to="/accounts">Marketplace</NavLink>
         </header>
 
         <div class="content-wrapper">
