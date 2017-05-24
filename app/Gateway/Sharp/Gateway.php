@@ -145,7 +145,7 @@ class Gateway extends Base\Gateway
         if ($input['payment']['method'] === Payment\Method::NETBANKING)
         {
             $acquirer = [
-                'bank_transaction_id' => random_integer(7)
+                'reference1' => random_integer(7)
             ];
         }
 
