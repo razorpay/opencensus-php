@@ -37,10 +37,10 @@
         >
           Activate Merchant on Dashboard <i class="pull-right fa fa-check-square"></i>
         </a>
-        <a href class="list-group-item btn-enable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(1)">
+        <a href class="list-group-item btn-enable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_enable_international') !== -1" ng-click="setInternational(1)">
           Enable International <i class="pull-right fa fa-globe"></i>
         </a>
-        <a href class="list-group-item btn-disable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(0)">
+        <a href class="list-group-item btn-disable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_disable_international') !== -1" ng-click="setInternational(0)">
           Disable International <i class="pull-right fa fa-globe"></i>
         </a>
         <a href class="list-group-item"
@@ -589,7 +589,55 @@
             </div>
           </div>
 
-          <!-- Credits -->
+
+        <!--Merchant Gateway Rules-->
+        <a href class="list-group-item" ng-init="isGatewayRulesCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="isGatewayRulesCollapsed = !isGatewayRulesCollapsed"
+                      ng-show="gatewayRules && gatewayRules.items.length != 0">Show/Hide</button>
+              <span ng-if="gatewayRules && gatewayRules.items.length === 0">
+                No Gateway rules found
+              </span>
+            </span>
+          Gateway Rules
+        </a>
+        <div collapse="isGatewayRulesCollapsed" class="panel-body">
+          <div class="list-group-item" ng-if="gatewayRules.length != 0">
+            <div class="m-t list-group-item">
+              <table class="table table-striped b-light horz-scroll">
+                <thead>
+                  <tr>
+                    <th>Rule ID</th>
+                    <th>Gateway</th>
+                    <th>Gateway Acquirer</th>
+                    <th>Method</th>
+                    <th>Method Type</th>
+                    <th>Network</th>
+                    <th>Issuer</th>
+                    <th>International</th>
+                    <th>Load</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
+                    <td>{{row.id}}</td>
+                    <td>{{row.gateway}}</td>
+                    <td>{{row.gateway_acquirer || 'ALL'}}</td>
+                    <td>{{methodMap[row.method]}}</td>
+                    <td>{{row.method_type || 'ALL'}}</td>
+                    <td>{{networkMap[row.network] || 'ALL'}}</td>
+                    <td>{{row.issuer || 'ALL'}}</td>
+                    <td>{{row.international || 'BOTH'}}</td>
+                    <td>{{row.load}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Credits -->
           <div class="list-group-item" ng-init="isCreditsLogCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs pull-right"  ng-click="isCreditsLogCollapsed = !isCreditsLogCollapsed"
@@ -781,6 +829,7 @@
              <option value="netbanking_icici">Netbanking ICICI</option>
              <option value="netbanking_federal">Netbanking Federal</option>
              <option value="netbanking_indusind">Netbanking Indusind</option>
+             <option value="netbanking_rbl">Netbanking RBL</option>
              <option value="cybersource">Cybersource</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>

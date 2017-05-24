@@ -50,7 +50,7 @@ var app = angular
         }
         user.identity(true).then(function(data) {
           if (data) {
-            $rootScope.role = data.merchants[data.id].pivot.role;
+            $rootScope.role = data.merchants[data.id].role;
           }
         });
       });

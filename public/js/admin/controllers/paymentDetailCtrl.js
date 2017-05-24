@@ -363,18 +363,26 @@ app
           $scope.isAnalyticsCollapsed = true;
           return;
         }
-        var request = $http.get(
-          '/admin/' +
-            $scope.mode +
-            '/payments/' +
-            $scope.entity.id +
-            '/analytics'
-        );
+        var entityData = $scope.entity.id.split('_');
+        var paymentId = entityData[entityData.length - 1];
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'payment_analytics',
+          },
+          mode: $scope.mode,
+          query_params: {
+            payment_id: paymentId,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
         request
           .success(function(data) {
             $scope.alerts.resetAlerts();
             if (data.success) {
-              $scope.entity.analytics = data.data;
+              $scope.entity.analytics = data.data.items[0];
               $scope.isAnalyticsCollapsed = false;
             } else {
               angular.forEach(data.errors, function(error) {

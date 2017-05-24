@@ -85,6 +85,7 @@ app.controller('EntitiesCtrl', [
       'netbanking_airtel',
       'netbanking_federal',
       'netbanking_indusind',
+      'netbanking_rbl',
       'paytm',
       'sharp',
       'upi_icici',
@@ -702,7 +703,7 @@ app.controller('EntitiesCtrl', [
         .success(function(data) {
           $scope.alerts.resetAlerts();
           if (data.success) {
-            $scope.headings = data.data.headings;
+            $scope.headings = Object.keys(data.data.items[0]);
             $scope.entity.items = data.data.items;
 
             $scope.entity.count = parseInt(data.data.count);
