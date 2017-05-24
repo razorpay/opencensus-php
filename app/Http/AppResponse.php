@@ -36,7 +36,7 @@ class AppResponse
 
     public static function allowOriginForAuthService($response)
     {
-        $response->header('Access-Control-Allow-Origin', env(AUTH_SERVICE_URL));
+        $response->header('Access-Control-Allow-Origin', env('AUTH_SERVICE_URL'));
         $response->header('Access-Control-Allow-Credentials', 'true');
         return $response;
     }
