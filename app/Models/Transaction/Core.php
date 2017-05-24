@@ -486,7 +486,7 @@ class Core extends Base\Core
 
         $channel = Transaction\Channel::ATOM;
 
-        if (Terminal\Shared::isPaymentOnSharedTerminal($payment))
+        if ($payment->terminal->isShared() === true)
         {
             $channel = Transaction\Channel::KOTAK;
 
