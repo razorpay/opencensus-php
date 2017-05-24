@@ -14,6 +14,7 @@ app
     'organization',
     'displayValue',
     'utils',
+    'utilMapping',
     '$state',
     function(
       $scope,
@@ -28,6 +29,7 @@ app
       organization,
       displayValue,
       utils,
+      utilMapping,
       $state
     ) {
       admin.identity().then(function(data) {
@@ -54,9 +56,14 @@ app
           });
         }
       });
+
+      $scope.networkMap = utilMapping.getMap('networkMap');
+      $scope.methodMap = utilMapping.getMap('methodMap');
       $scope.selected_groups = {};
 
       generateMerchant();
+      getGatewayRulesOfMerchant();
+
       $scope.lockForm = function() {
         var data = {
           route_name: 'merchant_activation_update',
@@ -1408,6 +1415,38 @@ app
         $scope.terminals = terminals;
       }
 
+      function getGatewayRulesOfMerchant() {
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'gateway_rule',
+          },
+          mode: $scope.mode,
+          query_params: {
+            merchant_id: $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.gatewayRules = data.data.items;
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
+
       function generateMerchant() {
         var request = $http.get('/admin/merchant/' + $scope.merchant.id);
         request
@@ -1576,22 +1615,13 @@ app
                 mode: 'test',
               },
             });
-            request
-              .success(function(data) {
-                if (data.success) {
-                  $scope.merchant.balance.test = data.data.balance;
-                  $scope.merchant.credits.test = data.data.credits;
-                  $scope.merchant.fee_credits.test = data.data.fee_credits;
-                } else {
-                  $scope.alerts.resetAlerts();
-                  angular.forEach(data.errors, function(value) {
-                    $scope.alerts.addAlert('danger', value);
-                  });
-                }
-              })
-              .error(function() {
-                $scope.alerts.addAlert('danger', null, true);
-              });
+            request.success(function(data) {
+              if (data.success) {
+                $scope.merchant.balance.test = data.data.balance;
+                $scope.merchant.credits.test = data.data.credits;
+                $scope.merchant.fee_credits.test = data.data.fee_credits;
+              }
+            });
           }
         });
       }
