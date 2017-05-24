@@ -2308,11 +2308,6 @@ trait Authorize
         return false;
     }
 
-    protected function runOtpPaymentFlow(array $gatewayInput, Payment\Entity $payment)
-    {
-        return $this->callGatewayOtpGenerate($gatewayInput, $payment);
-    }
-
     protected function callGatewayOtpGenerate(array $data, Payment\Entity $payment, $otpResend = false)
     {
         try
