@@ -913,6 +913,8 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
+        'upi_npci_request',
+        'upi_zero_call',
     ];
 
     public static $proxy = [
@@ -1165,8 +1167,6 @@ final class Route
         'checkout_public',
         'mock_hdfc_3dsecure',
         'transparent_redirect_get',
-        'upi_npci_request',
-        'upi_zero_call',
         'transparent_redirect_post',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
