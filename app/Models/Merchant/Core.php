@@ -126,9 +126,12 @@ class Core extends Base\Core
                     // Update admin leads
                     $adminLead = (new AdminLead\Core)->getByAdminId($firstAdminId);
 
-                    $adminLead->setMerchantId($merchant->id);
+                    if (empty($adminLead) === false)
+                    {
+                        $adminLead->setMerchantId($merchant->id);
 
-                    $this->repo->saveOrFail($adminLead);
+                        $this->repo->saveOrFail($adminLead);
+                    }
                 }
             }
         }
