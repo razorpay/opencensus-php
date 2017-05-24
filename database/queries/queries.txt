@@ -2034,3 +2034,6 @@ ALTER TABLE terminals
 
 ALTER TABLE admin_leads
   ADD merchant_id CHAR(14) DEFAULT NULL AFTER org_id;
+
+ALTER TABLE admin_leads
+  ADD CONSTRAINT `admin_leads_merchant_id_foreign` FOREIGN KEY (`merchant_id`) REFERENCES `merchants` (`id`);
