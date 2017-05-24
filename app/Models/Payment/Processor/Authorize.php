@@ -110,9 +110,9 @@ trait Authorize
 
             if ($this->canRunOtpPaymentFlow($payment, $input))
             {
-                $this->createAnalyticsLog($payment);
-
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
+
+                $this->createAnalyticsLog($payment);
 
                 return $request;
             }
