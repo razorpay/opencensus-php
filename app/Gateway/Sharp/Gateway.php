@@ -105,7 +105,9 @@ class Gateway extends Base\Gateway
 
         $this->verifyPaymentCreateResponse($input);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($input);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function callbackOtpSubmit(array $input)
@@ -134,6 +136,22 @@ class Gateway extends Base\Gateway
         }
 
         return [];
+    }
+
+    protected function getAcquirerData(array $input)
+    {
+        $acquirer = [];
+
+        if ($input['payment']['method'] === Payment\Method::NETBANKING)
+        {
+            $acquirer = [
+                'reference1' => random_integer(7)
+            ];
+        }
+
+        return [
+            'acquirer' => $acquirer
+        ];
     }
 
     public function capture(array $input)

@@ -210,8 +210,10 @@ class Entity extends Base\Entity
     {
         $permissions = [];
 
+        $roles = $this->roles()->with('permissions')->get();
+
         // Create a list of all the permissions from all the roles
-        foreach ($this->roles as $role)
+        foreach ($roles as $role)
         {
             foreach ($role->permissions->toArray() as $permission)
             {

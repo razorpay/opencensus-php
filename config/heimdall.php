@@ -204,6 +204,7 @@ return [
             Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
             Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
             Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
         ],
     ],
 
@@ -321,6 +322,7 @@ return [
             Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
             Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
             Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
         ],
     ],
 
@@ -399,6 +401,7 @@ return [
             Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
             Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
             Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
         ],
     ],
 
