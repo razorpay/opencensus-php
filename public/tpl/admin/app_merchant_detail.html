@@ -37,10 +37,10 @@
         >
           Activate Merchant on Dashboard <i class="pull-right fa fa-check-square"></i>
         </a>
-        <a href class="list-group-item btn-enable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(1)">
+        <a href class="list-group-item btn-enable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==false && admin.permissions.indexOf('edit_merchant_enable_international') !== -1" ng-click="setInternational(1)">
           Enable International <i class="pull-right fa fa-globe"></i>
         </a>
-        <a href class="list-group-item btn-disable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_international') !== -1" ng-click="setInternational(0)">
+        <a href class="list-group-item btn-disable-international" dynamic-tooltip="edit_merchant_international" ng-show="merchant.details.international==true && admin.permissions.indexOf('edit_merchant_disable_international') !== -1" ng-click="setInternational(0)">
           Disable International <i class="pull-right fa fa-globe"></i>
         </a>
         <a href class="list-group-item"
@@ -829,6 +829,7 @@
              <option value="netbanking_icici">Netbanking ICICI</option>
              <option value="netbanking_federal">Netbanking Federal</option>
              <option value="netbanking_indusind">Netbanking Indusind</option>
+             <option value="netbanking_rbl">Netbanking RBL</option>
              <option value="cybersource">Cybersource</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>
