@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
     const ENABLED                       = 'enabled';
     const NETWORK_CATEGORY              = 'network_category';
     const TYPE                          = 'type';
+    const MODE                          = 'mode';
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
@@ -144,7 +145,7 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::TPV                       => false,
-        self::TYPE                      => Type::DUAL,
+        self::TYPE                      => Mode::DUAL,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
@@ -276,9 +277,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NETWORK_CATEGORY);
     }
 
-    public function getType()
+    public function getMode()
     {
-        return $this->getAttribute(self::TYPE);
+        return $this->getAttribute(self::MODE);
     }
 
     // ---------------------- END GETTERS ----------------------
@@ -337,9 +338,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
-    public function setType($type)
+    public function setMode($mode)
     {
-        $this->setAttribute(self::TYPE, $type);
+        $this->setAttribute(self::MODE, $mode);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -522,7 +523,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::USED_COUNT, $usedCount);
     }
 
-     public function setUsed()
+    public function setUsed()
     {
         $this->setAttribute(self::USED, true);
     }
@@ -619,12 +620,12 @@ class Entity extends Base\PublicEntity
 
     public function isAuthCapture()
     {
-        return ($this->getAttribute(self::TYPE) === Type::AUTH_CAPTURE);
+        return ($this->getAttribute(self::MODE) === Mode::AUTH_CAPTURE);
     }
 
     public function isPurchase()
     {
-        return ($this->getAttribute(self::TYPE) === Type::PURCHASE);
+        return ($this->getAttribute(self::MODE) === Mode::PURCHASE);
     }
 
     public function isDomestic()

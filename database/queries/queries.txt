@@ -2052,3 +2052,7 @@ ALTER TABLE offers
 # post deploy of pr - 3321
 ALTER TABLE offers
     DROP COLUMN payment_count;
+
+# Adds mode to terminals
+ALTER TABLE terminals
+    ADD COLUMN mode TINYINT(1) DEFAULT 3 NOT NULL AFTER type;
