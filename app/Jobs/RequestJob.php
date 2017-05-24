@@ -50,7 +50,7 @@ class RequestJob extends Job implements ShouldQueue
 
             $this->delete();
         }
-        catch(\Requests_Exception $e)
+        catch(\Exception $e)
         {
             $this->handleException($e);
         }
