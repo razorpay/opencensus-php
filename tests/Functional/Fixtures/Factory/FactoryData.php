@@ -691,5 +691,9 @@ final class FactoryData
         $factory(\RZP\Models\Promotion\Entity::class, [
             'id'          => $faker->uniqueid
         ]);
+
+         $factory(\RZP\Models\Coupon\Entity::class, [
+            'id'          => $faker->uniqueid
+        ]);
     }
 }

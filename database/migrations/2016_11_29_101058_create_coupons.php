@@ -31,11 +31,17 @@ class CreateCoupons extends Migration
 
             $table->string(Coupon::ENTITY_TYPE);
 
-            $table->string(Coupon::CODE);
+            $table->string(Coupon::COUPON_CODE);
 
-            $table->integer(Coupon::START_DATE);
+            $table->integer(Coupon::START_DATE)
+                  ->nullable();
 
-            $table->integer(Coupon::END_DATE);
+            $table->integer(Coupon::END_DATE)
+                  ->nullable();
+
+            $table->integer(Coupon::USAGE)
+                  ->nullable()
+                  ->default(null);
 
             $table->integer(Coupon::CREATED_AT);
 
