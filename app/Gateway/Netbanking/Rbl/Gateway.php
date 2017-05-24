@@ -166,8 +166,8 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         //
-        // Verify response will contain S or N, but we have already
-        // mapped the S status to Y in parseVerifyResponse
+        // Verify response will contain ENTRY_STATUS and will have success
+        // or failure
         //
         if ($content[ResponseFields::ENTRY_STATUS] === Status::SUCCESS)
         {
@@ -214,7 +214,7 @@ class Gateway extends Base\Gateway
             RequestFields::USER_TYPE        => Constants::USER_TYPE,
             RequestFields::MENU_ID          => Constants::MENU_ID,
             RequestFields::CALL_MODE        => Constants::CALL_MODE,
-            RequestFields::CATEGORY_ID      => 'AAA',
+            RequestFields::CATEGORY_ID      => Constants::CATEGORY,
             RequestFields::RETURN_URL       => $input['callbackUrl'],
         ];
 
@@ -233,7 +233,7 @@ class Gateway extends Base\Gateway
             $dataToEncrypt[RequestFields::ACCOUNT_NUMBER] = '.' . $input['order']['account_number'];
         }
 
-        $stringToEncrypt = $this->prepareStringToEncrypt($dataToEncrypt);
+        $stringToEncrypt = $this->getStringToEncrypt($dataToEncrypt);
 
         $data[RequestFields::QUERY_STRING] = $this->getEncryptedString($stringToEncrypt);
 
@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
      * @param Eg. $data = ['PRN' => "6vTX585l2WP6Bq", 'MD' => "P"]
      * @return Eg. string "PRN~6vTX585l2WP6Bq|MD~P"
      */
-    protected function prepareStringToEncrypt(array $data) :string
+    protected function getStringToEncrypt(array $data) :string
     {
         $queryArray = [];
 
@@ -300,7 +300,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->fill($attributes);
 
-        $gatewayPayment->saveOrFail();
+        $this->repo->saveOrFail($gatewayPayment);
     }
 
     protected function checkCallbackStatus(array $content)
@@ -346,20 +346,21 @@ class Gateway extends Base\Gateway
         //
         if (isset($content[ResponseFields::REFERENCE_ID]) === true)
         {
-                if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
-                {
-                    $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::REFERENCE_ID];
-                }
-                else if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === false) and
-                         ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !== $content[ResponseFields::REFERENCE_ID]))
-                {
-                    $this->trace->error(
-                        TraceCode::GATEWAY_MULTIPLE_BANK_PAYMENT_IDS,
-                        [
-                            'authorize_bid' => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
-                            'verify_bid'    => $content[ResponseFields::REFERENCE_ID]
-                        ]);
-                }
+            if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
+            {
+                $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::REFERENCE_ID];
+            }
+            else if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === false) and
+                    ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !== $content[ResponseFields::REFERENCE_ID]))
+            {
+                $this->trace->error(
+                    TraceCode::GATEWAY_MULTIPLE_BANK_PAYMENT_IDS,
+                    [
+                        'authorize_bid' => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
+                        'verify_bid'    => $content[ResponseFields::REFERENCE_ID]
+                    ]
+                );
+            }
         }
 
         return $attributes ?? [];
@@ -374,9 +375,9 @@ class Gateway extends Base\Gateway
     {
         $xml = (array) simplexml_load_string($body);
 
-        $transactionStatus = (array) $xml['RetrieveTransactionStatus'];
+        $transactionStatus = (array) $xml[ResponseFields::TRANSACTION_STATUS];
 
-        return (array)$transactionStatus['RetrieveTransactionStatus_REC'];
+        return (array) $transactionStatus[ResponseFields::STATUS_RECORD];
     }
 
     protected function getMerchantId()

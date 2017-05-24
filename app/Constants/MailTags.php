@@ -66,6 +66,7 @@ class MailTags
         self::KOTAK_BENEFICIARY_MAIL,
         self::HDFC_NETBANKING_REFUNDS_MAIL,
         self::AXIS_NETBANKING_REFUNDS_MAIL,
-        self::ICICI_NETBANKING_REFUNDS_MAIL
+        self::ICICI_NETBANKING_REFUNDS_MAIL,
+        self::RBL_NETBANKING_REFUNDS_MAIL,
     ];
 }

@@ -100,8 +100,6 @@ class RefundFile extends Base\RefundFile
 
             $message->from('refunds@razorpay.com', 'Rbl Netbanking refunds');
 
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
             $message->subject($fileData['subject']);
 
             $message->to($emails);

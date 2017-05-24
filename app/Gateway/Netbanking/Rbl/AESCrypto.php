@@ -9,12 +9,11 @@ class AESCrypto extends Base\AESCrypto
 {
     const KEY_LENGTH = 256;
 
-
     public function __construct(int $mode, string $masterKey, string $initializationVector = '')
     {
-        $key = $this->getKey($masterKey);
+        $this->buildKey($masterKey);
 
-        parent::__construct($mode, $key);
+        parent::__construct($mode, $masterKey);
     }
 
     public function encryptString(string $string)
@@ -27,13 +26,13 @@ class AESCrypto extends Base\AESCrypto
         return parent::decryptString(base64_decode(urldecode($string)));
     }
 
-    protected function getKey($key)
+    protected function buildKey(& $key)
     {
-        $keyBytes = (int) self::KEY_LENGTH / 8;
+        $keyBytes = (int) (self::KEY_LENGTH / 8);
 
         $keyLength = strlen($key);
 
-        $repeatFactor = (int) $keyBytes / $keyLength;
+        $repeatFactor = (int) ($keyBytes / $keyLength);
 
         return str_repeat($key, $repeatFactor);
     }

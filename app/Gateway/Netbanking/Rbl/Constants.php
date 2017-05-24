@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Rbl;
 
-
 class Constants
 {
 	const BANK_ID           = 176;
@@ -23,4 +22,5 @@ class Constants
 	const NO                = 'N';
 	const AUTHENTICATION    = 'AuthenticationFG';
 	const LOAD              = 'LOAD';
+	const CATEGORY          = 'AAA';
 }
