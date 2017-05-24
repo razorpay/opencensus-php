@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\AdminLead\Entity as AdminLead;
 use RZP\Models\Admin\Admin\Entity as Admin;
 use RZP\Models\Admin\Org\Entity as Org;
+use RZP\Models\Merchant\Entity as Merchant;
 
 class CreateAdminLeadsTable extends Migration
 {
@@ -27,6 +28,9 @@ class CreateAdminLeadsTable extends Migration
             $table->char(AdminLead::ADMIN_ID, Admin::ID_LENGTH);
 
             $table->char(AdminLead::ORG_ID, Org::ID_LENGTH);
+
+            $table->char(AdminLead::MERCHANT_ID, Merchant::ID_LENGTH)
+                  ->nullable();
 
             $table->char(AdminLead::TOKEN, 40)
                   ->unique();
@@ -50,6 +54,10 @@ class CreateAdminLeadsTable extends Migration
             $table->foreign(AdminLead::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG);
+
+            $table->foreign(AdminLead::MERCHANT_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT);
         });
     }
 
