@@ -79,6 +79,11 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
 
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
     public function setPublicAdminIdAttribute(array &$attributes)
     {
         $adminId = $this->getAdminId();
@@ -131,11 +136,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ADMIN_ID);
     }
 
-    public function getMerchantId() : string
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
     public function getEmail() : string
     {
         return $this->getAttribute(self::EMAIL);
@@ -149,10 +149,5 @@ class Entity extends Base\Entity
         $rulesVar = $validator->getRulesForOperation('send_invitation');
 
         return array_keys($rulesVar);
-    }
-
-    public function setMerchantId($merchantId)
-    {
-        $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 }

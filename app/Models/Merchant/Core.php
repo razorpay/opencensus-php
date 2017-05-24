@@ -128,7 +128,7 @@ class Core extends Base\Core
 
                     if (empty($adminLead) === false)
                     {
-                        $adminLead->setMerchantId($merchant->id);
+                        $adminLead->merchant()->associate($merchant);
 
                         $this->repo->saveOrFail($adminLead);
                     }
