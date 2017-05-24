@@ -41,7 +41,8 @@ class DashboardUserProvider implements UserProvider
      */
     public function retrieveByToken($identifier, $token)
     {
-        throw new \Exception;
+        //TODO Remove this
+        // throw new \Exception;
     }
 
     /**
@@ -53,7 +54,8 @@ class DashboardUserProvider implements UserProvider
      */
     public function updateRememberToken(UserContract $user, $token)
     {
-        throw new \Exception;
+        //TODO Remove this
+        // throw new \Exception;
     }
 
     /**
