@@ -563,6 +563,8 @@ class Processor
 
         $this->tracePaymentFailed($error, $traceCode);
 
+        $this->createAnalyticsLog($payment);
+
         $this->eventPaymentFailed();
 
         if ($this->merchant->isFeatureEnabled(Feature::PAYMENT_FAILURE_EMAIL) === true)

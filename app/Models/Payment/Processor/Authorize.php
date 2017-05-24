@@ -131,6 +131,8 @@ trait Authorize
 
                 $retry = false;
 
+                $this->createAnalyticsLog($payment);
+
                 break;
             }
             catch (Exception\GatewayRequestException $e)
@@ -165,12 +167,6 @@ trait Authorize
                 $terminalData['end'] = microtime(true);
 
                 $this->recordTerminalAudit($terminalData, $payment, $retryAttempts);
-
-                if (($retry === false) or
-                    ($retryAttempts >= $maxRetryAttempts))
-                {
-                    $this->createAnalyticsLog($payment);
-                }
             }
         }
 
