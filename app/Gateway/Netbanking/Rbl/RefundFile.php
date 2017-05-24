@@ -50,8 +50,10 @@ class RefundFile extends Base\RefundFile
             'subject'    => 'RBL Netbanking refunds file for ' . $today,
             'file_path'  => $file['local_file_path'],
             'signed_url' => $signedFileUrl,
-            'count'      => count($data),
-            'date'       => $today
+            'count'      => count($data) - 1,
+            'date'       => $today,
+            'file_name'  => basename($file['local_file_path']),
+            'body'       => self::EMAIL_BODY
         ];
 
         $this->sendRefundEmail($fileData);
