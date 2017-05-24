@@ -91,4 +91,11 @@ class Core extends Base\Core
 
         return $adminLead;
     }
+
+    public function getByAdminId(string $adminId)
+    {
+        return $this->repo
+                    ->admin_lead
+                    ->findByAdminId($adminId);
+    }
 }

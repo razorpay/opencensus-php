@@ -13,6 +13,7 @@ class Entity extends Base\Entity
 
     const ADMIN_ID          = 'admin_id';
     const ORG_ID            = 'org_id';
+    const MERCHANT_ID       = 'merchant_id';
     const TOKEN             = 'token';
     const EMAIL             = 'email';
     const FORM_DATA         = 'form_data';
@@ -130,6 +131,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ADMIN_ID);
     }
 
+    public function getMerchantId() : string
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getEmail() : string
     {
         return $this->getAttribute(self::EMAIL);
@@ -143,5 +149,10 @@ class Entity extends Base\Entity
         $rulesVar = $validator->getRulesForOperation('send_invitation');
 
         return array_keys($rulesVar);
+    }
+
+    public function setMerchantId($merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 }

@@ -19,6 +19,7 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Admin\AdminLead;
 
 class Core extends Base\Core
 {
@@ -40,7 +41,7 @@ class Core extends Base\Core
 
         $this->addMerchantSupportingEntities($merchant);
 
-        $this->syncHeimdallRelatedEntities($merchant, $input);
+        $this->syncHeimdallRelatedEntities($merchant, $input, true);
 
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
@@ -105,7 +106,7 @@ class Core extends Base\Core
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
     }
 
-    public function syncHeimdallRelatedEntities(Entity $merchant, array $input)
+    public function syncHeimdallRelatedEntities(Entity $merchant, array $input, $create = false)
     {
         if (isset($input[Entity::GROUPS]) === true)
         {
@@ -115,6 +116,21 @@ class Core extends Base\Core
         if (isset($input[Entity::ADMINS]) === true)
         {
             $this->repo->sync($merchant, Entity::ADMINS, $input[Entity::ADMINS]);
+
+            if ($create === true)
+            {
+                $firstAdminId = current($input[Entity::ADMINS]);
+
+                if ($firstAdminId !== false)
+                {
+                    // Update admin leads
+                    $adminLead = (new AdminLead\Core)->getByAdminId($firstAdminId);
+
+                    $adminLead->setMerchantId($merchant->id);
+
+                    $this->repo->saveOrFail($adminLead);
+                }
+            }
         }
     }
 
