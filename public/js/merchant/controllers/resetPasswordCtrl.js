@@ -19,7 +19,10 @@ app.controller('ResetPasswordCtrl', [
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.success = false;
-    $scope.data = { token: $stateParams.token };
+    $scope.data = {
+      token: $stateParams.token,
+      expiryTime: $stateParams.expiry_time,
+    };
     if (!$scope.data.token) {
       $state.go('access.signin');
     }

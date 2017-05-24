@@ -25,11 +25,11 @@ class MiscMailer extends Mailer
         return $this;
     }
 
-    public function sendForgetPasswordEmail($email, $org, $token)
+    public function sendForgetPasswordEmail($email, $org, $token, $expiryTime)
     {
         $this->view = 'emails.auth.reminder';
 
-        $this->data = ['token' => $token, 'org' => $org];
+        $this->data = ['token' => $token, 'org' => $org, 'expiryTime' => $expiryTime];
 
         $this->email = $email;
 
