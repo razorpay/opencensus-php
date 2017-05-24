@@ -1011,8 +1011,17 @@ angular
               idParam: 'id',
               sign: 'role_',
             },
-
             methods: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            adjustment: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            schedule_task: {
               route: 'app.merchants.detail',
               idParam: 'id',
               sign: '',
@@ -1027,6 +1036,44 @@ angular
 
             $state.go(entityDetails.route, params);
           }
+        },
+      };
+    },
+  ])
+  .factory('utilMapping', [
+    '$state',
+    function($state) {
+      // mapping used in multiple files
+      var map = {
+        networkMap: {
+          AMEX: 'American Express',
+          DICL: 'Diners Club',
+          DISC: 'Discover',
+          JCB: 'JCB',
+          MAES: 'Maestro',
+          MC: 'MasterCard',
+          RUPAY: 'RuPay',
+          VISA: 'Visa',
+          UNP: 'Union Pay',
+        },
+        methodMap: {
+          card: 'Card',
+          wallet: 'Wallet',
+          netbanking: 'Netbanking',
+          upi: 'UPI',
+          emi: 'EMI',
+        },
+        gatewayAcquirerMap: {
+          axis: 'Axis',
+          hdfc: 'HDFC',
+          amex: 'Amex',
+          icic: 'ICICI',
+        },
+      };
+
+      return {
+        getMap: function(key) {
+          return map[key];
         },
       };
     },
