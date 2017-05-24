@@ -107,7 +107,7 @@ class Gateway extends Base\Gateway
 
         $acquirerData = $this->getAcquirerData($input);
 
-        return $this->getCallbackResponseData($input);
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function callbackOtpSubmit(array $input)
