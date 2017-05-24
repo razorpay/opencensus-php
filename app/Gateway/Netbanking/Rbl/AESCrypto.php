@@ -34,6 +34,6 @@ class AESCrypto extends Base\AESCrypto
 
         $repeatFactor = (int) ($keyBytes / $keyLength);
 
-        return str_repeat($key, $repeatFactor);
+        $key =  str_repeat($key, $repeatFactor);
     }
 }

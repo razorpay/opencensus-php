@@ -132,7 +132,7 @@ class Gateway extends Base\Gateway
         $verify->payment = $this->saveVerifyContent($verify);
     }
 
-    protected function getVerifyMatchStatus(Verify $verify) :string
+    protected function getVerifyMatchStatus(Verify $verify): string
     {
         $status = VerifyResult::STATUS_MATCH;
 
@@ -175,7 +175,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getVerifyRequestData(array $input) :array
+    protected function getVerifyRequestData(array $input): array
     {
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
              $input['payment']['id'], Action::AUTHORIZE);
@@ -201,7 +201,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getAuthorizeRequestData(array $input) :array
+    protected function getAuthorizeRequestData(array $input): array
     {
         $data =
         [
@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
      * @param Eg. $data = ['PRN' => "6vTX585l2WP6Bq", 'MD' => "P"]
      * @return Eg. string "PRN~6vTX585l2WP6Bq|MD~P"
      */
-    protected function getStringToEncrypt(array $data) :string
+    protected function getStringToEncrypt(array $data): string
     {
         $queryArray = [];
 
@@ -258,7 +258,7 @@ class Gateway extends Base\Gateway
         return $queryString;
     }
 
-    protected function getEncryptedString(string $stringToEncrypt) :string
+    protected function getEncryptedString(string $stringToEncrypt): string
     {
         $masterKey = $this->getSecret();
 
@@ -267,7 +267,7 @@ class Gateway extends Base\Gateway
         return $aes->encryptString($stringToEncrypt);
     }
 
-    public function getDecryptedString(string $stringToDencrypt) :string
+    public function getDecryptedString(string $stringToDencrypt): string
     {
         $masterKey = $this->getSecret();
 
@@ -276,7 +276,7 @@ class Gateway extends Base\Gateway
         return $aes->decryptString($stringToDencrypt);
     }
 
-    protected function getEntityAttributes(array $input) :array
+    protected function getEntityAttributes(array $input): array
     {
         $entityAttributes = [
             RequestFields::AMOUNT             => $input['payment']['amount'] / 100,
@@ -334,7 +334,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributesToSave(array $content, Base\Entity $gatewayPayment) :array
+    protected function getVerifyAttributesToSave(array $content, Base\Entity $gatewayPayment): array
     {
         if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
         {
@@ -366,12 +366,12 @@ class Gateway extends Base\Gateway
         return $attributes ?? [];
     }
 
-    protected function getAuthSuccessStatus() :string
+    protected function getAuthSuccessStatus(): string
     {
         return Status::getAuthSuccessStatus();
     }
 
-    protected function parseVerifyResponse(string $body) :array
+    protected function parseVerifyResponse(string $body): array
     {
         $xml = (array) simplexml_load_string($body);
 
@@ -390,10 +390,5 @@ class Gateway extends Base\Gateway
         }
 
         return $mid;
-    }
-
-    protected function getLiveMerchantId()
-    {
-        return $this->config['live_merchant_id'];
     }
 }
