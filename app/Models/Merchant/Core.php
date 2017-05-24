@@ -152,15 +152,6 @@ class Core extends Base\Core
      */
     public function edit($merchant, $input)
     {
-        if (isset($input['international']) === true)
-        {
-            $action = Merchant\Action::EDIT_INTERNATIONAL;
-
-            $admin = $this->app['basicauth']->getAdmin();
-
-            $admin->hasMerchantActionPermissionOrFail($action);
-        }
-
         $merchant->setAuditAction(Action::EDIT_MERCHANT);
 
         $merchant->edit($input);
@@ -329,11 +320,20 @@ class Core extends Base\Core
         // Check for admin permissions
         $admin->hasMerchantActionPermissionOrFail($action);
 
+        if ($action === Merchant\Action::ENABLE_INTERNATIONAL)
+        {
+            $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+
+            (new Methods\Core)->validatePricingForInternational($merchant, $plan);
+        }
+
         $routePermission = Permission\Name::$actionMap[$action];
 
         $originalMerchant = clone $merchant;
 
-        $merchant->$action();
+        $function = camel_case($action);
+
+        $merchant->$function();
 
         $this->app['workflow']->setPermission($routePermission)->handle(
             $originalMerchant, $merchant);

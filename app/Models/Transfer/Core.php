@@ -388,7 +388,7 @@ class Core extends Base\Core
 
     protected function validateMerchantForTransfer(Merchant\Entity $merchant)
     {
-        $isOnHold = $merchant->holdFunds();
+        $isOnHold = $merchant->getHoldFunds();
 
         //
         // Don't allow a transfer operation on live mode

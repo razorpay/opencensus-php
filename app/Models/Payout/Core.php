@@ -245,7 +245,7 @@ class Core extends Base\Core
 
     protected function validateMerchantStatus(Merchant\Entity $merchant)
     {
-        $onHold = $merchant->holdFunds();
+        $onHold = $merchant->getHoldFunds();
 
         if ($onHold === true)
         {

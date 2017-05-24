@@ -295,6 +295,17 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateMerchantDetailExists($merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        if ($merchantDetails === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS);
+        }
+    }
+
     protected function validateAction($attribute, $action)
     {
         if (Action::exists($action) === false)
@@ -302,9 +313,12 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED);
         }
 
-        $validator = 'validate' .ucfirst($action);
+        $validator = 'validate' .studly_case($action);
 
-        $this->$validator();
+        if (method_exists($this, $validator))
+        {
+            $this->$validator();
+        }
     }
 
     protected function validateArchive()
@@ -317,13 +331,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED);
         }
 
-        $merchantDetails = $merchant->merchantDetail;
-
-        if ($merchantDetails === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS);
-        }
+        $this->validateMerchantDetailExists($merchant);
     }
 
     protected function validateUnarchive()
@@ -356,6 +364,72 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
+        }
+    }
+
+    protected function validateHoldFunds()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->getHoldFunds() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD);
+        }
+    }
+
+    protected function validateReleaseFunds()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->getHoldFunds() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ALREADY_RELEASED);
+        }
+    }
+
+    protected function validateEnableReceiptEmails()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isReceiptEmailsEnabled() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RECEIPT_EMAILS_ALREADY_ENABLED);
+        }
+    }
+
+    protected function validateDisableReceiptEmails()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isReceiptEmailsEnabled() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RECEIPT_EMAILS_ALREADY_DISABLED);
+        }
+    }
+
+    protected function validateEnableInternational()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isInternational() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED);
+        }
+    }
+
+    protected function validateDisableInternational()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isInternational() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED);
         }
     }
 }
