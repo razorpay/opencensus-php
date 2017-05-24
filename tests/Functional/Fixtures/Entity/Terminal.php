@@ -435,7 +435,7 @@ class Terminal extends Base
             'card'                      => 1,
             'shared'                    => 1,
             'recurring'                 => 4,
-            'type'                      => Mode::PURCHASE,
+            'mode'                      => Mode::PURCHASE,
             'gateway_merchant_id'       => 'random',
         ];
 
