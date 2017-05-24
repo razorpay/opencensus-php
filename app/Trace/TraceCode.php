@@ -687,7 +687,7 @@ class TraceCode
 // Trace codes for Merchant Reports
 
     const REPORT_CREATE_REQUEST                         = 'REPORT_CREATE_REQUEST';
-    const REPORT_ENTITY_FETCH_REQUEST                   = 'REPORT_ENTITY_FETCH_REQUEST';
+    const REPORT_QUEUE_JOB_FAILED                       = 'REPORT_QUEUE_JOB_FAILED';
 
 // Trace codes for gateway
     const USER_EDIT                                     = 'USER_EDIT';

@@ -83,7 +83,15 @@ class MerchantTest extends TestCase
 
         $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/users';
 
-        $this->startTest();
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $roles = array_column($response, 'role');
+
+        $this->assertEquals(count($roles), 2);
+
+        $this->assertTrue(in_array('owner', $roles));
+
+        $this->assertTrue(in_array('manager', $roles));
     }
 
     public function testGetBalance()
@@ -366,6 +374,11 @@ class MerchantTest extends TestCase
                         ['merchant_id' => '1cXSLlUU8V9sXl',
                          'entity_id'   => '1cXSLlUU8V9sXl',
                          'type'        => 'merchant']);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => '100000razorpay',
+            'hostname'  => 'dashboard.razorpay.com'
+        ]);
 
         $activatedAt = time();
 

@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Admin\Org;
 
-use RZP\Models\Admin\Action;
 use RZP\Models\Base;
+use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Permission;
 
 class Core extends Base\Core

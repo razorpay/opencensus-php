@@ -4,7 +4,24 @@ namespace RZP\Error;
 
 class PublicErrorDescription
 {
-    const GATEWAY_ERROR                                                         = 'Payment processing failed due to error at bank/wallet gateway';
+    //
+    // Please note before declaring strings that have characters that require escaping.
+    // Serialization is a problem when using these characters where signing is involved.
+    // Because the other side may read the backslashes as escape characters and ignore
+    // them while generating the signature.
+    // As per JSON spec these need escpaing -
+    //        %x22 /          ; "    quotation mark  U+0022
+    //        %x5C /          ; \    reverse solidus U+005C
+    //        %x2F /          ; /    solidus         U+002F
+    //        %x62 /          ; b    backspace       U+0008
+    //        %x66 /          ; f    form feed       U+000C
+    //        %x6E /          ; n    line feed       U+000A
+    //        %x72 /          ; r    carriage return U+000D
+    //        %x74 /          ; t    tab             U+0009
+    //
+
+
+    const GATEWAY_ERROR                                                         = 'Payment processing failed due to error at bank or wallet gateway';
     const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins.';
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
@@ -80,7 +97,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                                      = 'Card is expired';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                          = 'Expiry date is not valid';
-    const BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID                              = 'Card details entered by the user is/are invalid.';
+    const BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID                              = 'Card details entered by the user are invalid.';
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION         = 'Payment processing declined. The card issuing bank has prevented the payment from being authorized.';
     const BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE                        = 'The card number provided is not a legitimate one.';
     const BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID                      = 'The payment failed most probably due to an invalid card number';
@@ -407,6 +424,7 @@ class PublicErrorDescription
 
     // Workflow Related Errors
     const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                 = 'Workflow entity not found';
+    const BAD_REQUEST_WORKFLOW_ENTITY_ID_NOT_FOUND                              = 'Workflow entity ID not found';
     const BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL                       = 'No check required from checker roles in the current workflow action level';
     const BAD_REQUEST_ACTION_INVALID_TYPE                                       = 'The given action type is not valid';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                     = 'The given action method is not valid';

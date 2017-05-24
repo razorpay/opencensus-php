@@ -63,13 +63,13 @@ class TestCase extends IlluminateTestCase
 
     public function tearDown()
     {
+        parent::tearDown();
+
         Mockery::close();
 
         $this->freeUpObjectProperties();
 
         $this->resetIniConfiguration();
-
-        parent::tearDown();
     }
 
     protected function setUpTraits()

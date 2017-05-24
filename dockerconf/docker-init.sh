@@ -27,8 +27,8 @@ if [[ "$unamestr" == 'Darwin' ]]; then
 	if [ "$flush_file_content" = "false" ] && [ "$on_flush_file_content" = "none" ]; then
 		echo "Already Initialized"
 	else
-		echo -n "false" > $flush_file
-		echo -n "none" > $on_flush_file
+		echo "false" > $flush_file
+		echo "none" > $on_flush_file
 
 		git add $flush_file
 		git add $on_flush_file
