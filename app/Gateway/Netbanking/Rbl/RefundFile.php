@@ -44,11 +44,14 @@ class RefundFile extends Base\RefundFile
 
         $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
 
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $fileData = [
-            'subject'   => 'RBL Netbanking refunds file for ' . $today,
-            'file_path' => $file['local_file_path'],
-            'count'     => count($data),
-            'date'      => $today
+            'subject'    => 'RBL Netbanking refunds file for ' . $today,
+            'file_path'  => $file['local_file_path'],
+            'signed_url' => $signedFileUrl,
+            'count'      => count($data),
+            'date'       => $today
         ];
 
         $this->sendRefundEmail($fileData);
@@ -67,12 +70,12 @@ class RefundFile extends Base\RefundFile
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'],
                     'Asia/Kolkata')
-                    ->format('Y-d-m');
+                    ->format('m-d-y h:m:s');
 
             $refundDate = Carbon::createFromTimestamp(
                     $row['refund']['created_at'],
                     'Asia/Kolkata')
-                    ->format('Y-d-m');
+                    ->format('m-d-y h:m:s');
 
             $data[] = [
                 RefundFields::SERIAL_NO          => $index++,
@@ -83,7 +86,7 @@ class RefundFile extends Base\RefundFile
                 RefundFields::REFUND_DATE        => $refundDate,
                 RefundFields::MERCHANT_ID        => $row['terminal']['gateway_merchant_id'],
                 RefundFields::BANK_REFERENCE     => $row['gateway']['bank_payment_id'],
-                RefundFields::PGI_REFERENCE      => '',
+                RefundFields::PGI_REFERENCE      => $row['payment']['id'],
                 RefundFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
                 RefundFields::REFUND_AMOUNT      => $row['refund']['amount'] / 100,
             ];
@@ -104,7 +107,7 @@ class RefundFile extends Base\RefundFile
 
             $message->to($emails);
 
-            $message->attach($fileData['file_path']);
+            $message->attach($fileData['signed_url'], ['as' => $fileData['file_name']]);
 
             $headers = $message->getHeaders();
 
