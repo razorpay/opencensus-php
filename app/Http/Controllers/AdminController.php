@@ -486,15 +486,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function toggleTerminal($mode, $terminalId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->toggleTerminal($mode, $terminalId, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function passThrough($path = '')
     {
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);

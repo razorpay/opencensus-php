@@ -120,10 +120,19 @@ app
         },
         disable: function(id) {
           var data = { toggle: 0 };
-          var request = $http.put(
-            '/admin/' + $scope.mode + '/terminal/' + id + '/toggle',
-            data
-          );
+          var TerminalData = {
+            route_name: 'terminal_toggle',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: TerminalData,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -139,10 +148,19 @@ app
         },
         enable: function(id) {
           var data = { toggle: 1 };
-          var request = $http.put(
-            '/admin/' + $scope.mode + '/terminal/' + id + '/toggle',
-            data
-          );
+          var TerminalData = {
+            route_name: 'terminal_toggle',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: TerminalData,
+          });
           request
             .success(function(data) {
               if (data.success) {

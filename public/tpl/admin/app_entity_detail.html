@@ -52,12 +52,14 @@
           Delete Terminal
         </button>
         <button ng-show="entity.enabled" class="btn btn-warning" ng-click="terminal.disable(entity.id)"
+          dynamic-tooltip-pos="top" dynamic-tooltip="toggle_merchant_terminal"
           ng-confirm-click="Are you sure you want to disable this terminal?"
         >
           Disable Terminal
         </button>
         <button ng-show="!entity.enabled" class="btn btn-success" ng-click="terminal.enable(entity.id)"
-          ng-confirm-click="Are you sure you want to disable this terminal?"
+          dynamic-tooltip-pos="top" dynamic-tooltip="toggle_merchant_terminal"
+          ng-confirm-click="Are you sure you want to enable this terminal?"
         >
           Enable Terminal
         </button>

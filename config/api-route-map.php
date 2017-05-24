@@ -353,14 +353,17 @@ return [
 
         'merchant_edit'                     => 'merchants/{id}',
 
+        'merchant_action'                   => 'merchants/{id}/action',
+        'merchant_live_enable'              => 'merchants/{id}/live/enable',
+        'merchant_live_disable'             => 'merchants/{id}/live/disable',
+
         // Entities
         'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
         'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
         'admin_fetch_entity_multiple'       => 'admin/{type}',
 
-        'merchant_action'                   => 'merchants/{id}/action',
-        'merchant_live_enable'              => 'merchants/{id}/live/enable',
-        'merchant_live_disable'             => 'merchants/{id}/live/disable',
+        // Toggle Terminal
+        'terminal_toggle'                   => 'terminals/{id}/toggle',
 
         // Gateway Rules
         'gateway_create_rule'               => 'gateway/rules',
