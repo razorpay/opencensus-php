@@ -27,13 +27,12 @@ class Validator extends Base\Validator
         Entity::STATE       => 'sometimes|string|max:25',
     ];
 
-    public function validateLiveActionsOnEntity(string $entity, string $entityId)
+    public function validateLiveActionsOnEntity(string $entityId, string $entity, string $permissionName)
     {
-        $app = App::getFacadeRoot();
+        $actions = (new Core)->fetchOpenActionOnEntityOperation(
+            $entityId, $entity, $permissionName);
 
-        $orgId = $app['basicauth']->getAdminOrgId();
-
-        $actions = (new Differ\Core)->fetchByEntityAndEntityId($entity, $entityId);
+        $actions = $actions->toArray();
 
         // If there are any action in progress
         if (empty($actions) === false)
@@ -42,7 +41,7 @@ class Validator extends Base\Validator
 
             foreach ($actions as $action)
             {
-                $actionIds[] = $action['_source'][Differ\Entity::ACTION_ID];
+                $actionIds[] = $action[Entity::ID];
             }
 
             throw new Exception\BadRequestException(
