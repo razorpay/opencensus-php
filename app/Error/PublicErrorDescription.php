@@ -152,6 +152,12 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
+    const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
+    const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_RELEASED                           = 'The merchant funds are already released';
+    const BAD_REQUEST_RECEIPT_EMAILS_ALREADY_ENABLED                            = 'The merchant receipt emails are already enabled';
+    const BAD_REQUEST_RECEIPT_EMAILS_ALREADY_DISABLED                           = 'The merchant receipt emails are already disabled';
+    const BAD_REQUEST_INTERNATIONAL_ALREADY_ENABLED                             = 'Merchant international is already enabled';
+    const BAD_REQUEST_INTERNATIONAL_ALREADY_DISABLED                            = 'Merchant international is already disabled';
     const BAD_REQUEST_MERCHANT_INVALID                                          = 'The payment has been rejected by the gateway.';
     const BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED                 = 'Recurring payments are not supported for this merchant.';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                               = 'This payment could not be authorized by the processing bank.';
@@ -445,6 +451,7 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_STEP_OP_MISMATCH                                 = 'The op type does not match with other steps in the same level';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED                        = 'An action can only be closed by maker';
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                 = 'Workflow action is not in any open state';
+    const BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED                           = 'Workflow steps cannot be edited';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 

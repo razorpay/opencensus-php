@@ -13,6 +13,7 @@ class Entity extends Base\Entity
 
     const ADMIN_ID          = 'admin_id';
     const ORG_ID            = 'org_id';
+    const MERCHANT_ID       = 'merchant_id';
     const TOKEN             = 'token';
     const EMAIL             = 'email';
     const FORM_DATA         = 'form_data';
@@ -76,6 +77,11 @@ class Entity extends Base\Entity
     public function org()
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     public function setPublicAdminIdAttribute(array &$attributes)

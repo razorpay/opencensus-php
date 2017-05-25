@@ -158,6 +158,15 @@ class Core extends Base\Core
         }
     }
 
+    public function validatePricingForInternational($merchant, $plan)
+    {
+        if ($plan->hasInternationalPricing() === false)
+        {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Pricing not present for international.');
+        }
+    }
+
     public function setDefaultMethods($merchant)
     {
         $methods = (new Methods\Entity)->build();

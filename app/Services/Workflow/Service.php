@@ -117,7 +117,7 @@ class Service
 
         // Check if any actions are in open/approved state on the same
         // entity. If yes then prevent any further operations on this.
-        (new Action\Validator)->validateLiveActionsOnEntity($entity, $entityId);
+        (new Action\Validator)->validateLiveActionsOnEntity($entityId, $entity, $this->getPermission());
 
         // Necessary data to pass to WorkflowController
         $params = $this->createDifferEntity($this->request, $entity, $entityId);

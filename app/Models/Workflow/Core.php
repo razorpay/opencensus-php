@@ -71,13 +71,20 @@ class Core extends Base\Core
 
     public function update(Entity $workflow, array $input)
     {
+        $validator = $workflow->getValidator();
+
         if ($this->isWorkflowEditable($workflow) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
         }
 
-        $workflow->getValidator()->validatePermissionsForOrg(
+        if (empty($input[Entity::LEVELS]) === false)
+        {
+            $validator->validateCheckersExistForWorkflow();
+        }
+
+        $validator->validatePermissionsForOrg(
             $workflow->getOrgId(), $input[Entity::PERMISSIONS]);
 
         $workflow->edit($input);

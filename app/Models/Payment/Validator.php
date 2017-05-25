@@ -22,10 +22,10 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         'amount'                  => 'required|integer',
-        'currency'                => 'required|size:3',
-        'method'                  => 'custom',
-        'vpa'                     => 'required_if:method,upi|max:100|custom',
-        'aadhaar'                 => 'required_if:method,aeps',
+        'currency'                => 'required|string|size:3',
+        'method'                  => 'string|custom',
+        'vpa'                     => 'required_if:method,upi|string|max:100|custom',
+        'aadhaar'                 => 'required_if:method,aeps|array',
         'aadhaar.number'          => 'required_if:method,aeps|size:12|string',
         'aadhaar.fingerprint'     => 'required_if:method,aeps|max:999|string',
         'aadhaar.session_key'     => 'sometimes_if:method,aeps|size:344|string',
@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         'email'                   => 'sometimes|nullable|email',
         'contact'                 => 'sometimes|nullable|contact_syntax',
         'signature'               => 'sometimes',
+        'signature'               => 'sometimes|nullable|string',
         'notes'                   => 'sometimes|notes',
         'notes.merchant_order_id' => 'required_with:signature',
         'callback_url'            => 'sometimes|url',

@@ -828,9 +828,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SETTLEMENT_SCHEDULE_ID);
     }
 
-    public function holdFunds()
+    public function getHoldFunds()
     {
         return $this->getAttribute(self::HOLD_FUNDS);
+    }
+
+    public function holdFunds()
+    {
+        $this->setHoldFunds(true);
+    }
+
+    public function releaseFunds()
+    {
+        $this->setHoldFunds(false);
     }
 
     public function setHoldFunds($holdFunds)
@@ -876,6 +886,21 @@ class Entity extends Base\PublicEntity
     public function enableReceiptEmails()
     {
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
+    }
+
+    public function disableReceiptEmails()
+    {
+        $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, false);
+    }
+
+    public function enableInternational()
+    {
+        $this->setAttribute(self::INTERNATIONAL, true);
+    }
+
+    public function disableInternational()
+    {
+        $this->setAttribute(self::INTERNATIONAL, false);
     }
 
     /** Overridden from the PublicEntity */
