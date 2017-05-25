@@ -92,7 +92,7 @@ class Repository extends Base\Repository
                      ->first();
     }
 
-    public function fetchDowntimesWithoutTerminal(array $input)
+    public function fetchDowntimesWithoutTerminal(Payment\Entity $payment)
     {
         $query = $this->newQuery();
 
@@ -100,6 +100,34 @@ class Repository extends Base\Repository
 
         return $query->whereNull(Entity::TERMINAL_ID)
                      ->get();
+    }
+
+    public function fetchDowntimesForSorter(array $params)
+    {
+        $query = $this->newQuery();
+
+        $this->buildQueryForDowntimeSorter($query, $params);
+
+        return $query->get();
+    }
+
+    protected function buildQueryForDowntimeSorter(
+        array $input, \RZP\Base\BuilderEx & $query)
+    {
+        foreach ($input as $key => $value)
+        {
+            if (is_array($value) === true)
+            {
+                $query->whereIn($key, $value);
+            }
+            else
+            {
+                $query->where(function ($query) use ($key, $value)
+                {
+                    $query->where($key, '=', $value);
+                });
+            }
+        }
     }
 
     protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
