@@ -112,8 +112,6 @@ trait Authorize
             {
                 $request = $this->runOtpPaymentFlow($terminalGatewayInput, $payment);
 
-                $this->createAnalyticsLog($payment);
-
                 return $request;
             }
 
@@ -130,8 +128,6 @@ trait Authorize
                 $request = $this->callGatewayAuthorize($terminalGatewayInput);
 
                 $retry = false;
-
-                $this->createAnalyticsLog($payment);
 
                 break;
             }
@@ -2163,9 +2159,11 @@ trait Authorize
         {
             (new Analytics\Service)->createLog($payment);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::WARNING,
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
                 TraceCode::PAYMENT_ANALYTICS_SAVE_FAILED);
         }
     }
