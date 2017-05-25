@@ -144,7 +144,7 @@ angular
       if (angular.isDefined($localStorage.rzp_mode)) {
         currentMode = $localStorage.rzp_mode;
         user.identity().then(function(data) {
-          if (currentMode == 'live' && data.activated !== true) {
+          if (currentMode == 'live' && parseInt(data.activated) !== 1) {
             currentMode = 'test';
           }
         });

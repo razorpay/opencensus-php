@@ -120,7 +120,7 @@ angular
       $scope.selectMode = function(mode) {
         user.identity().then(function(data) {
           var userData = data;
-          if (mode == 'live' && userData.activated !== true) {
+          if (mode == 'live' && parseInt(userData.activated) !== 1) {
             var modalInstance = $modal.open({
               templateUrl: 'activationModalContent.html',
               controller: 'activationModalCtrl',
