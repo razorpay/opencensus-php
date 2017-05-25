@@ -24,35 +24,6 @@
   <!-- Splash Screen ends -->
   <div class="app" id="app" ng-class="{'app-header-fixed':app.settings.headerFixed, 'app-aside-fixed':app.settings.asideFixed, 'app-aside-folded':app.settings.asideFolded}" ui-view></div>
 
-  <!--rollbar-->
-  <script>
-    var _rollbarConfig = {
-      accessToken: "eadbbbbc3c1744c8bbdf23026a9cce41",
-      captureUncaught: true,
-      payload: {},
-      enabled: false,
-      verbose: true
-    };
-
-    var list = {
-      Production: 'dashboard.razorpay.com',
-      Beta: 'betadashboard.razorpay.com',
-      Development: 'dashboard.razorpay.dev'
-    }
-
-    for(var i in list){
-      if(window.location.hostname == list[i]){
-        _rollbarConfig.payload.environment = i;
-
-        // Only enable rollbar if we are not in Development
-        if (i !== 'Development') {
-          _rollbarConfig.enabled = true;
-          _rollbarConfig.verbose = false;
-        };
-      }
-    }
-
-  </script>
   <script type='text/javascript'>
     window.__lo_site_id = 77197;
 
