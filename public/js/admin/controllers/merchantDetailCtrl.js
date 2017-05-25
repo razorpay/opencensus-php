@@ -1756,11 +1756,6 @@ app
             $scope.pricing_plans[value.id] = value.name;
           }
           $scope.loading = false;
-
-          // Trigger select2 on the dropdown
-          setTimeout(function() {
-            $('select[name="pricing_plan_id"]').select2();
-          }, 100);
         }
       });
 
