@@ -10,6 +10,11 @@ class Mailable extends BaseMailable
 {
     use Queueable;
 
+    #TODO : decrease the number of attempts after daily files are fixed
+    public $tries = 50;
+
+    public $timeout = 120;
+
     public function build()
     {
         return $this->addSender()
