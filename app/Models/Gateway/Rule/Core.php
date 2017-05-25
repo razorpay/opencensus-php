@@ -57,8 +57,7 @@ class Core extends Base\Core
      */
     public function fetchApplicableRulesForPayment(
                         array $terminals,
-                        array $input,
-                        bool $verbose = false): Base\PublicCollection
+                        array $input): Base\PublicCollection
     {
         $ruleFetchParams = $this->getRuleFetchParams($terminals, $input);
 
@@ -75,13 +74,6 @@ class Core extends Base\Core
         if ($merchantSpecificRules->isEmpty() === false)
         {
             $applicableRules = $merchantSpecificRules;
-        }
-
-        if ($verbose === true)
-        {
-            $this->trace->info(
-                TraceCode::GATEWAY_RULES_POST_FILTER,
-                $applicableRules->pluck(Entity::ID)->toArray());
         }
 
         return $applicableRules;

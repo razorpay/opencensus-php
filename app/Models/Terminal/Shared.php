@@ -105,20 +105,6 @@ class Shared
         self::OPENWALLET_RAZORPAY_TERMINAL  => Gateway::WALLET_OPENWALLET,
     );
 
-    public static function isSharedTerminal($terminal)
-    {
-        $id = $terminal->getId();
-
-        return in_array($id, self::$shared);
-    }
-
-    public static function isPaymentOnSharedTerminal($payment)
-    {
-        $terminal = $payment->terminal;
-
-        return self::isSharedTerminal($terminal);
-    }
-
     public static function getSharedTerminalMapping()
     {
         return self::$map;
@@ -127,12 +113,5 @@ class Shared
     public static function getGatewayForTerminal($terminal)
     {
         return self::$map[$terminal];
-    }
-
-    public static function getSharedTerminalForGateway($gateway)
-    {
-        $map = array_flip(self::$map);
-
-        return $map[$gateway];
     }
 }

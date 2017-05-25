@@ -49,7 +49,7 @@ class CreateMerchantUsersTable extends Migration
      */
     public function down()
     {
-        Schema::table(Merchant::MERCHANT_USERS, function(Blueprint $table)
+        Schema::table(Table::MERCHANT_USERS, function(Blueprint $table)
         {
             $table->dropForeign(Table::MERCHANT_USERS .'_' .User::MERCHANT_ID .'_foreign');
 
@@ -58,6 +58,6 @@ class CreateMerchantUsersTable extends Migration
             $table->dropUnique('merchant_users_merchant_id_user_id_role_unique');
         });
 
-        Schema::drop(Merchant::MERCHANT_USERS);
+        Schema::drop(Table::MERCHANT_USERS);
     }
 }

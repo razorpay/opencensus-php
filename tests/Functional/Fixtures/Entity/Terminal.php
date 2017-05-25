@@ -326,7 +326,7 @@ class Terminal extends Base
 
         $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_jiomoney',
             'card'                      => 0,
             'netbanking'                => 0,
@@ -962,7 +962,7 @@ class Terminal extends Base
 
         $defaultValues = [
             'id'                        => $terminalId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_openwallet',
             'shared'                    => 1,
         ];
