@@ -39,7 +39,9 @@ class Core extends Base\Core
 
         $admin = $admin->toArrayPublic();
 
+        $token = $invitation->getToken();
         $invitation = $invitation->toArrayPublic();
+        $invitation['token'] = $token;
 
         $merchantInvitationMail = new MerchantInvitationMail($admin, $org, $invitation);
 

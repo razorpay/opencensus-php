@@ -65,27 +65,14 @@ class Activation extends Mailable
 
     protected function addSubject()
     {
-        $subjectName = $this->getSubjectName();
-
-        $subject = "Razorpay | Account activated for $subjectName";
-
-        $this->subject($subject);
+        $this->subject($this->data['subject']);
 
         return $this;
     }
 
     protected function addMailData()
     {
-        $subjectName = $this->getSubjectName();
-
-        $data = [
-            'merchant' => $this->merchant,
-            'plan'     => $this->plan,
-            'name'     => $subjectName,
-            'rules'    => $this->rules,
-        ];
-
-        $this->with($data);
+        $this->with($this->data);
 
         return $this;
     }
@@ -99,17 +86,5 @@ class Activation extends Mailable
         });
 
         return $this;
-    }
-
-    protected function getSubjectName()
-    {
-        $subjectName = $this->merchant['billing_label'];
-
-        if (empty($subjectName) === true)
-        {
-            $subjectName = $this->merchant['name'];
-        }
-
-        return $subjectName;
     }
 }
