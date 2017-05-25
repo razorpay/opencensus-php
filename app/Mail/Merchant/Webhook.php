@@ -17,8 +17,6 @@ class Webhook extends Mailable
 
     public function __construct(array $webhook, array $merchant, array $options)
     {
-        parent::__construct();
-
         $this->webhook = $webhook;
 
         $this->merchant = $merchant;

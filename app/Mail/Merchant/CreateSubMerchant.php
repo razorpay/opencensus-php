@@ -14,8 +14,6 @@ class CreateSubMerchant extends Mailable
 
     public function __construct(array $subMerchant, array $aggregator)
     {
-        parent::__construct();
-
         $this->subMerchant = $subMerchant;
 
         $this->aggregator = $aggregator;

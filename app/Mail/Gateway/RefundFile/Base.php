@@ -14,8 +14,6 @@ class Base extends Mailable
 
     public function __construct(array $data, string $type)
     {
-        parent::__construct();
-
         $this->data = $data;
 
         $this->type = $type;

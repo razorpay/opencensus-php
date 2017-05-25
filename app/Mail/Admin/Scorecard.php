@@ -14,8 +14,6 @@ class Scorecard extends Mailable
 
     public function __construct(array $data)
     {
-        parent::__construct();
-
         $this->data = $data;
     }
 

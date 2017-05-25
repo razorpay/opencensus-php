@@ -2,8 +2,6 @@
 
 namespace RZP\Mail\Base;
 
-use App;
-
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable as BaseMailable;
@@ -11,16 +9,6 @@ use Illuminate\Mail\Mailable as BaseMailable;
 class Mailable extends BaseMailable
 {
     use Queueable;
-
-    // Attribute to store app mode value which is used to construct the mailable
-    protected $mode;
-
-    public function __construct()
-    {
-        $app = App::getFacadeRoot();
-
-        $this->mode = $app['rzp.mode'];
-    }
 
     public function build()
     {
