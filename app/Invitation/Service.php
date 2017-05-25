@@ -264,6 +264,6 @@ class Service extends Base\Service
 
     public function getInvitationById(string $inviteId)
     {
-        return Entity::find($invalId);
+        return Entity::find($inviteId);
     }
 }
