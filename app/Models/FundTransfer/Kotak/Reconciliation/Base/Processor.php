@@ -165,7 +165,9 @@ class Processor extends Base\Core
     {
         $version = $this->getSettlementVersion($row);
 
-        $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\' . ucwords($version) . '\\RowProcessor';
+        $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\' .
+                                    ucwords($version) .
+                                    '\\RowProcessor';
 
         $reconciledEntity = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
 
@@ -191,7 +193,6 @@ class Processor extends Base\Core
         $amount = $reconciledEntity->getAmount();
 
         if (isset($this->batchFundTransferStats[$batchId]) === false)
-
         {
             $this->batchFundTransferStats[$batchId] =
                 ['processed_count' => 1, 'processed_amount' => $amount];
@@ -272,7 +273,8 @@ class Processor extends Base\Core
 
     protected function sendReconciliationSummaryMail($response)
     {
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment('dev', 'testing') === false))
         {
             return;
         }
