@@ -981,8 +981,6 @@ class Service extends Base\Service
         {
             $response = $this->api->user->login($input)->toArray();
 
-            $response['confirmed'] = (int) ($response['confirmed'] ?? 0);
-
             $genericUser = (new Helper)->createdGenericUser($response);
         }
         catch(\Razorpay\Api\Errors\Error $e)
@@ -1004,8 +1002,6 @@ class Service extends Base\Service
         try
         {
             $response = $this->api->user->get($userId, $input)->toArray();
-
-            $response['confirmed'] = (int) ($response['confirmed'] ?? 0);
 
             $genericUser = (new Helper)->createdGenericUser($response);
         }
