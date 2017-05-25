@@ -13,12 +13,12 @@ class Url
      *
      * We handle this in getUrl()
      */
-    const LIVE_AUTHORIZE    = '/api/MerchantAPI/UPI/v1/CollectPay';
-    const LIVE_VERIFY       = '/api/MerchantAPI/UPI/v1/TransactionStatus';
+    const LIVE_AUTHORIZE    = '/api/MerchantAPI/UPI/v2/CollectPay/%s';
+    const LIVE_VERIFY       = '/api/MerchantAPI/UPI/v2/TransactionStatus/%s';
     const LIVE_REFUND       = '/api/MerchantAPI/UPI/v1/Refund/%s';
 
-    const TEST_AUTHORIZE    = '/newCollectPay';
-    const TEST_VERIFY       = '/newTransactionStatus';
+    const TEST_AUTHORIZE    = '/api/MerchantAPI/UPI/v2/CollectPay/%s';
+    const TEST_VERIFY       = '/api/MerchantAPI/UPI/v2/TransactionStatus/%s';
 
     //here %s is for merchant Id string
     const TEST_REFUND       = '/api/MerchantAPI/UPI/v1/Refund/%s';
