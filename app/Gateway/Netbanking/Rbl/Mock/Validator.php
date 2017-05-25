@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         RequestFields::BANK_ID          => 'required|string',
         RequestFields::LANGUAGE_ID      => 'required|string|in:001',
         RequestFields::CHANNEL_ID       => 'required|string|in:I',
-        RequestFields::V_LOGIN_FLAG     => 'required|int|in:2',
+        RequestFields::V_LOGIN_FLAG     => 'required|integer|in:2',
         RequestFields::SERVICE_ID       => 'required|string|in:RRTSE',
         RequestFields::STATE_MODE       => 'required|string|in:N',
         RequestFields::RESPONSE_FORMAT  => 'required|string|in:XML',

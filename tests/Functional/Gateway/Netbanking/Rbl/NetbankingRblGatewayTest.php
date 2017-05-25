@@ -253,7 +253,7 @@ class NetbankingRblGatewayTest extends TestCase
 
                         $testData = [
                             'subject'     => 'RBL Netbanking refunds file for ' . $date,
-                            'count'       => 4,
+                            'count'       => 3,
                             'date'        => $date,
                         ];
 

@@ -267,13 +267,13 @@ class Gateway extends Base\Gateway
         return $aes->encryptString($stringToEncrypt);
     }
 
-    public function getDecryptedString(string $stringToDencrypt): string
+    public function getDecryptedString(string $stringToDecrypt): string
     {
         $masterKey = $this->getSecret();
 
         $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
-        return $aes->decryptString($stringToDencrypt);
+        return $aes->decryptString($stringToDecrypt);
     }
 
     protected function getEntityAttributes(array $input): array
@@ -336,6 +336,8 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyAttributesToSave(array $content, Base\Entity $gatewayPayment): array
     {
+        $attributes = [];
+
         if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
         {
             $attributes[Base\Entity::STATUS] = $content[ResponseFields::ENTRY_STATUS];
@@ -350,8 +352,7 @@ class Gateway extends Base\Gateway
             {
                 $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::REFERENCE_ID];
             }
-            else if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === false) and
-                    ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !== $content[ResponseFields::REFERENCE_ID]))
+            else if ($gatewayPayment[Base\Entity::BANK_PAYMENT_ID] !== $content[ResponseFields::REFERENCE_ID])
             {
                 $this->trace->error(
                     TraceCode::GATEWAY_MULTIPLE_BANK_PAYMENT_IDS,
@@ -363,7 +364,7 @@ class Gateway extends Base\Gateway
             }
         }
 
-        return $attributes ?? [];
+        return $attributes;
     }
 
     protected function getAuthSuccessStatus(): string

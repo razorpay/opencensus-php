@@ -70,14 +70,14 @@ class RefundFile extends Base\RefundFile
         foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
-                    $row['payment']['created_at'],
-                    'Asia/Kolkata')
-                    ->format('m-d-y h:m:s');
+                        $row['payment']['created_at'],
+                        'Asia/Kolkata')
+                        ->format('m-d-y h:m:s');
 
             $refundDate = Carbon::createFromTimestamp(
-                    $row['refund']['created_at'],
-                    'Asia/Kolkata')
-                    ->format('m-d-y h:m:s');
+                              $row['refund']['created_at'],
+                              'Asia/Kolkata')
+                              ->format('m-d-y h:m:s');
 
             $data[] = [
                 RefundFields::SERIAL_NO          => $index++,
