@@ -71,6 +71,10 @@ class Core extends Base\Core
 
         if ($aggregatorMerchant->isMarketplace() === true)
         {
+            // Use Startup Plan as the default for linked accounts
+            // where transfer method pricing is 0
+            $subMerchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+
             $subMerchant->parent()->associate($aggregatorMerchant);
         }
 
