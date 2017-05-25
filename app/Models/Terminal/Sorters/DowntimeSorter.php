@@ -23,15 +23,15 @@ class DowntimeSorter extends Terminal\Sorter
 
     public function gatewayDowntimeSorter($terminals, array $input)
     {
-        $downtimes = $this->getRelevantDowntimes($input['payment']);
+        $params = $this->buildQueryParams($input['payment']);
+
+        $downtimes = $this->getRelevantDowntimes($params);
 
         // todo filtering
     }
 
-    protected function getRelevantDowntimes($input)
+    protected function getRelevantDowntimes(array $params)
     {
-        $params = $this->buildQueryParams($input);
-
         $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
 
         $downtimes = $this->repo->gateway_downtime
