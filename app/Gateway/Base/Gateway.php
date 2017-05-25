@@ -246,6 +246,12 @@ class Gateway
         $this->input = $input;
     }
 
+    public function verifyRefund(array $input)
+    {
+        throw new Exception\LogicException(
+            'Verify Refund is not implemented');
+    }
+
     public function canTopup()
     {
         return $this->topup;
