@@ -2,13 +2,12 @@
 
 namespace App\Api;
 
-use Carbon\Carbon;
-use App\Http\AppResponse;
 use Auth;
-use App\Base;
-
-use App\Trace\TraceCode;
 use Trace;
+use App\Base;
+use Carbon\Carbon;
+use App\Trace\TraceCode;
+use App\Http\AppResponse;
 
 class Service extends Base\Service
 {
@@ -365,7 +364,7 @@ class Service extends Base\Service
                          ->toArray();
 
             $data['dates']      = $this->getDateRanges($input['year'], $input['month']);
-            $data['merchant']   = $this->merchant;
+            $data['merchant']   = $this->merchant->toArray();
             $data['invoice_id'] = $this->getInvoiceId($input['year'], $input['month']);
 
             return [null, $data];
