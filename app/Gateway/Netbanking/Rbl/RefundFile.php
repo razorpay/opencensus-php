@@ -63,6 +63,8 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
+        $data = [];
+
         $data[] = self::$headers;
 
         $index = 1;
