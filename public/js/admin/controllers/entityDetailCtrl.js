@@ -14,6 +14,7 @@ app
     'getType',
     'displayClass',
     'displayValue',
+    '$state',
     function(
       $scope,
       $http,
@@ -25,7 +26,8 @@ app
       getState,
       getType,
       displayClass,
-      displayValue
+      displayValue,
+      $state
     ) {
       //Intialise alerts and scope functions
       $scope.getStatusClass = statusClass;
@@ -78,13 +80,24 @@ app
       // Terminal Specific actions
       $scope.terminal = {
         delete: function(id) {
-          var request = $http.delete(
-            '/admin/' + $scope.mode + '/terminal/' + id
-          );
+          var data = {
+            route_name: 'terminal_delete',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+          };
+          var request = $http.delete('/admin/generic', {
+            params: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
                 alert('Terminal deleted');
+                $state.go('app.entities', {
+                  mode: $scope.mode,
+                  type: 'terminal',
+                });
               } else {
                 alert(data.errors);
               }

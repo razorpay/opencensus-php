@@ -364,6 +364,8 @@ return [
 
         // Toggle Terminal
         'terminal_toggle'                   => 'terminals/{id}/toggle',
+        // Delete Terminal
+        'terminal_delete'                   => 'terminals/{id}',
 
         // Gateway Rules
         'gateway_create_rule'               => 'gateway/rules',

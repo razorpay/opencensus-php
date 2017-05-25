@@ -437,13 +437,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function deleteTerminal($mode, $terminalId)
-    {
-        list($error, $data) = (new Admin\Service)->deleteTerminal($mode, $terminalId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function editTerminal($mode, $terminalId)
     {
         $input = Input::all();
