@@ -102,11 +102,14 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function fetchDowntimesForSorter(array $params)
+    public function fetchDowntimesForSorter(array $params, $timestamp)
     {
         $query = $this->newQuery();
 
-        $this->buildQueryForDowntimeSorter($query, $params);
+        $this->buildQueryForDowntimeSorter($params, $query);
+
+        $query->where(Entity::BEGIN, '<=', $timestamp)
+              ->where(Entity::END, '>=', $timestamp);
 
         return $query->get();
     }
