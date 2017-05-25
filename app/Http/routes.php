@@ -45,7 +45,9 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/user/pre_signup', 'MerchantController@postSignup');
             Route::get('/user/pre_signup', 'MerchantController@getSignup');
             Route::post('/user/track_lead', 'UserController@trackLead');
-            Route::get('/user/logged_in', 'UserController@checkLoggedIn'); //Better routes
+            Route::options('/user/logged_in', 'UserController@checkLoggedIn')->middleware('cors');
+            Route::get('/user/logged_in', 'UserController@checkLoggedIn')->middleware('cors');
+            // TODO: Move this to internal auth or something equivalent
             Route::get('/user/{token}/detail', 'UserController@getDetailsFromToken');
         });
     });

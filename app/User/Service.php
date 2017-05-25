@@ -810,8 +810,14 @@ class Service extends Base\Service
         if ($user !== null)
         {
             $token = str_random(30);
-            $cacheKey = self::OAUTH_TOKENS.'.'.$token;
-            $this->cache->put($cacheKey, $user->id.','.$user->getCurrentMerchantId(), 10);
+            $cacheKey = $this->makeOauthTokenCacheKey($token);
+
+            $data = [
+                'id'            => $user->id,
+                'merchant_id'   => $user->getCurrentMerchantId()
+            ];
+
+            $this->cache->put($cacheKey, $data, 10);
 
             $data['token'] = $token;
         }
@@ -823,21 +829,24 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    private function makeOauthTokenCacheKey($token)
+    {
+        return self::OAUTH_TOKENS . '.' . $token;
+    }
+
     public function getDetailsFromToken($token)
     {
         $error = null;
         $data = null;
-        $cacheKey = self::OAUTH_TOKENS.'.'.$token;
+        $cacheKey = $this->makeOauthTokenCacheKey($token);
 
         if ($this->cache->has($cacheKey) === true)
         {
-            $token_data = $this->cache->get($cacheKey);
-            $token_data = explode(',', $token_data);
-            $userId = $token_data[0];
-            $merchantId = $token_data[1];
-            $user = (new Entity)->findOrFail($userId);
+            $data = $this->cache->get($cacheKey);
+
+            $user = (new Entity)->findOrFail($data['id']);
             $data['user'] = $user;
-            $data['user']['merchant_id'] = $merchantId;
+            $data['user']['merchant_id'] = $data['merchant_id'];
         }
         else
         {

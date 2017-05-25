@@ -214,11 +214,13 @@ class UserController extends Controller
             $response = AppResponse::unauthorizedResponse($error);
         }
 
-        $response = AppResponse::allowOriginForAuthService($response);
-
         return $response;
     }
 
+    /**
+     * The auth-service gets details of the currently logged in user
+     * using this route (once it has the token)
+     */
     public function getDetailsFromToken(string $token)
     {
         list($error, $data) = (new User\Service)->getDetailsFromToken($token);
