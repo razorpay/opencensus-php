@@ -370,6 +370,10 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(1, $result['invoices_created']);
         $invoice = $this->getLastEntity('invoice', true);
 
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals($invoice['id'], $payment['invoice_id']);
+
         $this->clearMock();
         $this->failOnCapture();
 
