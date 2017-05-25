@@ -45,6 +45,27 @@ EOT;
         return $this->makeUpiResponse($str, $input['url']);
     }
 
+    public function ReqListPsp(array $input)
+    {
+        $array = $this->getArrayFromXml($input['content']);
+
+        $ts = upi_ts();
+
+        $str = <<<EOT
+<upi:RespListAccPvd xmlns:upi="http://npci.org/upi/schema/">
+    <Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
+    <Txn id="{$array['Txn']['@attributes']['id']}" note="" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Head']['@attributes']['orgId']}" ts=$ts"" type="ListAccPvd"/>
+    <Resp reqMsgId="" result="SUCCESS" errCode=""/>
+    <PspList>
+        <Psp name="HDFC" codes="hdfcgold,hdfcsliver" active="Y" url="" spocName="" spocEmail="" spocPhone="" lastModifedTs=""/>
+        <Psp name="ICICI" codes="icici,iciciwallet" active="N" url="" spocName="" spocEmail="" spocPhone="" lastModifedTs=""/>
+       </PspList>
+</upi:RespListAccPvd>
+EOT;
+
+        return $this->makeUpiResponse($str, $input['url']);
+    }
+
     protected function getArrayFromXml(string $str)
     {
         $xml = simplexml_load_string($str);
