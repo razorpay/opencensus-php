@@ -69,6 +69,8 @@ class Helper
         {
             foreach ($user['merchants'] as $merchant)
             {
+                $merchant['activated'] = (int) ($merchant['activated'] ?? 0);
+
                 $merchants->push(new GenericMerchant($merchant));
             }
         }
