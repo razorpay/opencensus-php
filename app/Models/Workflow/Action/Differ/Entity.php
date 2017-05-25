@@ -35,6 +35,10 @@ use RZP\Models\Workflow\Base;
         'permission' => string (21) "edit_merchant_archive"
         'action_id' => string (14) "7bWmWeONFIeZrJ"
         'created_at' => integer 1491488037
+        'state' => string (4) "open"
+        'auth_details' => [
+            'merchant_id' => string (14) "10000000000000"
+        ]
     ]
 */
 
