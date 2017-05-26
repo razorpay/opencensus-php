@@ -15,6 +15,12 @@ trait Inquiry
 
     public function verifyRefund(array $input)
     {
+        if ($input['refund']['created_at'] < 1493323209)
+        {
+            throw new Exception\LogicException(
+                'Unexpected refund verify result received');
+        }
+
         $response = $this->sendRefundVerifyRequest($input);
 
         $data = $response['data'];
@@ -34,7 +40,7 @@ trait Inquiry
         {
             $response['data']['result'] = 'CAPTURED';
 
-            $refund = $this->repo->findLastEntityByRefundId($input['refund']['id']);
+            $refund = $this->repo->findByRefundId($input['refund']['id']);
 
             $attributes = $this->getSuccessfulVerifyRefundAttributes($input, $response['data']);
             $refund->fill($attributes);
