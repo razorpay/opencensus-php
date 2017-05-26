@@ -12,17 +12,7 @@ import ActivationRequired from 'merchant/components/ActivationRequired';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
-
-// Will be moved to separate file
-class Layout extends Component {
-  render() {
-    return (
-      <div class="layout">
-        {this.props.children}
-      </div>
-    );
-  }
-}
+import { applyTheme } from 'rzp/themes';
 
 @connect(state => state.session, {
   ...ModalActions,
@@ -49,7 +39,11 @@ export default class App extends Component {
           this.props.updateSession({ mode: currentMode });
         }
       }),
-      this.props.fetchOrg(),
+      this.props.fetchOrg().then(({ data }) => {
+        if (data.custom_code && data.custom_code !== 'rzp') {
+          applyTheme(data.custom_code);
+        }
+      }),
     ]).then(() => {
       this.setState({ isLoading: false });
     });
@@ -93,7 +87,7 @@ export default class App extends Component {
 
     return (
       <Router basename="/app">
-        <Layout>
+        <div class="layout">
           <HeaderNav
             user={user}
             mode={mode}
@@ -108,7 +102,7 @@ export default class App extends Component {
           {/* Creates Portal for the comp */}
           <ModalDialog />
           <Notifications />
-        </Layout>
+        </div>
       </Router>
     );
   }

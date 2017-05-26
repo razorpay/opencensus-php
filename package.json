@@ -15,6 +15,7 @@
     "case-sensitive-paths-webpack-plugin": "^1.1.4",
     "css-loader": "^0.26.1",
     "dot": "^1.1.1",
+    "dot-tpl-loader": "^1.2.1",
     "extract-text-webpack-plugin": "^2.1.0",
     "file-loader": "^0.11.1",
     "gulp": "^3.9.1",

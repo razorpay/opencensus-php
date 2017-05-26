@@ -19,7 +19,7 @@ const webpackConfig = {
       'web_modules',
       path.resolve(__dirname, 'public/react'),
     ],
-    extensions: ['.js', '.jsx', '.styl'],
+    extensions: ['.js', '.jsx', '.styl', '.jst'],
   },
   module: {},
   externals: {
@@ -95,6 +95,15 @@ webpackConfig.module.rules = [
     use: [
       {
         loader: 'file-loader',
+      },
+    ],
+  },
+
+  {
+    test: /\.jst$/,
+    use: [
+      {
+        loader: 'dot-tpl-loader',
       },
     ],
   },
