@@ -154,9 +154,16 @@ class Service extends Base\Service
             return [static::INVALID_INVITE];
         }
 
-        $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
+        $user = User\Entity::find($user->id);
 
-        $invitation->delete();
+        list($error, $response) = (new User\Service)->attachMerchantUserOnApi($user->id, $invitation->merchant_id, $invitation->role);
+
+        if (empty($error) === true)
+        {
+            $user->joinMerchantByIdWithRole($invitation->merchant_id, $invitation->role);
+
+            $invitation->delete();
+        }
     }
 
     /**
