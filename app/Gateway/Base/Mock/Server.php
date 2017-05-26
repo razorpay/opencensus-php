@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
+use Requests;
 use Requests_Response;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -257,6 +258,18 @@ class Server extends Base\Core
 
         $response->headers->set('Content-Type', 'application/text; charset=UTF-8');
         $response->headers->set('Cache-Control', 'no-cache');
+
+        return $response;
+    }
+
+    protected function makeAsyncRequest($request)
+    {
+        $method = $request['method'];
+
+        $response = Requests::$method(
+            $request['url'],
+            $request['headers'],
+            $request['content']);
 
         return $response;
     }

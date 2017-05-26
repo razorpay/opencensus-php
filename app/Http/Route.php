@@ -913,7 +913,6 @@ final class Route
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
-        'upi_npci_request',
         'upi_zero_call',
     ];
 
@@ -1177,6 +1176,7 @@ final class Route
         'checkout_onyx',
         'checkout_hosted',
         'mock_event_tracker',
+        'upi_npci_request',
     ];
 
     public static $internalApps = [

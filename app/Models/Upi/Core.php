@@ -62,18 +62,18 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::GATEWAY_UPI_REQUEST_CALLBACK,
             [
-                'api'   => $api,
-                'id'    => $id,
-                'body'  => $body
+                'api'  => $api,
+                'id'   => $id,
+                'body' => $body
             ]);
 
         $parsedRequest = $this->app['upi.client']->parse($body, $api);
 
         $requestData = [
-            'api'               => $api,
-            'id'                => $id,
-            'body'              => $body,
-            'parsed_request'    => $parsedRequest,
+            'api'            => $api,
+            'id'             => $id,
+            'body'           => $body,
+            'parsed_request' => $parsedRequest,
         ];
 
         $response = $this->app['gateway']->call('upi_npci', 'handle_request', $requestData, $this->mode);

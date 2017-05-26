@@ -377,8 +377,8 @@ EOT;
 
         $this->cacheRequestOrResponse($input, $msgId, $txnId);
 
-        switch ($method) {
-
+        switch ($method)
+        {
             case 'RespAuthDetails':
                 $payee = $params['payee'];
                 $payer = $params['payer'];
@@ -445,7 +445,7 @@ EOT;
 $str = <<<EOT
 <upi:ReqManageVae xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
-
+<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="ManageVae" />
 <VaeList>
 <Vae op="ADD" seqNum="1" name="Razorpay" addr="pay@razor" logo="image" url="https://razorpay.com/images/logo-black.png"/>
 </VaeList>
