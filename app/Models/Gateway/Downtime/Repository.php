@@ -92,7 +92,7 @@ class Repository extends Base\Repository
                      ->first();
     }
 
-    public function fetchDowntimesWithoutTerminal(Payment\Entity $payment)
+    public function fetchDowntimesWithoutTerminal($input)
     {
         $query = $this->newQuery();
 
