@@ -220,6 +220,38 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
 
+    public function testPaymentWithEmptyAcquirerData()
+    {
+        $paymentData = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthPayment($paymentData);
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/payments/' . $payment['razorpay_payment_id']
+        ];
+
+        $this->ba->privateAuth();
+
+        // Get raw response
+        $response = $this->sendRequest($request)->getContent();
+
+        $this->assertRegexp('/' . preg_quote('"acquirer_data":{}') . '/', $response);
+    }
+
+    public function testPaymentWithAcquirerData()
+    {
+        $paymentData = $this->getDefaultNetbankingPaymentArray();
+
+        $this->doAuthPayment($paymentData);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertArrayHasKey('acquirer_data', $payment);
+
+        $this->assertArrayHasKey('bank_transaction_id', $payment['acquirer_data']);
+    }
+
     protected function mockEsClient()
     {
         $clientBuilder = Mockery::mock('RZP\Services\EsClient', [$this->app])
