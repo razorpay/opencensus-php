@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { NavLink, Switch, Route, withRouter } from 'react-router-dom';
+import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 
 import Home from 'merchant/containers/HomeContainer';
 import Transactions from 'merchant/containers/Transactions';
@@ -23,7 +23,6 @@ import OrderDetails from 'merchant/containers/Orders/Details';
 const getBaseView = location => {
   return (
     <Switch location={location}>
-      <Route path="/" component={Home} />
       <Route path="/payments" component={Transactions} />
       <Route path="/refunds" component={Transactions} />
       <Route path="/orders" component={Transactions} />
@@ -74,6 +73,13 @@ const getBaseView = location => {
       <Route path="/config" component={Settings} />
       <Route path="/keys" component={Settings} />
       <Route path="/webhooks" component={Settings} />
+      <Route path="/dashboard" component={Home} />
+      <Route
+        path="/"
+        render={() => {
+          return <Redirect to="/dashboard" />;
+        }}
+      />
     </Switch>
   );
 };

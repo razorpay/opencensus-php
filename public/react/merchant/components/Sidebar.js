@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 import MainNavLink from 'merchant/components/MainNavLink';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
@@ -49,9 +49,9 @@ export default class Sidebar extends Component {
     return (
       <div class="sidebar">
         <section class="brand-logo">
-          <a href="#/">
+          <Link to="/dashboard">
             <img src="img/logo_full.png" />
-          </a>
+          </Link>
         </section>
         <nav>
           {!isMerchant
@@ -60,7 +60,7 @@ export default class Sidebar extends Component {
                 <MainNavLink
                   label="Home"
                   icon="icon-chart"
-                  to="/"
+                  to="/dashboard"
                   exact
                   notMyRole="sellerapp support"
                 />
