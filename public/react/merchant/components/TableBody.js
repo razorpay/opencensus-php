@@ -23,7 +23,11 @@ export default props => {
 
   return (
     <tbody>
-      {tableRowComponent || children}
+      {tableRowComponent
+        ? typeof tableRowComponent === 'function'
+            ? tableRowComponent()
+            : tableRowComponent
+        : children}
     </tbody>
   );
 };

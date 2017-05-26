@@ -76,7 +76,8 @@ app
         for (var key in $scope.entity) {
           // If the entity has that key and its not currently shown
           if (
-            $scope.entity.hasOwnProperty(key) && shownByDefault.indexOf(key) < 0
+            $scope.entity.hasOwnProperty(key) &&
+            shownByDefault.indexOf(key) < 0
           ) {
             keys.push(key);
           }

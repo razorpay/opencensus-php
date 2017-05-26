@@ -18,8 +18,6 @@ var app = angular
     'ngIdle',
     'ngBusy',
     'noCAPTCHA',
-    'angulartics',
-    'angulartics.segment.io',
     'react',
   ])
   .run([
@@ -130,12 +128,8 @@ var app = angular
           url: '/activationold',
           templateUrl: 'tpl/app_activation.html',
         })
-        .state('app.referrals', {
-          url: '/referral',
-          templateUrl: 'tpl/app_referrals.html',
-        })
-        .state('app.profile', {
-          url: '/profile',
+        .state('app.profileold', {
+          url: '/profileold',
           templateUrl: 'tpl/app_profile.html',
         })
         .state('app.accountsold', {
@@ -147,6 +141,10 @@ var app = angular
         .state('app.dashboard', {
           url: '/dashboard',
           templateProvider: reactTemplateProvider('<merchant-home />'),
+        })
+        .state('app.profile', {
+          url: '/profile',
+          templateProvider: reactTemplateProvider('<profile/>'),
         })
         .state('app.invoices', {
           url: '/invoices',
@@ -332,6 +330,10 @@ var app = angular
           url: '/accounts',
           templateProvider: reactTemplateProvider('<accounts-list />'),
         })
+        .state('app.referrals', {
+          url: '/referral',
+          templateProvider: reactTemplateProvider('<referrals-list />'),
+        })
         //Guest Routes
         .state('access', {
           url: '/access',
@@ -439,6 +441,10 @@ var reactTemplateProvider = function(template) {
         }
       } else {
         deferred.resolve(template);
+        if (window.ga) {
+          ga('set', 'page', '/' + location.hash);
+          ga('send', 'pageview');
+        }
       }
       return deferred.promise;
     },

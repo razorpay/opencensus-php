@@ -861,7 +861,8 @@ angular
           // includes base_amount and base_amount_refunded
           return 'amount_inr';
         } else if (
-          key.substr(-6) === 'amount' || key.substr(0, 7) === 'amount_'
+          key.substr(-6) === 'amount' ||
+          key.substr(0, 7) === 'amount_'
         ) {
           return 'amount';
         } else if (isId(key)) {
@@ -915,56 +916,101 @@ angular
       };
     },
   ])
-  .factory('utils', function() {
-    return {
-      humanize: function(str) {
-        var frags = str.split('_');
+  .factory('utils', [
+    '$state',
+    function($state) {
+      return {
+        humanize: function(str) {
+          var frags = str.split('_');
 
-        for (var i = 0; i < frags.length; i++) {
-          frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
-        }
+          for (var i = 0; i < frags.length; i++) {
+            frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
+          }
 
-        return frags.join(' ');
-      },
-      mergeUnique: function(arr, isCaseSensitive) {
-        isCaseSensitive = isCaseSensitive || false;
-        var auxArr = arr.concat();
+          return frags.join(' ');
+        },
+        mergeUnique: function(arr, isCaseSensitive) {
+          isCaseSensitive = isCaseSensitive || false;
+          var auxArr = arr.concat();
 
-        for (var i = 0; i < auxArr.length; i++) {
-          for (var j = i + 1; j < auxArr.length; j++) {
-            if (
-              (isCaseSensitive &&
-                auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
-              auxArr[i] === auxArr[j]
-            ) {
-              auxArr.splice(j--, 1);
+          for (var i = 0; i < auxArr.length; i++) {
+            for (var j = i + 1; j < auxArr.length; j++) {
+              if (
+                (isCaseSensitive &&
+                  auxArr[i].toLowerCase() === auxArr[j].toLowerCase()) ||
+                auxArr[i] === auxArr[j]
+              ) {
+                auxArr.splice(j--, 1);
+              }
             }
           }
-        }
 
-        return auxArr;
-      },
-      isArray: function(val) {
-        if (!val) {
+          return auxArr;
+        },
+        isArray: function(val) {
+          if (!val) {
+            return false;
+          }
+
+          return val instanceof Array;
+        },
+
+        // rightmost obj gets preference for same keys
+        concatObj: function() {
+          var result = {};
+          var len = arguments.length;
+          for (var i = 0; i < len; i++) {
+            for (var p in arguments[i]) {
+              if (arguments[i].hasOwnProperty(p)) {
+                result[p] = arguments[i][p];
+              }
+            }
+          }
+
+          return result;
+        },
+
+        isWorkflow: function(data) {
+          if (
+            data.id.indexOf('w_action') === 0 &&
+            typeof data.workflow_id !== 'undefined'
+          ) {
+            return true;
+          }
+
           return false;
-        }
+        },
 
-        return val instanceof Array;
-      },
+        resolveEntityLinkAndGo: function(entityId, entityName) {
+          var entityMap = {
+            merchant: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
 
-      // rightmost obj gets preference for same keys
-      concatObj: function() {
-        var result = {};
-        var len = arguments.length;
-        for (var i = 0; i < len; i++) {
-          for (var p in arguments[i]) {
-            if (arguments[i].hasOwnProperty(p)) {
-              result[p] = arguments[i][p];
-            }
+            role: {
+              route: 'app.roles.edit',
+              idParam: 'id',
+              sign: 'role_',
+            },
+
+            methods: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+          };
+
+          if (typeof entityMap[entityName] !== 'undefined') {
+            var entityDetails = entityMap[entityName];
+
+            var params = {};
+            params[entityDetails.idParam] = entityDetails.sign + entityId;
+
+            $state.go(entityDetails.route, params);
           }
-        }
-
-        return result;
-      },
-    };
-  });
+        },
+      };
+    },
+  ]);

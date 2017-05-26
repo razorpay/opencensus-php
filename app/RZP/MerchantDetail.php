@@ -9,6 +9,7 @@ use Razorpay\Api\Entity as ApiEntity;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\ServerError as ServerError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
+use Auth;
 
 class MerchantDetail extends Entity
 {
@@ -50,6 +51,16 @@ class MerchantDetail extends Entity
     public function updateDetailsByAdmin($merchantId, array $input)
     {
         $error = $response = null;
+
+        $adminUser = Auth::guard('api')->user();
+
+        if (empty($adminUser) === false)
+        {
+            $adminToken = $adminUser->token;
+
+            // For admin auth (heimdall) on API
+            ApiRequest::addHeader('X-Admin-Token', $adminToken);
+        }
 
         try
         {

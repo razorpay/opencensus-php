@@ -24,6 +24,11 @@ class UserController extends Controller
         return view('merchant.tmpgetIndex');
     }
 
+    public function getIndexNew()
+    {
+        return view('merchant.tmpgetIndexNew');
+    }
+
     /**
      * Returns an empty success to keep the user session active..
      *

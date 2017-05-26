@@ -9,6 +9,7 @@ app
     '$modal',
     '$stateParams',
     'admin',
+    'utils',
     function(
       $scope,
       $http,
@@ -16,7 +17,8 @@ app
       $state,
       $modal,
       $stateParams,
-      admin
+      admin,
+      utils
     ) {
       $scope.alerts = alertsFactory.getHandler();
 
@@ -33,6 +35,19 @@ app
         }
       }
 
+      // Modal to show diff
+      function openDiffModal() {
+        $modal.open({
+          templateUrl: 'actionChanges.html',
+          controller: 'actionChangeCtrl',
+          resolve: {
+            action_data: function() {
+              return $scope.action_diff_data;
+            },
+          },
+        });
+      }
+
       $scope.fetchDiff = function() {
         var request = $http.get('/admin/generic', {
           params: {
@@ -47,24 +62,26 @@ app
         request.success(function(data) {
           if (data.success) {
             $scope.action_diff_data = data;
+
+            openDiffModal(); // Show modal diff after success
+          } else {
+            $scope.alerts.addAlert(
+              'danger',
+              'Error: Changes cannot be fetched!',
+              true
+            );
           }
         });
       };
 
-      $scope.fetchDiff();
-
       // Audit log breakup details
 
       $scope.showActionChanges = function() {
-        $modal.open({
-          templateUrl: 'actionChanges.html',
-          controller: 'actionChangeCtrl',
-          resolve: {
-            action_data: function() {
-              return $scope.action_diff_data;
-            },
-          },
-        });
+        if (!$scope.action_diff_data) {
+          $scope.fetchDiff();
+        } else {
+          openDiffModal();
+        }
       };
 
       $scope.saveComment = function() {
@@ -112,109 +129,124 @@ app
         comment.admin_name = name;
       };
 
-      // $scope.fetchAllComments = function () {
-      //   var request = $http({
-      //     url: '/admin/generic',
-      //     method: 'GET',
-      //     params: {
-      //       route_name: 'action_comment_fetch',
-      //       url_params: {
-      //         '{id}': $stateParams.action_id
-      //       }
-      //     }
-      //   });
-      //
-      //   request.success(function (data) {
-      //     if (data.success) {
-      //       data.data.items.forEach(function (item, k) {
-      //         commentMod(item);
-      //
-      //         data.data.items[k] = item;
-      //       });
-      //
-      //       $scope.cards = $scope.cards.concat(data.data.items);
-      //
-      //       $scope.comment_count = data.data.count;
-      //     }
-      //   });
-      // };
-      //
-      // $scope.fetchAllComments();
+      var updateFeed = function(data) {
+        // Action details
+        $scope.action_details = data;
 
-      $scope.fetchActionDetails = function() {
-        var request = $http({
-          url: '/admin/generic',
-          method: 'GET',
-          params: {
-            route_name: 'workflow_action_details',
-            url_params: {
-              '{id}': $stateParams.action_id,
-            },
-          },
+        switch ($scope.action_details.state) {
+          case 'approved':
+          case 'executed':
+            $scope.stateClass = 'approved-bg-color';
+            break;
+          case 'closed':
+            $scope.stateClass = 'rejected-bg-color';
+            break;
+          case 'open':
+          default:
+            $scope.stateClass = 'pending-bg-color';
+        }
+
+        // Resolve entity link
+
+        $scope.entityLinkClick = function() {
+          utils.resolveEntityLinkAndGo(
+            $scope.action_details.entity_id,
+            $scope.action_details.entity_name
+          );
+        };
+
+        // Action comments
+
+        var comments = data.comments;
+
+        comments.forEach(function(item, k) {
+          commentMod(item, 'comment');
+
+          comments[k] = item;
         });
 
-        request.success(function(data) {
-          if (data.success) {
-            // Action details
-            $scope.action_details = data.data;
+        // Re-init first just incase this function
+        // is being called for the second time
+        $scope.cards = [];
 
-            // Action comments
+        $scope.cards = $scope.cards.concat(comments);
 
-            var comments = data.data.comments;
+        $scope.comment_count = comments.length;
 
-            comments.forEach(function(item, k) {
-              commentMod(item, 'comment');
+        // Action approvals/rejections
 
-              comments[k] = item;
-            });
+        var checkers = data.checkers;
 
-            $scope.cards = $scope.cards.concat(comments);
+        checkers.forEach(function(item, k) {
+          commentMod(item, 'status');
 
-            $scope.comment_count = comments.length;
+          checkers[k] = item;
+        });
 
-            // Action approvals/rejections
+        $scope.cards = $scope.cards.concat(checkers);
 
-            var checkers = data.data.checkers;
+        // Sort the cards by timestamp
 
-            checkers.forEach(function(item, k) {
-              commentMod(item, 'status');
+        $scope.cards.sort(function(a, b) {
+          return a.created_at - b.created_at;
+        });
 
-              checkers[k] = item;
-            });
+        // Prepare the list of approvers
+        $scope.approverList = checkers.filter(function(checker) {
+          return checker.approved;
+        });
 
-            $scope.cards = $scope.cards.concat(checkers);
+        // Prepare the list of rejectors
+        $scope.rejectorList = checkers.filter(function(checker) {
+          return !checker.approved;
+        });
 
-            $scope.approverList = $scope.cards.filter(function(card) {
-              return card.approved;
-            });
+        $scope.levels = {};
+        var steps = $scope.action_details.workflow_steps;
 
-            $scope.rejectorList = $scope.cards.filter(function(card) {
-              return !card.approved;
-            });
-
-            $scope.levels = {};
-            var steps = $scope.action_details.workflow_steps;
-
-            // Level(step) structure having roles names
-            for (var key in steps) {
-              if (!$scope.levels[steps[key].level]) {
-                $scope.levels[steps[key].level] = [];
-              }
-              $scope.levels[steps[key].level].push(steps[key].role.name);
-            }
-
-            // To display vertical lines between steps
-            $scope.totalLevels = Object.keys($scope.levels).length;
+        // Level(step) structure having roles names
+        for (var key in steps) {
+          if (!$scope.levels[steps[key].level]) {
+            $scope.levels[steps[key].level] = [];
           }
+          $scope.levels[steps[key].level].push(steps[key].role.name);
+        }
 
-          updateEditFieldState();
-        });
+        // To display vertical lines between steps
+        $scope.totalLevels = Object.keys($scope.levels).length;
+
+        updateEditFieldState();
+      };
+
+      $scope.fetchActionDetails = function(data) {
+        if (typeof data !== 'undefined') {
+          updateFeed(data);
+        } else {
+          var request = $http({
+            url: '/admin/generic',
+            method: 'GET',
+            params: {
+              route_name: 'workflow_action_details',
+              url_params: {
+                '{id}': $stateParams.action_id,
+              },
+            },
+          });
+
+          request.success(function(data) {
+            if (data.success) {
+              updateFeed(data.data);
+            }
+          });
+        }
       };
 
       $scope.fetchActionDetails();
 
       // Cards data
 
+      // This is purely for display purposes, don't work on it
+      // to do any sort of computation/calculation.
       $scope.cards = [];
 
       $scope.actionStateChange = function(state) {
@@ -273,9 +305,14 @@ app
                   'Action performed successfully!',
                   true
                 );
-                $scope.action_details.state = data.data.state; // Change state of request
 
-                updateEditFieldState();
+                // The action will update 3-4 places in the UI
+                // For now it's better (although very dirty)
+                // to just call fetchActionDetails. This must be
+                // later re-written though for performance and
+                // to avoid network call.
+
+                $scope.fetchActionDetails(data.data);
               } else {
                 angular.forEach(data.errors, function(value, key) {
                   $scope.alerts.addAlert('danger', value);
@@ -300,6 +337,7 @@ app
       };
       $scope.setTitleInactive = function() {
         $scope.titleActive = false;
+        $('#title-input').blur();
       };
       $scope.setDescActive = function() {
         $scope.descActive = true;
@@ -307,6 +345,7 @@ app
       };
       $scope.setDescInactive = function() {
         $scope.descActive = false;
+        $('#desc-textarea').blur();
       };
 
       $scope.saveTitle = function() {
@@ -413,10 +452,13 @@ app
     '$http',
     'action_data',
     'utils',
-    function($scope, $modalInstance, $http, action_data, utils) {
+    'displayValue',
+    function($scope, $modalInstance, $http, action_data, utils, displayValue) {
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
       };
+
+      $scope.displayValue = displayValue;
 
       $scope.data = action_data;
       $scope.isArray = utils.isArray;

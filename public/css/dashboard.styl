@@ -54,13 +54,29 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
   &::after {
     content: '';
     position: absolute;
-    left: -8px;
     width: 0;
     height: 0;
-    transform: translate(0, 50%);
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-right: 10px solid #000;
+  }
+
+  &.right {
+    &::after {
+      left: -8px;
+      transform: translate(0, 50%);
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-right: 10px solid #000;
+    }
+  }
+
+  &.top {
+    &::after {
+      left: 50%;
+      bottom: 0;
+      transform: translate(-50%, 100%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid #000;
+    }
   }
 }
 @keyframes fadeIn {
@@ -456,6 +472,13 @@ a.highlight:hover, a.highlight:focus {
   .pending-color {
     color: #FCCB00;
   }
+
+  .approved-bg-color {
+    background-color: #17C446;
+  }
+  .rejected-bg-color {
+    background-color: #F14F4B;
+  }
   .pending-bg-color {
     background-color: #FCCB00;
   }
@@ -531,9 +554,6 @@ a.highlight:hover, a.highlight:focus {
   .faded-text {
     color: #ccc;
   }
-  .timestamp {
-    cursor: help;
-  }
   .right-label {
     text-transform: uppercase;
     font-weight: bold;
@@ -544,6 +564,18 @@ a.highlight:hover, a.highlight:focus {
   }
   .desc-edit-icon > i {
     opacity: 0;
+  }
+  .desc-remove-icon {
+    position: absolute;
+    font-size: 14px;
+    z-index: 100;
+    cursor: pointer;
+    color: #e8e8e8;
+    top: 17px;
+
+    &:hover {
+      color: #c2c2c2;
+    }
   }
   .title-text {
     position: absolute;

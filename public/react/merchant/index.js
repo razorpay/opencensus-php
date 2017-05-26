@@ -1,5 +1,5 @@
 import 'rzp/utils/polyfills';
-import 'merchant/styles/layout.styl';
+import 'styles/rzp/layout.styl';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
@@ -18,11 +18,12 @@ import CustomersListContainer from './containers/Customers/List';
 import ItemsListContainer from './containers/Items/List';
 import InvoicesListContainer from './containers/Invoices/List';
 import InvoicesNewContainer from './containers/Invoices/New';
-import InvoiceDetailsContainer from './containers/Invoices/Details';
+import InvoiceDetailsContainer from './containers/PaymentLinks/Details';
 
 import OrdersListContainer from './containers/Orders/List';
 import OrderDetailsContainer from './containers/Orders/Details';
 import WebhooksContainer from './containers/Webhooks/List';
+import ProfileContainer from './containers/Profile';
 import AddFundsContainer from './containers/AddFunds';
 
 import SettlementsListContainer from './containers/Settlements/List';
@@ -42,6 +43,7 @@ import BatchListContainer from './containers/Refunds/BatchList';
 import PaymentsList from './containers/Payments/List';
 import PaymentDetails from './containers/Payments/Details';
 import AccountsListContainer from './containers/Accounts/List';
+import ReferralsListContainer from './containers/Referrals/List';
 
 // import PlansListContainer from './containers/Plans/List'
 // import SubscriptionsListContainer from './containers/Subscriptions/List'
@@ -140,6 +142,7 @@ createNgDirective('settlementsList', SettlementsListContainer);
 createNgDirective('settlementDetails', SettlementDetailsContainer, ['id']);
 
 createNgDirective('webhooksList', WebhooksContainer);
+createNgDirective('profile', ProfileContainer);
 
 createNgDirective('keysList', KeysListContainer);
 createNgDirective('addFunds', AddFundsContainer);
@@ -154,6 +157,7 @@ createNgDirective('batchUpload', BatchUploadContainer);
 createNgDirective('paymentsList', PaymentsList);
 createNgDirective('paymentDetails', PaymentDetails, ['id']);
 createNgDirective('accountsList', AccountsListContainer);
+createNgDirective('referralsList', ReferralsListContainer);
 
 // createNgDirective('subscriptionsList', SubscriptionsListContainer)
 // createNgDirective('subscriptionsNew', SubscriptionsNewContainer)

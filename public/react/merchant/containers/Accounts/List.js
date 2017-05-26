@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import Header from 'rzp/ui/Header';
+import { NavLink } from 'react-router-dom';
+import TetherComponent from 'react-tether';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import AccountsList from 'merchant/components/Accounts/AccountsList';
@@ -82,67 +83,66 @@ export default class AccountsListContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <div class="react-root">
-        <Header title="Marketplace Accounts">
-          <a
-            class="pull-right"
-            href="https://docs.razorpay.com/v1/page/marketplace"
-            target="_blank"
-          >
-            Marketplace APIs Documentation &nbsp;
-            <i class="fa fa-external-link" />
-          </a>
-        </Header>
+      <tabbed-container>
+        <header id="accounts-header">
+          <NavLink to="/app/accounts">Marketplace</NavLink>
+        </header>
 
         <div class="content-wrapper">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              All Accounts
+          <TetherComponent
+            target="#accounts-header"
+            attachment="top right"
+            targetAttachment="top right"
+            offset="-8px 20px"
+          >
+            <div />{/* required by react-tether */}
+            <div class="btn-toolbar pull-right">
+              <a
+                class="btn btn-link"
+                href="https://docs.razorpay.com/v1/page/marketplace"
+                target="_blank"
+              >
+                Marketplace APIs Documentation &nbsp;
+                <i class="icon icon-external-link" />
+              </a>
 
-              <div class="btn-toolbar pull-right">
-                <button
-                  class="btn btn-sm btn-default"
-                  onClick={this.exportAccountsCSV}
-                >
-                  <i class="fa fa-download" />
-                  <span>Export All (CSV)</span>
-                </button>
-                <button
-                  class="btn btn-sm btn-primary"
-                  onClick={this.showAddAccountModal}
-                >
-                  <i class="fa fa-plus" />
-                  <span>Add Account</span>
-                </button>
-              </div>
+              <button class="btn btn-default" onClick={this.exportAccountsCSV}>
+                <i class="icon icon-download" />
+                <span>Export All (CSV)</span>
+              </button>
+              <button
+                class="btn btn-primary"
+                onClick={this.showAddAccountModal}
+              >
+                <i class="icon icon-plus" />
+                <span>Add Account</span>
+              </button>
             </div>
+          </TetherComponent>
 
-            <div class="panel-body">
-              <AccountsListFilter
-                form="accountsListFilter"
-                count={this.state.count}
-                onSubmit={this.search}
-              />
-            </div>
+          <AccountsListFilter
+            form="accountsListFilter"
+            count={this.state.count}
+            onSubmit={this.search}
+          />
 
-            <Alert type={status.type} message={status.message} />
+          <Alert type={status.type} message={status.message} />
 
-            <AccountsList
-              accounts={accounts}
-              isLoading={loading}
-              highlightRow={account => account.id === highlightRowId}
-              onEdit={this.showAccountDetailsModal}
-            />
+          <AccountsList
+            accounts={accounts}
+            isLoading={loading}
+            highlightRow={account => account.id === highlightRowId}
+            onEdit={this.showAccountDetailsModal}
+          />
 
-            <Pager
-              count={this.state.count}
-              skip={this.state.skip}
-              length={accounts.length}
-              onClick={this.paginate}
-            />
-          </div>
+          <Pager
+            count={this.state.count}
+            skip={this.state.skip}
+            length={accounts.length}
+            onClick={this.paginate}
+          />
         </div>
-      </div>
+      </tabbed-container>
     );
   }
 }

@@ -19,29 +19,29 @@ export const invoiceStatusMap = {
 
 export const orderStatusMap = {
   created: 'bg-light',
-  attempted: 'bg-info',
-  paid: 'bg-success',
+  attempted: 'label-info',
+  paid: 'label-success',
 };
 
 export const paymentStatusMap = {
   created: 'bg-light',
-  authorized: 'bg-info',
-  captured: 'bg-success',
-  failed: 'bg-danger',
+  authorized: 'label-info',
+  captured: 'label-success',
+  failed: 'label-danger',
   refunded: 'bg-primary',
 };
 
 export const settlementStatusMap = {
   created: 'bg-light',
-  processed: 'bg-success',
-  failed: 'bg-danger',
+  processed: 'label-success',
+  failed: 'label-danger',
 };
 
 export const batchUploadStatusMap = {
   created: 'bg-light',
-  processing: 'bg-info',
-  processed: 'bg-success',
-  failure: 'bg-danger',
+  processing: 'label-info',
+  processed: 'label-success',
+  failure: 'label-danger',
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);

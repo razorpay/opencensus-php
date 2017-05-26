@@ -1,0 +1,37 @@
+tabbed-container {
+  padding: 20px;
+  display: block;
+
+  header {
+    line-height: 46px;
+    border-bottom: 1px solid #E2E8EA;
+    position: relative;
+    margin-bottom: 16px;
+
+    a {
+      color: #555;
+      border-bottom: 4px solid transparent;
+      display: inline-block;
+      margin: 0 16px;
+      font-weight: bold;
+
+      &:first-child {
+        margin-left: 0;
+      }
+
+      &.active {
+        color: #6A55D1;
+        border-color: #6A55D1;
+      }
+    }
+  }
+
+  footer {
+    padding: 20px 15px 0;
+  }
+
+  header + .content-wrapper {
+    border: 1px solid #e2e8ea;
+    background-color: #fff;
+  }
+}

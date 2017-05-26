@@ -57,7 +57,7 @@
     </a>
   </li>
   <li>
-    <a id="workflowFeedNav" ui-sref="app.workflows.actions.list({ type: 'open' })" >
+    <a id="workflowFeedNav" ui-sref="app.workflows.actions.list({ type: 'maker' })" >
       <i class="fa fa-exchange icon text-warning-lter"></i>
       <span>Requests</span>
     </a>
@@ -65,7 +65,7 @@
 
   <li class="line dk"></li>
 
-  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
+  <li class="hidden-folded padder m-t m-b-sm text-muted text-xs" ng-if="admin.permissions && admin.permissions.indexOf('view_all_admin') !== -1">
     <span>User Access Management</span>
   </li>
 

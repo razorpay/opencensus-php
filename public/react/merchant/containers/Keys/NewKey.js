@@ -1,5 +1,6 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 import { Field, reduxForm } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
@@ -87,9 +88,9 @@ export default class NewKey extends Component {
             </div>
             <div class="form-group">
               <div class="col-md-8 col-md-offset-3">
-                <a href={`/keys/csv?id=${key.id}&secret=${key.secret}`}>
+                <NavLink to={`/keys/csv?id=${key.id}&secret=${key.secret}`}>
                   Download Key Details
-                </a>
+                </NavLink>
               </div>
             </div>
           </div>

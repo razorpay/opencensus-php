@@ -96,6 +96,22 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
   }, {});
 };
 
+// TODO: Remove this fn once Selva's branch is merged having this function.
+export const getURLQueryParams = (url = document.location.hash) => {
+  let search = url.split('?')[1];
+  let params = {};
+
+  if (search) {
+    params = search.split('&').reduce((prev, curr) => {
+      let [key, value] = curr.split('=');
+      prev[key] = value;
+      return prev;
+    }, {});
+  }
+
+  return params;
+};
+
 export const noop = () => {};
 
 export const colors = ['primary', 'success', 'info', 'warn', 'danger'];

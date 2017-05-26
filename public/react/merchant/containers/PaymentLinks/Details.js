@@ -4,7 +4,7 @@ import * as InvoiceActions from 'merchant/modules/invoices/details';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
-import IssueConfirmModal from './IssueConfirmModal';
+import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 
 @connect(state => state.invoice, {
   ...InvoiceActions,
@@ -25,7 +25,16 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   componentWillMount() {
-    this.props.fetchInvoice(this.props.id);
+    let id = this.props.id || this.props.match.params.id;
+    this.props.fetchInvoice(id);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let oldId = this.props.id || this.props.match.params.id;
+    let newId = nextProps.id || nextProps.match.params.id;
+    if (oldId !== newId) {
+      this.props.fetchInvoice(newId);
+    }
   }
 
   issueInvoice = (props, notifyProps) => {
@@ -117,17 +126,13 @@ export default class InvoiceDetailContainer extends Component {
     let statusMsg = this.state.statusMsg;
 
     return (
-      <div class="react-root">
-        <div class="content-wrapper">
-          <InvoiceDetail
-            invoice={invoice}
-            isLoading={loading}
-            statusMsg={statusMsg}
-            onIssue={this.showIssueConfirmModal}
-            onCancel={this.cancelInvoice}
-          />
-        </div>
-      </div>
+      <InvoiceDetail
+        invoice={invoice}
+        isLoading={loading}
+        statusMsg={statusMsg}
+        onIssue={this.showIssueConfirmModal}
+        onCancel={this.cancelInvoice}
+      />
     );
   }
 }

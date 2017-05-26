@@ -2,7 +2,9 @@
 
 const path = require('path');
 const webpack = require('webpack');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
+const bootstrap = require('bootstrap-styl');
 
 const webpackConfig = {
   context: process.cwd() + '/public/react',
@@ -23,45 +25,78 @@ const webpackConfig = {
   externals: {
     jquery: 'jQuery',
   },
+
+  stats: {
+    children: false,
+  },
 };
 
 // ------------------------------------
 // Entry Points
 // ------------------------------------
 webpackConfig.entry = {
-  merchant: './merchant',
-  admin: './admin',
+  // merchant: './merchant',
+  merchant: './merchant/index_new',
+  // admin: './admin',
 };
 
 // ------------------------------------
 // Bundle Output
 // ------------------------------------
 webpackConfig.output = {
-  path: process.cwd() + '/public/react/dist',
+  path: path.resolve(__dirname, 'public/dist'),
   filename: '[name]_react.js',
 };
 
 // ------------------------------------
 // Loaders
 // ------------------------------------
-webpackConfig.module.loaders = [
+webpackConfig.module.rules = [
   {
     test: /\.(js|jsx)$/,
     include: path.resolve(__dirname, 'public/react'),
-    loader: 'babel-loader',
-    query: {
-      cacheDirectory: true,
-      plugins: [
-        'react-html-attrs',
-        'transform-runtime',
-        'transform-decorators-legacy',
-      ],
-      presets: ['es2015', 'react', 'stage-0'],
-    },
+    use: [
+      {
+        loader: 'babel-loader',
+        options: {
+          cacheDirectory: true,
+          plugins: [
+            'react-html-attrs',
+            'transform-runtime',
+            'transform-decorators-legacy',
+          ],
+          presets: ['es2015', 'react', 'stage-0'],
+        },
+      },
+    ],
   },
   {
     test: /\.styl$/,
-    loader: 'style-loader!css-loader?modules&localIdentName=[local]!stylus-loader?paths=/public/react',
+    // exclude: path.resolve(__dirname, 'node_modules'),
+    use: ExtractTextPlugin.extract({
+      fallback: 'style-loader',
+      use: [
+        {
+          loader: 'css-loader',
+        },
+        {
+          loader: 'stylus-loader',
+          options: {
+            use: bootstrap(),
+            paths: 'node_modules/bootstrap-styl/bootstrap',
+          },
+        },
+      ],
+    }),
+  },
+
+  {
+    test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+    use: [
+      {
+        loader: 'file-loader',
+      },
+    ],
   },
 ];
 
@@ -71,8 +106,13 @@ webpackConfig.module.loaders = [
 webpackConfig.plugins = [
   new CaseSensitivePathsPlugin(),
 
-  /* https://github.com/webpack/webpack/issues/3128 */
-  new webpack.IgnorePlugin(/\.\/locale$/),
+  new webpack.ProvidePlugin({
+    React: 'react',
+  }),
+
+  new ExtractTextPlugin({
+    filename: '[name].css',
+  }),
 ];
 
 module.exports = webpackConfig;

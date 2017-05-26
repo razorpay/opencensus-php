@@ -4,6 +4,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 
 const UPDATE_SESSION = 'UPDATE_SESSION';
 const USER_FETCH = 'USER_FETCH';
+const ORG_FETCH = 'ORG_FETCH';
 
 export const updateSession = payload => {
   return dispatch => {
@@ -26,6 +27,27 @@ export const fetchUser = () => {
   };
 };
 
+export const fetchOrg = () => {
+  return dispatch => {
+    return dispatch({
+      type: ORG_FETCH,
+      payload: ajax({
+        url: '/admin/org',
+        appendModeInURL: false,
+      }),
+    });
+  };
+};
+
+export const switchMerchant = merchantId => {
+  return dispatch => {
+    return ajax({
+      url: `/settings/merchants/switch/${merchantId}`,
+      appendModeInURL: false,
+    });
+  };
+};
+
 let initialState = {
   user: null,
   org: {},
@@ -43,6 +65,9 @@ export default function(state = initialState, action) {
 
     case `${USER_FETCH}::SUCCESS`:
       return set(state, 'user', action.payload.data);
+
+    case `${ORG_FETCH}::SUCCESS`:
+      return set(state, 'org', action.payload.data);
 
     default:
       return state;

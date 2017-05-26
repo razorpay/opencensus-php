@@ -12,7 +12,6 @@ app
     'user',
     'organization',
     'transformRequestAsFormPost',
-    '$analytics',
     '$window',
     '$cookies',
     function(
@@ -26,7 +25,6 @@ app
       user,
       organization,
       transformRequestAsFormPost,
-      $analytics,
       $window
     ) {
       $scope.toArray = function(obj) {

@@ -3,11 +3,14 @@ import { humanize } from 'rzp/utils/rzp-utils';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import DetailRow from './DetailRow';
+import { NavLink } from 'react-router-dom';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
-export default ({ label, value, ngRouter, entity = {} }) => {
+export default ({ label, value, entity = {} }) => {
   let type = getType(label, value);
   let currency = entity.currency || 'INR';
   let val = value;
+  let entityName;
 
   switch (type) {
     case 'timestamp':
@@ -21,15 +24,14 @@ export default ({ label, value, ngRouter, entity = {} }) => {
     case 'amount':
       val = () => <Amount value={value} currency={currency} />;
       break;
+
     case 'id':
-      let entityName, url;
       entityName = label.split('_')[0];
-
-      url = ngRouter.href(`app.${entityName}s.detail`, { id: value });
-
-      if (url) {
-        val = () => <a href={url} target="_blank">{value}</a>;
-      }
+      val = () => (
+        <TransactionNavLink to={`/app/${entityName}s/${value}`}>
+          {value}
+        </TransactionNavLink>
+      );
   }
 
   label = typeof label === 'function' ? label : humanize(label);

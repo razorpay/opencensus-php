@@ -40,7 +40,7 @@ export default class PlansListContainer extends ModalContainer {
             class="pull-right btn btn-primary btn-rounded"
             onClick={this.openModal}
           >
-            <i class="fa fa-plus" />
+            <i class="icon icon-plus" />
             <span>New Plan</span>
           </button>
         </Header>

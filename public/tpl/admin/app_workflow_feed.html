@@ -1,7 +1,8 @@
 <div class="workflow-feed-page" ng-controller="WorkflowFeedCtrl">
   <div class="bg-light lter b-b wrapper-md">
     <h3 class="m-n font-thin">
-      Action {{action_id}}
+      {{action_details.permission.description}}
+      (<a href="javascript:void(0);" ng-click="entityLinkClick()">{{action_details.entity_id}}</a>)
       <spinner class="inline"></spinner>
 
       <a class='btn btn-info pull-right' href="javascript:void(0);" ng-click="showActionChanges()">
@@ -21,7 +22,7 @@
             <span ng-style="!action_details.admin.name && {'visibility':'collapse'}">performed this action</span>
             <span ng-if="action_details.created_at" title="{{feed.timestamp}}" class="timestamp">{{ action_details.created_at * 1000 | date:'medium' }}</span>
 
-            <span class="label pending-bg-color pull-right action-state">{{ action_details.state }}</span>
+            <span class="label pull-right action-state" ng-class="stateClass">{{ action_details.state }}</span>
           </div>
           <div class="wrapper clearfix">
             <div class="heading-container h3 m-b">
@@ -38,7 +39,14 @@
                    ng-if="action_details && allowFieldEdit">
                 <div class="col-xs-12" style="padding: 0 7px;">
                   <div class="input-group input-group-lg">
-                    <input type="text" class="form-control " id="title-input" aria-describedby="sizing-addon1" ng-model="action_details.title"> <!-- placeholder="Add a title" -->
+                    <input type="text" class="form-control " id="title-input"
+                           aria-describedby="sizing-addon1"
+                           ng-model="action_details.title"
+                           style="padding-right: 40px;"> <!-- placeholder="Add a title" -->
+                    <span class="desc-remove-icon glyphicon glyphicon-remove"
+                          ng-click="setTitleInactive()"
+                          style="right: 88px;"
+                          ng-if="titleActive"></span>
                     <span class="input-group-btn " >
                       <button
                         class="btn btn-info "
@@ -61,6 +69,10 @@
             <div class="description" ng-class="{'desc-active': descActive}" ng-if="action_details && allowFieldEdit">
               <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>
               <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea"></textarea>
+              <span class="desc-remove-icon glyphicon glyphicon-remove"
+                    ng-click="setDescInactive()"
+                    style="right: 10px;"
+                    ng-if="descActive"></span>
               <div class="desc-text wrapper-sm" ng-click="setDescActive();alerts.resetAlerts();" >
                 <!-- <div class="bg-white"></div> -->
                 <span class="description-text">
@@ -90,7 +102,8 @@
                      ng-class="{ 'inactive': action_details.current_level != index }">
 
                   <div class="level-element">
-                    <span class="tick-green" ng-if="index < action_details.current_level">
+                    <span class="tick-green"
+                          ng-if="index < action_details.current_level || (index == action_details.current_level && ['approved', 'executed'].indexOf(action_details.state) !== -1)">
                       <i class="glyphicon glyphicon-ok"/>
                     </span>
                     <div class="pills-label level-label" >STEP {{index}}</div>
@@ -196,7 +209,7 @@
           </div>
         </div>
 
-        <div ng-if="rejectorList && rejectorList .length">
+        <div ng-if="rejectorList && rejectorList.length">
           <div class="right-label m-b m-t">Rejected by</div>
           <div class="assignee-list m-b">
             <div>
@@ -214,13 +227,14 @@
 
 <script type="text/ng-template" id="actionChanges.html">
   <div class="modal-header">
-    <h3 class="modal-title">Entity Changes</h3>
+    <h3 class="modal-title">Changes</h3>
   </div>
 
   <div class="modal-body new-key-modal" style="overflow: auto;">
 
+    <h4 ng-if="data.data && !(data.data.old || data.data.new)">No Changes found</h4>
 
-    <h4 ng-if="data.data">Change</h4>
+    <h4 ng-if="data.data && (data.data.old || data.data.new)">Change</h4>
     <table ng-if="data.data" class="table table-striped b-t b-light">
       <thead>
       <tr>
@@ -237,13 +251,17 @@
           <ul ng-if="isArray(data.data.old[type])" class="comparison-list">
             <li ng-repeat="obj in data.data.old[type]" ng-if="obj.name">{{obj.name}}</li>
           </ul>
-          <span ng-if="!isArray(data.data.old[type])">{{data.data.old[type]}}</span>
+          <span ng-if="!isArray(data.data.old[type])">
+            {{ displayValue(type, data.data.old[type]) }}
+          </span>
         </td>
         <td ng-if="data">
           <ul ng-if="isArray(data.data.new[type])" class="comparison-list">
             <li ng-repeat="obj in data.data.new[type]"  ng-if="obj.name">{{obj.name}}</li>
           </ul>
-          <span ng-if="!isArray(data.data.new[type])">{{data.data.new[type]}}</span>
+          <span ng-if="!isArray(data.data.new[type])">
+            {{ displayValue(type, data.data.new[type]) }}
+          </span>
         </td>
       </tr>
       </tbody>

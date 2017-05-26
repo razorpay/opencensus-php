@@ -1,18 +1,19 @@
 import Time from 'rzp/ui/Time';
 import TableBody from '../TableBody';
+import { NavLink } from 'react-router-dom';
 
 const RefundsListItem = ({ refund }) => {
   return (
     <tr>
       <td>
-        <a target="_blank" href={`#/app/refunds/${refund.id}`}>
-          {refund.id}
-        </a>
+        <NavLink to={`/refunds/${refund.id}`}>
+          <code>{refund.id}</code>
+        </NavLink>
       </td>
       <td>
-        <a target="_blank" href={`#/app/payments/${refund.payment_id}`}>
-          {refund.payment_id}
-        </a>
+        <NavLink to={`/payments/${refund.payment_id}`}>
+          <code>{refund.payment_id}</code>
+        </NavLink>
       </td>
       <td>{refund.currency}</td>
       <td>{refund.amountInINR}</td>
@@ -26,7 +27,7 @@ const RefundsListItem = ({ refund }) => {
 export default ({ refunds, isLoading }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Refund Id</th>

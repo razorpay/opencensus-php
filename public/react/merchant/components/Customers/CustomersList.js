@@ -4,13 +4,13 @@ const CustomersListItem = props => {
   let { customer, canHighlightRow } = props;
   return (
     <tr class={canHighlightRow ? 'luminate' : ''}>
-      <td>{customer.name}</td>
+      <td><a onClick={props.onEdit}>{customer.name}</a></td>
       <td>{customer.email}</td>
       <td>{customer.contact}</td>
       <td class="row-action">
         <div class="btn-group">
           <button class="btn btn-xs btn-default" onClick={props.onEdit}>
-            <i class="fa fa-edit" />
+            <i class="icon icon-edit" />
             <span>edit</span>
           </button>
           {/*
@@ -18,7 +18,7 @@ const CustomersListItem = props => {
             class='btn btn-xs btn-default'
             onClick={props.onDelete}
           >
-            <i class='fa fa-trash text-danger'></i>
+            <i class='icon icon-trash text-danger'></i>
             <span>delete</span>
           </button>
 */}

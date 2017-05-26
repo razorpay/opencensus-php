@@ -15,6 +15,8 @@
     "case-sensitive-paths-webpack-plugin": "^1.1.4",
     "css-loader": "^0.26.1",
     "dot": "^1.1.1",
+    "extract-text-webpack-plugin": "^2.1.0",
+    "file-loader": "^0.11.1",
     "gulp": "^3.9.1",
     "gulp-concat-multi": "^1.0.1",
     "gulp-plumber": "^1.1.0",
@@ -28,18 +30,19 @@
     "run-sequence": "^1.2.2",
     "style-loader": "^0.13.1",
     "stylus-loader": "^2.5.0",
-    "webpack": "^2.2.1"
+    "through2": "^2.0.3",
+    "webpack": "^2.5.1"
   },
   "dependencies": {
     "autoprefixer-stylus": "^0.13.0",
     "babel-runtime": "^6.23.0",
     "chart.js": "^2.5.0",
     "classnames": "^2.2.5",
-    "dfaqapi": "^0.0.2",
     "moment": "^2.17.1",
     "ngreact": "^0.3.0",
     "react": "^15.4.2",
     "react-addons-shallow-compare": "^15.4.2",
+    "react-angular": "^0.2.0",
     "react-async-button": "^0.0.6",
     "react-chartjs-2": "^2.0.5",
     "react-dates": "^7.0.1",
@@ -47,14 +50,14 @@
     "react-modal": "^1.6.5",
     "react-power-select": "^0.0.9",
     "react-redux": "^5.0.2",
-    "react-simple-dropdown": "^2.0.0",
+    "react-router-dom": "^4.1.1",
+    "react-simple-dropdown": "^3.0.0",
     "react-tabs": "^0.8.2",
     "react-tether": "^0.5.5",
     "react-time": "^4.2.0",
     "redux": "^3.6.0",
     "redux-form": "^6.5.0",
-    "redux-thunk": "^2.2.0",
-    "through2": "^2.0.3"
+    "redux-thunk": "^2.2.0"
   },
   "scripts": {
     "precommit": "lint-staged",

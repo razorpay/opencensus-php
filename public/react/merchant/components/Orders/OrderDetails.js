@@ -10,14 +10,15 @@ import {
 } from 'merchant/components/StatusLabel';
 import TableBody from 'merchant/components/TableBody';
 import DetailRow from 'merchant/components/DetailRow';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
 const PaymentList = ({ payment }) => {
   return (
     <tr>
       <td>
-        <a target="_blank" href={`#/app/payments/${payment.id}`}>
-          {payment.id}
-        </a>
+        <TransactionNavLink to={`/app/payments/${payment.id}`}>
+          <code>{payment.id}</code>
+        </TransactionNavLink>
       </td>
       <td>
         <PaymentStatusLabel status={payment.status} />
@@ -33,63 +34,61 @@ export default props => {
   let { order, payments, isLoading, statusMsg } = props;
 
   return (
-    <div>
+    <div class="content-wrapper content-sm txn-details">
       {isLoading
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel-detail-container">
+        : <div class="panel panel-default">
             <Alert type={statusMsg.type} message={statusMsg.message} />
 
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                Order ID: <b>{order.id}</b>
-              </div>
+            <div class="panel-heading">
+              Order ID: <b>{order.id}</b>
+            </div>
 
-              <div class="panel-body">
-                <div class="list-group">
-                  <DetailRow
-                    label="Amount"
-                    value={() => <Amount value={order.amount} />}
-                  />
+            <div class="panel-body">
+              <div class="list-group details-row-container">
+                <DetailRow
+                  label="Amount"
+                  value={() => <Amount value={order.amount} />}
+                />
 
-                  <DetailRow label="Currency" value={order.currency} />
-                  <DetailRow label="Attempts" value={order.attempts} />
+                <DetailRow label="Currency" value={order.currency} />
+                <DetailRow label="Attempts" value={order.attempts} />
 
-                  <DetailRow
-                    label="Status"
-                    value={() => <OrderStatusLabel status={order.status} />}
-                  />
+                <DetailRow
+                  label="Status"
+                  value={() => <OrderStatusLabel status={order.status} />}
+                />
 
-                  {order.attempts > 0
-                    ? <ListGroupToggler
-                        label="Payments"
-                        onToggleClick={() => props.onTogglePayments(order)}
-                      >
-                        <table class="table table-hover table-striped">
-                          <TableBody
-                            colSpan={2}
-                            isLoading={payments.loading}
-                            rows={payments.items}
-                          >
-                            {payments.items.map(payment => (
-                              <PaymentList key={payment.id} payment={payment} />
-                            ))}
-                          </TableBody>
-                        </table>
-                      </ListGroupToggler>
-                    : <DetailRow label="Payments" value="No Payments" />}
+                {order.attempts > 0
+                  ? <ListGroupToggler
+                      label="Payments"
+                      onToggleClick={() => props.onTogglePayments(order)}
+                    >
+                      <table class="table table-hover">
+                        <TableBody
+                          colSpan={2}
+                          isLoading={payments.loading}
+                          rows={payments.items}
+                        >
+                          {payments.items.map(payment => (
+                            <PaymentList key={payment.id} payment={payment} />
+                          ))}
+                        </TableBody>
+                      </table>
+                    </ListGroupToggler>
+                  : <DetailRow label="Payments" value="No Payments" />}
 
-                  <DetailRow
-                    label="Created At"
-                    value={() => (
-                      <Time
-                        value={order.created_at}
-                        format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
-                  />
-                </div>
+                <DetailRow
+                  label="Created At"
+                  value={() => (
+                    <Time
+                      value={order.created_at}
+                      format="DD MMM YYYY, hh:mm:ss a"
+                    />
+                  )}
+                />
               </div>
             </div>
           </div>}

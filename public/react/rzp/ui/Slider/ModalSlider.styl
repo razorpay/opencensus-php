@@ -1,0 +1,37 @@
+.ModalSlider__Overlay.ReactModal__Overlay {
+  width: 525px;
+  position: fixed;
+  top: 51px;
+  right: 0;
+  bottom: 0;
+  left: auto;
+  box-shadow: 3px 11px 22px -1px #3a3f51;
+  transform: translateX(90%);
+  transition: transform 300ms linear;
+  z-index: 9998;
+  background-color: #fff;
+  overflow: auto;
+  padding-bottom: 45px;
+
+  &.ReactModal__Overlay--after-open {
+    transform: translateX(1%);
+  }
+
+  &.ReactModal__Overlay--before-close {
+    opacity: 1;
+    transform: translateX(90%);
+  }
+}
+
+.ModalSlider__Content {
+  min-height: 100%;
+  transform: none;
+
+  button.close {
+    padding: 14px;
+  }
+
+  .content-wrapper {
+    padding: 0;
+  }
+}

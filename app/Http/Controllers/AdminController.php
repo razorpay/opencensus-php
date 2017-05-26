@@ -286,49 +286,11 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postMerchantPricing($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postMerchantPricing($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getMerchantActivation($id)
     {
         $dashboardOnly = Input::get('dashboard', false);
 
         $error = (new Admin\Service)->activateMerchant($id, $dashboardOnly);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantLiveEnable($id)
-    {
-
-        $error = (new Admin\Service)->liveEnableMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantLiveDisable($id)
-    {
-        $error = (new Admin\Service)->liveDisableMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantArchive($id)
-    {
-        $error = (new Admin\Service)->archiveMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantSuspend($id)
-    {
-        $error = (new Admin\Service)->suspendMerchant($id);
 
         return AppResponse::jsonResponse($error);
     }
@@ -364,46 +326,11 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function getMerchantUnarchive($id)
-    {
-        $error = (new Admin\Service)->unarchiveMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantUnsuspend($id)
-    {
-        $error = (new Admin\Service)->unsuspendMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getLockMerchantDetails($id)
-    {
-        $error = (new Admin\Service)->lockMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getUnlockMerchantDetails($id)
-    {
-        $error = (new Admin\Service)->unlockMerchant($id);
-
-        return AppResponse::jsonResponse($error);
-    }
-
     public function getMerchantDetails($id)
     {
         list($error, $data) = (new Admin\Service)->fetchMerchantAndActivationDetails($id);
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getMerchantBanks($id)
-    {
-        $data = (new Admin\Service)->fetchMerchantBanks($id);
-
-        return AppResponse::jsonResponse([], $data);
     }
 
     public function postEditMerchant($id)
@@ -420,42 +347,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->postEditMerchantEmail($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function putEditBankDetails($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postEditBankDetails($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postEditMerchantComment($id)
-    {
-        $comment = Input::get('comment');
-
-        list($error, $data) = (new Admin\Service)->postEditMerchantComment($id, $comment);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postMerchantBanks($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postMerchantBanks($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postAddAdjustment($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postAddAdjustment($id, $input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -704,16 +595,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function postSetMerchantInternational($merchantId)
-    {
-        $input = Input::only('international');
-
-        list($error, $response) = (new Admin\Service)
-            ->postSetMerchantInternational($merchantId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     public function getMerchantTags($merchantId)
     {
         list($error, $response) = (new Admin\Service)
@@ -808,13 +689,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse([], $company->fetch());
     }
 
-    public function getMerchantBankAccount($merchantId)
-    {
-        list($error, $bankAccount) = (new Admin\Service)->fetchBankAccount($merchantId);
-
-        return AppResponse::jsonResponse($error, $bankAccount);
-    }
-
     public function postReconciliate($mode)
     {
         $input = Input::all();
@@ -850,15 +724,6 @@ class AdminController extends Controller
     public function getScheduleList()
     {
         list($error, $response) = (new Admin\Service)->getScheduleList();
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function postMerchantSchedule($id)
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Admin\Service)->assignMerchantSchedule($id, $input);
 
         return AppResponse::jsonResponse($error, $response);
     }

@@ -1,14 +1,15 @@
 import Time from 'rzp/ui/Time';
 import { OrderStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from '../TableBody';
+import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
 const OrdersListItem = ({ order }) => {
   return (
     <tr>
       <td>
-        <a target="_blank" href={`#/app/orders/${order.id}/details`}>
-          {order.id}
-        </a>
+        <TransactionNavLink to={`/app/orders/${order.id}`}>
+          <code>{order.id}</code>
+        </TransactionNavLink>
       </td>
       <td>{order.attempts}</td>
       <td>{order.currency}</td>
@@ -27,7 +28,7 @@ const OrdersListItem = ({ order }) => {
 export default ({ orders, isLoading }) => {
   return (
     <div class="table-responsive">
-      <table class="table table-hover table-striped">
+      <table class="table table-hover">
         <thead>
           <tr>
             <th>Order Id</th>

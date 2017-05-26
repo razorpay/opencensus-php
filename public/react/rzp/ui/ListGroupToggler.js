@@ -32,7 +32,7 @@ export default class ListGroupToggler extends Component {
         />
         {this.state.show
           ? <div class="panel-body">
-              <div class="list-group">
+              <div class="list-group detail-row-container">
                 {this.props.children}
               </div>
             </div>

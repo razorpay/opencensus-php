@@ -1,11 +1,13 @@
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 
-export default props => {
+export default ({ type, ...otherProps }) => {
+  let label = type === 'link' ? 'Payment Link' : 'Invoice';
+
   return (
-    <ListFilter {...props}>
+    <ListFilter {...otherProps}>
       <div class="form-group list-filter-item">
-        <label>Invoice Status</label>
+        <label>{label} Status</label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value="">All</option>
           <option value="draft">Draft</option>
@@ -17,7 +19,7 @@ export default props => {
       </div>
 
       <div class="form-group list-filter-item">
-        <label>Invoice ID</label>
+        <label>{label} ID</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 

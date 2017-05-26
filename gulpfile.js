@@ -106,8 +106,6 @@ const concatJs = lazypipe().pipe(concatMulti, {
     'public/js/angular/angular-busy.js',
     'public/js/angular/ng-react.js',
     'public/js/libs/angular-file-upload.min.js',
-    'public/js/libs/angulartics.min.js',
-    'public/js/libs/angulartics-segmentio.min.js',
     'public/js/libs/filesaver.min.js',
     'public/js/libs/jquery-tourbus.js',
     'public/js/themes/init.js',
@@ -121,10 +119,6 @@ const concatJs = lazypipe().pipe(concatMulti, {
     'public/js/*.js',
     'node_modules/moment/min/moment.min.js',
   ],
-
-  'js/generated/merchant_react.js': ['public/react/dist/merchant_react.js'],
-
-  'js/generated/admin_react.js': ['public/react/dist/admin_react.js'],
 
   'js/generated/admin.js': [
     'public/js/admin/**/*.js',
@@ -260,7 +254,6 @@ gulp.task('dev:webpack', ['dev:setENV'], cb => {
 });
 
 gulp.task('watch:full', ['dev:webpack'], () => {
-  gulp.watch('public/css/*.styl', ['css']);
   gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
   gulp.watch(
     [
@@ -270,6 +263,7 @@ gulp.task('watch:full', ['dev:webpack'], () => {
       'public/react/merchant/**/*',
       'public/react/admin/**/*',
       'public/react/rzp/**/*',
+      'public/react/styles/**/*.styl',
     ],
     ['dev:webpack']
   );
