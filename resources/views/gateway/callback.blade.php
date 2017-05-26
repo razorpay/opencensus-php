@@ -29,30 +29,37 @@ var data = {!!utf8_json_encode($data)!!};
 
 var s = 'razorpay_payment_id' in data;
 data = JSON.stringify(data);
-if(window.CheckoutBridge){
-  if(typeof CheckoutBridge.oncomplete=='function'){CheckoutBridge.oncomplete(data)}
+if (window.CheckoutBridge) {
+  if (typeof CheckoutBridge.oncomplete == 'function') {
+    CheckoutBridge.oncomplete(data);
+  }
 } else {
-  document.cookie = "onComplete="+data+";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
+  document.cookie =
+    'onComplete=' + data + ';expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/';
   try {
     localStorage.setItem('onComplete', data);
-  } catch(e) {}
+  } catch (e) {}
 }
 
-function g(id){return document.getElementById(id)}
-function razorpay_callback(){return data}
+function g(id) {
+  return document.getElementById(id);
+}
+function razorpay_callback() {
+  return data;
+}
 
-var t = g('text')
-t.innerHTML += s ? 'Successful' : 'Failed'
-t.className = 'show ' + (s ? 's' : 'f')
-g('icon').innerHTML = s ? '&#10004' : '!'
+var t = g('text');
+t.innerHTML += s ? 'Successful' : 'Failed';
+t.className = 'show ' + (s ? 's' : 'f');
+g('icon').innerHTML = s ? '&#10004' : '!';
 
-if(!window.CheckoutBridge){
-  if(window.opener){
+if (!window.CheckoutBridge) {
+  if (window.opener) {
     try {
       opener.onComplete(data);
       close();
-    } catch(e){}
-    opener.postMessage(data,'*');
+    } catch (e) {}
+    opener.postMessage(data, '*');
   }
   setTimeout(close, 999);
 }
