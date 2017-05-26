@@ -74,7 +74,11 @@ export default class HomeContainer extends Component {
             {/*<a class='start-tour-link'>Start Tour</a>*/}
           </div>
         </Header>
-        <div class="wrapper-md">
+        <div
+          style={{
+            padding: '20px',
+          }}
+        >
           <div class="row">
             <InfoCardList
               entity_totals={entity_totals}

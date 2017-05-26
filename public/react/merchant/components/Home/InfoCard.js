@@ -1,5 +1,5 @@
 export default ({ bg, content, title, loading, error }) => {
-  let panelClass = 'panel padder-v item';
+  let panelClass = 'panel item';
   let textClass = 'font-thin h1';
 
   if (bg) {
@@ -15,9 +15,20 @@ export default ({ bg, content, title, loading, error }) => {
 
   return (
     <div class="col-xxs-12 col-xs-6 col-sm-6 col-md-4 col-lg-6">
-      <div class={panelClass}>
+      <div
+        class={panelClass}
+        style={{
+          paddingTop: '15px',
+          paddingBottom: '15px',
+        }}
+      >
         <div>
-          <div class={textClass}>
+          <div
+            class={textClass}
+            style={{
+              margin: '0',
+            }}
+          >
             {
               do {
                 if (loading) {
@@ -32,7 +43,14 @@ export default ({ bg, content, title, loading, error }) => {
               }
             }
           </div>
-          <span class="text-muted text-xs">{title}</span>
+          <span
+            style={{
+              fontSize: '12px',
+              color: '#d6d3e6',
+            }}
+          >
+            {title}
+          </span>
         </div>
       </div>
     </div>
