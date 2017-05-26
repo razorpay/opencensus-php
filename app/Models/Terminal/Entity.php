@@ -70,9 +70,9 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
-        self::RECURRING,
         self::INTERNATIONAL,
         self::TPV,
+        self::TYPE,
         self::MODE,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
@@ -99,7 +99,6 @@ class Entity extends Base\PublicEntity
         self::AEPS,
         self::EMI,
         self::EMI_DURATION,
-        self::RECURRING,
         self::INTERNATIONAL,
         self::SHARED,
         self::TPV,
@@ -147,12 +146,11 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::TPV                       => false,
-        self::TYPE                      => Mode::DUAL,
+        self::TYPE                      => 1,
         self::MODE                      => Mode::DUAL,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
-        self::RECURRING                 => 1,
         self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
         self::USED                      => false,
@@ -162,7 +160,6 @@ class Entity extends Base\PublicEntity
         self::CARD                      => 'boolean',
         self::EMI                       => 'boolean',
         self::NETBANKING                => 'boolean',
-        self::RECURRING                 => 'int',
         self::INTERNATIONAL             => 'boolean',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
@@ -226,11 +223,6 @@ class Entity extends Base\PublicEntity
     public function getShared()
     {
         return $this->getAttribute(self::SHARED);
-    }
-
-    public function getRecurring()
-    {
-        return $this->getAttribute(self::RECURRING);
     }
 
     public function getType()
