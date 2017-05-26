@@ -1,14 +1,25 @@
 @include('partials/head')
 
 <link rel='shortcut icon' href='{{asset('img/logo.png')}}'>
-<link rel='stylesheet' href='css/generated{{asset('style.css')}}' type='text/css' />
+
+@if ($isAuthenticated)
+  <link rel='stylesheet' href="/dist/{{asset('merchant.css')}}">
+@else
+  <link rel='stylesheet' href='css/generated{{asset('style.css')}}' type='text/css' />
+@endif
 
 @include('partials/common')
 
-<!-- jQuery & angular -->
-<script src='{{asset('js/generated/pre.js')}}'></script>
-<!-- Merchant Js-->
-<script src='{{asset('js/generated/merchant.js')}}'></script>
+@if ($isAuthenticated)
+  <script src="/js/jquery/jquery-2.1.4.min.js"></script>
+  <script src="/dist/{{asset('merchant_react.js')}}"></script>
+@else
+  <!-- jQuery & angular -->
+  <script src='{{asset('js/generated/pre.js')}}'></script>
+  <!-- Merchant Js-->
+  <script src='{{asset('js/generated/merchant.js')}}'></script>
+@endif
+
 <!-- supportkiy code -->
 @if(env('APP_ENV') !== 'testing')
    @include('partials/supportkit')
