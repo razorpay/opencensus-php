@@ -512,6 +512,9 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+        'transfer_fetch_reversals'                => ['get',      'transfers/{id}/reversals',                       'TransferController@etTransferReversals'                            ],
+        'reversal_fetch'                          => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
+        'reversal_fetch_multiple'                 => ['get',      'reversals/',                                     'ReversalController@getReversals'                                   ],
         'payment_update_on_hold'                  => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
 
         // Dummy routes to test Account Auth
