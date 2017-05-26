@@ -25,7 +25,7 @@ class DowntimeSorter extends Terminal\Sorter
     {
         $terminalGateways = $this->getTerminalGateways($terminals);
 
-        $params = $this->buildQueryParams($input['payment'], $terminals);
+        $params = $this->buildQueryParams($input['payment'], $terminalGateways);
 
         $downtimes = $this->getRelevantDowntimes($params);
 
@@ -145,9 +145,17 @@ class DowntimeSorter extends Terminal\Sorter
             }
         }
 
-        $params[Downtime::PARTIAL] = false;
+        if ($terminalGateways)
+        {
+            $params[Downtime::GATEWAY] = [$terminalGateways, self::ALL];
+        }
 
-        $params[Downtime::GATEWAY] = [$terminalGateways, self::ALL];
+        else
+        {
+            $params[Downtime::GATEWAY] = self::ALL;
+        }
+
+        $params[Downtime::PARTIAL] = false;
 
         return $params;
     }
