@@ -31,7 +31,7 @@ class Type
     ];
 
     /**
-     * Checks if a particular type of recurring is applicable,
+     * Checks if a particular type of terminal is applicable,
      * by seeing if the corresponding bit position is set.
      * Shift right 'pos' times and check LSB
      * @param  string  $hexType Hex value of the bit-wise field
