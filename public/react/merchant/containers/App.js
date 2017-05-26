@@ -40,8 +40,9 @@ export default class App extends Component {
         }
       }),
       this.props.fetchOrg().then(({ data }) => {
-        if (data.custom_code && data.custom_code !== 'rzp') {
-          applyTheme(data.custom_code);
+        let orgCode = (this.orgCode = data.custom_code);
+        if (orgCode && orgCode !== 'rzp') {
+          applyTheme(orgCode);
         }
       }),
     ]).then(() => {
@@ -87,7 +88,7 @@ export default class App extends Component {
 
     return (
       <Router basename="/app">
-        <div class="layout">
+        <div class={`layout ${this.orgCode}`}>
           <HeaderNav
             user={user}
             mode={mode}
