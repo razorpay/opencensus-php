@@ -598,6 +598,7 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
+        'device_fetch',
     ];
 
     public static $device = [

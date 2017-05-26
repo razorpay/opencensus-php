@@ -37,6 +37,13 @@ class Core extends Base\Core
         return $device;
     }
 
+    public function createTest(array $input, Merchant\Entity $merchant)
+    {
+        unset($input['number']);
+
+        return $this->create($input, $merchant);
+    }
+
     public function verify(Entity $device, Customer\Entity $customer)
     {
         if ($device->hasBeenVerified() === true)
