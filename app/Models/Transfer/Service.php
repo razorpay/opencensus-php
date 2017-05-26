@@ -17,7 +17,7 @@ class Service extends Base\Service
         $this->core = new Core();
     }
 
-    public function fetch(string $id) : array
+    public function fetch(string $id): array
     {
         $transfer =  $this->repo
                           ->transfer
@@ -35,7 +35,18 @@ class Service extends Base\Service
         return $transfers->toArrayPublic();
     }
 
-    public function create(array $input) : array
+    public function fetchReversalsOfTransfer(string $id): array
+    {
+        $options = [Reversal\Entity::TRANSFER_ID => $id];
+
+        $merchantId = $this->merchant->getId();
+
+        $reversals = $this->repo->reversal->fetch($options, $merchantId);
+
+        return $reversals->toArrayPublic();
+    }
+
+    public function create(array $input): array
     {
         $transfer = $this->core->createForMerchant($input, $this->merchant);
 
