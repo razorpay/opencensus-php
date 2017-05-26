@@ -2618,18 +2618,18 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
-        $terminalType = $payment->terminal->getType();
+        $terminalMode = $payment->terminal->getMode();
 
-        if ($terminalType === Terminal\Type::AUTH_CAPTURE)
+        if ($terminalMode === Terminal\Mode::AUTH_CAPTURE)
         {
             return true;
         }
-        else if ($terminalType === Terminal\Type::PURCHASE)
+        else if ($terminalMode === Terminal\Mode::PURCHASE)
         {
             return false;
         }
 
-        // We handle dual and null terminal type as the default case
+        // We handle dual and null terminal mode as the default case
         // In the default case, we check if the card network supports
         // purchase or auth+capture. Example. FSS uses Auth and capture
         // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
