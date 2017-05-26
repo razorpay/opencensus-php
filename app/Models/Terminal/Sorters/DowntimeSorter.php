@@ -23,11 +23,83 @@ class DowntimeSorter extends Terminal\Sorter
 
     public function gatewayDowntimeSorter($terminals, array $input)
     {
-        $params = $this->buildQueryParams($input['payment']);
+        $terminalGateways = $this->getTerminalGateways($terminals);
+
+        $params = $this->buildQueryParams($input['payment'], $terminals);
 
         $downtimes = $this->getRelevantDowntimes($params);
 
-        // todo filtering
+        $sortedTerminals = $this->sortTerminals($terminals, $downtimes);
+
+        return $terminals;
+    }
+
+    protected function sortTerminals($terminals, $downtimes)
+    {
+        $boostedTerminals = [];
+
+        $nonBoostedTerminals = [];
+
+        foreach ($terminals as $terminal)
+        {
+            for ($i = 0; $i < count($downtimes); $i++)
+            {
+                $downtime = $downtimes[$i];
+
+                $boostTerminal = $this->shouldBoostTerminal($terminal, $downtime);
+
+                if ($boostTerminal === true)
+                {
+                    $nonBoostedTerminals[] = $terminal;
+                }
+
+                else
+                {
+                    $boostedTerminals[] = $terminal;
+                }
+            }
+        }
+
+        return array_merge($boostedTerminals, $nonBoostedTerminals);
+    }
+
+    /**
+     * Checks if priority of terminal should be kept low
+     *
+     * @param $terminal
+     * @param $downtime
+     * @return bool
+     */
+    protected function shouldBoostTerminal($terminal, $downtime)
+    {
+        if ($terminal->getId() === $downtime->getTerminalId())
+        {
+            return false;
+        }
+
+        if ($terminal->getGateway() === $downtime->getGateway())
+        {
+            return false;
+        }
+
+        if ($downtime->getGateway() === self::ALL)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function getTerminalGateways($terminals)
+    {
+        $terminalGateways = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $terminalGateways[] = $terminal->getGateway();
+        }
+
+        return array_unique($terminalGateways);
     }
 
     protected function getRelevantDowntimes(array $params)
@@ -40,7 +112,7 @@ class DowntimeSorter extends Terminal\Sorter
         return $downtimes;
     }
 
-    protected function buildQueryParams(Payment\Entity $payment)
+    protected function buildQueryParams(Payment\Entity $payment, array $terminalGateways)
     {
         $method = $payment->getMethod();
 
@@ -74,6 +146,8 @@ class DowntimeSorter extends Terminal\Sorter
         }
 
         $params[Downtime::PARTIAL] = false;
+
+        $params[Downtime::GATEWAY] = [$terminalGateways, self::ALL];
 
         return $params;
     }
