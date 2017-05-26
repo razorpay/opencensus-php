@@ -93,6 +93,10 @@ class BasicEntityReport extends BaseReport
 
         list($from, $to, $count, $skip) = $this->getParamsForReport($input);
 
+        // currently limiting the api response can break the merchant integration
+        // so overwriting the limits for now
+        list($count, $skip) = [200000, 0];
+
         list($data, $count) = $this->getReportData($from, $to, $count, $skip);
 
         return $data;

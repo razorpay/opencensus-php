@@ -98,7 +98,8 @@ class Authenticate
 
         $ret = null;
 
-        if (in_array($route, Route::$internal, true) === true)
+        if ((in_array($route, Route::$internal, true) === true) or
+            (in_array($route, Route::$admin, true) === true))
         {
             $ret = $ba->appAuth();
         }

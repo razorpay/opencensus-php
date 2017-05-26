@@ -109,6 +109,7 @@ class Gateway
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::HDFC,
+        Payment\Gateway::MOBIKWIK,
     ];
 
     public static $channels = [
@@ -368,6 +369,7 @@ class Gateway
     public static $recurringGateways = [
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
+        Gateway::AXIS_MIGS,
     ];
 
     /**

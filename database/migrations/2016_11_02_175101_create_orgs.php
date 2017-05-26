@@ -55,6 +55,12 @@ class CreateOrgs extends Migration
                   ->nullable()
                   ->unique();
 
+            $table->string(Org::FROM_EMAIL)
+                  ->nullable();
+
+            $table->string(Org::SIGNATURE_EMAIL)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Org::CREATED_AT);
 

@@ -639,8 +639,15 @@ class FeeCalculator
         {
             $payment = $this->entity;
 
+            $amount = $this->amount;
+
+            if ($payment->merchant->isFeeBearerCustomer() === true)
+            {
+                $amount = $amount + $fee;
+            }
+
             if (($payment->isMethodCardOrEmi() === true) and
-                ($payment->getBaseAmount() <= 200000))
+                ($amount <= 200000))
             {
                 $totalTaxes = 0;
             }

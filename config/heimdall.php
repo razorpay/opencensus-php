@@ -63,7 +63,8 @@ return [
             Permission::EDIT_MERCHANT_SUSPEND => '',
             Permission::EDIT_MERCHANT_UNSUSPEND => '',
             Permission::EDIT_MERCHANT_METHODS => '',
-            Permission::EDIT_MERCHANT_INTERNATIONAL => '',
+            Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL => '',
+            Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL => '',
             Permission::EDIT_MERCHANT_PRICING => '',
             Permission::EDIT_MERCHANT_COMMENTS => '',
@@ -200,6 +201,12 @@ return [
             Permission::VIEW_MERCHANT_INVITE        => 'View Merchant Invite',
         ],
 
+        PermissionCategory::GATEWAY_RULE => [
+            Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
+            Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
+            Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
+        ],
     ],
 
     // trimmed down assignable permissions which an HDFC manager would have
@@ -311,6 +318,13 @@ return [
             Permission::VIEW_ALL_WORKFLOW  => 'View all workflows',
             Permission::CREATE_WORKFLOW    => 'Create a workflow',
         ],
+
+        PermissionCategory::GATEWAY_RULE => [
+            Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
+            Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
+            Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
+        ],
     ],
 
     'enable_workflow_permissions' => [
@@ -382,6 +396,13 @@ return [
             Permission::EDIT_WORKFLOW      => 'Edit Workflows',
             Permission::DELETE_WORKFLOW    => 'Delete Workflows',
             Permission::CREATE_WORKFLOW    => 'Create a workflow',
+        ],
+
+        PermissionCategory::GATEWAY_RULE => [
+            Permission::CREATE_GATEWAY_RULE => 'Create gateway rule for merchant',
+            Permission::EDIT_GATEWAY_RULE   => 'Update gateway rule for merchant',
+            Permission::DELETE_GATEWAY_RULE => 'Remove gateway rule for merchant',
+            Permission::VIEW_GATEWAY_RULE   => 'View all gateway rules'
         ],
     ],
 

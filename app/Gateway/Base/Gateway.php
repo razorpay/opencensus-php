@@ -246,6 +246,12 @@ class Gateway
         $this->input = $input;
     }
 
+    public function verifyRefund(array $input)
+    {
+        throw new Exception\LogicException(
+            'Verify Refund is not implemented');
+    }
+
     public function canTopup()
     {
         return $this->topup;
@@ -336,6 +342,19 @@ class Gateway
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }
+    }
+
+    protected function isSecondRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            (isset($input['token']) === true) and
+            ($input['token']->isRecurring() === true) and
+            ($input['terminal']->isNon3DSRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function generateRefunds($input)
