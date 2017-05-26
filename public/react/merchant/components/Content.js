@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter } from 'react-router-dom';
 
+import Home from 'merchant/containers/HomeContainer';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/List';
@@ -22,6 +23,7 @@ import OrderDetails from 'merchant/containers/Orders/Details';
 const getBaseView = location => {
   return (
     <Switch location={location}>
+      <Route path="/" component={Home} />
       <Route path="/payments" component={Transactions} />
       <Route path="/refunds" component={Transactions} />
       <Route path="/orders" component={Transactions} />
