@@ -78,6 +78,9 @@ webpackConfig.module.rules = [
       use: [
         {
           loader: 'css-loader',
+          options: {
+            minimize: true,
+          },
         },
         {
           loader: 'stylus-loader',
@@ -120,7 +123,7 @@ webpackConfig.plugins = [
   }),
 
   new ExtractTextPlugin({
-    filename: '[name].css',
+    filename: '[name]_react.css',
   }),
 ];
 
