@@ -233,9 +233,9 @@ class Gateway extends Base\Gateway
             $dataToEncrypt[RequestFields::ACCOUNT_NUMBER] = '.' . $input['order']['account_number'];
         }
 
-        $stringToEncrypt = $this->getStringToEncrypt($dataToEncrypt);
+        $stringToEncrypt = $this->getStringToHash($dataToEncrypt, '|');
 
-        $data[RequestFields::QUERY_STRING] = $this->getEncryptedString($stringToEncrypt);
+        $data[RequestFields::QUERY_STRING] = $this->getHashOfString($stringToEncrypt);
 
         return $data;
     }
@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
      * @param Eg. $data = ['PRN' => "6vTX585l2WP6Bq", 'MD' => "P"]
      * @return Eg. string "PRN~6vTX585l2WP6Bq|MD~P"
      */
-    protected function getStringToEncrypt(array $data): string
+    protected function getStringToHash($data, $glue = ''): string
     {
         $queryArray = [];
 
@@ -253,12 +253,12 @@ class Gateway extends Base\Gateway
             $queryArray[] = $key . '~' . $value;
         }
 
-        $queryString = implode('|', $queryArray);
+        $queryString = implode($glue, $queryArray);
 
         return $queryString;
     }
 
-    protected function getEncryptedString(string $stringToEncrypt): string
+    protected function getHashOfString($stringToEncrypt): string
     {
         $masterKey = $this->getSecret();
 
@@ -369,7 +369,7 @@ class Gateway extends Base\Gateway
 
     protected function getAuthSuccessStatus(): string
     {
-        return Status::getAuthSuccessStatus();
+        return Status::SUCCESS;
     }
 
     protected function parseVerifyResponse(string $body): array
