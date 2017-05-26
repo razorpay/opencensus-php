@@ -159,6 +159,32 @@ EOT;
         return $str;
     }
 
+    public function ReqRegMob(array $array, string $ts)
+    {
+        $str = <<<EOT
+<upi:RespRegMob xmlns:upi="http://npci.org/upi/schema/">
+  <Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
+  <Txn id="{$array['Txn']['@attributes']['id']}" note="{$array['Txn']['@attributes']['note']}" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Txn']['@attributes']['refUrl']}" ts="$ts" type="ReqRegMob" />
+  <Resp reqMsgId="" result="SUCCESS" errCode=""/>
+</upi:RespRegMob>
+EOT;
+
+        return $str;
+    }
+
+    public function ReqSetCre(array $array, string $ts)
+    {
+        $str = <<<EOT
+<upi:RespSetCre xmlns:upi="http://npci.org/upi/schema/">
+    <Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
+    <Txn id="{$array['Txn']['@attributes']['id']}" note="{$array['Txn']['@attributes']['note']}" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Txn']['@attributes']['refUrl']}" ts="$ts" type="SetCre"/>
+    <Resp reqMsgId="" result="SUCCESS" errCode=""/>
+</upi:RespSetCre>
+EOT;
+
+        return $str;
+    }
+
     protected function getArrayFromXml(string $str)
     {
         $xml = simplexml_load_string($str);
