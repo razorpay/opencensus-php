@@ -1756,11 +1756,6 @@ app
             $scope.pricing_plans[value.id] = value.name;
           }
           $scope.loading = false;
-
-          // Trigger select2 on the dropdown
-          setTimeout(function() {
-            $('select[name="pricing_plan_id"]').select2();
-          }, 100);
         }
       });
 
@@ -2377,16 +2372,36 @@ app
       var request = $http.get('/admin/generic', {
         params: data,
       });
-      request.success(function(data) {
-        angular.forEach(data.data.items, function(value) {
-          $scope.schedule_list[value.id] = value.name;
+      request
+        .success(function(data) {
+          $scope.loading = false;
+
+          if (data.success) {
+            angular.forEach(data.data.items, function(value) {
+              $scope.schedule_list[value.id] = value.name;
+            });
+
+            $scope.type_list = { Settlement: 'settlement' };
+            $scope.methods = [
+              null,
+              'card',
+              'netbanking',
+              'emi',
+              'wallet',
+              'upi',
+            ];
+          } else {
+            var errors = [];
+            angular.forEach(data.errors, function(value) {
+              errors.push(value);
+            });
+            $scope.scheduleFetchError = errors.join(', ');
+          }
+        })
+        .error(function() {
+          $scope.loading = false;
+          $scope.scheduleFetchError = 'Server Error';
         });
-
-        $scope.type_list = { Settlement: 'settlement' };
-        $scope.methods = [null, 'card', 'netbanking', 'emi', 'wallet', 'upi'];
-
-        $scope.loading = false;
-      });
 
       $scope.scheduleListLength = function() {
         return Object.keys($scope.schedule_list).length;

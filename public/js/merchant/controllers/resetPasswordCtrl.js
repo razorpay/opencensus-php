@@ -30,7 +30,6 @@ app.controller('ResetPasswordCtrl', [
       $state.go('access.signin');
     }
     $scope.submit = function($valid) {
-      debugger;
       if (!$valid) {
         $scope.alerts.addAlert(
           'danger',

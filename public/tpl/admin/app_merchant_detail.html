@@ -746,7 +746,9 @@
         </div>
       </div>
       <h5 ng-if="loading">Loading Schedules....</h5>
-      <!-- <h4 ng-if="loading === false && pricingPlansLength() == 0">No Plans available. First create a pricing plan <a ui-sref="app.pricing.list">here</a></h4> -->
+      <h4 ng-if="loading === false" style="color: red; font-size: 11px">
+        {{scheduleFetchError ? scheduleFetchError : scheduleListLength() == 0 ? 'Schedule list is empty' : ''}}
+      </h4>
     </form>
   </div>
   <div class="modal-footer">

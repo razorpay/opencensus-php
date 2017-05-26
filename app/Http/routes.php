@@ -56,7 +56,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/user/logout', 'UserController@getLogout');
 
         // This returns all the needed information
-        Route::get('/user', 'UserController@getUserDetailsV2');
+        Route::get('/user', 'UserController@getUserDetailsV2'); //ePOS
         Route::get('/user_old', 'UserController@getUserDetailsV1');
         Route::get('/user/details', 'UserController@getUserDetailsV2');
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');

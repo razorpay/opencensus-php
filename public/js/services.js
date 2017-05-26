@@ -65,7 +65,8 @@ angular
                 // if any of the fields is missing, isPreSignupDone will be false
                 _isPreSignupDone =
                   _identity.pre_signup &&
-                  (_identity.user.created_at < 1488306600 || // pre-signup is only for signup on/after 01 March 2017
+                  (parseInt(_identity.activated) === 1 ||
+                  _identity.created_at < 1488306600 || // pre-signup is only for signup on/after 01 March 2017
                     !!Object.keys(_identity.pre_signup)
                       // get all values
                       .map(function(key) {
@@ -144,7 +145,7 @@ angular
       if (angular.isDefined($localStorage.rzp_mode)) {
         currentMode = $localStorage.rzp_mode;
         user.identity().then(function(data) {
-          if (currentMode == 'live' && data.activated !== true) {
+          if (currentMode == 'live' && parseInt(data.activated) !== 1) {
             currentMode = 'test';
           }
         });

@@ -567,7 +567,7 @@ class Service extends Base\Service
         {
             $data = $this->api
                          ->merchant
-                         ->set($merchantId)
+                         ->setId($merchantId)
                          ->keys()
                          ->create()
                          ->toArray();
