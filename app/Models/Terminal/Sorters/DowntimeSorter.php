@@ -36,6 +36,11 @@ class DowntimeSorter extends Terminal\Sorter
 
     protected function sortTerminals($terminals, $downtimes)
     {
+        if (count($downtimes) === 0)
+        {
+            return $terminals;
+        }
+
         $boostedTerminals = [];
 
         $nonBoostedTerminals = [];
@@ -109,7 +114,7 @@ class DowntimeSorter extends Terminal\Sorter
         $downtimes = $this->repo->gateway_downtime
                                 ->fetchDowntimesForSorter($params, $timestamp);
 
-        return $downtimes;
+        return $downtimes->toArray();
     }
 
     protected function buildQueryParams(Payment\Entity $payment, array $terminalGateways)
@@ -145,15 +150,7 @@ class DowntimeSorter extends Terminal\Sorter
             }
         }
 
-        if ($terminalGateways)
-        {
-            $params[Downtime::GATEWAY] = [$terminalGateways, self::ALL];
-        }
-
-        else
-        {
-            $params[Downtime::GATEWAY] = self::ALL;
-        }
+        $params[Downtime::GATEWAY] = array_merge($terminalGateways, [self::ALL]);
 
         $params[Downtime::PARTIAL] = false;
 
