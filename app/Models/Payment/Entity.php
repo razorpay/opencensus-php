@@ -1077,6 +1077,38 @@ class Entity extends Base\PublicEntity
         return ((empty($email) === true) or ($email === self::DUMMY_EMAIL));
     }
 
+    /**
+     * Checks if card should be saved depending on if the payment is emi or
+     * the payment was a card payment and has an associated order on which an offer
+     * was applied
+     *
+     * @return bool
+     */
+    public function shouldSaveCard(): bool
+    {
+        if (($this->isEmi() === true) or ($this->hasCardOffer() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function hasCardOffer(): bool
+    {
+        if (($this->isCard() === true) and ($this->hasOrder() === true))
+        {
+            $order = $this->order;
+
+            if ($order->hasOffer() === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 // ----------------------- Getters ---------------------------------------------
 
     public function getTransferId()
