@@ -109,6 +109,7 @@ class Gateway
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::HDFC,
+        Payment\Gateway::MOBIKWIK,
     ];
 
     public static $channels = [

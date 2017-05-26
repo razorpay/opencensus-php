@@ -911,7 +911,7 @@ class MerchantTest extends TestCase
                 'starts_at'    => $startsAt
             ]);
 
-        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 

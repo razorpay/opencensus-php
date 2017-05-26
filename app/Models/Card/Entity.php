@@ -140,6 +140,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Card\Entity', self::GLOBAL_CARD_ID, self::ID);
     }
 
+    public function hasGlobalCard(): bool
+    {
+        return $this->isAttributeNotNull(self::GLOBAL_CARD_ID);
+    }
+
     protected function generateLast4($input)
     {
         $last4 = substr($input['number'], -4);

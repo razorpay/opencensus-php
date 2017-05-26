@@ -422,3 +422,4 @@ UPDATE terminals
 
 UPDATE terminals SET used = true WHERE used_count > 0;
 
+UPDATE terminals SET mode = type;
