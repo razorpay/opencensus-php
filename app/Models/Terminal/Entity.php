@@ -233,6 +233,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECURRING);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     public function getEmiDuration()
     {
         return $this->getAttribute(self::EMI_DURATION);
@@ -595,26 +600,31 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    protected function isRecurringTypeApplicable($type)
+    protected function isTypeApplicable($type)
     {
-        $hex = $this->getRecurring();
+        $hex = $this->getType();
 
-        return Recurring::isTypeApplicable($hex, $type);
+        return Type::isApplicable($hex, $type);
     }
 
     public function isNonRecurring()
     {
-        return ($this->isRecurringTypeApplicable(Recurring::NON_RECURRING) === true);
+        return ($this->isTypeApplicable(Type::NON_RECURRING) === true);
     }
 
     public function is3DSRecurring()
     {
-        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_3DS) === true);
+        return ($this->isTypeApplicable(Type::RECURRING_3DS) === true);
     }
 
     public function isNon3DSRecurring()
     {
-        return ($this->isRecurringTypeApplicable(Recurring::RECURRING_NON_3DS) === true);
+        return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
+    }
+
+    public function isIvr()
+    {
+        return ($this->isTypeApplicable(Type::IVR) === true);
     }
 
     public function isInternational()

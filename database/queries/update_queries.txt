@@ -443,3 +443,5 @@ UPDATE merchants
     SET org_id = '100000razorpay'
     WHERE id NOT IN ('7icgzKgnv7IMbP', '7icw1On5t9IXsB', '7oDON3kPcJ7H0m')
     AND org_id IS null;
+
+UPDATE terminals SET type = recurring;

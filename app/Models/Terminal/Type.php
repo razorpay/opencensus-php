@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
-class Recurring
+class Type
 {
     // Terminal to be used for non recurring payments
     const NON_RECURRING     = 'non_recurring';
@@ -13,16 +13,21 @@ class Recurring
     // Terminal to be used for non-3DS transactions after first succesful payment
     const RECURRING_NON_3DS = 'recurring_non_3ds';
 
+    // Terminal to be used for IVR transactions
+    const IVR               = 'ivr';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
         self::RECURRING_NON_3DS,
+        self::IVR,
     ];
 
     protected static $bitPosition = [
         self::NON_RECURRING     => 1,
         self::RECURRING_3DS     => 2,
         self::RECURRING_NON_3DS => 3,
+        self::IVR               => 4,
     ];
 
     /**
@@ -33,7 +38,7 @@ class Recurring
      * @param  string  $type    Name of the recurring type to be checked
      * @return boolean          Whether type is applicable
      */
-    public static function isTypeApplicable($hexType, $type)
+    public static function isApplicable($hexType, $type)
     {
         $pos = self::$bitPosition[$type];
 
