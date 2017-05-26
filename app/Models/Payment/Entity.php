@@ -809,6 +809,12 @@ class Entity extends Base\PublicEntity
                 break;
         }
 
+        if (empty($acquirerData) === true)
+        {
+            // Show the field as an empty object on json_encoded response
+            $acquirerData = new \stdClass;
+        }
+
         return $acquirerData;
     }
 
@@ -1574,7 +1580,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicAcquirerDataAttribute(array & $array)
     {
-        // Adding test merchants and policy bazaar merchant.
+        // Adding test merchants and PolicyBazaar merchant ID's
         $merchantIds = ['10000000000000', '6ZJzxyLFWrGs74', '7LAuMvKMcy7s0f'];
 
         $currentMerchantId = $this->getMerchantId();
