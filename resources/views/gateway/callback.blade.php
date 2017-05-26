@@ -46,48 +46,14 @@ t.innerHTML += s ? 'Successful' : 'Failed'
 t.className = 'show ' + (s ? 's' : 'f')
 g('icon').innerHTML = s ? '&#10004' : '!'
 
-onerror = function(message){
-  message = JSON.stringify({
-    access_token: '4a62d17b6108416eaa6da7cbb5cb9aaf',
-    data: {
-      client: {
-        javascript: {
-          browser: navigator.userAgent
-        }
-      },
-      context: 'popup',
-      level: 'error',
-      environment: 'prod',
-      request: {
-        url: location.href,
-        user_ip: '$remote_ip'
-      },
-      body: {
-        message: {
-          body: message
-        }
-      }
-    }
-  })
-  var xhr = new XMLHttpRequest()
-  xhr.open('post', 'https://api.rollbar.com/api/1/item/', true)
-  xhr.send(message)
-}
 if(!window.CheckoutBridge){
-  if(window.opener) {
+  if(window.opener){
     try {
       opener.onComplete(data);
-      try {
-        close();
-      } catch(e) {
-        onerror(e.message);
-      }
+      close();
     } catch(e){}
     opener.postMessage(data,'*');
   }
-  setTimeout(function(){
-    onerror('unclosed: 300');
-  }, 300)
   setTimeout(close, 999);
 }
 
