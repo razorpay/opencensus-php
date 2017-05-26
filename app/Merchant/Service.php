@@ -305,6 +305,7 @@ class Service extends Base\Service
                 //swap roles between user with new email and original owner
                 $oldOwner = $merchant->users()->where('role', 'owner')->first();
 
+                // removing merchant user mapping entry on both api and dashboard for oldOwner user
                 list($error, $response) = (new User\Service)->detachMerchantUserOnApi($oldOwner->id, $merchant->id);
 
                 if (empty($error) === true)
@@ -312,6 +313,7 @@ class Service extends Base\Service
                     $merchant->removeUserById($oldOwner->id);
                 }
 
+                // adding merchant user mapping entry on both api and dashboard with manager role for oldOwner user
                 list($error, $response) = (new User\Service)->attachMerchantUserOnApi($oldOwner->id, $merchant->id, 'manager');
 
                 if (empty($error) === true)
@@ -319,6 +321,7 @@ class Service extends Base\Service
                     $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
                 }
 
+                // removing merchant user mapping entry on both api and dashboard for teamUser user
                 list($error, $response) = (new User\Service)->detachMerchantUserOnApi($teamUser->id, $merchant->id);
 
                 if (empty($error) === true)
@@ -326,6 +329,7 @@ class Service extends Base\Service
                     $merchant->removeUserById($teamUser->id);
                 }
 
+                // adding merchant user mapping entry on both api and dashboard with owner role for teamUser user
                 list($error, $response) = (new User\Service)->attachMerchantUserOnApi($teamUser->id, $merchant->id, 'owner');
 
                 if (empty($error) === true)
@@ -339,6 +343,7 @@ class Service extends Base\Service
                 //assign owner to existing user and make existing owner a manager.
                 $oldOwner = $merchant->users()->where('role', 'owner')->first();
 
+                // removing merchant user mapping entry on both api and dashboard for oldOwner user
                 list($error, $response) = (new User\Service)->detachMerchantUserOnApi($oldOwner->id, $merchant->id);
 
                 if (empty($error) === true)
@@ -346,6 +351,7 @@ class Service extends Base\Service
                     $merchant->removeUserById($oldOwner->id);
                 }
 
+                // adding merchant user mapping entry on both api and dashboard with manager role for oldOwner user
                 list($error, $response) = (new User\Service)->attachMerchantUserOnApi($oldOwner->id, $merchant->id, 'manager');
 
                 if (empty($error) === true)
@@ -353,6 +359,7 @@ class Service extends Base\Service
                     $oldOwner->joinMerchantByIdWithRole($merchant->id, 'manager');
                 }
 
+                // adding merchant user mapping entry on both api and dashboard with owner role for existingUser user
                 list($error, $response) = (new User\Service)->attachMerchantUserOnApi($existingUser->id, $merchant->id, 'owner');
 
                 if (empty($error) === true)
