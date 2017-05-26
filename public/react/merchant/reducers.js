@@ -4,6 +4,7 @@ import sessionReducer from 'merchant/modules/session';
 import modalReducer from 'rzp/modules/modals';
 import sliderReducer from 'rzp/modules/slider';
 import notificationsReducer from 'rzp/modules/notifications';
+import homeReducer from 'merchant/modules/home';
 import invoicesReducer from 'merchant/modules/invoices/list';
 import invoiceDetailsReducer from 'merchant/modules/invoices/details';
 import subscriptionsReducer from 'merchant/modules/subscriptions';
@@ -30,6 +31,7 @@ import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 import referralsReducer from 'merchant/modules/referrals';
 
 export default combineReducers({
+  home: homeReducer,
   form: formReducer,
   session: sessionReducer,
   modal: modalReducer,

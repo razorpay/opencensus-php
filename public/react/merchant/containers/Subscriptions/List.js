@@ -33,16 +33,16 @@ export default class SubscriptionsListContainer extends Component {
       <div>
         <Header title="Subscriptions">
           <a
-            href="/subscriptions/new"
-            className="pull-right btn btn-primary btn-rounded"
+            href="#/app/subscriptions/new"
+            class="pull-right btn btn-primary btn-rounded"
           >
             <i className="icon icon-plus" />
             <span>New Subscription</span>
           </a>
         </Header>
 
-        <div className="content-wrapper">
-          <div className="panel panel-default">
+        <div class="content-wrapper">
+          <div class="panel panel-default">
             <SubscriptionsList
               subscriptions={subscriptions}
               plans={plans}
