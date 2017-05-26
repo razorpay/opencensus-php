@@ -9,18 +9,16 @@ use RZP\Models\Reversal;
 
 class ReversalController extends Controller
 {
-    protected $service;
+    protected $service = Reversal\Service::class;
 
     public function __construct()
     {
         parent::__construct();
-
-        $this->service = new Reversal\Service;
     }
 
     public function getReversal(string $id)
     {
-        $reversal = $this->service->fetch($id);
+        $reversal = $this->service()->fetch($id);
 
         return ApiResponse::json($reversal);
     }
@@ -29,7 +27,7 @@ class ReversalController extends Controller
     {
         $input = Request::all();
 
-        $reversals = $this->service->fetchMultiple($input);
+        $reversals = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($reversals);
     }

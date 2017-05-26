@@ -39,7 +39,7 @@ class TransferTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->runRequestResponseFlow($data);
+        $this->startTest($data);
     }
 
     public function testFetchSingleReversal()
@@ -54,7 +54,7 @@ class TransferTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $response = $this->runRequestResponseFlow($data);
+        $response = $this->startTest($data);
 
         $expected = [
             'id'          => $reversal['id'],
