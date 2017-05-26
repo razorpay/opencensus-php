@@ -13,29 +13,29 @@ export default class MyAccount extends Component {
     return (
       <tabbed-container>
         <header id="myaccount-header">
-          <NavLink to="/app/profile">Profile</NavLink>
+          <NavLink to="/profile">Profile</NavLink>
           <ShowWhen myRole="owner manager admin">
-            <NavLink to="/app/activation">Activation</NavLink>
+            <NavLink to="/activation">Activation</NavLink>
           </ShowWhen>
 
           <ShowWhen notMyRole="sellerapp support">
-            <NavLink to="/app/credits">Credits</NavLink>
+            <NavLink to="/credits">Credits</NavLink>
           </ShowWhen>
 
           <ShowWhen notMyRole="sellerapp">
-            <NavLink to="/app/addfunds">Add Funds</NavLink>
+            <NavLink to="/addfunds">Add Funds</NavLink>
           </ShowWhen>
 
           <ShowWhen notMyRole="sellerapp support" featureEnabled="Referral">
-            <NavLink to="/app/referrals">Referrals</NavLink>
+            <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
         </header>
 
-        <Route path="/app/profile" component={Profile} />
-        <Route path="/app/activation" component={Activation} />
-        <Route path="/app/credits" component={Credits} />
-        <Route path="/app/addfunds" component={AddFunds} />
-        <Route path="/app/referrals" component={Referrals} />
+        <Route path="/profile" component={Profile} />
+        <Route path="/activation" component={Activation} />
+        <Route path="/credits" component={Credits} />
+        <Route path="/addfunds" component={AddFunds} />
+        <Route path="/referrals" component={Referrals} />
       </tabbed-container>
     );
   }

@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
 import { required } from 'rzp/utils/validators';
-import * as AccountActions from 'merchant/modules/accounts';
+import * as AccountActions from 'merchant/modules/marketplace/accounts';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 

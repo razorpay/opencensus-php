@@ -10,12 +10,12 @@ export default class InvoicingContainer extends Component {
     return (
       <tabbed-container>
         <header id="invoicing-header">
-          <NavLink to="/app/invoices">Invoices</NavLink>
-          <NavLink to="/app/items">Items</NavLink>
+          <NavLink to="/invoices">Invoices</NavLink>
+          <NavLink to="/items">Items</NavLink>
         </header>
 
-        <Route path="/app/invoices" component={Invoices} />
-        <Route path="/app/items" component={Items} />
+        <Route path="/invoices" component={Invoices} />
+        <Route path="/items" component={Items} />
       </tabbed-container>
     );
   }

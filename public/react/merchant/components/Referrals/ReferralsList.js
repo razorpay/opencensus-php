@@ -1,4 +1,4 @@
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import CheckIcon from 'rzp/ui/CheckIcon';
 

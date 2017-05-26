@@ -1,15 +1,15 @@
 import Time from 'rzp/ui/Time';
 import { OrderStatusLabel } from 'merchant/components/StatusLabel';
-import TableBody from '../TableBody';
-import TransactionNavLink from 'merchant/containers/TransactionNavLink';
+import TableBody from 'rzp/ui/TableBody';
+import { NavLink } from 'react-router-dom';
 
 const OrdersListItem = ({ order }) => {
   return (
     <tr>
       <td>
-        <TransactionNavLink to={`/app/orders/${order.id}`}>
+        <NavLink to={`/orders/${order.id}`}>
           <code>{order.id}</code>
-        </TransactionNavLink>
+        </NavLink>
       </td>
       <td>{order.attempts}</td>
       <td>{order.currency}</td>

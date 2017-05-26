@@ -1,6 +1,6 @@
 import Time from 'rzp/ui/Time';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import { NavLink } from 'react-router-dom';
 
 const PaymentsListItem = ({ payment, hasOrders, orders }) => {

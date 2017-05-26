@@ -19,7 +19,7 @@ const webpackConfig = {
       'web_modules',
       path.resolve(__dirname, 'public/react'),
     ],
-    extensions: ['.js', '.jsx', '.styl'],
+    extensions: ['.js', '.jsx', '.styl', '.jst'],
   },
   module: {},
   externals: {
@@ -78,6 +78,9 @@ webpackConfig.module.rules = [
       use: [
         {
           loader: 'css-loader',
+          options: {
+            minimize: true,
+          },
         },
         {
           loader: 'stylus-loader',
@@ -98,6 +101,15 @@ webpackConfig.module.rules = [
       },
     ],
   },
+
+  {
+    test: /\.jst$/,
+    use: [
+      {
+        loader: 'dot-tpl-loader',
+      },
+    ],
+  },
 ];
 
 // ------------------------------------
@@ -111,7 +123,7 @@ webpackConfig.plugins = [
   }),
 
   new ExtractTextPlugin({
-    filename: '[name].css',
+    filename: '[name]_react.css',
   }),
 ];
 

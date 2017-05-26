@@ -242,7 +242,7 @@ export default class InvoicesNewContainer extends Component {
         type: 'success',
         message: 'Invoice Saved',
       });
-      this.props.history.push(`/app/invoices/${invoice.id}`);
+      this.props.history.push(`/invoices/${invoice.id}`);
       return invoice;
     });
   };
@@ -257,7 +257,7 @@ export default class InvoicesNewContainer extends Component {
           type: 'success',
           message: 'Invoice Issued',
         });
-        this.props.history.push(`/app/invoices/${invoice.id}`);
+        this.props.history.push(`/invoices/${invoice.id}`);
         return invoice;
       });
     });
@@ -306,7 +306,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   navigateToList() {
-    this.props.history.push('/app/invoices');
+    this.props.history.push('/invoices');
   }
 
   deleteInvoice = () => {

@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('path');
+const fs = require('fs');
 const gulp = require('gulp');
 const webpack = require('webpack');
 const through = require('through2').obj;
@@ -229,6 +231,32 @@ gulp.task('webpack:prod', cb => {
   runWebpack(config, cb);
 });
 
+var rmOrig = function() {
+  return through(function(file, enc, cb) {
+    this.push(file); // We'll just pass this file along
+
+    if (!file.revOrigPath) {
+      return cb(); // Nothing to remove :)
+    }
+
+    fs.unlink(file.revOrigPath, function(err) {
+      // TODO: emit an error if err
+      cb();
+    });
+  });
+};
+
+//TODO: Need to offload this work to webpack especially when doing code splitting
+gulp.task('webpack:rev', cb => {
+  return gulp
+    .src(['public/dist/merchant_react.js', 'public/dist/merchant_react.css'])
+    .pipe(rev())
+    .pipe(gulp.dest('public/dist'))
+    .pipe(rmOrig())
+    .pipe(rev.manifest())
+    .pipe(through(revReference));
+});
+
 gulp.task('dev:setENV', cb => {
   isDevelopment = true;
   cb();
@@ -237,6 +265,7 @@ gulp.task('dev:setENV', cb => {
 gulp.task('default', cb => {
   run(
     'webpack:prod',
+    'webpack:rev',
     'compileThemes',
     ['css:prod', 'js:prod'],
     'tmpl',

@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
@@ -8,7 +9,6 @@ import LineItemReadOnlyTable from './LineItemReadOnlyTable';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import DetailRow from 'merchant/components/DetailRow';
 import ListGroupToggler from 'rzp/ui/ListGroupToggler';
-import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -81,11 +81,9 @@ export default props => {
                         return '--';
                       }
                       return (
-                        <TransactionNavLink
-                          to={`/app/payments/${invoice.payment_id}`}
-                        >
+                        <NavLink to={`/payments/${invoice.payment_id}`}>
                           <code>{invoice.payment_id}</code>
-                        </TransactionNavLink>
+                        </NavLink>
                       );
                     }}
                   />

@@ -10,7 +10,7 @@ export default ({ onCloseClick }) => {
         {' '}
         <br />
         Please fill and submit the {' '}
-        <NavLink to="/app/activation" onClick={onCloseClick}>
+        <NavLink to="/activation" onClick={onCloseClick}>
           <u>activation form.</u>
         </NavLink>
         <div class="Modal__actions text-right">

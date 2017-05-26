@@ -1,4 +1,4 @@
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 
 const CustomersListItem = props => {
   let { customer, canHighlightRow } = props;

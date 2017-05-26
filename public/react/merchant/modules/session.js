@@ -5,6 +5,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 const UPDATE_SESSION = 'UPDATE_SESSION';
 const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
+export const USER_LOGOUT = 'USER_LOGOUT';
 
 export const updateSession = payload => {
   return dispatch => {
@@ -48,6 +49,18 @@ export const switchMerchant = merchantId => {
   };
 };
 
+export const logout = () => {
+  return dispatch => {
+    return dispatch({
+      type: USER_LOGOUT,
+      payload: ajax({
+        url: '/user/logout',
+        appendModeInURL: false,
+      }),
+    });
+  };
+};
+
 let initialState = {
   user: null,
   org: {},
@@ -65,6 +78,10 @@ export default function(state = initialState, action) {
 
     case `${USER_FETCH}::SUCCESS`:
       return set(state, 'user', action.payload.data);
+
+    case `${USER_FETCH}::ERROR`:
+    case `${USER_LOGOUT}::SUCCESS`:
+      return set(state, 'user', null);
 
     case `${ORG_FETCH}::SUCCESS`:
       return set(state, 'org', action.payload.data);

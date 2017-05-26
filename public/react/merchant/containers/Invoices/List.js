@@ -20,7 +20,7 @@ export default class InvoicesListContainer extends ListContainer {
   }
 
   editInvoice = invoice => {
-    this.props.history.push(`/app/invoices/${invoice.id}`);
+    this.props.history.push(`/invoices/${invoice.id}`);
   };
 
   render() {
@@ -37,7 +37,7 @@ export default class InvoicesListContainer extends ListContainer {
         >
           <div />{/* required by react-tether */}
           <ShowWhen notMyRole="sellerapp support" featureEnabled="Invoice">
-            <NavLink to="/app/invoices/new" class="btn btn-primary pull-right">
+            <NavLink to="/invoices/new" class="btn btn-primary pull-right">
               <i class="icon icon-plus" />
               <span>Create Invoice</span>
             </NavLink>

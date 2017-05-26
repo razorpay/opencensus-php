@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 
 const BatchUploadsListItem = ({ batchupload, mode }) => {

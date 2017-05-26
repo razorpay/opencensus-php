@@ -63,7 +63,7 @@ const ProfileDropdown = ({ user, onLogoutClick }) => {
         <ul class="dropdown-menu">
           {user.current &&
             <li>
-              <Link to="/app/activation">
+              <Link to="/activation">
                 Activation
                 {' '}
                 {!user.activated &&
@@ -72,7 +72,7 @@ const ProfileDropdown = ({ user, onLogoutClick }) => {
                   </span>}
               </Link>
             </li>}
-          <li><Link to="/app/profile">Profile</Link></li>
+          <li><Link to="/profile">Profile</Link></li>
           <li class="divider" />
           <li><a onClick={onLogoutClick}>Logout</a></li>
         </ul>

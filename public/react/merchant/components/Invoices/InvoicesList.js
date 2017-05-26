@@ -1,9 +1,8 @@
 import { NavLink } from 'react-router-dom';
-import TableBody from '../TableBody';
+import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
-import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
 const InvoiceListItem = props => {
   let { invoice, canHighlight, onEditClick } = props;
@@ -11,10 +10,10 @@ const InvoiceListItem = props => {
     <tr class={canHighlight ? 'luminate' : ''}>
       <td>
         {invoice.type === 'link'
-          ? <TransactionNavLink to={`/app/paymentlinks/${invoice.id}`}>
+          ? <NavLink to={`/paymentlinks/${invoice.id}`}>
               <code>{invoice.id}</code>
-            </TransactionNavLink>
-          : <NavLink to={`/app/invoices/${invoice.id}`}>
+            </NavLink>
+          : <NavLink to={`/invoices/${invoice.id}`}>
               <code>{invoice.id}</code>
             </NavLink>}
       </td>

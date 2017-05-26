@@ -35,7 +35,7 @@ export default class RefundsListContainer extends ListContainer {
           >
             <NavLink
               class="btn btn-primary pull-right"
-              to="/app/refunds/batchupload"
+              to="/refunds/batchupload"
             >
               Batch Refunds
             </NavLink>

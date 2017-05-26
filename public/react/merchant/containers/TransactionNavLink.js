@@ -6,7 +6,7 @@
  *    Follows the same API signature of `NavLink` component.
  *
  *  ```jsx
- *    <TransactionNavLink to={`/app/payments/${payment.id}`}>
+ *    <TransactionNavLink to={`/payments/${payment.id}`}>
  *      {payment.id}
  *    </TransactionNavLink />
  *  ````

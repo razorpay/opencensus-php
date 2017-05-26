@@ -74,7 +74,7 @@ export default class CustomersListContainer extends ListContainer {
     return (
       <tabbed-container>
         <header id="customers-header">
-          <NavLink to="/app/customers">Customers</NavLink>
+          <NavLink to="/customers">Customers</NavLink>
         </header>
 
         <div class="content-wrapper">

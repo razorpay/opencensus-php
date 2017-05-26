@@ -13,21 +13,21 @@ export default class Settings extends Component {
       <tabbed-container>
         <header>
           <ShowWhen myRole="owner manager admin">
-            <NavLink to="/app/config">Configuration</NavLink>
+            <NavLink to="/config">Configuration</NavLink>
           </ShowWhen>
 
           <ShowWhen myRole="owner manager admin">
-            <NavLink to="/app/webhooks">Webhooks</NavLink>
+            <NavLink to="/webhooks">Webhooks</NavLink>
           </ShowWhen>
 
           <ShowWhen myRole="owner admin">
-            <NavLink to="/app/keys">API Keys</NavLink>
+            <NavLink to="/keys">API Keys</NavLink>
           </ShowWhen>
         </header>
 
-        <Route path="/app/config" component={Configuration} />
-        <Route path="/app/webhooks" component={Webhooks} />
-        <Route path="/app/keys" component={ApiKeys} />
+        <Route path="/config" component={Configuration} />
+        <Route path="/webhooks" component={Webhooks} />
+        <Route path="/keys" component={ApiKeys} />
       </tabbed-container>
     );
   }

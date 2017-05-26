@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import Time from 'rzp/ui/Time';
 import Clipboard from 'rzp/ui/Clipboard';
-import TransactionNavLink from 'merchant/containers/TransactionNavLink';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -26,9 +25,9 @@ export default ({ invoice }) => {
           ? <div>
               <dt>Payment Id</dt>
               <dd>
-                <TransactionNavLink to={`/app/payments/${invoice.payment_id}`}>
+                <NavLink to={`/payments/${invoice.payment_id}`}>
                   <code>{invoice.payment_id}</code>
-                </TransactionNavLink>
+                </NavLink>
               </dd>
 
               <dt>Paid On</dt>
