@@ -35,6 +35,14 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    public function findLastEntityByRefundId($refundId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::REFUND_ID, '=', $refundId)
+                    ->orderBy(Entity::ID, 'desc')
+                    ->first();
+    }
+
     public function persistAfterEnroll($request, $response)
     {
         $result = $response['enroll_result'];

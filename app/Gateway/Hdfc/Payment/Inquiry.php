@@ -34,10 +34,10 @@ trait Inquiry
         {
             $response['data']['result'] = 'CAPTURED';
 
-            $refund = $this->repo->findByRefundId($input['refund']['id']);
+            $refund = $this->repo->findLastEntityByRefundId($input['refund']['id']);
 
             $attributes = $this->getSuccessfulVerifyRefundAttributes($input, $response['data']);
-            $refund->fill($response['data']);
+            $refund->fill($attributes);
 
             $this->repo->saveOrFail($refund);
 
