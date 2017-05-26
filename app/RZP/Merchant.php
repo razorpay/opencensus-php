@@ -150,4 +150,11 @@ class Merchant extends Entity
     {
         return $this->request('GET', self::BANK_ACCOUNT_URL);
     }
+
+    public function getUsers($merchantId)
+    {
+        $relativeUrl = $this->getEntityUrl().$merchantId.'/users';
+
+        return $this->request('GET', $relativeUrl);
+    }
 }

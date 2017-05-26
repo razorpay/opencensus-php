@@ -3,6 +3,7 @@
 namespace App\Mailers;
 
 use App\Admin;
+use App\Merchant;
 use App\Merchant\Entity as MerchantEntity;
 use App\Exception\InvalidContactInformationException;
 
@@ -15,7 +16,7 @@ class MerchantMailer extends Mailer
      *
      * @param \App\Merchant\Entity $merchant
      */
-    public function __construct(MerchantEntity $merchant, array $merchantDetails)
+    public function __construct(Merchant\GenericMerchant $merchant, array $merchantDetails)
     {
         if (is_object($merchant) === false)
         {
