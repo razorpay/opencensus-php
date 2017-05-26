@@ -77,12 +77,16 @@ export default class App extends Component {
       });
   };
 
-  logout = () => {};
+  logout = () => {
+    return this.props.logout().then(() => {
+      location.reload();
+    });
+  };
 
   render() {
     let { user, mode, modeFormatted } = this.props;
 
-    if (this.state.isLoading) {
+    if (this.state.isLoading || !user) {
       return null;
     }
 
