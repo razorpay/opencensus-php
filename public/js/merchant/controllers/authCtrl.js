@@ -252,6 +252,7 @@ app
       }
 
       $scope.goToDashboard = function(role) {
+        location.hash = '/';
         location.reload();
       };
 

@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { HashRouter as Router } from 'react-router-dom';
+import { withRouter } from 'react-router';
 
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Slider from 'rzp/ui/Slider';
@@ -14,6 +14,7 @@ import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import { applyTheme } from 'rzp/themes';
 
+@withRouter
 @connect(state => state.session, {
   ...ModalActions,
   ...SessionActions,
@@ -31,12 +32,16 @@ export default class App extends Component {
       this.props.updateSession({ mode: currentMode });
     }
     Promise.all([
-      this.props.fetchUser().then(response => {
+      this.props.fetchUser().then(({ data }) => {
+        let role = data.merchants[data.current].pivot.role;
+
         if (!currentMode) {
-          currentMode = parseInt(response.data.activated) === 1
-            ? 'live'
-            : 'test';
+          currentMode = parseInt(data.activated) === 1 ? 'live' : 'test';
           this.props.updateSession({ mode: currentMode });
+        }
+
+        if (role === 'sellerapp') {
+          this.props.history.replace('/invoices');
         }
       }),
       this.props.fetchOrg().then(({ data }) => {
@@ -91,24 +96,22 @@ export default class App extends Component {
     }
 
     return (
-      <Router basename="/app">
-        <div class={`layout ${this.orgCode}`}>
-          <HeaderNav
-            user={user}
-            mode={mode}
-            modeFormatted={modeFormatted}
-            onSwitchMode={this.switchMode}
-            onSwitchMerchant={this.switchMerchant}
-            onLogout={this.logout}
-          />
-          <Sidebar user={user} />
-          <Content />
+      <div id="react-root" class={`react-root layout ${this.orgCode}`}>
+        <HeaderNav
+          user={user}
+          mode={mode}
+          modeFormatted={modeFormatted}
+          onSwitchMode={this.switchMode}
+          onSwitchMerchant={this.switchMerchant}
+          onLogout={this.logout}
+        />
+        <Sidebar user={user} />
+        <Content />
 
-          {/* Creates Portal for the comp */}
-          <ModalDialog />
-          <Notifications />
-        </div>
-      </Router>
+        {/* Creates Portal for the comp */}
+        <ModalDialog />
+        <Notifications />
+      </div>
     );
   }
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
+import { HashRouter as Router } from 'react-router-dom';
 import { Tabs } from 'react-tabs';
 import 'styles/merchant';
 
@@ -20,9 +21,9 @@ Tabs.setUseDefaultStyles(false);
 render(
   <Provider store={store}>
     <ConfirmModalProvider>
-      <div id="react_root" class="react-root">
+      <Router basename="/app">
         <App />
-      </div>
+      </Router>
     </ConfirmModalProvider>
   </Provider>,
   document.getElementById('react-root')
