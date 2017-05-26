@@ -31,7 +31,7 @@ class DowntimeSorter extends Terminal\Sorter
 
         $sortedTerminals = $this->sortTerminals($terminals, $downtimes);
 
-        return $terminals;
+        return $sortedTerminals;
     }
 
     protected function sortTerminals($terminals, $downtimes)
@@ -48,7 +48,7 @@ class DowntimeSorter extends Terminal\Sorter
 
                 $boostTerminal = $this->shouldBoostTerminal($terminal, $downtime);
 
-                if ($boostTerminal === true)
+                if ($boostTerminal === false)
                 {
                     $nonBoostedTerminals[] = $terminal;
                 }
