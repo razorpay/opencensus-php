@@ -36,28 +36,39 @@
     margin-bottom: 10px;
   }
 
-  .row,
-  .col-md-4,
   .panel,
   .panel-body {
     height: 100%;
     position: relative;
   }
 
-  .Transaction__Vol {
-    margin-right: 280px;
-    height: 100%;
+  &.Transaction__Vol {
+    margin-right: 30%;
+    @media $sm-max {
+      margin-right: 0;
+    }
   }
 
-  .Transaction__Types {
+  &.Transaction__Types {
     display: inline-block;
     float: right;
-    height: 100%;
-    width: 280px;
+    width: 30%;
     color: #58666e;
+    @media $sm-max {
+      width: 100%;
+      float: none;
+    }
 
     .panel-body {
       background-color: #e4eaec;
     }
+  }
+}
+
+.RecentTxns .WidgetContainer {
+  height: auto;
+
+  .panel-body {
+    min-height: 175px;
   }
 }

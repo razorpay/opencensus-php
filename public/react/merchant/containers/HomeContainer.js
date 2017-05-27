@@ -110,13 +110,13 @@ export default class HomeContainer extends Component {
               </div>
             </div>
           </div>
-          <div class="WidgetContainer clearfix">
+          <div class="clearfix">
             <MethodBreakupCard
               data={payment_breakup.data}
               loading={payment_breakup.loading}
               error={payment_breakup.error}
             />
-            <div class="Transaction__Vol">
+            <div class="WidgetContainer Transaction__Vol">
               <AnalyticsGraph
                 title="Transaction Volume"
                 loading={graphData.loading}
@@ -126,28 +126,22 @@ export default class HomeContainer extends Component {
             </div>
           </div>
 
-          <div class="WidgetContainer">
-            <div class="panel">
-              <div class="panel-body">
-                <div class="row">
-                  <RecentEntityTable
-                    entity="payment"
-                    data={payments}
-                    loading={payments.loading}
-                  />
-                  <RecentEntityTable
-                    entity="refund"
-                    data={refunds}
-                    loading={refunds.loading}
-                  />
-                  <RecentEntityTable
-                    entity="settlement"
-                    data={settlements}
-                    loading={settlements.loading}
-                  />
-                </div>
-              </div>
-            </div>
+          <div class="row RecentTxns">
+            <RecentEntityTable
+              entity="payment"
+              data={payments}
+              loading={payments.loading}
+            />
+            <RecentEntityTable
+              entity="refund"
+              data={refunds}
+              loading={refunds.loading}
+            />
+            <RecentEntityTable
+              entity="settlement"
+              data={settlements}
+              loading={settlements.loading}
+            />
           </div>
         </div>
       </div>

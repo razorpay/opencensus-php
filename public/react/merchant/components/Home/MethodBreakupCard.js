@@ -21,7 +21,7 @@ export default ({ data, loading, error }) => {
   }
 
   return (
-    <div class="Transaction__Types">
+    <div class="Transaction__Types WidgetContainer">
       <div class="panel">
         <div class="panel-body">
           <h4 class="font-thin">Transaction Types</h4>

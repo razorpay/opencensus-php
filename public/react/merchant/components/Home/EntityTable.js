@@ -26,50 +26,56 @@ export default ({ entity, data, loading }) => {
   let items = data[`${entity}s`];
   return (
     <div class="col-md-4">
-      <Link
-        data-tip={`See All ${titleCase(entity)}s`}
-        class="pull-right"
-        to={`/${entity}s/list`}
-      >
-        <i class="icon-arrow-right" />
-      </Link>
+      <div class="WidgetContainer">
+        <div class="panel">
+          <div class="panel-body">
+            <Link
+              data-tip={`See All ${titleCase(entity)}s`}
+              class="pull-right"
+              to={`/${entity}s/list`}
+            >
+              <i class="icon-arrow-right" />
+            </Link>
 
-      <h4>Recent {titleCase(entity)}s</h4>
-      {
-        do {
-          if (loading) {
-            <div class="centered"><LoaderDots /></div>;
-          } else if (data.count) {
-            items.slice(0, 5).map((item, index) => {
-              return (
-                <div key={index} class="row" style={{ margin: '10px' }}>
-                  <a href={`#/app/${entity}/${item.id}`}>
-                    <StatusLabel
-                      entity={entity}
-                      status={item.status}
-                      data-tip={titleCase(item.status) || null}
-                      data-place="right"
-                    >
-                      <Amount value={item.amount} />
-                    </StatusLabel>
+            <h4>Recent {titleCase(entity)}s</h4>
+            {
+              do {
+                if (loading) {
+                  <div class="centered"><LoaderDots /></div>;
+                } else if (data.count) {
+                  items.slice(0, 5).map((item, index) => {
+                    return (
+                      <div key={index} class="row" style={{ margin: '10px' }}>
+                        <a href={`#/app/${entity}/${item.id}`}>
+                          <StatusLabel
+                            entity={entity}
+                            status={item.status}
+                            data-tip={titleCase(item.status) || null}
+                            data-place="right"
+                          >
+                            <Amount value={item.amount} />
+                          </StatusLabel>
 
-                    <div class="col-xs-8 col-md-9">
-                      <code class="hidden-xs">{item.id}</code>
-                      <span class="pull-right">
-                        {formatFromNow(item.created_at)}
-                      </span>
-                    </div>
-                  </a>
-                </div>
-              );
-            });
-          } else {
-            <h5 style={{ marginTop: '30px' }}>
-              No Recent {titleCase(entity)}s
-            </h5>;
-          }
-        }
-      }
+                          <div class="col-xs-8 col-md-9">
+                            <code class="hidden-xs">{item.id}</code>
+                            <span class="pull-right">
+                              {formatFromNow(item.created_at)}
+                            </span>
+                          </div>
+                        </a>
+                      </div>
+                    );
+                  });
+                } else {
+                  <h5 style={{ marginTop: '30px' }}>
+                    No Recent {titleCase(entity)}s
+                  </h5>;
+                }
+              }
+            }
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

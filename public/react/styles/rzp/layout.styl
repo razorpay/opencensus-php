@@ -3,10 +3,12 @@
 
 html, body {
   background-color: #f0f3f4;
+  overflow-x: hidden;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
+  padding-bottom: 60px;
 }
 
 *:focus {
@@ -21,6 +23,9 @@ body {
 .main-content {
   margin-left: 200px;
   margin-top: 51px;
+  @media $sm-max {
+    margin-left: 45px;
+  }
 }
 
 .btn {
@@ -39,6 +44,11 @@ body {
   bottom: 0;
   background-color: #3a3f51;
   width: 200px;
+  z-index: 1111;
+  @media $sm-max {
+    width: 45px;
+    overflow: hidden;
+  }
 
   .brand-logo {
     margin-bottom: 15px;
@@ -70,12 +80,25 @@ body {
     border-top: 1px solid transparent;
   }
 
+  nav {
+    position: absolute;
+    top: 85px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+    padding-bottom: 60px;
+  }
+
   .nav > a {
     border-left: 4px solid transparent;
     color: #b4b6bd;
     display: block;
     line-height: 40px;
     padding: 0 15px;
+    @media $sm-max {
+      white-space: nowrap;
+    }
 
     .badge {
       margin-top: 13px;
@@ -104,6 +127,9 @@ body {
   border-bottom: 0;
   background-color: #fff;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
+  @media $sm-max {
+    margin-left: 45px;
+  }
 }
 
 .navbar-default .navbar-nav {
@@ -158,7 +184,10 @@ body {
 }
 
 .content-wrapper {
-  padding: 30px 20px;
+  padding: 20px;
+  @media $sm-max {
+    padding: 10px;
+  }
 }
 
 .content-sm {

@@ -2,7 +2,7 @@ import LoaderDots from 'rzp/ui/LoaderDots';
 
 export default ({ className, content, title, loading, error }) => {
   return (
-    <div class="col-xxs-12 col-xs-6 col-sm-6 col-md-4 col-lg-6">
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-6">
       <div class={`panel InfoCard ${className}`}>
         <div class="InfoCard__value">
           {
