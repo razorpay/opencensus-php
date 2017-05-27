@@ -11,7 +11,7 @@ export default class Settings extends Component {
   render() {
     return (
       <tabbed-container>
-        <header>
+        <header id="settings-header">
           <ShowWhen myRole="owner manager admin">
             <NavLink to="/config">Configuration</NavLink>
           </ShowWhen>

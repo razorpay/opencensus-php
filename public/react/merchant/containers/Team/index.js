@@ -37,14 +37,16 @@ export default class TeamContainer extends Component {
         <header>
           <NavLink to="/team">Manage Team</NavLink>
 
-          <a
-            class="pull-right"
-            href="https://docs.razorpay.com/v1/page/team-support"
-            target="_blank"
-          >
-            Team & Roles Documentation &nbsp;
-            <i class="icon icon-new-tab-link" />
-          </a>
+          <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link"
+              href="https://docs.razorpay.com/v1/page/team-support"
+              target="_blank"
+            >
+              Documentation &nbsp;
+              <i class="icon icon-external-link" />
+            </a>
+          </div>
         </header>
 
         <div class="content-wrapper content-sm">

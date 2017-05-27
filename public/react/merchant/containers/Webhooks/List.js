@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import TetherComponent from 'react-tether';
 import Header from 'rzp/ui/Header';
 import Alert from 'rzp/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -42,6 +43,25 @@ export default class WebhooksContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
+        <TetherComponent
+          target="#settings-header"
+          attachment="top right"
+          targetAttachment="top right"
+          offset="-8px 20px"
+        >
+          <div />{/* required by react-tether */}
+          <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link"
+              href="https://docs.razorpay.com/v1/page/webhooks"
+              target="_blank"
+            >
+              Documentation &nbsp;
+              <i class="icon icon-external-link" />
+            </a>
+          </div>
+        </TetherComponent>
+
         {error && <Alert type="error" message={error} />}
 
         <WebhooksList
