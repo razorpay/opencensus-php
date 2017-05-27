@@ -83,6 +83,12 @@ webpackConfig.module.rules = [
           },
         },
         {
+          loader: 'postcss-loader',
+          options: {
+            plugins: loader => [require('autoprefixer')()],
+          },
+        },
+        {
           loader: 'stylus-loader',
           options: {
             use: bootstrap(),

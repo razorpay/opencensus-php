@@ -35,7 +35,7 @@ export default props => {
           title="Last Transaction"
         />
         <InfoCard
-          bg="info"
+          class="bg-info"
           loading={entity_totals.loading}
           content={
             entity_totals.data.payment
@@ -46,7 +46,7 @@ export default props => {
           title="Total Payments"
         />
         <InfoCard
-          bg="primary"
+          class="bg-primary"
           loading={entity_totals.loading}
           content={
             entity_totals.data.refund

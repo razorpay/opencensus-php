@@ -1,57 +1,25 @@
-export default ({ bg, content, title, loading, error }) => {
-  let panelClass = 'panel item';
-  let textClass = 'font-thin h1';
+import LoaderDots from 'rzp/ui/LoaderDots';
 
-  if (bg) {
-    panelClass += ` bg-${bg}`;
-    textClass += ` text-white`;
-  }
-
-  if (error) {
-    textClass = bg
-      ? textClass.replace('text-white', 'text-danger')
-      : `${textClass} text-danger`;
-  }
-
+export default ({ className, content, title, loading, error }) => {
   return (
     <div class="col-xxs-12 col-xs-6 col-sm-6 col-md-4 col-lg-6">
-      <div
-        class={panelClass}
-        style={{
-          paddingTop: '15px',
-          paddingBottom: '15px',
-        }}
-      >
-        <div>
-          <div
-            class={textClass}
-            style={{
-              margin: '0',
-            }}
-          >
-            {
-              do {
-                if (loading) {
-                  ('...');
-                } else if (error) {
-                  ('Error');
-                } else if (typeof content === 'function') {
-                  content();
-                } else {
-                  content;
-                }
+      <div class={`panel InfoCard ${className}`}>
+        <div class="InfoCard__value">
+          {
+            do {
+              if (loading) {
+                <LoaderDots />;
+              } else if (error) {
+                <small class="text-danger font-sm">Error!</small>;
+              } else if (typeof content === 'function') {
+                <div class="h1">{content()}</div>;
+              } else {
+                <div class="h1">{content}</div>;
               }
             }
-          </div>
-          <span
-            style={{
-              fontSize: '12px',
-              color: '#d6d3e6',
-            }}
-          >
-            {title}
-          </span>
+          }
         </div>
+        <span class="InfoCard__label">{title}</span>
       </div>
     </div>
   );

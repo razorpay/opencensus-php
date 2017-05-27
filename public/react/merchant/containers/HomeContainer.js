@@ -11,6 +11,20 @@ import InfoCardList from 'merchant/components/Home/InfoCardList';
 import RecentEntityTable from 'merchant/components/Home/EntityTable';
 import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
 import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
+import { defaults } from 'react-chartjs-2';
+
+defaults.global.defaultFontColor = '#666';
+defaults.global.defaultFontFamily =
+  '"Lato", "Helvetica Neue", Helvetica, Arial,sans-serif';
+defaults.global.defaultFontSize = 11;
+defaults.global.layout = {
+  padding: {
+    left: 10,
+    bottom: 15,
+    top: 5,
+    right: 5,
+  },
+};
 
 // graph data
 // numbers
@@ -71,6 +85,7 @@ export default class HomeContainer extends Component {
           </div>
         </Header>
         <div
+          class="Dashboard"
           style={{
             padding: '20px',
           }}
@@ -85,71 +100,53 @@ export default class HomeContainer extends Component {
               settlements={settlements}
             />
             <div class="col-md-12 col-lg-6">
-              <AnalyticsGraph
-                panelClass="panel wrapper"
-                title="Successful Transactions"
-                style={{
-                  height: '244px',
-                  textAlign: 'center',
-                  lineHeight: '244px',
-                }}
-                loading={graphData.loading}
-                error={graphData.error}
-                data={graphData.transaction_count}
-              />
+              <div class="WidgetContainer">
+                <AnalyticsGraph
+                  title="Successful Transactions"
+                  loading={graphData.loading}
+                  error={graphData.error}
+                  data={graphData.transaction_count}
+                />
+              </div>
             </div>
           </div>
-          <div
-            class="panel"
-            style={{
-              display: 'table',
-              width: '100%',
-              height: '100%',
-              borderSpacing: '0',
-              tableLayout: 'fixed',
-            }}
-          >
-            <AnalyticsGraph
-              panelClass="wrapper"
-              title="Transaction Volume"
-              style={{
-                height: '306px',
-                textAlign: 'center',
-                lineHeight: '306px',
-              }}
-              panelStyle={{
-                display: 'table-cell',
-                float: 'none',
-                height: '100%',
-                verticalAlign: 'top',
-              }}
-              loading={graphData.loading}
-              error={graphData.error}
-              data={graphData.transaction_amount}
-            />
+          <div class="WidgetContainer clearfix">
             <MethodBreakupCard
               data={payment_breakup.data}
               loading={payment_breakup.loading}
               error={payment_breakup.error}
             />
+            <div class="Transaction__Vol">
+              <AnalyticsGraph
+                title="Transaction Volume"
+                loading={graphData.loading}
+                error={graphData.error}
+                data={graphData.transaction_amount}
+              />
+            </div>
           </div>
-          <div class="panel wrapper">
-            <div class="row">
-              <RecentEntityTable
-                entity="payment"
-                data={payments}
-                loading={payments.loading}
-              />
-              <RecentEntityTable
-                entity="refund"
-                data={refunds}
-                loading={refunds.loading}
-              />
-              <RecentEntityTable
-                entity="settlement"
-                data={settlements}
-                loading={settlements.loading}
-              />
+
+          <div class="WidgetContainer">
+            <div class="panel">
+              <div class="panel-body">
+                <div class="row">
+                  <RecentEntityTable
+                    entity="payment"
+                    data={payments}
+                    loading={payments.loading}
+                  />
+                  <RecentEntityTable
+                    entity="refund"
+                    data={refunds}
+                    loading={refunds.loading}
+                  />
+                  <RecentEntityTable
+                    entity="settlement"
+                    data={settlements}
+                    loading={settlements.loading}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

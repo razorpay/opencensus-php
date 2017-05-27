@@ -1,35 +1,30 @@
 import { createLineData, timeScale } from 'rzp/utils/chart';
 import { Line } from 'react-chartjs-2';
+import LoaderDots from 'rzp/ui/LoaderDots';
 
-export default ({
-  title,
-  style,
-  data,
-  loading,
-  panelClass,
-  error,
-  panelStyle,
-}) => {
+export default ({ title, data, loading, error }) => {
   return (
-    <div class={panelClass} style={panelStyle}>
-      <h4 class="font-thin text-muted">{title}</h4>
-      <div style={style}>
+    <div class="panel">
+      <div class="panel-body">
+        <h4 class="text-muted">{title}</h4>
         {loading || !data.datasets[0].data.length || error
-          ? <span
-              class={`${loading ? 'h1 ' : error ? 'text-danger ' : ''}text-thin`}
-            >
+          ? <div class="centered">
               {
                 do {
                   if (loading) {
-                    ('...');
+                    <LoaderDots />;
                   } else if (error) {
-                    ('Error occurred in loading data');
+                    <div class="text-danger">
+                      Error occurred in loading data!
+                    </div>;
                   } else {
-                    ('No data available for the selected time period');
+                    <div class="text-muted">
+                      No data available for the selected time period
+                    </div>;
                   }
                 }
               }
-            </span>
+            </div>
           : <Line options={timeScale} data={data} />}
       </div>
     </div>

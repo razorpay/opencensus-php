@@ -1,4 +1,7 @@
+import { Link } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
+import LoaderDots from 'rzp/ui/LoaderDots';
+
 import {
   PaymentStatusLabel,
   SettlementStatusLabel,
@@ -23,27 +26,19 @@ export default ({ entity, data, loading }) => {
   let items = data[`${entity}s`];
   return (
     <div class="col-md-4">
-      <a
+      <Link
         data-tip={`See All ${titleCase(entity)}s`}
         class="pull-right"
-        href={`#/app/${entity}s/list`}
+        to={`/${entity}s/list`}
       >
         <i class="icon-arrow-right" />
-      </a>
-      <h4 style={{ margin: '0 0 10px' }}>Recent {titleCase(entity)}s</h4>
+      </Link>
+
+      <h4>Recent {titleCase(entity)}s</h4>
       {
         do {
           if (loading) {
-            <div
-              class="text-thin h1"
-              style={{
-                height: '165px',
-                textAlign: 'center',
-                lineHeight: '165px',
-              }}
-            >
-              ...
-            </div>;
+            <div class="centered"><LoaderDots /></div>;
           } else if (data.count) {
             items.slice(0, 5).map((item, index) => {
               return (
@@ -69,7 +64,9 @@ export default ({ entity, data, loading }) => {
               );
             });
           } else {
-            <div>No Recent {titleCase(entity)}</div>;
+            <h5 style={{ marginTop: '30px' }}>
+              No Recent {titleCase(entity)}s
+            </h5>;
           }
         }
       }

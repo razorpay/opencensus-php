@@ -1,4 +1,5 @@
 import { titleCase, colors } from 'rzp/utils/rzp-utils';
+import LoaderDots from 'rzp/ui/LoaderDots';
 
 export default ({ data, loading, error }) => {
   let methodBreakup = [null];
@@ -20,53 +21,48 @@ export default ({ data, loading, error }) => {
   }
 
   return (
-    <div
-      class="col wrapper"
-      style={{
-        display: 'table-cell',
-        float: 'none',
-        height: '100%',
-        verticalAlign: 'top',
-        backgroundColor: '#e4eaec',
-        width: '280px',
-        borderRadius: '0 2px 2px 0',
-        padding: '30px',
-        color: '#58666e',
-      }}
-    >
-      <h4 class="font-thin">Transaction Types</h4>
-      {loading || error
-        ? <div
-            class={`text-thin ${loading ? 'h1' : 'text-danger'}`}
-            style={{
-              height: '280px',
-              textAlign: 'center',
-              lineHeight: '280px',
-            }}
-          >
-            {loading ? '...' : 'Error occurred in loading data'}
-          </div>
-        : methodBreakup.map((methodData, index) => {
-            return (
-              <div key={index}>
-                {methodData
-                  ? <div>
-                      <div class="text-center-folded">
-                        <span class="pull-right">{methodData.value}</span>
-                        <span>{titleCase(methodData.title)}</span>
-                      </div>
-                      <div class="progress-xs bg-white progress">
-                        <div
-                          class={'progress-bar progress-bar-' + methodData.bg}
-                          role="progressbar"
-                          style={{ width: methodData.value }}
-                        />
-                      </div>
+    <div class="Transaction__Types">
+      <div class="panel">
+        <div class="panel-body">
+          <h4 class="font-thin">Transaction Types</h4>
+          {
+            do {
+              if (loading) {
+                <div class="centered"><LoaderDots /></div>;
+              } else if (error) {
+                <div class="centered">
+                  <div class="text-danger">Error occurred in loading data!</div>
+                </div>;
+              } else {
+                methodBreakup.map((methodData, index) => {
+                  return (
+                    <div key={index}>
+                      {methodData
+                        ? <div>
+                            <div>
+                              <small class="pull-right">
+                                {methodData.value}
+                              </small>
+                              <small>{titleCase(methodData.title)}</small>
+                            </div>
+                            <div class="progress-xs progress">
+                              <div
+                                class={
+                                  'progress-bar progress-bar-' + methodData.bg
+                                }
+                                style={{ width: methodData.value }}
+                              />
+                            </div>
+                          </div>
+                        : 'No Data'}
                     </div>
-                  : 'No Data'}
-              </div>
-            );
-          })}
+                  );
+                });
+              }
+            }
+          }
+        </div>
+      </div>
     </div>
   );
 };
