@@ -1,5 +1,4 @@
 import { Component } from 'react';
-import Countdown from 'rzp/ui/Countdown';
 import ProgressBar from 'rzp/ui/ProgressBar';
 
 export default class IdleWarning extends Component {
