@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use Auth;
+use Input;
 use App\Api;
+use Response;
 use App\Merchant;
+use Carbon\Carbon;
+use App\Transaction;
 use App\MerchantDetails;
 use App\Http\AppResponse;
-use App\Transaction;
-use Input;
-use Response;
-use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
@@ -40,7 +40,7 @@ class TransactionController extends Controller
 
         $input = Input::all();
 
-        $input['merchant_id'] = Auth::user()->getCurrentMerchantId();
+        $input['merchant_id'] = Auth::user()->currentMerchant()->id;
 
         $data = (new Transaction\Service)->getAnalytics($input, $mode);
 
@@ -51,7 +51,7 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::user()->getCurrentMerchantId();
+        $merchant_id = Auth::user()->currentMerchant()->id;
 
         $data = (new Transaction\Service)->getAggregations($merchant_id, $mode);
 
@@ -62,7 +62,7 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $merchant_id = Auth::user()->getCurrentMerchantId();
+        $merchant_id = Auth::user()->currentMerchant()->id;
 
         $data = (new Transaction\Service)->getPaymentAggregations($merchant_id, $mode);
 
@@ -105,6 +105,7 @@ class TransactionController extends Controller
     public function getGenerateReport($mode)
     {
         $input = Input::all();
+
         $this->checkMode($mode);
 
         list($error, $file) = (new Api\Service)->generateReport($mode, $input);
@@ -120,6 +121,7 @@ class TransactionController extends Controller
     public function getResourceReport($mode, $resource)
     {
         $this->checkMode($mode);
+
         $input = Input::all();
 
         list($error, $response) = (new Api\Service)->generateResourceReport($mode, $resource, $input);
@@ -188,6 +190,7 @@ class TransactionController extends Controller
         $created_at = (new Transaction\Service)->getCreatedAtFromInputAndType($timestamp, $type);
 
         $merchantId = isset($input['merchant_id']) ? $input['merchant_id'] : null;
+
         $data = (new Transaction\Service)->getTimelyTransactionsForTheType($created_at, $mode, $type, $merchantId);
 
         list($error, $data) = (new Transaction\Service)->updateTypeAggregations($data, $created_at, $mode, $type);

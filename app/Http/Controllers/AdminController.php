@@ -1,22 +1,20 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Http\AppResponse;
-use App\Http\SlackResponse;
-
-use App\Admin;
-use App\Admin\Entity;
-use App\Merchant;
-
 use App;
 use Auth;
-use Input;
-use Config;
-use OAuthFacade;
-use Redirect;
-use Cache;
-use Session;
 use View;
+use Input;
+use Cache;
+use Config;
+use Session;
+use Redirect;
+use App\Admin;
+use OAuthFacade;
+use App\Merchant;
+use App\Admin\Entity;
+use App\Http\AppResponse;
+use App\Http\SlackResponse;
 
 class AdminController extends Controller
 {
@@ -254,8 +252,10 @@ class AdminController extends Controller
     {
         $error = (new Admin\Service)->loginUsingPrimaryOwner($id);
 
-        if(empty($error) === false)
+        if (empty($error) === false)
+        {
             return AppResponse::jsonResponse($error);
+        }
 
         return redirect('/');
     }
@@ -266,7 +266,6 @@ class AdminController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
-
 
     public function getMerchantTerminal($id)
     {
@@ -351,47 +350,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getPaymentRefunds($mode, $paymentId)
-    {
-        list($error, $data) = (new Admin\Service)->getPaymentRefunds($mode, $paymentId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getPaymentAnalytics($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Admin\Service)->getPaymentAnalytics($mode, $id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postRefundAuthorizedPayment($mode, $merchantId, $id)
-    {
-        list($error, $data) = (new Admin\Service)->refundAuthorizedPayment($mode, $merchantId, $id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postRefund($mode, $merchantId, $id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->refundPayment($mode, $merchantId, $id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postCapture($mode, $merchantId, $id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->capturePayment($mode, $merchantId, $id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getMultipleEntities($mode, $entity, $format = 'json')
     {
         $input = Input::all();
@@ -408,13 +366,6 @@ class AdminController extends Controller
         {
             return AppResponse::jsonResponse($error, $data);
         }
-    }
-
-    public function getEntityById($mode, $entity, $id)
-    {
-        list($error, $data) = (new Admin\Service)->fetchEntityById($mode, $entity, $id);
-
-        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getAdmins()
@@ -572,8 +523,7 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        list($error, $response) = (new Admin\Service)
-            ->tagMerchant($merchantId, $input);
+        list($error, $response) = (new Admin\Service)->tagMerchant($merchantId, $input);
 
         return AppResponse::jsonResponse($error, $response);
 
@@ -597,8 +547,7 @@ class AdminController extends Controller
 
     public function getMerchantTags($merchantId)
     {
-        list($error, $response) = (new Admin\Service)
-            ->getMerchantTags($merchantId);
+        list($error, $response) = (new Admin\Service)->getMerchantTags($merchantId);
 
         return AppResponse::jsonResponse($error, $response);
     }
@@ -717,13 +666,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $response) = (new Admin\Service)->uploadOrgLogo($orgId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function getScheduleList()
-    {
-        list($error, $response) = (new Admin\Service)->getScheduleList();
 
         return AppResponse::jsonResponse($error, $response);
     }

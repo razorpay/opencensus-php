@@ -57,8 +57,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/user/logout', 'UserController@getLogout');
 
         // This returns all the needed information
-        Route::get('/user', 'UserController@getUserDetails');
-        Route::get('/user/details', 'UserController@getUserDetails');
+        Route::get('/user', 'UserController@getUserDetailsV2'); //ePOS
+        Route::get('/user_old', 'UserController@getUserDetailsV1');
+        Route::get('/user/details', 'UserController@getUserDetailsV2');
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
         Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
 
@@ -145,7 +146,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
 
         // Registers a sub-merchant account
-        Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant')->name('submerchant_register');
+        Route::post('/submerchants', 'MerchantController@postRegisterSubMerchant')->name('submerchant_register');
         Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
 
     });
@@ -207,16 +208,6 @@ Route::group(['middleware' => ['web']], function () {
         // EMI Plan Routes
         Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
 
-        // Admin Payment Actions
-        Route::get('/admin/{mode}/payments/{id}/analytics', 'AdminController@getPaymentAnalytics');
-        Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
-
-        // More admin payment actions
-        // These use proxy auth so needs merchantId
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture')
-                ->name('admin_payment_capture');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Newsletter
@@ -236,8 +227,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
-        Route::get('admin/schedule/list', 'AdminController@getScheduleList');
-
         Route::group(['middleware'  =>  ['admin', 'superadmin', 'admin_access']], function()
         {
             // This is the RAW API route which processes api calls
@@ -252,13 +241,8 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
 
-        Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities')
-                ->name('admin_fetch_entity');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')
-                ->name('admin_fetch_entity');
-        // This is a very generic route and needs to be defined below
-        Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById')
                 ->name('admin_fetch_entity');
 
         // Upload logos for orgs

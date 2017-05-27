@@ -49,7 +49,7 @@ angular
             .success(function(data) {
               try {
                 dataLayer.push({
-                  merchant_id: data.data.merchants[0].pivot.merchant_id,
+                  merchant_id: data.data.merchants[0].id,
                 });
               } catch (e) {}
               _identity = data.data;
@@ -65,7 +65,8 @@ angular
                 // if any of the fields is missing, isPreSignupDone will be false
                 _isPreSignupDone =
                   _identity.pre_signup &&
-                  (_identity.created_at < 1488306600 || // pre-signup is only for signup on/after 01 March 2017
+                  (parseInt(_identity.activated) === 1 ||
+                  _identity.created_at < 1488306600 || // pre-signup is only for signup on/after 01 March 2017
                     !!Object.keys(_identity.pre_signup)
                       // get all values
                       .map(function(key) {
@@ -525,11 +526,11 @@ angular
           if (this.users) {
             return this.users;
           }
-
+          var deferred = $q.defer();
           var users = [];
+
           $http
             .get('/admin/generic', {
-              ignoreErrors: true,
               params: {
                 route_name: 'admin_get_multiple',
               },
@@ -541,13 +542,18 @@ angular
                     users.push(user);
                   });
                 }
+
+                deferred.resolve(users);
               } else {
-                users = {};
+                users = [];
               }
             })
-            .error(function() {});
+            .error(function(data) {
+              return data.errors;
+            });
+
           this.users = users;
-          return this.users;
+          return deferred.promise;
         },
       };
     },
@@ -955,6 +961,14 @@ angular
           return val instanceof Array;
         },
 
+        isIndexedArray: function(val) {
+          if (this.isArray(val) === false) {
+            return false;
+          }
+
+          return ['object', 'undefined'].indexOf(typeof val[0]) === -1;
+        },
+
         // rightmost obj gets preference for same keys
         concatObj: function() {
           var result = {};
@@ -969,9 +983,9 @@ angular
 
           return result;
         },
-
         isWorkflow: function(data) {
           if (
+            typeof data.id !== 'undefined' &&
             data.id.indexOf('w_action') === 0 &&
             typeof data.workflow_id !== 'undefined'
           ) {
@@ -988,14 +1002,27 @@ angular
               idParam: 'id',
               sign: '',
             },
-
+            credits: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
             role: {
               route: 'app.roles.edit',
               idParam: 'id',
               sign: 'role_',
             },
-
             methods: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            adjustment: {
+              route: 'app.merchants.detail',
+              idParam: 'id',
+              sign: '',
+            },
+            schedule_task: {
               route: 'app.merchants.detail',
               idParam: 'id',
               sign: '',
@@ -1010,6 +1037,44 @@ angular
 
             $state.go(entityDetails.route, params);
           }
+        },
+      };
+    },
+  ])
+  .factory('utilMapping', [
+    '$state',
+    function($state) {
+      // mapping used in multiple files
+      var map = {
+        networkMap: {
+          AMEX: 'American Express',
+          DICL: 'Diners Club',
+          DISC: 'Discover',
+          JCB: 'JCB',
+          MAES: 'Maestro',
+          MC: 'MasterCard',
+          RUPAY: 'RuPay',
+          VISA: 'Visa',
+          UNP: 'Union Pay',
+        },
+        methodMap: {
+          card: 'Card',
+          wallet: 'Wallet',
+          netbanking: 'Netbanking',
+          upi: 'UPI',
+          emi: 'EMI',
+        },
+        gatewayAcquirerMap: {
+          axis: 'Axis',
+          hdfc: 'HDFC',
+          amex: 'Amex',
+          icic: 'ICICI',
+        },
+      };
+
+      return {
+        getMap: function(key) {
+          return map[key];
         },
       };
     },

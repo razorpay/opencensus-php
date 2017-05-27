@@ -462,6 +462,7 @@ app
 
       $scope.data = action_data;
       $scope.isArray = utils.isArray;
+      $scope.isIndexedArray = utils.isIndexedArray;
       $scope.dataKeys = [];
 
       if ($scope.data && $scope.data.success) {

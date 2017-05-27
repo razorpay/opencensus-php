@@ -48,7 +48,7 @@ export default ({ invoice }) => {
           <div>
             <dt>Email Sent to</dt>
             <dd class="text-ellipsis">
-              {invoice.customer_details.customer_email}
+              {invoice.customer.email}
               <span
                 style={{ marginLeft: '10px' }}
                 class={`${notificationClassMap[invoice.email_status]}`}
@@ -62,7 +62,7 @@ export default ({ invoice }) => {
           <div>
             <dt>SMS Sent to</dt>
             <dd>
-              {invoice.customer_details.customer_contact}
+              {invoice.customer.contact}
               <span
                 style={{ marginLeft: '10px' }}
                 class={`${notificationClassMap[invoice.sms_status]}`}

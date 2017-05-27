@@ -85,6 +85,10 @@ return [
         // Create Schedule
         'schedule_create'                   => 'schedules',
         'schedule_assign'                   => 'merchants/{id}/schedules',
+        'schedule_fetch_multiple'           => 'schedules',
+
+        // Add Adjustment
+        'adj_add'                           => 'adjustments',
     ],
 
     // auth
@@ -269,8 +273,15 @@ return [
             'routeName' => 'balance_get'
         ],
 
-        // Add Adjustment
-        'adj_add'                           => 'adjustments',
+        // Admin Payment Actions
+        // Refund Authorized Payment
+        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
+        // Refund Payment
+        'payment_refund'                    => 'payments/{id}/refund',
+        // Capture Payment
+        'payment_capture'                   => 'payments/{id}/capture',
+        // View Payment Refunds
+        'payment_fetch_refunds'             => 'payments/{id}/refunds',
     ],
 
     // auth
@@ -342,8 +353,18 @@ return [
 
         'merchant_edit'                     => 'merchants/{id}',
 
+        // Entities
+        'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
+        'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
+        'admin_fetch_entity_multiple'       => 'admin/{type}',
+
         'merchant_action'                   => 'merchants/{id}/action',
         'merchant_live_enable'              => 'merchants/{id}/live/enable',
         'merchant_live_disable'             => 'merchants/{id}/live/disable',
+
+        // Gateway Rules
+        'gateway_create_rule'               => 'gateway/rules',
+        'gateway_update_rule'               => 'gateway/rules/{id}',
+        'gateway_delete_rule'               => 'gateway/rules/{id}',
     ],
 ];

@@ -221,7 +221,7 @@ app
             $scope.isLoggedIn = true;
             user.identity(true).then(function(data) {
               if (data.user.confirmed) {
-                $scope.goToDashboard(data.user.merchants[0].pivot.role);
+                $scope.goToDashboard(data.user.merchants[0].role);
               } else {
                 hideSpinner();
                 $state.transitionTo(
@@ -278,7 +278,7 @@ app
             user.identity(true).then(function(userDetails) {
               // user.authorize and then if email verified
               if (user.isVerified()) {
-                var role = userDetails.merchants[userDetails.id].pivot.role;
+                var role = userDetails.merchants[userDetails.id].role;
                 $scope.goToDashboard(role);
               } else {
                 goToVerification();
@@ -474,7 +474,7 @@ app
               );
             } else {
               var userDetails = user.getIdentity();
-              var role = userDetails.merchants[userDetails.id].pivot.role;
+              var role = userDetails.merchants[userDetails.id].role;
               $scope.goToDashboard(role);
             }
           }
@@ -573,7 +573,7 @@ app
               if (user.isVerified() && user.isPreSignupDone()) {
                 var role =
                   userDetails.merchants &&
-                  userDetails.merchants[userDetails.id].pivot.role;
+                  userDetails.merchants[userDetails.id].role;
                 $scope.goToDashboard(role);
               } else {
                 $scope.email_not_verified = false;

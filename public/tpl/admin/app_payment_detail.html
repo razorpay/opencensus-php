@@ -224,8 +224,8 @@
             Payment Analytics
           </div>
           <div collapse="isAnalyticsCollapsed" class="panel-body">
-            <div class="list-group-item" ng-repeat="(key,value) in entity.analytics">
-              <span class="pull-right" ng-class="displayClass(key, value)">
+            <div class="list-group-item clear" ng-repeat="(key,value) in entity.analytics">
+              <span class="pull-right" style="max-width: 300px;" ng-class="displayClass(key, value)">
                 {{displayValue(key, value)}}
               </span>
               {{key|titlecase}}

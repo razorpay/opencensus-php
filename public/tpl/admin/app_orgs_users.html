@@ -46,7 +46,7 @@
             <td ng-if="fields.indexOf('name') !== -1">{{row.name}}</td>
             <td ng-if="fields.indexOf('username') !== -1">{{row.username}}</td>
             <td ng-if="fields.indexOf('email') !== -1">{{row.email}}</td>
-            <td ng-if="fields.indexOf('roles') !== -1">
+            <td style="max-width: 200px;" ng-if="fields.indexOf('roles') !== -1">
               {{ roleFormatter(row.roles) }}
             </td>
             <td ng-if="fields.indexOf('employee_code') !== -1">

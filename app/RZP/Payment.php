@@ -11,13 +11,6 @@ class Payment extends \Razorpay\Api\Payment
         return $this->request('GET', $relativeUrl);
     }
 
-    public function refundAuthorized()
-    {
-        $relativeUrl = $this->getEntityUrl() . $this->id . '/authorize_refund';
-
-        return $this->request('POST', $relativeUrl);
-    }
-
     /**
      * Overridden here because we need to use App\RZP\Payment instead of
      * Razorpay\Api\Payment
