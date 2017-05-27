@@ -5,10 +5,12 @@ import { withRouter } from 'react-router';
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Slider from 'rzp/ui/Slider';
 import Notifications from 'rzp/ui/Notifications';
+import ReactIdle from 'rzp/ui/ReactIdle';
 import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
 import ActivationRequired from 'merchant/components/ActivationRequired';
+import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
@@ -88,6 +90,21 @@ export default class App extends Component {
     });
   };
 
+  lock = () => {
+    let email = this.props.user.contact_email;
+    return this.props.logout().then(() => {
+      location.hash = `/access/lockme/${email}`;
+      location.reload();
+    });
+  };
+
+  showIdleWarning = () => {
+    this.props.closeModal();
+    this.props.openModal({
+      component: <IdleWarningDialog countdown={15} />,
+    });
+  };
+
   render() {
     let { user, mode, modeFormatted } = this.props;
 
@@ -111,6 +128,13 @@ export default class App extends Component {
         {/* Creates Portal for the comp */}
         <ModalDialog />
         <Notifications />
+        <ReactIdle
+          idleDuration={15 * 60}
+          warningDuration={15}
+          onIdleStart={this.showIdleWarning}
+          onIdleEnd={this.props.closeModal}
+          onIdleTimeout={this.lock}
+        />
       </div>
     );
   }
