@@ -67,12 +67,6 @@ export default class HomeContainer extends Component {
               isLive={isLive}
             />
           </div>
-          <div>
-            <small class="text-muted">
-              Welcome to Razorpay.
-            </small>
-            {/*<a class='start-tour-link'>Start Tour</a>*/}
-          </div>
         </Header>
         <div
           style={{

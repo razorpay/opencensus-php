@@ -1,4 +1,5 @@
 import { Component } from 'react';
+
 export default class ReactIdle extends Component {
   events = 'mousemove keydown keypress mousewheel mousedown touchstart touchmove scroll';
   counter = 0;

@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { DateRangePicker } from 'react-dates';
 import moment from 'moment';
+import './DateRangePickerField.styl';
 
 export default class DateRangePickerField extends Component {
   state = {
@@ -67,8 +68,9 @@ export default class DateRangePickerField extends Component {
 
     return (
       <div
-        class={`datepicker-container ${this.state.focused ? 'datepicker--focused' : ''}`}
+        class={`daterangepicker-container ${this.state.focused ? 'datepicker--focused' : ''}`}
       >
+        <i class="icon icon-date-range" />
         <DateRangePicker
           startDate={this.state.from}
           endDate={this.state.to}

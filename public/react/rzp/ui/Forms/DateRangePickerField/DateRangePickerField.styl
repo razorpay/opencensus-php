@@ -1,0 +1,33 @@
+.daterangepicker-container {
+  position: relative;
+
+  .icon-date-range {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    z-index: 1;
+    font-size: 20px;
+    pointer-events: none;
+  }
+
+  .DateInput {
+    font-weight: 600;
+    width: 104px;
+  }
+
+  .DateRangePickerInput__arrow {
+    > svg {
+      display: none;
+    }
+
+    &::after {
+      content: 'to'
+      font-size: 13px;
+      color: #666;
+    }
+  }
+
+  .DateRangePickerInput >.DateInput:first-child .DateInput__display-text {
+    padding-left: 32px;
+  }
+}

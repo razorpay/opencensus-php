@@ -21,6 +21,15 @@ export default class Content extends Component {
   getBaseView = () => {
     return (
       <Switch location={this.baseLocation}>
+        <Route path="/dashboard" component={Home} />
+        <Route
+          path="/"
+          exact
+          render={() => {
+            return <Redirect to="/dashboard" />;
+          }}
+        />
+
         <Route path="/payments" component={Transactions} />
         <Route path="/refunds" component={Transactions} />
         <Route path="/orders" component={Transactions} />
@@ -72,13 +81,6 @@ export default class Content extends Component {
         <Route path="/config" component={Settings} />
         <Route path="/keys" component={Settings} />
         <Route path="/webhooks" component={Settings} />
-        <Route path="/dashboard" component={Home} />
-        <Route
-          path="/"
-          render={() => {
-            return <Redirect to="/dashboard" />;
-          }}
-        />
       </Switch>
     );
   };

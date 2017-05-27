@@ -231,7 +231,8 @@ body.ReactModal__Body--open {
   top: -11px !important;
 }
 
-.SingleDatePicker__picker {
+.SingleDatePicker__picker,
+.DateRangePicker__picker {
   top: 45px;
 }
 
@@ -243,7 +244,6 @@ body.ReactModal__Body--open {
   font-weight: inherit;
   font-size: 14px;
   padding: 0;
-  width: 100%;
 }
 
 .DateInput--disabled {
@@ -275,6 +275,30 @@ body.ReactModal__Body--open {
 
 .DateInput--with-caret::after {
   top: 35px;
+}
+
+.CalendarDay--after-hovered-start,
+.CalendarDay--hovered-span,
+.CalendarDay--selected-span {
+  background-color: #E9E6F8;
+  border-color: #CBCCE0;
+  color: #706E77;
+}
+
+.CalendarDay--selected-span.CalendarDay--hovered,
+.CalendarDay--selected-span:active {
+  background-color: #d2cdf0;
+  border-color: #CBCCE0;
+}
+
+.CalendarDay--selected,
+.CalendarDay--selected-end,
+.CalendarDay--selected-start,
+.CalendarDay--selected-end:active,
+.CalendarDay--selected-start:active,
+.CalendarDay--selected:active {
+  background-color: #6A5ACE;
+  border-color: #6A5ACE;
 }
 
 .DateRangePicker__picker--valid-date-hovered .CalendarMonth__day--selected-start,
