@@ -62,9 +62,11 @@ export default class HomeContainer extends Component {
           <div class="pull-right">
             <DateRangePickerField
               onDatesChange={params => {
-                this.props.fetchAnalytics(params);
+                this.props.fetchAnalytics({
+                  ...params,
+                  isLive,
+                });
               }}
-              isLive={isLive}
             />
           </div>
         </Header>

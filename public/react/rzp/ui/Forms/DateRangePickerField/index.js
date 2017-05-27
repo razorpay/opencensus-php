@@ -14,7 +14,6 @@ export default class DateRangePickerField extends Component {
     this.props.onDatesChange({
       from: this.state.from.unix(),
       to: this.state.to.unix(),
-      isLive: this.props.isLive,
     });
   }
 
@@ -34,7 +33,6 @@ export default class DateRangePickerField extends Component {
           this.props.onDatesChange({
             from: dates.startDate.unix(),
             to: dates.endDate.unix(),
-            isLive: this.props.isLive,
           });
         }
       }
