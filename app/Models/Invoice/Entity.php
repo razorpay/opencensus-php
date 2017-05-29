@@ -727,36 +727,6 @@ class Entity extends Base\PublicEntity
         return $lineItems;
     }
 
-    // TODO:
-    // Following two mutators method are here for backward compatibility.
-    // This can be removed post update queries(after code depl) have been run.
-
-    public function getTaxAmountAttribute($taxAmount): int
-    {
-        if (($taxAmount === null) and
-            ($this->getAmount() !== null))
-        {
-            return 0;
-        }
-        else
-        {
-            return (int) $taxAmount;
-        }
-    }
-
-    public function getGrossAmountAttribute($grossAmount): int
-    {
-        if (($grossAmount === null) and
-            ($this->getAmount() !== null))
-        {
-            return (int) $this->getAmount();
-        }
-        else
-        {
-            return (int) $grossAmount;
-        }
-    }
-
     protected function getPaymentIdAttribute()
     {
         $orderId = $this->getOrderId();

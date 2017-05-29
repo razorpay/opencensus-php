@@ -17,9 +17,6 @@ class Repository extends Base\Repository
      * at MySQL level but because we're using SoftDelets trait that doesn't
      * get triggered.
      *
-     * TODO: Couldn't find any better alternatives than what is being done below.
-     *       Please do suggest.
-     *
      * @param Entity $entity
      *
      */
