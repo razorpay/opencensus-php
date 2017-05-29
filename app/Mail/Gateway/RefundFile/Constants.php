@@ -13,6 +13,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_HDFC    => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
         Gateway::NETBANKING_ICICI   => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
         Gateway::NETBANKING_FEDERAL => ['settlements@razorpay.com'],
+        Gateway::NETBANKING_RBL     => ['settlements@razorpay.com'],
         Gateway::UPI_ICICI          => ['settlements@razorpay.com'],
         Gateway::WALLET_AIRTELMONEY => ['settlements@razorpay.com'],
         Gateway::WALLET_PAYUMONEY   => ['settlements@razorpay.com']
@@ -22,6 +23,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_HDFC    => 'Hdfc Netbanking refunds',
         Gateway::NETBANKING_ICICI   => 'Icici Netbanking refunds',
         Gateway::NETBANKING_FEDERAL => 'Federal Netbanking refunds',
+        Gateway::NETBANKING_RBL     => 'RBL Netbanking refunds',
         Gateway::UPI_ICICI          => 'UPI Icici Refunds',
         Gateway::WALLET_AIRTELMONEY => 'Wallet Airtelmoney refunds',
         Gateway::WALLET_PAYUMONEY   => 'Wallet Payumoney refunds'
@@ -33,13 +35,15 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_FEDERAL => 'Federal Netbanking refunds file for ',
         Gateway::UPI_ICICI          => 'UPI Icici refunds file for ',
         Gateway::WALLET_AIRTELMONEY => 'Airtelmoney refunds file for ',
-        Gateway::WALLET_PAYUMONEY   => 'PayUMoney refunds file for '
+        Gateway::WALLET_PAYUMONEY   => 'PayUMoney refunds file for ',
+        Gateway::NETBANKING_RBL     => 'RBL Netbanking refunds file for ',
     ];
 
     const MAILTAG_MAP = [
         Gateway::NETBANKING_HDFC    => MailTags::HDFC_NETBANKING_REFUNDS_MAIL,
         Gateway::NETBANKING_ICICI   => MailTags::ICICI_NETBANKING_REFUNDS_MAIL,
         Gateway::NETBANKING_FEDERAL => MailTags::FEDERAL_NETBANKING_REFUNDS_MAIL,
+        Gateway::NETBANKING_RBL     => MailTags::RBL_NETBANKING_REFUNDS_MAIL,
         Gateway::UPI_ICICI          => MailTags::ICICI_UPI_REFUNDS_MAIL,
         Gateway::WALLET_AIRTELMONEY => MailTags::AIRTEL_MONEY_REFUNDS_MAIL,
         Gateway::WALLET_PAYUMONEY   => MailTags::PAYU_MONEY_REFUNDS_MAIL,
@@ -49,6 +53,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_HDFC    => 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',
         Gateway::NETBANKING_ICICI   => 'Please forward the ICICI Netbanking refunds file to UBPS operations team',
         Gateway::NETBANKING_FEDERAL => 'Please find attached refunds information for Federal Netbanking',
+        Gateway::NETBANKING_RBL     => 'Please forward the RBL Netbanking refunds file to the operations team',
         Gateway::UPI_ICICI          => 'Please find attached refunds information for UPI',
         Gateway::WALLET_AIRTELMONEY => 'Please find attached refunds information for AirtelMoney',
         Gateway::WALLET_PAYUMONEY   => 'Please find attached refunds information for PayUMoney',

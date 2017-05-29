@@ -4,6 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
+    "hash": "0bee1c9e08bbf5faee8332608228d99e",
     "content-hash": "0602186600030574d23c37180325c153",
     "packages": [
         {
@@ -4348,11 +4349,7 @@
                 "laravel",
                 "slack"
             ],
-<<<<<<< HEAD
-            "time": "2017-03-10 06:17:18"
-=======
             "time": "2017-05-26T12:04:11+00:00"
->>>>>>> 48fbbff858b9194ce8d34f71c4b4999a10a9f137
         },
         {
             "name": "razorpay/slack-laravel",
@@ -4397,11 +4394,7 @@
                 "laravel",
                 "slack"
             ],
-<<<<<<< HEAD
-            "time": "2017-03-13 10:46:45"
-=======
             "time": "2017-05-26T12:28:12+00:00"
->>>>>>> 48fbbff858b9194ce8d34f71c4b4999a10a9f137
         },
         {
             "name": "razorpay/spine",
