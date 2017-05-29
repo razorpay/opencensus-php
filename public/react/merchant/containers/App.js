@@ -25,6 +25,7 @@ import { applyTheme } from 'rzp/themes';
 export default class App extends Component {
   state = {
     isLoading: true,
+    showMobileNav: false,
   };
 
   componentWillMount() {
@@ -156,6 +157,12 @@ export default class App extends Component {
     });
   };
 
+  toggleMobileNav = () => {
+    this.setState({
+      showMobileNav: !this.state.showMobileNav,
+    });
+  };
+
   render() {
     let { user, mode, modeFormatted } = this.props;
 
@@ -172,6 +179,8 @@ export default class App extends Component {
           onSwitchMode={this.switchMode}
           onSwitchMerchant={this.switchMerchant}
           onLogout={this.logout}
+          toggleMobileNav={this.toggleMobileNav}
+          showMobileNav={this.state.showMobileNav}
         />
         <Sidebar user={user} />
         <Content />

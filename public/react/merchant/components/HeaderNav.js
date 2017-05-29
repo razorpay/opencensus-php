@@ -88,11 +88,28 @@ export default ({
   onSwitchMode,
   onSwitchMerchant,
   onLogout,
+  toggleMobileNav,
+  showMobileNav,
 }) => {
   return (
     <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container-fluid">
-        <div class="collapse navbar-collapse">
+        <div class="navbar-header">
+          <button
+            type="button"
+            class="navbar-toggle"
+            data-toggle="collapse"
+            onClick={toggleMobileNav}
+          >
+            <span class="icon-bar" />
+            <span class="icon-bar" />
+            <span class="icon-bar" />
+          </button>
+        </div>
+        <div
+          class={`${showMobileNav ? '' : 'collapse '}navbar-collapse`}
+          id="headerNav"
+        >
           <ul class="nav navbar-nav navbar-right">
             <li><a data-tip="Merchant ID" data-place="bottom">{user.id}</a></li>
             <li>
