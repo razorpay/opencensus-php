@@ -24,9 +24,9 @@ class UserController extends Controller
         return view('merchant.tmpgetIndex', [ 'isAuthenticated' =>  $user ]);
     }
 
-    public function getIndexNew()
+    public function getIndexOld()
     {
-        return view('merchant.tmpgetIndexNew');
+        return view('merchant.tmpgetIndexOld');
     }
 
     /**

@@ -1,0 +1,16 @@
+@include('partials/head')
+
+<link rel='shortcut icon' href='{{asset('img/logo.png')}}'>
+<link rel='stylesheet' href='https://dashboard.razorpay.com/css/generated/style-05c302509c.css' type='text/css' />
+
+@include('partials/common')
+
+<script src='https://dashboard.razorpay.com/js/generated/pre-901aa525aa.js'></script>
+<script src='https://dashboard.razorpay.com/js/generated/merchant-659dc9c06c.js'></script>
+
+<!-- supportkiy code -->
+@if(env('APP_ENV') !== 'testing')
+   @include('partials/supportkit')
+@endif
+
+@include('partials/footer')

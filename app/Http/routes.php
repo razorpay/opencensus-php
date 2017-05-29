@@ -12,7 +12,7 @@
 
 Route::group(['middleware' => ['web']], function () {
     Route::get('/', 'UserController@getIndex')->name('dashboard');
-    Route::get('/new', 'UserController@getIndexNew')->name('dashboard_new');
+    Route::get('/old', 'UserController@getIndexOld')->name('dashboard_old');
     Route::get('/admin', 'AdminController@getIndex');
 
     // This is for enabling CORS support on contact form submissions

@@ -35,7 +35,7 @@ export default class App extends Component {
     }
     Promise.all([
       this.props.fetchUser().then(({ data }) => {
-        let role = data.merchants[data.current].pivot.role;
+        let role = data.merchants[data.current].role;
 
         if (!currentMode) {
           currentMode = parseInt(data.activated) === 1 ? 'live' : 'test';
@@ -59,8 +59,7 @@ export default class App extends Component {
   }
 
   initSmooch(data) {
-    debugger;
-    let role = data.merchants[data.current].pivot.role;
+    let role = data.merchants[data.current].role;
     if (window.smoochScript) {
       smoochScript.then(function() {
         var sk_user = function() {
@@ -154,7 +153,7 @@ export default class App extends Component {
     }
 
     return (
-      <div id="react-root" class={`react-root layout ${this.orgCode}`}>
+      <div class={`layout ${this.orgCode}`}>
         <HeaderNav
           user={user}
           mode={mode}
