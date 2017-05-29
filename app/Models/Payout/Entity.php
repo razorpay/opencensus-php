@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const RETURN_UTR             = 'return_utr';
     const REMARKS                = 'remarks';
     const PROCESSED_AT           = 'processed_at';
+    const PROCESSED_ON           = 'processed_on';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -81,7 +82,7 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::FAILURE_REASON,
         self::REMARKS,
-        self::PROCESSED_AT,
+        self::PROCESSED_ON,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -99,7 +100,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::STATUS,
         self::UTR,
-        self::PROCESSED_AT,
+        self::PROCESSED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -109,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::DESTINATION,
         self::CUSTOMER_ID,
+        self::PROCESSED_ON,
     ];
 
     protected $defaults = [
@@ -311,15 +313,20 @@ class Entity extends Base\PublicEntity
         $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
     }
 
-    public function getPricingFeatures()
-    {
-        return [];
-    }
-
-    protected function getProcessedAtAttribute()
+    protected function setPublicProcessedOnAttribute(array &$array)
     {
         $processedAt = $this->attributes[self::PROCESSED_AT];
 
-        return date('d/m/y', $processedAt);
+        $array[self::PROCESSED_ON] = null;
+
+        if ($processedAt !== null)
+        {
+            $array[self::PROCESSED_ON] = date('d/m/y', $processedAt);
+        }
+    }
+
+    public function getPricingFeatures()
+    {
+        return [];
     }
 }

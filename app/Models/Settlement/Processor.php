@@ -127,7 +127,7 @@ class Processor extends Base\Core
 
             $setlIds = $this->input['settlement_ids'];
 
-            Entity::verifyIdAndStripSignMultiple($setlIds);
+            Entity::verifyIdAndSilentlyStripSignMultiple($setlIds);
 
             $channels = $this->getArrayedChannels();
 

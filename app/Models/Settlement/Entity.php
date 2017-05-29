@@ -59,9 +59,9 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CHANNEL,
         self::UTR,
+        self::PROCESSED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::PROCESSED_ON,
     ];
 
     protected $public = [
