@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Tax\Group\Entity;
+use RZP\Models\Item;
 
 class CreateTaxGroups extends Migration
 {
@@ -39,7 +40,17 @@ class CreateTaxGroups extends Migration
             $table->foreign(Entity::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
-                  ->on_delete('restrict');
+                  ->onDelete('restrict');
+        });
+
+        // This needs to be done here because migrations are run in order of
+        // timestamps and tax_groups table gets created after items.
+        Schema::table(Table::ITEM, function(Blueprint $table)
+        {
+            $table->foreign(Item\Entity::TAX_GROUP_ID)
+                  ->references(Entity::ID)
+                  ->on(Table::TAX_GROUP)
+                  ->onDelete('set null');
         });
     }
 
@@ -55,6 +66,14 @@ class CreateTaxGroups extends Migration
             $table->dropForeign
             (
                 Table::TAX_GROUP . '_' . Entity::MERCHANT_ID . '_foreign'
+            );
+        });
+
+        Schema::table(Table::ITEM, function($table)
+        {
+            $table->dropForeign
+            (
+                Table::ITEM . '_' . Item\Entity::TAX_GROUP_ID . '_foreign'
             );
         });
 

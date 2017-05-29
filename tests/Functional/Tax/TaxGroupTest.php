@@ -17,7 +17,7 @@ class TaxGroupTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
 
         $this->seed('TaxGroupAndTaxSeeder');
     }
@@ -50,5 +50,18 @@ class TaxGroupTest extends TestCase
     public function testDeleteTaxGroup()
     {
         $this->startTest();
+    }
+
+    public function testDeleteTaxGroupAndCacadeNullInItem()
+    {
+        $this->fixtures->create('item', ['tax_group_id' => '00000000000001']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testDeleteTaxGroup'];
+
+        $this->startTest();
+
+        $item = $this->getLastEntity('item', true);;
+
+        $this->assertNull($item['tax_group_id']);
     }
 }
