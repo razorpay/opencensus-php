@@ -19,7 +19,6 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   componentWillMount() {
-    debugger;
     let id = this.props.id || this.props.match.params.id;
     this.props.fetchPayment(id);
   }
