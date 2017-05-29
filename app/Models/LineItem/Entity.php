@@ -22,7 +22,8 @@ class Entity extends Base\PublicEntity
     const NAME             = 'name';
     const DESCRIPTION      = 'description';
     const AMOUNT           = 'amount';
-    const TOTAL_AMOUNT     = 'total_amount';
+    const UNIT_AMOUNT      = 'unit_amount';
+    const GROSS_AMOUNT     = 'gross_amount';
     const TAX_AMOUNT       = 'tax_amount';
     const NET_AMOUNT       = 'net_amount';
     const CURRENCY         = 'currency';
@@ -72,7 +73,8 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
-        self::TOTAL_AMOUNT,
+        self::UNIT_AMOUNT,
+        self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
         self::NET_AMOUNT,
         self::CURRENCY,
@@ -92,14 +94,15 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
-        // self::TOTAL_AMOUNT,
-        // self::TAX_AMOUNT,
-        // self::NET_AMOUNT,
+        self::UNIT_AMOUNT,
+        self::GROSS_AMOUNT,
+        self::TAX_AMOUNT,
+        self::NET_AMOUNT,
         self::CURRENCY,
-        // self::TAX_INCLUSIVE,
-        // self::UNIT,
+        self::TAX_INCLUSIVE,
+        self::UNIT,
         self::QUANTITY,
-        // self::TAXES,
+        self::TAXES,
     ];
 
     protected $fillable = [
@@ -114,7 +117,8 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT        => 'int',
-        self::TOTAL_AMOUNT  => 'int',
+        self::UNIT_AMOUNT   => 'int',
+        self::GROSS_AMOUNT  => 'int',
         self::TAX_AMOUNT    => 'int',
         self::NET_AMOUNT    => 'int',
         self::TAX_INCLUSIVE => 'bool',
@@ -128,6 +132,10 @@ class Entity extends Base\PublicEntity
         self::REF_ID,
     ];
 
+    protected $appends = [
+        self::UNIT_AMOUNT,
+    ];
+
     //
     // Fields which can be populated from item template, if item_id is provided
     // in input.
@@ -137,10 +145,10 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
-        // self::UNIT,
-        // self::TAX_INCLUSIVE,
-        // self::TAX_ID,
-        // self::TAX_GROUP_ID,
+        self::UNIT,
+        self::TAX_INCLUSIVE,
+        self::TAX_ID,
+        self::TAX_GROUP_ID,
     ];
 
     // -------------------------- Getters ----------------------------
@@ -150,9 +158,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getTotalAmount()
+    public function getGrossAmount()
     {
-        return $this->getAttribute(self::TOTAL_AMOUNT);
+        return $this->getAttribute(self::GROSS_AMOUNT);
     }
 
     public function getTaxAmount()
@@ -184,9 +192,9 @@ class Entity extends Base\PublicEntity
 
     // Setters
 
-    public function setTotalAmount(int $totalAmount)
+    public function setGrossAmount(int $grossAmount)
     {
-        $this->setAttribute(self::TOTAL_AMOUNT, $totalAmount);
+        $this->setAttribute(self::GROSS_AMOUNT, $grossAmount);
     }
 
     public function setTaxAmount(int $taxAmount)
@@ -228,15 +236,15 @@ class Entity extends Base\PublicEntity
     // Following three mutators method are here for backward compatibility.
     // This can be removed post update queries(after code depl) have been run.
 
-    public function getTotalAmountAttribute($totalAmount): int
+    public function getGrossAmountAttribute($grossAmount): int
     {
-        if ($totalAmount === null)
+        if ($grossAmount === null)
         {
             return (int) ($this->getAmount() * $this->getQuantity());
         }
         else
         {
-            return (int) $totalAmount;
+            return (int) $grossAmount;
         }
     }
 
@@ -256,12 +264,17 @@ class Entity extends Base\PublicEntity
     {
         if ($netAmount === null)
         {
-            return (int) $this->getTotalAmount();
+            return (int) $this->getGrossAmount();
         }
         else
         {
             return (int) $netAmount;
         }
+    }
+
+    public function getUnitAmountAttribute(): int
+    {
+        return (int) $this->getAmount();
     }
 
     // -------------------- Relations --------------------------------

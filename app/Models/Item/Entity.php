@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const NAME                  = 'name';
     const DESCRIPTION           = 'description';
     const AMOUNT                = 'amount';
+    const UNIT_AMOUNT           = 'unit_amount';
     const CURRENCY              = 'currency';
     const TYPE                  = 'type';
 
@@ -71,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
+        self::UNIT_AMOUNT,
         self::CURRENCY,
         self::TYPE,
         self::UNIT,
@@ -88,12 +90,13 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,
+        self::UNIT_AMOUNT,
         self::CURRENCY,
         self::TYPE,
-        // self::UNIT,
-        // self::TAX_INCLUSIVE,
-        // self::TAX_ID,
-        // self::TAX_GROUP_ID,
+        self::UNIT,
+        self::TAX_INCLUSIVE,
+        self::TAX_ID,
+        self::TAX_GROUP_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -109,9 +112,14 @@ class Entity extends Base\PublicEntity
         self::TAX_INCLUSIVE,
     ];
 
+    protected $appends = [
+        self::UNIT_AMOUNT,
+    ];
+
     protected $casts = [
         self::ACTIVE        => 'bool',
         self::AMOUNT        => 'int',
+        self::UNIT_AMOUNT   => 'int',
         self::TAX_INCLUSIVE => 'bool',
     ];
 
@@ -195,6 +203,13 @@ class Entity extends Base\PublicEntity
         $taxGroupId = $this->getAttribute(self::TAX_GROUP_ID);
 
         $output[self::TAX_GROUP_ID] = Tax\Group\Entity::getSignedIdOrNull($taxGroupId);
+    }
+
+    // Appends
+
+    public function getUnitAmountAttribute(): int
+    {
+        return (int) $this->getAmount();
     }
 
     // -------------------- Relations --------------------------------

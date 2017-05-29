@@ -24,6 +24,8 @@ class Core extends Base\Core
             ]
         );
 
+        $this->modifyInputToHandleRenamedAttributes($input);
+
         $lineItem = (new Entity)->generateId();
 
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
@@ -98,6 +100,8 @@ class Core extends Base\Core
                 'entity_id' => $morphEntity->getId(),
                 'input'     => $input,
             ]);
+
+        $this->modifyInputToHandleRenamedAttributes($input);
 
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
@@ -323,11 +327,11 @@ class Core extends Base\Core
      */
     protected function calculateAndSetAmountsOfLineItem(Entity $lineItem)
     {
-        // Total amount = Quantity * Unit amount
+        // Gross amount = Quantity * Unit amount
 
-        $totalAmount = $lineItem->getAmount() * $lineItem->getQuantity();
+        $grossAmount = $lineItem->getAmount() * $lineItem->getQuantity();
 
-        $lineItem->setTotalAmount($totalAmount);
+        $lineItem->setGrossAmount($grossAmount);
 
         // Tax amount = ∑(lineItem.taxes.tax_amount)
 
@@ -340,10 +344,10 @@ class Core extends Base\Core
 
         $lineItem->setTaxAmount($taxAmount);
 
-        // Net amount = Total amount, if tax inclusive
-        //            = Total amount + Tax amount, if not tax inclusive
+        // Net amount = Gross amount, if tax inclusive
+        //            = Gross amount + Tax amount, if not tax inclusive
 
-        $netAmount = $lineItem->getTotalAmount();
+        $netAmount = $lineItem->getGrossAmount();
 
         if ($lineItem->isTaxInclusive() === false)
         {
@@ -351,5 +355,20 @@ class Core extends Base\Core
         }
 
         $lineItem->setNetAmount($netAmount);
+    }
+
+    /**
+     * Modifies input param to handle renamed attributes in response.
+     *
+     * @param array $input
+     */
+    protected function modifyInputToHandleRenamedAttributes(array & $input)
+    {
+        if (array_key_exists(Entity::UNIT_AMOUNT, $input) === true)
+        {
+            $input[Entity::AMOUNT] = $input[Entity::UNIT_AMOUNT];
+
+            unset($input[Entity::UNIT_AMOUNT]);
+        }
     }
 }

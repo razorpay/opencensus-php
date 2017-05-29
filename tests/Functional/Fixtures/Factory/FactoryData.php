@@ -352,7 +352,7 @@ final class FactoryData
             'amount'       => 100000,
             'currency'     => 'INR',
             'quantity'     => 1,
-            'total_amount' => 100000,
+            'gross_amount' => 100000,
             'tax_amount'   => 0,
             'net_amount'   => 100000,
         ]);

@@ -379,15 +379,15 @@ UPDATE cybersource set authorizationCode='T38678' where id=28984;
 
 # Post deployment of #3125
 
-# For all old entries (net_amount would be null), set tax_amount to 0 and net_amount = amount.
+# For all old entries (gross_amount would be null), set tax_amount to 0 and gross_amount = amount.
 UPDATE invoices SET
     tax_amount = 0,
-    net_amount = amount
-WHERE net_amount IS NULL AND amount IS NOT NULL;
+    gross_amount = amount
+WHERE gross_amount IS NULL AND amount IS NOT NULL;
 
-# For all old entries (total_amount would be null), set total_amount, tax_amount and net_amount.
+# For all old entries (gross_amount would be null), set gross_amount, tax_amount and net_amount.
 UPDATE line_items SET
-    total_amount = amount * quantity,
+    gross_amount = amount * quantity,
     tax_amount = 0,
-    net_amount = total_amount
-WHERE total_amount IS NULL;
+    net_amount = gross_amount
+WHERE gross_amount IS NULL;

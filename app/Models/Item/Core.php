@@ -21,6 +21,8 @@ class Core extends Base\Core
             $input
         );
 
+        $this->modifyInputToHandleRenamedAttributes($input);
+
         $item = (new Entity)->build($input);
 
         $item->merchant()->associate($merchant);
@@ -40,6 +42,8 @@ class Core extends Base\Core
                 'item_id' => $item->getId(),
                 'input'   => $input,
             ]);
+
+        $this->modifyInputToHandleRenamedAttributes($input);
 
         $item->edit($input);
 
@@ -137,6 +141,21 @@ class Core extends Base\Core
 
                 $item->taxGroup()->associate($taxGroup);
             }
+        }
+    }
+
+    /**
+     * Modifies input param to handle renamed attributes in response.
+     *
+     * @param array $input
+     */
+    protected function modifyInputToHandleRenamedAttributes(array & $input)
+    {
+        if (array_key_exists(Entity::UNIT_AMOUNT, $input) === true)
+        {
+            $input[Entity::AMOUNT] = $input[Entity::UNIT_AMOUNT];
+
+            unset($input[Entity::UNIT_AMOUNT]);
         }
     }
 }

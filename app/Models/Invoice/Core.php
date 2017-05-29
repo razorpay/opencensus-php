@@ -58,6 +58,8 @@ class Core extends Base\Core
             $input
         );
 
+        $this->modifyInputToHandleRenamedAttributes($input);
+
         $invoice = (new Generator($merchant))->setSubscription($subscription)->generate($input);
 
         $this->trace->info(
@@ -84,6 +86,8 @@ class Core extends Base\Core
                 'invoice_status' => $invoice->getStatus(),
                 'input'          => $input,
             ]);
+
+        $this->modifyInputToHandleRenamedAttributes($input);
 
         $status = $invoice->getStatus();
 
@@ -611,7 +615,7 @@ class Core extends Base\Core
         if (($invoice->isTypeInvoice() === false) and ($invoice->getAmount() !== null))
         {
             $invoice->setTaxAmount(0);
-            $invoice->setNetAmount($invoice->getAmount());
+            $invoice->setGrossAmount($invoice->getAmount());
 
             return;
         }
@@ -629,24 +633,24 @@ class Core extends Base\Core
         }
 
         // Invoice's:
-        // Amount = ∑(line_items.total_amount)
+        // Gross amount = ∑(line_items.gross_amount)
         // Tax amount = ∑(line_items.tax_amount)
-        // Net amount = ∑(line_items.net_amount)
+        // Amount = ∑(line_items.net_amount)
 
-        $amount = $taxAmount = $netAmount = 0;
+        $grossAmount = $taxAmount = $amount = 0;
 
         foreach ($lineItems as $lineItem)
         {
-            $amount    += $lineItem->getTotalAmount();
-            $taxAmount += $lineItem->getTaxAmount();
-            $netAmount += $lineItem->getNetAmount();
+            $grossAmount += $lineItem->getGrossAmount();
+            $taxAmount   += $lineItem->getTaxAmount();
+            $amount      += $lineItem->getNetAmount();
         }
 
-        $invoice->setAmount($amount);
+        $invoice->setGrossAmount($grossAmount);
         $invoice->setTaxAmount($taxAmount);
-        $invoice->setNetAmount($netAmount);
+        $invoice->setAmount($amount);
 
-        $invoice->getValidator()->validateMaxAllowedAmount($amount);
+        $invoice->getValidator()->validateMaxAllowedAmount($grossAmount);
     }
 
     // -------------------- Protected methods --------------------
@@ -747,6 +751,21 @@ class Core extends Base\Core
                 ]);
 
             $this->generatePdfWithRetry($id, $attempt);
+        }
+    }
+
+    /**
+     * Modifies input param to handle renamed attributes in response.
+     *
+     * @param array $input
+     */
+    protected function modifyInputToHandleRenamedAttributes(array & $input)
+    {
+        if (array_key_exists(Entity::INVOICE_NUMBER, $input) === true)
+        {
+            $input[Entity::RECEIPT] = $input[Entity::INVOICE_NUMBER];
+
+            unset($input[Entity::INVOICE_NUMBER]);
         }
     }
 }

@@ -49,7 +49,7 @@ class InvoiceTaxesTest extends TestCase
 
         $order = $this->getLastEntity('order');
 
-        $this->assertEquals($order['amount'], $response['net_amount']);
+        $this->assertEquals($order['amount'], $response['amount']);
     }
 
     /**

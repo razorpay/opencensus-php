@@ -26,13 +26,14 @@ class Entity extends Base\PublicEntity
 
     const ORDER_ID                 = 'order_id';
     const RECEIPT                  = 'receipt';
+    const INVOICE_NUMBER           = 'invoice_number';
     const MERCHANT_ID              = 'merchant_id';
     const SUBSCRIPTION_ID          = 'subscription_id';
     const CUSTOMER_ID              = 'customer_id';
     const CUSTOMER_NAME            = 'customer_name';
     const CUSTOMER_EMAIL           = 'customer_email';
-    const CUSTOMER_BILLING_ADDR_ID = 'customer_billing_addr_id';
     const CUSTOMER_CONTACT         = 'customer_contact';
+    const CUSTOMER_BILLING_ADDR_ID = 'customer_billing_addr_id';
     const STATUS                   = 'status';
     const SUBSCRIPTION_STATUS      = 'subscription_status';
     const DATE                     = 'date';
@@ -51,9 +52,9 @@ class Entity extends Base\PublicEntity
     const COMMENT                  = 'comment';
     const SHORT_URL                = 'short_url';
     const VIEW_LESS                = 'view_less';
-    const AMOUNT                   = 'amount';
+    const GROSS_AMOUNT             = 'gross_amount';
     const TAX_AMOUNT               = 'tax_amount';
-    const NET_AMOUNT               = 'net_amount';
+    const AMOUNT                   = 'amount';
     const CURRENCY                 = 'currency';
     const USER_ID                  = 'user_id';
     const SOURCE                   = 'source';
@@ -82,8 +83,6 @@ class Entity extends Base\PublicEntity
     // ------------------------- Output Keys -------------------------
 
     const CUSTOMER_DETAILS         = 'customer_details';
-    const CUSTOMER_ADDRESS         = 'customer_address';
-    const CUSTOMER_BILLING_ADDRESS = 'customer_billing_address';
     const PAYMENT_ID               = 'payment_id';
 
     // ------------------------ Output Keys End ----------------------
@@ -123,8 +122,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        // This is null by default because we don't create an order
-        // when the invoice is being generated in a draft state.
         self::ORDER_ID                 => null,
         self::STATUS                   => Status::ISSUED,
         self::SUBSCRIPTION_STATUS      => null,
@@ -142,9 +139,9 @@ class Entity extends Base\PublicEntity
         self::VIEW_LESS                => 1,
         self::TYPE                     => Type::INVOICE,
         self::USER_ID                  => null,
-        self::AMOUNT                   => null,
+        self::GROSS_AMOUNT             => null,
         self::TAX_AMOUNT               => null,
-        self::NET_AMOUNT               => null,
+        self::AMOUNT                   => null,
         self::CURRENCY                 => 'INR',
         self::BILLING_START            => null,
         self::BILLING_END              => null,
@@ -188,10 +185,10 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::PUBLIC_ID,
         self::RECEIPT,
+        self::INVOICE_NUMBER,
         self::STATUS,
         self::SUBSCRIPTION_STATUS,
         self::CUSTOMER_ID,
-        self::CUSTOMER,
         self::MERCHANT_ID,
         self::SUBSCRIPTION_ID,
         self::ORDER_ID,
@@ -222,8 +219,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::BILLING_START,
         self::BILLING_END,
+        self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
-        self::NET_AMOUNT,
         self::USER_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -234,8 +231,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::RECEIPT,
+        self::INVOICE_NUMBER,
         self::CUSTOMER_ID,
-        self::CUSTOMER,
         self::CUSTOMER_DETAILS,
         self::ORDER_ID,
         self::SUBSCRIPTION_ID,
@@ -251,9 +248,9 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::DATE,
         self::TERMS,
+        self::GROSS_AMOUNT,
+        self::TAX_AMOUNT,
         self::AMOUNT,
-        // self::TAX_AMOUNT,
-        // self::NET_AMOUNT,
         self::CURRENCY,
         self::DESCRIPTION,
         self::NOTES,
@@ -263,7 +260,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_START,
         self::BILLING_END,
         self::TYPE,
-        // self::GROUP_TAXES_DISCOUNTS,
+        self::GROUP_TAXES_DISCOUNTS,
         self::USER_ID,
         self::CREATED_AT,
     ];
@@ -274,22 +271,22 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_DETAILS,
         self::LINE_ITEMS,
         self::PAYMENT_ID,
+        self::INVOICE_NUMBER,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
-        self::CUSTOMER,
         self::ORDER_ID,
         self::SUBSCRIPTION_ID,
     ];
 
     protected $casts = [
         self::VIEW_LESS             => 'bool',
-        self::AMOUNT                => 'int',
+        self::GROSS_AMOUNT          => 'int',
         self::TAX_AMOUNT            => 'int',
-        self::NET_AMOUNT            => 'int',
+        self::AMOUNT                => 'int',
         self::DATE                  => 'int',
         self::EXPIRE_BY             => 'int',
         self::EXPIRED_AT            => 'int',
@@ -354,14 +351,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function getGrossAmount()
+    {
+        return $this->getAttribute(self::GROSS_AMOUNT);
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getNetAmount()
-    {
-        return $this->getAttribute(self::NET_AMOUNT);
     }
 
     public function getCurrency()
@@ -638,11 +635,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SHORT_URL, $shortUrl);
     }
 
-    public function setAmount(int $amount)
-    {
-        $this->setAttribute(self::AMOUNT, $amount);
-    }
-
     public function setBillingStart(int $billingStart)
     {
         $this->setAttribute(self::BILLING_START, $billingStart);
@@ -653,14 +645,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BILLING_END, $billingEnd);
     }
 
+    public function setGrossAmount(int $amount)
+    {
+        $this->setAttribute(self::GROSS_AMOUNT, $amount);
+    }
+
     public function setTaxAmount(int $amount)
     {
         $this->setAttribute(self::TAX_AMOUNT, $amount);
     }
 
-    public function setNetAmount(int $amount)
+    public function setAmount(int $amount)
     {
-        $this->setAttribute(self::NET_AMOUNT, $amount);
+        $this->setAttribute(self::AMOUNT, $amount);
     }
 
     /**
@@ -672,9 +669,9 @@ class Entity extends Base\PublicEntity
      */
     public function setAmountsToNull()
     {
-        $this->setAttribute(self::AMOUNT, null);
+        $this->setAttribute(self::GROSS_AMOUNT, null);
         $this->setAttribute(self::TAX_AMOUNT, null);
-        $this->setAttribute(self::NET_AMOUNT, null);
+        $this->setAttribute(self::AMOUNT, null);
     }
 
     /**
@@ -702,18 +699,37 @@ class Entity extends Base\PublicEntity
     // -------------------------------------- Accessors --------------
 
     /**
-     * @deprecated Replaced with setPublicCustomerAttribute method.
+     * Gets customer_details attribute of invoice entity.
+     *
+     * Invoice has association with customer and customer_billing_addr_id. A
+     * customer's detail and it's primary billing address can be edited anytime.
+     * We keep customer's basic attribute in invoice entity as a snapshot. This
+     * attribute returns those.
      *
      * @return array
      */
     protected function getCustomerDetailsAttribute(): array
     {
-        return [
+        $customerDetails = [
+            Customer\Entity::NAME            => $this->getAttribute(self::CUSTOMER_NAME),
+            Customer\Entity::EMAIL           => $this->getAttribute(self::CUSTOMER_EMAIL),
+            Customer\Entity::CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
+            Customer\Entity::BILLING_ADDRESS => null,
+
+            // For backward compatibility.
             self::CUSTOMER_NAME    => $this->getAttribute(self::CUSTOMER_NAME),
             self::CUSTOMER_EMAIL   => $this->getAttribute(self::CUSTOMER_EMAIL),
             self::CUSTOMER_CONTACT => $this->getAttribute(self::CUSTOMER_CONTACT),
-            self::CUSTOMER_ADDRESS => null,
         ];
+
+        if ($this->hasCustomerBillingAddress() === true)
+        {
+            $billingAddress = $this->customerBillingAddress->toArrayPublic();
+
+            $customerDetails[Customer\Entity::BILLING_ADDRESS] = $billingAddress;
+        }
+
+        return $customerDetails;
     }
 
     /**
@@ -747,16 +763,16 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getNetAmountAttribute($netAmount): int
+    public function getGrossAmountAttribute($grossAmount): int
     {
-        if (($netAmount === null) and
+        if (($grossAmount === null) and
             ($this->getAmount() !== null))
         {
             return (int) $this->getAmount();
         }
         else
         {
-            return (int) $netAmount;
+            return (int) $grossAmount;
         }
     }
 
@@ -785,6 +801,11 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    public function getInvoiceNumberAttribute()
+    {
+        return $this->getAttribute(self::RECEIPT);
+    }
+
     // -------------------------------------- End Accessors ----------
 
     // -------------------------------------- Public Setters ---------
@@ -794,22 +815,6 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
-    }
-
-    protected function setPublicCustomerAttribute(array & $array)
-    {
-        $array[self::CUSTOMER] = [
-            Customer\Entity::NAME    => $this->getAttribute(self::CUSTOMER_NAME),
-            Customer\Entity::EMAIL   => $this->getAttribute(self::CUSTOMER_EMAIL),
-            Customer\Entity::CONTACT => $this->getAttribute(self::CUSTOMER_CONTACT),
-        ];
-
-        if ($this->hasCustomerBillingAddress() === true)
-        {
-            $billingAddress = $this->customerBillingAddress->toArrayPublic();
-
-            $array[self::CUSTOMER][Customer\Entity::BILLING_ADDRESS] = $billingAddress;
-        }
     }
 
     protected function setPublicOrderIdAttribute(array & $array)

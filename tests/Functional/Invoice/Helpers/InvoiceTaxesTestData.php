@@ -34,7 +34,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer' => [
+                'customer_details' => [
                     'name'    => null,
                     'email'   => 'test@test.test',
                     'contact' => null
@@ -44,7 +44,7 @@ return [
                         'name'          => 'Item #1',
                         'description'   => null,
                         'amount'        => 100,
-                        'total_amount'  => 500,
+                        'gross_amount'  => 500,
                         'tax_amount'    => 50,
                         'net_amount'    => 550,
                         'currency'      => 'INR',
@@ -67,7 +67,7 @@ return [
                         'name'          => 'Item #2',
                         'description'   => null,
                         'amount'        => 150,
-                        'total_amount'  => 450,
+                        'gross_amount'  => 450,
                         'tax_amount'    => 135,
                         'net_amount'    => 585,
                         'currency'      => 'INR',
@@ -96,9 +96,9 @@ return [
                         ],
                     ],
                 ],
-                'amount'                => 950,
+                'gross_amount'          => 950,
                 'tax_amount'            => 185,
-                'net_amount'            => 1135,
+                'amount'                => 1135,
                 'currency'              => 'INR',
                 'description'           => null,
                 'type'                  => 'invoice',
@@ -139,7 +139,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer' => [
+                'customer_details' => [
                     'name'    => null,
                     'email'   => 'test@test.test',
                     'contact' => null
@@ -149,7 +149,7 @@ return [
                         'name'          => 'Some item name',
                         'description'   => 'Some item description',
                         'amount'        => 100000,
-                        'total_amount'  => 100000,
+                        'gross_amount'  => 100000,
                         'tax_amount'    => 0,
                         'net_amount'    => 100000,
                         'currency'      => 'INR',
@@ -162,7 +162,7 @@ return [
                         'name'          => 'Some item name',
                         'description'   => 'Some item description',
                         'amount'        => 100000,
-                        'total_amount'  => 100000,
+                        'gross_amount'  => 100000,
                         'tax_amount'    => 10000,
                         'net_amount'    => 110000,
                         'currency'      => 'INR',
@@ -185,7 +185,7 @@ return [
                         'name'          => 'Updated item name',
                         'description'   => 'Some item description',
                         'amount'        => 100000,
-                        'total_amount'  => 100000,
+                        'gross_amount'  => 100000,
                         'tax_amount'    => 10100,
                         'net_amount'    => 110100,
                         'currency'      => 'INR',
@@ -217,7 +217,7 @@ return [
                         'name'          => 'Item #3',
                         'description'   => null,
                         'amount'        => 1000,
-                        'total_amount'  => 1000,
+                        'gross_amount'  => 1000,
                         'tax_amount'    => 300,
                         'net_amount'    => 1300,
                         'currency'      => 'INR',
@@ -246,9 +246,9 @@ return [
                         ],
                     ],
                 ],
-                'amount'                => 301000,
+                'gross_amount'          => 301000,
                 'tax_amount'            => 20400,
-                'net_amount'            => 321400,
+                'amount'                => 321400,
                 'currency'              => 'INR',
                 'description'           => null,
                 'type'                  => 'invoice',
@@ -287,7 +287,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer' => [
+                'customer_details' => [
                     'name'    => null,
                     'email'   => 'test@test.test',
                     'contact' => null
@@ -297,7 +297,7 @@ return [
                         'name'          => 'Item #1',
                         'description'   => null,
                         'amount'        => 100,
-                        'total_amount'  => 500,
+                        'gross_amount'  => 500,
                         'tax_amount'    => 46,
                         'net_amount'    => 500,
                         'currency'      => 'INR',
@@ -320,7 +320,7 @@ return [
                         'name'          => 'Item #2',
                         'description'   => null,
                         'amount'        => 150,
-                        'total_amount'  => 450,
+                        'gross_amount'  => 450,
                         'tax_amount'    => 104,
                         'net_amount'    => 450,
                         'currency'      => 'INR',
@@ -349,9 +349,9 @@ return [
                         ],
                     ],
                 ],
-                'amount'                => 950,
+                'gross_amount'          => 950,
                 'tax_amount'            => 150,
-                'net_amount'            => 950,
+                'amount'                => 950,
                 'currency'              => 'INR',
                 'description'           => null,
                 'type'                  => 'invoice',
@@ -390,7 +390,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer' => [
+                'customer_details' => [
                     'name'    => null,
                     'email'   => 'test@test.test',
                     'contact' => null
@@ -400,7 +400,7 @@ return [
                         'name'          => 'Item #1',
                         'description'   => null,
                         'amount'        => 100,
-                        'total_amount'  => 500,
+                        'gross_amount'  => 500,
                         'tax_amount'    => 150,
                         'net_amount'    => 650,
                         'currency'      => 'INR',
@@ -432,7 +432,7 @@ return [
                         'name'          => 'Item #2',
                         'description'   => null,
                         'amount'        => 500,
-                        'total_amount'  => 1500,
+                        'gross_amount'  => 1500,
                         'tax_amount'    => 409,
                         'net_amount'    => 1500,
                         'currency'      => 'INR',
@@ -461,9 +461,9 @@ return [
                         ],
                     ],
                 ],
-                'amount'                => 2000,
+                'gross_amount'          => 2000,
                 'tax_amount'            => 559,
-                'net_amount'            => 2150,
+                'amount'                => 2150,
                 'currency'              => 'INR',
                 'description'           => null,
                 'type'                  => 'invoice',
@@ -508,7 +508,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer' => [
+                'customer_details' => [
                     'name'    => null,
                     'email'   => 'test@test.test',
                     'contact' => null
@@ -518,7 +518,7 @@ return [
                         'name'          => 'Updated name',
                         'description'   => 'Some item description',
                         'amount'        => 100000,
-                        'total_amount'  => 100000,
+                        'gross_amount'  => 100000,
                         'tax_amount'    => 30000,
                         'net_amount'    => 130000,
                         'currency'      => 'INR',
@@ -550,7 +550,7 @@ return [
                         'name'          => 'Some item name',
                         'description'   => 'Some item description',
                         'amount'        => 100000,
-                        'total_amount'  => 100000,
+                        'gross_amount'  => 100000,
                         'tax_amount'    => 30000,
                         'net_amount'    => 130000,
                         'currency'      => 'INR',
@@ -582,7 +582,7 @@ return [
                         'name'          => 'Updated item name',
                         'description'   => 'Some item description',
                         'amount'        => 100000,
-                        'total_amount'  => 100000,
+                        'gross_amount'  => 100000,
                         'tax_amount'    => 0,
                         'net_amount'    => 100000,
                         'currency'      => 'INR',
@@ -595,7 +595,7 @@ return [
                         'name'          => 'New item added #1',
                         'description'   => null,
                         'amount'        => 1300,
-                        'total_amount'  => 1300,
+                        'gross_amount'  => 1300,
                         'tax_amount'    => 390,
                         'net_amount'    => 1690,
                         'currency'      => 'INR',
@@ -627,7 +627,7 @@ return [
                         'name'          => 'New item added #2',
                         'description'   => null,
                         'amount'        => 1300,
-                        'total_amount'  => 6500,
+                        'gross_amount'  => 6500,
                         'tax_amount'    => 0,
                         'net_amount'    => 6500,
                         'currency'      => 'INR',
@@ -637,9 +637,9 @@ return [
                         'taxes'         => [],
                     ],
                 ],
-                'amount'                => 307800,
+                'gross_amount'          => 307800,
                 'tax_amount'            => 60390,
-                'net_amount'            => 368190,
+                'amount'                => 368190,
                 'currency'              => 'INR',
                 'description'           => null,
                 'status'                => 'draft',

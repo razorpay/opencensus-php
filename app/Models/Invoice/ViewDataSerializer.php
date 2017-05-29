@@ -113,12 +113,12 @@ class ViewDataSerializer extends Base\Core
             function (& $lineItem, $i)
             {
                 $amountFormatted = number_format($lineItem[LineItem\Entity::AMOUNT] / 100, 2);
-                $totalAmount = $lineItem[LineItem\Entity::AMOUNT] * $lineItem[LineItem\Entity::QUANTITY];
-                $totalAmountFormatted = number_format($totalAmount / 100, 2);
+                $grossAmount = $lineItem[LineItem\Entity::AMOUNT] * $lineItem[LineItem\Entity::QUANTITY];
+                $grossAmountFormatted = number_format($grossAmount / 100, 2);
 
                 $lineItem += [
                     'amount_formatted'       => $amountFormatted,
-                    'total_amount_formatted' => $totalAmountFormatted,
+                    'total_amount_formatted' => $grossAmountFormatted,
                 ];
             });
 

@@ -267,7 +267,7 @@ class Notifier extends Base\Core
 
             $message->subject($data['subject']);
 
-            $message->to($data['invoice']['customer']['email']);
+            $message->to($data['invoice']['customer_details']['email']);
 
             $headers = $message->getHeaders();
 
@@ -470,7 +470,7 @@ class Notifier extends Base\Core
             'params' => [
                 'merchant_name' => $merchant->getBillingLabelElseName(),
                 'invoice_link'  => $this->invoice->getShortUrl(),
-                'amount'        => $this->invoice->getNetAmount() / 100,
+                'amount'        => $this->invoice->getAmount() / 100,
             ]
         ];
 

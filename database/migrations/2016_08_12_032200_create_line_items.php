@@ -37,11 +37,7 @@ class CreateLineItems extends Migration
 
             $table->integer(Entity::AMOUNT);
 
-            // TODO:
-            // - Following three amount fields should be made NOT NULL
-            //   post deployment of #3125.
-
-            $table->integer(Entity::TOTAL_AMOUNT)
+            $table->integer(Entity::GROSS_AMOUNT)
                   ->unsigned()
                   ->nullable();
 

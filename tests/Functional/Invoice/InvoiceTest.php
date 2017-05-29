@@ -125,8 +125,8 @@ class InvoiceTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $this->assertEquals($invoice['customer']['email'], 'a@b.com');
-        $this->assertEquals($invoice['customer']['contact'], '+919918899029');
+        $this->assertEquals($invoice['customer_details']['email'], 'a@b.com');
+        $this->assertEquals($invoice['customer_details']['contact'], '+919918899029');
     }
 
     public function testCreateInvoiceWithMultipleLineItems()

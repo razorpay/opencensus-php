@@ -12,10 +12,6 @@
   <testsuites>
       <testsuite name="Application Test Suite">
           <directory>./tests/</directory>
-          <!-- Following two test files will be included once new attributes of
-          entities are exposed publicly soon. -->
-          <exclude>./tests/Functional/Invoice/InvoiceTaxesTest.php</exclude>
-          <exclude>./tests/Unit/LineItem/Tax/CalculatorTest.php</exclude>
       </testsuite>
   </testsuites>
   <filter>

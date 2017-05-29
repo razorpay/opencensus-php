@@ -13,13 +13,14 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::NAME                => 'required|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::AMOUNT              => 'required|integer|min:100',
+        Entity::AMOUNT              => 'required_without:unit_amount|integer|min:100',
+        Entity::UNIT_AMOUNT         => 'required_without:amount|integer|min:100',
         Entity::CURRENCY            => 'required|size:3|in:INR',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
-        // Entity::UNIT                => 'sometimes|string|max:512',
-        // Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
-        // Entity::TAX_ID              => 'sometimes|public_id|size:18',
-        // Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
+        Entity::UNIT                => 'sometimes|string|max:512',
+        Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
+        Entity::TAX_ID              => 'sometimes|public_id|size:18',
+        Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
     ];
 
     protected static $editRules  = [
@@ -27,11 +28,12 @@ class Validator extends Base\Validator
         Entity::NAME                => 'sometimes|string|max:512',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::AMOUNT              => 'sometimes|integer|min:100',
+        Entity::UNIT_AMOUNT         => 'sometimes|integer|min:100',
         Entity::CURRENCY            => 'sometimes|size:3|in:INR',
-        // Entity::UNIT                => 'sometimes|string|max:512',
-        // Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
-        // Entity::TAX_ID              => 'sometimes|public_id|size:18',
-        // Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
+        Entity::UNIT                => 'sometimes|string|max:512',
+        Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
+        Entity::TAX_ID              => 'sometimes|public_id|size:18',
+        Entity::TAX_GROUP_ID        => 'sometimes|public_id|size:19',
     ];
 
     protected static $createValidators = [
