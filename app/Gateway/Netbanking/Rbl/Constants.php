@@ -15,8 +15,6 @@ class Constants
 	const CHANNEL_ID        = 'I';
 	const SERVICE_ID        = 'RRTSE';
 	const STATE_MODE        = 'N';
-	const VIRTUAL_USER      = '176.RAZORPAYADM';
-	const ACCESS_CODE       = 'Rbl@12345';
 	const TYPE_PAYMENT      = 'M';
 	const YES               = 'Y';
 	const NO                = 'N';

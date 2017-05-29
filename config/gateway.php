@@ -268,7 +268,6 @@ return array(
     'netbanking_rbl' => [
         'test_merchant_id'  => env('NETBANKING_RBL_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_RBL_GATEWAY_TEST_HASH_SECRET'),
-        'live_merchant_id'  => env('NETBANKING_RBL_GATEWAY_LIVE_MERCHANT_ID'),
     ],
 
     'sharp' => array(

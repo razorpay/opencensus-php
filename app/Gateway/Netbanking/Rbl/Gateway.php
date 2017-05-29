@@ -85,7 +85,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $content = $this->getVerifyRequestData($verify->input);
+        $content = $this->getVerifyRequestData($verify->input, $verify->payment);
 
         $content = http_build_query($content);
 
@@ -175,11 +175,8 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getVerifyRequestData(array $input): array
+    protected function getVerifyRequestData(array $input, $gatewayPayment): array
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-             $input['payment']['id'], Action::AUTHORIZE);
-
         $data = [
             RequestFields::BANK_ID          => Constants::BANK_ID,
             RequestFields::LANGUAGE_ID      => Constants::LANGUAGE_ID,
@@ -190,8 +187,8 @@ class Gateway extends Base\Gateway
             RequestFields::RESPONSE_FORMAT  => FileFormat::XML,
             RequestFields::REQUEST_FORMAT   => FileFormat::NV,
             RequestFields::MULTIPLE_RECORDS => Constants::NO,
-            RequestFields::USER_PRINCIPAL   => Constants::VIRTUAL_USER,
-            RequestFields::ACCESS_CODE      => Constants::ACCESS_CODE,
+            RequestFields::USER_PRINCIPAL   => $input['terminal']['gateway_merchant_id2'],
+            RequestFields::ACCESS_CODE      => $input['terminal']['gateway_access_code'],
             RequestFields::V_PAYEE_ID       => $this->getMerchantId(),
             RequestFields::BANK_REFERENCE   => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
             RequestFields::ENTITY_TYPE      => Constants::TYPE_PAYMENT,
@@ -233,9 +230,7 @@ class Gateway extends Base\Gateway
             $dataToEncrypt[RequestFields::ACCOUNT_NUMBER] = '.' . $input['order']['account_number'];
         }
 
-        $stringToEncrypt = $this->getStringToHash($dataToEncrypt, '|');
-
-        $data[RequestFields::QUERY_STRING] = $this->getHashOfString($stringToEncrypt);
+        $data[RequestFields::QUERY_STRING] = $this->getHashOfArray($dataToEncrypt);
 
         return $data;
     }
@@ -253,7 +248,7 @@ class Gateway extends Base\Gateway
             $queryArray[] = $key . '~' . $value;
         }
 
-        $queryString = implode($glue, $queryArray);
+        $queryString = implode('|', $queryArray);
 
         return $queryString;
     }
