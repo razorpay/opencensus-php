@@ -311,7 +311,7 @@ class Gateway extends Base\Gateway
         //
         array_walk_recursive($gatewayParam, [$gatewayParamXml, 'addChild']);
 
-        return $gatewayParamXml->asXML();
+        return trim(explode('?>', $gatewayParamXml->asXML())[1]);
     }
 
     protected function getGatewayParamArray(array $input)
@@ -325,6 +325,7 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
             RequestFields::AMOUNT                => $amount,
             RequestFields::RETURN_URL            => $input['callbackUrl'],
+            RequestFields::NARRATION             => Constants::NARRATION
         ];
 
         return $gatewayParam;
