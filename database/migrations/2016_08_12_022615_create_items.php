@@ -41,7 +41,6 @@ class CreateItems extends Migration
             $table->char(Entity::TYPE, 16)
                   ->default(Type::INVOICE);
 
-            // TODO: What is idea max length for units?
             $table->string(Entity::UNIT, 512)
                   ->nullable();
 

@@ -232,46 +232,6 @@ class Entity extends Base\PublicEntity
 
     // Mutators
 
-    // TODO:
-    // Following three mutators method are here for backward compatibility.
-    // This can be removed post update queries(after code depl) have been run.
-
-    public function getGrossAmountAttribute($grossAmount): int
-    {
-        if ($grossAmount === null)
-        {
-            return (int) ($this->getAmount() * $this->getQuantity());
-        }
-        else
-        {
-            return (int) $grossAmount;
-        }
-    }
-
-    public function getTaxAmountAttribute($taxAmount): int
-    {
-        if ($taxAmount === null)
-        {
-            return 0;
-        }
-        else
-        {
-            return (int) $taxAmount;
-        }
-    }
-
-    public function getNetAmountAttribute($netAmount): int
-    {
-        if ($netAmount === null)
-        {
-            return (int) $this->getGrossAmount();
-        }
-        else
-        {
-            return (int) $netAmount;
-        }
-    }
-
     public function getUnitAmountAttribute(): int
     {
         return (int) $this->getAmount();
