@@ -237,6 +237,7 @@ class CreatePayments extends Migration
             $table->index(Payment::EMAIL);
             $table->index(Payment::BANK);
             $table->index(Payment::AMOUNT);
+            $table->index(Payment::AMOUNT_TRANSFERRED);
             $table->index(Payment::LATE_AUTHORIZED);
             $table->index(Payment::ON_HOLD);
             $table->index(Payment::ON_HOLD_UNTIL);
