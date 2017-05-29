@@ -71,6 +71,9 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
+        // If callback status was a success, we verify the payment immediately
+        $this->verifyCallback($input);
+
         return $this->getCallbackResponseData($input);
     }
 
@@ -81,6 +84,34 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    /**
+     * Verifying the payment after callback response is saved to
+     * prevent user tampering with the data while making a payment.
+     */
+    protected function verifyCallback(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $this->repo->findByPaymentIdAndAction(
+                    $verify->input['payment']['id'], Action::AUTHORIZE);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)
