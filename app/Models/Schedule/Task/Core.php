@@ -57,7 +57,7 @@ class Core extends Base\Core
             $this->repo->deleteOrFail($currentScheduleTask);
         }
 
-        $this->repo->saveOrFail($entity);
+        $this->repo->saveOrFail($scheduleTask);
 
         $this->traceAndNotifyScheduleAssignment($scheduleTask);
 

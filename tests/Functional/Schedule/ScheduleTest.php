@@ -208,7 +208,8 @@ class ScheduleTest extends TestCase
                     $testScheduleTask['id'],
                     true,
                     'live');
-            });
+            }
+        );
 
         // Schedule task does exist in test db, so fetch works
         $testScheduleTask = $this->getEntityById(
@@ -229,6 +230,10 @@ class ScheduleTest extends TestCase
         $this->fixtures->merchant->addFeatures(['subscriptions']);
 
         $request = $this->testData[__FUNCTION__];
+
+        $customer = $this->getLastEntity('customer');
+
+        $request['content']['customer_id'] = $customer['id'];
 
         $this->ba->privateAuth();
 

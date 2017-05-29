@@ -140,7 +140,7 @@ return [
         'url' => '/subscriptions',
         'method' => 'post',
         'content' => [
-            'customer_id'     => 'cust_10000gcustomer',
+            'customer_id'     => '',
             'plan_id'         => 'plan_1000000000plan',
             'quantity'        => 1,
             'total_count'     => 6, // Every two months
