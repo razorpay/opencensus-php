@@ -703,7 +703,10 @@ app.controller('EntitiesCtrl', [
         .success(function(data) {
           $scope.alerts.resetAlerts();
           if (data.success) {
-            $scope.headings = Object.keys(data.data.items[0]);
+            $scope.headings = [];
+            if (Array.isArray(data.data.items) && data.data.items.length) {
+              $scope.headings = Object.keys(data.data.items[0]);
+            }
             $scope.entity.items = data.data.items;
 
             $scope.entity.count = parseInt(data.data.count);
