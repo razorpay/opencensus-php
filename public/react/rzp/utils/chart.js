@@ -32,7 +32,7 @@ const rgb = (array, alpha) => {
 };
 
 export const timeScale = ({ xLabel, yLabel }) => {
-  let scale = {
+  let scalesObj = {
     scales: {
       xAxes: [
         {
@@ -65,19 +65,19 @@ export const timeScale = ({ xLabel, yLabel }) => {
   };
 
   if (xLabel) {
-    scales.xAxes[0].scaleLabel = {
+    scalesObj.scales.xAxes[0].scaleLabel = {
       display: true,
       labelString: xLabel,
     };
   }
   if (yLabel) {
-    scales.yAxes[0].scaleLabel = {
+    scalesObj.scales.yAxes[0].scaleLabel = {
       display: true,
       labelString: yLabel,
     };
   }
 
-  return scale;
+  return scalesObj;
 };
 
 export const processLineData = data => {
