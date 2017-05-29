@@ -159,7 +159,7 @@ class DowntimeSorter extends Terminal\Sorter
         $downtimes = $this->repo->gateway_downtime
                                 ->fetchDowntimesForSorter($params, $timestamp);
 
-        return $downtimes->toArray();
+        return $downtimes;
     }
 
     /**
@@ -194,7 +194,7 @@ class DowntimeSorter extends Terminal\Sorter
         {
             $params = [
                 Downtime::METHOD => Payment\Method::NETBANKING,
-                Downtime::ISSUER => [$payment->getBankName(), self::ALL],
+                Downtime::ISSUER => [$payment->getBank(), self::ALL],
             ];
         }
 

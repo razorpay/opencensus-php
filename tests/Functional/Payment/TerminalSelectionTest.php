@@ -741,4 +741,54 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
         $this->assertEquals('DrctHDFCTermnl', $payment1['terminal_id']);
     }
+
+    public function testDowntimeSortingNetbankingEbs()
+    {
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $ebsDowntimData = $this->testData['ebsDowntimeData'];
+        $this->fixtures->create('gateway_downtime:netbanking', $ebsDowntimData);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        // this payment should go through via billdesk as ebs has lowest priority
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('billdesk', $payment['gateway']);
+    }
+
+    public function testDowntimeSortingNetbankingAll()
+    {
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $allNetbankingDowntimeData = $this->testData['allNetbankingDowntimeData'];
+        $this->fixtures->create('gateway_downtime:netbanking', $allNetbankingDowntimeData);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        // this payment should go through via netbanking_kotak
+        // order shouldn't change
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('billdesk', $payment['gateway']);
+    }
+
+    public function testDowntimeSortingNetbankingHdfc()
+    {
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $kkbkDowntimeData = $this->testData['kkbkDowntimeData'];
+        $this->fixtures->create('gateway_downtime:netbanking', $kkbkDowntimeData);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'KKBK';
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        // this payment should go through via billdesk
+        // because netbanking for kotak is down
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('billdesk', $payment['gateway']);
+    }
 }
