@@ -104,7 +104,7 @@ export default class Sidebar extends Component {
 
                 <MainNavLink
                   label="Marketplace"
-                  icon="icon-team"
+                  icon="icon-store"
                   to="/accounts"
                   notMyRole="sellerapp support"
                   featureEnabled="Marketplace"

@@ -87,7 +87,7 @@ export default class FileUploadButton extends Component {
 
     return (
       <label class={`fileupload-btn btn ${labelClass}`} disabled={isDisabled}>
-        <i class="icon icon-folder-open" />
+        <i class="icon icon-folder" />
         <span>{buttonText}</span>
 
         <input

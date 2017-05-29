@@ -32,10 +32,7 @@ export default class SubscriptionsListContainer extends Component {
     return (
       <div>
         <Header title="Subscriptions">
-          <a
-            href="#/app/subscriptions/new"
-            class="pull-right btn btn-primary btn-rounded"
-          >
+          <a href="#/app/subscriptions/new" class="pull-right btn btn-primary">
             <i className="icon icon-plus" />
             <span>New Subscription</span>
           </a>

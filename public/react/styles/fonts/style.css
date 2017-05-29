@@ -1,10 +1,10 @@
 @font-face {
   font-family: 'icons';
-  src:  url('./icons.eot?p2kyzb');
-  src:  url('./icons.eot?p2kyzb#iefix') format('embedded-opentype'),
-    url('./icons.ttf?p2kyzb') format('truetype'),
-    url('./icons.woff?p2kyzb') format('woff'),
-    url('./icons.svg?p2kyzb#icons') format('svg');
+  src:  url('./icons.eot?knfa9l');
+  src:  url('./icons.eot?knfa9l#iefix') format('embedded-opentype'),
+    url('./icons.ttf?knfa9l') format('truetype'),
+    url('./icons.woff?knfa9l') format('woff'),
+    url('./icons.svg?knfa9l#icons') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -24,6 +24,15 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-arrow-forward:before {
+  content: "\e920";
+}
+.icon-folder:before {
+  content: "\e921";
+}
+.icon-store:before {
+  content: "\e922";
+}
 .icon-account:before {
   content: "\e900";
 }

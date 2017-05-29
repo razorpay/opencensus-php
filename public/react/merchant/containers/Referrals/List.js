@@ -73,7 +73,7 @@ export default class ReferralsListContainer extends ListContainer {
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar">
               <button
-                class="pull-right btn btn-primary btn-rounded"
+                class="pull-right btn btn-primary"
                 onClick={() => this.showCreateMerchantModal()}
               >
                 <i class="icon icon-plus" />

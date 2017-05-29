@@ -98,7 +98,7 @@ export default class NewKey extends Component {
           <div class="modal-footer">
             <button
               type="submit"
-              class="btn btn-primary btn-rounded"
+              class="btn btn-primary"
               onClick={handleSubmit(this.save)}
             >
               OK

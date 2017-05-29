@@ -167,7 +167,7 @@ export default class AddFundsContainer extends Component {
           </div>
 
           <AsyncButton
-            class="btn btn-primary btn-rounded"
+            class="btn btn-primary"
             text={this.state.isSaving ? 'Adding Funds...' : 'Add Funds'}
             style={{ marginTop: '10px' }}
             disabled={this.state.isSaving}

@@ -179,7 +179,7 @@ export default class ReportsContainer extends Component {
           <hr />
 
           <AsyncButton
-            class="btn btn-primary btn-rounded"
+            class="btn btn-primary"
             onClick={handleSubmit(this.prepareGenerateReport)}
             text="Download Report"
             pendingText="Generating..."

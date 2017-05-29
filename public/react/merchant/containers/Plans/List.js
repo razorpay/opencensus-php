@@ -36,10 +36,7 @@ export default class PlansListContainer extends ModalContainer {
     return (
       <div>
         <Header title="Plans">
-          <button
-            class="pull-right btn btn-primary btn-rounded"
-            onClick={this.openModal}
-          >
+          <button class="pull-right btn btn-primary" onClick={this.openModal}>
             <i class="icon icon-plus" />
             <span>New Plan</span>
           </button>

@@ -53,7 +53,7 @@ export default class PaymentLinksContainer extends ListContainer {
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar pull-right">
               <button
-                class="btn btn-primary btn-rounded"
+                class="btn btn-primary"
                 onClick={() => this.showPaymentLinkModal()}
               >
                 <i class="icon icon-plus" />
