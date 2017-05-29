@@ -25,6 +25,7 @@ class Entity extends Base\PublicEntity
     const REMARKS                = 'remarks';
     const RETURN_UTR             = 'return_utr';
     const PROCESSED_AT           = 'processed_at';
+    const PROCESSED_ON           = 'processed_on';
 
     protected static $sign = 'setl';
 
@@ -60,7 +61,7 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::PROCESSED_AT,
+        self::PROCESSED_ON,
     ];
 
     protected $public = [
@@ -71,7 +72,7 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::SERVICE_TAX,
         self::UTR,
-        self::PROCESSED_AT,
+        self::PROCESSED_ON,
         self::CREATED_AT
     ];
 
@@ -91,6 +92,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
+    ];
+
+    protected $publicSetters = [
+        self::PROCESSED_ON,
     ];
 
     // --------------------------------- relations -------------------------------
@@ -290,18 +295,23 @@ class Entity extends Base\PublicEntity
         return $fee;
     }
 
-    protected function getProcessedAtAttribute()
-    {
-        $processedAt = $this->attributes[self::PROCESSED_AT];
-
-        return date('d/m/y', $processedAt);
-    }
-
     // ------------------------------- mutators --------------------------------
 
     protected function setRemarksAttribute($remarks)
     {
         $this->attributes[self::REMARKS] = substr($remarks, 0, 255);
+    }
+
+    protected function setPublicProcessedOnAttribute(array &$array)
+    {
+        $processedAt = $this->attributes[self::PROCESSED_AT];
+
+        $array[self::PROCESSED_ON] = null;
+
+        if ($processedAt !== null)
+        {
+            $array[self::PROCESSED_ON] = date('d/m/y', $processedAt);
+        }
     }
 
     // ------------------------------- end mutators ----------------------------
