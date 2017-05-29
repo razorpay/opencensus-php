@@ -1,7 +1,7 @@
 import moment from 'moment';
 
-export function titleCase(sentence = '') {
-  return sentence
+export function titleCase(sentence) {
+  return (sentence || '')
     .split(/\s+|_/)
     .map(word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
     .join(' ');
