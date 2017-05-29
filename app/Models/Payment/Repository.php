@@ -20,6 +20,7 @@ use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
 use RZP\Models\Invoice;
 use RZP\Base\BuilderEx;
+use RZP\Tests\Unit\Models\Payment\EntityTest;
 
 class Repository extends Base\Repository
 {
@@ -29,6 +30,7 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
+        Entity::TRANSFERRED        => 'sometimes|in:0,1'
     ];
 
     // These are proxy allowed params to search on.
@@ -587,6 +589,18 @@ class Repository extends Base\Repository
         $international = $this->dbColumn(Entity::INTERNATIONAL);
 
         $query->where($international, '=', $params[Entity::INTERNATIONAL]);
+    }
+
+    protected function addQueryParamTransferred($query, $params)
+    {
+        if ($params[Entity::TRANSFERRED] !== '1')
+        {
+            return;
+        }
+
+        $amountTransferred = $this->dbColumn(Entity::AMOUNT_TRANSFERRED);
+
+        $query->where($amountTransferred, '>', 0);
     }
 
     protected function addQueryCaptured($query, $params)
