@@ -106,6 +106,7 @@ export default class HomeContainer extends Component {
                   loading={graphData.loading}
                   error={graphData.error}
                   data={graphData.transaction_count}
+                  yLabel="Number of Successful Transactions"
                 />
               </div>
             </div>
@@ -122,6 +123,7 @@ export default class HomeContainer extends Component {
                 loading={graphData.loading}
                 error={graphData.error}
                 data={graphData.transaction_amount}
+                yLabel="Transaction Volume in INR"
               />
             </div>
           </div>

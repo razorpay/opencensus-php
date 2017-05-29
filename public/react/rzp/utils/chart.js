@@ -31,36 +31,53 @@ const rgb = (array, alpha) => {
   return `rgb(${array[0]}, ${array[1]}, ${array[2]})`;
 };
 
-export const timeScale = {
-  scales: {
-    xAxes: [
-      {
-        type: 'time',
-        time: {
-          displayFormats: {
-            day: 'DD, MMM',
+export const timeScale = ({ xLabel, yLabel }) => {
+  let scale = {
+    scales: {
+      xAxes: [
+        {
+          type: 'time',
+          time: {
+            displayFormats: {
+              day: 'DD, MMM',
+            },
+            unit: 'day',
+            parser: utcMoment => utcMoment.utcOffset('+0000'),
+            tooltipFormat: 'ddd DD MMM YYYY',
           },
-          unit: 'day',
-          parser: utcMoment => utcMoment.utcOffset('+0000'),
-          tooltipFormat: 'ddd DD MMM YYYY',
+          gridLines: {
+            color: '#f8f8f8',
+          },
         },
-        gridLines: {
-          color: '#f8f8f8',
+      ],
+      yAxes: [
+        {
+          ticks: {
+            beginAtZero: true,
+            suggestedMax: 10,
+          },
+          gridLines: {
+            color: '#f8f8f8',
+          },
         },
-      },
-    ],
-    yAxes: [
-      {
-        ticks: {
-          beginAtZero: true,
-          suggestedMax: 10,
-        },
-        gridLines: {
-          color: '#f8f8f8',
-        },
-      },
-    ],
-  },
+      ],
+    },
+  };
+
+  if (xLabel) {
+    scales.xAxes[0].scaleLabel = {
+      display: true,
+      labelString: xLabel,
+    };
+  }
+  if (yLabel) {
+    scales.yAxes[0].scaleLabel = {
+      display: true,
+      labelString: yLabel,
+    };
+  }
+
+  return scale;
 };
 
 export const processLineData = data => {

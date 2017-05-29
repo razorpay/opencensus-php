@@ -2,7 +2,7 @@ import { createLineData, timeScale } from 'rzp/utils/chart';
 import { Line } from 'react-chartjs-2';
 import LoaderDots from 'rzp/ui/LoaderDots';
 
-export default ({ title, data, loading, error }) => {
+export default ({ title, data, loading, error, yLabel, xLabel }) => {
   return (
     <div class="panel">
       <div class="panel-body">
@@ -25,7 +25,7 @@ export default ({ title, data, loading, error }) => {
                 }
               }
             </div>
-          : <Line options={timeScale} data={data} />}
+          : <Line options={timeScale({ yLabel, xLabel })} data={data} />}
       </div>
     </div>
   );
