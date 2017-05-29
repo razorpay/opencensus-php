@@ -32,9 +32,9 @@ export default ({ entity, data, loading }) => {
             <Link
               data-tip={`See All ${titleCase(entity)}s`}
               class="pull-right"
-              to={`/${entity}s/list`}
+              to={`/${entity}s/`}
             >
-              <i class="icon-arrow-right" />
+              <i class="icon icon-arrow-forward" />
             </Link>
 
             <h4>Recent {titleCase(entity)}s</h4>
@@ -46,7 +46,7 @@ export default ({ entity, data, loading }) => {
                   items.slice(0, 5).map((item, index) => {
                     return (
                       <div key={index} class="row" style={{ margin: '10px' }}>
-                        <a href={`#/app/${entity}/${item.id}`}>
+                        <Link to={`/${entity}s/${item.id}`}>
                           <StatusLabel
                             entity={entity}
                             status={item.status}
@@ -62,7 +62,7 @@ export default ({ entity, data, loading }) => {
                               {formatFromNow(item.created_at)}
                             </span>
                           </div>
-                        </a>
+                        </Link>
                       </div>
                     );
                   });
