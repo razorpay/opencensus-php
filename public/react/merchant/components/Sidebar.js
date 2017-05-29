@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import MainNavLink from 'merchant/components/MainNavLink';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
@@ -100,7 +101,12 @@ export default class Sidebar extends Component {
                   notMyRole="sellerapp"
                 />
 
-                <div class="divider" />
+                <ShowWhen
+                  notMyRole="sellerapp support"
+                  featureEnabled="Marketplace"
+                >
+                  <div class="divider" />
+                </ShowWhen>
 
                 <MainNavLink
                   label="Marketplace"
