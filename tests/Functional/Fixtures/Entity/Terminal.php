@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Terminal\Mode;
 use RZP\Models\Base\UniqueIdEntity;
 
 class Terminal extends Base
@@ -22,6 +23,7 @@ class Terminal extends Base
         $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
+        $this->createSharedNetbankingRblTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -41,20 +43,26 @@ class Terminal extends Base
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
-        $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl123',
-                                         'merchant_id' => $sharedMerchantAccount,
-                                         'category' => 123,
-                                         'shared' => 1]);
+        $this->createSharedHdfcTerminal([
+            'id' => 'SharedTrmnl123',
+            'merchant_id' => $sharedMerchantAccount,
+            'category' => 123,
+            'shared' => 1
+        ]);
 
-        $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl124',
-                                         'merchant_id' => $sharedMerchantAccount,
-                                         'category' => 124,
-                                         'shared' => 1]);
+        $this->createSharedHdfcTerminal([
+            'id' => 'SharedTrmnl124',
+            'merchant_id' => $sharedMerchantAccount,
+            'category' => 124,
+            'shared' => 1
+        ]);
 
-        $this->createSharedHdfcTerminal(['id' => 'SharedTrmnl125',
-                                         'merchant_id' => $sharedMerchantAccount,
-                                         'category' => 125,
-                                         'shared' => 1]);
+        $this->createSharedHdfcTerminal([
+            'id' => 'SharedTrmnl125',
+            'merchant_id' => $sharedMerchantAccount,
+            'category' => 125,
+            'shared' => 1
+        ]);
     }
 
     public function createAtomTerminal(array $attributes = [])
@@ -318,7 +326,7 @@ class Terminal extends Base
 
         $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_jiomoney',
             'card'                      => 0,
             'netbanking'                => 0,
@@ -428,8 +436,32 @@ class Terminal extends Base
             'card'                      => 1,
             'shared'                    => 1,
             'recurring'                 => 4,
+            'mode'                      => Mode::PURCHASE,
             'gateway_merchant_id'       => 'random',
         ];
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedMigsRecurringTerminals()
+    {
+        $attributes = [
+            'id'                        => 'MiGSRcgTmnl3DS',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'axis_migs',
+            'gateway_acquirer'          => 'axis',
+            'card'                      => 1,
+            'shared'                    => 1,
+            'recurring'                 => 3,
+            'gateway_merchant_id'       => 'random',
+            'gateway_terminal_id'       => 'recurring_random',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $attributes['id']               = 'MiGSRcgTmlN3DS';
+        $attributes['recurring']        = 4;
 
         $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -836,6 +868,34 @@ class Terminal extends Base
         return $this->createSharedNetbankingFederalTerminal($attributes);
     }
 
+    public function createSharedNetbankingRblTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_RBL_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_rbl',
+            'gateway_merchant_id'       => 'netbanking_rbl_merchant_id',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingRblTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               =>  Shared::NETBANKING_RBL_TPV_TERMINAL,
+            'network_category' => 'securities'
+        ];
+
+        return $this->createSharedNetbankingRblTerminal($attributes);
+    }
+
     public function createSharedAmexTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
@@ -902,7 +962,7 @@ class Terminal extends Base
 
         $defaultValues = [
             'id'                        => $terminalId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_openwallet',
             'shared'                    => 1,
         ];

@@ -1095,7 +1095,7 @@ trait Authorize
 
             $payment->setRecurring(false);
 
-            $vault = $payment->isEmi();
+            $vault = $payment->shouldSaveCard();
 
             $gatewayInput['card'] = $this->createCardEntity($input['card'], $vault, $this->merchant);
         }
@@ -2535,8 +2535,6 @@ trait Authorize
 
             $payment->setAuthorizeTimestamp();
 
-            $payment->terminal->incrementUsedCount();
-
             $this->updateAcquirerData($payment, $data);
 
             // If payment was earlier failed, then that means it's
@@ -2567,7 +2565,12 @@ trait Authorize
 
             $this->repo->saveOrFail($payment);
 
-            $this->repo->saveOrFail($payment->terminal);
+            if ($payment->terminal->isUsed() === false)
+            {
+                $payment->terminal->setUsed();
+
+                $this->repo->saveOrFail($payment->terminal);
+            }
 
             $this->updateAssociatedPaymentEntities($payment);
 
@@ -2615,6 +2618,21 @@ trait Authorize
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
+        $terminalMode = $payment->terminal->getMode();
+
+        if ($terminalMode === Terminal\Mode::AUTH_CAPTURE)
+        {
+            return true;
+        }
+        else if ($terminalMode === Terminal\Mode::PURCHASE)
+        {
+            return false;
+        }
+
+        // We handle dual and null terminal mode as the default case
+        // In the default case, we check if the card network supports
+        // purchase or auth+capture. Example. FSS uses Auth and capture
+        // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
         $gateway = $payment->getGateway();
 
         $networkCode = null;

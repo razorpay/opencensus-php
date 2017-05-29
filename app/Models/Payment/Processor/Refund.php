@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use BasicAuth;
 use Mail;
 use Request;
 use RZP\Error\ErrorCode;
@@ -626,11 +625,6 @@ trait Refund
         $payment = $this->refund->payment;
 
         $data = $this->getGatewayDataForRefund($this->refund, $payment);
-
-        if ($payment->getTokenId() !== null)
-        {
-            $data['token'] = $payment->localToken;
-        }
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {

@@ -15,7 +15,7 @@ return [
                 'issuer'           => 'HDFC',
                 'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000
+                'load'             => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -29,7 +29,7 @@ return [
                 'issuer'           => 'HDFC',
                 'international'    => false,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000,
+                'load'             => 50,
                 'admin'            => true
             ],
         ],
@@ -45,7 +45,7 @@ return [
                 'issuer'           => 'HDFC',
                 'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000
+                'load'             => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -75,7 +75,7 @@ return [
                 'issuer'           => 'HDFC',
                 'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000
+                'load'             => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -105,7 +105,7 @@ return [
                 'issuer'           => 'HDFC',
                 'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000
+                'load'             => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -135,7 +135,7 @@ return [
                 'issuer'           => 'HDFC',
                 'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000
+                'load'             => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -165,7 +165,7 @@ return [
                 'issuer'           => 'HDFC',
                 'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000
+                'load'             => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -195,7 +195,7 @@ return [
                 'issuer'           => 'XYZ',
                 'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000
+                'load'             => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -226,7 +226,7 @@ return [
                 'issuer'           => 'ICIC',
                 'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000
+                'load'             => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -256,7 +256,7 @@ return [
                 'issuer'           => 'ICIC',
                 'international'    => 0,
                 'gateway_acquirer' => 'axis',
-                'load'             => 5000
+                'load'             => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -283,7 +283,7 @@ return [
                 'gateway'     => 'billdesk',
                 'method'      => 'netbanking',
                 'issuer'      => 'SBIN',
-                'load'        => 5000
+                'load'        => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -294,7 +294,7 @@ return [
                 'gateway'     => 'billdesk',
                 'method'      => 'netbanking',
                 'issuer'      => 'SBIN',
-                'load'        => 5000,
+                'load'        => 50,
                 'admin'       => true,
             ],
         ],
@@ -304,10 +304,10 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'hdfc',
-                'method'  => 'netbanking',
-                'issuer' => 'SBIN',
-                'load' => 5000
+                'gateway'     => 'hdfc',
+                'method'      => 'netbanking',
+                'issuer'      => 'SBIN',
+                'load'        => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -331,9 +331,9 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'netbanking_hdfc',
-                'method'  => 'netbanking',
-                'load' => 5000
+                'gateway'     => 'netbanking_hdfc',
+                'method'      => 'netbanking',
+                'load'        => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -357,10 +357,10 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'ebs',
-                'issuer' => 'ALLA',
-                'method'  => 'netbanking',
-                'load' => 5000
+                'gateway'     => 'ebs',
+                'issuer'      => 'ALLA',
+                'method'      => 'netbanking',
+                'load'        => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -384,9 +384,9 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'wallet_jiomoney',
-                'method'  => 'wallet',
-                'load' => 5000
+                'gateway'     => 'wallet_jiomoney',
+                'method'      => 'wallet',
+                'load'        => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -394,10 +394,10 @@ return [
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'wallet_jiomoney',
-                'method'  => 'wallet',
-                'load' => 5000,
-                'admin' => true,
+                'gateway'     => 'wallet_jiomoney',
+                'method'      => 'wallet',
+                'load'        => 50,
+                'admin'       => true,
             ],
         ],
     ],
@@ -405,11 +405,11 @@ return [
     'testCreateGatewayRuleWithAlreadyExistingRule' => [
         'request' => [
             'content' => [
-                'method' => 'card',
+                'method'      => 'card',
                 'merchant_id' => '10000000000000',
-                'gateway' => 'hdfc',
-                'network' => 'VISA',
-                'load' => 5000
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'load'        => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'post'
@@ -433,10 +433,10 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'axis_migs',
-                'method'  => 'card',
-                'network' => 'VISA',
-                'load' => 4000
+                'gateway'     => 'axis_migs',
+                'method'      => 'card',
+                'network'     => 'VISA',
+                'load'        => 40
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -444,11 +444,11 @@ return [
         'response' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'axis_migs',
-                'method'  => 'card',
-                'network' => 'VISA',
-                'load' => 4000,
-                'admin' => true
+                'gateway'     => 'axis_migs',
+                'method'      => 'card',
+                'network'     => 'VISA',
+                'load'        => 40,
+                'admin'       => true
             ],
         ],
     ],
@@ -457,10 +457,10 @@ return [
         'request' => [
             'content' => [
                 'merchant_id' => '10000000000000',
-                'gateway' => 'axis_migs',
-                'method'  => 'card',
-                'network' => 'VISA',
-                'load' => 5000
+                'gateway'     => 'axis_migs',
+                'method'      => 'card',
+                'network'     => 'VISA',
+                'load'        => 50
             ],
             'url' => '/gateway/rules',
             'method' => 'POST',
@@ -483,7 +483,7 @@ return [
     'testUpdadateGatewayRuleLoad' => [
         'request' => [
             'content' => [
-                'load' => 7000,
+                'load' => 70,
             ],
             'method' => 'PATCH',
         ],
@@ -493,7 +493,7 @@ return [
                 'merchant_id' => '10000000000000',
                 'gateway'     => 'hdfc',
                 'network'     => 'VISA',
-                'load'        => 7000
+                'load'        => 70
             ],
         ],
     ],
@@ -501,7 +501,7 @@ return [
     'testUpdateGatewayRuleLoadButWithTotalLoadExceedingMaxLoad' => [
         'request' => [
             'content' => [
-                'load' => 7000
+                'load' => 70
             ],
             'method' => 'PATCH',
         ],

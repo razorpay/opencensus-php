@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY          => 'required|string|max:50|custom',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
-        Entity::LOAD             => 'required|integer|min:0|max:10000',
+        Entity::LOAD             => 'required|numeric|between:0,100',
         Entity::METHOD           => 'required|string|max:30',
         Entity::METHOD_TYPE      => 'sometimes|filled|string|max:10',
         Entity::ISSUER           => 'sometimes|filled|string',
@@ -25,7 +25,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::LOAD => 'sometimes|filled|integer|min:0|max:10000'
+        Entity::LOAD => 'sometimes|filled|numeric|between:0,100'
     ];
 
     protected static $createValidators = [
@@ -156,11 +156,13 @@ class Validator extends Base\Validator
     {
         if ($issuer === null)
         {
-            if (in_array($gateway, Gateway::$netbankingGateways, true) === false)
+            if (in_array($gateway, Gateway::$netbankingGateways, true) === true)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'issuer can be null only for shared netbanking gateways');
+                return;
             }
+
+            throw new Exception\BadRequestValidationFailureException(
+                'issuer can be null only for shared netbanking gateways');
         }
 
         $gateways = Gateway::getGatewaysForNetbankingBank($issuer);

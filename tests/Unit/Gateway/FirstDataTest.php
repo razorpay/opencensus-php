@@ -17,6 +17,11 @@ class FirstDataTest extends TestCase
 
     public function testSetCurlSslOpts()
     {
+        // This test requires CERTIFICATE_DIR_PATH to be set to some dir where
+        // you have write permissions, as a new file will be added there. Using
+        // 'storage/certs' works fine. Add a 'first_data' subfolder too, and a
+        // file with the value of FIRST_DATA_SERVER_CERTIFICATE as its name.
+
         $curl = curl_init();
 
         $this->gateway->setMode(Mode::TEST);

@@ -391,3 +391,55 @@ UPDATE line_items SET
     tax_amount = 0,
     net_amount = gross_amount
 WHERE gross_amount IS NULL;
+
+### Updates type in terminals
+
+###########################################################################
+##          ##                                                           ##
+##          ## aeps_icici         netbanking_federal  wallet_airtelmoney ##
+##          ## billdesk           netbanking_hdfc     wallet_freecharge  ##
+## PURCHASE ## ebs                netbanking_icici    wallet_jiomoney    ##
+##          ## mobikwik           netbanking_kotak    wallet_olamoney    ##
+##          ## netbanking_airtel  upi_icici           wallet_payumoney   ##
+##          ## netbanking_axis    upi_idfc            wallet_payzapp     ##
+##          ##                                                           ##
+###########################################################################
+##          ##                                                           ##
+##          ## atom               first_data          sharp              ##
+##  DUAL    ## axis_genius        hdfc                                   ##
+##          ## cybersource        paytm                                  ##
+##          ##                                                           ##
+###########################################################################
+##          ##                                                           ##
+## AUTH-    ## amex               wallet_openwallet                      ##
+## CAPTURE  ## axis_migs                                                 ##
+##          ##                                                           ##
+###########################################################################
+
+UPDATE terminals
+    SET type=2
+    WHERE gateway='first_data' AND recurring=4;
+
+UPDATE terminals
+    SET type=1
+    WHERE gateway in (
+        'axis_migs', 'amex', 'wallet_openwallet'
+    );
+
+UPDATE terminals
+    SET type=2
+    WHERE
+        card=0
+        AND gateway NOT IN (
+                'sharp', 'atom', 'wallet_openwallet'
+            );
+###########################################################################
+
+UPDATE terminals SET used = true WHERE used_count > 0;
+
+UPDATE terminals SET mode = type;
+
+UPDATE merchants
+    SET org_id = '100000razorpay'
+    WHERE id NOT IN ('7icgzKgnv7IMbP', '7icw1On5t9IXsB', '7oDON3kPcJ7H0m')
+    AND org_id IS null;

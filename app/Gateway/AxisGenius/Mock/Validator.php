@@ -6,7 +6,7 @@ use RZP\Gateway\AxisMigs;
 
 class Validator extends AxisMigs\Mock\Validator
 {
-    protected static $authRules = array(
+    protected static $authenticateRules = array(
         'vpc_Command'               => 'required|in:pay',
         'vpc_Amount'                => 'required|integer',
         'vpc_Currency'              => 'required|in:INR|max:3',

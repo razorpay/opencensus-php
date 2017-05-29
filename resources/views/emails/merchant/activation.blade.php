@@ -14,7 +14,7 @@
                               </center>
                               </h1>
                               <center class="whitetext" style="min-width: 580px; width: 100%; color: #f2f2f2; text-align: center;">
-                              Your Razorpay account has been activated.
+                              Your {{{$merchant['org']['business_name']}}} account has been activated.
                               </center>
                             </td>
                             <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
@@ -44,7 +44,7 @@
                   <table class="container" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="wrapper last bluebg" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #39ACE5; position: relative; padding-right: 0px;">
                         <table class="three columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 130px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
                               <table class="tiny-button" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; overflow: hidden; width: 100%;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 5px 0 4px; text-align: center; vertical-align: top; color: #f2f2f2; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #2F87C7; border: 1px solid #2284a1; display: block; width: auto !important; border-bottom: 2px solid #2C7CAF; margin-bottom: 1em;">
-                                    <a href="https://dashboard.razorpay.com" style="color: #f2f2f2 !important; text-decoration: none; font-family: 'Lucida Sans', Helvetica, Arial, sans-serif !important; font-size: 12px; font-weight: normal;">Go to Dashboard</a>
+                                    <a href="{{{$merchant['org']['hostname']}}}" style="color: #f2f2f2 !important; text-decoration: none; font-family: 'Lucida Sans', Helvetica, Arial, sans-serif !important; font-size: 12px; font-weight: normal;">Go to Dashboard</a>
                                   </td>
                                 </tr></table></td>
                           </tr></table></td>
@@ -56,7 +56,7 @@
                         <table class="twelve columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="darktext left-text-pad right-text-pad" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #484B4C; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px; padding-left: 10px; padding-right: 10px;">
 <p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">Hi {{{$merchant['name']}}},</p>
 
-<p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">Your Razorpay account for
+<p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">Your {{{$merchant['org']['business_name']}}} account for
 
 <a title="Merchant Website" href="{{$merchant['website']}}" style="color: #2ba6cb; text-decoration: none;">{{{$merchant['billing_label']}}}</a>
 
@@ -75,11 +75,11 @@ is now active. The pricing details associated with your account are:
 
 <p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">If you face any issues while implementing this, feel free to drop us an <a href="mailto:support@razorpay.com" style="color: #2ba6cb; text-decoration: none;">email</a>.</p>
 
-<p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">We hope that the association between you and Razorpay will be fruitful for both organizations.</p>
+<p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">We hope that the association between you and {{{$merchant['org']['business_name']}}} will be fruitful for both organizations.</p>
 
 <p style="margin: 0; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 25px; padding: 0; text-align: left; font-size: 14px; margin-bottom: 10px;">
 Regards,<br>
-Team Razorpay
+Team {{{$merchant['org']['business_name']}}}
 </p>
                             </td>
                             <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
@@ -87,6 +87,8 @@ Team Razorpay
                     </tr></table></center>
               </td>
             </tr></table>
-          @include('emails.partials.footer', ['message'=>$message])
+          @if ($merchant['org']['custom_code'] === 'rzp')
+            @include('emails.partials.footer', ['message'=>$message])
+          @endif
         </td>
       </tr></table></body></html>

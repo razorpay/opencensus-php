@@ -2043,3 +2043,44 @@ ALTER TABLE line_items
     ADD COLUMN gross_amount INT(10) UNSIGNED DEFAULT NULL AFTER amount,
     ADD COLUMN tax_amount INT(10) UNSIGNED DEFAULT NULL AFTER gross_amount,
     ADD COLUMN net_amount INT(10) UNSIGNED DEFAULT NULL AFTER tax_amount;
+
+# Adds type to terminals
+ALTER TABLE terminals
+    ADD COLUMN type TINYINT(1) DEFAULT 3 NOT NULL AFTER tpv;
+
+# Adding from_email and signature_email in orgs
+ALTER TABLE orgs
+    ADD COLUMN from_email VARCHAR(255) DEFAULT NULL after custom_code,
+    ADD COLUMN signature_email VARCHAR(255) DEFAULT NULL after from_email;
+
+ALTER TABLE terminals
+    ADD COLUMN used TINYINT(1) DEFAULT 0 NOT NULL AFTER used_count;
+
+ALTER TABLE admin_leads
+  ADD merchant_id CHAR(14) DEFAULT NULL AFTER org_id;
+
+ALTER TABLE admin_leads
+  ADD CONSTRAINT `admin_leads_merchant_id_foreign` FOREIGN KEY (`merchant_id`) REFERENCES `merchants` (`id`);
+
+# Index payment.wallet
+ALTER TABLE payments
+    ADD INDEX payments_wallet_index (wallet);
+
+#pre deploy of pr - 3321
+ALTER TABLE offers
+    ADD COLUMN max_payment_count INTEGER NULL AFTER flat_cashback;
+
+ALTER TABLE offers
+    ADD COLUMN linked_offer_ids TEXT NULL AFTER max_payment_count;
+
+# post deploy of pr - 3321
+ALTER TABLE offers
+    DROP COLUMN payment_count;
+
+# Adds mode to terminals
+ALTER TABLE terminals
+    ADD COLUMN mode TINYINT(1) DEFAULT 3 NOT NULL AFTER type;
+
+# Index payment.amount_transferred
+ALTER TABLE payments
+    ADD INDEX payments_amount_transferred_index (amount_transferred);

@@ -24,6 +24,8 @@ class Service
 
     protected $entity;
 
+    protected $entityId;
+
     protected $config;
 
     protected $permission;
@@ -54,6 +56,32 @@ class Service
         return $this;
     }
 
+    public function getEntity()
+    {
+        return $this->entity;
+    }
+
+    public function setEntityId($entityId)
+    {
+        $this->entityId = $entityId;
+
+        return $this;
+    }
+
+    public function getEntityId()
+    {
+        return $this->entityId;
+    }
+
+    public function setEntityAndId(string $entity, string $entityId)
+    {
+        $this->entity = $entity;
+
+        $this->entityId = $entityId;
+
+        return $this;
+    }
+
     public function trigger()
     {
         // Since we need to calculate the diffs, we'll need
@@ -62,7 +90,7 @@ class Service
         // fool-proof but will work well for a good number of
         // our routes (MVP acceptable).
 
-        $entity = $this->entity;
+        $entity = $this->getEntity();
 
         if (empty($entity))
         {
@@ -70,15 +98,26 @@ class Service
                 ErrorCode::BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND);
         }
 
-        $routeParams = $this->router->current()->parameters();
+        $entityId = $this->getEntityId();
 
-        // Pick the `id` first, if not then the first value
-        // First value is not entirely robust though
-        $entityId = $routeParams['id'] ?? array_values($routeParams)[0];
+        if (empty($entityId))
+        {
+            $routeParams = $this->router->current()->parameters();
+
+            // Pick the `id` first, if not then the first value
+            // First value is not entirely robust though
+            $entityId = $routeParams['id'] ?? (array_values($routeParams)[0] ?? null);
+
+            if (empty($entityId))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_WORKFLOW_ENTITY_ID_NOT_FOUND);
+            }
+        }
 
         // Check if any actions are in open/approved state on the same
         // entity. If yes then prevent any further operations on this.
-        (new Action\Validator)->validateLiveActionsOnEntity($entity, $entityId);
+        (new Action\Validator)->validateLiveActionsOnEntity($entityId, $entity, $this->getPermission());
 
         // Necessary data to pass to WorkflowController
         $params = $this->createDifferEntity($this->request, $entity, $entityId);
@@ -132,6 +171,20 @@ class Service
         if (empty($diff) === false)
         {
             $differEntity[Differ\Entity::DIFF] = $diff;
+        }
+
+        // Auth Details
+        $authDetails = [];
+
+        // If proxy auth set merchant ID
+        if ($this->ba->isProxyAuth() === true)
+        {
+            $authDetails['merchant_id'] = $this->ba->getMerchant()->getId();
+        }
+
+        if (empty($authDetails) === false)
+        {
+            $differEntity[Differ\Entity::AUTH_DETAILS] = $authDetails;
         }
 
         return $differEntity;
@@ -200,6 +253,16 @@ class Service
         return $permissionHasWorkflow;
     }
 
+    /*
+        In case of an edit operation both $originalData
+        and $dirtyData should be set.
+
+        In case of an "add" operation pass an empty stdClass
+        object as $originalData.
+
+        In case of a "delete" operation pass an empty stdClass
+        object as $dirtyData.
+    */
     public function handle($originalData = null, $dirtyData = null)
     {
         // 1. If the permission has no workflow then don't do anything
@@ -229,11 +292,32 @@ class Service
         }
         else
         {
+            if (method_exists($originalData, 'toArray') === true)
+            {
+                $originalDataArray = $originalData->toArray();
+            }
+            else
+            {
+                $originalDataArray = (array) $originalData;
+            }
+
+            if (method_exists($dirtyData, 'toArray') === true)
+            {
+                $dirtyDataArray = $dirtyData->toArray();
+            }
+            else
+            {
+                $dirtyDataArray = (array) $dirtyData;
+            }
+
             // Set entity
-            $this->setEntity($dirtyData->getEntityName());
+            if (method_exists($dirtyData, 'getEntityName') === true)
+            {
+                $this->setEntity($dirtyData->getEntityName());
+            }
 
             $diff = $differCore->createDiff(
-                $originalData->toArray(), $dirtyData->toArray());
+                $originalDataArray, $dirtyDataArray);
         }
 
         $this->setDiff($diff);

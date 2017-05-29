@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\Subscription;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
 use Carbon\Carbon;
 
 class SubscriptionChargeTest extends TestCase
 {
+    use PaymentTrait;
     use SubscriptionTrait;
 
     const MAX_AUTH_ATTEMPTS = 3;
@@ -23,9 +25,9 @@ class SubscriptionChargeTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['subscriptions']);
 
-        $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
-        $this->gateway = 'first_data';
+        $this->gateway = 'cybersource';
 
         $this->mockTokenex();
     }
@@ -226,7 +228,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('overdue', $subscription['status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
-        $this->passCharge();
+        $this->clearMock();
 
         $result = $this->makeSubscriptionRetryCronRequest();
         // Subscription was queued
@@ -275,7 +277,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
 
-        $this->failOnCapture($subscription);
+        $this->failOnCapture();
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         // Invoice got created
@@ -307,7 +309,7 @@ class SubscriptionChargeTest extends TestCase
                                  ->addMonths(2)->addDays(1)->timestamp;
         $this->assertEquals($expectedNextRun, $task['next_run_at']);
 
-        $this->passOnCapture($subscription);
+        $this->clearMock();
 
         $result = $this->makeSubscriptionRetryCronRequest();
         // Subscription was queued
@@ -363,8 +365,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(1, $result['invoices_created']);
         $invoice = $this->getLastEntity('invoice', true);
 
-        $this->passCharge();
-        $this->failOnCapture($subscription);
+        $this->clearMock();
+        $this->failOnCapture();
 
         $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
                           ->addDay(1)
@@ -390,7 +392,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals($subscription['id'], $invoice['subscription_id']);
 
-        $this->passOnCapture($subscription);
+        $this->clearMock();
 
         $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
                           ->addDay(1)
@@ -459,7 +461,7 @@ class SubscriptionChargeTest extends TestCase
         $invoice = $this->getLastEntity('invoice', true);
         $this->assertEquals('halted', $invoice['subscription_status']);
 
-        $this->passCharge();
+        $this->clearMock();
 
         $result = $this->chargeSubscriptionInvoiceManually($invoice);
 
@@ -603,7 +605,7 @@ class SubscriptionChargeTest extends TestCase
         // Retries exhausted, subscription marked as halted
         $this->assertEquals('halted', $subscription['status']);
 
-        $this->passCharge();
+        $this->clearMock();
 
         $task = $this->getLastEntity('schedule_task', true);
         Carbon::setTestNow(Carbon::createFromTimestamp($task['next_run_at'] + 1));
@@ -656,7 +658,7 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
 
-        $this->failOnCapture($subscription);
+        $this->failOnCapture();
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
 
@@ -705,6 +707,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('halted', $subscription['status']);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        $this->clearMock();
 
         $recurringPayment = $this->doAuthPayment($paymentRequest);
 
@@ -805,7 +809,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('halted', $subscription['status']);
         $this->assertEquals(3, $subscription['auth_attempts']);
 
-        $this->passCharge();
+        $this->clearMock();
         // subscription.halted event fired after successful re-auth
         $this->mockAndTestWebhookData('subscription.activated');
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);

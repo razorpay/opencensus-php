@@ -30,6 +30,7 @@ class Gateway
     const NETBANKING_AIRTEL  = 'netbanking_airtel';
     const NETBANKING_AXIS    = 'netbanking_axis';
     const NETBANKING_FEDERAL = 'netbanking_federal';
+    const NETBANKING_RBL     = 'netbanking_rbl';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
     const UPI_ICICI          = 'upi_icici';
@@ -109,6 +110,7 @@ class Gateway
         Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::BILLDESK,
         Payment\Gateway::HDFC,
+        Payment\Gateway::MOBIKWIK,
     ];
 
     public static $channels = [
@@ -128,6 +130,7 @@ class Gateway
         self::NETBANKING_AIRTEL  => Settlement\Channel::KOTAK,
         self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
         self::NETBANKING_FEDERAL => Settlement\Channel::KOTAK,
+        self::NETBANKING_RBL     => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
@@ -169,6 +172,7 @@ class Gateway
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
             self::NETBANKING_FEDERAL,
+            self::NETBANKING_RBL,
         ],
 
         Method::WALLET => [
@@ -344,6 +348,7 @@ class Gateway
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
+        self::NETBANKING_RBL,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -368,6 +373,7 @@ class Gateway
     public static $recurringGateways = [
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
+        Gateway::AXIS_MIGS,
     ];
 
     /**
@@ -430,7 +436,8 @@ class Gateway
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
+        IFSC::RATN => Gateway::NETBANKING_RBL);
 
     /**
      * For the banks that require a refundfile generated everyday,
@@ -443,7 +450,8 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::FDRL => Gateway::NETBANKING_FEDERAL);
+        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
+        IFSC::RATN => Gateway::NETBANKING_RBL);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.

@@ -98,10 +98,11 @@ class Core extends Base\Core
         $controllerSplit = explode('@', $controller);
 
         return [
-            Entity::ROUTE_PARAMS  => $esObject[Entity::ROUTE_PARAMS],
-            Entity::PAYLOAD       => $esObject[Entity::PAYLOAD],
-            Entity::CONTROLLER    => $controllerSplit[0],
-            Entity::FUNCTION_NAME => $controllerSplit[1],
+            Entity::ROUTE_PARAMS    => $esObject[Entity::ROUTE_PARAMS],
+            Entity::PAYLOAD         => $esObject[Entity::PAYLOAD],
+            Entity::CONTROLLER      => $controllerSplit[0],
+            Entity::FUNCTION_NAME   => $controllerSplit[1],
+            Entity::AUTH_DETAILS    => $esObject[Entity::AUTH_DETAILS] ?? [],
         ];
     }
 
@@ -211,17 +212,18 @@ class Core extends Base\Core
     {
         $diff = [];
 
-        $keys = array_keys($original);
+        $keys = array_merge(array_keys($original), array_keys($dirty));
+        $keys = array_values(array_unique($keys));
 
         $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
 
         foreach ($diffKeys as $key)
         {
             // Can be scalar or an array
-            $originalData = $original[$key];
+            $originalData = $original[$key] ?? null;
 
             // Can be scalar or an array
-            $dirtyData = $dirty[$key];
+            $dirtyData = $dirty[$key] ?? null;
 
             $originalDataIsIndexedArray = $dirtyDataIsIndexedArray = false;
 
@@ -247,9 +249,16 @@ class Core extends Base\Core
                 // array_values() is used to re-set indexes
                 // [54 => 'YESB'] => [0 => 'YESB']
 
-                $diff['old'][$key] = array_values(array_diff($originalData, $dirtyData));
+                $orgDirtyDiff = array_values(array_diff($originalData, $dirtyData));
+                $dirtyOrgDiff = array_values(array_diff($dirtyData, $originalData));
 
-                $diff['new'][$key] = array_values(array_diff($dirtyData, $originalData));
+                if ((empty($orgDirtyDiff) === false) or
+                    (empty($dirtyOrgDiff) === false))
+                {
+                    $diff['old'][$key] = $orgDirtyDiff;
+
+                    $diff['new'][$key] = $dirtyOrgDiff;
+                }
             }
             else
             {
@@ -264,35 +273,6 @@ class Core extends Base\Core
         }
 
         return $diff;
-    }
-
-    public function fetchByEntityAndEntityId(string $entity, string $entityId)
-    {
-        $openStates = State\Entity::OPEN_STATES;
-
-        $matchParams = [
-            Entity::ENTITY_NAME => $entity,
-            Entity::ENTITY_ID   => $entityId,
-        ];
-
-        $esResponse = null;
-
-        try
-        {
-            $mock = $this->config->get('database.es_workflow_action_mock');
-
-            if ($mock === false)
-            {
-                $esResponse = $this->esDao->searchDifferByParams(
-                    strtolower($this->baseIndex), self::ES_TYPE, $matchParams, $openStates);
-            }
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->warning(TraceCode::HEIMDALL_ACTION_LOG_FAIL, ['msg' => $e]);
-        }
-
-        return $esResponse;
     }
 
     public function updateStateInEs(string $actionId, string $state)

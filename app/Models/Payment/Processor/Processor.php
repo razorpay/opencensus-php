@@ -3,7 +3,6 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use BasicAuth;
 use Carbon\Carbon;
 
 use RZP\Http;
@@ -102,9 +101,14 @@ class Processor
     /**
      * Api Route instance
      *
-     * @var Http\Route
+     * @var \RZP\Http\Route
      */
     protected $route;
+
+    /**
+     * @var \RZP\Http\BasicAuth\BasicAuth
+     */
+    protected $ba;
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -131,6 +135,8 @@ class Processor
         $this->route = $this->app['api.route'];
 
         $this->segment = $this->app['segment'];
+
+        $this->ba = $this->app['basicauth'];
 
         // Only used in hdfc verify refund flow
         $this->verifyRefundStatus = null;
@@ -254,7 +260,7 @@ class Processor
 
         $str = implode('|', $data);
 
-        return $this->app['basicauth']->sign($str);
+        return $this->ba->sign($str);
     }
 
     protected function checkMerchantPermissions()
@@ -640,7 +646,11 @@ class Processor
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
-        $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
+        // Do not track payment when Gateway verify is called
+        if ($action !== Payment\Action::VERIFY)
+        {
+            $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
+        }
 
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }

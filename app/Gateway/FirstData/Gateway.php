@@ -166,11 +166,6 @@ class Gateway extends Base\Gateway
     {
         parent::capture($input);
 
-        if ($this->shouldCapture($input) === false)
-        {
-            return;
-        }
-
         $requestContent = $this->getCaptureRequestArray($input);
 
         $this->trace->info(TraceCode::GATEWAY_CAPTURE_REQUEST, $requestContent);
@@ -940,48 +935,6 @@ class Gateway extends Base\Gateway
         }
 
         return false;
-    }
-
-    protected function isSecondRecurringPayment(array $input)
-    {
-        if (($input['payment']['recurring'] === true) and
-            (isset($input['token']) === true) and
-            ($input['token'] !== null) and
-            ($input['token']->isRecurring() === true) and
-            ($input['terminal']->isNon3DSRecurring() === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function shouldCapture(array $input)
-    {
-        $captureEntity = $this->repo->findByPaymentIdAndAction(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::CAPTURE);
-
-        if ($captureEntity !== null)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_ALREADY_CAPTURED,
-                $input['payment']);
-
-            return false;
-        }
-
-        $purchaseEntity = $this->repo->findByPaymentIdAndAction(
-                                            $input['payment'][Payment\Entity::ID],
-                                            Base\Action::PURCHASE);
-
-        if ($purchaseEntity !== null)
-        {
-            // First gatewayPayment entity was a purchase transaction,
-            // so capture is not needed.
-            // This happens in case of second recurring payment requests.
-            return false;
-        }
     }
 
     protected function getRequestOptions()

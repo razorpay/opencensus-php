@@ -5,12 +5,10 @@ namespace RZP\Tests\Functional\Helpers\Subscription;
 use Mockery;
 use Closure;
 use Carbon\Carbon;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception;
 
 trait SubscriptionTrait
 {
-    use PaymentTrait;
-
     public function getSubscriptionAuthTransactionRequest($subscription, $authAmount = null)
     {
         $paymentRequest = $this->getDefaultRecurringPaymentArray();
@@ -176,43 +174,29 @@ trait SubscriptionTrait
 
     protected function failCharge()
     {
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function($input, $action)
         {
-            $content['ApprovalCode']      = 'N:-10503:Poor excude for an error message';
-            $content['TransactionResult'] = 'FAILED';
+            throw new \SoapFault('HTTP', 'Random SoapFault Exception');
         });
     }
 
-    protected function passCharge()
+    protected function failOnCapture()
     {
-        $this->mockServerContentFunction(function(&$content)
+        $this->mockServerContentFunction(function($input, $action)
         {
-
+            if ($action === 'validate_capture')
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid Capture');
+            }
         });
     }
 
-    protected function failOnCapture($subscription)
+    protected function clearMock()
     {
-        // This tells the gateways to fail on capture
-        $this->fixtures->edit(
-            'subscription',
-            $subscription['id'],
-            [
-                'notes' => [
-                    'fail' => 'capture',
-                ],
-            ]);
-    }
-
-    protected function passOnCapture($subscription)
-    {
-        // This tells the gateways to fail on capture
-        $this->fixtures->edit(
-            'subscription',
-            $subscription['id'],
-            [
-                'notes' => [],
-            ]);
+        $this->mockServerContentFunction(function(&$input)
+        {
+        });
     }
 
     protected function mockInfernoFire(Closure $closure, $times = 1)
@@ -296,5 +280,12 @@ trait SubscriptionTrait
     protected function chargeSubscriptionInvoiceManually($invoice)
     {
         return $this->makeSubscriptionInvoiceChargeManualRequest($invoice['id']);
+    }
+
+    protected function createSubscriptionPreRequisiteEntities(array $planAttributes = [])
+    {
+        $response = $this->fixtures->create('customer');
+
+        $response = $this->fixtures->plan->create($planAttributes);
     }
 }
