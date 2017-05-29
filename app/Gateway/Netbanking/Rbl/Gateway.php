@@ -239,7 +239,7 @@ class Gateway extends Base\Gateway
      * @param Eg. $data = ['PRN' => "6vTX585l2WP6Bq", 'MD' => "P"]
      * @return Eg. string "PRN~6vTX585l2WP6Bq|MD~P"
      */
-    protected function getStringToHash($data, $glue = ''): string
+    protected function getStringToHash($data, $glue = '|'): string
     {
         $queryArray = [];
 
@@ -248,7 +248,7 @@ class Gateway extends Base\Gateway
             $queryArray[] = $key . '~' . $value;
         }
 
-        $queryString = implode('|', $queryArray);
+        $queryString = implode($glue, $queryArray);
 
         return $queryString;
     }
