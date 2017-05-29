@@ -30,7 +30,7 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
-        Entity::TRANSFERRED        => 'sometimes|in:0,1'
+        Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1'
     ];
 
     // These are proxy allowed params to search on.
