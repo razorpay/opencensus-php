@@ -364,6 +364,39 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $content = $this->sendRefundVerifyRequest($input);
+
+        if ($content['vpc_DRExists'] === 'N')
+        {
+            if ($input['refund']['created_at'] < Carbon::now('Asia/Kolkata')->subDays(5)->timestamp)
+            {
+                return false;
+            }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Unable to verify migs refund');
+            }
+        }
+
+        if (($content['vpc_FoundMultipleDRs'] === 'N') and
+            ($content['vpc_RefundedAmount'] === $input['refund']['base_amount']))
+        {
+            return true;
+        }
+        else if ($content['vpc_FoundMultipleDRs'] === 'Y')
+        {
+            throw new Exception\LogicException(
+                'Shouldn\'t reach here');
+        }
+
+        return false;
+    }
+
     protected function captureAuthorizedPayment(array $input)
     {
         assert ($input['payment']['status'] === 'authorized');
@@ -415,12 +448,32 @@ class Gateway extends Base\Gateway
         $this->verifyAmaTransactionResponse($content, $input);
     }
 
+    protected function sendRefundVerifyRequest($input)
+    {
+        $content = $this->getRefundVerifyRequestContent($input);
+
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
+
+        if (isset($content['vpc_SecureHash']))
+        {
+            $this->verifySecureHash($content);
+            unset($content['vpc_SecureHash']);
+        }
+
+        if (isset($content['vpc_Command']))
+        {
+            unset($content['vpc_Command']);
+        }
+
+        return $content;
+    }
+
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
         $payment = $verify->payment;
 
-        $content = $this->getPaymentVerifyRequestContent($input, $payment);
+        $content = $this->getPaymentVerifyRequestContent($input);
 
         $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
@@ -651,7 +704,7 @@ class Gateway extends Base\Gateway
 
     protected function addSubMerchantDetails(array & $content, array $input)
     {
-        ;
+        // Dummy function
     }
 
     protected function getPaymentCaptureRequestContent($input, $payment)
@@ -667,12 +720,21 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestContent($input, $payment)
+    protected function getRefundVerifyRequestContent($input)
+    {
+        return $this->getVerifyRequestContent($input, 'refund');
+    }
+
+    protected function getPaymentVerifyRequestContent($input)
+    {
+        return $this->getVerifyRequestContent($input, 'payment');
+    }
+
+    protected function getVerifyRequestContent($input, $entity)
     {
         $content = [
             'vpc_Command'       => AxisMigs\Command::QUERYDR,
-            'vpc_Amount'        => $input['payment']['amount'],
-            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_MerchTxnRef'   => $input[$entity]['id'],
         ];
 
         return $content;
