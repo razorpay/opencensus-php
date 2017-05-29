@@ -8,6 +8,7 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
@@ -16,8 +17,9 @@ class Repository extends Base\Repository
     protected $entity = 'invoice';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID => 'sometimes|string|min:14|max:18',
-        Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
+        Entity::PAYMENT_ID  => 'sometimes|string|min:14|max:18',
+        Entity::RECEIPT     => 'sometimes|string|min:1|max:40',
+        Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:20',
     ];
 
     protected $proxyFetchParamRules = [
@@ -189,6 +191,19 @@ class Repository extends Base\Repository
         $query->where($paymentIdAttribute, '=', $paymentId);
 
         $query->select($query->getModel()->getTable() . '.*');
+    }
+
+    protected function addQueryParamCustomerId(
+        \RZP\Base\BuilderEx $query,
+        array $params)
+    {
+        $customerId = $params[Entity::CUSTOMER_ID];
+
+        Customer\Entity::stripSignWithoutValidation($customerId);
+
+        $customerIdAttr = $this->repo->invoice->dbColumn(Entity::CUSTOMER_ID);
+
+        $query->where($customerIdAttr, $customerId);
     }
 
     protected function addQueryParamOrderId($query, $params)
