@@ -453,11 +453,11 @@ $str = <<<EOT
 EOT;
     break;
         // TODO: Switch to this when you want to try out real payments
-        case 'ReqPayReal':
+        case 'ReqPay':
             $mpinCredBlock = $input['params']['gateway']['mpincredblock'];
             $imei = $input['params']['device']->getImei();
             $packageName = $input['params']['device']->getPackageName();
-            $amount = number_format($input['params']['p2p']->getAmount(), 2, ',', '');
+            $amount = number_format(/*$input['params']['p2p']->getAmount()*/ 100, 2, '.', '');
             $source = $input['params']['p2p']->source;
             $sink = $input['params']['p2p']->sink;
             $customer = $input['params']['p2p']->customer;
@@ -480,7 +480,7 @@ EOT;
         <Ac addrType="ACCOUNT" name="Hari Ram">
             <Detail name="IFSC" value="RAZR0000001"/>
             <Detail name="ACTYPE" value="SAVINGS"/>
-            <Detail name="ACNUM" value="{$source->bank_account->getAccountNumber()}"/>
+            <Detail name="ACNUM" value="{$source->bankAccount->getAccountNumber()}"/>
         </Ac>
         <Device>
             <Tag name="MOBILE" value="{$customer->getContact()}"/>
@@ -509,29 +509,20 @@ EOT;
     break;
             // We are currently sending a fake reqbalenq
             // for a payment request
-            case 'ReqPay':
             case 'ReqBalEnq':
                 $params = $input['params'];
                 $mpinCredBlock  = $params['gateway']['mpincredblock'];
                 $imei = $params['device']['imei'];
                 $packageName = $params['device']['package_name'];
-                $amount = number_format($params['p2p']['amount'], 2, ',', '');
-                $p2pId = $params['p2p']['id'];
-                $txnId = $params['p2p']['txn_id'];
-                $source = $params['source'];
-                $sink = $params['sink'];
                 $customer = $params['customer'];
                 $bankAccount = $params['bank_account'];
-
-                $imei = '358960060336586';
-                $packageName = 'com.razorpay.upi.sampleapp';
 
                 $method = 'ReqBalEnq';
 
                 $str = <<<EOT
 <upi:ReqBalEnq xmlns:upi="http://npci.org/upi/schema/">
 <Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
-<Txn id="$txnId" note="$p2pId" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="BalEnq">
+<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="BalEnq">
 <RiskScores/>
 </Txn>
 <Payer addr="nemo@razor" name="Hari Ram" seqNum="1" type="PERSON">
@@ -754,6 +745,42 @@ EOT;
 </upi:ReqListKeys>
 EOT;
             break;
+
+        case 'ReqOtp':
+                $params = $input['params'];
+                $mpinCredBlock  = $params['input']['mpincredblock'];
+                $imei = $params['device']['imei'];
+                $packageName = $params['device']['package_name'];
+                $customer = $params['customer'];
+                $bankAccount = $params['bank_account'];
+
+                $method = 'ReqOtp';
+
+                $str = <<<EOT
+<upi:ReqOtp xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="$orgId" msgId="$msgId"/>
+<Txn id="$txnId" note="HELLO WORLD" refId="{$ids[0]}" refUrl="$refUrl" ts="$ts" type="Otp" />
+<Payer addr="mayank@razor" name="" seqNum="" type="PERSON" code="">
+    <Device>
+        <Tag name="MOBILE" value="{$customer['contact']}"/>
+        <Tag name="GEOCODE" value="12.9667,77.5667"/>
+        <Tag name="LOCATION" value="Sarjapur Road, Bangalore, IN" />
+        <Tag name="IP" value="182.74.201.50"/>
+        <Tag name="TYPE" value="MOB"/>
+        <Tag name="ID" value="{$imei}"/>
+        <Tag name="OS" value="Android"/>
+        <Tag name="APP" value="{$packageName}"/>
+        <Tag name="CAPABILITY" value="5200000200010004000639292929292"/>
+    </Device>
+    <Ac addrType="ACCOUNT">
+        <Detail name="IFSC" value="RAZR0000001"/>
+        <Detail name="ACTYPE" value="SAVINGS"/>
+        <Detail name="ACNUM" value="{$bankAccount['account_number']}"/>
+    </Ac>
+</Payer>
+</upi:ReqOtp>
+EOT;
+                break;
 
             default:
                 throw new \Exception("Invalid Method");

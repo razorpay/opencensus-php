@@ -478,7 +478,7 @@ final class Route
         'device_verify'                           => ['post',     'upi/devices/verify',                             'DeviceController@verifyDevice'                                     ],
         'device_fetch'                            => ['get',      'upi/devices/{id}',                               'DeviceController@getDevice'                                        ],
         'upi_customer_bank_accounts_fetch'        => ['get',      'upi/bank_accounts/ifsc/{ifsc}',                  'CustomerController@fetchUpiBankAccounts'                           ],
-        'customer_balance_fetch'                  => ['get',      'upi/bank_accounts/{id}/balance',                 'CustomerController@fetchBalance'                                   ],
+        'customer_balance_fetch'                  => ['post',     'upi/bank_accounts/{id}/balance',                 'CustomerController@fetchBalance'                                   ],
         'customer_bank_account_fetch'             => ['get',      'upi/bank_accounts/{id}',                         'CustomerController@fetchBankAccount'                               ],
         'reset_mpin'                              => ['put',      'upi/bank_accounts/{id}/mpin',                    'CustomerController@resetMpin'                                      ],
         'set_mpin'                                => ['post',     'upi/bank_accounts/{id}/mpin',                    'CustomerController@setMpin'                                        ],

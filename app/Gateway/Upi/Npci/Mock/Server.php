@@ -7,13 +7,22 @@ use RZP\Gateway\Base;
 
 class Server extends Base\Mock\Server
 {
-    public function upiRequest(string $method, array $input)
+    public function upiRequest(string $reqMethod, array $input)
     {
         $array = $this->getArrayFromXml($input['content']);
 
         $ts = upi_ts();
 
-        $str = $this->$method($array, $ts);
+        $method = $this->getRespMethod($reqMethod);
+
+        if ($method === 'RespPay')
+        {
+            $str = $this->RespPay($array, $ts, $input['url']);
+        }
+        else
+        {
+            $str = $this->$method($array, $ts);
+        }
 
         $request = $this->getStandardRequestArray($str, $input['url']);
 
@@ -24,20 +33,98 @@ class Server extends Base\Mock\Server
         return $this->makeUpiResponse($authResponse, $input['url']);
     }
 
-    public function ReqHbt(array $array, string $ts)
+    public function RespHbt(array $array, string $ts)
     {
         $str = <<<EOT
-<upi:ReqHbt xmlns:upi="http://npci.org/upi/schema/">
+<upi:RespHbt xmlns:upi="http://npci.org/upi/schema/">
     <Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
     <Txn id="{$array['Txn']['@attributes']['id']}" note="HELLO WORLD" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Head']['@attributes']['orgId']}" ts="$ts" type="Hbt" />
     <HbtMsg type="ALIVE" value="NA"/>
-</upi:ReqHbt>
+</upi:RespHbt>
 EOT;
 
         return $str;
     }
 
-    public function ReqListAccPvd(array $array, string $ts)
+    public function RespPay(array $array, string $ts, string $url)
+    {
+        $this->ReqAuthDetails($array, $ts, $url);
+
+        $this->ReqTxnConfirmation($array, $ts, $url);
+
+        $str = <<<EOT
+<upi:RespPay xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
+<Txn id="{$array['Txn']['@attributes']['id']}" note="HELLO WORLD" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Head']['@attributes']['orgId']}" ts="$ts" type="PAY" orgTxnId="" />
+        <RiskScores>
+            <Score provider="sp" type="TXNRISK" value=""/>
+            <Score provider="npci" type="TXNRISK" value=""/>
+        </RiskScores>
+<Resp reqMsgId="" result="SUCCESS" errCode="">
+    <Ref type="PAYER" seqNum="" addr="" regName="" settAmount="" settCurrency="" acNum ="" approvalNum="" respCode="" reversalRespCode="" />
+    <Ref type="PAYEE" seqNum="" addr="" settAmount="" acNum ="" regName="" approvalNum="" respCode="" reversalRespCode="" />
+</Resp>
+</upi:RespPay>
+EOT;
+
+        return $str;
+    }
+
+    public function ReqAuthDetails(array $array, string $ts, string $url)
+    {
+        $str = <<<EOT
+<upi:ReqAuthDetails xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
+<Txn id="{$array['Txn']['@attributes']['id']}" note="HELLO WORLD" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Head']['@attributes']['orgId']}" ts="$ts" type="Pay" />
+    <RiskScores>
+        <Score provider="sp" type="TXNRISK" value=""/>
+        <Score provider="NPCI" type="TXNRISK" value=""/>
+    </RiskScores>
+<Payer addr="" name="" seqNum="" type="PERSON" code="">
+    <Info>
+        <Identity type="PAN" verifiedName="" />
+        <Rating VerifiedAddress="TRUE"/>
+    </Info>
+<Amount value="" curr="INR">
+    <Split name="PURCHASE" value=""/>
+</Amount>
+</Payer>
+<Payees>
+    <Payee seqNum="" addr="" name="">
+        <Info>
+            <Identity type="PAN" verifiedName=""/> <Rating VerifiedAddress="TRUE"/>
+        </Info>
+        <Amount value="" curr="INR">
+            <Split name="PURCHASE" value=""/>
+        </Amount>
+    </Payee>
+</Payees>
+</upi:ReqAuthDetails>
+EOT;
+
+        $request = $this->getStandardRequestArray($str, $url);
+
+        $this->makeAsyncRequest($request);
+    }
+
+    public function ReqTxnConfirmation(array $array, string $ts, string $url)
+    {
+        $str = <<<EOT
+<upi:ReqTxnConfirmation xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
+<Txn id="{$array['Txn']['@attributes']['id']}" note="HELLO WORLD" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Head']['@attributes']['orgId']}" ts="$ts" type="TxnConfirmation" />
+<TxnConfirmation note="" orgStatus="SUCCESS" orgErrCode="" type="" orgTxnId="">
+    <Ref type="PAYER" seqNum="" addr="" regName="" settAmount="" settCurrency="" approvalNum="" respCode="" orgAmount="" reversalRespCode=""/>
+</TxnConfirmation>
+</upi:ReqTxnConfirmation>
+EOT;
+
+        $request = $this->getStandardRequestArray($str, $url);
+
+        $this->makeAsyncRequest($request);
+    }
+
+    public function RespListAccPvd(array $array, string $ts)
     {
         $str = <<<EOT
 <upi:RespListAccPvd xmlns:upi="http://npci.org/upi/schema/">
@@ -54,7 +141,7 @@ EOT;
         return $str;
     }
 
-    public function ReqListPsp(array $array, string $ts)
+    public function RespListPsp(array $array, string $ts)
     {
         $str = <<<EOT
 <upi:RespListAccPvd xmlns:upi="http://npci.org/upi/schema/">
@@ -71,7 +158,7 @@ EOT;
         return $str;
     }
 
-    public function ReqListKeys(array $array, string $ts)
+    public function RespListKeys(array $array, string $ts)
     {
         $str = <<<EOT
 <upi:RespListKeys xmlns:upi="http://npci.org/upi/schema/">
@@ -92,7 +179,7 @@ EOT;
         return $str;
     }
 
-    public function ReqListAccount(array $array, string $ts)
+    public function RespListAccount(array $array, string $ts)
     {
         $str = <<<EOT
 <upi:RespListAccount xmlns:upi="http://npci.org/upi/schema/">
@@ -113,7 +200,7 @@ EOT;
         return $str;
     }
 
-    public function ReqListVae(array $array, string $ts)
+    public function RespListVae(array $array, string $ts)
     {
         $str = <<<EOT
 <upi:RespListVae xmlns:upi="http://npci.org/upi/schema/">
@@ -130,7 +217,7 @@ EOT;
         return $str;
     }
 
-    public function ReqManageVae(array $array, string $ts)
+    public function RespManageVae(array $array, string $ts)
     {
         $str = <<<EOT
 <upi:RespManageVae xmlns:upi="http://npci.org/upi/schema/">
@@ -146,7 +233,7 @@ EOT;
         return $str;
     }
 
-    public function ReqValAdd(array $array, string $ts)
+    public function RespValAdd(array $array, string $ts)
     {
         $str = <<<EOT
 <upi:RespValAdd xmlns:upi="http://npci.org/upi/schema/">
@@ -159,7 +246,7 @@ EOT;
         return $str;
     }
 
-    public function ReqRegMob(array $array, string $ts)
+    public function RespRegMob(array $array, string $ts)
     {
         $str = <<<EOT
 <upi:RespRegMob xmlns:upi="http://npci.org/upi/schema/">
@@ -172,7 +259,7 @@ EOT;
         return $str;
     }
 
-    public function ReqSetCre(array $array, string $ts)
+    public function RespSetCre(array $array, string $ts)
     {
         $str = <<<EOT
 <upi:RespSetCre xmlns:upi="http://npci.org/upi/schema/">
@@ -180,6 +267,58 @@ EOT;
     <Txn id="{$array['Txn']['@attributes']['id']}" note="{$array['Txn']['@attributes']['note']}" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Txn']['@attributes']['refUrl']}" ts="$ts" type="SetCre"/>
     <Resp reqMsgId="" result="SUCCESS" errCode=""/>
 </upi:RespSetCre>
+EOT;
+
+        return $str;
+    }
+
+    public function RespOtp(array $array, string $ts)
+    {
+        $str = <<<EOT
+<upi:RespOtp xmlns:upi="http://npci.org/upi/schema/">
+    <Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
+    <Txn id="{$array['Txn']['@attributes']['id']}" note="{$array['Txn']['@attributes']['note']}" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Txn']['@attributes']['refUrl']}" ts="$ts" type="Otp"/>
+    <Resp reqMsgId="" result="SUCCESS" errCode=""/>
+</upi:RespOtp>
+EOT;
+
+        return $str;
+    }
+
+    public function RespBalEnq(array $array, string $ts)
+    {
+        $str = <<<EOT
+<upi:RespBalEnq xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
+<Txn id="{$array['Txn']['@attributes']['id']}" note="{$array['Txn']['@attributes']['note']}" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Txn']['@attributes']['refUrl']}" ts="$ts" type="BalEnq"/>
+<RiskScores>
+    <Score provider="sp" type="TXNRISK" value=""/>
+    <Score provider="NPCI" type="TXNRISK" value=""/>
+</RiskScores>
+</Txn>
+<Payer addr="" name="" seqNum="" type="PERSON" code="">
+     <Bal>
+            <Data>342342343</Data>
+     </Bal>
+</Payer>
+</upi:RespBalEnq>
+EOT;
+
+        return $str;
+    }
+
+    public function RespPendingMsg(array $array, string $ts)
+    {
+        $str = <<<EOT
+<upi:RespPendingMsg xmlns:upi="http://npci.org/upi/schema/">
+<Head ver="1.0" ts="$ts" orgId="{$array['Head']['@attributes']['orgId']}" msgId="{$array['Head']['@attributes']['msgId']}"/>
+<Txn id="{$array['Txn']['@attributes']['id']}" note="{$array['Txn']['@attributes']['note']}" refId="{$array['Txn']['@attributes']['refId']}" refUrl="{$array['Txn']['@attributes']['refUrl']}" ts="$ts" type="PendingMsg"/>
+<Resp reqMsgId=" " result="SUCCESS" errCode=""/>
+<RespMsg>
+    <PenTxn id=" " note="" refId="" refUrl="" ts="" type="COLLECT" orgTxnId=""/>
+    <PenTxn id=" " note="" refId="" refUrl="" ts="" type="COLLECT" orgTxnId=""/>
+</RespMsg>
+</upi:RespPendingMsg>
 EOT;
 
         return $str;
@@ -201,6 +340,11 @@ EOT;
 EOT;
 
         return $str;
+    }
+
+    protected function getRespMethod(string $reqMethod) : string
+    {
+        return str_replace('Req', 'Resp', $reqMethod);
     }
 
     protected function getStandardRequestArray(string $str, string $url)

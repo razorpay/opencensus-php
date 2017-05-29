@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use Request;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Address;
@@ -314,6 +315,8 @@ class Service extends Base\Service
 
     public function fetchBalance($accountId)
     {
+        $input = Request::all();
+
         Entity::stripSignWithoutValidation($accountId);
         $bankAccount = $this->repo->bank_account->findOrFail($accountId);
 
@@ -322,10 +325,10 @@ class Service extends Base\Service
             return;
         }
 
-        $balance = [
-            'id'     => $bankAccount->getPublicId(),
-            'amount' => '10000',
-        ];
+        $data = $this->core->sendBalanceEnqRequestToGateway($this->device, $this->device->customer, $bankAccount, $input);
+
+        // Cache the balance from the callback and make a cache call here?
+        $balance = 10000;
 
         return $balance;
     }
@@ -526,6 +529,9 @@ class Service extends Base\Service
         // Confirm ownership of bank account
         assertTrue($bankAccount->getEntityId() === $this->device->customer->getId());
 
+        $otpResponse = $this->core->sendOtpRequestToGateway($this->device, $this->device->customer, $bankAccount, $input);
+
+        // TODO: Conditionally send Mpin request if otp request acknowledgement received correctly
         $response = $this->core->sendSetMpinRequestToGateway($this->device, $this->device->customer, $bankAccount, $input);
 
         return $response;
