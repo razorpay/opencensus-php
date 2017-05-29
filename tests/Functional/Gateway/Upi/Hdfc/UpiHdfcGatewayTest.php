@@ -179,12 +179,12 @@ class UpiHdfcGatewayTest extends TestCase
 
         $payment = $this->testPayment();
 
-        $data = $this->testData[__FUNCTION__];
+        $refund = $this->refundPayment($payment['id'], 10000);
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->refundPayment($payment['id'], 10000);
-        });
+        $entity = $this->getEntityById('refund', $refund['id'], 'admin');
+
+        $this->assertEquals('failed', $entity['status']);
+        $this->assertEquals(false, $entity['gateway_refunded']);
 
     }
 
