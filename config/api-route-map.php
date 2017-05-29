@@ -264,21 +264,21 @@ return [
         // Transfers
         'transfer_fetch_multiple'           => [
             'url'       => 'transfers',
-            'routeName' => 'transfers_fetch_all'
+            'routeName' => 'marketplace_read'
         ],
         'transfer_fetch'           => [
             'url'       => 'transfers/{id}',
-            'routeName' => 'transfers_fetch_single'
+            'routeName' => 'marketplace_read'
         ],
 
         // Reversals
         'reversal_fetch_multiple'           => [
             'url'       => 'reversals',
-            'routeName' => 'reversals_fetch_all'
+            'routeName' => 'marketplace_read'
         ],
         'reversal_fetch'           => [
             'url'       => 'reversals/{id}',
-            'routeName' => 'reversals_fetch_single'
+            'routeName' => 'marketplace_read'
         ],
     ],
 
