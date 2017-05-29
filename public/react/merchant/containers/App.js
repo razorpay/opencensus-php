@@ -42,9 +42,7 @@ export default class App extends Component {
           this.props.updateSession({ mode: currentMode });
         }
 
-        if (role === 'sellerapp') {
-          this.props.history.replace('/invoices');
-        }
+        this.redirectToRoute(role);
         this.initSmooch(data);
       }),
       this.props.fetchOrg().then(({ data }) => {
@@ -56,6 +54,19 @@ export default class App extends Component {
     ]).then(() => {
       this.setState({ isLoading: false });
     });
+  }
+
+  componentWillReceiveProps({ user }) {
+    if (user) {
+      let role = user.merchants[user.current].role;
+      this.redirectToRoute(role);
+    }
+  }
+
+  redirectToRoute(role) {
+    if (role === 'sellerapp') {
+      this.props.history.replace('/invoices');
+    }
   }
 
   initSmooch(data) {
