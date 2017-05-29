@@ -437,7 +437,7 @@ class Core extends Base\Core
         $data['invoice'] = [
             'order_id'  => Order\Entity::getSignedId($orderId),
             'url'       => $invoice->getShortUrl(),
-            'amount'    => $invoice->getNetAmount(),
+            'amount'    => $invoice->getAmount(),
         ];
 
         if ($customer)

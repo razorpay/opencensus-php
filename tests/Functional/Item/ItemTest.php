@@ -27,10 +27,13 @@ class ItemTest extends TestCase
     public function testCreateItem()
     {
         $response = $this->startTest();
+    }
 
-        $item = $this->getLastEntity('item', true);
+    public function testCreateItem2()
+    {
+        $this->startTest();
 
-        $this->assertEquals($item['id'], $response['id']);
+        $this->assertResponseWithLastEntity('item', __FUNCTION__);
     }
 
     public function testCreateItemWithTaxId()
@@ -71,6 +74,15 @@ class ItemTest extends TestCase
                                 'unit'   => 'Kg',
                                 'tax_id' => '00000000000001',
                             ]);
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('item', __FUNCTION__);
+    }
+
+    public function testUpdateItem2()
+    {
+        $this->fixtures->create('item');
 
         $this->startTest();
 

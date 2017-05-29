@@ -65,6 +65,7 @@ return [
             'url' => '/invoices',
             'method' => 'post',
             'content' => [
+                'invoice_number' => 'inv# xyz',
                 'customer'      => [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
@@ -93,7 +94,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'receipt'          => null,
+                'receipt'          => 'inv# xyz',
+                'invoice_number'   => 'inv# xyz',
                 'customer_details' => [
                     'name'            => 'test',
                     'email'           => 'test@razorpay.com',
@@ -248,7 +250,7 @@ return [
                     [
                         'name'          => 'Another item',
                         'description'   => 'Another description',
-                        'amount'        => 200000,
+                        'unit_amount'   => 200000,
                         'quantity'      => 2,
                     ]
                 ],
@@ -268,12 +270,14 @@ return [
                         'name'        => 'Some item name',
                         'description' => 'Some item description',
                         'amount'      => 100000,
+                        'unit_amount' => 100000,
                         'quantity'    => 1,
                     ],
                     [
                         'name'        => 'Another item',
                         'description' => 'Another description',
                         'amount'      => 200000,
+                        'unit_amount' => 200000,
                         'quantity'    => 2,
                     ]
                 ],
@@ -1096,7 +1100,7 @@ return [
             'url'       => '/invoices/inv_1000000invoice',
             'method'    => 'patch',
             'content'   => [
-                'receipt'      => 'inv_receipt_0001',
+                'invoice_number' => 'inv_receipt_0001',
                 'sms_notify'   => '0',
                 'email_notify' => '0',
                 'date'         => 1480506888,
@@ -1111,6 +1115,7 @@ return [
                 'id'                   => 'inv_1000000invoice',
                 'entity'               => 'invoice',
                 'receipt'              => 'inv_receipt_0001',
+                'invoice_number'       => 'inv_receipt_0001',
                 'customer_id'          => 'cust_100000customer',
                 'customer_details'     => [
                     'name'    => 'test',

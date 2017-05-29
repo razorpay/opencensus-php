@@ -33,6 +33,35 @@ return [
         ],
     ],
 
+    'testCreateItem2' => [
+        'request' => [
+            'url'     => '/items',
+            'method'  => 'post',
+            'content' => [
+                'name'        => 'Item 1',
+                'description' => 'Item 1 description :) ..',
+                'unit_amount' => 100,
+                'currency'    => 'INR',
+                'type'        => 'invoice',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'active'        => true,
+                'name'          => 'Item 1',
+                'description'   => 'Item 1 description :) ..',
+                'amount'        => 100,
+                'unit_amount'   => 100,
+                'currency'      => 'INR',
+                'unit'          => null,
+                'tax_inclusive' => false,
+                'tax_id'        => null,
+                'tax_group_id'  => null,
+            ],
+        ],
+    ],
+
+
     'testCreateItemWithTaxId' => [
         'request' => [
             'url'     => '/items',
@@ -199,6 +228,28 @@ return [
                 'tax_inclusive' => false,
                 'tax_id'        => 'tax_00000000000001',
                 'tax_group_id'  => null,
+            ],
+        ],
+    ],
+
+    'testUpdateItem2' => [
+        'request' => [
+            'url'     => '/items/item_1000000000item',
+            'method'  => 'patch',
+            'content' => [
+                'name'        => 'Item 2 Updated',
+                'unit_amount' => 5000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'item_1000000000item',
+                'active'        => true,
+                'name'          => 'Item 2 Updated',
+                'description'   => 'Some item description',
+                'amount'        => 5000,
+                'unit_amount'   => 5000,
+                'currency'      => 'INR',
             ],
         ],
     ],
