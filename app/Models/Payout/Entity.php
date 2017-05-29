@@ -315,7 +315,7 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicProcessedOnAttribute(array &$array)
     {
-        $processedAt = $this->attributes[self::PROCESSED_AT];
+        $processedAt = $this->getAttribute(self::PROCESSED_AT);
 
         $array[self::PROCESSED_ON] = null;
 
