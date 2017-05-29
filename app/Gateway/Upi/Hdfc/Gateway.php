@@ -176,7 +176,7 @@ class Gateway extends Base\Gateway
      * @param  array $input
      * @return boolean
      */
-    public function callback(array $input)
+    public function callback(array $input): array
     {
         parent::callback($input);
 
@@ -200,6 +200,9 @@ class Gateway extends Base\Gateway
 
         // Authorization was successful
         $this->updateGatewayEntityResponse($gatewayPayment, $content);
+
+        // Gateways must return array in callback
+        return [];
     }
 
     /**
