@@ -22,6 +22,19 @@ trait ScheduleTrait
         return $response;
     }
 
+    private function editSchedule($id, $input)
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/schedules/'.$id,
+            'content' => $input,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
     private function fetchSchedule($id)
     {
         $request = [

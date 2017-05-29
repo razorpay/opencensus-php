@@ -257,8 +257,6 @@ class Generator extends Base\Core
         $this->invoice->getValidator()
                       ->validateInvoiceIssue();
 
-        $this->invoice->setDefaultExpireByIfNotAlreadySet();
-
         $this->invoice->setStatus(Status::ISSUED);
 
         $this->createAndAssociateOrderForInvoice();

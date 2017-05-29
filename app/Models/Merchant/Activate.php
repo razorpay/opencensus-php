@@ -93,7 +93,10 @@ class Activate extends Base\Core
 
         $subjectName = $merchant->getBillingLabelElseName();
 
-        $businessName = $org->getBusinessName();
+        if ($org === null)
+        {
+            $org = $this->repo->org->getRazorpayOrg();
+        }
 
         $subject = $org->getBusinessName() . " | Account activated for $subjectName";
 

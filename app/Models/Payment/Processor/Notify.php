@@ -4,13 +4,12 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Carbon\Carbon;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 use Mail;
 use RZP\Constants\MailTags;
 use RZP\Constants\Mode;
 use RZP\Jobs\InvoiceAction;
+use RZP\Jobs\DispatchRouter;
 use RZP\Mail\Payment as PaymentMail;
-use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Payment;
@@ -18,7 +17,13 @@ use RZP\Trace\TraceCode;
 
 class Notify
 {
-    use DispatchesJobs;
+    const AUTHORIZED                 = 'authorized';
+    const CARD_SAVED                 = 'card_saved';
+    const CAPTURED                   = 'captured';
+    const REFUNDED                   = 'refunded';
+    const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
+    const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
+    const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
 
     /**
      * The minimum amount for a transaction to be considered risky
@@ -229,15 +234,6 @@ class Notify
      */
     public function trigger($event)
     {
-        if ($event === Payment\Event::INVOICE_PAYMENT_AUTHORIZED)
-        {
-            (new Invoice\Core)->dispatchQueueJob(
-                $this->mode,
-                InvoiceAction::AUTHORIZED,
-                $this->invoice->getId()
-            );
-        }
-
         /**
          * This is wrapped in a try-catch block as this is not
          * critical path for the payment operation
@@ -245,6 +241,20 @@ class Notify
          */
         try
         {
+            // If it's invoice payment authorization:
+            // - dispatch a queue job which updates the invoice pdf,
+            // - if invoice's email_notify is set to '0', just return.
+
+            if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
+            {
+                $job = new InvoiceAction(
+                            $this->mode,
+                            InvoiceAction::AUTHORIZED,
+                            $this->invoice->getId());
+
+                (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+            }
+
             // Send out notification for Slack
             $this->notifyViaSlack($event);
 

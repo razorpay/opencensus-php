@@ -98,7 +98,7 @@ class EsClient
         // If ES mock is set to true.
         if ($this->esMock === true)
         {
-            return ['errors' => false];
+            return [];
         }
 
         return $this->client->bulk($params);

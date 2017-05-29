@@ -37,7 +37,7 @@ trait Inquiry
             $refund = $this->repo->findByRefundId($input['refund']['id']);
 
             $attributes = $this->getSuccessfulVerifyRefundAttributes($input, $response['data']);
-            $refund->fill($response['data']);
+            $refund->fill($attributes);
 
             $this->repo->saveOrFail($refund);
 

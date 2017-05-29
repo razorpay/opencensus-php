@@ -4,7 +4,6 @@ namespace RZP\Models\Invoice;
 
 use Config;
 use Carbon\Carbon;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -17,13 +16,12 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\InvoiceAction;
 use RZP\Models\FileStore;
+use RZP\Jobs\DispatchRouter;
 
 class Core extends Base\Core
 {
     const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
     const MAX_EXPECTED_QUEUE_DELAY     = 360; // In seconds (= 6 minutes)
-
-    use DispatchesJobs;
 
     protected $lineItemCore;
     protected $pdfGenerator;
@@ -55,7 +53,9 @@ class Core extends Base\Core
             $input
         );
 
-        $invoice = (new Generator($merchant))->setSubscription($subscription)->generate($input);
+        $invoice = (new Generator($merchant))
+                        ->setSubscription($subscription)
+                        ->generate($input);
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,
@@ -64,7 +64,12 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
+            $job = new InvoiceAction(
+                        $this->mode,
+                        InvoiceAction::ISSUED,
+                        $invoice->getId());
+
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
         }
 
         return $invoice;
@@ -110,7 +115,12 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatchQueueJob($this->mode, InvoiceAction::UPDATED, $invoice->getId());
+            $job = new InvoiceAction(
+                        $this->mode,
+                        InvoiceAction::UPDATED,
+                        $invoice->getId());
+
+            (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
         }
 
         return $invoice;
@@ -133,7 +143,12 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
+        $job = new InvoiceAction(
+                    $this->mode,
+                    InvoiceAction::ISSUED,
+                    $invoice->getId());
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
 
         return $invoice;
     }
@@ -387,7 +402,12 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatchQueueJob($this->mode, InvoiceAction::EXPIRED, $invoice->getId());
+        $job = new InvoiceAction(
+                        $this->mode,
+                        InvoiceAction::EXPIRED,
+                        $invoice->getId());
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
     }
 
     public function fetchStatus(Entity $invoice)
@@ -552,35 +572,6 @@ class Core extends Base\Core
         $this->setPdfGenerator($invoice);
 
         return $this->generatePdfWithRetry($invoice->getId());
-    }
-
-    /**
-     * Dispatches invoice queue job.
-     *
-     * @param string $mode   - Taking mode as argument just if this method gets
-     *                         invoked from another async queue job.
-     *                         TODO: ENHANCEMENT: Long term/Permanent solution is to have all such
-     *                         app variables to be initialized in abstract way.
-     *                         And then we will not have to do such things everywhere.
-     * @param string $action
-     * @param string $id
-     *
-     * @return void
-     */
-    public function dispatchQueueJob(string $mode, string $action, string $id)
-    {
-        $job = (new InvoiceAction($mode, $action, $id));
-
-        $mock = Config::get('queue.mock');
-
-        if ($mock === false)
-        {
-            $queue = Config::get('queue.sqs_invoice_emails');
-
-            $job->onConnection('sqs_multi_default')->onQueue($queue);
-        }
-
-        $this->dispatch($job);
     }
 
     // -------------------- Protected methods --------------------
