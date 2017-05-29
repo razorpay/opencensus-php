@@ -22,9 +22,9 @@ const InvoiceListItem = props => {
       </td>
       <td>{invoice.receipt}</td>
       <td>
-        {invoice.customer.contact ||
-          invoice.customer.email ||
-          invoice.customer.name}
+        {invoice.customer_details.customer_contact ||
+          invoice.customer_details.customer_email ||
+          invoice.customer_details.customer_name}
       </td>
       <td>{invoice.short_url}</td>
       <td class="text-right">
