@@ -1373,24 +1373,6 @@ class Service extends Base\Service
         return [ $error, $response ];
     }
 
-    public function changeTerminalPrimaryMerchant($mode, $terminalId, $input)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->changePrimaryMerchant($terminalId, $input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
     public function editCredits($merchantId, $input)
     {
         $this->setApiCredentials(null, 'live');

@@ -466,18 +466,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function changePrimaryMerchant($mode, $terminalId)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->changeTerminalPrimaryMerchant(
-            $mode,
-            $terminalId,
-            $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function passThrough($path = '')
     {
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);

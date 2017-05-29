@@ -221,12 +221,21 @@ app
             });
         },
         changePrimaryMerchant: function(terminal_id, merchant_id) {
-          var url =
-            '/admin/' + $scope.mode + '/terminal/' + terminal_id + '/reassign';
-          var request = $http.put(url, {
-            merchant_id: merchant_id,
+          var data = {
+            route_name: 'terminal_reassign_merchant',
+            url_params: {
+              '{id}': terminal_id,
+            },
+            body: {
+              merchant_id: merchant_id,
+            },
+            mode: $scope.mode,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
           });
-
           request
             .success(function(data) {
               if (data.success) {

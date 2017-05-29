@@ -366,6 +366,8 @@ return [
         'terminal_toggle'                   => 'terminals/{id}/toggle',
         // Delete Terminal
         'terminal_delete'                   => 'terminals/{id}',
+        // Terminal Change Primary Merchant
+        'terminal_reassign_merchant'        => 'terminals/{id}/reassign',
 
         // Gateway Rules
         'gateway_create_rule'               => 'gateway/rules',

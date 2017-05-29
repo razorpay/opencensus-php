@@ -38,11 +38,4 @@ class Terminal extends Entity
 
         return $this->request('PUT', $relativeUrl);
     }
-
-    public function changePrimaryMerchant($id, $params)
-    {
-        $relativeUrl = $this->getEntityUrl() . $id . '/reassign';
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
 }
