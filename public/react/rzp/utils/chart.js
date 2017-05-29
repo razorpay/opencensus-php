@@ -44,12 +44,18 @@ export const timeScale = {
           parser: utcMoment => utcMoment.utcOffset('+0000'),
           tooltipFormat: 'ddd DD MMM YYYY',
         },
+        gridLines: {
+          color: '#f8f8f8',
+        },
       },
     ],
     yAxes: [
       {
         ticks: {
           beginAtZero: true,
+        },
+        gridLines: {
+          color: '#f8f8f8',
         },
       },
     ],
