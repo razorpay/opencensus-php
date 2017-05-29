@@ -92,7 +92,7 @@ class Repository extends Base\Repository
                      ->first();
     }
 
-    public function fetchDowntimesWithoutTerminal($input)
+    public function fetchDowntimesWithoutTerminal(array $input)
     {
         $query = $this->newQuery();
 
@@ -102,6 +102,19 @@ class Repository extends Base\Repository
                      ->get();
     }
 
+    /**
+     * Fetches downtimes for DonwtimeSorter
+     *
+     * Params are provided as [key => val]
+     * where 'val' can either be an array or string
+     *
+     * $timestamp is provided separately because
+     * it has to be compared to 'begin' & 'end'
+     *
+     * @param $params array
+     * @param $timestamp
+     * @return collection
+     */
     public function fetchDowntimesForSorter(array $params, $timestamp)
     {
         $query = $this->newQuery();
@@ -114,6 +127,13 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    /**
+     * Helper function to add param valus to the query
+     *
+     * @param $input array
+     * @param $query
+     * @return $query
+     */
     protected function buildQueryForDowntimeSorter(
         array $input, \RZP\Base\BuilderEx & $query)
     {
