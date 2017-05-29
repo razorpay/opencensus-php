@@ -129,6 +129,7 @@ class Entity extends Base\PublicEntity
         self::PAID_AT                  => null,
         self::CANCELLED_AT             => null,
         self::EXPIRED_AT               => null,
+        self::EXPIRE_BY                => null,
         self::RECEIPT                  => null,
         self::DESCRIPTION              => null,
         self::NOTES                    => [],
@@ -652,26 +653,6 @@ class Entity extends Base\PublicEntity
     public function setBillingEnd($billingEnd)
     {
         $this->setAttribute(self::BILLING_END, $billingEnd);
-    }
-
-    /**
-     * @deprecated
-     *
-     * Sets expire_by's default value at the time of issue of invoices.
-     * Gets called from Generator->issueInvoice() method.
-     */
-    public function setDefaultExpireByIfNotAlreadySet()
-    {
-        if ($this->getExpireBy() !== null)
-        {
-            return;
-        }
-
-        $expireBy = Carbon::now('Asia/Kolkata')
-                          ->addDays(self::DEFAULT_EXPIRY_DAYS)
-                          ->timestamp;
-
-        $this->setAttribute(self::EXPIRE_BY, $expireBy);
     }
 
     // -------------------------------------- End Setters --------------------------------------
