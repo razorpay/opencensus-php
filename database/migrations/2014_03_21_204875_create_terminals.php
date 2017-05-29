@@ -98,6 +98,7 @@ class CreateTerminals extends Migration
                   ->default(0);
 
             $table->tinyInteger(Terminal::TYPE)
+                  ->unsigned()
                   ->default(1);
 
             $table->tinyInteger(Terminal::MODE)

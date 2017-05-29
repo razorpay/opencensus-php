@@ -35,7 +35,7 @@ class Type
      * by seeing if the corresponding bit position is set.
      * Shift right 'pos' times and check LSB
      * @param  string  $hexType Hex value of the bit-wise field
-     * @param  string  $type    Name of the recurring type to be checked
+     * @param  string  $type    Name of the type to be checked
      * @return boolean          Whether type is applicable
      */
     public static function isApplicable($hexType, $type)

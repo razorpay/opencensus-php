@@ -2088,3 +2088,6 @@ ALTER TABLE payments
 # Foreign Key on Merchants
 ALTER TABLE adjustment
     ADD CONSTRAINT adjustment_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants(id);
+
+ALTER TABLE terminals
+   CHANGE COLUMN type TINYINT(1) UNSIGNED DEFAULT 1;
