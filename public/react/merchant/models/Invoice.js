@@ -131,6 +131,15 @@ export default class Invoice extends GenericEntity {
 
   deserializeProperty(prop, value) {
     switch (prop) {
+      case 'customer_details':
+        this.customer = {
+          name: value.customer_name,
+          email: value.customer_email,
+          contact: value.customer_contact,
+          address: value.customer_address,
+        };
+        break;
+
       case 'amount':
         this.amountInINR = getFixedINRAmount(value);
         break;

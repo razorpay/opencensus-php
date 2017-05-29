@@ -61,7 +61,7 @@ export const cancelInvoice = params => {
 let initialState = {
   loading: true,
   invoice: {
-    customer: {},
+    customer_details: {},
     line_items: [],
     notes: {},
   },

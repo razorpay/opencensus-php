@@ -13,6 +13,6 @@ export default class InvoiceFactory extends Factory {
   due_date = Math.round(
     faker.date.between(new Date(), '12 Dec 2016').getTime() / 1000
   );
-  customer = this.belongsTo('customer');
-  customer_id = this.customer.id;
+  customer_details = this.belongsTo('customer');
+  customer_id = this.customer_details.id;
 }
