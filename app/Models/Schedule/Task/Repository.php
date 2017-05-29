@@ -15,6 +15,11 @@ class Repository extends Base\Repository
         Entity::SCHEDULE_ID             => 'sometimes|alpha_dash|max:20',
     );
 
+    protected function shouldSync($entity) : bool
+    {
+        return Type::isSyncedInLiveAndTest($entity->getType());
+    }
+
     /**
      * Returns merchant schedule if it matches the one passed in the argument.
      * Method and merchant_id has to be same for it to be duplicate

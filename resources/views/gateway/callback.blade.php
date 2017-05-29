@@ -29,65 +29,38 @@ var data = {!!utf8_json_encode($data)!!};
 
 var s = 'razorpay_payment_id' in data;
 data = JSON.stringify(data);
-if(window.CheckoutBridge){
-  if(typeof CheckoutBridge.oncomplete=='function'){CheckoutBridge.oncomplete(data)}
+if (window.CheckoutBridge) {
+  if (typeof CheckoutBridge.oncomplete == 'function') {
+    CheckoutBridge.oncomplete(data);
+  }
 } else {
-  document.cookie = "onComplete="+data+";expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/";
+  document.cookie =
+    'onComplete=' + data + ';expires=Fri, 31 Dec 9999 23:59:59 GMT;path=/';
   try {
     localStorage.setItem('onComplete', data);
-  } catch(e) {}
+  } catch (e) {}
 }
 
-function g(id){return document.getElementById(id)}
-function razorpay_callback(){return data}
-
-var t = g('text')
-t.innerHTML += s ? 'Successful' : 'Failed'
-t.className = 'show ' + (s ? 's' : 'f')
-g('icon').innerHTML = s ? '&#10004' : '!'
-
-onerror = function(message){
-  message = JSON.stringify({
-    access_token: '4a62d17b6108416eaa6da7cbb5cb9aaf',
-    data: {
-      client: {
-        javascript: {
-          browser: navigator.userAgent
-        }
-      },
-      context: 'popup',
-      level: 'error',
-      environment: 'prod',
-      request: {
-        url: location.href,
-        user_ip: '$remote_ip'
-      },
-      body: {
-        message: {
-          body: message
-        }
-      }
-    }
-  })
-  var xhr = new XMLHttpRequest()
-  xhr.open('post', 'https://api.rollbar.com/api/1/item/', true)
-  xhr.send(message)
+function g(id) {
+  return document.getElementById(id);
 }
-if(!window.CheckoutBridge){
-  if(window.opener) {
+function razorpay_callback() {
+  return data;
+}
+
+var t = g('text');
+t.innerHTML += s ? 'Successful' : 'Failed';
+t.className = 'show ' + (s ? 's' : 'f');
+g('icon').innerHTML = s ? '&#10004' : '!';
+
+if (!window.CheckoutBridge) {
+  if (window.opener) {
     try {
       opener.onComplete(data);
-      try {
-        close();
-      } catch(e) {
-        onerror(e.message);
-      }
-    } catch(e){}
-    opener.postMessage(data,'*');
+      close();
+    } catch (e) {}
+    opener.postMessage(data, '*');
   }
-  setTimeout(function(){
-    onerror('unclosed: 300');
-  }, 300)
   setTimeout(close, 999);
 }
 

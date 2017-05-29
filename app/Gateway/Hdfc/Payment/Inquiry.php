@@ -13,10 +13,69 @@ trait Inquiry
 {
     use Base\AuthorizeFailed;
 
+    public function verifyRefund(array $input)
+    {
+        $response = $this->sendRefundVerifyRequest($input);
+
+        $data = $response['data'];
+
+        if (isset($response['error']['result']) === true)
+        {
+            if ($response['error']['code'] === 'GW00201')
+            {
+                return false;
+            }
+
+            $data = $response['error'];
+        }
+        else if (($response['data']['result'] === 'FAILURE(SUSPECT)') and
+                 ($response['data']['trackid'] === $input['refund']['id']) and
+                 ((int) ($response['data']['amt'] * 100) === $input['refund']['amount']))
+        {
+            $response['data']['result'] = 'CAPTURED';
+
+            $refund = $this->repo->findByRefundId($input['refund']['id']);
+
+            $attributes = $this->getSuccessfulVerifyRefundAttributes($input, $response['data']);
+            $refund->fill($attributes);
+
+            $this->repo->saveOrFail($refund);
+
+            return true;
+        }
+
+        $this->trace->critical(
+            TraceCode::GATEWAY_REFUND_VERIFY_UNEXPECTED,
+            $data);
+
+        throw new Exception\LogicException(
+            'Unexpected refund verify result received');
+    }
+
+    protected function getSuccessfulVerifyRefundAttributes($input, $responseData)
+    {
+        $attributes = [
+            'received'                  => '1',
+            'payment_id'                => $input['payment']['id'],
+            'refund_id'                 => $input['refund']['id'],
+            'gateway_transaction_id'    => $responseData['tranid'],
+            'amount'                    => $responseData['amt'],
+            'action'                    => Action::REFUND,
+            'status'                    => Payment\Status::REFUNDED,
+            'result'                    => $responseData['result'],
+            'ref'                       => $responseData['ref'],
+            'auth'                      => $responseData['auth'],
+            'avr'                       => $responseData['avr'],
+            'postdate'                  => $responseData['postdate']
+        ];
+
+        return $attributes;
+    }
+
     protected function getPaymentToVerify($verify)
     {
         $input = $verify->input;
-        
+
         $payment = $this->repo->findByPaymentIdToVerify($input['payment']['id']);
 
         $verify->payment = $payment;
@@ -285,9 +344,63 @@ trait Inquiry
         $content['transid'] = $payment['gateway_transaction_id'];
         $content['udf5'] = 'PaymentID';
 
-        $content['amt'] = $verify->input['payment']['amount']/100;
+        $content['amt'] = $verify->input['payment']['amount'] / 100;
         $content['member'] = $verify->input['card']['name'];
         $content['trackid'] = $verify->input['payment']['id'];
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $content);
+
+        return $content;
+    }
+
+    protected function sendRefundVerifyRequest(array $input)
+    {
+        // Gets the request array for verify from gateway
+        $requestContent = $this->getRefundVerifyRequestContentArray($input);
+
+        // Sets the gateway URL for the inquiry (verifying payment status)
+        $this->inquiryRequest['url'] = Hdfc\Urls::SUPPORT_PAYMENT_URL;
+
+        // Sets the request body for the inquiry (verifying payment status)
+        $this->inquiryRequest['data'] = $requestContent;
+
+        // TO NOTE: This is just initializing RESPONSE from the inquiry.
+        $this->inquiryResponse['data'] = [];
+
+        $traceVerifyData = $this->inquiryRequest;
+
+        unset($traceVerifyData['content']);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            $traceVerifyData);
+
+        // This sets the response received from the inquiry
+        $this->runRequestResponseFlow(
+            $this->inquiryRequest,
+            $this->inquiryResponse);
+
+        $inquiryResponse = $this->inquiryResponse;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'payment_id' => $input['payment']['id'],
+                'xml' => $inquiryResponse['xml'],
+                'response_content' => $inquiryResponse['data']
+            ]);
+
+        return $inquiryResponse;
+    }
+
+    protected function getRefundVerifyRequestContentArray(array $input)
+    {
+        $content['action'] = Action::INQUIRY;
+        $content['transid'] = $input['refund']['id'];
+        $content['udf5'] = 'TrackID';
+
+        $content['amt'] = $input['refund']['amount'] / 100;
+        $content['member'] = 'test';
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY, $content);
 

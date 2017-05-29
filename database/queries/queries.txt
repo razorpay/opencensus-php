@@ -2037,7 +2037,22 @@ ALTER TABLE admin_leads
 
 ALTER TABLE admin_leads
   ADD CONSTRAINT `admin_leads_merchant_id_foreign` FOREIGN KEY (`merchant_id`) REFERENCES `merchants` (`id`);
-  
+
 # Index payment.wallet
 ALTER TABLE payments
     ADD INDEX payments_wallet_index (wallet);
+
+#pre deploy of pr - 3321
+ALTER TABLE offers
+    ADD COLUMN max_payment_count INTEGER NULL AFTER flat_cashback;
+
+ALTER TABLE offers
+    ADD COLUMN linked_offer_ids TEXT NULL AFTER max_payment_count;
+
+# post deploy of pr - 3321
+ALTER TABLE offers
+    DROP COLUMN payment_count;
+
+# Adds mode to terminals
+ALTER TABLE terminals
+    ADD COLUMN mode TINYINT(1) DEFAULT 3 NOT NULL AFTER type;
