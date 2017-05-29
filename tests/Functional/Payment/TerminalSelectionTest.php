@@ -742,21 +742,6 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('DrctHDFCTermnl', $payment1['terminal_id']);
     }
 
-    public function testDowntimeSortingNetbankingEbs()
-    {
-        $this->fixtures->create('terminal:multiple_netbanking_terminals');
-
-        $ebsDowntimData = $this->testData['ebsDowntimeData'];
-        $this->fixtures->create('gateway_downtime:netbanking', $ebsDowntimData);
-
-        $payment = $this->getDefaultNetbankingPaymentArray();
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        // this payment should go through via billdesk as ebs has lowest priority
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals('billdesk', $payment['gateway']);
-    }
-
     public function testDowntimeSortingNetbankingAll()
     {
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
@@ -768,8 +753,23 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        // this payment should go through via netbanking_kotak
+        // this payment should go through via billdesk
         // order shouldn't change
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('billdesk', $payment['gateway']);
+    }
+
+    public function testDowntimeSortingNetbankingEbs()
+    {
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $ebsDowntimData = $this->testData['ebsDowntimeData'];
+        $this->fixtures->create('gateway_downtime:netbanking', $ebsDowntimData);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        // this payment should go through via billdesk as ebs has lowest priority
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('billdesk', $payment['gateway']);
     }
@@ -790,5 +790,43 @@ class TerminalSelectionTest extends TestCase
         // because netbanking for kotak is down
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('billdesk', $payment['gateway']);
+    }
+
+    public function testDowntimeCardAxisMigs()
+    {
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+        $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $axisMigsAllNetworkDowntimeData = $this->testData['axisMigsAllNetworkDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $axisMigsAllNetworkDowntimeData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '555555555555558';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        // this payment should go through via hdfc
+        // because netbanking for kotak is down
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('hdfc', $payment['gateway']);
+    }
+
+    public function testDowntimeCardHdfcVisa()
+    {
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+        $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $hdfcVisaDowntimeData = $this->testData['hdfcVisaDowntimeData'];
+        $this->fixtures->create('gateway_downtime:card', $hdfcVisaDowntimeData);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4012001036275556';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        // this payment should go through via hdfc
+        // because netbanking for kotak is down
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('axis_migs', $payment['gateway']);
     }
 }

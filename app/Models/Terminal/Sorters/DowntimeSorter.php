@@ -19,7 +19,7 @@ class DowntimeSorter extends Terminal\Sorter
         'gateway_downtime',
     ];
 
-    const ALL = 'all';
+    const ALL = 'ALL';
 
     /**
      * Sorts the terminals wrt the downtimes.
@@ -202,7 +202,7 @@ class DowntimeSorter extends Terminal\Sorter
         {
             $params = [
                 Downtime::METHOD    => [Payment\Method::CARD, Payment\Method::EMI],
-                Downtime::NETWORK   => [$payment->card->getNetwork(), self::ALL],
+                Downtime::NETWORK   => [strtoupper($payment->card->getNetwork()), self::ALL],
                 Downtime::CARD_TYPE => [$payment->card->getType(), self::ALL],
             ];
 
