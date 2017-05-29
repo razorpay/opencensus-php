@@ -20,7 +20,6 @@ use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
 use RZP\Models\Invoice;
 use RZP\Base\BuilderEx;
-use RZP\Tests\Unit\Models\Payment\EntityTest;
 
 class Repository extends Base\Repository
 {
@@ -591,6 +590,12 @@ class Repository extends Base\Repository
         $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
 
+    /**
+     * Param to filter payments that have been transferred (amount_transferred > 0)
+     *
+     * @param $query
+     * @param $params
+     */
     protected function addQueryParamTransferred($query, $params)
     {
         if ($params[Entity::TRANSFERRED] !== '1')

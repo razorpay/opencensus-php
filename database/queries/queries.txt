@@ -2056,3 +2056,7 @@ ALTER TABLE offers
 # Adds mode to terminals
 ALTER TABLE terminals
     ADD COLUMN mode TINYINT(1) DEFAULT 3 NOT NULL AFTER type;
+
+# Index payment.amount_transferred
+ALTER TABLE payments
+    ADD INDEX payments_amount_transferred_index (amount_transferred);
