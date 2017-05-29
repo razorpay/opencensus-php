@@ -53,6 +53,7 @@ export const timeScale = {
       {
         ticks: {
           beginAtZero: true,
+          suggestedMax: 10,
         },
         gridLines: {
           color: '#f8f8f8',
