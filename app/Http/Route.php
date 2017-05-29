@@ -209,7 +209,7 @@ final class Route
         'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
-        'setl_reconcile_test'                     => ['post',     'settlements/reconcile/test',                     'SettlementController@postReconcileInTestMode'              ],
+        'setl_reconcile_test'                     => ['post',     'settlements/reconcile/test',                     'SettlementController@postReconcileInTestMode'                      ],
         'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
         'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                       'SettlementController@postH2HSettlementReconcile'                   ],
         'setl_return_generate'                    => ['post',     'settlements/return/generate',                    'SettlementController@postSettlementReturnGenerate'                 ],
@@ -512,6 +512,9 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+        'transfer_fetch_reversals'                => ['get',      'transfers/{id}/reversals',                       'TransferController@getTransferReversals'                           ],
+        'reversal_fetch'                          => ['get',      'reversals/{id}',                                 'ReversalController@getReversal'                                    ],
+        'reversal_fetch_multiple'                 => ['get',      'reversals',                                      'ReversalController@getReversals'                                   ],
         'payment_update_on_hold'                  => ['post',     'payments/on_hold/update',                        'PaymentController@updateOnHold'                                    ],
 
         // Dummy routes to test Account Auth
@@ -692,6 +695,9 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
+        'transfer_fetch_reversals',
+        'reversal_fetch',
+        'reversal_fetch_multiple',
     ];
 
     public static $internal = [
