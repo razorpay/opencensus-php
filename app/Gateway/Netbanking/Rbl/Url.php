@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Rbl;
 
 class Url
 {
-	const LIVE_DOMAIN = 'https://www.fednetbank.com';
+    const LIVE_DOMAIN = 'https://online.rblbank.com/corp/';
     const TEST_DOMAIN = 'https://onlineuat.rblbank.com/corp/';
 
     const AUTHORIZE   = 'AuthenticationController?';
