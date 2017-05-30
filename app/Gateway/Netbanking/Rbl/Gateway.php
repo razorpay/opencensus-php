@@ -67,12 +67,16 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::MERCHANT_REFERENCE]
         );
 
-        $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                    $content[ResponseFields::MERCHANT_REFERENCE],
+                                    Payment\Action::AUTHORIZE);
+
+        $this->saveCallbackResponse($content, $gatewayPayment);
 
         $this->checkCallbackStatus($content);
 
         // If callback status was a success, we verify the payment immediately
-        $this->verifyCallback($input);
+        $this->verifyCallback($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input);
     }
@@ -90,14 +94,13 @@ class Gateway extends Base\Gateway
      * Verifying the payment after callback response is saved to
      * prevent user tampering with the data while making a payment.
      */
-    protected function verifyCallback(array $input)
+    protected function verifyCallback(array $input, $gatewayPayment)
     {
         parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
 
-        $verify->payment = $this->repo->findByPaymentIdAndAction(
-                    $verify->input['payment']['id'], Action::AUTHORIZE);
+        $verify->payment = $gatewayPayment;
 
         $this->sendPaymentVerifyRequest($verify);
 
@@ -218,8 +221,8 @@ class Gateway extends Base\Gateway
             RequestFields::RESPONSE_FORMAT  => FileFormat::XML,
             RequestFields::REQUEST_FORMAT   => FileFormat::NV,
             RequestFields::MULTIPLE_RECORDS => Constants::NO,
-            RequestFields::USER_PRINCIPAL   => $input['terminal']['gateway_merchant_id2'],
-            RequestFields::ACCESS_CODE      => $input['terminal']['gateway_access_code'],
+            RequestFields::USER_PRINCIPAL   => $this->getUserPrincipal(),
+            RequestFields::ACCESS_CODE      => $this->getAccessCode(),
             RequestFields::V_PAYEE_ID       => $this->getMerchantId(),
             RequestFields::BANK_REFERENCE   => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
             RequestFields::ENTITY_TYPE      => Constants::TYPE_PAYMENT,
@@ -312,17 +315,13 @@ class Gateway extends Base\Gateway
         return $entityAttributes;
     }
 
-    protected function saveCallbackResponse(array $content)
+    protected function saveCallbackResponse(array $content, $gatewayPayment)
     {
         $attributes = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE],
             Base\Entity::STATUS          => $content[ResponseFields::STATUS],
         ];
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                    $content[ResponseFields::MERCHANT_REFERENCE],
-                                    Payment\Action::AUTHORIZE);
 
         $gatewayPayment->fill($attributes);
 
@@ -405,6 +404,30 @@ class Gateway extends Base\Gateway
         $transactionStatus = (array) $xml[ResponseFields::TRANSACTION_STATUS];
 
         return (array) $transactionStatus[ResponseFields::STATUS_RECORD];
+    }
+
+    protected function getAccessCode()
+    {
+        $accessCode = $input['terminal']['gateway_access_code'];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $accessCode = $this->config['test_access_code'];
+        }
+
+        return $accessCode;
+    }
+
+    protected function getUserPrincipal()
+    {
+        $userPricipal = $input['terminal']['gateway_merchant_id2'];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $userPricipal = $this->config['test_merchant_id2'];
+        }
+
+        return $userPricipal;
     }
 
     protected function getMerchantId()
