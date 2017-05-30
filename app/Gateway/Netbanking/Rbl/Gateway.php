@@ -408,7 +408,7 @@ class Gateway extends Base\Gateway
 
     protected function getAccessCode()
     {
-        $accessCode = $input['terminal']['gateway_access_code'];
+        $accessCode = $this->input['terminal']['gateway_access_code'];
 
         if ($this->mode === Mode::TEST)
         {
@@ -420,7 +420,7 @@ class Gateway extends Base\Gateway
 
     protected function getUserPrincipal()
     {
-        $userPricipal = $input['terminal']['gateway_merchant_id2'];
+        $userPricipal = $this->input['terminal']['gateway_merchant_id2'];
 
         if ($this->mode === Mode::TEST)
         {
