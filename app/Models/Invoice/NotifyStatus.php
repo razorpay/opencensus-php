@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class NotifyStatus
 {
     const PENDING       = 'pending';
@@ -9,16 +11,17 @@ class NotifyStatus
     const DELIVERED     = 'delivered';
     const FAILED        = 'failed';
 
-    public static function isStatusValid($status)
+    public static function isStatusValid(string $status): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($status)));
     }
 
-    public static function checkStatus($status)
+    public static function checkStatus(string $status)
     {
         if (self::isStatusValid($status) === false)
         {
-            throw new \InvalidArgumentException('Not a valid status: ' . $status);
+            throw new BadRequestValidationFailureException(
+                'Not a valid status: ' . $status);
         }
     }
 }

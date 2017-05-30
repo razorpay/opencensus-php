@@ -38,7 +38,8 @@ class Netbanking
         IFSC::UTIB,
         IFSC::KKBK,
         IFSC::AIRP,
-        IFSC::FDRL
+        IFSC::FDRL,
+        IFSC::RATN,
     ];
 
     protected static $selfTPV = [
@@ -47,6 +48,7 @@ class Netbanking
         IFSC::KKBK,
         IFSC::UTIB,
         IFSC::FDRL,
+        IFSC::RATN,
     ];
 
     protected static $paytm = array(

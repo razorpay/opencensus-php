@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\Subscription;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
 use Carbon\Carbon;
 
 class SubscriptionCreateTest extends TestCase
 {
+    use PaymentTrait;
     use SubscriptionTrait;
 
     public function setUp()
@@ -384,13 +386,6 @@ class SubscriptionCreateTest extends TestCase
 
     public function testFetchMultipleSubscription()
     {
-    }
-
-    protected function createSubscriptionPreRequisiteEntities(array $planAttributes = [])
-    {
-        $this->fixtures->create('customer');
-
-        $this->fixtures->plan->create($planAttributes);
     }
 
     protected function getCreateSubscriptionRequestContent($function, $planId = null)

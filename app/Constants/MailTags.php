@@ -23,6 +23,7 @@ class MailTags
     const AIRTEL_MONEY_REFUNDS_MAIL       = 'airtel_money_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL   = 'icici_netbanking_refunds_mail';
     const FEDERAL_NETBANKING_REFUNDS_MAIL = 'axis_netbanking_refunds_mail';
+    const RBL_NETBANKING_REFUNDS_MAIL     = 'rbl_netbanking_refunds_mail';
 
     const PAYU_MONEY_REFUNDS_MAIL         = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL          = 'icici_upi_refunds_mail';
@@ -67,6 +68,7 @@ class MailTags
         self::KOTAK_BENEFICIARY_MAIL,
         self::HDFC_NETBANKING_REFUNDS_MAIL,
         self::AXIS_NETBANKING_REFUNDS_MAIL,
-        self::ICICI_NETBANKING_REFUNDS_MAIL
+        self::ICICI_NETBANKING_REFUNDS_MAIL,
+        self::RBL_NETBANKING_REFUNDS_MAIL,
     ];
 }

@@ -489,6 +489,13 @@ class Entity extends Base\PublicEntity
 
         $last4 = $this->getLast4();
 
+        $blackListedIins = Card\BlackList::BLOCKED_IIN;
+
+        if (isset($blackListedIins[$iin]) === true)
+        {
+            return true;
+        }
+
         $blackList = Card\BlackList::BLOCKED_IIN_LAST4;
 
         if ((isset($blackList[$iin]) === true) and

@@ -23,7 +23,7 @@ class InvoiceCommunicationTest extends TestCase
                 'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
             ]);
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
     }
 
     public function testSmsAndEmailNotify()
