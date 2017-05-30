@@ -1383,6 +1383,14 @@ trait Authorize
     {
         $iinEntity = $payment->card->iinRelation;
 
+        // On custom checkouts, sometimes users are entering random cards for
+        // which iin entity doesn't exist
+        if ($iinEntity === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD);
+        }
+
         IIN\IIN::validateEmiAvailableForCard($iinEntity, $cardNumber);
 
         $payment->setBank($iinEntity->getIssuer());
