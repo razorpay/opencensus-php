@@ -2084,3 +2084,7 @@ ALTER TABLE terminals
 # Index payment.amount_transferred
 ALTER TABLE payments
     ADD INDEX payments_amount_transferred_index (amount_transferred);
+
+# Foreign Key on Merchants
+ALTER TABLE adjustment
+    ADD CONSTRAINT adjustment_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants(id);
