@@ -88,9 +88,9 @@ export default class NewKey extends Component {
             </div>
             <div class="form-group">
               <div class="col-md-8 col-md-offset-3">
-                <NavLink to={`/keys/csv?id=${key.id}&secret=${key.secret}`}>
+                <a href={`/keys/csv?id=${key.id}&secret=${key.secret}`}>
                   Download Key Details
-                </NavLink>
+                </a>
               </div>
             </div>
           </div>

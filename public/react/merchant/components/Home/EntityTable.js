@@ -52,7 +52,7 @@ export default ({ entity, data, loading }) => {
                               <td>
                                 <Link to={`/${entity}s/${item.id}`}>
                                   <code>{item.id}</code>
-                                  <div class="font-xs">
+                                  <div class="text-muted font-xs">
                                     {formatFromNow(item.created_at)}
                                   </div>
                                 </Link>
