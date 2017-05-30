@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import Header from 'rzp/ui/Header';
@@ -29,36 +30,42 @@ export default class SettlementsListContainer extends ListContainer {
     let { loading, settlements, error } = this.props;
 
     return (
-      <div class="content-wrapper">
-        <SettlementsListFilter
-          form="settlementsListFilter"
-          count={this.state.count}
-          onSubmit={this.search}
-        />
+      <tabbed-container>
+        <header>
+          <NavLink to="/settlements">Settlements</NavLink>
+        </header>
 
-        {error && <Alert type="error" message={error} />}
+        <div class="content-wrapper">
+          <SettlementsListFilter
+            form="settlementsListFilter"
+            count={this.state.count}
+            onSubmit={this.search}
+          />
 
-        <SettlementsList
-          settlements={settlements}
-          isLoading={loading}
-          showBreakup={this.showBreakup}
-        />
+          {error && <Alert type="error" message={error} />}
 
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={settlements.length}
-          onClick={this.paginate}
-        />
+          <SettlementsList
+            settlements={settlements}
+            isLoading={loading}
+            showBreakup={this.showBreakup}
+          />
 
-        <div class="row">
-          <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
-            <p>
-              A settlement is an aggregate of payments and refunds, and as such the fees in a settlement is not reflective of the pricing. We only charge fees on a captured payment.
-            </p>
+          <Pager
+            count={this.state.count}
+            skip={this.state.skip}
+            length={settlements.length}
+            onClick={this.paginate}
+          />
+
+          <div class="row">
+            <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
+              <p>
+                A settlement is an aggregate of payments and refunds, and as such the fees in a settlement is not reflective of the pricing. We only charge fees on a captured payment.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </tabbed-container>
     );
   }
 }

@@ -41,52 +41,59 @@ export default class PaymentLinksContainer extends ListContainer {
     let status = this.state.status;
 
     return (
-      <div class="content-wrapper">
-        <TetherComponent
-          target="#link-header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 20px"
-        >
-          <div />{/* required by react-tether */}
+      <tabbed-container>
+        <header id="link-header">
+          <NavLink to="/paymentlinks">Payment Links</NavLink>
+        </header>
 
-          <ShowWhen notMyRole="support">
-            <div class="btn-toolbar pull-right">
-              <button
-                class="btn btn-primary"
-                onClick={() => this.showPaymentLinkModal()}
-              >
-                <i class="icon icon-plus" />
-                <span>Create Payment Link</span>
-              </button>
-            </div>
-          </ShowWhen>
-        </TetherComponent>
+        <div class="content-wrapper">
+          <TetherComponent
+            target="#link-header"
+            attachment="top right"
+            targetAttachment="top right"
+            offset="-8px 20px"
+          >
+            <div />{/* required by react-tether */}
 
-        <InvoiceListFilter
-          form="InvoiceListFilter"
-          type="link"
-          count={this.state.count}
-          onSubmit={this.search}
-        />
+            <ShowWhen notMyRole="support">
+              <div class="btn-toolbar pull-right">
+                <button
+                  class="btn btn-primary"
+                  onClick={() => this.showPaymentLinkModal()}
+                >
+                  <i class="icon icon-plus" />
+                  <span>Create Payment Link</span>
+                </button>
+              </div>
+            </ShowWhen>
+          </TetherComponent>
 
-        <Alert type={status.type} message={status.message} />
+          <InvoiceListFilter
+            form="InvoiceListFilter"
+            type="link"
+            count={this.state.count}
+            onSubmit={this.search}
+          />
 
-        <InvoicesList
-          invoices={invoices}
-          isLoading={loading}
-          type="link"
-          highlightRow={invoice => invoice.id === this.props.highLightInvoiceId}
-          onEdit={this.showPaymentLinkModal}
-        />
+          <Alert type={status.type} message={status.message} />
 
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={invoices.length}
-          onClick={this.paginate}
-        />
-      </div>
+          <InvoicesList
+            invoices={invoices}
+            isLoading={loading}
+            type="link"
+            highlightRow={invoice =>
+              invoice.id === this.props.highLightInvoiceId}
+            onEdit={this.showPaymentLinkModal}
+          />
+
+          <Pager
+            count={this.state.count}
+            skip={this.state.skip}
+            length={invoices.length}
+            onClick={this.paginate}
+          />
+        </div>
+      </tabbed-container>
     );
   }
 }

@@ -183,7 +183,7 @@ export default class App extends Component {
           showMobileNav={this.state.showMobileNav}
         />
         <Sidebar user={user} />
-        <Content />
+        <Content user={user} />
 
         {/* Creates Portal for the comp */}
         <ModalDialog />

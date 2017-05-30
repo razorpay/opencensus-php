@@ -16,74 +16,261 @@ import Settings from 'merchant/containers/Settings';
 import { matchDetail } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 
+// Below will be removed with old navigation removal
+import PaymentsList from 'merchant/containers/Payments/List';
+import RefundsList from 'merchant/containers/Refunds/List';
+import BatchUpload from 'merchant/containers/Refunds/BatchUpload';
+import BatchUploads from 'merchant/containers/Refunds/BatchList';
+import OrdersList from 'merchant/containers/Orders/List';
+import Profile from 'merchant/containers/Profile';
+import Activation from 'merchant/containers/Activation';
+import AddFunds from 'merchant/containers/AddFunds';
+import Credits from 'merchant/containers/Credits/List';
+import Referrals from 'merchant/containers/Referrals/List';
+import Configuration from 'merchant/containers/Configuration';
+import ApiKeys from 'merchant/containers/Keys/List';
+import Webhooks from 'merchant/containers/Webhooks/List';
+
+// Can be removed with old navigation removal
+const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
+  return (
+    <tabbed-container>
+      <header id={headerId}>
+        <NavLink to={to}>{navLabel}</NavLink>
+      </header>
+      <Route path={path || to} component={component} />
+    </tabbed-container>
+  );
+};
+
 @withRouter
 export default class Content extends Component {
   getBaseView = () => {
+    let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
+
     return (
-      <Switch location={this.baseLocation}>
-        <Route path="/dashboard" component={Home} />
-        <Route
-          path="/"
-          exact
-          render={() => {
-            return <Redirect to="/dashboard" />;
-          }}
-        />
+      <div>
+        {
+          do {
+            if (isNewUIEnabled) {
+              <Switch location={this.baseLocation}>
+                <Route path="/dashboard" component={Home} />
+                <Route
+                  path="/"
+                  exact
+                  render={() => {
+                    return <Redirect to="/dashboard" />;
+                  }}
+                />
 
-        <Route path="/payments" component={Transactions} />
-        <Route path="/refunds" component={Transactions} />
-        <Route path="/orders" component={Transactions} />
+                <Route path="/payments" component={Transactions} />
+                <Route path="/refunds" component={Transactions} />
+                <Route path="/orders" component={Transactions} />
 
-        <Route
-          path="/settlements"
-          render={() => (
-            <tabbed-container>
-              <header id="link-header">
-                <NavLink to="/settlements">Settlements</NavLink>
-              </header>
-              <Route path="/settlements" component={Settlements} />
-            </tabbed-container>
-          )}
-        />
+                <Route path="/settlements" component={Settlements} />
 
-        <Route path="/invoices" exact component={InvoicingContainer} />
-        <Route path="/invoices/:id(inv_.+)" component={InvoicesNew} />
-        <Route path="/invoices/new" component={InvoicesNew} />
-        <Route path="/items" component={InvoicingContainer} />
+                <Route path="/invoices" exact component={InvoicingContainer} />
+                <Route path="/invoices/:id(inv_.+)" component={InvoicesNew} />
+                <Route path="/invoices/new" component={InvoicesNew} />
+                <Route path="/items" component={InvoicingContainer} />
+                <Route path="/paymentlinks" component={PaymentLinks} />
+                <Route path="/customers" component={Customers} />
 
-        <Route
-          path="/paymentlinks"
-          render={() => (
-            <tabbed-container>
-              <header id="link-header">
-                <NavLink to="/paymentlinks">Payment Links</NavLink>
-              </header>
+                <Route path="/marketplace" component={Marketplace} />
+                <Route path="/accounts" component={Marketplace} />
 
-              <Route path="/paymentlinks" component={PaymentLinks} />
-            </tabbed-container>
-          )}
-        />
+                <Route path="/reports" component={Reports} />
+                <Route path="/team" component={TeamManagement} />
 
-        <Route path="/customers" component={Customers} />
-        <Route path="/marketplace" component={Marketplace} />
+                <Route path="/profile" component={MyAccount} />
+                <Route path="/activation" component={MyAccount} />
+                <Route path="/addfunds" component={MyAccount} />
+                <Route path="/credits" component={MyAccount} />
+                <Route path="/referrals" component={MyAccount} />
 
-        <Route path="/accounts" component={Marketplace} />
+                <Route path="/config" component={Settings} />
+                <Route path="/keys" component={Settings} />
+                <Route path="/webhooks" component={Settings} />
 
-        <Route path="/reports" component={Reports} />
-        <Route path="/team" component={TeamManagement} />
+                <Route render={() => <Redirect to="/dashboard" />} />
+              </Switch>;
+            } else {
+              <Switch location={this.baseLocation}>
+                <Route path="/dashboard" component={Home} />
+                <Route
+                  path="/"
+                  exact
+                  render={() => {
+                    return <Redirect to="/dashboard" />;
+                  }}
+                />
 
-        <Route path="/profile" component={MyAccount} />
-        <Route path="/activation" component={MyAccount} />
-        <Route path="/addfunds" component={MyAccount} />
-        <Route path="/credits" component={MyAccount} />
-        <Route path="/referrals" component={MyAccount} />
+                <Route
+                  path="/payments"
+                  render={() => (
+                    <TabbedContent
+                      to="/payments"
+                      navLabel="Payments"
+                      component={PaymentsList}
+                    />
+                  )}
+                />
 
-        <Route path="/config" component={Settings} />
-        <Route path="/keys" component={Settings} />
-        <Route path="/webhooks" component={Settings} />
+                <Route
+                  path="/refunds/batchupload"
+                  render={() => (
+                    <TabbedContent
+                      headerId="transactions-header"
+                      to="/refunds"
+                      path="/refunds/batchupload"
+                      navLabel="Refunds"
+                      component={BatchUpload}
+                    />
+                  )}
+                />
 
-        <Route render={() => <Redirect to="/dashboard" />} />
-      </Switch>
+                <Route
+                  path="/refunds/batchuploads"
+                  render={() => (
+                    <TabbedContent
+                      headerId="transactions-header"
+                      to="/refunds"
+                      path="/refunds/batchuploads"
+                      navLabel="Refunds"
+                      component={BatchUploads}
+                    />
+                  )}
+                />
+
+                <Route
+                  path="/refunds"
+                  exact
+                  render={() => (
+                    <TabbedContent
+                      headerId="transactions-header"
+                      to="/refunds"
+                      navLabel="Refunds"
+                      component={RefundsList}
+                    />
+                  )}
+                />
+
+                <Route
+                  path="/orders"
+                  render={() => (
+                    <TabbedContent
+                      to="/orders"
+                      navLabel="Orders"
+                      component={OrdersList}
+                    />
+                  )}
+                />
+
+                <Route path="/settlements" component={Settlements} />
+
+                <Route path="/invoices" exact component={InvoicingContainer} />
+                <Route path="/invoices/:id(inv_.+)" component={InvoicesNew} />
+                <Route path="/invoices/new" component={InvoicesNew} />
+                <Route path="/items" component={InvoicingContainer} />
+                <Route path="/paymentlinks" component={PaymentLinks} />
+
+                <Route path="/customers" component={Customers} />
+                <Route path="/marketplace" component={Marketplace} />
+                <Route path="/accounts" component={Marketplace} />
+                <Route path="/reports" component={Reports} />
+                <Route path="/team" component={TeamManagement} />
+
+                <Route
+                  path="/profile"
+                  render={() => (
+                    <TabbedContent
+                      to="/profile"
+                      navLabel="Profile"
+                      component={Profile}
+                    />
+                  )}
+                />
+                <Route
+                  path="/activation"
+                  render={() => (
+                    <TabbedContent
+                      to="/activation"
+                      navLabel="Activation"
+                      component={Activation}
+                    />
+                  )}
+                />
+                <Route
+                  path="/addfunds"
+                  render={() => (
+                    <TabbedContent
+                      to="/addfunds"
+                      navLabel="Add Funds"
+                      component={AddFunds}
+                    />
+                  )}
+                />
+                <Route
+                  path="/credits"
+                  render={() => (
+                    <TabbedContent
+                      to="/credits"
+                      headerId="myaccount-header"
+                      navLabel="Credits"
+                      component={Credits}
+                    />
+                  )}
+                />
+                <Route
+                  path="/referrals"
+                  render={() => (
+                    <TabbedContent
+                      to="/referrals"
+                      headerId="myaccount-header"
+                      navLabel="Referrals"
+                      component={Referrals}
+                    />
+                  )}
+                />
+
+                <Route
+                  path="/config"
+                  render={() => (
+                    <TabbedContent
+                      to="/config"
+                      navLabel="Configuration"
+                      component={Configuration}
+                    />
+                  )}
+                />
+                <Route
+                  path="/keys"
+                  render={() => (
+                    <TabbedContent
+                      to="/keys"
+                      navLabel="API Keys"
+                      component={ApiKeys}
+                    />
+                  )}
+                />
+                <Route
+                  path="/webhooks"
+                  render={() => (
+                    <TabbedContent
+                      to="/webhooks"
+                      headerId="settings-header"
+                      navLabel="Webhooks"
+                      component={Webhooks}
+                    />
+                  )}
+                />
+
+                <Route render={() => <Redirect to="/dashboard" />} />
+              </Switch>;
+            }
+          }
+        }
+      </div>
     );
   };
 

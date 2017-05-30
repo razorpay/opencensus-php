@@ -8,7 +8,7 @@ import OrderDetails from 'merchant/containers/Orders/Details';
 
 const entityMap = {
   '/payments/:id': PaymentsDetails,
-  '/refunds/:id': RefundDetails,
+  '/refunds/:id(rfnd_.+)': RefundDetails,
   '/orders/:id': OrderDetails,
   '/settlements/:id': SettlementDetails,
   '/paymentlinks/:id': PaymentLinkDetails,

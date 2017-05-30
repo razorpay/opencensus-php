@@ -369,3 +369,18 @@ a.breadcrumb__backNav--link {
   left: 50%;
   transform: translate(-50%, -50%)
 }
+
+
+.divider-old {
+  border-top: 2px solid #2e3344;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-left: 20px;
+  padding-top: 10px;
+
+  &::after {
+    content: attr(data-label);
+    font-size: 11px;
+    color: #8b8e99;
+  }
+}
