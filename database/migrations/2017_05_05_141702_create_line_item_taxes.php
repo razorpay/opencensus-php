@@ -4,11 +4,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Merchant;
-use RZP\Models\Tax\Entity;
-use RZP\Models\Item;
+use RZP\Models\LineItem\Tax\Entity;
+use RZP\Models\Tax as TaxModel;
 
-class CreateTaxes extends Migration
+class CreateLineItemTaxes extends Migration
 {
     /**
      * Run the migrations.
@@ -17,20 +16,31 @@ class CreateTaxes extends Migration
      */
     public function up()
     {
-        Schema::create(Table::TAX, function(Blueprint $table)
+        Schema::create(Table::LINE_ITEM_TAX, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
-            $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+            $table->char(Entity::LINE_ITEM_ID, Entity::ID_LENGTH);
+
+            $table->char(Entity::TAX_ID, Entity::ID_LENGTH);
 
             $table->string(Entity::NAME, 512);
 
             $table->string(Entity::RATE_TYPE, 15);
 
             $table->integer(Entity::RATE)
+                  ->unsigned();
+
+            $table->char(Entity::GROUP_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Entity::GROUP_NAME, 512)
+                  ->nullable();
+
+            $table->integer(Entity::TAX_AMOUNT)
                   ->unsigned();
 
             $table->integer(Entity::CREATED_AT);
@@ -42,20 +52,15 @@ class CreateTaxes extends Migration
             $table->index(Entity::UPDATED_AT);
             $table->index(Entity::DELETED_AT);
 
-            $table->foreign(Entity::MERCHANT_ID)
-                  ->references(Merchant\Entity::ID)
-                  ->on(Table::MERCHANT)
-                  ->onDelete('restrict');
-        });
-
-        // This needs to be done here because migrations are run in order of
-        // timestamps and taxes table gets created after items.
-        Schema::table(Table::ITEM, function(Blueprint $table)
-        {
-            $table->foreign(Item\Entity::TAX_ID)
-                  ->references(Entity::ID)
+            $table->foreign(Entity::TAX_ID)
+                  ->references(TaxModel\Entity::ID)
                   ->on(Table::TAX)
-                  ->onDelete('set null');
+                  ->on_delete('restrict');
+
+            $table->foreign(Entity::GROUP_ID)
+                  ->references(TaxModel\Group\Entity::ID)
+                  ->on(Table::TAX_GROUP)
+                  ->on_delete('restrict');
         });
     }
 
@@ -66,22 +71,19 @@ class CreateTaxes extends Migration
      */
     public function down()
     {
-        Schema::table(Table::TAX, function($table)
+        Schema::table(Table::LINE_ITEM_TAX, function($table)
         {
             $table->dropForeign
             (
-                Table::TAX . '_' . Entity::MERCHANT_ID . '_foreign'
+                Table::LINE_ITEM_TAX . '_' . Entity::TAX_ID . '_foreign'
             );
-        });
 
-        Schema::table(Table::ITEM, function($table)
-        {
             $table->dropForeign
             (
-                Table::ITEM . '_' . Item\Entity::TAX_ID . '_foreign'
+                Table::LINE_ITEM_TAX . '_' . Entity::GROUP_ID . '_foreign'
             );
         });
 
-        Schema::drop(Table::TAX);
+        Schema::drop(Table::LINE_ITEM_TAX);
     }
 }

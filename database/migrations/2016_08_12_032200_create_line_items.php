@@ -37,7 +37,25 @@ class CreateLineItems extends Migration
 
             $table->integer(Entity::AMOUNT);
 
+            $table->integer(Entity::GROSS_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Entity::TAX_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Entity::NET_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
             $table->char(Entity::CURRENCY, 3);
+
+            $table->tinyInteger(Entity::TAX_INCLUSIVE)
+                  ->default(0);
+
+            $table->string(Entity::UNIT, 512)
+                  ->nullable();
 
             $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
 

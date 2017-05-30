@@ -370,6 +370,8 @@ class PublicErrorDescription
     const BAD_REQUEST_ITEM_INACTIVE                                             = 'Item cannot be used as it is inactive';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
     const BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE                                    = 'Can only reuse an item of the same item type';
+    const BAD_REQUEST_INVALID_ITEM_TAX_DETAILS                                  = 'Tax details provided for line item is invalid';
+    const BAD_REQUEST_LINK_TYPE_HAS_NO_TAXATION                                 = 'Payment link does not support taxation';
 
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
 

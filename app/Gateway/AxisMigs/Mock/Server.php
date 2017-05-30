@@ -209,7 +209,7 @@ class Server extends Base\Mock\Server
 
         $content = array(
             'vpc_AcqResponseCode'   => '00',
-            'vpc_Amount'            => $input['vpc_Amount'],
+            'vpc_Amount'            => $payment['vpc_Amount'],
             'vpc_BatchNo'           => $payment['vpc_BatchNo'],
             'vpc_Card'              => 'MC',
             'vpc_Command'           => 'queryDR',
