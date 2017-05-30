@@ -4464,12 +4464,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack.git",
-                "reference": "bdece3512c9c29a9a45247c0368bacbb4dc28c55"
+                "reference": "ce669ad5ae594c914013f186a14212a3d7efaca9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack/zipball/bdece3512c9c29a9a45247c0368bacbb4dc28c55",
-                "reference": "bdece3512c9c29a9a45247c0368bacbb4dc28c55",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/ce669ad5ae594c914013f186a14212a3d7efaca9",
+                "reference": "ce669ad5ae594c914013f186a14212a3d7efaca9",
                 "shasum": ""
             },
             "require": {
@@ -4512,7 +4512,7 @@
                 "laravel",
                 "slack"
             ],
-            "time": "2017-05-30T09:26:35+00:00"
+            "time": "2017-05-30T10:44:07+00:00"
         },
         {
             "name": "razorpay/slack-laravel",
