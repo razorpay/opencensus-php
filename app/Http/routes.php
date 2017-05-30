@@ -215,8 +215,6 @@ Route::group(['middleware' => ['web']], function () {
         // Terminal Routes
         Route::put('/admin/{mode}/terminal/{id}', 'AdminController@editTerminal');
 
-        Route::delete('/admin/{mode}/terminal/{id}/merchant/{mid}', 'AdminController@unassignSubMerchantToTerminal');
-
         // Reconcile settlements
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
 

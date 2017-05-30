@@ -370,6 +370,8 @@ return [
         'terminal_reassign_merchant'        => 'terminals/{id}/reassign',
         // Terminal Assign Sub Merchants
         'terminal_add_merchant'             => 'terminals/{id}/merchants/{mid}',
+        // Terminal Remove Sub Merchant
+        'terminal_remove_merchant'          => 'terminals/{id}/merchants/{mid}',
 
         // Gateway Rules
         'gateway_create_rule'               => 'gateway/rules',

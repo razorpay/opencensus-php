@@ -501,23 +501,20 @@ app
       $scope.alerts = alertsFactory.getHandler();
 
       $scope.deleteSubMerchant = function(merchantId) {
-        var request = $http.delete(
-          '/admin/' +
-            mode +
-            '/terminal/' +
-            current.id +
-            '/merchant/' +
-            merchantId
-        );
-
+        var data = {
+          route_name: 'terminal_remove_merchant',
+          url_params: {
+            '{id}': current.id,
+            '{mid}': merchantId,
+          },
+          mode: mode,
+        };
+        var request = $http.delete('/admin/generic', {
+          params: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
-              var index = $scope.subMerchants.indexOf(merchantId);
-              if (index > -1) {
-                $scope.subMerchants.splice(index, 1);
-              }
-
               $scope.alerts.addAlert(
                 'success',
                 'Sub merchant unassigned from the terminal successfully'

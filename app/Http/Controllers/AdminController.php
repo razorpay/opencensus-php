@@ -445,16 +445,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        list($error, $data) = (new Admin\Service)->unassignSubMerchantToTerminal(
-            $mode,
-            $terminalId,
-            $merchantId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function passThrough($path = '')
     {
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
