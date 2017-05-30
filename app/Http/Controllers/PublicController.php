@@ -2,12 +2,24 @@
 
 namespace RZP\Http\Controllers;
 
-use View, Request;
+use View, Request, ApiResponse;
 use RZP\Exception;
 use RZP\Base\JitValidator;
 
 class PublicController extends Controller
 {
+    public function getRoot()
+    {
+        $response['message'] = "Welcome to Razorpay API.";
+
+        return ApiResponse::json($response);
+    }
+
+    public function getCatchAllRoute(string $uri)
+    {
+        return ApiResponse::routeNotFound();
+    }
+
     public function getAccount()
     {
         $data = [
