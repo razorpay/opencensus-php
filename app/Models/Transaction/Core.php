@@ -930,13 +930,6 @@ class Core extends Base\Core
 
             $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule, $nextRunAt);
         }
-        // else fall back to default schedule assigned in merchant enittiy
-        else if ($schedule !== null)
-        {
-            $nextRunAt = $schedule->getNextRun();
-
-            $returnTime = ScheduleLibrary::getNextApplicableTime($capturedAt, $schedule, $nextRunAt);
-        }
         else
         {
             $addDays = $merchant->getSettlementSchedule();

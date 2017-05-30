@@ -46,20 +46,22 @@ class Core extends Base\Core
     {
         $scheduleTask = $this->create($merchant, $entity, $input);
 
-        $currentScheduleTask = $this->repo
-                                    ->schedule_task
-                                    ->fetchExistingScheduleTask($scheduleTask);
-
-        if ($currentScheduleTask !== null)
+        $this->repo->transactionOnLiveAndTest(function() use ($scheduleTask)
         {
-            $scheduleTask->setNextRunAt($currentScheduleTask->getNextRunAt());
+            // for settlements, we want to keep schedules in sync in test and live
+            if ($scheduleTask->isTypeSettlement() === true)
+            {
+                $this->createOrUpdateInMode($scheduleTask, Mode::LIVE);
+                $this->createOrUpdateInMode($scheduleTask, Mode::TEST);
 
-            $this->repo->deleteOrFail($currentScheduleTask);
-        }
-
-        $this->repo->saveOrFail($scheduleTask);
-
-        $this->traceAndNotifyScheduleAssignment($scheduleTask);
+                // Notify slack only in the case of settlement schedule_task
+                $this->traceAndNotifyScheduleAssignment($scheduleTask);
+            }
+            else
+            {
+                $this->createOrUpdateInMode($scheduleTask, $this->mode);
+            }
+        });
 
         return $scheduleTask;
     }
@@ -111,6 +113,27 @@ class Core extends Base\Core
                                     $method);
 
         return $scheduleTask;
+    }
+
+    protected function createOrUpdateInMode(Entity $scheduleTask, string $mode)
+    {
+        $entity = clone $scheduleTask;
+
+        $entity->setConnection($mode);
+
+        $currentScheduleTask = $this->repo
+                                    ->schedule_task
+                                    ->connection($mode)
+                                    ->fetchExistingScheduleTask($entity);
+
+        if ($currentScheduleTask !== null)
+        {
+            $entity->setNextRunAt($currentScheduleTask->getNextRunAt());
+
+            $this->repo->deleteOrFail($currentScheduleTask);
+        }
+
+        $this->repo->saveOrFail($entity);
     }
 
     /**
