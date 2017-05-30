@@ -111,6 +111,7 @@ class Gateway
         Payment\Gateway::BILLDESK,
         Payment\Gateway::HDFC,
         Payment\Gateway::MOBIKWIK,
+        Payment\Gateway::WALLET_OLAMONEY,
     ];
 
     public static $channels = [
