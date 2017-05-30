@@ -54,6 +54,9 @@ build:
           code: |
               mkdir -p /opt/razorpay/certs/first_data
       - script:
+          name: Add route cache
+          code: php artisan route:cache
+      - script:
           name: Run unit tests
           code: php -d memory_limit=4G vendor/phpunit/phpunit/phpunit --debug --verbose
       - script:
