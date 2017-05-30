@@ -188,15 +188,19 @@ app
             });
         },
         addSubMerchant: function(id, merchant_id) {
-          var request = $http.put(
-            '/admin/' +
-              $scope.mode +
-              '/terminal/' +
-              id +
-              '/merchant/' +
-              merchant_id
-          );
-
+          var data = {
+            route_name: 'terminal_add_merchant',
+            url_params: {
+              '{id}': id,
+              '{mid}': merchant_id,
+            },
+            mode: $scope.mode,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
