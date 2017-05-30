@@ -1631,20 +1631,23 @@ final class Route
 
     public function defineAllExtraRoutes()
     {
-        $this->router->any('{all}', function ($uri = null)
-        {
-            return ApiResponse::routeNotFound();
-        })->where('all', '.*');
+        $this->router
+             ->any('{all}',
+                   [
+                       'as' => 'api_root',
+                       'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
+                   ])
+             ->where('all', '.*');
     }
 
     public function defineRootApiRoute()
     {
-        $this->router->get('/', function ()
-        {
-            $response['message'] = "Welcome to Razorpay API.";
-
-            return ApiResponse::json($response);
-        });
+        $this->router
+             ->get('/',
+                   [
+                       'as' => 'api_root',
+                       'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
+                   ]);
     }
 
     public function getApiRouteInCategory($category)
