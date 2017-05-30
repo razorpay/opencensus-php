@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Settlement;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -311,7 +313,7 @@ class Entity extends Base\PublicEntity
 
         if ($processedAt !== null)
         {
-            $array[self::PROCESSED_ON] = date('d/m/y', $processedAt);
+            $array[self::PROCESSED_ON] = Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->format('d/m/y');
         }
     }
 

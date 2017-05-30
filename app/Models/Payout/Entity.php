@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payout;
 
+use Carbon\Carbon;
+
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -321,7 +323,7 @@ class Entity extends Base\PublicEntity
 
         if ($processedAt !== null)
         {
-            $array[self::PROCESSED_ON] = date('d/m/y', $processedAt);
+            $array[self::PROCESSED_ON] = Carbon::createFromTimestamp($processedAt, 'Asia/Kolkata')->format('d/m/y');
         }
     }
 
