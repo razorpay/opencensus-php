@@ -358,7 +358,9 @@ class Service extends Base\Service
         {
             try
             {
-                $schedule = $merchant->schedule;
+                $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+                $schedule = (new Schedule\Core)->getOrCreateDefaultSchedule($defaultDelay);
 
                 $input = [
                     ScheduleTask\Entity::METHOD      => null,
