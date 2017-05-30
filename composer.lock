@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "0602186600030574d23c37180325c153",
+    "content-hash": "fe65d790bc8e7c6067a3e302001ea4ca",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -4460,16 +4460,16 @@
         },
         {
             "name": "razorpay/slack",
-            "version": "1.9.0",
+            "version": "1.9.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack.git",
-                "reference": "f657eb95b4e5871ca5ef69b090c5c02c73170888"
+                "reference": "bdece3512c9c29a9a45247c0368bacbb4dc28c55"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack/zipball/f657eb95b4e5871ca5ef69b090c5c02c73170888",
-                "reference": "f657eb95b4e5871ca5ef69b090c5c02c73170888",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/bdece3512c9c29a9a45247c0368bacbb4dc28c55",
+                "reference": "bdece3512c9c29a9a45247c0368bacbb4dc28c55",
                 "shasum": ""
             },
             "require": {
@@ -4512,25 +4512,25 @@
                 "laravel",
                 "slack"
             ],
-            "time": "2017-05-26T12:04:11+00:00"
+            "time": "2017-05-30T09:26:35+00:00"
         },
         {
             "name": "razorpay/slack-laravel",
-            "version": "1.3.0",
+            "version": "1.3.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack-laravel.git",
-                "reference": "e0cd7e6598ec8fa39cfa5d44a6f2cba2640c449e"
+                "reference": "0f406bfb5c67f2da29866e70d8f97387deb03629"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack-laravel/zipball/e0cd7e6598ec8fa39cfa5d44a6f2cba2640c449e",
-                "reference": "e0cd7e6598ec8fa39cfa5d44a6f2cba2640c449e",
+                "url": "https://api.github.com/repos/razorpay/slack-laravel/zipball/0f406bfb5c67f2da29866e70d8f97387deb03629",
+                "reference": "0f406bfb5c67f2da29866e70d8f97387deb03629",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.4.0",
-                "razorpay/slack": "1.9.0"
+                "razorpay/slack": "1.9.9"
             },
             "type": "library",
             "autoload": {
@@ -4557,7 +4557,7 @@
                 "laravel",
                 "slack"
             ],
-            "time": "2017-05-26T12:28:12+00:00"
+            "time": "2017-05-30T09:30:05+00:00"
         },
         {
             "name": "razorpay/spine",
