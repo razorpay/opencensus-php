@@ -87,6 +87,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>
                 <option value="FDRL">Federal Bank</option>
+                <option value="RATN">RBL Bank</option>
                 <option value="CITI">CITI Bank</option>
                 <option value="UTIB">Axis Bank</option>
                 <option value="YESB">Yes Bank</option>

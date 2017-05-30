@@ -8,6 +8,13 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    /**
+     * We keep tax rate as multiple of 100 in case it's of type
+     * percentage. So to return the actual percent value we
+     * multiply the value by 0.0001.
+     */
+    const PERCENT_MULTIPLIER = 0.0001;
+
     use SoftDeletes;
 
     // Table attributes
@@ -32,6 +39,10 @@ class Entity extends Base\PublicEntity
     protected $entity = 'tax';
 
     protected $generateIdOnCreate = true;
+
+    protected $defaults = [
+        self::RATE_TYPE => RateType::PERCENTAGE,
+    ];
 
     protected $visible = [
         self::ID,
@@ -67,6 +78,11 @@ class Entity extends Base\PublicEntity
 
     // Getters
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
     public function getRateType()
     {
         return $this->getAttribute(self::RATE_TYPE);
@@ -77,10 +93,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RATE);
     }
 
+    public function getRatePercentValue()
+    {
+        return $this->getRate() * self::PERCENT_MULTIPLIER;
+    }
+
     // Relations
 
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function items()
+    {
+        return $this->hasMany('RZP\Models\Item\Entity');
     }
 }

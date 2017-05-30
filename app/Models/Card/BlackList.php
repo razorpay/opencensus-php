@@ -8,7 +8,7 @@ use RZP\Models\Card;
 
 class BlackList
 {
-    const BLOCKED_IIN_LAST4 = array(
+    const BLOCKED_IIN_LAST4 = [
         '402766' => ['4657','9268'],
         '403690' => ['1897'],
         '410039' => ['9469'],
@@ -45,5 +45,9 @@ class BlackList
         '552492' => ['8800'],
         '557125' => ['4273'],
         '622018' => ['2665'],
-    );
+    ];
+
+    const BLOCKED_IIN = [
+        '521729',
+    ];
 }

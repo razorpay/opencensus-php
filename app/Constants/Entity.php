@@ -61,6 +61,7 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const SCHEDULE_TASK         = 'schedule_task';
+    const LINE_ITEM_TAX         = 'line_item_tax';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
@@ -122,6 +123,7 @@ class Entity
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const NETBANKING_FEDERAL    = 'netbanking_federal';
+    const NETBANKING_RBL        = 'netbanking_rbl';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_JIOMONEY       = 'wallet_jiomoney';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
@@ -214,6 +216,7 @@ class Entity
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
         self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
+        self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Rbl::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
 
         // heimdall
@@ -234,6 +237,7 @@ class Entity
         self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
+        self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
     ];
 
     protected static $repository = [
@@ -243,6 +247,7 @@ class Entity
         self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_FEDERAL => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_RBL     => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,

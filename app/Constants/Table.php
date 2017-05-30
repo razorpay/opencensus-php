@@ -50,6 +50,7 @@ class Table
     const BANK_ACCOUNT          = 'bank_accounts';
     const SUBSCRIPTION          = 'subscriptions';
     const SCHEDULE_TASK         = 'schedule_tasks';
+    const LINE_ITEM_TAX         = 'line_item_taxes';
     const MERCHANT_USERS        = 'merchant_users';
     const MERCHANT_OFFER        = 'merchant_offer';
     const MERCHANT_DETAIL       = 'merchant_details';

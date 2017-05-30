@@ -24,6 +24,8 @@ class Shared
     const NETBANKING_AXIS_TPV_TERMINAL      = '100NbAxisTpvTl';
     const NETBANKING_FEDERAL_TERMINAL       = '100NbFdrlTrmnl';
     const NETBANKING_FEDERAL_TPV_TERMINAL   = '100NbFdrlTpvTl';
+    const NETBANKING_RBL_TERMINAL           = '100NbRblTermnl';
+    const NETBANKING_RBL_TPV_TERMINAL       = '100NbRblTpvTml';
     const OLAMONEY_RAZORPAY_TERMINAL        = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL           = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL         = '100PayzappTmnl';
@@ -55,6 +57,7 @@ class Shared
         self::NETBANKING_AIRTEL_TERMINAL,
         self::NETBANKING_AXIS_TERMINAL,
         self::NETBANKING_FEDERAL_TERMINAL,
+        self::NETBANKING_RBL_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,
@@ -87,6 +90,7 @@ class Shared
         self::NETBANKING_AIRTEL_TERMINAL    => Gateway::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS_TERMINAL      => Gateway::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL_TERMINAL   => Gateway::NETBANKING_FEDERAL,
+        self::NETBANKING_RBL_TERMINAL       => Gateway::NETBANKING_RBL,
         self::OLAMONEY_RAZORPAY_TERMINAL    => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL       => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL     => Gateway::WALLET_PAYZAPP,
@@ -101,20 +105,6 @@ class Shared
         self::OPENWALLET_RAZORPAY_TERMINAL  => Gateway::WALLET_OPENWALLET,
     );
 
-    public static function isSharedTerminal($terminal)
-    {
-        $id = $terminal->getId();
-
-        return in_array($id, self::$shared);
-    }
-
-    public static function isPaymentOnSharedTerminal($payment)
-    {
-        $terminal = $payment->terminal;
-
-        return self::isSharedTerminal($terminal);
-    }
-
     public static function getSharedTerminalMapping()
     {
         return self::$map;
@@ -123,12 +113,5 @@ class Shared
     public static function getGatewayForTerminal($terminal)
     {
         return self::$map[$terminal];
-    }
-
-    public static function getSharedTerminalForGateway($gateway)
-    {
-        $map = array_flip(self::$map);
-
-        return $map[$gateway];
     }
 }

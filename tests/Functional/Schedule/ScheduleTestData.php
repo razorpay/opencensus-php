@@ -119,4 +119,42 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED,
         ],
     ],
+
+    'testScheduleSyncLiveAndTest' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'createSubscriptionToSync' => [
+        'url' => '/subscriptions',
+        'method' => 'post',
+        'content' => [
+            'customer_id'     => '',
+            'plan_id'         => 'plan_1000000000plan',
+            'quantity'        => 1,
+            'total_count'     => 6, // Every two months
+            'start_at'        => 1516386600,
+            'customer_notify' => 0,
+            'addons'        => [
+                [
+                    'item' => [
+                        'amount' => 300,
+                        'currency' => 'INR',
+                        'name' => 'Sample Upfront Amount'
+                    ]
+                ]
+            ],
+        ],
+    ]
 ];

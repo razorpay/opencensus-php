@@ -377,6 +377,21 @@ daily_settlements.processed_amount = stats.processed_amount;
 #Adds Auth code to a payment
 UPDATE cybersource set authorizationCode='T38678' where id=28984;
 
+# Post deployment of #3125
+
+# For all old entries (gross_amount would be null), set tax_amount to 0 and gross_amount = amount.
+UPDATE invoices SET
+    tax_amount = 0,
+    gross_amount = amount
+WHERE gross_amount IS NULL AND amount IS NOT NULL;
+
+# For all old entries (gross_amount would be null), set gross_amount, tax_amount and net_amount.
+UPDATE line_items SET
+    gross_amount = amount * quantity,
+    tax_amount = 0,
+    net_amount = gross_amount
+WHERE gross_amount IS NULL;
+
 ### Updates type in terminals
 
 ###########################################################################
@@ -422,3 +437,9 @@ UPDATE terminals
 
 UPDATE terminals SET used = true WHERE used_count > 0;
 
+UPDATE terminals SET mode = type;
+
+UPDATE merchants
+    SET org_id = '100000razorpay'
+    WHERE id NOT IN ('7icgzKgnv7IMbP', '7icw1On5t9IXsB', '7oDON3kPcJ7H0m')
+    AND org_id IS null;

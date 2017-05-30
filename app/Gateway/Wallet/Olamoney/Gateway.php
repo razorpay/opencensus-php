@@ -66,7 +66,10 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRefundRequest($input);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
+        $this->traceGatewayPaymentRequest(
+            $request,
+            $input,
+            TraceCode::GATEWAY_REFUND_REQUEST);
 
         $request['headers'] = $this->getRequestHeaders();
 
@@ -74,12 +77,11 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_RESPONSE,
-            [
-                'response' => $content,
-                'payment_id' => $input['payment']['id']
-            ]);
+        $this->traceGatewayPaymentResponse(
+            $content,
+            $input,
+            TraceCode::GATEWAY_REFUND_RESPONSE
+        );
 
         $this->createWalletRefundEntity($content, $input);
 
@@ -353,6 +355,25 @@ class Gateway extends Base\Gateway
         $gatewayPaymentAttrs = $this->getCreateWalletAttributes($input, $content);
 
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs, Action::AUTHORIZE);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        parent::verify($input);
+
+        $content = $this->sendRefundVerifyRequest($input);
+
+        if ($content[ResponseFields::STATUS] === Status::COMPLETED)
+        {
+            return true;
+        }
+        else if ($content[ResponseFields::STATUS] === Status::ERROR)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
+            'Unrecognized verify refund status: ' . $content[ResponseFields::STATUS]);
     }
 
     protected function getDebitRequestArray(array $input)
@@ -751,7 +772,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getVerifyRequestArray($input);
+        $request = $this->getVerifyRequestArray($input, 'payment');
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $request);
 
@@ -776,10 +797,31 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getVerifyRequestArray(array $input)
+    protected function sendRefundVerifyRequest(array $input): array
+    {
+        $request = $this->getVerifyRequestArray($input, 'refund');
+
+        $this->traceGatewayPaymentRequest(
+            $request,
+            $input,
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->parseResponseBody($response);
+
+        $this->traceGatewayPaymentResponse(
+            $content,
+            $input,
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE);
+
+        return $content;
+    }
+
+    protected function getVerifyRequestArray(array $input, string $entity)
     {
         $content = [
-            RequestFields::UNIQUE_BILL_ID   => $input['payment']['id'],
+            RequestFields::UNIQUE_BILL_ID   => $input[$entity]['id'],
             RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
             RequestFields::TIMESTAMP        => Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s'),
         ];

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment;
 
+use DB;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -10,6 +11,7 @@ use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
+use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -27,6 +29,7 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
+        Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1'
     ];
 
     // These are proxy allowed params to search on.
@@ -587,6 +590,24 @@ class Repository extends Base\Repository
         $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
 
+    /**
+     * Param to filter payments that have been transferred (amount_transferred > 0)
+     *
+     * @param $query
+     * @param $params
+     */
+    protected function addQueryParamTransferred($query, $params)
+    {
+        if ($params[Entity::TRANSFERRED] !== '1')
+        {
+            return;
+        }
+
+        $amountTransferred = $this->dbColumn(Entity::AMOUNT_TRANSFERRED);
+
+        $query->where($amountTransferred, '>', 0);
+    }
+
     protected function addQueryCaptured($query, $params)
     {
         $captured = $params[Entity::CAPTURED];
@@ -753,6 +774,40 @@ class Repository extends Base\Repository
                        'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
+    }
+
+    /**
+     * Fetches the number of times a payment has been made against each offer id in $offerIds
+     * grouped by offerId
+     *
+     * @param  array  $cardIds  Card ids to check
+     * @param  array  $offerIds Offer ids to check
+     * @return int              Count of payments
+     */
+    public function getPaymentCountForCardIdsAndOfferIds(array $cardIds, array $offerIds): array
+    {
+        $ordersTable = $this->repo->order->getTableName();
+        $paymentOrderIdCol = $this->dbColumn(Entity::ORDER_ID);
+        $orderIdCol = $this->repo->order->dbColumn(Order\Entity::ID);
+        $paymentStatusCol = $this->dbColumn(Entity::STATUS);
+        $orderOfferIdCol = $this->repo->order->dbColumn(Order\Entity::OFFER_ID);
+        $paymentCardIdCol = $this->dbColumn(Entity::CARD_ID);
+        $paymentIdCol = $this->dbColumn(Entity::ID);
+
+        // Query executed - select count(payments.id) AS payment_count, orders.offer_id
+        // from `payments` inner join `orders` on `payments`.`order_id` = `orders`.`id`
+        // where `payments`.`status` = ? and `orders`.`offer_id` in (?) and `payments`.`card_id`
+        // in (?) having payment_count >= 1 group by `orders`.`offer_id`
+        return $this->newQuery()
+                    ->select(DB::raw("count($paymentIdCol) AS payment_count, $orderOfferIdCol"))
+                    ->join($ordersTable, $paymentOrderIdCol, '=', $orderIdCol)
+                    ->where($paymentStatusCol, '=', Status::CAPTURED)
+                    ->whereIn($orderOfferIdCol, $offerIds)
+                    ->whereIn($paymentCardIdCol, $cardIds)
+                    ->groupBy($orderOfferIdCol)
+                    ->having('payment_count', '>=', 1)
+                    ->pluck('payment_count', 'offer_id')
+                    ->toArray();
     }
 
     protected function getPaymentVolumeBetweenTimestamp($from, $to)
