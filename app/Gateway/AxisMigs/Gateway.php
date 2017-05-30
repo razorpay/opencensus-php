@@ -376,7 +376,7 @@ class Gateway extends Base\Gateway
                 'Unable to verify migs refund');
         }
 
-        $content = $this->sendRefundVerifyRequest($input);
+        $content = $this->sendVerifyRequest($input, 'refund');
 
         if ($content['vpc_DRExists'] === 'N')
         {
@@ -456,9 +456,9 @@ class Gateway extends Base\Gateway
         $this->verifyAmaTransactionResponse($content, $input);
     }
 
-    protected function sendRefundVerifyRequest($input)
+    protected function sendVerifyRequest($input, $entity = 'payment')
     {
-        $content = $this->getRefundVerifyRequestContent($input);
+        $content = $this->getVerifyRequestContent($input, $entity);
 
         $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
 
@@ -479,22 +479,8 @@ class Gateway extends Base\Gateway
     protected function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
-        $payment = $verify->payment;
 
-        $content = $this->getPaymentVerifyRequestContent($input);
-
-        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
-
-        if (isset($content['vpc_SecureHash']))
-        {
-            $this->verifySecureHash($content);
-            unset($content['vpc_SecureHash']);
-        }
-
-        if (isset($content['vpc_Command']))
-        {
-            unset($content['vpc_Command']);
-        }
+        $content = $this->sendVerifyRequest($input, 'payment');
 
         $verify->verifyResponse = $this->response;
 
@@ -726,16 +712,6 @@ class Gateway extends Base\Gateway
         ];
 
         return $content;
-    }
-
-    protected function getRefundVerifyRequestContent($input)
-    {
-        return $this->getVerifyRequestContent($input, 'refund');
-    }
-
-    protected function getPaymentVerifyRequestContent($input)
-    {
-        return $this->getVerifyRequestContent($input, 'payment');
     }
 
     protected function getVerifyRequestContent($input, $entity)
