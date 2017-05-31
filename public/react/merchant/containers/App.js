@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import TetherComponent from 'react-tether';
 
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Slider from 'rzp/ui/Slider';
@@ -9,6 +10,7 @@ import ReactIdle from 'rzp/ui/ReactIdle';
 import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
+import Footer from 'merchant/components/Footer';
 import ActivationRequired from 'merchant/components/ActivationRequired';
 import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
 import * as ModalActions from 'rzp/modules/modals';
@@ -184,6 +186,15 @@ export default class App extends Component {
         />
         <Sidebar user={user} />
         <Content user={user} />
+
+        <TetherComponent
+          target="body"
+          attachment="bottom left"
+          targetAttachment="bottom left"
+        >
+          <div />
+          <Footer />
+        </TetherComponent>
 
         {/* Creates Portal for the comp */}
         <ModalDialog />
