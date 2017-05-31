@@ -17,7 +17,6 @@ class Entity extends Base\PublicEntity
     const ANCHOR      = 'anchor';
     const HOUR        = 'hour';
     const DELAY       = 'delay';
-    const NEXT_RUN    = 'next_run';
 
     const DELETED_AT  = 'deleted_at';
 
