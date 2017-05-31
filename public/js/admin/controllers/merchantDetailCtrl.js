@@ -1786,6 +1786,7 @@ app
         'payzapp',
         'payumoney',
         'olamoney',
+        'mpesa',
         'upi',
         'airtelmoney',
         'freecharge',
