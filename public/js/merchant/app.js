@@ -18,7 +18,6 @@ var app = angular
     'ngIdle',
     'ngBusy',
     'noCAPTCHA',
-    'react',
   ])
   .run([
     '$rootScope',
@@ -26,15 +25,7 @@ var app = angular
     '$stateParams',
     'user',
     'authorization',
-    'jqTourbusService',
-    function(
-      $rootScope,
-      $state,
-      $stateParams,
-      user,
-      authorization,
-      jqTourbusService
-    ) {
+    function($rootScope, $state, $stateParams, user, authorization) {
       $rootScope.$on('$stateChangeStart', function(
         event,
         toState,
@@ -57,8 +48,6 @@ var app = angular
       $rootScope.$on('$stateChangeError', function() {
         $state.go('500');
       });
-
-      $rootScope.tour = jqTourbusService;
     },
   ])
   .config([

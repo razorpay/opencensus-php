@@ -44,7 +44,6 @@
     "ngreact": "^0.3.0",
     "react": "^15.4.2",
     "react-addons-shallow-compare": "^15.4.2",
-    "react-angular": "^0.2.0",
     "react-async-button": "^0.0.6",
     "react-chartjs-2": "^2.0.5",
     "react-dates": "^7.0.1",

@@ -4092,10 +4092,6 @@ react-addons-shallow-compare@^15.4.2:
     fbjs "^0.8.4"
     object-assign "^4.1.0"
 
-react-angular@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/react-angular/-/react-angular-0.2.0.tgz#3a465ead433a2e0a09f5f1264394766600349b82"
-
 react-async-button@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/react-async-button/-/react-async-button-0.0.6.tgz#2e909dfc8923597c562cb1c4f3bc3e620341be7e"
