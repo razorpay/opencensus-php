@@ -122,7 +122,6 @@ class MerchantCreateTest extends TestCase
         $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
 
         $this->assertEquals($merchant['id'], $scheduleTask['merchant_id']);
-        $this->assertEquals($schedule['id'], $merchant['settlement_schedule_id']);
         $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
         $this->assertEquals($schedule['period'], 'daily');
         $this->assertEquals($schedule['delay'], 3);
@@ -213,7 +212,6 @@ class MerchantCreateTest extends TestCase
         $schedule = $this->getEntityById('schedule', $scheduleTask['schedule_id'], true);
 
         $this->assertEquals($linkedAcc['id'], $scheduleTask['merchant_id']);
-        $this->assertEquals($schedule['id'], $linkedAcc['settlement_schedule_id']);
         $this->assertEquals($schedule['delay'], 2);
     }
 

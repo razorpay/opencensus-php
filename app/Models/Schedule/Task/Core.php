@@ -22,8 +22,6 @@ class Core extends Base\Core
     {
         $schedule = $this->getDefaultMerchantSchedule($merchant);
 
-        $merchant->schedule()->associate($schedule);
-
         $input = [
             Entity::METHOD      => null,
             Entity::TYPE        => Type::SETTLEMENT,
