@@ -11,7 +11,7 @@ export default ({ invitations, onAcceptClick, onRejectClick }) => {
           key={index}
           label={() => (
             <span>
-              Invitation to join <strong>${invite.merchant.name}</strong>
+              Invitation to join <strong>{invite.merchant.name}</strong>
             </span>
           )}
           value={() => (
