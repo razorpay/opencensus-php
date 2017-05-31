@@ -3,6 +3,7 @@
 namespace RZP\Models\Schedule\Task;
 
 use Config;
+use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -90,6 +91,15 @@ class Core extends Base\Core
         $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
 
         $scheduleTask->schedule()->associate($schedule);
+
+        if ($schedule->hasHour() === true)
+        {
+            $nextRunAt = Carbon::createFromTimestamp($scheduleTask->getNextRunAt(), 'Asia/Kolkata');
+
+            $nextRunAt->hour($schedule->getHour());
+
+            $scheduleTask->setNextRunAt($nextRunAt->getTimestamp());
+        }
 
         return $scheduleTask;
     }

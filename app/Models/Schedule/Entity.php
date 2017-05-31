@@ -69,6 +69,12 @@ class Entity extends Base\PublicEntity
         return ($this->getPeriod() === Period::HOURLY);
     }
 
+    public function hasHour()
+    {
+        return (($this->isHourly() === false) and
+                ($this->getHour() !== 0));
+    }
+
     // ----------------------- Relations -----------------------
 
     public function merchant()
