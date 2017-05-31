@@ -221,8 +221,8 @@ class Gateway extends Base\Gateway
             RequestFields::RESPONSE_FORMAT  => FileFormat::XML,
             RequestFields::REQUEST_FORMAT   => FileFormat::NV,
             RequestFields::MULTIPLE_RECORDS => Constants::NO,
-            RequestFields::USER_PRINCIPAL   => $this->getUserPrincipal(),
-            RequestFields::ACCESS_CODE      => $this->getAccessCode(),
+            RequestFields::USER_PRINCIPAL   => $this->getUserPrincipal($input),
+            RequestFields::ACCESS_CODE      => $this->getAccessCode($input),
             RequestFields::V_PAYEE_ID       => $this->getMerchantId(),
             RequestFields::BANK_REFERENCE   => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
             RequestFields::ENTITY_TYPE      => Constants::TYPE_PAYMENT,
@@ -406,9 +406,9 @@ class Gateway extends Base\Gateway
         return (array) $transactionStatus[ResponseFields::STATUS_RECORD];
     }
 
-    protected function getAccessCode()
+    protected function getAccessCode(array $input): string
     {
-        $accessCode = $this->input['terminal']['gateway_access_code'];
+        $accessCode = $input['terminal']['gateway_access_code'];
 
         if ($this->mode === Mode::TEST)
         {
@@ -418,9 +418,9 @@ class Gateway extends Base\Gateway
         return $accessCode;
     }
 
-    protected function getUserPrincipal()
+    protected function getUserPrincipal(array $input): string
     {
-        $userPricipal = $this->input['terminal']['gateway_merchant_id2'];
+        $userPricipal = $input['terminal']['gateway_merchant_id2'];
 
         if ($this->mode === Mode::TEST)
         {
