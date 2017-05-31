@@ -24,11 +24,6 @@ class UserController extends Controller
         return view('merchant.tmpgetIndex', [ 'isAuthenticated' =>  $user ]);
     }
 
-    public function getIndexOld()
-    {
-        return view('merchant.tmpgetIndexOld');
-    }
-
     /**
      * Returns an empty success to keep the user session active..
      *
