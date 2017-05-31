@@ -58,7 +58,7 @@ export default props => {
         />
         <InfoCard
           loading={entity_totals.loading}
-          content={() => (
+          content={
             <Amount
               value={
                 entity_totals.data.payment
@@ -66,14 +66,14 @@ export default props => {
                   : 0
               }
             />
-          )}
+          }
           error={entity_totals.error}
           title="Total Volume"
         />
         <InfoCard
           amount
           loading={current_balance.loading}
-          content={() => <Amount value={current_balance.data.balance || 0} />}
+          content={<Amount value={current_balance.data.balance || 0} />}
           error={current_balance.error}
           title="Current Balance"
         />

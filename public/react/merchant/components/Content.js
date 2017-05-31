@@ -55,13 +55,7 @@ export default class Content extends Component {
             if (isNewUIEnabled) {
               <Switch location={this.baseLocation}>
                 <Route path="/dashboard" component={Home} />
-                <Route
-                  path="/"
-                  exact
-                  render={() => {
-                    return <Redirect to="/dashboard" />;
-                  }}
-                />
+                <Redirect from="/" exact to="/dashboard" />
 
                 <Route path="/payments" component={Transactions} />
                 <Route path="/refunds" component={Transactions} />
@@ -92,18 +86,12 @@ export default class Content extends Component {
                 <Route path="/keys" component={Settings} />
                 <Route path="/webhooks" component={Settings} />
 
-                <Route render={() => <Redirect to="/dashboard" />} />
+                <Redirect to="/dashboard" />
               </Switch>;
             } else {
               <Switch location={this.baseLocation}>
                 <Route path="/dashboard" component={Home} />
-                <Route
-                  path="/"
-                  exact
-                  render={() => {
-                    return <Redirect to="/dashboard" />;
-                  }}
-                />
+                <Redirect from="/" exact to="/dashboard" />
 
                 <Route
                   path="/payments"
@@ -265,7 +253,7 @@ export default class Content extends Component {
                   )}
                 />
 
-                <Route render={() => <Redirect to="/dashboard" />} />
+                <Redirect to="/dashboard" />
               </Switch>;
             }
           }
