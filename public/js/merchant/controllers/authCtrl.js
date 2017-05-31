@@ -236,6 +236,10 @@ app
             });
           } else {
             hideSpinner();
+            if (data.errors[0].includes('email has already been taken')) {
+              trackDrip('error_email_taken');
+            }
+
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
             });
