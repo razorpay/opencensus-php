@@ -55,6 +55,9 @@ export default class App extends Component {
         }
       }),
     ]).then(() => {
+      let $splash = document.getElementById('splash');
+      $splash.parentElement.removeChild($splash);
+
       this.setState({ isLoading: false });
     });
   }
