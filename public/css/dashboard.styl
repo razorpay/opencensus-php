@@ -1,5 +1,74 @@
 $supportkit-text = ' You can also reach us at 1800-270-0323'
 
+#switch-merchant-button {
+  width: 140px;
+  b {
+    position: absolute;
+    top: 24px;
+    right: 15px;
+    display: none;
+  }
+  .select2-selection__rendered {
+    &:after {
+      content: 'Switch Merchant';
+      font-size: 14px;
+    }
+  }
+  .select2-container--open .selection, .selection:hover {
+    background: #F2F2F2;
+  }
+  .select2 {
+    & + b {
+      display: block;
+    }
+  }
+  select {
+    display: none;
+  }
+  .selection {
+    width: 140px;
+    display: block;
+  }
+}
+
+.select2-dropdown {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1)
+}
+
+.select2-container {
+  width: 100%;
+}
+
+.select2-container--default .select2-selection--single {
+  border: 0;
+  background: none;
+  height: 51px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  display: none;
+}
+
+.select2-container .select2-selection--single .select2-selection__rendered {
+  padding: 0 15px;
+  width: 100%;
+  font-size: 0;
+  line-height: 51px;
+  height: 51px;
+}
+
+.select2-search--dropdown {
+  padding: 6px 10px;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.11) inset;
+  background: #fefefe;
+  border-radius: 2px;
+}
+
 ::-webkit-scrollbar-track
 {
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.2);
@@ -54,13 +123,29 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
   &::after {
     content: '';
     position: absolute;
-    left: -8px;
     width: 0;
     height: 0;
-    transform: translate(0, 50%);
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-    border-right: 10px solid #000;
+  }
+
+  &.right {
+    &::after {
+      left: -8px;
+      transform: translate(0, 50%);
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-right: 10px solid #000;
+    }
+  }
+
+  &.top {
+    &::after {
+      left: 50%;
+      bottom: 0;
+      transform: translate(-50%, 100%);
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid #000;
+    }
   }
 }
 @keyframes fadeIn {
@@ -456,6 +541,13 @@ a.highlight:hover, a.highlight:focus {
   .pending-color {
     color: #FCCB00;
   }
+
+  .approved-bg-color {
+    background-color: #17C446;
+  }
+  .rejected-bg-color {
+    background-color: #F14F4B;
+  }
   .pending-bg-color {
     background-color: #FCCB00;
   }
@@ -531,9 +623,6 @@ a.highlight:hover, a.highlight:focus {
   .faded-text {
     color: #ccc;
   }
-  .timestamp {
-    cursor: help;
-  }
   .right-label {
     text-transform: uppercase;
     font-weight: bold;
@@ -544,6 +633,18 @@ a.highlight:hover, a.highlight:focus {
   }
   .desc-edit-icon > i {
     opacity: 0;
+  }
+  .desc-remove-icon {
+    position: absolute;
+    font-size: 14px;
+    z-index: 100;
+    cursor: pointer;
+    color: #e8e8e8;
+    top: 17px;
+
+    &:hover {
+      color: #c2c2c2;
+    }
   }
   .title-text {
     position: absolute;
@@ -774,6 +875,8 @@ a.highlight:hover, a.highlight:focus {
 .assignee-label {
   background: #EBEBEB;
   margin-right: 12px;
+  display: inline-block;
+  margin-bottom: 8px;
 }
 
 .delete-btn {

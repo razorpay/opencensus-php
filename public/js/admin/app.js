@@ -17,8 +17,6 @@ var app = angular
     'angularFileUpload',
     'ngIdle',
     'ngBusy',
-    'angulartics',
-    'angulartics.segment.io',
     'react',
   ])
   .run([
@@ -64,15 +62,13 @@ var app = angular
     '$compileProvider',
     '$filterProvider',
     '$provide',
-    '$analyticsProvider',
     function(
       $stateProvider,
       $urlRouterProvider,
       $controllerProvider,
       $compileProvider,
       $filterProvider,
-      $provide,
-      $analyticsProvider
+      $provide
     ) {
       // lazy controller, directive and service
       app.controller = $controllerProvider.register;
@@ -128,6 +124,10 @@ var app = angular
         .state('app.merchants.activation', {
           url: '/:id/activation',
           templateUrl: 'tpl/admin/app_merchant_activation.html',
+        })
+        .state('app.gateway', {
+          url: '/gateway_rule',
+          templateUrl: 'tpl/admin/app_gateway.html',
         })
         .state('app.pricing', {
           url: '/pricing',

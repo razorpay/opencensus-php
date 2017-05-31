@@ -60,8 +60,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/user/logout', 'UserController@getLogout');
 
         // This returns all the needed information
-        Route::get('/user', 'UserController@getUserDetails');
-        Route::get('/user/details', 'UserController@getUserDetails');
+        Route::get('/user', 'UserController@getUserDetailsV2'); //ePOS
+        Route::get('/user_old', 'UserController@getUserDetailsV1');
+        Route::get('/user/details', 'UserController@getUserDetailsV2');
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
         Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
 
@@ -148,7 +149,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');
 
         // Registers a sub-merchant account
-        Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant')->name('submerchant_register');
+        Route::post('/submerchants', 'MerchantController@postRegisterSubMerchant')->name('submerchant_register');
         Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
 
     });
@@ -163,15 +164,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/list', 'AdminController@getMerchantList');
         Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
-        // This is the list of banks in netbanking
-        Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
 
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
         Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature')
                 ->name('admin_delete_features');
 
-        // This is the merchant's bank account
-        Route::get('/admin/merchant/{id}/bank_account', 'AdminController@getMerchantBankAccount');
         Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin')
                ->name('admin_merchant_login');
         Route::get('/admin/activity', 'AdminController@getAdminActivity');
@@ -197,24 +194,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
 
         // Admin merchant actions
-        Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
-        Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
-        Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
-        Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
-        Route::post('admin/merchant/{id}/addadjustment', 'AdminController@postAddAdjustment');
         Route::get('/admin/merchant/{id}/activate', 'AdminController@getMerchantActivation');
-        Route::get('/admin/merchant/{id}/live/enable', 'AdminController@getMerchantLiveEnable');
-        Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
-        Route::get('/admin/merchant/{id}/archive', 'AdminController@getMerchantArchive');
-        Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
-        Route::get('/admin/merchant/{id}/suspend', 'AdminController@getMerchantSuspend');
-        Route::get('/admin/merchant/{id}/unsuspend', 'AdminController@getMerchantUnsuspend');
         Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
-        Route::post('/admin/merchants/{id}/international', 'AdminController@postSetMerchantInternational');
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
-        Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
         Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
 
         // Creevey Related routes
@@ -227,16 +211,6 @@ Route::group(['middleware' => ['web']], function () {
         // EMI Plan Routes
         Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
 
-        // Admin Payment Actions
-        Route::get('/admin/{mode}/payments/{id}/analytics', 'AdminController@getPaymentAnalytics');
-        Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
-
-        // More admin payment actions
-        // These use proxy auth so needs merchantId
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture')
-                ->name('admin_payment_capture');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Newsletter
@@ -256,9 +230,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
-        Route::get('admin/schedule/list', 'AdminController@getScheduleList');
-        Route::post('admin/merchant/{id}/schedules', 'AdminController@postMerchantSchedule');
-
         Route::group(['middleware'  =>  ['admin', 'superadmin', 'admin_access']], function()
         {
             // This is the RAW API route which processes api calls
@@ -272,15 +243,9 @@ Route::group(['middleware' => ['web']], function () {
         });
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
-        Route::put('/admin/merchant/{id}/bank_account', 'AdminController@putEditBankDetails');
 
-        Route::get('/admin/{mode}/fetchentity/{entity}', 'AdminController@getMultipleEntities')
-                ->name('admin_fetch_entity');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')
-                ->name('admin_fetch_entity');
-        // This is a very generic route and needs to be defined below
-        Route::get('/admin/{mode}/fetchentity/{entity}/{entity_id}', 'AdminController@getEntityById')
                 ->name('admin_fetch_entity');
 
         // Upload logos for orgs

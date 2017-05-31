@@ -7,6 +7,7 @@ import invoicesReducer from 'merchant/modules/invoices/list';
 import invoiceDetailsReducer from 'merchant/modules/invoices/details';
 import subscriptionsReducer from 'merchant/modules/subscriptions';
 import plansReducer from 'merchant/modules/plans';
+import profileReducer from 'merchant/modules/profile';
 import customersReducer from 'merchant/modules/customers';
 import itemsReducer from 'merchant/modules/items';
 import ordersReducer from 'merchant/modules/orders/list';
@@ -25,6 +26,7 @@ import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
 import paymentsReducer from 'merchant/modules/payments/list';
 import paymentReducer from 'merchant/modules/payments/details';
 import accountsReducer from 'merchant/modules/accounts';
+import referralsReducer from 'merchant/modules/referrals';
 
 export default combineReducers({
   form: formReducer,
@@ -35,6 +37,7 @@ export default combineReducers({
   invoice: invoiceDetailsReducer,
   subscriptions: subscriptionsReducer,
   plans: plansReducer,
+  profile: profileReducer,
   customers: customersReducer,
   items: itemsReducer,
   orders: ordersReducer,
@@ -52,6 +55,7 @@ export default combineReducers({
   credits: creditsReducer,
   refunds: refundsReducer,
   refund: refundReducer,
+  referrals: referralsReducer,
   batchuploads: batchuploadsReducer,
   accounts: accountsReducer,
 });

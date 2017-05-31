@@ -40,7 +40,8 @@ angular.module('ui.jq', ['ui.load']).value('uiJqConfig', {}).directive('uiJq', [
             if (attrs.uiOptions) {
               linkOptions = scope.$eval('[' + attrs.uiOptions + ']');
               if (
-                angular.isObject(options) && angular.isObject(linkOptions[0])
+                angular.isObject(options) &&
+                angular.isObject(linkOptions[0])
               ) {
                 linkOptions[0] = angular.extend({}, options, linkOptions[0]);
               }

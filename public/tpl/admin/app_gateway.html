@@ -1,0 +1,273 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Gateway Rules
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md" ng-controller="GatewayRulesCtrl">
+  <div class="text-center m-t">
+    <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+  </div>
+  <div class="row" style="padding: 15px;">
+    <form>
+      <div class="col-lg-2">
+        Mode:
+        <select class="form-control input-sm w-xs inline" ng-model="mode">
+          <option value="live">Live</option>
+          <option value="test">Test</option>
+        </select>
+      </div>
+      <div class="col-lg-5 row">
+        Merchant Id:
+        <input type="text" class="form-control" ng-model="merchantId" placeholder="Merchant Id" style="width:200px; display: inline-block">
+        <button class="btn btn-info m-l save-btn ng-scope" ng-model="searchMerchantId" ng-click="getRulesById()">
+          Search
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="panel panel-default" >
+    <div class="panel-heading">
+      List of all Gatway Rules
+    </div>
+    <div class="row wrapper">
+      <div class="col-md-6 m-b-xs" >
+        <div ng-if="gatewayRules && !noResults">
+          <label for='filter' class='m-r'>Search</label>
+          <input id="filter" type="text" class="form-control input-sm w-sm inline m-r">
+        </div>
+      </div>
+      <div class="col-md-6" ng-if="admin.permissions && admin.permissions.indexOf('create_gateway_rule') !== -1">
+        <button id='addRoleButton' class='btn btn-primary pull-right' ng-click="addNewRule()">
+          Add new Rule
+        </button>
+      </div>
+    </div>
+
+    <div ng-if="!gatewayRules && noResults" class="col-md-12 m-b-xs" style="text-align: center; margin: 12px;">
+      Loading Gateway Rules...
+    </div>
+
+    <div ng-if="gatewayRules && noResults" class="col-md-12 m-b-xs" style="text-align: center; margin: 12px;">
+      No gateway rules found
+    </div>
+
+
+    <div ng-if="gatewayRules">
+      <table ui-jq="footable" data-filter="#filter" data-page-size="10" class="pricing-table table table-responsive table-striped b-t b-light">
+        <thead>
+        <tr>
+          <th>Rule ID</th>
+          <th>Merchant ID</th>
+          <th>Gateway</th>
+          <th>Method</th>
+          <th>Method Type</th>
+          <th>Network</th>
+          <th>Issuer</th>
+          <th>Load</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="row in gatewayRules" class="merchants-table-body">
+          <td>{{row.id}}</td>
+          <td>{{row.merchant_id}}</td>
+          <td>{{row.gateway}}</td>
+          <td>{{methodMap[row.method]}}</td>
+          <td>{{row.method_type || 'ALL'}}</td>
+          <td>{{networkMap[row.network] || 'ALL'}}</td>
+          <td>{{row.issuer || 'ALL'}}</td>
+          <td>{{row.load}}</td>
+          <td>
+            <button class="btn btn-default btn-xs"
+                    ng-click="editRule(row)">
+              <i class="fa fa-pencil-square"></i>
+              {{admin.permissions && admin.permissions.indexOf('edit_gateway_rule') !== -1 ? 'edit' : 'view'}}
+            </button>
+            <button class="btn btn-default btn-xs"
+                    ng-if="admin.permissions && admin.permissions.indexOf('delete_gateway_rule') !== -1"
+                    ng-confirm-click="Are you sure you want to delete this Gateway Rule?"
+                    ng-click="deleteRuleById(row.id)">
+              <i class="fa fa-user-times text-danger"></i>
+              delete
+            </button>
+          </td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+          <td colspan="12" class="text-center">
+            <ul class="pagination"></ul>
+          </td>
+        </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/ng-template" id="editGatewayRuleModal.html">
+  <div class="modal-header">
+    <h3 class="modal-title" ng-if="editMode && admin.permissions && admin.permissions.indexOf('edit_gateway_rule') !== -1">
+      Edit Gateway Rule
+    </h3>
+    <h3 class="modal-title" ng-if="editMode && admin.permissions && admin.permissions.indexOf('edit_gateway_rule') === -1">
+      View Gateway Rule
+    </h3>
+    <h3 class="modal-title" ng-if="!editMode && admin.permissions && admin.permissions.indexOf('create_gateway_rule') !== -1">
+      Create a new Gateway Rule
+    </h3>
+  </div>
+  <div class="modal-body merchant-modal">
+    <div class="row wrapper" ng-if="editMode">
+      <div class="col-md-6">
+        <label class="control-label">Rule ID:</label> <b>{{current.id}}</b>
+      </div>
+      <div class="col-md-6">
+        <label class="control-label">Merchant ID:</label> <b>{{current.merchant_id}}</b>
+      </div>
+    </div>
+
+    <form class="form-horizontal" name="editRuleForm">
+      <!-- Merchant Id-->
+      <div class="form-group" ng-if="!editMode">
+        <label class="col-lg-2 control-label">Merchant ID*:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="merchant_id"
+                 ng-model="current.merchant_id"
+                 ng-init="current.merchant_id = current.merchant_id || '100000Razorpay'"
+                 ng-required="!editMode">
+        </div>
+      </div>
+
+      <!-- Gateway -->
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Gateway*:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="gateway"
+                 ng-model="current.gateway"
+                 ng-readonly="editMode"
+                 ng-required="!editMode">
+        </div>
+      </div>
+
+      <!-- Gateway Acquirer -->
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Gateway Acquirer:</label>
+        <div class="col-lg-10" >
+          <!--<input type="text" class="form-control m-b" name="gateway_acquirer" ng-model="current.gateway_acquirer" ng-readonly="editMode">-->
+          <select name="gateway_acquirer"
+                  ng-model="current.gateway_acquirer"
+                  ng-init="current.gateway_acquirer = current.gateway_acquirer || ''"
+                  class="form-control"
+                  ng-disabled="editMode">
+            <option value="">ALL</option>
+            <option ng-repeat="(key, option) in gatewayAcquirerMap" value={{key}}>{{option}}</option>
+          </select>
+
+        </div>
+      </div>
+
+      <!-- Method -->
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Method*:</label>
+        <div class="col-lg-10" >
+          <select name="method" ng-model="current.method" ng-required="!editMode" class="form-control" ng-disabled="editMode">
+            <option ng-repeat="(key, option) in methodMap" value={{key}}>{{option}}</option>
+          </select>
+          <!--Display error for select type tags-->
+          <span ng-show="editRuleForm.method.$error.required" style="font-size:11px; color: red;">
+            Method is required
+          </span>
+        </div>
+      </div>
+
+      <!-- Method Type -->
+      <div class="form-group" ng-if="current.method === 'card'">
+        <label class="col-lg-2 control-label">Method Type:</label>
+        <div class="col-lg-10" >
+          <select name="method_type" ng-model="current.method_type" class="form-control" ng-disabled="editMode">
+            <option value="">ALL</option>
+            <option value="credit">Credit</option>
+            <option value="debit">Debit</option>
+          </select>
+
+        </div>
+      </div>
+
+      <!-- Network -->
+      <div class="form-group" ng-if="current.method === 'card'">
+        <label class="col-lg-2 control-label">Network:</label>
+        <div class="col-lg-10" >
+          <select name="network"
+                  ng-model="current.network"
+                  ng-init="current.network = current.network || ''"
+                  class="form-control"
+                  ng-disabled="editMode">
+            <option value="">ALL</option>
+            <option ng-repeat="(key, option) in networkMap" value={{key}}>{{option}}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- International -->
+      <div class="form-group">
+        <label class="col-lg-2 control-label">International:</label>
+        <div class="col-lg-10" >
+          <!--<input type="text" class="form-control m-b" name="international" ng-model="current.international" ng-readonly="editMode">-->
+          <select name="international"
+                  ng-model="current.international"
+                  ng-init="current.international = current.international || ''"
+                  class="form-control"
+                  ng-disabled="editMode">
+            <option value="">Both</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Issuer -->
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Issuer:</label>
+        <div class="col-lg-10" >
+          <input type="text" class="form-control m-b" name="issuer"
+                 ng-model="current.issuer"
+                 ng-init="current.issuer = current.issuer || 'ALL'"
+                 ng-readonly="editMode">
+        </div>
+      </div>
+
+      <!-- Load -->
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Load*:</label>
+        <div class="col-lg-10" >
+          <input type="decimal" class="form-control m-b" name="load"
+                 ng-model="current.load"
+                 placeholder="Eg: 220.15 (range is 0-100)"
+                 ng-required="!editMode"
+                 ng-readonly="editMode && admin.permissions && admin.permissions.indexOf('edit_gateway_rule') === -1">
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
+        <button class="btn btn-primary modal-ok" type="submit"
+                ng-if="editMode && admin.permissions && admin.permissions.indexOf('edit_gateway_rule') !== -1"
+                ng-click="editRuleForm.$valid && ok(current)">
+          UPDATE
+        </button>
+
+        <button class="btn btn-primary modal-ok" type="submit"
+                ng-if="!editMode && admin.permissions && admin.permissions.indexOf('create_gateway_rule') !== -1"
+                ng-click="editRuleForm.$valid && ok(current)">
+          CREATE
+        </button>
+      </div>
+
+    </form>
+  </div>
+</script>
+

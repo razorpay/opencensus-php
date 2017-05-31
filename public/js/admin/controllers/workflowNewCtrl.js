@@ -60,20 +60,19 @@ app.controller('WorkflowNewCtrl', [
           data.data.levels.forEach(function(level) {
             $scope.levels[level.level - 1] = {
               level: level.level,
-              op_type: level.op_type
+              op_type: level.op_type,
             };
 
             if (level.steps && level.steps.length) {
-
               // For each role(step), keep only role_id and reviewer_count properties
               for (var index in level.steps) {
                 level.steps[index] = {
                   role_id: level.steps[index].role_id,
-                  reviewer_count: level.steps[index].reviewer_count
+                  reviewer_count: level.steps[index].reviewer_count,
                 };
               }
 
-              $scope.levels[level.level - 1].steps  = level.steps;
+              $scope.levels[level.level - 1].steps = level.steps;
             }
             setTimeout(initRoleSelector, 0);
           });
@@ -81,7 +80,10 @@ app.controller('WorkflowNewCtrl', [
 
         // Show warning message on top if user cannot edit
         if (!$scope.isEditable) {
-          $scope.alerts.addAlert('warning', 'An action is pending corresponding to this workflow. You cannot edit this workflow right now.');
+          $scope.alerts.addAlert(
+            'warning',
+            'An action is pending corresponding to this workflow. You cannot edit this workflow right now.'
+          );
         }
       });
     };
@@ -99,9 +101,9 @@ app.controller('WorkflowNewCtrl', [
         params: {
           route_name: 'permission_get_multiple',
           count: 1000 /* A very high number, todo discuss with Rishabh */,
-          url_params: {
-            '{type}': 'workflow'
-          }
+          query_params: {
+            type: 'workflow',
+          },
         },
       });
 
@@ -171,7 +173,7 @@ app.controller('WorkflowNewCtrl', [
         // Check and add a role(step) in the corresponding level, if not present
         if (
           !$scope.levels[stepIndex].steps.some(function(role) {
-            return role.role_id === roleId
+            return role.role_id === roleId;
           })
         ) {
           $scope.levels[stepIndex].steps.push({
@@ -192,9 +194,7 @@ app.controller('WorkflowNewCtrl', [
 
     // Attach role selector to the newly added level
     function attachRoleSelector() {
-      var $roleSelect = $(
-        $('.role-select2')[$('.role-select2').length - 1]
-      );
+      var $roleSelect = $($('.role-select2')[$('.role-select2').length - 1]);
 
       addRoleSelector($roleSelect);
     }
@@ -203,7 +203,7 @@ app.controller('WorkflowNewCtrl', [
     $scope.addStep = function() {
       $scope.levels.push({
         steps: [],
-        op_type: 'and'
+        op_type: 'and',
       });
 
       setTimeout(attachRoleSelector, 0);
@@ -222,7 +222,8 @@ app.controller('WorkflowNewCtrl', [
 
     // Increment count corresponding to the role
     $scope.incReviewerCount = function(roleIndex, stepIndex) {
-      if ($scope.levels[stepIndex].steps[roleIndex].reviewer_count >= 99) return;
+      if ($scope.levels[stepIndex].steps[roleIndex].reviewer_count >= 99)
+        return;
       $scope.levels[stepIndex].steps[roleIndex].reviewer_count++;
     };
 
@@ -316,8 +317,11 @@ app.controller('WorkflowNewCtrl', [
           );
           $scope.editLayout = true;
           $scope.workflowId = data.data.id; // Update workflow id once flow is created.
-        }  else {
-          $scope.alerts.addAlert('danger', 'Creating workflow failed: ' + data.errors.join(', '))
+        } else {
+          $scope.alerts.addAlert(
+            'danger',
+            'Creating workflow failed: ' + data.errors.join(', ')
+          );
         }
       });
     };
@@ -330,7 +334,7 @@ app.controller('WorkflowNewCtrl', [
       $scope.alerts.resetAlerts();
       var valid = true;
       var payload = {
-        levels: []
+        levels: [],
       };
 
       // Check for empty workflow name
@@ -376,8 +380,11 @@ app.controller('WorkflowNewCtrl', [
             'success',
             $scope.workflowName + ' - Workflow updated successfully'
           );
-        }  else {
-          $scope.alerts.addAlert('danger', 'Update failed: ' + data.errors.join(', '))
+        } else {
+          $scope.alerts.addAlert(
+            'danger',
+            'Update failed: ' + data.errors.join(', ')
+          );
         }
       });
     };
@@ -385,7 +392,6 @@ app.controller('WorkflowNewCtrl', [
     // Filter roles(steps)if already added by the user in the corresponding level.
     $scope.filterItems = function(stepInd) {
       return function(role) {
-
         // Iterate all roles(steps) of corresponding level to check if role id is present
         for (var key in $scope.levels[stepInd].steps) {
           if (

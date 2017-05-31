@@ -10,6 +10,7 @@ export default class ListContainer extends Component {
 
   constructor() {
     super(...arguments);
+    this.searchFilters = {};
     this.state = {
       status: {},
     };
@@ -44,9 +45,22 @@ export default class ListContainer extends Component {
   };
 
   search = params => {
+    this.searchFilters = params;
     return this.fetchAll({
       ...this.getDefaultPageParams(),
       ...params,
+    });
+  };
+
+  paginate = params => {
+    let filters = {
+      ...this.searchFilters,
+      ...params,
+    };
+
+    return this.fetchAll({
+      ...this.getDefaultPageParams(),
+      ...filters,
     });
   };
 

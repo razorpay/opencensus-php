@@ -1,4 +1,5 @@
 !storage/screenshots
+selenium-server.jar
 ## Need to fix this
 .DS_Store
 /bootstrap/compiled.php
@@ -9,10 +10,14 @@ environment/.env
 environment/.env.dev
 environment/.env.testing
 environment/env.php
+# ignore generated docker conf
+environment/.env.dev_docker
+environment/.env.testing_docker
 !environment/.env.defaults
 !environment/.env.production
 !environment/.env.beta
 !environment/.env.alpha
+storage/
 generated/
 grunt.json
 node_modules/

@@ -98,7 +98,7 @@ export default class ItemsListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={items.length}
-              onClick={this.fetchAll}
+              onClick={this.paginate}
             />
           </div>
         </div>
