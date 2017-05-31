@@ -17,7 +17,7 @@ class Cors
         $headers = [
             'Access-Control-Allow-Origin'       => env('AUTH_SERVICE_URL'),
             'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS, PUT, DELETE',
-            'Access-Control-Allow-Credentials'  => true,
+            'Access-Control-Allow-Credentials'  => 'true',
         ];
 
         if ($request->getMethod() === 'OPTIONS')
