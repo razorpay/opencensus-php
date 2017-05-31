@@ -40,7 +40,7 @@ class Service extends Base\Service
     {
         $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $item = $this->core->update($item, $input);
+        $item = $this->core->update($item, $input, $this->merchant);
 
         return $item->toArrayPublic();
     }

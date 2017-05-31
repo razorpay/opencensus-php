@@ -7,7 +7,6 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Terminal\Mode;
-use RZP\Models\Terminal\Recurring;
 
 class CreateTerminals extends Migration
 {
@@ -99,7 +98,8 @@ class CreateTerminals extends Migration
                   ->default(0);
 
             $table->tinyInteger(Terminal::TYPE)
-                  ->default(Mode::DUAL);
+                  ->unsigned()
+                  ->default(1);
 
             $table->tinyInteger(Terminal::MODE)
                   ->default(Mode::DUAL);

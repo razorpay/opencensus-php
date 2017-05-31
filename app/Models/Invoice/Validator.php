@@ -38,14 +38,6 @@ class Validator extends Base\Validator
     const MIN_EXPIRY_SECS = 900;
 
     protected static $createRules = [
-        // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
-        // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
-        // Entity::ADJUSTMENT          => 'sometimes|integer',
-        // Entity::SHIPPING            => 'sometimes|integer|min:1',
-
-        // Entity::DUE_BY              => 'sometimes|integer',
-        // Entity::SCHEDULED_AT        => 'sometimes|integer',
-
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|epoch',
@@ -53,6 +45,7 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
@@ -75,14 +68,6 @@ class Validator extends Base\Validator
     //
 
     protected static $createDraftRules = [
-        // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
-        // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
-        // Entity::ADJUSTMENT          => 'sometimes|integer',
-        // Entity::SHIPPING            => 'sometimes|integer|min:1',
-
-        // Entity::DUE_BY              => 'sometimes|integer',
-        // Entity::SCHEDULED_AT        => 'sometimes|integer',
-
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|epoch',
@@ -90,6 +75,7 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
@@ -114,6 +100,7 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
@@ -138,6 +125,7 @@ class Validator extends Base\Validator
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
@@ -395,7 +383,8 @@ class Validator extends Base\Validator
 
         if (NotifyMedium::isMediumValid($medium) === false)
         {
-            throw new BadRequestValidationFailureException($medium . ' is not a valid communication medium.');
+            throw new BadRequestValidationFailureException(
+                $medium . ' is not a valid communication medium.');
         }
 
         if (($medium === NotifyMedium::EMAIL) and
@@ -595,58 +584,4 @@ class Validator extends Base\Validator
                 'description is required.');
         }
     }
-
-    // protected static $createValidators = [
-    //     Entity::DISCOUNT_FLAT,
-    //     Entity::DISCOUNT_PERCENT,
-    // ];
-
-    // public function validateDiscountFlat($input)
-    // {
-    //     if (isset($input[Entity::DISCOUNT_FLAT]) === false)
-    //     {
-    //         return;
-    //     }
-    //
-    //     if (isset($input[Entity::DISCOUNT_PERCENT]) === true)
-    //     {
-    //         throw new BadRequestValidationFailureException(
-    //             'Both discount_flat and discount_percent should not be set.'
-    //         );
-    //     }
-    //
-    //     $totalAmount = $discountableAmount = $input[Entity::TOTAL_AMOUNT];
-    //
-    //     if (isset($input[Entity::TOTAL_TAX]) === true)
-    //     {
-    //         $discountableAmount = $totalAmount - $input[Entity::TOTAL_TAX];
-    //     }
-    //
-    //     if ($input[Entity::DISCOUNT_FLAT] > $discountableAmount)
-    //     {
-    //         throw new BadRequestValidationFailureException(
-    //             'Discount cannot be greater than the total amount of the invoice',
-    //             null,
-    //             [
-    //                 'total_amount'  => $input[Entity::TOTAL_AMOUNT],
-    //                 'discount_flat' => $input[Entity::DISCOUNT_FLAT],
-    //             ]
-    //         );
-    //     }
-    // }
-    //
-    // public function validateDiscountPercent($input)
-    // {
-    //     if (isset($input[Entity::DISCOUNT_PERCENT]) === false)
-    //     {
-    //         return;
-    //     }
-    //
-    //     if (isset($input[Entity::DISCOUNT_FLAT]) === true)
-    //     {
-    //         throw new BadRequestValidationFailureException(
-    //             'Both discount_flat and discount_percent should not be set.'
-    //         );
-    //     }
-    // }
 }

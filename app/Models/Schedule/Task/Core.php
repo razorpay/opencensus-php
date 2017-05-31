@@ -53,14 +53,15 @@ class Core extends Base\Core
             {
                 $this->createOrUpdateInMode($scheduleTask, Mode::LIVE);
                 $this->createOrUpdateInMode($scheduleTask, Mode::TEST);
+
+                // Notify slack only in the case of settlement schedule_task
+                $this->traceAndNotifyScheduleAssignment($scheduleTask);
             }
             else
             {
                 $this->createOrUpdateInMode($scheduleTask, $this->mode);
             }
         });
-
-        $this->traceAndNotifyScheduleAssignment($scheduleTask);
 
         return $scheduleTask;
     }

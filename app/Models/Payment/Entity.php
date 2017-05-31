@@ -98,6 +98,9 @@ class Entity extends Base\PublicEntity
 
     const ACQUIRER_DATA         = 'acquirer_data';
 
+    // Query params
+    const TRANSFERRED           = 'transferred';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;

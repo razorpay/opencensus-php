@@ -73,11 +73,13 @@ class InvoiceAction extends Job implements ShouldQueue
 
             if ($handlerResult === false)
             {
-                $this->trace->error(TraceCode::INVOICE_ACTION_JOB_ERROR, $tracePayload);
+                $this->trace->error(
+                    TraceCode::INVOICE_ACTION_JOB_ERROR, $tracePayload);
             }
             else
             {
-                $this->trace->debug(TraceCode::INVOICE_ACTION_JOB_HANDLED, $tracePayload);
+                $this->trace->debug(
+                    TraceCode::INVOICE_ACTION_JOB_HANDLED, $tracePayload);
             }
         }
         catch (\Throwable $e)
@@ -141,7 +143,7 @@ class InvoiceAction extends Job implements ShouldQueue
         $this->core = new Invoice\Core;
     }
 
-    // ------------------------- Handlers for various events -------------------------
+    // ------------------------- Handlers for various events ---------
     //
     // Conventions:
     // - It should be of the following format: handle + Studly cased event constant
@@ -153,19 +155,22 @@ class InvoiceAction extends Job implements ShouldQueue
     {
         $pdfPath = $this->core->createInvoicePdf($this->invoice);
 
-        return (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
+        return (new Invoice\Notifier($this->invoice, $pdfPath))
+                    ->notifyInvoiceIssuedToCustomer();
     }
 
     private function handleIssued()
     {
         $pdfPath = $this->core->createInvoicePdf($this->invoice);
 
-        return (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
+        return (new Invoice\Notifier($this->invoice, $pdfPath))
+                    ->notifyInvoiceIssuedToCustomer();
     }
 
     private function handleExpired()
     {
-        return (new Invoice\Notifier($this->invoice))->notifyInvoiceExpiredToCustomer();
+        return (new Invoice\Notifier($this->invoice))
+                    ->notifyInvoiceExpiredToCustomer();
     }
 
     private function handleAuthorized()
@@ -179,7 +184,7 @@ class InvoiceAction extends Job implements ShouldQueue
         return true;
     }
 
-    // ------------------------------------------------------------
+    // ---------------------------------------------------------------
 
     private function handleException(\Throwable $e)
     {

@@ -11,11 +11,12 @@ class SettlementFailureException extends ServerErrorException
 
     public function __construct(
         $channel,
+        $message = null,
         $data = null,
         \Exception $previous = null)
     {
         $code = ErrorCode::SERVER_ERROR_SETTLEMENTS_FAILED;
-        $message = 'Critical error: Settlements failed';
+        $message = $message ?: 'Critical error: Settlements failed';
 
         $data['channel'] = $channel;
 
