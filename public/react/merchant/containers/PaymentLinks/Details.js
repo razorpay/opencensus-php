@@ -13,7 +13,6 @@ import IssueConfirmModal from 'merchant/containers/Invoices/IssueConfirmModal';
 })
 export default class InvoiceDetailContainer extends Component {
   static contextTypes = {
-    ngRouter: PropTypes.object,
     confirm: PropTypes.func,
   };
 

@@ -7,6 +7,7 @@ import ModalDialog from 'rzp/ui/ModalDialog';
 import Slider from 'rzp/ui/Slider';
 import Notifications from 'rzp/ui/Notifications';
 import ReactIdle from 'rzp/ui/ReactIdle';
+import LocalStorageService from 'rzp/utils/localStorage';
 import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
@@ -31,7 +32,7 @@ export default class App extends Component {
   };
 
   componentWillMount() {
-    let currentMode = localStorage.getItem('rzp_mode');
+    let currentMode = LocalStorageService.getItem('rzp_mode');
 
     if (currentMode) {
       this.props.updateSession({ mode: currentMode });
@@ -122,7 +123,7 @@ export default class App extends Component {
         component: <ActivationRequired onCloseClick={this.props.closeModal} />,
       });
     } else {
-      localStorage.setItem('rzp_mode', mode);
+      LocalStorageService.setItem('rzp_mode', mode);
       location.reload();
     }
   };
@@ -188,7 +189,7 @@ export default class App extends Component {
           showMobileNav={this.state.showMobileNav}
         />
         <Sidebar user={user} />
-        <Content user={user} />
+        <Content user={user} modeFormatted={modeFormatted} />
 
         <TetherComponent
           target="body"

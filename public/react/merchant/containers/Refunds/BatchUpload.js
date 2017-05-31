@@ -10,7 +10,6 @@ import { uploadBatchRefunds } from 'merchant/modules/refunds/batchuploads';
 @connect(state => state.session, { uploadBatchRefunds, showNotification })
 export default class BatchUpload extends Component {
   static contextTypes = {
-    ngRouter: PropTypes.object,
     confirm: PropTypes.func,
   };
 

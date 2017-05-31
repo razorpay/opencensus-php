@@ -15,7 +15,6 @@ import RefundModal from './RefundModal';
 export default class PaymentDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
-    ngRouter: PropTypes.object,
   };
 
   componentWillMount() {

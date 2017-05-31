@@ -118,13 +118,13 @@ export default props => {
                 <div class="list-group details-row-container">
                   <DetailRow
                     label="Name"
-                    value={invoice.customer_details.name}
+                    value={invoice.customer_details.customer_name}
                   />
                   <DetailRow
                     label="Email"
                     value={() => (
                       <span>
-                        {invoice.customer_details.email}
+                        {invoice.customer_details.customer_email}
                         {invoice.email_status
                           ? <span
                               style={{ marginLeft: '10px' }}
@@ -140,7 +140,7 @@ export default props => {
                     label="Phone"
                     value={() => (
                       <span>
-                        {invoice.customer_details.contact}
+                        {invoice.customer_details.customer_contact}
                         {invoice.sms_status
                           ? <span
                               style={{ marginLeft: '10px' }}

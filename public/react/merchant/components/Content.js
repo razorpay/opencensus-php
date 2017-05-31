@@ -236,7 +236,7 @@ export default class Content extends Component {
                   render={() => (
                     <TabbedContent
                       to="/keys"
-                      navLabel="API Keys"
+                      navLabel={`API Keys ( ${this.props.modeFormatted} Mode )`}
                       component={ApiKeys}
                     />
                   )}
