@@ -90,14 +90,7 @@ class Core extends Base\Core
 
         $scheduleTask->schedule()->associate($schedule);
 
-        if ($schedule->hasHour() === true)
-        {
-            $nextRunAt = Carbon::createFromTimestamp($scheduleTask->getNextRunAt(), 'Asia/Kolkata');
-
-            $nextRunAt->hour($schedule->getHour());
-
-            $scheduleTask->setNextRunAt($nextRunAt->getTimestamp());
-        }
+        $scheduleTask->updateNextRunAt($scheduleTask->getNextRunAt());
 
         return $scheduleTask;
     }
@@ -136,7 +129,7 @@ class Core extends Base\Core
 
         if ($currentScheduleTask !== null)
         {
-            $entity->setNextRunAt($currentScheduleTask->getNextRunAt());
+            $entity->updateNextRunAt($currentScheduleTask->getNextRunAt());
 
             $this->repo->deleteOrFail($currentScheduleTask);
         }
