@@ -1,8 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import TetherComponent from 'react-tether';
-
 import ModalDialog from 'rzp/ui/ModalDialog';
 import Slider from 'rzp/ui/Slider';
 import Notifications from 'rzp/ui/Notifications';
@@ -190,15 +188,7 @@ export default class App extends Component {
         />
         <Sidebar user={user} />
         <Content user={user} modeFormatted={modeFormatted} />
-
-        <TetherComponent
-          target="body"
-          attachment="bottom left"
-          targetAttachment="bottom left"
-        >
-          <div />
-          <Footer />
-        </TetherComponent>
+        <Footer />
 
         {/* Creates Portal for the comp */}
         <ModalDialog />

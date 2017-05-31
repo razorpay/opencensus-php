@@ -9,7 +9,6 @@ html, body {
 body {
   -webkit-font-smoothing: antialiased;
   padding-bottom: 60px;
-  min-height: 100vh;
 }
 
 *:focus {
@@ -19,6 +18,11 @@ body {
 .icon {
   vertical-align: text-bottom;
   font-size: 110%;
+}
+
+.layout {
+  position: relative;
+  min-height: 84vh;
 }
 
 .main-content {
@@ -148,6 +152,8 @@ body {
 }
 
 .pagefooter {
+  position: absolute;
+  top: 100%;
   padding: 20px;
   font-size: 10px;
   color: #8F96B3;
