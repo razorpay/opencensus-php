@@ -434,7 +434,7 @@ UPDATE terminals
                 'sharp', 'atom', 'wallet_openwallet'
             );
 
-# Shift to boolean for terminal use detection 
+# Shift to boolean for terminal use detection
 UPDATE terminals SET used = true WHERE used_count > 0;
 
 UPDATE terminals SET mode = type;
@@ -447,13 +447,13 @@ UPDATE merchants
 
 
 # To mark failed refunds with RRN as processed
-UPDATE refunds SET status = "processed" and gateway_refunded = "1" WHERE id IN ("7mXj7UJtpyOPlE", "7o4JYARL094Pdo", "7mz7qebLCAt2JG", "7q68hxjoCEXOg4") AND status = "failed" AND rrn IS NOT NULL;
+UPDATE refunds SET status = "processed", gateway_refunded = "1" WHERE id IN ("7mXj7UJtpyOPlE", "7o4JYARL094Pdo", "7mz7qebLCAt2JG", "7q68hxjoCEXOg4") AND status = "failed" AND rrn IS NOT NULL;
 
 # To mark all the old refunds as processed
-UPDATE refunds SET status = "processed" and gateway_refunded = "1" WHERE status IS NULL;
+UPDATE refunds SET status = "processed", gateway_refunded = "1" WHERE status IS NULL;
 
 # To mark all the failed reversals as processed as authorization has already been voided by the bank
-UPDATE refunds SET status = "processed" and gateway_refunded = "1" WHERE id IN ("7tPDqA8GZpmdf4", "7r205m0roajJiM", "7oSpcOsjkgwH5q") AND status = "failed";
+UPDATE refunds SET status = "processed", gateway_refunded = "1" WHERE id IN ("7tPDqA8GZpmdf4", "7r205m0roajJiM", "7oSpcOsjkgwH5q") AND status = "failed";
 
 # move to type coulum from recurring column
 UPDATE terminals SET type = recurring;
