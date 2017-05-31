@@ -543,18 +543,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, []);
     }
 
-    /**
-     * Deletes an EMI Plan
-     * @param  string $emiId EMI Plan Id
-     */
-    public function deleteEMIPlan($emiId)
-    {
-        list($error, $data) = $response = (new Admin\Service)
-            ->deleteEmi($emiId);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postSlackQuery()
     {
         $input = Input::all();

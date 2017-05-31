@@ -318,11 +318,23 @@ app
       $scope.emi = {
         delete: function(id) {
           // EMI plans are also modeless
-          var request = $http.delete('/admin/emi/' + id);
+          var data = {
+            route_name: 'emi_plan_delete',
+            url_params: {
+              '{id}': id,
+            },
+          };
+          var request = $http.delete('/admin/generic', {
+            params: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
                 alert('EMI Plan deleted');
+                $state.go('app.entities', {
+                  mode: $scope.mode,
+                  type: 'emi_plan',
+                });
               } else {
                 alert(data.errors);
               }

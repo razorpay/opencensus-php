@@ -373,6 +373,9 @@ return [
         // Terminal Remove Sub Merchant
         'terminal_remove_merchant'          => 'terminals/{id}/merchants/{mid}',
 
+        // Delete EMI Plan
+        'emi_plan_delete'                   => 'emi/{id}',
+
         // Gateway Rules
         'gateway_create_rule'               => 'gateway/rules',
         'gateway_update_rule'               => 'gateway/rules/{id}',

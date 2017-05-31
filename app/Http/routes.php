@@ -186,9 +186,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/password', 'AdminController@postPassword');
         Route::put('/admin/{id}/edit', 'AdminController@putEdit');
 
-        // EMI Routes
-        Route::delete('/admin/emi/{emiId}', 'AdminController@deleteEMIPlan');
-
         // Admin merchant actions
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
@@ -204,8 +201,6 @@ Route::group(['middleware' => ['web']], function () {
         // IIN Routes
         Route::delete('/admin/iin/{id}', 'AdminController@deleteIIN');
         Route::put('/admin/iin/{id}', 'AdminController@putEditIIN');
-        // EMI Plan Routes
-        Route::delete('/admin/emi/{id}', 'AdminController@deleteIIN');
 
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 

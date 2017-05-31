@@ -1517,28 +1517,6 @@ class Service extends Base\Service
     }
 
     /**
-     * deletes an EMI Plan
-     * @param  string $emiId EMI Plan Id
-     * @return array
-     */
-    public function deleteEmi($emiId)
-    {
-        $this->setApiCredentials(null);
-        $error = $data = [];
-
-        try
-        {
-            $data = $this->api->EMI->setId($emiId)->delete($emiId);
-        }
-        catch (ApiError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
-    /**
      * See the data params at
      * https://razorpay.slack.com/services/20502106306?updated=1#service_setup
      *
