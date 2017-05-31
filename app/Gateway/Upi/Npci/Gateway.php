@@ -274,10 +274,6 @@ EOT;
 
         if ($this->needsProcessing($api))
         {
-            $params['original_request_params'] = [];
-            $params['msgId'] = $msgId;
-            $params['api'] = $api;
-
             $params = [
                 'original_request_params'   => [],
                 'msg_id'                    => $msgId,

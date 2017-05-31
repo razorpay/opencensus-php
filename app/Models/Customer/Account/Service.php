@@ -327,6 +327,7 @@ class Service extends Base\Service
 
         $data = $this->core->sendBalanceEnqRequestToGateway($this->device, $this->device->customer, $bankAccount, $input);
 
+        // msg id
         // Cache the balance from the callback and make a cache call here?
         $balance = 10000;
 
